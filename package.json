@@ -1,0 +1,35 @@
+{
+  "name": "karibu-baskin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma migrate deploy && next build",
+    "start": "next start",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/server": "^11.11.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.8",
+    "@mui/material": "^6.4.8",
+    "@mui/material-nextjs": "^7.3.9",
+    "@mui/x-date-pickers": "^7.28.1",
+    "@prisma/client": "^6.5.0",
+    "date-fns": "^4.1.0",
+    "next": "^16.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "prisma": "^6.5.0",
+    "typescript": "^5"
+  }
+}

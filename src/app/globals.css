@@ -1,0 +1,38 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  min-height: 100vh;
+  background-color: #F7F4F1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Rimuove il flash blu sul tap su mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Scrolling fluido su iOS */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Nessun outline di default, solo su focus da tastiera */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media print {
+  header,
+  nav,
+  button,
+  form {
+    display: none !important;
+  }
+}
