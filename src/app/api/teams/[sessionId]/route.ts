@@ -47,7 +47,7 @@ export async function POST(
 
   await prisma.session.update({
     where: { id: sessionId },
-    data: { teams },
+    data: { teams: teams as object },
   });
 
   return NextResponse.json({ ...teams, generated: true });
