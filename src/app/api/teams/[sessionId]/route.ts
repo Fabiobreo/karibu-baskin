@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { generateTeams } from "@/lib/teamGenerator";
 import { isAdminAuthenticated } from "@/lib/auth";
@@ -66,7 +67,7 @@ export async function DELETE(
 
   await prisma.session.update({
     where: { id: sessionId },
-    data: { teams: null },
+    data: { teams: Prisma.DbNull },
   });
 
   return NextResponse.json({ ok: true });
