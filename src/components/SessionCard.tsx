@@ -11,6 +11,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { format } from "date-fns";
 import Link from "next/link";
+import Countdown from "@/components/Countdown";
 
 interface SessionWithCount {
   id: string;
@@ -35,11 +36,14 @@ export default function SessionCard({ session }: { session: SessionWithCount }) 
             {session.title}
           </Typography>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 15, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.82rem" }}>
-              Ore {format(date, "HH:mm")}
-            </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <AccessTimeIcon sx={{ fontSize: 15, color: "text.disabled" }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.82rem" }}>
+                Ore {format(date, "HH:mm")}
+              </Typography>
+            </Box>
+            <Countdown date={session.date} />
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.5 }}>

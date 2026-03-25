@@ -19,6 +19,7 @@ import { it } from "date-fns/locale";
 import RegistrationForm from "@/components/RegistrationForm";
 import RosterByRole from "@/components/RosterByRole";
 import TeamDisplay from "@/components/TeamDisplay";
+import ShareSection from "@/components/ShareSection";
 
 interface Session {
   id: string;
@@ -101,11 +102,15 @@ export default function SessionPage() {
               <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: "1.5rem", md: "2rem" } }}>
                 {session.title}
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 1.5 }}>
                 {format(new Date(session.date), "EEEE d MMMM yyyy", { locale: it })}
                 {" · ore "}
                 {format(new Date(session.date), "HH:mm")}
               </Typography>
+              <ShareSection
+                sessionTitle={session.title}
+                sessionUrl={typeof window !== "undefined" ? window.location.href : `https://karibu-baskin.vercel.app/allenamento/${sessionId}`}
+              />
             </Box>
 
             {/* ── Squadre ── */}

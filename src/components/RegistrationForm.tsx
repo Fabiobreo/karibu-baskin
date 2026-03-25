@@ -7,10 +7,10 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
-  Alert,
   CircularProgress,
 } from "@mui/material";
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
+import { useToast } from "@/context/ToastContext";
 
 interface Props {
   sessionId: string;
@@ -22,23 +22,20 @@ export default function RegistrationForm({ sessionId, onRegistered, registeredNa
   const [name, setName] = useState("");
   const [role, setRole] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const { showToast } = useToast();
 
-  const isDuplicate = name.trim().length > 0 &&
+  const isDuplicate =
+    name.trim().length > 0 &&
     registeredNames.some((n) => n.toLowerCase() === name.trim().toLowerCase());
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !role) {
-      setError("Inserisci il tuo nome e seleziona il ruolo");
+      showToast({ message: "Inserisci il tuo nome e seleziona il ruolo", severity: "warning" });
       return;
     }
 
     setLoading(true);
-    setError(null);
-    setSuccess(false);
-
     try {
       const res = await fetch("/api/registrations", {
         method: "POST",
@@ -47,21 +44,21 @@ export default function RegistrationForm({ sessionId, onRegistered, registeredNa
       });
 
       if (res.status === 409) {
-        setError("Sei già iscritto a questo allenamento");
+        showToast({ message: "Sei già iscritto a questo allenamento", severity: "error" });
         return;
       }
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? "Errore durante l'iscrizione");
+        showToast({ message: data.error ?? "Errore durante l'iscrizione", severity: "error" });
         return;
       }
 
-      setSuccess(true);
+      showToast({ message: `✅ ${name.trim()} iscritto/a con successo!`, severity: "success" });
       setName("");
       setRole(null);
       onRegistered();
     } catch {
-      setError("Errore di rete, riprova");
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setLoading(false);
     }
@@ -76,14 +73,14 @@ export default function RegistrationForm({ sessionId, onRegistered, registeredNa
       <TextField
         label="Il tuo nome"
         value={name}
-        onChange={(e) => { setName(e.target.value); setSuccess(false); setError(null); }}
+        onChange={(e) => setName(e.target.value)}
         fullWidth
         size="small"
         inputProps={{ maxLength: 60 }}
         sx={{ mb: 2 }}
         disabled={loading}
         error={isDuplicate}
-        helperText={isDuplicate ? "Questo atleta è già iscritto a questo allenamento" : ""}
+        helperText={isDuplicate ? "Questo atleta è già iscritto" : ""}
       />
 
       <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -93,7 +90,7 @@ export default function RegistrationForm({ sessionId, onRegistered, registeredNa
         value={role}
         exclusive
         onChange={(_, val) => val !== null && setRole(val)}
-        sx={{ mb: 2, flexWrap: "wrap", gap: 0.5 }}
+        sx={{ mb: 2.5, flexWrap: "wrap", gap: 0.5 }}
       >
         {ROLES.map((r) => (
           <ToggleButton
@@ -120,20 +117,10 @@ export default function RegistrationForm({ sessionId, onRegistered, registeredNa
         ))}
       </ToggleButtonGroup>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          Iscrizione completata!
-        </Alert>
-      )}
-
       <Button
         type="submit"
         variant="contained"
+        fullWidth
         disabled={loading || !name.trim() || !role || isDuplicate}
         startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
       >
