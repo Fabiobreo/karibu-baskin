@@ -9,6 +9,8 @@ export interface Athlete {
 export interface Teams {
   teamA: Athlete[];
   teamB: Athlete[];
+  teamC?: Athlete[];
+  numTeams: 2 | 3;
 }
 
 // Mulberry32 PRNG — fast, deterministic, good enough for this use
@@ -40,37 +42,27 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
   return a;
 }
 
-export function generateTeams(athletes: Athlete[], sessionId: string): Teams {
-  const teamA: Athlete[] = [];
-  const teamB: Athlete[] = [];
+export function generateTeams(
+  athletes: Athlete[],
+  sessionId: string,
+  numTeams: 2 | 3 = 2
+): Teams {
+  const buckets: Athlete[][] = Array.from({ length: numTeams }, () => []);
 
-  // For each role, split evenly. Odd player alternates team per role
-  // alternation is seeded by sessionId to be deterministic
-  const sessionSeed = stringToSeed(sessionId);
-
-  ROLES.forEach((role, roleIndex) => {
+  // Per ogni ruolo, mescola in modo deterministico e distribuisce round-robin
+  ROLES.forEach((role) => {
     const group = athletes.filter((a) => a.role === role);
     const seed = stringToSeed(`${sessionId}-${role}`);
     const shuffled = seededShuffle(group, seed);
-
-    const half = Math.floor(shuffled.length / 2);
-    const isOdd = shuffled.length % 2 === 1;
-
-    // Alternate which team gets the extra player based on role index + session seed
-    const extraGoesToA = (sessionSeed + roleIndex) % 2 === 0;
-
-    teamA.push(...shuffled.slice(0, half));
-    teamB.push(...shuffled.slice(half, half * 2));
-
-    if (isOdd) {
-      const extra = shuffled[shuffled.length - 1];
-      if (extraGoesToA) {
-        teamA.push(extra);
-      } else {
-        teamB.push(extra);
-      }
-    }
+    shuffled.forEach((athlete, i) => {
+      buckets[i % numTeams].push(athlete);
+    });
   });
 
-  return { teamA, teamB };
+  return {
+    teamA: buckets[0],
+    teamB: buckets[1],
+    ...(numTeams === 3 ? { teamC: buckets[2] } : {}),
+    numTeams,
+  };
 }

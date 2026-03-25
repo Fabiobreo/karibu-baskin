@@ -91,6 +91,7 @@ const theme = createTheme({
         root: {
           background: "linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 100%)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+          borderRadius: "0 !important",
         },
       },
     },

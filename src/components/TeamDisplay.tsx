@@ -1,8 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
-  Button,
   Typography,
   Paper,
   Grid2 as Grid,
@@ -10,10 +9,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  CircularProgress,
-  Alert,
+  Skeleton,
 } from "@mui/material";
-import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
 
 interface Athlete {
@@ -25,13 +23,16 @@ interface Athlete {
 interface Teams {
   teamA: Athlete[];
   teamB: Athlete[];
+  teamC?: Athlete[];
+  numTeams: 2 | 3;
+  generated: boolean;
 }
 
 interface Props {
   sessionId: string;
 }
 
-function TeamColumn({ name, athletes, color }: { name: string; athletes: Athlete[]; color: string }) {
+export function TeamColumn({ name, athletes, color }: { name: string; athletes: Athlete[]; color: string }) {
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden", height: "100%" }}>
       <Box sx={{ px: 2, py: 1.5, backgroundColor: color, display: "flex", alignItems: "center", gap: 1 }}>
@@ -72,54 +73,65 @@ function TeamColumn({ name, athletes, color }: { name: string; athletes: Athlete
 
 export default function TeamDisplay({ sessionId }: Props) {
   const [teams, setTeams] = useState<Teams | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  async function loadTeams() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/teams/${sessionId}`);
-      if (!res.ok) throw new Error("Errore nel caricamento");
-      const data = await res.json();
-      if (data.teamA.length === 0 && data.teamB.length === 0) {
-        setError("Nessun atleta iscritto, impossibile generare le squadre");
-        return;
-      }
-      setTeams(data);
-    } catch {
-      setError("Errore nel caricamento delle squadre");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    fetch(`/api/teams/${sessionId}`)
+      .then((r) => r.json())
+      .then((data: Teams) => {
+        if (data.generated) setTeams(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [sessionId]);
+
+  if (loading) {
+    return (
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 6 }}><Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} /></Grid>
+        <Grid size={{ xs: 12, md: 6 }}><Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} /></Grid>
+      </Grid>
+    );
   }
 
-  return (
-    <Box>
-      <Button
-        variant="contained"
-        color="secondary"
-        size="large"
-        onClick={loadTeams}
-        disabled={loading}
-        startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <SportsSoccerIcon />}
-        sx={{ mb: 2 }}
+  if (!teams) {
+    return (
+      <Box
+        sx={{
+          py: 4,
+          px: 3,
+          textAlign: "center",
+          borderRadius: 2,
+          border: "1px dashed rgba(0,0,0,0.15)",
+          backgroundColor: "background.paper",
+        }}
       >
-        {loading ? "Generando squadre..." : teams ? "Rigenera squadre" : "Genera squadre"}
-      </Button>
+        <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
+        <Typography variant="body1" color="text.secondary" fontWeight={500}>
+          Squadre non ancora generate
+        </Typography>
+        <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+          Le squadre verranno pubblicate dall&apos;amministratore prima dell&apos;allenamento.
+        </Typography>
+      </Box>
+    );
+  }
 
-      {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
+  const colSize = teams.numTeams === 3 ? { xs: 12, md: 4 } : { xs: 12, md: 6 };
 
-      {teams && (
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" />
-          </Grid>
+  return (
+    <Grid container spacing={2}>
+      <Grid size={colSize}>
+        <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" />
+      </Grid>
+      <Grid size={colSize}>
+        <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" />
+      </Grid>
+      {teams.numTeams === 3 && teams.teamC && (
+        <Grid size={colSize}>
+          <TeamColumn name="Bianchi" athletes={teams.teamC} color="#757575" />
         </Grid>
       )}
-    </Box>
+    </Grid>
   );
 }

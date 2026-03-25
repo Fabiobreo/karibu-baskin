@@ -22,6 +22,7 @@ interface SessionWithCount {
   id: string;
   title: string;
   date: string;
+  teams: object | null;
   _count: { registrations: number };
 }
 
@@ -73,7 +74,7 @@ export default function AdminPage() {
               Allenamenti programmati
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <AdminSessionList sessions={sessions} onDeleted={loadSessions} />
+            <AdminSessionList sessions={sessions} onDeleted={loadSessions} onTeamsGenerated={loadSessions} />
           </Box>
         </Box>
       </Container>

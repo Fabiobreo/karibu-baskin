@@ -29,40 +29,40 @@ export default function Footer() {
           gap: 2,
         }}
       >
-        {/* Logo */}
-        <Image src="/logo.png" alt="Karibu Baskin" width={56} height={56} style={{ objectFit: "contain" }} />
-
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-            Karibu Baskin
-          </Typography>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            Montecchio Maggiore
-          </Typography>
-        </Box>
-
-        {/* Social */}
-        <Box sx={{ display: "flex", gap: 0.5 }}>
-          <IconButton
-            component="a"
-            href="https://www.instagram.com/karibu_baskin"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#E1306C" } }}
-            aria-label="Instagram"
-          >
-            <InstagramIcon />
-          </IconButton>
-          <IconButton
-            component="a"
-            href="https://www.facebook.com/karibu.baskin"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#1877F2" } }}
-            aria-label="Facebook"
-          >
-            <FacebookIcon />
-          </IconButton>
+        {/* Logo + testo + social affiancati */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Image src="/logo.png" alt="Karibu Baskin" width={52} height={52} style={{ objectFit: "contain" }} />
+          <Box>
+            <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+              Karibu Baskin
+            </Typography>
+            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              Montecchio Maggiore
+            </Typography>
+          </Box>
+          {/* Social */}
+          <Box sx={{ display: "flex", gap: 0.5, ml: 0.5 }}>
+            <IconButton
+              component="a"
+              href="https://www.instagram.com/karibubaskin"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#E1306C" }, p: 0.75 }}
+              aria-label="Instagram"
+            >
+              <InstagramIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              component="a"
+              href="https://www.facebook.com/karibu.baskin"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#1877F2" }, p: 0.75 }}
+              aria-label="Facebook"
+            >
+              <FacebookIcon fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
 
         <Divider sx={{ width: "100%", borderColor: "rgba(255,255,255,0.08)" }} />
