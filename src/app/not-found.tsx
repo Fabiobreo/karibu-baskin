@@ -1,6 +1,9 @@
 import { Box, Typography, Button } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Pagina non trovata | Karibu Baskin" };
 
 export default function NotFound() {
   return (
@@ -40,15 +43,11 @@ export default function NotFound() {
         La pagina che stai cercando non esiste o è stata spostata.
       </Typography>
 
-      <Button
-        variant="contained"
-        component={Link}
-        href="/"
-        size="large"
-        sx={{ borderRadius: 3, px: 4 }}
-      >
-        Torna agli allenamenti
-      </Button>
+      <Link href="/" style={{ textDecoration: "none" }}>
+        <Button variant="contained" size="large" sx={{ borderRadius: 3, px: 4 }}>
+          Torna agli allenamenti
+        </Button>
+      </Link>
     </Box>
   );
 }
