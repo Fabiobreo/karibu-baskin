@@ -24,7 +24,7 @@ export default async function HomePage() {
   const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as any ?? null }));
 
   // Raggruppa per giorno
-  const grouped = new Map<string, typeof rawSessions>();
+  const grouped = new Map<string, typeof sessions>();
   sessions.forEach((s) => {
     const key = format(new Date(s.date), "yyyy-MM-dd");
     if (!grouped.has(key)) grouped.set(key, []);
