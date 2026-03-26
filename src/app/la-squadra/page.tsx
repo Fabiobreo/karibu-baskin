@@ -18,7 +18,7 @@ const VALUES = [
   {
     icon: <GroupsIcon sx={{ fontSize: 32 }} />,
     title: "Comunità",
-    description: "Siamo una famiglia di 80 persone. Ogni allenamento è un momento di crescita condivisa, dentro e fuori dal campo.",
+    description: "Siamo una famiglia di oltre 80 persone. Ogni allenamento è un momento di crescita condivisa, dentro e fuori dal campo.",
   },
   {
     icon: <EmojiEventsIcon sx={{ fontSize: 32 }} />,
@@ -51,7 +51,7 @@ const STORIA = [
   {
     anno: "2025",
     titolo: "10 anni e due squadre",
-    testo: "Raggiungiamo i 10 anni di attività con 80 iscritti e organizziamo la \"Karibub Ten League\", un torneo celebrativo con 6 squadre partecipanti. Per la stagione 2025/2026 nasciamo in due: i Montekki e i Kapuleti.",
+    testo: "Raggiungiamo i 10 anni di attività con oltre 80 iscritti e organizziamo la \"Karibu Ten League\", un torneo celebrativo con 6 squadre partecipanti. Un traguardo che celebra la crescita dell'associazione e apre una nuova era: quella dei Montekki e dei Kapuleti.",
   },
 ];
 
@@ -76,7 +76,7 @@ const TEAMS = [
 
 const STATS = [
   { value: "2015", label: "Anno di fondazione" },
-  { value: "80", label: "Atleti tesserati" },
+  { value: "80+", label: "Atleti tesserati" },
   { value: "2", label: "Squadre in campo" },
   { value: "1°", label: "Titolo regionale 2018" },
 ];
@@ -106,7 +106,7 @@ export default function LaSquadraPage() {
             ASD Karibu Baskin
           </Typography>
           <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, maxWidth: 540, mx: "auto", fontSize: { xs: "1rem", md: "1.1rem" } }}>
-            Nati nel 2015 a Montecchio Maggiore. 80 atleti, 2 squadre, un unico obiettivo: giocare insieme, tutti.
+            Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre, un unico obiettivo: giocare insieme, tutti.
           </Typography>
         </Container>
       </Box>
@@ -140,7 +140,7 @@ export default function LaSquadraPage() {
             Le nostre squadre
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 620 }}>
-            Grazie ai nostri 80 iscritti, quest&apos;anno abbiamo realizzato due squadre che partecipano ai campionati regionali veneti.
+            Con oltre 80 atleti tesserati, per la stagione 2025/2026 abbiamo formato due squadre che partecipano ai campionati regionali veneti.
           </Typography>
           <Grid container spacing={3}>
             {TEAMS.map((team) => (

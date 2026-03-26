@@ -1,6 +1,7 @@
 import { Box, Typography, IconButton, Divider } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
+import YouTubeIcon from "@mui/icons-material/YouTube";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -61,6 +62,16 @@ export default function Footer() {
               aria-label="Facebook"
             >
               <FacebookIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              component="a"
+              href="https://youtube.com/@karibubaskin"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#FF0000" }, p: 0.75 }}
+              aria-label="YouTube"
+            >
+              <YouTubeIcon fontSize="small" />
             </IconButton>
           </Box>
         </Box>
