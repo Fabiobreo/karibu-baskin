@@ -13,8 +13,10 @@ import Image from "next/image";
 
 const NAV_LINKS = [
   { label: "Allenamenti", href: "/" },
-  { label: "Il Baskin", href: "/il-baskin" },
   { label: "La Squadra", href: "/la-squadra" },
+  { label: "Il Baskin", href: "/il-baskin" },
+  { label: "Sponsor", href: "/sponsor" },
+  { label: "Contatti", href: "/contatti" },
 ];
 
 export default function SiteHeader() {
