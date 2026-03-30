@@ -28,12 +28,6 @@ const CONTACTS = [
     value: "asdkaribubaskin@gmail.com",
     href: "mailto:asdkaribubaskin@gmail.com",
   },
-  {
-    icon: <EmailIcon />,
-    label: "PEC",
-    value: "asdkaribubaskin@legalmail.it",
-    href: "mailto:asdkaribubaskin@legalmail.it",
-  },
 ];
 
 const SOCIAL = [

@@ -18,6 +18,11 @@ enum AppRole {
   ADMIN
 }
 
+enum Gender {
+  MALE
+  FEMALE
+}
+
 // ── Auth.js v5 — modelli standard (Prisma adapter) ───────────────────────────
 
 model User {
@@ -28,13 +33,19 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
 
-  appRole AppRole @default(GUEST)
+  appRole   AppRole @default(GUEST)
 
-  accounts      Account[]
-  authSessions  Session[]
-  registrations Registration[]
-  childLinks    ParentChild[]  @relation("ParentLinks")
-  parentLinks   ParentChild[]  @relation("ChildLinks")
+  // Campi atleta
+  sportRole Int?
+  gender    Gender?
+  birthDate DateTime?
+
+  accounts         Account[]
+  authSessions     Session[]
+  registrations    Registration[]
+  childLinks       ParentChild[]       @relation("ParentLinks")
+  parentLinks      ParentChild[]       @relation("ChildLinks")
+  sportRoleHistory SportRoleHistory[]
 }
 
 model Account {
@@ -70,6 +81,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ── Storico ruolo sportivo atleta ────────────────────────────────────────────
+
+model SportRoleHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  sportRole Int
+  changedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, changedAt])
 }
 
 // ── Relazione Genitore → Figlio ───────────────────────────────────────────────

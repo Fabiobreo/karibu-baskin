@@ -2,15 +2,21 @@
 import { useState } from "react";
 import {
   Box, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Paper, Avatar, Typography, Select, MenuItem, Chip,
-  TextField, InputAdornment,
+  TableRow, Avatar, Typography, Select, MenuItem, Chip,
+  TextField, InputAdornment, IconButton, Dialog, DialogTitle,
+  DialogContent, DialogActions, Button, Divider, Stack,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import type { AppRole } from "@prisma/client";
+import EditIcon from "@mui/icons-material/Edit";
+import HistoryIcon from "@mui/icons-material/History";
+import type { AppRole, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
+import { ROLE_LABELS, ROLE_COLORS } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 
-const ROLE_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
+const APP_ROLE_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
   GUEST: "default",
   ATHLETE: "info",
   PARENT: "success",
@@ -18,19 +24,42 @@ const ROLE_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | 
   ADMIN: "error",
 };
 
+const GENDER_LABELS: Record<Gender, string> = {
+  MALE: "Maschio",
+  FEMALE: "Femmina",
+};
+
+interface RoleHistoryEntry {
+  sportRole: number;
+  changedAt: Date | string;
+}
+
 interface User {
   id: string;
   name: string | null;
   email: string;
   image: string | null;
   appRole: AppRole;
+  sportRole: number | null;
+  gender: Gender | null;
+  birthDate: Date | string | null;
   createdAt: Date | string;
   _count: { registrations: number };
+  sportRoleHistory: RoleHistoryEntry[];
+}
+
+interface EditState {
+  sportRole: string;   // stringa per il select ("" = non impostato)
+  gender: string;      // "" | "MALE" | "FEMALE"
+  birthDate: string;   // "YYYY-MM-DD" o ""
 }
 
 export default function AdminUserList({ users: initialUsers }: { users: User[] }) {
   const [users, setUsers] = useState(initialUsers);
   const [search, setSearch] = useState("");
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editState, setEditState] = useState<EditState>({ sportRole: "", gender: "", birthDate: "" });
+  const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
 
   const filtered = users.filter(
@@ -46,12 +75,55 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       body: JSON.stringify({ appRole: newRole }),
     });
     if (res.ok) {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, appRole: newRole } : u))
-      );
+      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, appRole: newRole } : u));
       showToast({ message: `Ruolo aggiornato a ${ROLE_LABELS_IT[newRole]}`, severity: "success" });
     } else {
-      showToast({ message: "Errore nell'aggiornamento del ruolo", severity: "error" });
+      showToast({ message: "Errore aggiornamento ruolo", severity: "error" });
+    }
+  }
+
+  function openEdit(user: User) {
+    setEditUser(user);
+    setEditState({
+      sportRole: user.sportRole?.toString() ?? "",
+      gender: user.gender ?? "",
+      birthDate: user.birthDate
+        ? new Date(user.birthDate).toISOString().slice(0, 10)
+        : "",
+    });
+  }
+
+  async function handleSaveAthleteData() {
+    if (!editUser) return;
+    setSaving(true);
+    const payload: Record<string, unknown> = {
+      sportRole: editState.sportRole ? parseInt(editState.sportRole) : null,
+      gender: editState.gender || null,
+      birthDate: editState.birthDate || null,
+    };
+    const res = await fetch(`/api/users/${editUser.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    setSaving(false);
+    if (res.ok) {
+      const updated = await res.json();
+      setUsers((prev) => prev.map((u) => u.id === editUser.id ? {
+        ...u,
+        sportRole: updated.sportRole,
+        gender: updated.gender,
+        birthDate: updated.birthDate,
+        // Aggiorna storico solo se il ruolo è cambiato
+        sportRoleHistory:
+          updated.sportRole !== editUser.sportRole && updated.sportRole !== null
+            ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...editUser.sportRoleHistory]
+            : editUser.sportRoleHistory,
+      } : u));
+      showToast({ message: "Dati atleta aggiornati", severity: "success" });
+      setEditUser(null);
+    } else {
+      showToast({ message: "Errore nel salvataggio", severity: "error" });
     }
   }
 
@@ -71,14 +143,18 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           ),
         }}
       />
-      <TableContainer component={Paper} variant="outlined">
+
+      <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Utente</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Ruolo</TableCell>
+              <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Email</TableCell>
+              <TableCell>Ruolo utente</TableCell>
+              <TableCell align="center">Ruolo Baskin</TableCell>
+              <TableCell align="center">Genere</TableCell>
               <TableCell align="center">Iscrizioni</TableCell>
+              <TableCell align="center">Modifica</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -89,46 +165,63 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                     <Avatar src={user.image ?? undefined} sx={{ width: 32, height: 32, fontSize: 14 }}>
                       {user.name?.[0] ?? user.email[0].toUpperCase()}
                     </Avatar>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" fontWeight={600} noWrap>
                       {user.name ?? "—"}
                     </Typography>
                   </Box>
                 </TableCell>
-                <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.email}
-                  </Typography>
+                <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
                 </TableCell>
                 <TableCell>
                   <Select
                     value={user.appRole}
                     size="small"
                     onChange={(e) => handleRoleChange(user.id, e.target.value as AppRole)}
-                    sx={{ minWidth: 130, fontSize: "0.8rem" }}
+                    sx={{ minWidth: 120, fontSize: "0.8rem" }}
                     renderValue={(val) => (
-                      <Chip
-                        label={ROLE_LABELS_IT[val as AppRole]}
-                        size="small"
-                        color={ROLE_COLORS[val as AppRole]}
-                        sx={{ fontWeight: 600 }}
-                      />
+                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={APP_ROLE_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
                     )}
                   >
                     {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                       <MenuItem key={r} value={r}>
-                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_COLORS[r]} sx={{ fontWeight: 600 }} />
+                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={APP_ROLE_COLORS[r]} sx={{ fontWeight: 600 }} />
                       </MenuItem>
                     ))}
                   </Select>
                 </TableCell>
                 <TableCell align="center">
+                  {user.sportRole
+                    ? <Chip
+                        label={ROLE_LABELS[user.sportRole as keyof typeof ROLE_LABELS]}
+                        size="small"
+                        sx={{
+                          bgcolor: ROLE_COLORS[user.sportRole],
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: "0.72rem",
+                        }}
+                      />
+                    : <Typography variant="body2" color="text.disabled">—</Typography>}
+                </TableCell>
+                <TableCell align="center">
+                  {user.gender
+                    ? <Typography variant="body2">{GENDER_LABELS[user.gender]}</Typography>
+                    : <Typography variant="body2" color="text.disabled">—</Typography>}
+                </TableCell>
+                <TableCell align="center">
                   <Typography variant="body2">{user._count.registrations}</Typography>
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton size="small" onClick={() => openEdit(user)} title="Modifica dati atleta">
+                    <EditIcon fontSize="small" />
+                  </IconButton>
                 </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   Nessun utente trovato
                 </TableCell>
               </TableRow>
@@ -136,6 +229,102 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Dialog modifica atleta */}
+      <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          Dati atleta — {editUser?.name ?? editUser?.email}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2.5} sx={{ mt: 1 }}>
+            {/* Ruolo Baskin */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Ruolo Baskin (1–5)
+              </Typography>
+              <Select
+                fullWidth
+                size="small"
+                displayEmpty
+                value={editState.sportRole}
+                onChange={(e) => setEditState((s) => ({ ...s, sportRole: e.target.value }))}
+              >
+                <MenuItem value=""><em>Non impostato</em></MenuItem>
+                {[1, 2, 3, 4, 5].map((r) => (
+                  <MenuItem key={r} value={r.toString()}>
+                    <Chip
+                      label={ROLE_LABELS[r as keyof typeof ROLE_LABELS]}
+                      size="small"
+                      sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                    />
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+
+            {/* Genere */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Genere
+              </Typography>
+              <Select
+                fullWidth
+                size="small"
+                displayEmpty
+                value={editState.gender}
+                onChange={(e) => setEditState((s) => ({ ...s, gender: e.target.value }))}
+              >
+                <MenuItem value=""><em>Non impostato</em></MenuItem>
+                <MenuItem value="MALE">Maschio</MenuItem>
+                <MenuItem value="FEMALE">Femmina</MenuItem>
+              </Select>
+            </Box>
+
+            {/* Data di nascita */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Data di nascita (opzionale)
+              </Typography>
+              <TextField
+                fullWidth
+                size="small"
+                type="date"
+                value={editState.birthDate}
+                onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+
+            {/* Storico ruolo */}
+            {editUser && editUser.sportRoleHistory.length > 0 && (
+              <Box>
+                <Divider sx={{ mb: 1.5 }} />
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
+                  <HistoryIcon fontSize="small" color="action" />
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    Storico ruolo Baskin
+                  </Typography>
+                </Box>
+                <Stack spacing={0.5}>
+                  {editUser.sportRoleHistory.map((h, i) => (
+                    <Typography key={i} variant="caption" color="text.secondary">
+                      {ROLE_LABELS[h.sportRole as keyof typeof ROLE_LABELS]}
+                      {" · "}
+                      {format(new Date(h.changedAt), "d MMM yyyy", { locale: it })}
+                    </Typography>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setEditUser(null)}>Annulla</Button>
+          <Button variant="contained" onClick={handleSaveAthleteData} disabled={saving}>
+            {saving ? "Salvataggio..." : "Salva"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
