@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
-  const session = await prisma.session.findUnique({
+  const session = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
     select: { teams: true },
   });
@@ -46,7 +46,7 @@ export async function POST(
 
   const teams = generateTeams(registrations, sessionId, numTeams);
 
-  await prisma.session.update({
+  await prisma.trainingSession.update({
     where: { id: sessionId },
     data: { teams: teams as object },
   });
@@ -65,7 +65,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  await prisma.session.update({
+  await prisma.trainingSession.update({
     where: { id: sessionId },
     data: { teams: Prisma.DbNull },
   });

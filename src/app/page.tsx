@@ -14,7 +14,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const rawSessions = await prisma.session.findMany({
+  const rawSessions = await prisma.trainingSession.findMany({
     where: { date: { gte: new Date(Date.now() - 1000 * 60 * 60 * 24) } },
     orderBy: { date: "asc" },
     include: { _count: { select: { registrations: true } } },

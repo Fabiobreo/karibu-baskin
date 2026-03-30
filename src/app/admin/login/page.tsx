@@ -10,8 +10,10 @@ import {
   Button,
   Alert,
   CircularProgress,
+  Divider,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
@@ -56,7 +58,15 @@ export default function AdminLoginPage() {
           Karibu Baskin Montecchio Maggiore
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box sx={{ mt: 3, mb: 2 }}>
+          <GoogleSignInButton callbackUrl="/admin" />
+        </Box>
+
+        <Divider sx={{ mb: 2 }}>
+          <Typography variant="caption" color="text.disabled">oppure accedi come admin</Typography>
+        </Divider>
+
+        <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Password"
             type="password"

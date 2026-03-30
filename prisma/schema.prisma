@@ -8,7 +8,89 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ── Enum ruoli applicativi ────────────────────────────────────────────────────
+
+enum AppRole {
+  GUEST
+  ATHLETE
+  PARENT
+  COACH
+  ADMIN
+}
+
+// ── Auth.js v5 — modelli standard (Prisma adapter) ───────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  appRole AppRole @default(GUEST)
+
+  accounts      Account[]
+  authSessions  Session[]
+  registrations Registration[]
+  childLinks    ParentChild[]  @relation("ParentLinks")
+  parentLinks   ParentChild[]  @relation("ChildLinks")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
 model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── Relazione Genitore → Figlio ───────────────────────────────────────────────
+
+model ParentChild {
+  id        String   @id @default(cuid())
+  parentId  String
+  childId   String
+  createdAt DateTime @default(now())
+
+  parent User @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
+  child  User @relation("ChildLinks",  fields: [childId],  references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+}
+
+// ── Modelli esistenti (invariati nella tabella DB) ───────────────────────────
+
+// Rinominato in Prisma per evitare conflitti con AuthSession,
+// ma la tabella resta "Session" grazie a @@map
+model TrainingSession {
   id            String         @id @default(cuid())
   title         String
   date          DateTime
@@ -17,6 +99,7 @@ model Session {
   registrations Registration[]
 
   @@index([date])
+  @@map("TrainingSession")
 }
 
 model Registration {
@@ -25,8 +108,14 @@ model Registration {
   name      String
   role      Int
   createdAt DateTime @default(now())
-  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Nullable: null = registrazione anonima (legacy), non-null = utente loggato
+  userId String?
+
+  session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([sessionId, name])
   @@index([sessionId, role])
+  @@index([userId])
 }

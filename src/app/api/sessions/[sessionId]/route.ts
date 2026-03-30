@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
-  const session = await prisma.session.findUnique({
+  const session = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
     include: { _count: { select: { registrations: true } } },
   });
@@ -26,6 +26,6 @@ export async function DELETE(
   }
 
   const { sessionId } = await params;
-  await prisma.session.delete({ where: { id: sessionId } });
+  await prisma.trainingSession.delete({ where: { id: sessionId } });
   return new NextResponse(null, { status: 204 });
 }

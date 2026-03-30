@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { isAdminAuthenticated } from "@/lib/auth";
 
 export async function GET() {
-  const sessions = await prisma.session.findMany({
+  const sessions = await prisma.trainingSession.findMany({
     orderBy: { date: "asc" },
     include: {
       _count: { select: { registrations: true } },
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Titolo e data sono obbligatori" }, { status: 400 });
   }
 
-  const session = await prisma.session.create({
+  const session = await prisma.trainingSession.create({
     data: {
       title: title.trim(),
       date: new Date(date),

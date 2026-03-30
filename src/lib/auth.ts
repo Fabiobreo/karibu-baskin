@@ -8,14 +8,21 @@ function computeToken(password: string): string {
   return createHmac("sha256", secret).update(password).digest("hex");
 }
 
+// Usato da Server Components e Route Handlers (legge i cookies dalla richiesta corrente)
 export async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return false;
+  return verifyAdminToken(token);
+}
 
+// Alias per chiarezza semantica
+export const isAdminByCookie = isAdminAuthenticated;
+
+// Verifica un token raw (usato dal middleware che ha accesso diretto al cookie)
+export function verifyAdminToken(token: string): boolean {
   const password = process.env.ADMIN_PASSWORD ?? "";
   const expected = computeToken(password);
-
   try {
     return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
   } catch {

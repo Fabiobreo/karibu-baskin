@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ruolo non valido (1-5)" }, { status: 400 });
   }
 
-  const session = await prisma.session.findUnique({ where: { id: sessionId } });
+  const session = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
   if (!session) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
   }

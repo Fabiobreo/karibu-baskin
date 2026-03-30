@@ -55,6 +55,9 @@ export default function AdminPage() {
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>
             Admin — Karibu Baskin
           </Typography>
+          <Button color="inherit" component={Link} href="/admin/utenti" sx={{ mr: 1 }}>
+            Utenti
+          </Button>
           <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
             Esci
           </Button>
