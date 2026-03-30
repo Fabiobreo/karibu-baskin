@@ -190,7 +190,7 @@ export default function ContattiPage() {
                 }}
               >
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2796.5!2d11.4062!3d45.5003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x477f5b5e5e5e5e5e%3A0x0!2sPolisportivo+Gino+Cosaro%2C+Via+del+Vigo+11%2C+Montecchio+Maggiore!5e0!3m2!1sit!2sit!4v1"
+                  src="https://maps.google.com/maps?q=Polisportivo+Gino+Cosaro,+Via+del+Vigo+11,+Montecchio+Maggiore+VI&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
