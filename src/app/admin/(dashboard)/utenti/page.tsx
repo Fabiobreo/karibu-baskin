@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminUserList from "@/components/AdminUserList";
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, Paper } from "@mui/material";
 
 export const revalidate = 0;
 
@@ -26,7 +26,9 @@ export default async function AdminUtentiPage() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         {users.length} utenti registrati — modifica i ruoli dalla tabella sottostante.
       </Typography>
-      <AdminUserList users={users} />
+      <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
+        <AdminUserList users={users} />
+      </Paper>
     </Box>
   );
 }

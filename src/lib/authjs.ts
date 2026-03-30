@@ -15,7 +15,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
-  session: { strategy: "database" },
+  session: { strategy: "database", maxAge: 60 * 60 * 24 * 365 }, // 1 anno
   callbacks: {
     async session({ session, user }) {
       session.user.id = user.id;

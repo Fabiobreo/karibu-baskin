@@ -82,12 +82,6 @@ export default function Footer() {
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
             © {year} Karibu Baskin Montecchio Maggiore
           </Typography>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>·</Typography>
-          <Link href="/admin" style={{ textDecoration: "none" }}>
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.25)", "&:hover": { color: "rgba(255,255,255,0.5)" } }}>
-              Admin
-            </Typography>
-          </Link>
         </Box>
       </Box>
     </Box>

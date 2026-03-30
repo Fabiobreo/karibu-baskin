@@ -77,7 +77,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/admin/:path*",
     "/api/sessions/:path*",
     "/api/teams/:path*",
     "/api/users/:path*",

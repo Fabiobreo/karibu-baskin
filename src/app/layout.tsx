@@ -6,6 +6,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Analytics } from "@vercel/analytics/react";
 import theme from "@/theme";
 import { ToastProvider } from "@/context/ToastContext";
+import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import Footer from "@/components/Footer";
 import "./globals.css";
@@ -65,10 +66,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <ServiceWorkerRegistrar />
-            <ToastProvider>
-              <main style={{ flex: 1 }}>{children}</main>
-              <Footer />
-            </ToastProvider>
+            <Providers>
+              <ToastProvider>
+                <main style={{ flex: 1 }}>{children}</main>
+                <Footer />
+              </ToastProvider>
+            </Providers>
           </ThemeProvider>
         </AppRouterCacheProvider>
         <Analytics />
