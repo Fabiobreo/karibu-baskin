@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { generateTeams } from "@/lib/teamGenerator";
 import { isAdminAuthenticated } from "@/lib/auth";
+import { sendPushToAll } from "@/lib/webpush";
 
 // GET — ritorna le squadre salvate in DB
 export async function GET(
@@ -50,6 +51,19 @@ export async function POST(
     where: { id: sessionId },
     data: { teams: teams as object },
   });
+
+  // Notifica push (fire-and-forget)
+  const trainingSession = await prisma.trainingSession.findUnique({
+    where: { id: sessionId },
+    select: { title: true },
+  });
+  if (trainingSession) {
+    sendPushToAll({
+      title: "📋 Squadre pronte!",
+      body: `Le squadre per "${trainingSession.title}" sono state generate.`,
+      url: `/allenamento/${sessionId}`,
+    }).catch(() => {});
+  }
 
   return NextResponse.json({ ...teams, generated: true });
 }

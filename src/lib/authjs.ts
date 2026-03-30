@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
+import { sendPushToAll } from "@/lib/webpush";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -21,6 +22,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = user.id;
       session.user.appRole = (user as typeof user & { appRole: AppRole }).appRole;
       return session;
+    },
+  },
+  events: {
+    async createUser({ user }) {
+      // Notifica admin quando un nuovo utente si registra
+      sendPushToAll(
+        { title: "👤 Nuovo utente", body: `${user.name ?? user.email} si è registrato — in attesa di conferma.`, url: "/admin/utenti" },
+        true // solo admin
+      ).catch(() => {});
     },
   },
   pages: {

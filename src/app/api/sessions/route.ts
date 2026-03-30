@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminAuthenticated } from "@/lib/auth";
+import { sendPushToAll } from "@/lib/webpush";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 
 export async function GET() {
   const sessions = await prisma.trainingSession.findMany({
@@ -31,6 +34,13 @@ export async function POST(req: NextRequest) {
     },
     include: { _count: { select: { registrations: true } } },
   });
+
+  // Notifica push (fire-and-forget)
+  sendPushToAll({
+    title: "🏀 Nuovo allenamento",
+    body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}`,
+    url: `/allenamento/${session.id}`,
+  }).catch(() => {});
 
   return NextResponse.json(session, { status: 201 });
 }

@@ -45,7 +45,8 @@ model User {
   registrations    Registration[]
   childLinks       ParentChild[]       @relation("ParentLinks")
   parentLinks      ParentChild[]       @relation("ChildLinks")
-  sportRoleHistory SportRoleHistory[]
+  sportRoleHistory  SportRoleHistory[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Account {
@@ -81,6 +82,20 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// ── Push notifications ────────────────────────────────────────────────────────
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  // null = utente non loggato (anonimo)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ── Storico ruolo sportivo atleta ────────────────────────────────────────────

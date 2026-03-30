@@ -1,5 +1,5 @@
-// Service Worker minimale - Karibu Baskin
-const CACHE = "karibu-v1";
+// Service Worker — Karibu Baskin
+const CACHE = "karibu-v2";
 const PRECACHE = ["/", "/manifest.json", "/logo.png"];
 
 self.addEventListener("install", (e) => {
@@ -17,9 +17,7 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-  // Solo GET, solo same-origin
   if (e.request.method !== "GET" || !e.request.url.startsWith(self.location.origin)) return;
-  // Passa sempre le chiamate API alla rete
   if (e.request.url.includes("/api/")) return;
 
   e.respondWith(
@@ -30,5 +28,37 @@ self.addEventListener("fetch", (e) => {
         return res;
       })
       .catch(() => caches.match(e.request))
+  );
+});
+
+// ── Push notifications ─────────────────────────────────────────────────────
+
+self.addEventListener("push", (e) => {
+  if (!e.data) return;
+
+  let data = { title: "Karibu Baskin", body: "", url: "/", icon: "/logo.png" };
+  try { data = { ...data, ...e.data.json() }; } catch {}
+
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon,
+      badge: "/logo.png",
+      data: { url: data.url },
+      vibrate: [100, 50, 100],
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = e.notification.data?.url ?? "/";
+
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      const existing = list.find((c) => c.url.includes(self.location.origin));
+      if (existing) return existing.focus().then((c) => c.navigate(url));
+      return clients.openWindow(url);
+    })
   );
 });
