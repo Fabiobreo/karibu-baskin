@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
-import {
-  Box, Chip, Select, MenuItem, Button, Typography, Collapse,
-} from "@mui/material";
+import { Box, Select, MenuItem, Button, Typography, Chip, Tooltip } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import CloseIcon from "@mui/icons-material/Close";
 import type { AppRole } from "@prisma/client";
@@ -53,49 +51,63 @@ export default function PreviewBanner({ initialRole }: { initialRole: AppRole | 
         left: 0,
         right: 0,
         zIndex: 2000,
-        bgcolor: previewRole ? "#1A1A1A" : "rgba(26,26,26,0.92)",
-        backdropFilter: "blur(8px)",
+        bgcolor: "#1A1A1A",
         borderTop: previewRole
           ? `2px solid ${ROLE_COLORS[previewRole]}`
           : "1px solid rgba(255,255,255,0.1)",
-        px: { xs: 2, md: 4 },
-        py: 0.75,
+        px: 2,
+        py: 0.5,
         display: "flex",
         alignItems: "center",
-        gap: 2,
-        flexWrap: "wrap",
+        gap: 1,
+        minHeight: 44,
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <VisibilityIcon sx={{ color: "rgba(255,255,255,0.5)", fontSize: 18 }} />
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)", fontWeight: 600, whiteSpace: "nowrap" }}>
-          Visualizza come:
-        </Typography>
-      </Box>
+      {/* Icona — sempre visibile */}
+      <Tooltip title="Modalità preview admin">
+        <VisibilityIcon sx={{ color: previewRole ? ROLE_COLORS[previewRole] : "rgba(255,255,255,0.4)", fontSize: 18, flexShrink: 0 }} />
+      </Tooltip>
 
+      {/* Label — nascosta su mobile se preview attiva */}
+      <Typography
+        variant="caption"
+        sx={{
+          color: "rgba(255,255,255,0.45)",
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          display: { xs: previewRole ? "none" : "block", sm: "block" },
+        }}
+      >
+        Preview:
+      </Typography>
+
+      {/* Select ruolo */}
       <Select
         size="small"
         value={selecting}
         onChange={(e) => setSelecting(e.target.value as AppRole)}
         sx={{
-          fontSize: "0.8rem",
+          fontSize: "0.75rem",
           color: "#fff",
-          minWidth: 140,
-          ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.2)" },
-          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.5)" },
-          ".MuiSvgIcon-root": { color: "rgba(255,255,255,0.5)" },
+          height: 30,
+          minWidth: { xs: 100, sm: 130 },
+          ".MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.15)" },
+          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "rgba(255,255,255,0.4)" },
+          ".MuiSvgIcon-root": { color: "rgba(255,255,255,0.4)", fontSize: 18 },
+          ".MuiSelect-select": { py: "4px !important" },
         }}
       >
         {ROLES.map((r) => (
-          <MenuItem key={r} value={r}>
+          <MenuItem key={r} value={r} sx={{ fontSize: "0.8rem" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: ROLE_COLORS[r] }} />
+              <Box sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: ROLE_COLORS[r], flexShrink: 0 }} />
               {ROLE_LABELS_IT[r]}
             </Box>
           </MenuItem>
         ))}
       </Select>
 
+      {/* Bottone attiva */}
       <Button
         size="small"
         variant="contained"
@@ -104,42 +116,50 @@ export default function PreviewBanner({ initialRole }: { initialRole: AppRole | 
         sx={{
           bgcolor: ROLE_COLORS[selecting],
           "&:hover": { bgcolor: ROLE_COLORS[selecting], filter: "brightness(1.2)" },
-          fontSize: "0.75rem",
+          fontSize: "0.7rem",
           fontWeight: 700,
+          height: 28,
+          px: { xs: 1, sm: 1.5 },
+          minWidth: 0,
           whiteSpace: "nowrap",
         }}
       >
-        Attiva preview
+        {/* Testo completo su desktop, icona su mobile */}
+        <Box sx={{ display: { xs: "none", sm: "block" } }}>Attiva</Box>
+        <Box sx={{ display: { xs: "block", sm: "none" } }}>▶</Box>
       </Button>
 
-      <Collapse in={!!previewRole} orientation="horizontal">
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      {/* Stato preview attiva */}
+      {previewRole && (
+        <>
           <Chip
-            label={`Preview attiva: ${previewRole ? ROLE_LABELS_IT[previewRole] : ""}`}
+            label={ROLE_LABELS_IT[previewRole]}
             size="small"
             sx={{
-              bgcolor: previewRole ? ROLE_COLORS[previewRole] : "transparent",
+              bgcolor: ROLE_COLORS[previewRole],
               color: "#fff",
               fontWeight: 700,
-              fontSize: "0.72rem",
-              animation: "pulse 2s infinite",
-              "@keyframes pulse": {
-                "0%, 100%": { opacity: 1 },
-                "50%": { opacity: 0.7 },
-              },
+              fontSize: "0.7rem",
+              height: 22,
+              ml: 0.5,
             }}
           />
           <Button
             size="small"
             onClick={deactivate}
             disabled={loading}
-            startIcon={<CloseIcon sx={{ fontSize: "14px !important" }} />}
-            sx={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", minWidth: 0 }}
+            sx={{
+              color: "rgba(255,255,255,0.5)",
+              minWidth: 0,
+              px: 0.5,
+              height: 28,
+              "&:hover": { color: "#fff" },
+            }}
           >
-            Esci
+            <CloseIcon sx={{ fontSize: 16 }} />
           </Button>
-        </Box>
-      </Collapse>
+        </>
+      )}
     </Box>
   );
 }

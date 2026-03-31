@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { AppRole, Gender } from "@prisma/client";
+import { isAdminUser } from "@/lib/apiAuth";
 
 const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
@@ -10,6 +11,10 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  if (!(await isAdminUser())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+
   const { userId } = await params;
   const body = await req.json().catch(() => ({})) as {
     appRole?: AppRole;

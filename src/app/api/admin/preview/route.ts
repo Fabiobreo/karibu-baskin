@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
-import { isAdminAuthenticated } from "@/lib/auth";
 import type { AppRole } from "@prisma/client";
 
 const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
@@ -8,8 +7,8 @@ const COOKIE = "preview_role";
 
 // POST /api/admin/preview — attiva preview con il ruolo specificato
 export async function POST(req: NextRequest) {
-  const [session, cookieAdmin] = await Promise.all([auth(), isAdminAuthenticated()]);
-  const isAdmin = cookieAdmin || session?.user?.appRole === "ADMIN";
+  const session = await auth();
+  const isAdmin = session?.user?.appRole === "ADMIN";
   if (!isAdmin) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
 
   const { role } = await req.json().catch(() => ({})) as { role?: AppRole };

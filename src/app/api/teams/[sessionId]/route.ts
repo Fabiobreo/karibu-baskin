@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { generateTeams } from "@/lib/teamGenerator";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 
 // GET — ritorna le squadre salvate in DB
@@ -29,7 +29,7 @@ export async function POST(
 ) {
   const { sessionId } = await params;
 
-  if (!(await isAdminAuthenticated())) {
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
@@ -75,7 +75,7 @@ export async function DELETE(
 ) {
   const { sessionId } = await params;
 
-  if (!(await isAdminAuthenticated())) {
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
