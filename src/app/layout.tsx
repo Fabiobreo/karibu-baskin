@@ -10,6 +10,7 @@ import { PreviewRoleProvider } from "@/context/PreviewRoleContext";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import PreviewBanner from "@/components/PreviewBanner";
+import OfflineBanner from "@/components/OfflineBanner";
 import Footer from "@/components/Footer";
 import { auth } from "@/lib/authjs";
 import { cookies } from "next/headers";
@@ -81,6 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <PreviewRoleProvider previewRole={previewRole}>
                 <ToastProvider>
                   <main style={{ flex: 1, paddingBottom: isAdmin ? "52px" : 0 }}>
+                    <OfflineBanner />
                     {children}
                   </main>
                   <Footer />

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "rm -rf .next && next dev",
     "build": "prisma db push --skip-generate && prisma generate && next build",
     "db:deploy": "prisma migrate deploy",
     "start": "next start",
