@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { title, date } = body as { title?: string; date?: string };
+  const { title, date, endTime } = body as { title?: string; date?: string; endTime?: string };
 
   if (!title?.trim() || !date) {
     return NextResponse.json({ error: "Titolo e data sono obbligatori" }, { status: 400 });
@@ -31,14 +31,18 @@ export async function POST(req: NextRequest) {
     data: {
       title: title.trim(),
       date: new Date(date),
+      endTime: endTime ? new Date(endTime) : null,
     },
     include: { _count: { select: { registrations: true } } },
   });
 
   // Notifica push (fire-and-forget)
+  const timeRange = session.endTime
+    ? `${format(session.date, "HH:mm")}–${format(session.endTime, "HH:mm")}`
+    : `ore ${format(session.date, "HH:mm")}`;
   sendPushToAll({
     title: "🏀 Nuovo allenamento",
-    body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}`,
+    body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.id}`,
   }).catch(() => {});
 

@@ -8,6 +8,7 @@ interface SessionWithCount {
   id: string;
   title: string;
   date: string;
+  endTime: string | null;
   teams: object | null;
   _count: { registrations: number };
 }

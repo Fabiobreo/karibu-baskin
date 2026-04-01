@@ -25,5 +25,5 @@ export function canManageSessions(role: AppRole): boolean {
 }
 
 export function canRegister(role: AppRole): boolean {
-  return hasRole(role, "ATHLETE");
+  return hasRole(role, "GUEST");
 }

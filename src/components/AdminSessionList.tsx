@@ -30,6 +30,7 @@ interface SessionWithCount {
   id: string;
   title: string;
   date: string | Date;
+  endTime: string | Date | null;
   teams: object | null;
   _count: { registrations: number };
 }
@@ -154,7 +155,12 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                     <Chip label={`${s._count.registrations} iscritti`} size="small" />
                   </Box>
                 }
-                secondary={format(new Date(s.date), "EEEE d MMMM yyyy 'ore' HH:mm", { locale: it })}
+                secondary={
+                  format(new Date(s.date), "EEEE d MMMM yyyy", { locale: it }) +
+                  " · " +
+                  format(new Date(s.date), "HH:mm") +
+                  (s.endTime ? `–${format(new Date(s.endTime), "HH:mm")}` : "")
+                }
               />
             </ListItem>
           );

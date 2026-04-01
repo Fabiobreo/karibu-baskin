@@ -11,7 +11,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import HistoryIcon from "@mui/icons-material/History";
 import type { AppRole, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
-import { ROLE_LABELS, ROLE_COLORS } from "@/lib/constants";
+import { ROLE_COLORS, SPORT_ROLE_VARIANT_LABELS, sportRoleLabel } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -41,6 +41,9 @@ interface User {
   image: string | null;
   appRole: AppRole;
   sportRole: number | null;
+  sportRoleVariant: string | null;
+  sportRoleSuggested: number | null;
+  sportRoleSuggestedVariant: string | null;
   gender: Gender | null;
   birthDate: Date | string | null;
   createdAt: Date | string;
@@ -49,16 +52,17 @@ interface User {
 }
 
 interface EditState {
-  sportRole: string;   // stringa per il select ("" = non impostato)
-  gender: string;      // "" | "MALE" | "FEMALE"
-  birthDate: string;   // "YYYY-MM-DD" o ""
+  sportRole: string;        // stringa per il select ("" = non impostato)
+  sportRoleVariant: string; // "" | "S" | "T" | "P" | "R"
+  gender: string;           // "" | "MALE" | "FEMALE"
+  birthDate: string;        // "YYYY-MM-DD" o ""
 }
 
 export default function AdminUserList({ users: initialUsers }: { users: User[] }) {
   const [users, setUsers] = useState(initialUsers);
   const [search, setSearch] = useState("");
   const [editUser, setEditUser] = useState<User | null>(null);
-  const [editState, setEditState] = useState<EditState>({ sportRole: "", gender: "", birthDate: "" });
+  const [editState, setEditState] = useState<EditState>({ sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
 
@@ -86,6 +90,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
     setEditUser(user);
     setEditState({
       sportRole: user.sportRole?.toString() ?? "",
+      sportRoleVariant: user.sportRoleVariant ?? "",
       gender: user.gender ?? "",
       birthDate: user.birthDate
         ? new Date(user.birthDate).toISOString().slice(0, 10)
@@ -98,6 +103,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
     setSaving(true);
     const payload: Record<string, unknown> = {
       sportRole: editState.sportRole ? parseInt(editState.sportRole) : null,
+      sportRoleVariant: editState.sportRoleVariant || null,
       gender: editState.gender || null,
       birthDate: editState.birthDate || null,
     };
@@ -193,7 +199,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 <TableCell align="center">
                   {user.sportRole
                     ? <Chip
-                        label={ROLE_LABELS[user.sportRole as keyof typeof ROLE_LABELS]}
+                        label={sportRoleLabel(user.sportRole, user.sportRoleVariant)}
                         size="small"
                         sx={{
                           bgcolor: ROLE_COLORS[user.sportRole],
@@ -202,7 +208,20 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                           fontSize: "0.72rem",
                         }}
                       />
-                    : <Typography variant="body2" color="text.disabled">—</Typography>}
+                    : user.sportRoleSuggested
+                      ? <Chip
+                          label={`${sportRoleLabel(user.sportRoleSuggested, user.sportRoleSuggestedVariant)} ?`}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            borderColor: ROLE_COLORS[user.sportRoleSuggested],
+                            color: ROLE_COLORS[user.sportRoleSuggested],
+                            fontWeight: 700,
+                            fontSize: "0.72rem",
+                          }}
+                          title="Autovalutazione utente — da confermare"
+                        />
+                      : <Typography variant="body2" color="text.disabled">—</Typography>}
                 </TableCell>
                 <TableCell align="center">
                   {user.gender
@@ -242,18 +261,26 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
               <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
                 Ruolo Baskin (1–5)
               </Typography>
+              {editUser?.sportRoleSuggested && !editUser.sportRole && (
+                <Typography variant="caption" color="warning.main" display="block" sx={{ mb: 0.5 }}>
+                  Autovalutazione: {sportRoleLabel(editUser.sportRoleSuggested, editUser.sportRoleSuggestedVariant)}
+                  {editUser.sportRoleSuggestedVariant
+                    ? ` — ${SPORT_ROLE_VARIANT_LABELS[editUser.sportRoleSuggestedVariant] ?? ""}`
+                    : ""}
+                </Typography>
+              )}
               <Select
                 fullWidth
                 size="small"
                 displayEmpty
                 value={editState.sportRole}
-                onChange={(e) => setEditState((s) => ({ ...s, sportRole: e.target.value }))}
+                onChange={(e) => setEditState((s) => ({ ...s, sportRole: e.target.value, sportRoleVariant: "" }))}
               >
                 <MenuItem value=""><em>Non impostato</em></MenuItem>
                 {[1, 2, 3, 4, 5].map((r) => (
                   <MenuItem key={r} value={r.toString()}>
                     <Chip
-                      label={ROLE_LABELS[r as keyof typeof ROLE_LABELS]}
+                      label={sportRoleLabel(r)}
                       size="small"
                       sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
                     />
@@ -261,6 +288,32 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 ))}
               </Select>
             </Box>
+
+            {/* Variante ruolo (solo se ruolo 1 o 2) */}
+            {["1", "2"].includes(editState.sportRole) && (
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                  Variante ruolo
+                </Typography>
+                <Select
+                  fullWidth
+                  size="small"
+                  displayEmpty
+                  value={editState.sportRoleVariant}
+                  onChange={(e) => setEditState((s) => ({ ...s, sportRoleVariant: e.target.value }))}
+                >
+                  <MenuItem value=""><em>Nessuna variante (standard)</em></MenuItem>
+                  {editState.sportRole === "1" && (
+                    <MenuItem value="S">S — {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
+                  )}
+                  {editState.sportRole === "2" && [
+                    <MenuItem key="T" value="T">T — {SPORT_ROLE_VARIANT_LABELS["T"]}</MenuItem>,
+                    <MenuItem key="P" value="P">P — {SPORT_ROLE_VARIANT_LABELS["P"]}</MenuItem>,
+                    <MenuItem key="R" value="R">R — {SPORT_ROLE_VARIANT_LABELS["R"]}</MenuItem>,
+                  ]}
+                </Select>
+              </Box>
+            )}
 
             {/* Genere */}
             <Box>
@@ -308,7 +361,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 <Stack spacing={0.5}>
                   {editUser.sportRoleHistory.map((h, i) => (
                     <Typography key={i} variant="caption" color="text.secondary">
-                      {ROLE_LABELS[h.sportRole as keyof typeof ROLE_LABELS]}
+                      {sportRoleLabel(h.sportRole)}
                       {" · "}
                       {format(new Date(h.changedAt), "d MMM yyyy", { locale: it })}
                     </Typography>

@@ -18,6 +18,10 @@ export async function GET() {
       image: true,
       appRole: true,
       createdAt: true,
+      sportRole: true,
+      sportRoleVariant: true,
+      sportRoleSuggested: true,
+      sportRoleSuggestedVariant: true,
       childLinks: {
         include: { child: { select: { id: true, name: true, email: true, image: true, appRole: true } } },
       },

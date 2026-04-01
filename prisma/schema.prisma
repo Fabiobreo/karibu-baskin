@@ -36,9 +36,14 @@ model User {
   appRole   AppRole @default(GUEST)
 
   // Campi atleta
-  sportRole Int?
-  gender    Gender?
-  birthDate DateTime?
+  sportRole        Int?
+  sportRoleVariant String?   // "S", "T", "P", "R" — null per variante standard
+  gender           Gender?
+  birthDate        DateTime?
+
+  // Ruolo suggerito dall'autovalutazione (in attesa di conferma admin)
+  sportRoleSuggested        Int?
+  sportRoleSuggestedVariant String?
 
   accounts         Account[]
   authSessions     Session[]
@@ -132,7 +137,8 @@ model ParentChild {
 model TrainingSession {
   id            String         @id @default(cuid())
   title         String
-  date          DateTime
+  date          DateTime        // orario di inizio
+  endTime       DateTime?       // orario di fine (nullable per retrocompatibilità)
   createdAt     DateTime       @default(now())
   teams         Json?
   registrations Registration[]
@@ -155,6 +161,7 @@ model Registration {
   user    User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([sessionId, name])
+  @@unique([sessionId, userId])
   @@index([sessionId, role])
   @@index([userId])
 }

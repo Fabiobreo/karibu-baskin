@@ -18,6 +18,7 @@ export default function AdminSessionForm({ onCreated }: Props) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("18:00");
+  const [endTime, setEndTime] = useState("20:00");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,10 +34,15 @@ export default function AdminSessionForm({ onCreated }: Props) {
 
     try {
       const dateTime = new Date(`${date}T${time}:00`);
+      const endDateTime = endTime ? new Date(`${date}T${endTime}:00`) : null;
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), date: dateTime.toISOString() }),
+        body: JSON.stringify({
+          title: title.trim(),
+          date: dateTime.toISOString(),
+          endTime: endDateTime?.toISOString() ?? null,
+        }),
       });
 
       if (res.status === 401) {
@@ -52,6 +58,7 @@ export default function AdminSessionForm({ onCreated }: Props) {
       setTitle("");
       setDate("");
       setTime("18:00");
+      setEndTime("20:00");
       onCreated();
     } catch {
       setError("Errore di rete, riprova");
@@ -86,13 +93,23 @@ export default function AdminSessionForm({ onCreated }: Props) {
           size="small"
           InputLabelProps={{ shrink: true }}
           disabled={loading}
-          sx={{ flex: 1 }}
+          sx={{ flex: 2 }}
         />
         <TextField
-          label="Ora"
+          label="Inizio"
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          disabled={loading}
+          sx={{ flex: 1 }}
+        />
+        <TextField
+          label="Fine"
+          type="time"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
           size="small"
           InputLabelProps={{ shrink: true }}
           disabled={loading}

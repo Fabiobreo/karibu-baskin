@@ -6,6 +6,7 @@ import { isAdminUser } from "@/lib/apiAuth";
 const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
 const VALID_SPORT_ROLES = [1, 2, 3, 4, 5];
+const VALID_SPORT_ROLE_VARIANTS = ["S", "T", "P", "R"];
 
 export async function PATCH(
   req: NextRequest,
@@ -19,6 +20,7 @@ export async function PATCH(
   const body = await req.json().catch(() => ({})) as {
     appRole?: AppRole;
     sportRole?: number | null;
+    sportRoleVariant?: string | null;
     gender?: Gender | null;
     birthDate?: string | null;
   };
@@ -43,6 +45,13 @@ export async function PATCH(
     data.birthDate = body.birthDate ? new Date(body.birthDate) : null;
   }
 
+  if (body.sportRoleVariant !== undefined) {
+    if (body.sportRoleVariant !== null && !VALID_SPORT_ROLE_VARIANTS.includes(body.sportRoleVariant)) {
+      return NextResponse.json({ error: "Variante ruolo non valida" }, { status: 400 });
+    }
+    data.sportRoleVariant = body.sportRoleVariant ?? null;
+  }
+
   // sportRole: se cambia, registra nello storico
   if (body.sportRole !== undefined) {
     if (body.sportRole !== null && !VALID_SPORT_ROLES.includes(body.sportRole)) {
@@ -55,6 +64,11 @@ export async function PATCH(
       });
     }
     data.sportRole = body.sportRole ?? null;
+    // Quando il ruolo sportivo viene confermato, cancella il suggerimento
+    if (body.sportRole !== null) {
+      data.sportRoleSuggested = null;
+      data.sportRoleSuggestedVariant = null;
+    }
   }
 
   const user = await prisma.user.update({
@@ -62,7 +76,7 @@ export async function PATCH(
     data,
     select: {
       id: true, name: true, email: true, appRole: true,
-      sportRole: true, gender: true, birthDate: true,
+      sportRole: true, sportRoleVariant: true, gender: true, birthDate: true,
     },
   });
 

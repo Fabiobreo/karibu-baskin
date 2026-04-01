@@ -16,3 +16,16 @@ export const ROLE_COLORS: Record<number, string> = {
 
 export const ROLES = [1, 2, 3, 4, 5] as const;
 export type Role = (typeof ROLES)[number];
+
+// Varianti del ruolo sportivo (es. 1S, 2T, 2P, 2R)
+export const SPORT_ROLE_VARIANT_LABELS: Record<string, string> = {
+  S: "con spasticità",
+  T: "con assistenza tutor",
+  P: "con limitazioni arti superiori",
+  R: "con corsa limitata",
+};
+
+/** Restituisce la label completa del ruolo, es. "Ruolo 2T" */
+export function sportRoleLabel(role: number, variant?: string | null): string {
+  return `Ruolo ${role}${variant ?? ""}`;
+}
