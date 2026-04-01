@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "rm -rf .next && next dev",
-    "build": "prisma db push --skip-generate && prisma generate && next build",
+    "build": "prisma db push --skip-generate --accept-data-loss && prisma generate && next build",
     "db:deploy": "prisma migrate deploy",
     "start": "next start",
     "db:migrate": "prisma migrate dev",
