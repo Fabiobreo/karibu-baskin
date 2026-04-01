@@ -76,6 +76,26 @@ export default async function AdminPage() {
         />
       </Box>
 
+      {/* Badge suggerimenti ruolo */}
+      {pendingRoleCount > 0 && (
+        <Paper elevation={2} sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
+          <NewReleasesIcon color="warning" />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" fontWeight={700}>
+              {pendingRoleCount} {pendingRoleCount === 1 ? "utente ha" : "utenti hanno"} suggerito il proprio ruolo Baskin
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Vai su Gestione Utenti per confermare o modificare il ruolo.
+            </Typography>
+          </Box>
+          <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
+            <Typography variant="caption" color="primary" sx={{ "&:hover": { textDecoration: "underline" } }}>
+              Gestisci →
+            </Typography>
+          </Link>
+        </Paper>
+      )}
+
       {/* Ultimi iscritti */}
       <Paper elevation={2} sx={{ p: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
@@ -129,26 +149,6 @@ export default async function AdminPage() {
           </TableBody>
         </Table>
       </Paper>
-
-      {/* Badge ruoli da confermare */}
-      {pendingRoleCount > 0 && (
-        <Paper elevation={2} sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-          <NewReleasesIcon color="warning" />
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" fontWeight={700}>
-              {pendingRoleCount} {pendingRoleCount === 1 ? "utente ha" : "utenti hanno"} suggerito il proprio ruolo Baskin
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Vai su Gestione Utenti per confermare o modificare il ruolo.
-            </Typography>
-          </Box>
-          <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
-            <Typography variant="caption" color="primary" sx={{ "&:hover": { textDecoration: "underline" } }}>
-              Gestisci →
-            </Typography>
-          </Link>
-        </Paper>
-      )}
 
       <Divider />
 

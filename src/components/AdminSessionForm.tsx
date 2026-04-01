@@ -14,6 +14,13 @@ interface Props {
   onCreated: () => void;
 }
 
+interface FieldErrors {
+  title?: string;
+  date?: string;
+  time?: string;
+  endTime?: string;
+}
+
 export default function AdminSessionForm({ onCreated }: Props) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -21,13 +28,25 @@ export default function AdminSessionForm({ onCreated }: Props) {
   const [endTime, setEndTime] = useState("20:00");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  function validate(): boolean {
+    const errs: FieldErrors = {};
+    if (!title.trim())
+      errs.title = "Il titolo è obbligatorio";
+    if (!date)
+      errs.date = "La data è obbligatoria";
+    if (!time)
+      errs.time = "L'orario di inizio è obbligatorio";
+    if (time && endTime && endTime <= time)
+      errs.endTime = "L'orario di fine deve essere dopo l'inizio";
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !date || !time) {
-      setError("Tutti i campi sono obbligatori");
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
     setError(null);
@@ -59,6 +78,7 @@ export default function AdminSessionForm({ onCreated }: Props) {
       setDate("");
       setTime("18:00");
       setEndTime("20:00");
+      setFieldErrors({});
       onCreated();
     } catch {
       setError("Errore di rete, riprova");
@@ -76,43 +96,53 @@ export default function AdminSessionForm({ onCreated }: Props) {
       <TextField
         label="Titolo"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => { setTitle(e.target.value); setFieldErrors((p) => ({ ...p, title: undefined })); }}
         fullWidth
         size="small"
         placeholder="es. Allenamento settimanale"
         sx={{ mb: 2 }}
         disabled={loading}
+        error={!!fieldErrors.title}
+        helperText={fieldErrors.title}
+      />
+
+      <TextField
+        label="Data"
+        type="date"
+        value={date}
+        onChange={(e) => { setDate(e.target.value); setFieldErrors((p) => ({ ...p, date: undefined })); }}
+        size="small"
+        InputLabelProps={{ shrink: true }}
+        inputProps={{ max: "2100-12-31", min: "2026-01-01" }}
+        disabled={loading}
+        error={!!fieldErrors.date}
+        helperText={fieldErrors.date ?? " "}
+        sx={{ mb: 1, width: "100%" }}
       />
 
       <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
         <TextField
-          label="Data"
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          disabled={loading}
-          sx={{ flex: 2 }}
-        />
-        <TextField
           label="Inizio"
           type="time"
           value={time}
-          onChange={(e) => setTime(e.target.value)}
+          onChange={(e) => { setTime(e.target.value); setFieldErrors((p) => ({ ...p, time: undefined, endTime: undefined })); }}
           size="small"
           InputLabelProps={{ shrink: true }}
           disabled={loading}
+          error={!!fieldErrors.time}
+          helperText={fieldErrors.time ?? " "}
           sx={{ flex: 1 }}
         />
         <TextField
           label="Fine"
           type="time"
           value={endTime}
-          onChange={(e) => setEndTime(e.target.value)}
+          onChange={(e) => { setEndTime(e.target.value); setFieldErrors((p) => ({ ...p, endTime: undefined })); }}
           size="small"
           InputLabelProps={{ shrink: true }}
           disabled={loading}
+          error={!!fieldErrors.endTime}
+          helperText={fieldErrors.endTime ?? " "}
           sx={{ flex: 1 }}
         />
       </Box>

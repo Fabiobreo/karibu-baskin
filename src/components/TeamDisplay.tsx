@@ -15,6 +15,8 @@ import {
   ToggleButtonGroup,
   Alert,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -46,6 +48,35 @@ interface Props {
   onTeamsGenerated: (teams: TeamsData) => void;
 }
 
+const TEAM_META = [
+  { name: "Arancioni", color: "#E65100" },
+  { name: "Neri",      color: "#1A1A1A" },
+  { name: "Bianchi",   color: "#757575" },
+] as const;
+
+// ── Badge ruolo (riutilizzato in entrambi i layout) ───────────────────────────
+
+function RoleBadge({ role, count }: { role: number; count: number }) {
+  return (
+    <Box sx={{
+      display: "inline-flex", alignItems: "center",
+      borderRadius: "16px", overflow: "hidden",
+      bgcolor: ROLE_COLORS[role], color: "#fff",
+      fontSize: "0.8rem", lineHeight: 1,
+      opacity: count === 0 ? 0.28 : 1,
+    }}>
+      <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>
+        {ROLE_LABELS[role]}
+      </Box>
+      <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
+        {count} giocator{count !== 1 ? "i" : "e"}
+      </Box>
+    </Box>
+  );
+}
+
+// ── Layout mobile: colonne indipendenti impilate ──────────────────────────────
+
 export function TeamColumn({ name, athletes, color }: { name: string; athletes: TeamAthlete[]; color: string }) {
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden", height: "100%" }}>
@@ -63,16 +94,9 @@ export function TeamColumn({ name, athletes, color }: { name: string; athletes: 
         const group = athletes.filter((a) => a.role === role);
         if (group.length === 0) return null;
         return (
-          <Box key={role} sx={{ pb:0.5 }}>
+          <Box key={role} sx={{ pb: 0.5 }}>
             <Box sx={{ px: 2, pt: 1 }}>
-              <Box sx={{ display: "inline-flex", alignItems: "center", mb: 0.5, borderRadius: "16px", overflow: "hidden", bgcolor: ROLE_COLORS[role], color: "#fff", fontSize: "0.8rem", lineHeight: 1 }}>
-                <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>
-                  {ROLE_LABELS[role]}
-                </Box>
-                <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
-                  {group.length} giocator{group.length > 1 ? "i" : "e"}
-                </Box>
-              </Box>
+              <RoleBadge role={role} count={group.length} />
             </Box>
             <List dense disablePadding>
               {group.map((a) => (
@@ -88,10 +112,91 @@ export function TeamColumn({ name, athletes, color }: { name: string; athletes: 
   );
 }
 
+// ── Layout desktop: griglia allineata cross-column ────────────────────────────
+
+export function AlignedTeamGrid({ teams }: { teams: TeamsData }) {
+  const allTeams = [
+    teams.teamA,
+    teams.teamB,
+    ...(teams.teamC ? [teams.teamC] : []),
+  ];
+  const meta = TEAM_META.slice(0, teams.numTeams);
+  const cols = teams.numTeams;
+
+  const cells: React.ReactNode[] = [];
+
+  // ── Header ──
+  meta.forEach((m, i) => {
+    cells.push(
+      <Box key={`header-${i}`} sx={{
+        px: 2, py: 1.5,
+        backgroundColor: m.color,
+        display: "flex", alignItems: "center", gap: 1,
+      }}>
+        <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>{m.name}</Typography>
+        <Chip
+          label={`${allTeams[i].length} atlet${allTeams[i].length !== 1 ? "i" : "a"}`}
+          size="small"
+          sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "#fff" }}
+        />
+      </Box>
+    );
+  });
+
+  // ── Sezioni per ruolo ──
+  for (const role of ROLES) {
+    const groups = allTeams.map((t) => t.filter((a) => a.role === role));
+    const maxCount = Math.max(...groups.map((g) => g.length));
+    if (maxCount === 0) continue;
+
+    // Riga badge
+    groups.forEach((group, i) => {
+      cells.push(
+        <Box key={`badge-${role}-${i}`} sx={{
+          px: 2, pt: 1, pb: 0.5,
+        }}>
+          <RoleBadge role={role} count={group.length} />
+        </Box>
+      );
+    });
+
+    // Righe atleti (padding con celle vuote fino a maxCount)
+    for (let idx = 0; idx < maxCount; idx++) {
+      groups.forEach((group, i) => {
+        cells.push(
+          <Box key={`player-${role}-${idx}-${i}`} sx={{
+            px: 3,
+            minHeight: 32,
+            display: "flex", alignItems: "center",
+          }}>
+            {group[idx] && (
+              <Typography variant="body2">{group[idx].name}</Typography>
+            )}
+          </Box>
+        );
+      });
+    }
+  }
+
+  return (
+    <Paper variant="outlined" sx={{
+      overflow: "hidden",
+      display: "grid",
+      gridTemplateColumns: `repeat(${cols}, 1fr)`,
+    }}>
+      {cells}
+    </Paper>
+  );
+}
+
+// ── TeamDisplay ───────────────────────────────────────────────────────────────
+
 export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams, teamsLoading, onTeamsGenerated }: Props) {
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
+  const theme = useTheme();
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   async function handleGenerate() {
     setGenerating(true);
@@ -131,10 +236,6 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams
     return false;
   })();
 
-  const teamsAthleteCount = teams
-    ? teams.teamA.length + teams.teamB.length + (teams.teamC?.length ?? 0)
-    : 0;
-
   if (teamsLoading) {
     return (
       <Grid container spacing={2}>
@@ -147,17 +248,14 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams
   // Staff senza squadre generate → pannello di generazione
   if (!teams && isStaff) {
     return (
-      <Box
-        sx={{
-          py: 3,
-          px: 3,
-          textAlign: "center",
-          borderRadius: 2,
-          border: "1px dashed",
-          borderColor: "primary.main",
-          backgroundColor: "background.paper",
-        }}
-      >
+      <Box sx={{
+        py: 3, px: 3,
+        textAlign: "center",
+        borderRadius: 2,
+        border: "1px dashed",
+        borderColor: "primary.main",
+        backgroundColor: "background.paper",
+      }}>
         <GroupsIcon sx={{ fontSize: 36, color: "primary.main", mb: 1 }} />
         <Typography variant="body1" fontWeight={600} gutterBottom>
           Genera le squadre
@@ -201,16 +299,13 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams
   // Nessuna squadra, utente normale
   if (!teams) {
     return (
-      <Box
-        sx={{
-          py: 4,
-          px: 3,
-          textAlign: "center",
-          borderRadius: 2,
-          border: "1px dashed rgba(0,0,0,0.15)",
-          backgroundColor: "background.paper",
-        }}
-      >
+      <Box sx={{
+        py: 4, px: 3,
+        textAlign: "center",
+        borderRadius: 2,
+        border: "1px dashed rgba(0,0,0,0.15)",
+        backgroundColor: "background.paper",
+      }}>
         <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
         <Typography variant="body1" color="text.secondary" fontWeight={500}>
           Squadre non ancora pubblicate
@@ -249,19 +344,23 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams
         </Alert>
       )}
 
-      <Grid container spacing={2}>
-        <Grid size={colSize}>
-          <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" />
-        </Grid>
-        <Grid size={colSize}>
-          <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" />
-        </Grid>
-        {teams.numTeams === 3 && teams.teamC && (
+      {isDesktop ? (
+        <AlignedTeamGrid teams={teams} />
+      ) : (
+        <Grid container spacing={2}>
           <Grid size={colSize}>
-            <TeamColumn name="Bianchi" athletes={teams.teamC} color="#757575" />
+            <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" />
           </Grid>
-        )}
-      </Grid>
+          <Grid size={colSize}>
+            <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" />
+          </Grid>
+          {teams.numTeams === 3 && teams.teamC && (
+            <Grid size={colSize}>
+              <TeamColumn name="Bianchi" athletes={teams.teamC} color="#757575" />
+            </Grid>
+          )}
+        </Grid>
+      )}
     </Box>
   );
 }

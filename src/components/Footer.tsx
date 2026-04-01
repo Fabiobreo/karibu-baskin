@@ -15,8 +15,8 @@ export default function Footer() {
         mt: "auto",
         background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
         color: "rgba(255,255,255,0.85)",
-        pt: 4,
-        pb: 3,
+        pt: 2,
+        pb: 1.5,
         px: 2,
       }}
     >
