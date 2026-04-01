@@ -1,6 +1,9 @@
 import { Container, Paper, Typography, Box } from "@mui/material";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import TestLoginForm from "@/components/TestLoginForm";
+
+const testLoginEnabled = process.env.ENABLE_TEST_LOGIN === "true";
 
 export default function LoginPage() {
   return (
@@ -16,9 +19,8 @@ export default function LoginPage() {
         <Box>
           <GoogleSignInButton callbackUrl="/" />
         </Box>
-        <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 2 }}>
-          Al primo accesso il tuo account sarà in attesa di approvazione da parte dell&apos;admin.
-        </Typography>
+
+        {testLoginEnabled && <TestLoginForm callbackUrl="/" />}
       </Paper>
     </Container>
   );

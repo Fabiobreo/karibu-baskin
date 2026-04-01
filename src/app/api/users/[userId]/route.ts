@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { AppRole, Gender } from "@prisma/client";
 import { isAdminUser } from "@/lib/apiAuth";
+import { auth } from "@/lib/authjs";
 
 const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
@@ -81,4 +82,25 @@ export async function PATCH(
   });
 
   return NextResponse.json(user);
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) {
+  if (!(await isAdminUser())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+
+  const { userId } = await params;
+
+  // Impedisce all'admin di cancellare se stesso
+  const session = await auth();
+  if (session?.user?.id === userId) {
+    return NextResponse.json({ error: "Non puoi eliminare il tuo account" }, { status: 400 });
+  }
+
+  await prisma.user.delete({ where: { id: userId } });
+
+  return NextResponse.json({ ok: true });
 }

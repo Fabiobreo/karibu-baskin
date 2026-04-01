@@ -21,7 +21,10 @@
       "Bash(/tmp/fix_constraint.sql:*)",
       "Bash(__NEW_LINE_29c9ecbe91bc2e58__ cd:*)",
       "Bash(/tmp/fix_index.sql:*)",
-      "Bash(__NEW_LINE_f4ba6a14237d40d2__ cd:*)"
+      "Bash(__NEW_LINE_f4ba6a14237d40d2__ cd:*)",
+      "Bash(cmd.exe /c \"rmdir /s /q .next 2>nul & npx tsc --noEmit 2>&1\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin && npx tsc --noEmit 2>&1\")",
+      "Bash(cmd.exe /c \"mkdir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\test-login 2>nul & echo done\")"
     ]
   }
 }

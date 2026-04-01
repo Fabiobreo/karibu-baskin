@@ -223,14 +223,6 @@ export default function SessionPage() {
         ) : session ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
 
-            {/* Squadre */}
-            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-              <Typography variant="h6" fontWeight={700} gutterBottom>
-                Squadre
-              </Typography>
-              <TeamDisplay sessionId={sessionId} />
-            </Paper>
-
             {/* Iscrizione + roster */}
             <Box
               sx={{
@@ -269,6 +261,14 @@ export default function SessionPage() {
                 />
               </Paper>
             </Box>
+
+            {/* Squadre */}
+            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+              <Typography variant="h6" fontWeight={700} gutterBottom>
+                Squadre
+              </Typography>
+              <TeamDisplay sessionId={sessionId} />
+            </Paper>
 
           </Box>
         ) : (

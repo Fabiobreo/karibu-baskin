@@ -85,11 +85,18 @@ export default function RosterByRole({ registrations, currentUserId, isStaff, on
                     label={isDeleting ? <CircularProgress size={12} color="inherit" /> : reg.name}
                     size="small"
                     variant={isOwn ? "filled" : "outlined"}
-                    color={isOwn ? "primary" : "default"}
                     onDelete={canDelete && !isDeleting ? () => handleUnregister(reg) : undefined}
                     disabled={isDeleting}
                     title={isOwn ? "Clicca × per disiscriverti" : isStaff ? `Rimuovi ${reg.name}` : undefined}
-                    sx={isOwn ? { fontWeight: 700 } : undefined}
+                    sx={isOwn ? {
+                      backgroundColor: ROLE_COLORS[role],
+                      color: "#fff",
+                      fontWeight: 700,
+                      outline: "2px solid",
+                      outlineColor: ROLE_COLORS[role],
+                      outlineOffset: "2px",
+                      "& .MuiChip-deleteIcon": { color: "rgba(255,255,255,0.8)", "&:hover": { color: "#fff" } },
+                    } : undefined}
                   />
                 );
               })}

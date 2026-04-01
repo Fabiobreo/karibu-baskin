@@ -108,7 +108,7 @@ export default function TeamDisplay({ sessionId }: Props) {
       >
         <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
         <Typography variant="body1" color="text.secondary" fontWeight={500}>
-          Squadre non ancora generate
+          Squadre non ancora pubblicate
         </Typography>
         <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
           Le squadre verranno pubblicate dall&apos;amministratore prima dell&apos;allenamento.

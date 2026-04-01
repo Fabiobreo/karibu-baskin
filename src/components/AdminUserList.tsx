@@ -5,9 +5,11 @@ import {
   TableRow, Avatar, Typography, Select, MenuItem, Chip,
   TextField, InputAdornment, IconButton, Dialog, DialogTitle,
   DialogContent, DialogActions, Button, Divider, Stack,
+  DialogContentText, Tooltip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import HistoryIcon from "@mui/icons-material/History";
 import type { AppRole, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
@@ -64,6 +66,8 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editState, setEditState] = useState<EditState>({ sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
   const [saving, setSaving] = useState(false);
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { showToast } = useToast();
 
   const filtered = users.filter(
@@ -133,6 +137,26 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
     }
   }
 
+  async function handleDeleteConfirm() {
+    if (!deleteUser) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/users/${deleteUser.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setUsers((prev) => prev.filter((u) => u.id !== deleteUser.id));
+        showToast({ message: `Utente "${deleteUser.name ?? deleteUser.email}" eliminato`, severity: "success" });
+        setDeleteUser(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast({ message: data.error ?? "Errore durante l'eliminazione", severity: "error" });
+      }
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <Box>
       <TextField
@@ -161,6 +185,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
               <TableCell align="center">Genere</TableCell>
               <TableCell align="center">Iscrizioni</TableCell>
               <TableCell align="center">Modifica</TableCell>
+              <TableCell align="center">Elimina</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -236,11 +261,18 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                     <EditIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
+                <TableCell align="center">
+                  <Tooltip title="Elimina utente">
+                    <IconButton size="small" color="error" onClick={() => setDeleteUser(user)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   Nessun utente trovato
                 </TableCell>
               </TableRow>
@@ -248,6 +280,25 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Dialog conferma eliminazione */}
+      <Dialog open={!!deleteUser} onClose={() => !deleting && setDeleteUser(null)}>
+        <DialogTitle>Elimina utente</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Sei sicuro di voler eliminare <strong>{deleteUser?.name ?? deleteUser?.email}</strong>?
+            Verranno eliminate anche tutte le iscrizioni associate. Questa azione è irreversibile.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteUser(null)} disabled={deleting}>
+            Annulla
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleting}>
+            {deleting ? "Eliminazione..." : "Elimina"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Dialog modifica atleta */}
       <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="xs" fullWidth>
