@@ -19,6 +19,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: { strategy: "database", maxAge: 60 * 60 * 24 * 365 }, // 1 anno
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Ad ogni accesso Google aggiorna nome e foto profilo nel DB.
+      // Fire-and-forget: non blocca mai il login se fallisce.
+      if (account?.provider === "google" && profile && user.email) {
+        const picture = (profile as { picture?: string }).picture;
+        if (picture || profile.name) {
+          prisma.user.update({
+            where: { email: user.email },
+            data: {
+              ...(profile.name ? { name: profile.name } : {}),
+              ...(picture    ? { image: picture }       : {}),
+            },
+          }).catch(() => {});
+        }
+      }
+      return true;
+    },
     async session({ session, user }) {
       session.user.id = user.id;
       session.user.appRole = (user as typeof user & { appRole: AppRole }).appRole;

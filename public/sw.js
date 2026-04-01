@@ -1,5 +1,5 @@
 // Service Worker — Karibu Baskin
-const VERSION = "karibu-v3";
+const VERSION = "karibu-v4";
 const STATIC_CACHE  = `${VERSION}-static`;
 const PAGE_CACHE    = `${VERSION}-pages`;
 const API_CACHE     = `${VERSION}-api`;
@@ -20,13 +20,11 @@ const PRECACHE_PAGES = [
   "/sponsor",
 ];
 
-// API GET da tenere in cache (stale-while-revalidate)
+// API GET da tenere in cache offline (network-first, cache come fallback)
 const API_CACHE_PATTERNS = [
   /\/api\/sessions/,
   /\/api\/teams\//,
 ];
-
-const API_MAX_AGE = 5 * 60 * 1000; // 5 minuti
 
 // ── Install ────────────────────────────────────────────────────────────────
 
@@ -71,9 +69,9 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // 2. API GET → stale-while-revalidate (con TTL)
+  // 2. API GET → network-first, cache come fallback offline
   if (isApiCacheable(url.pathname)) {
-    e.respondWith(staleWhileRevalidate(request, API_CACHE));
+    e.respondWith(networkFirstApi(request, API_CACHE));
     return;
   }
 
@@ -101,40 +99,24 @@ async function cacheFirst(request, cacheName) {
   }
 }
 
-async function staleWhileRevalidate(request, cacheName) {
+async function networkFirstApi(request, cacheName) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-
-  // Controlla TTL: ignora cache scaduta
-  const isFresh = cached && isCachedFresh(cached);
-
-  const networkPromise = fetch(request).then((response) => {
+  try {
+    const response = await fetch(request);
     if (response.ok) {
-      const clone = response.clone();
-      // Aggiungi timestamp alla risposta
-      const headers = new Headers(clone.headers);
-      headers.set("sw-cached-at", Date.now().toString());
-      clone.arrayBuffer().then((body) => {
-        cache.put(request, new Response(body, { status: clone.status, headers }));
-      });
+      // Aggiorna la cache per uso offline
+      cache.put(request, response.clone());
     }
     return response;
-  }).catch(() => null);
-
-  if (isFresh) {
-    // Serve cached, aggiorna in background
-    networkPromise;
-    return cached;
+  } catch {
+    // Offline: restituisce l'ultima versione cached se disponibile
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    return new Response(JSON.stringify({ error: "Offline" }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
   }
-
-  // Cache scaduta o assente: aspetta rete, fallback su cache vecchia
-  const networkResponse = await networkPromise;
-  if (networkResponse) return networkResponse;
-  if (cached) return cached; // cache scaduta ma meglio di niente
-  return new Response(JSON.stringify({ error: "Offline" }), {
-    status: 503,
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 async function networkFirstPage(request) {
@@ -166,12 +148,6 @@ function isStaticAsset(pathname) {
 
 function isApiCacheable(pathname) {
   return API_CACHE_PATTERNS.some((p) => p.test(pathname));
-}
-
-function isCachedFresh(response) {
-  const cachedAt = response.headers.get("sw-cached-at");
-  if (!cachedAt) return false;
-  return Date.now() - parseInt(cachedAt) < API_MAX_AGE;
 }
 
 // ── Push notifications ─────────────────────────────────────────────────────

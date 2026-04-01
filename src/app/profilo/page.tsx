@@ -1,4 +1,4 @@
-import { getEffectiveSession } from "@/lib/effectiveSession";
+import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
@@ -30,7 +30,7 @@ const GENDER_LABELS: Record<Gender, string> = {
 };
 
 export default async function ProfiloPage() {
-  const { session } = await getEffectiveSession();
+  const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
   const user = await prisma.user.findUnique({

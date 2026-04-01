@@ -54,7 +54,7 @@ export function TeamColumn({ name, athletes, color }: { name: string; athletes: 
           {name}
         </Typography>
         <Chip
-          label={`${athletes.length} atleti`}
+          label={`${athletes.length} atlet${athletes.length !== 1 ? "i" : "a"}`}
           size="small"
           sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "#fff" }}
         />
@@ -63,17 +63,20 @@ export function TeamColumn({ name, athletes, color }: { name: string; athletes: 
         const group = athletes.filter((a) => a.role === role);
         if (group.length === 0) return null;
         return (
-          <Box key={role}>
-            <Box sx={{ px: 2, pt: 1, pb: 0.5 }}>
-              <Chip
-                label={`${ROLE_LABELS[role]} (${group.length})`}
-                size="small"
-                sx={{ backgroundColor: ROLE_COLORS[role], color: "#fff" }}
-              />
+          <Box key={role} sx={{ pb:0.5 }}>
+            <Box sx={{ px: 2, pt: 1 }}>
+              <Box sx={{ display: "inline-flex", alignItems: "center", mb: 0.5, borderRadius: "16px", overflow: "hidden", bgcolor: ROLE_COLORS[role], color: "#fff", fontSize: "0.8rem", lineHeight: 1 }}>
+                <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>
+                  {ROLE_LABELS[role]}
+                </Box>
+                <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
+                  {group.length} giocator{group.length > 1 ? "i" : "e"}
+                </Box>
+              </Box>
             </Box>
             <List dense disablePadding>
               {group.map((a) => (
-                <ListItem key={a.id} sx={{ py: 0 }}>
+                <ListItem key={a.id} sx={{ py: 0, px: 3 }}>
                   <ListItemText primary={a.name} />
                 </ListItem>
               ))}

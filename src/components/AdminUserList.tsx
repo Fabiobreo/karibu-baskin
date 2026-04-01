@@ -1,16 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Box, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Avatar, Typography, Select, MenuItem, Chip,
   TextField, InputAdornment, IconButton, Dialog, DialogTitle,
   DialogContent, DialogActions, Button, Divider, Stack,
-  DialogContentText, Tooltip,
+  DialogContentText, Tooltip, ToggleButton, ToggleButtonGroup,
+  TableSortLabel, TablePagination, Badge,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import HistoryIcon from "@mui/icons-material/History";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import type { AppRole, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_COLORS, SPORT_ROLE_VARIANT_LABELS, sportRoleLabel } from "@/lib/constants";
@@ -18,23 +20,20 @@ import { useToast } from "@/context/ToastContext";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
+// ── Tipi ────────────────────────────────────────────────────────────────────
+
 const APP_ROLE_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
-  GUEST: "default",
-  ATHLETE: "info",
-  PARENT: "success",
-  COACH: "warning",
-  ADMIN: "error",
+  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
 };
-
-const GENDER_LABELS: Record<Gender, string> = {
-  MALE: "Maschio",
-  FEMALE: "Femmina",
+const ROLE_LEVEL: Record<AppRole, number> = {
+  GUEST: 0, ATHLETE: 1, PARENT: 2, COACH: 3, ADMIN: 4,
 };
+const GENDER_LABELS: Record<Gender, string> = { MALE: "M", FEMALE: "F" };
+const ALL_APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 
-interface RoleHistoryEntry {
-  sportRole: number;
-  changedAt: Date | string;
-}
+type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRole";
+
+interface RoleHistoryEntry { sportRole: number; changedAt: Date | string; }
 
 interface User {
   id: string;
@@ -54,27 +53,123 @@ interface User {
 }
 
 interface EditState {
-  sportRole: string;        // stringa per il select ("" = non impostato)
-  sportRoleVariant: string; // "" | "S" | "T" | "P" | "R"
-  gender: string;           // "" | "MALE" | "FEMALE"
-  birthDate: string;        // "YYYY-MM-DD" o ""
+  sportRole: string;
+  sportRoleVariant: string;
+  gender: string;
+  birthDate: string;
 }
 
+// ── Componente ───────────────────────────────────────────────────────────────
+
 export default function AdminUserList({ users: initialUsers }: { users: User[] }) {
+  // Dati
   const [users, setUsers] = useState(initialUsers);
+
+  // Filtri
   const [search, setSearch] = useState("");
+  const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>([]);
+  const [filterSportRole, setFilterSportRole] = useState(""); // "" | "none" | "1"–"5"
+  const [filterGender, setFilterGender] = useState("");       // "" | "MALE" | "FEMALE" | "none"
+
+  // Ordinamento
+  const [sortBy, setSortBy] = useState<SortColumn>("createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  // Paginazione
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+
+  // Dialogs
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editState, setEditState] = useState<EditState>({ sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
   const [saving, setSaving] = useState(false);
   const [deleteUser, setDeleteUser] = useState<User | null>(null);
   const [deleting, setDeleting] = useState(false);
+
   const { showToast } = useToast();
 
-  const filtered = users.filter(
-    (u) =>
-      u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  // ── Filtro + ordinamento (memo) ────────────────────────────────────────────
+
+  const activeFilterCount =
+    filterAppRoles.length +
+    (filterSportRole ? 1 : 0) +
+    (filterGender ? 1 : 0) +
+    (search ? 1 : 0);
+
+  const processed = useMemo(() => {
+    let result = users;
+
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (u) => u.name?.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+    }
+    if (filterAppRoles.length > 0) {
+      result = result.filter((u) => filterAppRoles.includes(u.appRole));
+    }
+    if (filterSportRole === "none") {
+      result = result.filter((u) => !u.sportRole);
+    } else if (filterSportRole) {
+      result = result.filter((u) => u.sportRole === parseInt(filterSportRole));
+    }
+    if (filterGender === "none") {
+      result = result.filter((u) => !u.gender);
+    } else if (filterGender) {
+      result = result.filter((u) => u.gender === filterGender);
+    }
+
+    return [...result].sort((a, b) => {
+      let cmp = 0;
+      switch (sortBy) {
+        case "name":
+          cmp = (a.name ?? "").localeCompare(b.name ?? "", "it");
+          break;
+        case "createdAt":
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case "sportRole":
+          cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
+          break;
+        case "registrations":
+          cmp = a._count.registrations - b._count.registrations;
+          break;
+        case "appRole":
+          cmp = ROLE_LEVEL[a.appRole] - ROLE_LEVEL[b.appRole];
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [users, search, filterAppRoles, filterSportRole, filterGender, sortBy, sortDir]);
+
+  const paginated = processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
+  function handleSort(col: SortColumn) {
+    if (sortBy === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir("asc");
+    }
+    setPage(0);
+  }
+
+  function resetFilters() {
+    setSearch("");
+    setFilterAppRoles([]);
+    setFilterSportRole("");
+    setFilterGender("");
+    setPage(0);
+  }
+
+  function toggleAppRole(role: AppRole) {
+    setFilterAppRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
+    setPage(0);
+  }
+
+  // ── Azioni tabella ────────────────────────────────────────────────────────
 
   async function handleRoleChange(userId: string, newRole: AppRole) {
     const res = await fetch(`/api/users/${userId}`, {
@@ -96,9 +191,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       sportRole: user.sportRole?.toString() ?? "",
       sportRoleVariant: user.sportRoleVariant ?? "",
       gender: user.gender ?? "",
-      birthDate: user.birthDate
-        ? new Date(user.birthDate).toISOString().slice(0, 10)
-        : "",
+      birthDate: user.birthDate ? new Date(user.birthDate).toISOString().slice(0, 10) : "",
     });
   }
 
@@ -122,9 +215,9 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       setUsers((prev) => prev.map((u) => u.id === editUser.id ? {
         ...u,
         sportRole: updated.sportRole,
+        sportRoleVariant: updated.sportRoleVariant,
         gender: updated.gender,
         birthDate: updated.birthDate,
-        // Aggiorna storico solo se il ruolo è cambiato
         sportRoleHistory:
           updated.sportRole !== editUser.sportRole && updated.sportRole !== null
             ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...editUser.sportRoleHistory]
@@ -157,43 +250,172 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
     }
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <Box>
-      <TextField
-        placeholder="Cerca per nome o email..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        size="small"
-        sx={{ mb: 2, width: { xs: "100%", sm: 320 } }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" />
-            </InputAdornment>
-          ),
-        }}
-      />
+      {/* ── Barra ricerca + info ── */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
+        <TextField
+          placeholder="Cerca per nome o email..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          size="small"
+          sx={{ width: { xs: "100%", sm: 280 } }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
+          {processed.length !== users.length
+            ? `${processed.length} di ${users.length} utenti`
+            : `${users.length} utenti`}
+        </Typography>
+        {activeFilterCount > 0 && (
+          <Button size="small" onClick={resetFilters} startIcon={
+            <Badge badgeContent={activeFilterCount} color="primary">
+              <FilterListIcon fontSize="small" />
+            </Badge>
+          }>
+            Rimuovi filtri
+          </Button>
+        )}
+      </Box>
 
+      {/* ── Filtri ── */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 2.5 }}>
+        {/* Ruolo utente */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+            Ruolo utente
+          </Typography>
+          <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+            {ALL_APP_ROLES.map((role) => (
+              <Chip
+                key={role}
+                label={ROLE_LABELS_IT[role]}
+                size="small"
+                color={filterAppRoles.includes(role) ? APP_ROLE_COLORS[role] : "default"}
+                variant={filterAppRoles.includes(role) ? "filled" : "outlined"}
+                onClick={() => toggleAppRole(role)}
+                sx={{ cursor: "pointer", fontWeight: filterAppRoles.includes(role) ? 700 : 400 }}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Ruolo Baskin + Genere */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+              Ruolo Baskin
+            </Typography>
+            <Select
+              value={filterSportRole}
+              onChange={(e) => { setFilterSportRole(e.target.value); setPage(0); }}
+              size="small"
+              displayEmpty
+              sx={{ minWidth: 150, fontSize: "0.82rem" }}
+            >
+              <MenuItem value="">Tutti</MenuItem>
+              <MenuItem value="none"><em>Non impostato</em></MenuItem>
+              {[1, 2, 3, 4, 5].map((r) => (
+                <MenuItem key={r} value={r.toString()}>
+                  <Chip
+                    label={sportRoleLabel(r)}
+                    size="small"
+                    sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+              Genere
+            </Typography>
+            <ToggleButtonGroup
+              value={filterGender}
+              exclusive
+              size="small"
+              onChange={(_e, val) => { setFilterGender(val ?? ""); setPage(0); }}
+            >
+              <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>Tutti</ToggleButton>
+              <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>M</ToggleButton>
+              <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>F</ToggleButton>
+              <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>N/D</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ── Tabella ── */}
       <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Utente</TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === "name"}
+                  direction={sortBy === "name" ? sortDir : "asc"}
+                  onClick={() => handleSort("name")}
+                >
+                  Utente
+                </TableSortLabel>
+              </TableCell>
               <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Email</TableCell>
-              <TableCell>Ruolo utente</TableCell>
-              <TableCell align="center">Ruolo Baskin</TableCell>
-              <TableCell align="center">Genere</TableCell>
-              <TableCell align="center">Iscrizioni</TableCell>
-              <TableCell align="center">Modifica</TableCell>
-              <TableCell align="center">Elimina</TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortBy === "appRole"}
+                  direction={sortBy === "appRole" ? sortDir : "asc"}
+                  onClick={() => handleSort("appRole")}
+                >
+                  Ruolo
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={sortBy === "sportRole"}
+                  direction={sortBy === "sportRole" ? sortDir : "asc"}
+                  onClick={() => handleSort("sportRole")}
+                >
+                  Baskin
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
+              <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                <TableSortLabel
+                  active={sortBy === "createdAt"}
+                  direction={sortBy === "createdAt" ? sortDir : "asc"}
+                  onClick={() => handleSort("createdAt")}
+                >
+                  Iscritto il
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                <TableSortLabel
+                  active={sortBy === "registrations"}
+                  direction={sortBy === "registrations" ? sortDir : "asc"}
+                  onClick={() => handleSort("registrations")}
+                >
+                  Allenamenti
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">Azioni</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filtered.map((user) => (
+            {paginated.map((user) => (
               <TableRow key={user.id} hover>
+                {/* Utente */}
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Avatar src={user.image ?? undefined} sx={{ width: 32, height: 32, fontSize: 14 }}>
+                    <Avatar src={user.image ?? undefined} sx={{ width: 30, height: 30, fontSize: 13 }}>
                       {user.name?.[0] ?? user.email[0].toUpperCase()}
                     </Avatar>
                     <Typography variant="body2" fontWeight={600} noWrap>
@@ -201,79 +423,93 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                     </Typography>
                   </Box>
                 </TableCell>
+
+                {/* Email */}
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                   <Typography variant="body2" color="text.secondary">{user.email}</Typography>
                 </TableCell>
+
+                {/* Ruolo utente */}
                 <TableCell>
                   <Select
                     value={user.appRole}
                     size="small"
                     onChange={(e) => handleRoleChange(user.id, e.target.value as AppRole)}
-                    sx={{ minWidth: 120, fontSize: "0.8rem" }}
+                    sx={{ minWidth: 110, fontSize: "0.8rem" }}
                     renderValue={(val) => (
                       <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={APP_ROLE_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
                     )}
                   >
-                    {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
+                    {ALL_APP_ROLES.map((r) => (
                       <MenuItem key={r} value={r}>
                         <Chip label={ROLE_LABELS_IT[r]} size="small" color={APP_ROLE_COLORS[r]} sx={{ fontWeight: 600 }} />
                       </MenuItem>
                     ))}
                   </Select>
                 </TableCell>
+
+                {/* Ruolo Baskin */}
                 <TableCell align="center">
                   {user.sportRole
                     ? <Chip
                         label={sportRoleLabel(user.sportRole, user.sportRoleVariant)}
                         size="small"
-                        sx={{
-                          bgcolor: ROLE_COLORS[user.sportRole],
-                          color: "#fff",
-                          fontWeight: 700,
-                          fontSize: "0.72rem",
-                        }}
+                        sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
                       />
                     : user.sportRoleSuggested
                       ? <Chip
                           label={`${sportRoleLabel(user.sportRoleSuggested, user.sportRoleSuggestedVariant)} ?`}
                           size="small"
                           variant="outlined"
-                          sx={{
-                            borderColor: ROLE_COLORS[user.sportRoleSuggested],
-                            color: ROLE_COLORS[user.sportRoleSuggested],
-                            fontWeight: 700,
-                            fontSize: "0.72rem",
-                          }}
-                          title="Autovalutazione utente — da confermare"
+                          sx={{ borderColor: ROLE_COLORS[user.sportRoleSuggested], color: ROLE_COLORS[user.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
+                          title="Autovalutazione — da confermare"
                         />
                       : <Typography variant="body2" color="text.disabled">—</Typography>}
                 </TableCell>
-                <TableCell align="center">
+
+                {/* Genere */}
+                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   {user.gender
                     ? <Typography variant="body2">{GENDER_LABELS[user.gender]}</Typography>
                     : <Typography variant="body2" color="text.disabled">—</Typography>}
                 </TableCell>
-                <TableCell align="center">
+
+                {/* Iscritto il */}
+                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                  <Typography variant="body2" color="text.secondary" noWrap>
+                    {format(new Date(user.createdAt), "d MMM yyyy", { locale: it })}
+                  </Typography>
+                </TableCell>
+
+                {/* Allenamenti */}
+                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   <Typography variant="body2">{user._count.registrations}</Typography>
                 </TableCell>
+
+                {/* Azioni */}
                 <TableCell align="center">
-                  <IconButton size="small" onClick={() => openEdit(user)} title="Modifica dati atleta">
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Elimina utente">
-                    <IconButton size="small" color="error" onClick={() => setDeleteUser(user)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+                    <Tooltip title="Modifica dati atleta">
+                      <IconButton size="small" onClick={() => openEdit(user)}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Elimina utente">
+                      <IconButton size="small" color="error" onClick={() => setDeleteUser(user)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+
+            {paginated.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                  Nessun utente trovato
+                  {activeFilterCount > 0
+                    ? "Nessun utente corrisponde ai filtri selezionati."
+                    : "Nessun utente trovato."}
                 </TableCell>
               </TableRow>
             )}
@@ -281,7 +517,21 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
         </Table>
       </TableContainer>
 
-      {/* Dialog conferma eliminazione */}
+      {/* ── Paginazione ── */}
+      <TablePagination
+        component="div"
+        count={processed.length}
+        page={page}
+        onPageChange={(_e, p) => setPage(p)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value)); setPage(0); }}
+        rowsPerPageOptions={[10, 25, 50, 100]}
+        labelRowsPerPage="Righe:"
+        labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+        sx={{ borderTop: "1px solid", borderColor: "divider" }}
+      />
+
+      {/* ── Dialog conferma eliminazione ── */}
       <Dialog open={!!deleteUser} onClose={() => !deleting && setDeleteUser(null)}>
         <DialogTitle>Elimina utente</DialogTitle>
         <DialogContent>
@@ -291,16 +541,14 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteUser(null)} disabled={deleting}>
-            Annulla
-          </Button>
+          <Button onClick={() => setDeleteUser(null)} disabled={deleting}>Annulla</Button>
           <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleting}>
             {deleting ? "Eliminazione..." : "Elimina"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Dialog modifica atleta */}
+      {/* ── Dialog modifica atleta ── */}
       <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
           Dati atleta — {editUser?.name ?? editUser?.email}
@@ -321,35 +569,27 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 </Typography>
               )}
               <Select
-                fullWidth
-                size="small"
-                displayEmpty
+                fullWidth size="small" displayEmpty
                 value={editState.sportRole}
                 onChange={(e) => setEditState((s) => ({ ...s, sportRole: e.target.value, sportRoleVariant: "" }))}
               >
                 <MenuItem value=""><em>Non impostato</em></MenuItem>
                 {[1, 2, 3, 4, 5].map((r) => (
                   <MenuItem key={r} value={r.toString()}>
-                    <Chip
-                      label={sportRoleLabel(r)}
-                      size="small"
-                      sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
-                    />
+                    <Chip label={sportRoleLabel(r)} size="small" sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }} />
                   </MenuItem>
                 ))}
               </Select>
             </Box>
 
-            {/* Variante ruolo (solo se ruolo 1 o 2) */}
+            {/* Variante ruolo (solo 1 o 2) */}
             {["1", "2"].includes(editState.sportRole) && (
               <Box>
                 <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
                   Variante ruolo
                 </Typography>
                 <Select
-                  fullWidth
-                  size="small"
-                  displayEmpty
+                  fullWidth size="small" displayEmpty
                   value={editState.sportRoleVariant}
                   onChange={(e) => setEditState((s) => ({ ...s, sportRoleVariant: e.target.value }))}
                 >
@@ -372,9 +612,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 Genere
               </Typography>
               <Select
-                fullWidth
-                size="small"
-                displayEmpty
+                fullWidth size="small" displayEmpty
                 value={editState.gender}
                 onChange={(e) => setEditState((s) => ({ ...s, gender: e.target.value }))}
               >
@@ -390,9 +628,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 Data di nascita (opzionale)
               </Typography>
               <TextField
-                fullWidth
-                size="small"
-                type="date"
+                fullWidth size="small" type="date"
                 value={editState.birthDate}
                 onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
                 InputLabelProps={{ shrink: true }}

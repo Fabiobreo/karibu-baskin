@@ -42,8 +42,8 @@ interface StatusBadge {
 
 const TEAM_META = [
   { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
+  { key: "teamB" as const, name: "Neri", color: "#1A1A1A" },
+  { key: "teamC" as const, name: "Bianchi", color: "#757575" },
 ];
 
 function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
@@ -116,11 +116,13 @@ export default function SessionPage() {
 
   // Trova la squadra dell'utente corrente confrontando l'ID iscrizione
   const myRegistration = currentUser ? registrations.find((r) => r.userId === currentUser.id) : null;
+  // Layout "squadre prima" quando l'utente è iscritto e le squadre sono già generate
+  const teamFirstLayout = !!myRegistration && teams !== null;
   const myTeam = myRegistration && teams
     ? TEAM_META.find((t) => {
-        const list = t.key === "teamC" ? teams.teamC : teams[t.key];
-        return list?.some((a) => a.id === myRegistration.id);
-      }) ?? null
+      const list = t.key === "teamC" ? teams.teamC : teams[t.key];
+      return list?.some((a) => a.id === myRegistration.id);
+    }) ?? null
     : null;
 
   return (
@@ -133,7 +135,7 @@ export default function SessionPage() {
       ) : session && sessionDate ? (
         <Box
           sx={{
-            background: "linear-gradient(135deg, #1a1a1a 0%, #242424 65%, rgba(230,81,0,0.18) 100%)",
+            background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
             color: "#fff",
             px: { xs: 2.5, sm: 4, md: 8 },
             py: { xs: 3, sm: 4 },
@@ -141,17 +143,8 @@ export default function SessionPage() {
             overflow: "hidden",
           }}
         >
-          {/* Alone arancio decorativo */}
-          <Box sx={{
-            position: "absolute",
-            right: -60,
-            top: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(230,81,0,0.22) 0%, transparent 70%)",
-            pointerEvents: "none",
-          }} />
+          <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
+          <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
 
           <Box sx={{ maxWidth: "md", mx: "auto", position: "relative" }}>
             {/* Torna indietro */}
@@ -276,56 +269,80 @@ export default function SessionPage() {
               </Paper>
             )}
 
-            {/* Iscrizione + roster */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", md: "row" },
-                gap: 3,
-                alignItems: "flex-start",
-              }}
-            >
-              <Paper
-                elevation={2}
-                sx={{
-                  p: { xs: 2, sm: 3 },
-                  flex: "0 0 auto",
-                  width: { xs: "100%", md: 340 },
-                }}
-              >
-                <RegistrationForm
-                  sessionId={sessionId}
-                  onRegistered={loadData}
-                  registeredNames={registrations.map((r) => r.name)}
-                  registeredUserIds={registrations.map((r) => r.userId)}
-                  currentUser={currentUser}
-                />
-              </Paper>
+            {teamFirstLayout ? (
+              // ── Layout iscritto + squadre generate ──────────────────────────
+              // banner "la tua squadra" già mostrato sopra; qui squadre → iscritti
+              <>
+                <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Typography variant="h6" fontWeight={700} gutterBottom>
+                    Squadre
+                  </Typography>
+                  <TeamDisplay
+                    sessionId={sessionId}
+                    isStaff={isStaff}
+                    registrationIds={registrations.map((r) => r.id)}
+                    teams={teams}
+                    teamsLoading={teamsLoading}
+                    onTeamsGenerated={(newTeams) => setTeams(newTeams)}
+                  />
+                </Paper>
 
-              <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, flex: 1, minWidth: 0 }}>
                 <RosterByRole
                   registrations={registrations}
                   currentUserId={currentUser?.id ?? null}
                   isStaff={isStaff}
                   onUnregistered={loadData}
                 />
-              </Paper>
-            </Box>
+              </>
+            ) : (
+              // ── Layout default ───────────────────────────────────────────────
+              <>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 3,
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <Paper
+                    elevation={2}
+                    sx={{ p: { xs: 2, sm: 3 }, flex: "0 0 auto", width: { xs: "100%", md: 340 } }}
+                  >
+                    <RegistrationForm
+                      sessionId={sessionId}
+                      onRegistered={loadData}
+                      registeredNames={registrations.map((r) => r.name)}
+                      registeredUserIds={registrations.map((r) => r.userId)}
+                      currentUser={currentUser}
+                    />
+                  </Paper>
 
-            {/* Squadre */}
-            <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-              <Typography variant="h6" fontWeight={700} gutterBottom>
-                Squadre
-              </Typography>
-              <TeamDisplay
-                sessionId={sessionId}
-                isStaff={isStaff}
-                registrationIds={registrations.map((r) => r.id)}
-                teams={teams}
-                teamsLoading={teamsLoading}
-                onTeamsGenerated={(newTeams) => setTeams(newTeams)}
-              />
-            </Paper>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <RosterByRole
+                      registrations={registrations}
+                      currentUserId={currentUser?.id ?? null}
+                      isStaff={isStaff}
+                      onUnregistered={loadData}
+                    />
+                  </Box>
+                </Box>
+
+                <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Typography variant="h6" fontWeight={700} gutterBottom>
+                    Squadre
+                  </Typography>
+                  <TeamDisplay
+                    sessionId={sessionId}
+                    isStaff={isStaff}
+                    registrationIds={registrations.map((r) => r.id)}
+                    teams={teams}
+                    teamsLoading={teamsLoading}
+                    onTeamsGenerated={(newTeams) => setTeams(newTeams)}
+                  />
+                </Paper>
+              </>
+            )}
 
           </Box>
         ) : (

@@ -41,7 +41,7 @@ src/
 │   │   ├── teams/                # Generazione squadre
 │   │   ├── users/                # Gestione utenti + me/children
 │   │   ├── push/                 # Web Push (subscribe, vapid-public-key)
-│   │   └── admin/preview/        # Preview ruolo per admin
+│   │   └── test-login/           # Login fittizio per test (solo ENABLE_TEST_LOGIN=true)
 │   ├── admin/
 │   │   ├── login/                # Login admin (solo Google)
 │   │   └── (dashboard)/          # Route group protette (utenti, sessioni)
@@ -57,15 +57,13 @@ src/
 │   └── not-found.tsx             # Pagina 404
 ├── components/                   # Componenti riutilizzabili (tutti PascalCase)
 ├── context/
-│   ├── ToastContext.tsx           # Toast globali
-│   └── PreviewRoleContext.tsx     # Contesto preview ruolo admin
+│   └── ToastContext.tsx           # Toast globali
 ├── lib/
 │   ├── apiAuth.ts                # Helper auth per API route (isCoachOrAdmin, isAdminUser)
 │   ├── authjs.ts                 # Config Auth.js v5
 │   ├── authRoles.ts              # Gerarchia ruoli + helper hasRole()
 │   ├── constants.ts              # ROLE_LABELS, ROLE_COLORS, ROLES
 │   ├── db.ts                     # Prisma singleton
-│   ├── effectiveSession.ts       # Session con override preview ruolo
 │   ├── teamGenerator.ts          # Mulberry32 PRNG seeded shuffle
 │   ├── theme.ts                  # MUI theme
 │   └── webpush.ts                # Invio notifiche push (sendPushToAll)
@@ -106,7 +104,7 @@ src/
 
 ## Sistema di autenticazione
 
-**Solo Google OAuth** (Auth.js v5) — il vecchio sistema cookie HMAC è stato rimosso.
+**Solo Google OAuth** (Auth.js v5) — nessun CredentialsProvider.
 
 - **Ruoli:** `GUEST | ATHLETE | PARENT | COACH | ADMIN`
 - **Gerarchia:** `GUEST(0) < ATHLETE(1) < PARENT(2) < COACH(3) < ADMIN(4)`
@@ -116,8 +114,14 @@ src/
 - **`proxy.ts`:** matcher vuoto — non fa auth (Edge Runtime non supporta Prisma)
 - **Account linking:** `allowDangerousEmailAccountLinking: true` sul provider Google — permette di collegare account Google a utenti pre-creati dall'admin
 - **Sessione:** database strategy, durata 1 anno
+- **Immagine profilo:** aggiornata ad ogni login tramite callback `signIn` in `authjs.ts` (salva `name` e `image` da Google profile). Richiede `lh3.googleusercontent.com` in `next.config.ts` `images.remotePatterns`.
 
-**Preview ruolo (solo ADMIN):** banner fisso in basso permette di simulare qualsiasi ruolo. Usa cookie `preview_role` + `getEffectiveSession()` nei Server Component.
+**Test login (solo sviluppo):** `src/app/api/test-login/route.ts` + `src/components/TestLoginForm.tsx`.
+- Abilitato solo se `ENABLE_TEST_LOGIN=true` nell'env.
+- Crea manualmente una riga `Session` nel DB e imposta il cookie `authjs.session-token` via header raw `Set-Cookie` (non `NextResponse.cookies.set()` — bug Turbopack).
+- Cookie name: `authjs.session-token` (dev) / `__Secure-authjs.session-token` (prod).
+
+**Preview ruolo:** rimosso completamente. File eliminati: `PreviewBanner.tsx`, `PreviewRoleContext.tsx`, `effectiveSession.ts`, `api/admin/preview/route.ts`.
 
 ## Push notifications
 
@@ -139,18 +143,39 @@ NEXTAUTH_URL=                     # URL pubblico (es. https://karibu-baskin.verc
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=     # Chiave pubblica VAPID per Web Push
 VAPID_PRIVATE_KEY=                # Chiave privata VAPID
 VAPID_EMAIL=                      # Email contatto per Web Push (es. admin@karibubaskin.it)
+ENABLE_TEST_LOGIN=                # "true" per abilitare login fittizio (solo dev)
 ```
 
 > `ADMIN_PASSWORD` e `COOKIE_SECRET` sono stati rimossi — non più necessari.
 
 ## Offline / PWA
 
-Service worker (`public/sw.js`) con 3 strategie:
+Service worker (`public/sw.js`) con 3 strategie (versione `karibu-v4`):
 - **Cache-first:** asset statici (`/logo.png`, `/_next/static/*`, ecc.)
 - **Network-first + cache fallback:** pagine HTML (fallback su `/offline.html` se mai visitata)
-- **Stale-while-revalidate (5 min):** `GET /api/sessions*` e `GET /api/teams/*`
+- **Network-first + cache fallback:** `GET /api/sessions*` e `GET /api/teams/*` — cache usata solo se offline (era stale-while-revalidate, rimossa per evitare dati obsoleti)
 
 Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/la-squadra`, `/contatti`, `/sponsor`.
+
+## Pagina allenamento (`/allenamento/[sessionId]`)
+
+Layout adattivo in base allo stato dell'utente:
+
+- **Utente non iscritto o squadre non generate:** form iscrizione + lista iscritti affiancati, sezione squadre in fondo
+- **Utente iscritto + squadre generate:** banner "La tua squadra" in cima, sezione squadre subito dopo, lista iscritti in fondo (form nascosto)
+
+`TeamDisplay` è un componente controllato: riceve `teams: TeamsData | null`, `teamsLoading`, `onTeamsGenerated` dalla pagina. Non fa fetch internamente.
+
+Rilevamento cambio iscritti (per alert "rigenera squadre"): confronto Set degli ID iscrizioni vs ID nelle squadre salvate — resistente a sostituzioni (un utente esce, uno entra).
+
+## Gestione utenti admin (`/admin/utenti`)
+
+`AdminUserList` supporta:
+- **Ricerca** per nome/email
+- **Filtri:** ruolo utente (chip toggle), ruolo Baskin (select), genere (toggle group)
+- **Ordinamento:** per nome, ruolo utente, ruolo Baskin, data iscrizione, n° allenamenti (`TableSortLabel`)
+- **Paginazione:** `TablePagination` con opzioni 10/25/50/100, default 25
+- **Eliminazione utente:** dialog di conferma, endpoint `DELETE /api/users/[userId]` (admin-only, non può eliminare sé stesso)
 
 ## Note importanti
 
@@ -161,3 +186,4 @@ Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/la-squadra`, `/contat
 - **TypeScript strict:** abilitato — nessuna eccezione; risolvere tutti gli errori prima del push
 - **Turbopack cache corrotta:** se si vedono errori `.sst` nei log, usare `npm run dev:clean`
 - **Mock users:** `prisma/seed.ts` crea utenti di test (es. `npx tsx prisma/seed.ts 15`) — ricordarsi di pulirli prima di andare in produzione
+- **`NextResponse.cookies.set()` bug Turbopack:** non usarlo per impostare cookie di sessione — usare `res.headers.set("Set-Cookie", ...)` con stringa manuale

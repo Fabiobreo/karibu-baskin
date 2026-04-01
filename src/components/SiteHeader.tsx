@@ -14,7 +14,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { hasRole } from "@/lib/authRoles";
-import { usePreviewRole } from "@/context/PreviewRoleContext";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 
@@ -31,10 +30,9 @@ export default function SiteHeader() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const { previewRole } = usePreviewRole();
 
   const user = session?.user;
-  const effectiveRole = (previewRole ?? user?.appRole) as AppRole | undefined;
+  const effectiveRole = user?.appRole as AppRole | undefined;
   const isStaff = !!effectiveRole && hasRole(effectiveRole, "COACH");
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()

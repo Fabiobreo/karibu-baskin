@@ -6,15 +6,10 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Analytics } from "@vercel/analytics/react";
 import theme from "@/theme";
 import { ToastProvider } from "@/context/ToastContext";
-import { PreviewRoleProvider } from "@/context/PreviewRoleContext";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
-import PreviewBanner from "@/components/PreviewBanner";
 import OfflineBanner from "@/components/OfflineBanner";
 import Footer from "@/components/Footer";
-import { auth } from "@/lib/authjs";
-import { cookies } from "next/headers";
-import type { AppRole } from "@prisma/client";
 import "./globals.css";
 
 const inter = Inter({
@@ -64,13 +59,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, cookieStore] = await Promise.all([auth(), cookies()]);
-  const isAdmin = session?.user?.appRole === "ADMIN";
-  const previewRole = isAdmin
-    ? (cookieStore.get("preview_role")?.value as AppRole | null) ?? null
-    : null;
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="it" className={inter.variable}>
       <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -79,16 +68,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <CssBaseline />
             <ServiceWorkerRegistrar />
             <Providers>
-              <PreviewRoleProvider previewRole={previewRole}>
-                <ToastProvider>
-                  <main style={{ flex: 1, paddingBottom: isAdmin ? "52px" : 0 }}>
-                    <OfflineBanner />
-                    {children}
-                  </main>
-                  <Footer />
-                  {isAdmin && <PreviewBanner initialRole={previewRole} />}
-                </ToastProvider>
-              </PreviewRoleProvider>
+              <ToastProvider>
+                <main style={{ flex: 1 }}>
+                  <OfflineBanner />
+                  {children}
+                </main>
+                <Footer />
+              </ToastProvider>
             </Providers>
           </ThemeProvider>
         </AppRouterCacheProvider>
