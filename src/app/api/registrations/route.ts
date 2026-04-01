@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     // Utente loggato: recupera nome dal profilo
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, appRole: true, sportRoleSuggested: true },
+      select: { name: true, appRole: true, sportRole: true, sportRoleSuggested: true },
     });
 
     if (!user) {
@@ -72,8 +72,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Sei già iscritto a questo allenamento" }, { status: 409 });
     }
 
-    // Per gli utenti GUEST senza ruolo confermato: salva il suggerimento
-    if (user.appRole === "GUEST" && !user.sportRoleSuggested) {
+    // Per qualsiasi utente senza ruolo sportivo confermato: salva/aggiorna il suggerimento
+    if (!user.sportRole) {
       await prisma.user.update({
         where: { id: userId },
         data: {

@@ -8,13 +8,14 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import RegistrationForm, { type CurrentUser } from "@/components/RegistrationForm";
 import RosterByRole from "@/components/RosterByRole";
-import TeamDisplay from "@/components/TeamDisplay";
+import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import ShareSection from "@/components/ShareSection";
 
 interface Session {
@@ -38,6 +39,12 @@ interface StatusBadge {
   label: string;
   bgcolor: string;
 }
+
+const TEAM_META = [
+  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
+  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
+  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
+];
 
 function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
   const now = new Date();
@@ -63,6 +70,8 @@ export default function SessionPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [session, setSession] = useState<Session | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [teams, setTeams] = useState<TeamsData | null>(null);
+  const [teamsLoading, setTeamsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
 
@@ -74,13 +83,19 @@ export default function SessionPage() {
   }, []);
 
   const loadData = useCallback(async () => {
-    const [sessionRes, regRes] = await Promise.all([
+    const [sessionRes, regRes, teamsRes] = await Promise.all([
       fetch(`/api/sessions/${sessionId}`),
       fetch(`/api/registrations?sessionId=${sessionId}`),
+      fetch(`/api/teams/${sessionId}`),
     ]);
     if (sessionRes.ok) setSession(await sessionRes.json());
     if (regRes.ok) setRegistrations(await regRes.json());
+    if (teamsRes.ok) {
+      const data: TeamsData = await teamsRes.json();
+      setTeams(data.generated ? data : null);
+    }
     setLoading(false);
+    setTeamsLoading(false);
   }, [sessionId]);
 
   useEffect(() => {
@@ -96,6 +111,17 @@ export default function SessionPage() {
   const sessionUrl = typeof window !== "undefined"
     ? window.location.href
     : `https://karibu-baskin.vercel.app/allenamento/${sessionId}`;
+
+  const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
+
+  // Trova la squadra dell'utente corrente confrontando l'ID iscrizione
+  const myRegistration = currentUser ? registrations.find((r) => r.userId === currentUser.id) : null;
+  const myTeam = myRegistration && teams
+    ? TEAM_META.find((t) => {
+        const list = t.key === "teamC" ? teams.teamC : teams[t.key];
+        return list?.some((a) => a.id === myRegistration.id);
+      }) ?? null
+    : null;
 
   return (
     <>
@@ -217,11 +243,38 @@ export default function SessionPage() {
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 4 } }}>
         {loading ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
             <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
             <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
           </Box>
         ) : session ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+
+            {/* Banner "la tua squadra" — visibile solo se iscritto e squadre generate */}
+            {myTeam && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 2, sm: 2.5 },
+                  borderRadius: 2,
+                  background: `linear-gradient(120deg, ${myTeam.color} 0%, ${myTeam.color}cc 100%)`,
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <GroupsIcon sx={{ fontSize: 36, opacity: 0.85, flexShrink: 0 }} />
+                <Box>
+                  <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 600, letterSpacing: 0.8, textTransform: "uppercase" }}>
+                    La tua squadra
+                  </Typography>
+                  <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1.2 }}>
+                    {myTeam.name}
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
 
             {/* Iscrizione + roster */}
             <Box
@@ -253,10 +306,7 @@ export default function SessionPage() {
                 <RosterByRole
                   registrations={registrations}
                   currentUserId={currentUser?.id ?? null}
-                  isStaff={
-                    currentUser?.appRole === "COACH" ||
-                    currentUser?.appRole === "ADMIN"
-                  }
+                  isStaff={isStaff}
                   onUnregistered={loadData}
                 />
               </Paper>
@@ -267,7 +317,14 @@ export default function SessionPage() {
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Squadre
               </Typography>
-              <TeamDisplay sessionId={sessionId} />
+              <TeamDisplay
+                sessionId={sessionId}
+                isStaff={isStaff}
+                registrationIds={registrations.map((r) => r.id)}
+                teams={teams}
+                teamsLoading={teamsLoading}
+                onTeamsGenerated={(newTeams) => setTeams(newTeams)}
+              />
             </Paper>
 
           </Box>
