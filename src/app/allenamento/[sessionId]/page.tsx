@@ -13,7 +13,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import RegistrationForm, { type CurrentUser } from "@/components/RegistrationForm";
+import RegistrationForm, { type CurrentUser, type ChildInfo } from "@/components/RegistrationForm";
 import RosterByRole from "@/components/RosterByRole";
 import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import ShareSection from "@/components/ShareSection";
@@ -33,6 +33,7 @@ interface Registration {
   createdAt: string;
   sessionId: string;
   userId: string | null;
+  childId: string | null;
 }
 
 interface StatusBadge {
@@ -74,11 +75,20 @@ export default function SessionPage() {
   const [teamsLoading, setTeamsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
+  const [parentChildren, setParentChildren] = useState<ChildInfo[]>([]);
 
   useEffect(() => {
     fetch("/api/users/me")
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: CurrentUser | null) => setCurrentUser(data))
+      .then((data: CurrentUser | null) => {
+        setCurrentUser(data);
+        if (data?.appRole === "PARENT") {
+          fetch("/api/users/me/children")
+            .then((r) => (r.ok ? r.json() : []))
+            .then((kids: ChildInfo[]) => setParentChildren(kids))
+            .catch(() => {});
+        }
+      })
       .catch(() => setCurrentUser(null));
   }, []);
 
@@ -114,16 +124,25 @@ export default function SessionPage() {
 
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
-  // Trova la squadra dell'utente corrente confrontando l'ID iscrizione
-  const myRegistration = currentUser ? registrations.find((r) => r.userId === currentUser.id) : null;
-  // Layout "squadre prima" quando l'utente è iscritto e le squadre sono già generate
-  const teamFirstLayout = !!myRegistration && teams !== null;
+  // Iscrizioni pertinenti all'utente (sé stesso o i propri figli)
+  // Include anche la registrazione via childId se l'atleta ha un account collegato a un Child
+  const myRegistration = currentUser
+    ? registrations.find((r) =>
+        r.userId === currentUser.id ||
+        (currentUser.linkedChildId && r.childId === currentUser.linkedChildId)
+      )
+    : null;
+  const childRegistrations = parentChildren.length > 0
+    ? registrations.filter((r) => r.childId && parentChildren.some((c) => c.id === r.childId))
+    : [];
+  // Layout "squadre prima" solo se l'utente è effettivamente in una squadra generata
   const myTeam = myRegistration && teams
     ? TEAM_META.find((t) => {
       const list = t.key === "teamC" ? teams.teamC : teams[t.key];
       return list?.some((a) => a.id === myRegistration.id);
     }) ?? null
     : null;
+  const teamFirstLayout = !!myTeam;
 
   return (
     <>
@@ -290,6 +309,7 @@ export default function SessionPage() {
                 <RosterByRole
                   registrations={registrations}
                   currentUserId={currentUser?.id ?? null}
+                  parentChildIds={parentChildren.map((c) => c.id)}
                   isStaff={isStaff}
                   onUnregistered={loadData}
                 />
@@ -314,7 +334,9 @@ export default function SessionPage() {
                       onRegistered={loadData}
                       registeredNames={registrations.map((r) => r.name)}
                       registeredUserIds={registrations.map((r) => r.userId)}
+                      registeredChildIds={registrations.map((r) => r.childId)}
                       currentUser={currentUser}
+                      children={parentChildren}
                     />
                   </Paper>
 
@@ -322,6 +344,9 @@ export default function SessionPage() {
                     <RosterByRole
                       registrations={registrations}
                       currentUserId={currentUser?.id ?? null}
+                      linkedChildId={currentUser?.linkedChildId ?? null}
+                      parentChildIds={parentChildren.map((c) => c.id)}
+                      childUserIds={parentChildren.map((c) => c.userId).filter((id): id is string => !!id)}
                       isStaff={isStaff}
                       onUnregistered={loadData}
                     />

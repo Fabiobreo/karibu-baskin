@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import SessionCard from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
+import HeroSection from "@/components/HeroSection";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -34,9 +35,10 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
+      <HeroSection />
 
       {/* ── Lista allenamenti ── */}
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
           <CalendarTodayIcon sx={{ color: "primary.main", fontSize: 22 }} />
           <Typography variant="h5">

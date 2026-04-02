@@ -2,50 +2,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 
-// GET /api/users/me/children — figli collegati al genitore loggato
+// GET /api/users/me/children — figli del genitore loggato
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const links = await prisma.parentChild.findMany({
+  const children = await prisma.child.findMany({
     where: { parentId: session.user.id },
-    include: {
-      child: { select: { id: true, name: true, email: true, image: true, appRole: true } },
-    },
+    orderBy: { createdAt: "asc" },
   });
 
-  return NextResponse.json(links.map((l) => l.child));
+  return NextResponse.json(children);
 }
 
-// POST /api/users/me/children — collega un figlio tramite email
+// POST /api/users/me/children — crea un nuovo figlio
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const { childEmail } = await req.json();
-  if (!childEmail) {
-    return NextResponse.json({ error: "Email richiesta" }, { status: 400 });
+  const body = await req.json().catch(() => ({}));
+  const { name, sportRole, sportRoleVariant, gender, birthDate } = body as {
+    name?: string;
+    sportRole?: number | null;
+    sportRoleVariant?: string | null;
+    gender?: string | null;
+    birthDate?: string | null;
+  };
+
+  const trimmedName = name?.trim().slice(0, 60) ?? "";
+  if (!trimmedName) {
+    return NextResponse.json({ error: "Il nome è obbligatorio" }, { status: 400 });
   }
 
-  const child = await prisma.user.findUnique({ where: { email: childEmail } });
-  if (!child) {
-    return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
-  }
-  if (child.id === session.user.id) {
-    return NextResponse.json({ error: "Non puoi collegare te stesso" }, { status: 400 });
-  }
+  const child = await prisma.child.create({
+    data: {
+      parentId: session.user.id,
+      name: trimmedName,
+      sportRole: sportRole ?? null,
+      sportRoleVariant: sportRoleVariant ?? null,
+      gender: (gender as "MALE" | "FEMALE" | null) ?? null,
+      birthDate: birthDate ? new Date(birthDate) : null,
+    },
+  });
 
-  try {
-    const link = await prisma.parentChild.create({
-      data: { parentId: session.user.id, childId: child.id },
-      include: { child: { select: { id: true, name: true, email: true, appRole: true } } },
-    });
-    return NextResponse.json(link.child, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Collegamento già esistente" }, { status: 409 });
-  }
+  return NextResponse.json(child, { status: 201 });
 }

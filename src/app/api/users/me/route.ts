@@ -22,14 +22,12 @@ export async function GET() {
       sportRoleVariant: true,
       sportRoleSuggested: true,
       sportRoleSuggestedVariant: true,
-      childLinks: {
-        include: { child: { select: { id: true, name: true, email: true, image: true, appRole: true } } },
-      },
-      parentLinks: {
-        include: { parent: { select: { id: true, name: true, email: true, image: true } } },
-      },
+      childAccount: { select: { id: true } },
     },
   });
 
-  return NextResponse.json(user);
+  if (!user) return NextResponse.json(null);
+
+  const { childAccount, ...rest } = user;
+  return NextResponse.json({ ...rest, linkedChildId: childAccount?.id ?? null });
 }

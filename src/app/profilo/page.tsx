@@ -9,7 +9,7 @@ import SiteHeader from "@/components/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/constants";
 import type { AppRole, Gender } from "@prisma/client";
-import ParentChildLinker from "@/components/ParentChildLinker";
+import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -36,8 +36,9 @@ export default async function ProfiloPage() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      childLinks: {
-        include: { child: { select: { id: true, name: true, email: true, image: true, appRole: true } } },
+      children: {
+        orderBy: { createdAt: "asc" as const },
+        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true, userId: true },
       },
       sportRoleHistory: {
         orderBy: { changedAt: "desc" },
@@ -184,7 +185,7 @@ export default async function ProfiloPage() {
               Collega il profilo di tuo figlio/a per iscriverlo agli allenamenti.
             </Typography>
             <ParentChildLinker
-              initialChildren={user.childLinks.map((l) => l.child)}
+              initialChildren={user.children as ChildData[]}
             />
           </Paper>
         )}

@@ -11,7 +11,7 @@ export async function DELETE(
 
   const registration = await prisma.registration.findUnique({
     where: { id: regId },
-    select: { userId: true },
+    select: { userId: true, childId: true },
   });
 
   if (!registration) {
@@ -21,10 +21,28 @@ export async function DELETE(
   const session = await auth();
   const currentUserId = session?.user?.id ?? null;
 
-  const isOwner = currentUserId && registration.userId === currentUserId;
+  const isOwner = !!(currentUserId && registration.userId === currentUserId);
   const isStaff = await isCoachOrAdmin();
 
-  if (!isOwner && !isStaff) {
+  let isAllowed = false;
+  if (!isOwner && !isStaff && currentUserId) {
+    if (registration.childId) {
+      // Registrazione via childId: controlla atleta collegato o genitore
+      const child = await prisma.child.findUnique({
+        where: { id: registration.childId },
+        select: { userId: true, parentId: true },
+      });
+      isAllowed = child?.userId === currentUserId || child?.parentId === currentUserId;
+    } else if (registration.userId) {
+      // Registrazione via userId: controlla se è un figlio del genitore loggato
+      const childOfParent = await prisma.child.findFirst({
+        where: { userId: registration.userId, parentId: currentUserId },
+      });
+      isAllowed = !!childOfParent;
+    }
+  }
+
+  if (!isOwner && !isAllowed && !isStaff) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 

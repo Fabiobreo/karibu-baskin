@@ -397,15 +397,6 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                   Iscritto il
                 </TableSortLabel>
               </TableCell>
-              <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                <TableSortLabel
-                  active={sortBy === "registrations"}
-                  direction={sortBy === "registrations" ? sortDir : "asc"}
-                  onClick={() => handleSort("registrations")}
-                >
-                  Allenamenti
-                </TableSortLabel>
-              </TableCell>
               <TableCell align="center">Azioni</TableCell>
             </TableRow>
           </TableHead>
@@ -481,11 +472,6 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                   </Typography>
                 </TableCell>
 
-                {/* Allenamenti */}
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  <Typography variant="body2">{user._count.registrations}</Typography>
-                </TableCell>
-
                 {/* Azioni */}
                 <TableCell align="center">
                   <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
@@ -506,7 +492,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
 
             {paginated.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   {activeFilterCount > 0
                     ? "Nessun utente corrisponde ai filtri selezionati."
                     : "Nessun utente trovato."}

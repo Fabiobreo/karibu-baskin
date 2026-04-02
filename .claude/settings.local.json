@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:irp.cdn-website.com)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(cd /tmp)",
+      "Bash(curl -L -o baskin_classification.pdf https://irp.cdn-website.com/dbb225e6/files/uploaded/Allegato-A-al-regolamento-di-gioco-La-classificazione-dei-ruoli-nel-Baski.t.2025.pdf)",
+      "Bash(pdftotext -layout baskin_classification.pdf -)",
+      "Bash(pdftotext -layout baskin_classification.pdf extracted.txt)",
+      "Bash(rm -rf .next)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma:*)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe\")",
+      "Bash(ls \"D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\node_modules\\\\.prisma\\\\client\"\"*.tmp* 2>/dev/null && rm -f \"D:DevCompaniesHomeProjectskaribu-baskinnode_modules.prismaclient\"\"*.tmp*)",
+      "Bash(set -a)",
+      "Bash(source .env)",
+      "Bash(set +a)",
+      "Bash(PGPASSWORD=\"npg_QdjrEl0g5XwP\" psql \"postgresql://neondb_owner@ep-red-breeze-agdoj4do.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require\" -c \"SELECT conname FROM pg_constraint WHERE conrelid = ''\"\"Registration\"\"''::regclass AND contype = ''u'';\")",
+      "Bash(/tmp/fix_constraint.sql:*)",
+      "Bash(__NEW_LINE_29c9ecbe91bc2e58__ cd:*)",
+      "Bash(/tmp/fix_index.sql:*)",
+      "Bash(__NEW_LINE_f4ba6a14237d40d2__ cd:*)",
+      "Bash(cmd.exe /c \"rmdir /s /q .next 2>nul & npx tsc --noEmit 2>&1\")",
+      "Bash(cmd.exe /c \"cd /d D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin && npx tsc --noEmit 2>&1\")",
+      "Bash(cmd.exe /c \"mkdir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\test-login 2>nul & echo done\")",
+      "Bash(cmd.exe /c \"del /f D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\components\\\\PreviewBanner.tsx D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\context\\\\PreviewRoleContext.tsx D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\lib\\\\effectiveSession.ts D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\admin\\\\preview\\\\route.ts\")",
+      "Bash(rm \"D:/Dev/Companies/HomeProjects/karibu-baskin/src/app/api/users/me/children/[childId]/route.ts\")",
+      "Bash(rmdir \"D:/Dev/Companies/HomeProjects/karibu-baskin/src/app/api/users/me/children/[childId]\")"
+    ]
+  }
+}

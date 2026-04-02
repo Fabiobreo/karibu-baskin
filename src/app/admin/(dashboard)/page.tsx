@@ -12,6 +12,7 @@ import Link from "next/link";
 import AdminSessionsPanel from "@/components/AdminSessionsPanel";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 
 export const revalidate = 0;
 
@@ -25,7 +26,7 @@ export default async function AdminPage() {
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
-      select: { id: true, name: true, email: true, image: true, appRole: true, createdAt: true },
+      select: { id: true, name: true, email: true, image: true, appRole: true, createdAt: true, sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true },
     }),
     prisma.trainingSession.count({ where: { date: { gte: now } } }),
     // Utenti con ruolo suggerito ma non ancora confermato
@@ -132,6 +133,22 @@ export default async function AdminPage() {
                     sx={{ fontWeight: 600 }}
                   />
                 </TableCell>
+                <TableCell align="center">
+                  {user.sportRole
+                    ? <Chip
+                        label={sportRoleLabel(user.sportRole, user.sportRoleVariant)}
+                        size="small"
+                        sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                      />
+                    : user.sportRoleSuggested
+                      ? <Chip
+                          label={`${sportRoleLabel(user.sportRoleSuggested, user.sportRoleSuggestedVariant)} ?`}
+                          size="small"
+                          variant="outlined"
+                          sx={{ borderColor: ROLE_COLORS[user.sportRoleSuggested], color: ROLE_COLORS[user.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
+                        />
+                      : <Typography variant="body2" color="text.disabled">—</Typography>}
+                </TableCell>
                 <TableCell align="right">
                   <Typography variant="caption" color="text.secondary">
                     {format(new Date(user.createdAt), "d MMM yyyy", { locale: it })}
@@ -141,7 +158,7 @@ export default async function AdminPage() {
             ))}
             {recentUsers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 3, color: "text.secondary" }}>
+                <TableCell colSpan={5} align="center" sx={{ py: 3, color: "text.secondary" }}>
                   Nessun utente ancora iscritto
                 </TableCell>
               </TableRow>

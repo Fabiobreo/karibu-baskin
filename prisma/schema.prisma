@@ -48,8 +48,8 @@ model User {
   accounts         Account[]
   authSessions     Session[]
   registrations    Registration[]
-  childLinks       ParentChild[]       @relation("ParentLinks")
-  parentLinks      ParentChild[]       @relation("ChildLinks")
+  children         Child[]             @relation("ParentChildren")
+  childAccount     Child?              @relation("ChildUser")
   sportRoleHistory  SportRoleHistory[]
   pushSubscriptions PushSubscription[]
 }
@@ -116,18 +116,26 @@ model SportRoleHistory {
   @@index([userId, changedAt])
 }
 
-// ── Relazione Genitore → Figlio ───────────────────────────────────────────────
+// ── Figli gestiti da un genitore (senza account proprio) ─────────────────────
 
-model ParentChild {
-  id        String   @id @default(cuid())
-  parentId  String
-  childId   String
-  createdAt DateTime @default(now())
+model Child {
+  id               String    @id @default(cuid())
+  parentId         String
+  name             String
+  sportRole        Int?
+  sportRoleVariant String?
+  gender           Gender?
+  birthDate        DateTime?
+  createdAt        DateTime  @default(now())
 
-  parent User @relation("ParentLinks", fields: [parentId], references: [id], onDelete: Cascade)
-  child  User @relation("ChildLinks",  fields: [childId],  references: [id], onDelete: Cascade)
+  // Collegamento opzionale a un account User (se il figlio si registra in futuro)
+  userId String? @unique
 
-  @@unique([parentId, childId])
+  parent        User           @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  user          User?          @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
+  registrations Registration[]
+
+  @@index([parentId])
 }
 
 // ── Modelli esistenti (invariati nella tabella DB) ───────────────────────────
@@ -154,14 +162,20 @@ model Registration {
   role      Int
   createdAt DateTime @default(now())
 
-  // Nullable: null = registrazione anonima (legacy), non-null = utente loggato
-  userId String?
+  // Chi è iscritto (al più uno non-null):
+  // userId  → utente con account che si iscrive da solo
+  // childId → figlio senza account, iscritto dal genitore
+  // entrambi null → iscrizione anonima (legacy)
+  userId  String?
+  childId String?
 
   session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user    User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  child   Child?          @relation(fields: [childId], references: [id], onDelete: SetNull)
 
-  @@unique([sessionId, name])
   @@unique([sessionId, userId])
+  @@unique([sessionId, childId])
   @@index([sessionId, role])
   @@index([userId])
+  @@index([childId])
 }

@@ -11,16 +11,20 @@ interface Registration {
   createdAt: string | Date;
   sessionId: string;
   userId: string | null;
+  childId?: string | null;
 }
 
 interface Props {
   registrations: Registration[];
   currentUserId?: string | null;
-  isStaff?: boolean; // coach o admin: può cancellare chiunque
+  linkedChildId?: string | null;   // Child.id collegato all'account dell'atleta loggato
+  parentChildIds?: string[];       // Child.id dei figli del genitore
+  childUserIds?: string[];         // userId dei figli del genitore (per reg. fatte con account proprio)
+  isStaff?: boolean;
   onUnregistered?: () => void;
 }
 
-export default function RosterByRole({ registrations, currentUserId, isStaff, onUnregistered }: Props) {
+export default function RosterByRole({ registrations, currentUserId, linkedChildId, parentChildIds = [], childUserIds = [], isStaff, onUnregistered }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { showToast } = useToast();
 
@@ -29,9 +33,14 @@ export default function RosterByRole({ registrations, currentUserId, isStaff, on
     try {
       const res = await fetch(`/api/registrations/${reg.id}`, { method: "DELETE" });
       if (res.ok) {
-        const msg = isStaff && reg.userId !== currentUserId
+        const isOwnChild =
+          (!!reg.childId && (parentChildIds.includes(reg.childId) || reg.childId === linkedChildId)) ||
+          (!!reg.userId && childUserIds.includes(reg.userId));
+        const msg = (isStaff && reg.userId !== currentUserId && !isOwnChild)
           ? `${reg.name} rimosso dall'allenamento`
-          : "Disiscrizione effettuata";
+          : isOwnChild && reg.childId !== linkedChildId
+            ? `${reg.name} disiscritto/a`
+            : "Disiscrizione effettuata";
         showToast({ message: msg, severity: "success" });
         onUnregistered?.();
       } else {
@@ -88,19 +97,26 @@ export default function RosterByRole({ registrations, currentUserId, isStaff, on
               </Box>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8, pl: 0.3 }}>
                 {group.map((reg) => {
-                  const isOwn = !!currentUserId && reg.userId === currentUserId;
-                  const canDelete = isOwn || isStaff;
+                  const isOwn = !!currentUserId && (
+                    reg.userId === currentUserId ||
+                    (!!linkedChildId && reg.childId === linkedChildId)
+                  );
+                  const isOwnChild =
+                    (!!reg.childId && parentChildIds.includes(reg.childId)) ||
+                    (!!reg.userId && childUserIds.includes(reg.userId));
+                  const highlighted = isOwn || isOwnChild;
+                  const canDelete = isOwn || isOwnChild || isStaff;
                   const isDeleting = deletingId === reg.id;
                   return (
                     <Chip
                       key={reg.id}
                       label={isDeleting ? <CircularProgress size={12} color="inherit" /> : reg.name}
                       size="small"
-                      variant={isOwn ? "filled" : "outlined"}
+                      variant={highlighted ? "filled" : "outlined"}
                       onDelete={canDelete && !isDeleting ? () => handleUnregister(reg) : undefined}
                       disabled={isDeleting}
-                      title={isOwn ? "Clicca × per disiscriverti" : isStaff ? `Rimuovi ${reg.name}` : undefined}
-                      sx={isOwn ? {
+                      title={isOwn ? "Clicca × per disiscriverti" : isOwnChild ? `Disiscrivi ${reg.name}` : isStaff ? `Rimuovi ${reg.name}` : undefined}
+                      sx={highlighted ? {
                         backgroundColor: ROLE_COLORS[role],
                         color: "#fff",
                         fontWeight: 700,
