@@ -28,7 +28,7 @@ type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRol
 
 interface RoleHistoryEntry { sportRole: number; changedAt: Date | string; }
 
-interface User {
+interface UserEntry {
   id: string;
   name: string | null;
   email: string;
@@ -45,6 +45,22 @@ interface User {
   sportRoleHistory: RoleHistoryEntry[];
 }
 
+interface ChildEntry {
+  id: string;
+  name: string;
+  sportRole: number | null;
+  sportRoleVariant: string | null;
+  gender: Gender | null;
+  birthDate: Date | string | null;
+  createdAt: Date | string;
+  parent: { name: string | null; email: string };
+  _count: { registrations: number };
+}
+
+type AdminRow =
+  | (UserEntry & { kind: "user" })
+  | (ChildEntry & { kind: "child" });
+
 interface EditState {
   sportRole: string;
   sportRoleVariant: string;
@@ -54,9 +70,17 @@ interface EditState {
 
 // ── Componente ───────────────────────────────────────────────────────────────
 
-export default function AdminUserList({ users: initialUsers }: { users: User[] }) {
-  // Dati
-  const [users, setUsers] = useState(initialUsers);
+export default function AdminUserList({
+  users: initialUsers,
+  childEntries: initialChildren,
+}: {
+  users: UserEntry[];
+  childEntries: ChildEntry[];
+}) {
+  const [rows, setRows] = useState<AdminRow[]>(() => [
+    ...initialUsers.map((u) => ({ ...u, kind: "user" as const })),
+    ...initialChildren.map((c) => ({ ...c, kind: "child" as const })),
+  ]);
 
   // Filtri
   const [search, setSearch] = useState("");
@@ -73,13 +97,16 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Dialogs
-  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editRow, setEditRow] = useState<AdminRow | null>(null);
   const [editState, setEditState] = useState<EditState>({ sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
   const [saving, setSaving] = useState(false);
-  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const { showToast } = useToast();
+
+  const userCount = rows.filter((r) => r.kind === "user").length;
+  const childCount = rows.filter((r) => r.kind === "child").length;
 
   // ── Filtro + ordinamento (memo) ────────────────────────────────────────────
 
@@ -90,26 +117,34 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
     (search ? 1 : 0);
 
   const processed = useMemo(() => {
-    let result = users;
+    let result = rows;
 
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(
-        (u) => u.name?.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
-      );
+      result = result.filter((r) => {
+        if (r.kind === "user") {
+          return r.name?.toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
+        }
+        return (
+          r.name.toLowerCase().includes(q) ||
+          r.parent.name?.toLowerCase().includes(q) ||
+          r.parent.email.toLowerCase().includes(q)
+        );
+      });
     }
     if (filterAppRoles.length > 0) {
-      result = result.filter((u) => filterAppRoles.includes(u.appRole));
+      // I figli senza account non hanno appRole — vengono esclusi quando si filtra per ruolo
+      result = result.filter((r) => r.kind === "user" && filterAppRoles.includes(r.appRole));
     }
     if (filterSportRole === "none") {
-      result = result.filter((u) => !u.sportRole);
+      result = result.filter((r) => !r.sportRole);
     } else if (filterSportRole) {
-      result = result.filter((u) => u.sportRole === parseInt(filterSportRole));
+      result = result.filter((r) => r.sportRole === parseInt(filterSportRole));
     }
     if (filterGender === "none") {
-      result = result.filter((u) => !u.gender);
+      result = result.filter((r) => !r.gender);
     } else if (filterGender) {
-      result = result.filter((u) => u.gender === filterGender);
+      result = result.filter((r) => r.gender === filterGender);
     }
 
     return [...result].sort((a, b) => {
@@ -127,13 +162,16 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
         case "registrations":
           cmp = a._count.registrations - b._count.registrations;
           break;
-        case "appRole":
-          cmp = ROLE_HIERARCHY[a.appRole] - ROLE_HIERARCHY[b.appRole];
+        case "appRole": {
+          const aRole = a.kind === "user" ? ROLE_HIERARCHY[a.appRole] : -1;
+          const bRole = b.kind === "user" ? ROLE_HIERARCHY[b.appRole] : -1;
+          cmp = aRole - bRole;
           break;
+        }
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [users, search, filterAppRoles, filterSportRole, filterGender, sortBy, sortDir]);
+  }, [rows, search, filterAppRoles, filterSportRole, filterGender, sortBy, sortDir]);
 
   const paginated = processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
@@ -171,25 +209,27 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       body: JSON.stringify({ appRole: newRole }),
     });
     if (res.ok) {
-      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, appRole: newRole } : u));
+      setRows((prev) =>
+        prev.map((r) => r.kind === "user" && r.id === userId ? { ...r, appRole: newRole } : r)
+      );
       showToast({ message: `Ruolo aggiornato a ${ROLE_LABELS_IT[newRole]}`, severity: "success" });
     } else {
       showToast({ message: "Errore aggiornamento ruolo", severity: "error" });
     }
   }
 
-  function openEdit(user: User) {
-    setEditUser(user);
+  function openEdit(row: AdminRow) {
+    setEditRow(row);
     setEditState({
-      sportRole: user.sportRole?.toString() ?? "",
-      sportRoleVariant: user.sportRoleVariant ?? "",
-      gender: user.gender ?? "",
-      birthDate: user.birthDate ? new Date(user.birthDate).toISOString().slice(0, 10) : "",
+      sportRole: row.sportRole?.toString() ?? "",
+      sportRoleVariant: row.sportRoleVariant ?? "",
+      gender: row.gender ?? "",
+      birthDate: row.birthDate ? new Date(row.birthDate).toISOString().slice(0, 10) : "",
     });
   }
 
   async function handleSaveAthleteData() {
-    if (!editUser) return;
+    if (!editRow) return;
     setSaving(true);
     const payload: Record<string, unknown> = {
       sportRole: editState.sportRole ? parseInt(editState.sportRole) : null,
@@ -197,7 +237,10 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       gender: editState.gender || null,
       birthDate: editState.birthDate || null,
     };
-    const res = await fetch(`/api/users/${editUser.id}`, {
+    const url = editRow.kind === "user"
+      ? `/api/users/${editRow.id}`
+      : `/api/children/${editRow.id}`;
+    const res = await fetch(url, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -205,33 +248,49 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
     setSaving(false);
     if (res.ok) {
       const updated = await res.json();
-      setUsers((prev) => prev.map((u) => u.id === editUser.id ? {
-        ...u,
-        sportRole: updated.sportRole,
-        sportRoleVariant: updated.sportRoleVariant,
-        gender: updated.gender,
-        birthDate: updated.birthDate,
-        sportRoleHistory:
-          updated.sportRole !== editUser.sportRole && updated.sportRole !== null
-            ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...editUser.sportRoleHistory]
-            : editUser.sportRoleHistory,
-      } : u));
+      if (editRow.kind === "user") {
+        setRows((prev) => prev.map((r) => r.id === editRow.id && r.kind === "user" ? {
+          ...r,
+          sportRole: updated.sportRole,
+          sportRoleVariant: updated.sportRoleVariant,
+          gender: updated.gender,
+          birthDate: updated.birthDate,
+          sportRoleHistory:
+            updated.sportRole !== editRow.sportRole && updated.sportRole !== null
+              ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...editRow.sportRoleHistory]
+              : editRow.sportRoleHistory,
+        } : r));
+      } else {
+        setRows((prev) => prev.map((r) => r.id === editRow.id && r.kind === "child" ? {
+          ...r,
+          sportRole: updated.sportRole,
+          sportRoleVariant: updated.sportRoleVariant,
+          gender: updated.gender,
+          birthDate: updated.birthDate,
+        } : r));
+      }
       showToast({ message: "Dati atleta aggiornati", severity: "success" });
-      setEditUser(null);
+      setEditRow(null);
     } else {
       showToast({ message: "Errore nel salvataggio", severity: "error" });
     }
   }
 
   async function handleDeleteConfirm() {
-    if (!deleteUser) return;
+    if (!deleteRow) return;
     setDeleting(true);
+    const url = deleteRow.kind === "user"
+      ? `/api/users/${deleteRow.id}`
+      : `/api/children/${deleteRow.id}`;
     try {
-      const res = await fetch(`/api/users/${deleteUser.id}`, { method: "DELETE" });
+      const res = await fetch(url, { method: "DELETE" });
       if (res.ok) {
-        setUsers((prev) => prev.filter((u) => u.id !== deleteUser.id));
-        showToast({ message: `Utente "${deleteUser.name ?? deleteUser.email}" eliminato`, severity: "success" });
-        setDeleteUser(null);
+        setRows((prev) => prev.filter((r) => r.id !== deleteRow.id));
+        const label = deleteRow.kind === "user"
+          ? `Utente "${deleteRow.name ?? deleteRow.email}" eliminato`
+          : `Figlio "${deleteRow.name}" eliminato`;
+        showToast({ message: label, severity: "success" });
+        setDeleteRow(null);
       } else {
         const data = await res.json().catch(() => ({}));
         showToast({ message: data.error ?? "Errore durante l'eliminazione", severity: "error" });
@@ -250,7 +309,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       {/* ── Barra ricerca + info ── */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
         <TextField
-          placeholder="Cerca per nome o email..."
+          placeholder="Cerca per nome, email o genitore..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
           size="small"
@@ -264,9 +323,9 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           }}
         />
         <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-          {processed.length !== users.length
-            ? `${processed.length} di ${users.length} utenti`
-            : `${users.length} utenti`}
+          {processed.length !== rows.length
+            ? `${processed.length} di ${rows.length} (${userCount} utenti + ${childCount} figli senza account)`
+            : `${userCount} utenti + ${childCount} figli senza account`}
         </Typography>
         {activeFilterCount > 0 && (
           <Button size="small" onClick={resetFilters} startIcon={
@@ -361,7 +420,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                   Utente
                 </TableSortLabel>
               </TableCell>
-              <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Email</TableCell>
+              <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Email / Genitore</TableCell>
               <TableCell>
                 <TableSortLabel
                   active={sortBy === "appRole"}
@@ -394,74 +453,100 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginated.map((user) => (
-              <TableRow key={user.id} hover>
-                {/* Utente */}
+            {paginated.map((row) => (
+              <TableRow
+                key={`${row.kind}-${row.id}`}
+                hover
+                sx={row.kind === "child" ? { bgcolor: "action.hover" } : undefined}
+              >
+                {/* Utente / Nome */}
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Avatar src={user.image ?? undefined} sx={{ width: 30, height: 30, fontSize: 13 }}>
-                      {user.name?.[0] ?? user.email[0].toUpperCase()}
+                    <Avatar
+                      src={row.kind === "user" ? (row.image ?? undefined) : undefined}
+                      sx={{ width: 30, height: 30, fontSize: 13, bgcolor: row.kind === "child" ? "grey.400" : undefined }}
+                    >
+                      {(row.name ?? "?")[0].toUpperCase()}
                     </Avatar>
-                    <Typography variant="body2" fontWeight={600} noWrap>
-                      {user.name ?? "—"}
-                    </Typography>
+                    <Box>
+                      <Typography variant="body2" fontWeight={600} noWrap>
+                        {row.name ?? "—"}
+                      </Typography>
+                      {row.kind === "child" && (
+                        <Chip
+                          label="Senza account"
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontSize: "0.63rem", height: 15, mt: 0.25 }}
+                        />
+                      )}
+                    </Box>
                   </Box>
                 </TableCell>
 
-                {/* Email */}
+                {/* Email / Genitore */}
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+                  {row.kind === "user"
+                    ? <Typography variant="body2" color="text.secondary">{row.email}</Typography>
+                    : <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
+                        Figlio di {row.parent.name ?? row.parent.email}
+                      </Typography>
+                  }
                 </TableCell>
 
                 {/* Ruolo utente */}
                 <TableCell>
-                  <Select
-                    value={user.appRole}
-                    size="small"
-                    onChange={(e) => handleRoleChange(user.id, e.target.value as AppRole)}
-                    sx={{ minWidth: 110, fontSize: "0.8rem" }}
-                    renderValue={(val) => (
-                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
-                    )}
-                  >
-                    {ALL_APP_ROLES.map((r) => (
-                      <MenuItem key={r} value={r}>
-                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
-                      </MenuItem>
-                    ))}
-                  </Select>
+                  {row.kind === "user"
+                    ? <Select
+                        value={row.appRole}
+                        size="small"
+                        onChange={(e) => handleRoleChange(row.id, e.target.value as AppRole)}
+                        sx={{ minWidth: 110, fontSize: "0.8rem" }}
+                        renderValue={(val) => (
+                          <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                        )}
+                      >
+                        {ALL_APP_ROLES.map((r) => (
+                          <MenuItem key={r} value={r}>
+                            <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    : <Typography variant="body2" color="text.disabled" sx={{ pl: 0.5 }}>—</Typography>
+                  }
                 </TableCell>
 
                 {/* Ruolo Baskin */}
                 <TableCell align="center">
-                  {user.sportRole
+                  {row.sportRole
                     ? <Chip
-                        label={sportRoleLabel(user.sportRole, user.sportRoleVariant)}
+                        label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
                         size="small"
-                        sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                        sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
                       />
-                    : user.sportRoleSuggested
+                    : row.kind === "user" && row.sportRoleSuggested
                       ? <Chip
-                          label={`${sportRoleLabel(user.sportRoleSuggested, user.sportRoleSuggestedVariant)} ?`}
+                          label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
                           size="small"
                           variant="outlined"
-                          sx={{ borderColor: ROLE_COLORS[user.sportRoleSuggested], color: ROLE_COLORS[user.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
+                          sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
                           title="Autovalutazione — da confermare"
                         />
-                      : <Typography variant="body2" color="text.disabled">—</Typography>}
+                      : <Typography variant="body2" color="text.disabled">—</Typography>
+                  }
                 </TableCell>
 
                 {/* Genere */}
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {user.gender
-                    ? <Typography variant="body2">{GENDER_LABELS_SHORT[user.gender]}</Typography>
+                  {row.gender
+                    ? <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                     : <Typography variant="body2" color="text.disabled">—</Typography>}
                 </TableCell>
 
                 {/* Iscritto il */}
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   <Typography variant="body2" color="text.secondary" noWrap>
-                    {format(new Date(user.createdAt), "d MMM yyyy", { locale: it })}
+                    {format(new Date(row.createdAt), "d MMM yyyy", { locale: it })}
                   </Typography>
                 </TableCell>
 
@@ -469,12 +554,12 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 <TableCell align="center">
                   <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                     <Tooltip title="Modifica dati atleta">
-                      <IconButton size="small" onClick={() => openEdit(user)}>
+                      <IconButton size="small" onClick={() => openEdit(row)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Elimina utente">
-                      <IconButton size="small" color="error" onClick={() => setDeleteUser(user)}>
+                    <Tooltip title={row.kind === "user" ? "Elimina utente" : "Elimina figlio"}>
+                      <IconButton size="small" color="error" onClick={() => setDeleteRow(row)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -487,7 +572,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   {activeFilterCount > 0
-                    ? "Nessun utente corrisponde ai filtri selezionati."
+                    ? "Nessun risultato corrisponde ai filtri selezionati."
                     : "Nessun utente trovato."}
                 </TableCell>
               </TableRow>
@@ -511,16 +596,23 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       />
 
       {/* ── Dialog conferma eliminazione ── */}
-      <Dialog open={!!deleteUser} onClose={() => !deleting && setDeleteUser(null)}>
-        <DialogTitle>Elimina utente</DialogTitle>
+      <Dialog open={!!deleteRow} onClose={() => !deleting && setDeleteRow(null)}>
+        <DialogTitle>
+          {deleteRow?.kind === "user" ? "Elimina utente" : "Elimina figlio"}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Sei sicuro di voler eliminare <strong>{deleteUser?.name ?? deleteUser?.email}</strong>?
-            Verranno eliminate anche tutte le iscrizioni associate. Questa azione è irreversibile.
+            Sei sicuro di voler eliminare{" "}
+            <strong>
+              {deleteRow?.kind === "user"
+                ? (deleteRow.name ?? deleteRow.email)
+                : deleteRow?.name}
+            </strong>?
+            {" "}Verranno eliminate anche tutte le iscrizioni associate. Questa azione è irreversibile.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteUser(null)} disabled={deleting}>Annulla</Button>
+          <Button onClick={() => setDeleteRow(null)} disabled={deleting}>Annulla</Button>
           <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleting}>
             {deleting ? "Eliminazione..." : "Elimina"}
           </Button>
@@ -528,9 +620,9 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
       </Dialog>
 
       {/* ── Dialog modifica atleta ── */}
-      <Dialog open={!!editUser} onClose={() => setEditUser(null)} maxWidth="xs" fullWidth>
+      <Dialog open={!!editRow} onClose={() => setEditRow(null)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
-          Dati atleta — {editUser?.name ?? editUser?.email}
+          Dati atleta — {editRow?.name ?? (editRow?.kind === "user" ? editRow.email : "")}
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
@@ -539,11 +631,11 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
               <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
                 Ruolo Baskin (1–5)
               </Typography>
-              {editUser?.sportRoleSuggested && !editUser.sportRole && (
+              {editRow?.kind === "user" && editRow.sportRoleSuggested && !editRow.sportRole && (
                 <Typography variant="caption" color="warning.main" display="block" sx={{ mb: 0.5 }}>
-                  Autovalutazione: {sportRoleLabel(editUser.sportRoleSuggested, editUser.sportRoleSuggestedVariant)}
-                  {editUser.sportRoleSuggestedVariant
-                    ? ` — ${SPORT_ROLE_VARIANT_LABELS[editUser.sportRoleSuggestedVariant] ?? ""}`
+                  Autovalutazione: {sportRoleLabel(editRow.sportRoleSuggested, editRow.sportRoleSuggestedVariant)}
+                  {editRow.sportRoleSuggestedVariant
+                    ? ` — ${SPORT_ROLE_VARIANT_LABELS[editRow.sportRoleSuggestedVariant] ?? ""}`
                     : ""}
                 </Typography>
               )}
@@ -614,8 +706,8 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
               />
             </Box>
 
-            {/* Storico ruolo */}
-            {editUser && editUser.sportRoleHistory.length > 0 && (
+            {/* Storico ruolo (solo utenti con account) */}
+            {editRow?.kind === "user" && editRow.sportRoleHistory.length > 0 && (
               <Box>
                 <Divider sx={{ mb: 1.5 }} />
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
@@ -625,7 +717,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                   </Typography>
                 </Box>
                 <Stack spacing={0.5}>
-                  {editUser.sportRoleHistory.map((h, i) => (
+                  {editRow.sportRoleHistory.map((h, i) => (
                     <Typography key={i} variant="caption" color="text.secondary">
                       {sportRoleLabel(h.sportRole)}
                       {" · "}
@@ -638,7 +730,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setEditUser(null)}>Annulla</Button>
+          <Button onClick={() => setEditRow(null)}>Annulla</Button>
           <Button variant="contained" onClick={handleSaveAthleteData} disabled={saving}>
             {saving ? "Salvataggio..." : "Salva"}
           </Button>
