@@ -12,7 +12,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import { useToast } from "@/context/ToastContext";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS, sportRoleLabel, GENDER_LABELS } from "@/lib/constants";
 import type { Gender } from "@prisma/client";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
@@ -36,7 +36,6 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = { name: "", sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" };
-const GENDER_LABELS: Record<Gender, string> = { MALE: "Maschio", FEMALE: "Femmina" };
 
 // ── Componente ────────────────────────────────────────────────────────────────
 

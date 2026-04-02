@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Grid2 as Grid, Button } from "@mui/material";
 import SessionCard from "@/components/SessionCard";
+import type { TeamsData } from "@/components/TeamDisplay";
 import SiteHeader from "@/components/SiteHeader";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -31,8 +32,7 @@ export default async function AllenamentiPage({ searchParams }: Props) {
         include: { _count: { select: { registrations: true } } },
       });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as any ?? null }));
+  const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as unknown as TeamsData | null }));
 
   const grouped = new Map<string, typeof sessions>();
   sessions.forEach((s) => {

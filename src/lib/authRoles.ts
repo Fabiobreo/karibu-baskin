@@ -16,6 +16,10 @@ export const ROLE_LABELS_IT: Record<AppRole, string> = {
   ADMIN: "Admin",
 };
 
+export const ROLE_CHIP_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
+  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
+};
+
 export function hasRole(userRole: AppRole, required: AppRole): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[required];
 }

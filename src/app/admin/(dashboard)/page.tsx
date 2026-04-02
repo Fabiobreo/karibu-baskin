@@ -13,6 +13,7 @@ import AdminSessionsPanel from "@/components/AdminSessionsPanel";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 
 export const revalidate = 0;
 
@@ -38,22 +39,6 @@ export default async function AdminPage() {
   const recentCount = await prisma.user.count({
     where: { createdAt: { gte: thirtyDaysAgo } },
   });
-
-  const APP_ROLE_LABELS: Record<string, string> = {
-    GUEST: "Ospite",
-    ATHLETE: "Atleta",
-    PARENT: "Genitore",
-    COACH: "Allenatore",
-    ADMIN: "Admin",
-  };
-
-  const APP_ROLE_COLORS: Record<string, "default" | "warning" | "info" | "success" | "error"> = {
-    GUEST: "default",
-    ATHLETE: "info",
-    PARENT: "success",
-    COACH: "warning",
-    ADMIN: "error",
-  };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -127,9 +112,9 @@ export default async function AdminPage() {
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={APP_ROLE_LABELS[user.appRole] ?? user.appRole}
+                    label={ROLE_LABELS_IT[user.appRole] ?? user.appRole}
                     size="small"
-                    color={APP_ROLE_COLORS[user.appRole] ?? "default"}
+                    color={ROLE_CHIP_COLORS[user.appRole] ?? "default"}
                     sx={{ fontWeight: 600 }}
                   />
                 </TableCell>

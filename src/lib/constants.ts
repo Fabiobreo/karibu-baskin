@@ -1,3 +1,8 @@
+import type { Gender } from "@prisma/client";
+
+export const GENDER_LABELS: Record<Gender, string> = { MALE: "Maschio", FEMALE: "Femmina" };
+export const GENDER_LABELS_SHORT: Record<Gender, string> = { MALE: "M", FEMALE: "F" };
+
 export const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",
   2: "Ruolo 2",

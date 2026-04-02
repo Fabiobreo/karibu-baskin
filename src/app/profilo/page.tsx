@@ -7,8 +7,8 @@ import {
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
-import { ROLE_LABELS, ROLE_COLORS } from "@/lib/constants";
-import type { AppRole, Gender } from "@prisma/client";
+import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS } from "@/lib/constants";
+import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import { format } from "date-fns";
@@ -22,11 +22,6 @@ const APP_ROLE_CHIP_COLOR: Record<AppRole, "default" | "primary" | "success" | "
   PARENT: "success",
   COACH: "warning",
   ADMIN: "error",
-};
-
-const GENDER_LABELS: Record<Gender, string> = {
-  MALE: "Maschio",
-  FEMALE: "Femmina",
 };
 
 export default async function ProfiloPage() {

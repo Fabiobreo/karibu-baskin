@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import SessionCard from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
+import type { TeamsData } from "@/components/TeamDisplay";
 import HeroSection from "@/components/HeroSection";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -21,8 +22,7 @@ export default async function HomePage() {
     include: { _count: { select: { registrations: true } } },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as any ?? null }));
+  const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as unknown as TeamsData | null }));
 
   // Raggruppa per giorno
   const grouped = new Map<string, typeof sessions>();

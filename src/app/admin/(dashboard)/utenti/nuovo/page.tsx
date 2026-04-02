@@ -9,12 +9,8 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AppRole, Gender } from "@prisma/client";
-import { ROLE_LABELS_IT } from "@/lib/authRoles";
+import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/constants";
-
-const APP_ROLE_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
-  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
-};
 
 export default function NuovoUtentePage() {
   const router = useRouter();
@@ -125,12 +121,12 @@ export default function NuovoUtentePage() {
                     value={form.appRole}
                     onChange={(e) => set("appRole", e.target.value)}
                     renderValue={(val) => (
-                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={APP_ROLE_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
                     )}
                   >
                     {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                       <MenuItem key={r} value={r}>
-                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={APP_ROLE_COLORS[r]} sx={{ fontWeight: 600 }} />
+                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
                       </MenuItem>
                     ))}
                   </Select>

@@ -14,21 +14,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import HistoryIcon from "@mui/icons-material/History";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import type { AppRole, Gender } from "@prisma/client";
-import { ROLE_LABELS_IT } from "@/lib/authRoles";
-import { ROLE_COLORS, SPORT_ROLE_VARIANT_LABELS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_LABELS_IT, ROLE_CHIP_COLORS, ROLE_HIERARCHY } from "@/lib/authRoles";
+import { ROLE_COLORS, SPORT_ROLE_VARIANT_LABELS, sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
 // ── Tipi ────────────────────────────────────────────────────────────────────
 
-const APP_ROLE_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
-  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
-};
-const ROLE_LEVEL: Record<AppRole, number> = {
-  GUEST: 0, ATHLETE: 1, PARENT: 2, COACH: 3, ADMIN: 4,
-};
-const GENDER_LABELS: Record<Gender, string> = { MALE: "M", FEMALE: "F" };
 const ALL_APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 
 type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRole";
@@ -135,7 +128,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
           cmp = a._count.registrations - b._count.registrations;
           break;
         case "appRole":
-          cmp = ROLE_LEVEL[a.appRole] - ROLE_LEVEL[b.appRole];
+          cmp = ROLE_HIERARCHY[a.appRole] - ROLE_HIERARCHY[b.appRole];
           break;
       }
       return sortDir === "asc" ? cmp : -cmp;
@@ -299,7 +292,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 key={role}
                 label={ROLE_LABELS_IT[role]}
                 size="small"
-                color={filterAppRoles.includes(role) ? APP_ROLE_COLORS[role] : "default"}
+                color={filterAppRoles.includes(role) ? ROLE_CHIP_COLORS[role] : "default"}
                 variant={filterAppRoles.includes(role) ? "filled" : "outlined"}
                 onClick={() => toggleAppRole(role)}
                 sx={{ cursor: "pointer", fontWeight: filterAppRoles.includes(role) ? 700 : 400 }}
@@ -428,12 +421,12 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                     onChange={(e) => handleRoleChange(user.id, e.target.value as AppRole)}
                     sx={{ minWidth: 110, fontSize: "0.8rem" }}
                     renderValue={(val) => (
-                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={APP_ROLE_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
                     )}
                   >
                     {ALL_APP_ROLES.map((r) => (
                       <MenuItem key={r} value={r}>
-                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={APP_ROLE_COLORS[r]} sx={{ fontWeight: 600 }} />
+                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
                       </MenuItem>
                     ))}
                   </Select>
@@ -461,7 +454,7 @@ export default function AdminUserList({ users: initialUsers }: { users: User[] }
                 {/* Genere */}
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   {user.gender
-                    ? <Typography variant="body2">{GENDER_LABELS[user.gender]}</Typography>
+                    ? <Typography variant="body2">{GENDER_LABELS_SHORT[user.gender]}</Typography>
                     : <Typography variant="body2" color="text.disabled">—</Typography>}
                 </TableCell>
 
