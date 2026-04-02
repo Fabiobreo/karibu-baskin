@@ -10,6 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
+import HomeIcon from "@mui/icons-material/Home";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -17,8 +18,9 @@ import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 
-const NAV_LINKS = [
-  { label: "Allenamenti", href: "/" },
+const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
+  { label: "Home", href: "/", iconOnly: true },
+  { label: "Allenamenti", href: "/allenamenti" },
   { label: "La Squadra", href: "/la-squadra" },
   { label: "Il Baskin", href: "/il-baskin" },
   { label: "Sponsor", href: "/sponsor" },
@@ -72,10 +74,12 @@ export default function SiteHeader() {
                     borderBottom: active ? "2px solid #E65100" : "2px solid transparent",
                     borderRadius: 0,
                     pb: "2px",
+                    minWidth: link.iconOnly ? 36 : undefined,
+                    px: link.iconOnly ? 1 : undefined,
                     "&:hover": { color: "#fff", backgroundColor: "transparent" },
                   }}
                 >
-                  {link.label}
+                  {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
                 </Button>
               );
             })}

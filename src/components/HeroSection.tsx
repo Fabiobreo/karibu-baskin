@@ -4,6 +4,10 @@ import { Box, Typography, Button, Container } from "@mui/material";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Link from "next/link";
 
+function scrollToAllenamenti() {
+  document.getElementById("allenamenti")?.scrollIntoView({ behavior: "smooth" });
+}
+
 export default function HeroSection() {
   return (
     <Box
@@ -48,17 +52,6 @@ export default function HeroSection() {
           alignItems: "center",
         }}
       >
-        {/* Etichetta */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <Box sx={{ width: 28, height: 2.5, bgcolor: "primary.main", borderRadius: 2 }} />
-          <Typography sx={{
-            color: "primary.main", fontWeight: 700,
-            letterSpacing: "0.12em", textTransform: "uppercase", fontSize: "0.68rem",
-          }}>
-            Montecchio Maggiore · Vicenza
-          </Typography>
-          <Box sx={{ width: 28, height: 2.5, bgcolor: "primary.main", borderRadius: 2 }} />
-        </Box>
 
         {/* Titolo */}
         <Typography
@@ -105,8 +98,7 @@ export default function HeroSection() {
         {/* CTA */}
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
           <Button
-            component="a"
-            href="#allenamenti"
+            onClick={scrollToAllenamenti}
             variant="contained"
             size="large"
             sx={{
@@ -143,9 +135,9 @@ export default function HeroSection() {
 
       {/* Freccia scroll */}
       <Box
-        component="a"
-        href="#allenamenti"
-        sx={{
+        component="button"
+        onClick={scrollToAllenamenti}
+        sx={{ background: "none", border: "none", cursor: "pointer",
           position: "absolute", bottom: 24, left: "50%",
           transform: "translateX(-50%)",
           display: "flex",
