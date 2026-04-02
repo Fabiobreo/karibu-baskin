@@ -173,10 +173,10 @@ export default function SiteHeader() {
 
       {/* Drawer mobile */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}
-        PaperProps={{ sx: { width: 240, background: "#1A1A1A", color: "#fff", display: "flex", flexDirection: "column" } }}
+        PaperProps={{ sx: { width: 260, background: "#1A1A1A", color: "#fff", display: "flex", flexDirection: "column", height: "100%" } }}
       >
-        {/* Header */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5, flexShrink: 0 }}>
+        {/* Header: titolo + chiudi */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5 }}>
           <Typography variant="subtitle2" fontWeight={700}>Menu</Typography>
           <IconButton color="inherit" onClick={() => setDrawerOpen(false)} size="small">
             <CloseIcon />
@@ -184,99 +184,92 @@ export default function SiteHeader() {
         </Box>
         <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
 
-        {/* Utente nel drawer */}
+        {/* Profilo / Accedi */}
         {user ? (
           <>
-            <ListItemButton
-              component={Link}
-              href="/profilo"
-              onClick={() => setDrawerOpen(false)}
-              sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5, flexShrink: 0 }}
-            >
-              <Avatar
-                src={user.image ?? undefined}
-                alt={user.name ?? "Utente"}
-                sx={{ width: 36, height: 36, fontSize: "0.8rem", bgcolor: "primary.main", flexShrink: 0 }}
-              >
-                {!user.image && initials}
-              </Avatar>
-              <Box sx={{ overflow: "hidden", flex: 1 }}>
-                <Typography variant="body2" fontWeight={700} noWrap>{user.name}</Typography>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }} noWrap>Il mio profilo</Typography>
+            <Link href="/profilo" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none", color: "inherit" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5, cursor: "pointer", "&:hover": { bgcolor: "rgba(255,255,255,0.06)" } }}>
+                <Avatar
+                  src={user.image ?? undefined}
+                  alt={user.name ?? "Utente"}
+                  sx={{ width: 38, height: 38, fontSize: "0.85rem", bgcolor: "primary.main", flexShrink: 0 }}
+                >
+                  {!user.image && initials}
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" fontWeight={700}>{user.name}</Typography>
+                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>Il mio profilo</Typography>
+                </Box>
               </Box>
-              <AccountCircleIcon fontSize="small" sx={{ color: "rgba(255,255,255,0.3)", flexShrink: 0 }} />
-            </ListItemButton>
+            </Link>
             <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
           </>
         ) : (
-          <Box sx={{ px: 2, py: 1.5, flexShrink: 0 }}>
-            <Button
-              component={Link}
-              href="/login"
-              fullWidth
-              variant="outlined"
-              size="small"
-              onClick={() => setDrawerOpen(false)}
-              sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}
-            >
-              Accedi con Google
-            </Button>
-          </Box>
+          <>
+            <Box sx={{ px: 2, py: 1.5 }}>
+              <Button
+                component={Link}
+                href="/login"
+                fullWidth variant="outlined" size="small"
+                onClick={() => setDrawerOpen(false)}
+                sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}
+              >
+                Accedi con Google
+              </Button>
+            </Box>
+            <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+          </>
         )}
 
-        {/* Nav links — scrollabile se necessario */}
-        <Box sx={{ overflowY: "auto", flex: 1 }}>
-          <List disablePadding>
-            {NAV_LINKS.map((link) => {
-              const active = pathname === link.href;
-              return (
-                <ListItem key={link.href} disablePadding>
-                  <ListItemButton
-                    component={Link}
-                    href={link.href}
-                    onClick={() => setDrawerOpen(false)}
-                    sx={{
-                      color: active ? "#E65100" : "rgba(255,255,255,0.85)",
-                      fontWeight: active ? 700 : 400,
-                      borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
-                    }}
-                  >
-                    <ListItemText primary={link.label} primaryTypographyProps={{ fontWeight: active ? 700 : 400 }} />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-
-            {isStaff && (
-              <>
-                <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
-                <ListItem disablePadding>
-                  <ListItemButton
-                    component={Link}
-                    href="/admin"
-                    onClick={() => setDrawerOpen(false)}
-                    sx={{ color: "#E65100", fontWeight: 700, borderLeft: "3px solid #E65100" }}
-                  >
-                    <ListItemText primary="Admin" />
-                  </ListItemButton>
-                </ListItem>
-              </>
-            )}
-          </List>
-        </Box>
+        {/* Nav links */}
+        <List disablePadding>
+          {NAV_LINKS.map((link) => {
+            const active = pathname === link.href;
+            return (
+              <ListItem key={link.href} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href={link.href}
+                  onClick={() => setDrawerOpen(false)}
+                  sx={{
+                    color: active ? "#E65100" : "rgba(255,255,255,0.85)",
+                    borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                  }}
+                >
+                  <ListItemText primary={link.label} primaryTypographyProps={{ fontWeight: active ? 700 : 400 }} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+          {isStaff && (
+            <>
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href="/admin"
+                  onClick={() => setDrawerOpen(false)}
+                  sx={{ color: "#E65100", fontWeight: 700, borderLeft: "3px solid #E65100" }}
+                >
+                  <ListItemText primary="Admin" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          )}
+        </List>
 
         {/* Esci — sempre in fondo */}
         {user && (
-          <>
-            <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", flexShrink: 0 }} />
+          <Box sx={{ mt: "auto" }}>
+            <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
             <ListItemButton
               onClick={() => { setDrawerOpen(false); signOut({ callbackUrl: "/" }); }}
-              sx={{ color: "#ef5350", py: 1.5, flexShrink: 0 }}
+              sx={{ color: "#ef5350" }}
             >
               <ListItemIcon sx={{ minWidth: 36 }}><LogoutIcon fontSize="small" sx={{ color: "#ef5350" }} /></ListItemIcon>
               <ListItemText primary="Esci" />
             </ListItemButton>
-          </>
+          </Box>
         )}
       </Drawer>
     </>
