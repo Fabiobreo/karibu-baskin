@@ -12,6 +12,9 @@ import AddIcon from "@mui/icons-material/Add";
 
 interface Props {
   onCreated: () => void;
+  showTitle?: boolean;
+  formId?: string;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 interface FieldErrors {
@@ -21,7 +24,7 @@ interface FieldErrors {
   endTime?: string;
 }
 
-export default function AdminSessionForm({ onCreated }: Props) {
+export default function AdminSessionForm({ onCreated, showTitle = true, formId, onLoadingChange }: Props) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("18:00");
@@ -49,6 +52,7 @@ export default function AdminSessionForm({ onCreated }: Props) {
     if (!validate()) return;
 
     setLoading(true);
+    onLoadingChange?.(true);
     setError(null);
 
     try {
@@ -85,14 +89,17 @@ export default function AdminSessionForm({ onCreated }: Props) {
       setError("Errore di rete, riprova");
     } finally {
       setLoading(false);
+      onLoadingChange?.(false);
     }
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit}>
-      <Typography variant="h6" gutterBottom>
-        Nuovo allenamento
-      </Typography>
+    <Box component="form" id={formId} onSubmit={handleSubmit}>
+      {showTitle && (
+        <Typography variant="h6" gutterBottom>
+          Nuovo allenamento
+        </Typography>
+      )}
 
       <TextField
         label="Titolo"
@@ -154,14 +161,16 @@ export default function AdminSessionForm({ onCreated }: Props) {
         </Alert>
       )}
 
-      <Button
-        type="submit"
-        variant="contained"
-        disabled={loading}
-        startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
-      >
-        {loading ? "Creazione..." : "Crea allenamento"}
-      </Button>
+      {!formId && (
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
+        >
+          {loading ? "Creazione..." : "Crea allenamento"}
+        </Button>
+      )}
     </Box>
   );
 }

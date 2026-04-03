@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/db";
 import {
-  Box, Typography, Paper, Divider,
-  Table, TableBody, TableCell, TableRow, Avatar, Chip,
+  Box, Typography, Paper,
+  Table, TableBody, TableCell, TableHead, TableRow, Avatar, Chip,
 } from "@mui/material";
-import PeopleIcon from "@mui/icons-material/People";
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
@@ -11,7 +10,6 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
-import AdminSessionsPanel from "@/components/AdminSessionsPanel";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
@@ -45,25 +43,25 @@ export default async function AdminPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
 
-      {/* Stat cards + navigazione */}
+      {/* Navigazione */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" }, gap: 2 }}>
-        <StatCard icon={<PeopleIcon />} label="Utenti totali" value={totalUsers} color="#1565C0" />
-        <StatCard icon={<CalendarMonthIcon />} label="Prossimi allenamenti" value={upcomingSessions} color="#2E7D32" />
         <NavCard
           href="/admin/utenti"
           icon={<PersonIcon />}
           label="Gestione Utenti"
+          stat={`${totalUsers} utenti · +${recentCount} negli ultimi 30gg`}
           badge={pendingRoleCount}
           color="#E65100"
         />
-        <StatCard
-          icon={<PersonAddIcon />}
-          label="Nuovi iscritti (30 gg)"
-          value={recentCount}
-          color={recentCount > 0 ? "#1565C0" : "#757575"}
+        <NavCard
+          href="/admin/allenamenti"
+          icon={<CalendarMonthIcon />}
+          label="Gestione Allenamenti"
+          stat={upcomingSessions > 0 ? `${upcomingSessions} ${upcomingSessions === 1 ? "prossimo" : "prossimi"}` : "Nessuno in programma"}
+          color="#00897B"
         />
-        <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Squadre Agonistiche" color="#1565C0" />
-        <NavCard href="/admin/partite" icon={<EmojiEventsIcon />} label="Partite Ufficiali" color="#2E7D32" />
+        <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Gestione Squadre" color="#1565C0" />
+        <NavCard href="/admin/partite" icon={<EmojiEventsIcon />} label="Gestione Partite" color="#2E7D32" />
       </Box>
 
       {/* Badge suggerimenti ruolo */}
@@ -102,6 +100,15 @@ export default async function AdminPage() {
           </Link>
         </Box>
         <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ pl: 0, width: 40 }} />
+              <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Ruolo</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700 }}>Baskin</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>Iscritto il</TableCell>
+            </TableRow>
+          </TableHead>
           <TableBody>
             {recentUsers.map((user) => (
               <TableRow key={user.id} hover>
@@ -156,39 +163,15 @@ export default async function AdminPage() {
         </Table>
       </Paper>
 
-      <Divider />
-
-      {/* Gestione allenamenti */}
-      <AdminSessionsPanel />
     </Box>
   );
 }
 
-function StatCard({ icon, label, value, color }: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  color: string;
-}) {
-  return (
-    <Paper elevation={2} sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, color }}>
-        {icon}
-        <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ lineHeight: 1.2 }}>
-          {label}
-        </Typography>
-      </Box>
-      <Typography variant="h4" fontWeight={800} sx={{ color }}>
-        {value}
-      </Typography>
-    </Paper>
-  );
-}
-
-function NavCard({ href, icon, label, badge, color }: {
+function NavCard({ href, icon, label, stat, badge, color }: {
   href: string;
   icon: React.ReactNode;
   label: string;
+  stat?: string;
   badge?: number;
   color: string;
 }) {
@@ -217,7 +200,12 @@ function NavCard({ href, icon, label, badge, color }: {
         <Typography variant="subtitle2" fontWeight={700} sx={{ color }}>
           {label}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
+        {stat && (
+          <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
+            {stat}
+          </Typography>
+        )}
+        <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
           Gestisci →
         </Typography>
       </Paper>

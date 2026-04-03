@@ -61,11 +61,11 @@ function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
     return { label: "Terminato", bgcolor: "rgba(255,255,255,0.18)" };
   }
 
-  const diffMs = date.getTime() - now.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffHours < 24) return { label: "Oggi!", bgcolor: "#E65100" };
+  if (diffDays === 0) return { label: "Oggi!", bgcolor: "#E65100" };
   if (diffDays === 1) return { label: "Domani", bgcolor: "#1565C0" };
   return { label: `Tra ${diffDays} giorni`, bgcolor: "#1565C0" };
 }

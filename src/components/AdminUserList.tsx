@@ -85,7 +85,7 @@ export default function AdminUserList({
   // Filtri
   const [search, setSearch] = useState("");
   const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>([]);
-  const [filterSportRole, setFilterSportRole] = useState(""); // "" | "none" | "1"–"5"
+  const [filterSportRoles, setFilterSportRoles] = useState<string[]>([]); // "none" | "1"–"5"
   const [filterGender, setFilterGender] = useState("");       // "" | "MALE" | "FEMALE" | "none"
 
   // Ordinamento
@@ -112,7 +112,7 @@ export default function AdminUserList({
 
   const activeFilterCount =
     filterAppRoles.length +
-    (filterSportRole ? 1 : 0) +
+    (filterSportRoles.length > 0 ? 1 : 0) +
     (filterGender ? 1 : 0) +
     (search ? 1 : 0);
 
@@ -136,10 +136,12 @@ export default function AdminUserList({
       // I figli senza account non hanno appRole — vengono esclusi quando si filtra per ruolo
       result = result.filter((r) => r.kind === "user" && filterAppRoles.includes(r.appRole));
     }
-    if (filterSportRole === "none") {
-      result = result.filter((r) => !r.sportRole);
-    } else if (filterSportRole) {
-      result = result.filter((r) => r.sportRole === parseInt(filterSportRole));
+    if (filterSportRoles.length > 0) {
+      result = result.filter((r) => {
+        if (filterSportRoles.includes("none") && !r.sportRole) return true;
+        if (r.sportRole && filterSportRoles.includes(r.sportRole.toString())) return true;
+        return false;
+      });
     }
     if (filterGender === "none") {
       result = result.filter((r) => !r.gender);
@@ -171,7 +173,7 @@ export default function AdminUserList({
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [rows, search, filterAppRoles, filterSportRole, filterGender, sortBy, sortDir]);
+  }, [rows, search, filterAppRoles, filterSportRoles, filterGender, sortBy, sortDir]);
 
   const paginated = processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
@@ -188,7 +190,7 @@ export default function AdminUserList({
   function resetFilters() {
     setSearch("");
     setFilterAppRoles([]);
-    setFilterSportRole("");
+    setFilterSportRoles([]);
     setFilterGender("");
     setPage(0);
   }
@@ -196,6 +198,13 @@ export default function AdminUserList({
   function toggleAppRole(role: AppRole) {
     setFilterAppRoles((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
+    );
+    setPage(0);
+  }
+
+  function toggleSportRole(val: string) {
+    setFilterSportRoles((prev) =>
+      prev.includes(val) ? prev.filter((r) => r !== val) : [...prev, val]
     );
     setPage(0);
   }
@@ -360,49 +369,57 @@ export default function AdminUserList({
           </Box>
         </Box>
 
-        {/* Ruolo Baskin + Genere */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
-              Ruolo Baskin
-            </Typography>
-            <Select
-              value={filterSportRole}
-              onChange={(e) => { setFilterSportRole(e.target.value); setPage(0); }}
+        {/* Ruolo Baskin */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+            Ruolo Baskin
+          </Typography>
+          <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+            <Chip
+              label="Non impostato"
               size="small"
-              displayEmpty
-              sx={{ minWidth: 150, fontSize: "0.82rem" }}
-            >
-              <MenuItem value="">Tutti</MenuItem>
-              <MenuItem value="none"><em>Non impostato</em></MenuItem>
-              {[1, 2, 3, 4, 5].map((r) => (
-                <MenuItem key={r} value={r.toString()}>
-                  <Chip
-                    label={sportRoleLabel(r)}
-                    size="small"
-                    sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
-                  />
-                </MenuItem>
-              ))}
-            </Select>
+              variant={filterSportRoles.includes("none") ? "filled" : "outlined"}
+              onClick={() => toggleSportRole("none")}
+              sx={{ cursor: "pointer", fontWeight: filterSportRoles.includes("none") ? 700 : 400 }}
+            />
+            {[1, 2, 3, 4, 5].map((r) => {
+              const active = filterSportRoles.includes(r.toString());
+              return (
+                <Chip
+                  key={r}
+                  label={sportRoleLabel(r)}
+                  size="small"
+                  variant={active ? "filled" : "outlined"}
+                  onClick={() => toggleSportRole(r.toString())}
+                  sx={{
+                    cursor: "pointer",
+                    fontWeight: active ? 700 : 400,
+                    bgcolor: active ? ROLE_COLORS[r] : undefined,
+                    color: active ? "#fff" : undefined,
+                    borderColor: active ? ROLE_COLORS[r] : undefined,
+                  }}
+                />
+              );
+            })}
           </Box>
+        </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="caption" color="text.secondary" fontWeight={600}>
-              Genere
-            </Typography>
-            <ToggleButtonGroup
-              value={filterGender}
-              exclusive
-              size="small"
-              onChange={(_e, val) => { setFilterGender(val ?? ""); setPage(0); }}
-            >
-              <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>Tutti</ToggleButton>
-              <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>M</ToggleButton>
-              <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>F</ToggleButton>
-              <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>N/D</ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
+        {/* Genere */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+            Genere
+          </Typography>
+          <ToggleButtonGroup
+            value={filterGender}
+            exclusive
+            size="small"
+            onChange={(_e, val) => { setFilterGender(val ?? ""); setPage(0); }}
+          >
+            <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>Tutti</ToggleButton>
+            <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>M</ToggleButton>
+            <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>F</ToggleButton>
+            <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>N/D</ToggleButton>
+          </ToggleButtonGroup>
         </Box>
       </Box>
 
