@@ -33,6 +33,7 @@ interface SessionWithCount {
   id: string;
   title: string;
   date: string | Date;
+  dateSlug: string | null;
   teams: TeamsData | null;
   _count: { registrations: number };
 }
@@ -47,7 +48,7 @@ export default function SessionCard({ session }: { session: SessionWithCount }) 
   return (
     <>
       <Card elevation={0} sx={{ position: "relative" }}>
-        <CardActionArea component={Link} href={`/allenamento/${session.id}`} sx={{ borderRadius: "14px" }}>
+        <CardActionArea href={`/allenamento/${session.dateSlug ?? session.id}`} sx={{ borderRadius: "14px" }}>
           <CardContent sx={{ p: { xs: 2, sm: 2.5 }, pb: hasTeams ? "0 !important" : undefined }}>
             <Typography
               variant="h6"

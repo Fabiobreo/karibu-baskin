@@ -7,8 +7,10 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
-  const session = await prisma.trainingSession.findUnique({
-    where: { id: sessionId },
+
+  // Prova prima per ID (CUID), poi per dateSlug (es. "2025-03-15T18:00")
+  const session = await prisma.trainingSession.findFirst({
+    where: { OR: [{ id: sessionId }, { dateSlug: sessionId }] },
     include: { _count: { select: { registrations: true } } },
   });
   if (!session) {

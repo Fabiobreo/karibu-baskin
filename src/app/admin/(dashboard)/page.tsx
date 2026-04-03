@@ -8,6 +8,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import GroupsIcon from "@mui/icons-material/Groups";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import AdminSessionsPanel from "@/components/AdminSessionsPanel";
 import { format } from "date-fns";
@@ -60,6 +62,8 @@ export default async function AdminPage() {
           value={recentCount}
           color={recentCount > 0 ? "#1565C0" : "#757575"}
         />
+        <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Squadre Agonistiche" color="#1565C0" />
+        <NavCard href="/admin/partite" icon={<EmojiEventsIcon />} label="Partite Ufficiali" color="#2E7D32" />
       </Box>
 
       {/* Badge suggerimenti ruolo */}

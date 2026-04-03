@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { title, date, endTime } = body as { title?: string; date?: string; endTime?: string };
+  const { title, date, endTime, dateSlug } = body as { title?: string; date?: string; endTime?: string; dateSlug?: string };
 
   if (!title?.trim() || !date) {
     return NextResponse.json({ error: "Titolo e data sono obbligatori" }, { status: 400 });
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       title: title.trim(),
       date: new Date(date),
       endTime: endTime ? new Date(endTime) : null,
+      ...(dateSlug ? { dateSlug } : {}),
     },
     include: { _count: { select: { registrations: true } } },
   });
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   sendPushToAll({
     title: "🏀 Nuovo allenamento",
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
-    url: `/allenamento/${session.id}`,
+    url: `/allenamento/${session.dateSlug ?? session.id}`,
   }).catch(() => {});
 
   return NextResponse.json(session, { status: 201 });

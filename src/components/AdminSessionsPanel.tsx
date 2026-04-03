@@ -9,6 +9,7 @@ interface SessionWithCount {
   title: string;
   date: string;
   endTime: string | null;
+  dateSlug: string | null;
   teams: object | null;
   _count: { registrations: number };
 }

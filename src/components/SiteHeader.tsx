@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AppBar, Toolbar, Box, Button, IconButton,
   Drawer, List, ListItem, ListItemButton,
@@ -28,17 +29,22 @@ const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
 ];
 
 export default function SiteHeader() {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  const pathnameRaw = usePathname();
+  const pathname = mounted ? pathnameRaw : null;
+
   const { data: session, status } = useSession();
 
   const user = session?.user;
   const effectiveRole = user?.appRole as AppRole | undefined;
-  const isStaff = !!effectiveRole && hasRole(effectiveRole, "COACH");
+  const isStaff = status === "authenticated" && !!effectiveRole && hasRole(effectiveRole, "COACH");
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
     : "?";
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <>
@@ -64,8 +70,7 @@ export default function SiteHeader() {
               return (
                 <Button
                   key={link.href}
-                  component={Link}
-                  href={link.href}
+                  onClick={() => router.push(link.href)}
                   size="small"
                   sx={{
                     color: active ? "#fff" : "rgba(255,255,255,0.6)",
@@ -86,10 +91,9 @@ export default function SiteHeader() {
           </Box>
 
           {/* Link Admin (solo COACH/ADMIN) */}
-          {isStaff && (
+          {status !== "loading" && isStaff && (
             <Button
-              component={Link}
-              href="/admin"
+              onClick={() => router.push("/admin")}
               size="small"
               sx={{
                 display: { xs: "none", md: "inline-flex" },
@@ -137,7 +141,7 @@ export default function SiteHeader() {
                     <Typography variant="caption" color="text.secondary" noWrap>{user.email}</Typography>
                   </Box>
                   <Divider />
-                  <MenuItem component={Link} href="/profilo" onClick={() => setMenuAnchor(null)}>
+                  <MenuItem onClick={() => { setMenuAnchor(null); router.push("/profilo"); }}>
                     <ListItemIcon><AccountCircleIcon fontSize="small" /></ListItemIcon>
                     Il mio profilo
                   </MenuItem>
@@ -149,8 +153,7 @@ export default function SiteHeader() {
               </>
             ) : (
               <Button
-                component={Link}
-                href="/login"
+                onClick={() => router.push("/login")}
                 size="small"
                 variant="outlined"
                 sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)", fontSize: "0.8rem", "&:hover": { borderColor: "#fff" } }}
@@ -208,10 +211,8 @@ export default function SiteHeader() {
           <>
             <Box sx={{ px: 2, py: 1.5 }}>
               <Button
-                component={Link}
-                href="/login"
                 fullWidth variant="outlined" size="small"
-                onClick={() => setDrawerOpen(false)}
+                onClick={() => { setDrawerOpen(false); router.push("/login"); }}
                 sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}
               >
                 Accedi con Google
@@ -228,9 +229,7 @@ export default function SiteHeader() {
             return (
               <ListItem key={link.href} disablePadding>
                 <ListItemButton
-                  component={Link}
-                  href={link.href}
-                  onClick={() => setDrawerOpen(false)}
+                  onClick={() => { setDrawerOpen(false); router.push(link.href); }}
                   sx={{
                     color: active ? "#E65100" : "rgba(255,255,255,0.85)",
                     borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
@@ -246,9 +245,7 @@ export default function SiteHeader() {
               <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
               <ListItem disablePadding>
                 <ListItemButton
-                  component={Link}
-                  href="/admin"
-                  onClick={() => setDrawerOpen(false)}
+                  onClick={() => { setDrawerOpen(false); router.push("/admin"); }}
                   sx={{ color: "#E65100", fontWeight: 700, borderLeft: "3px solid #E65100" }}
                 >
                   <ListItemText primary="Admin" />

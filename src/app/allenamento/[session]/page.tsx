@@ -1,4 +1,6 @@
 "use client";
+// Route rinominata: [sessionId] → [session]
+// Il param può essere un dateSlug (es. "2025-03-15T18:00") o un CUID (retrocompatibilità)
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import {
@@ -23,6 +25,7 @@ interface Session {
   title: string;
   date: string;
   endTime: string | null;
+  dateSlug: string | null;
   _count: { registrations: number };
 }
 
@@ -68,8 +71,11 @@ function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
 }
 
 export default function SessionPage() {
-  const { sessionId } = useParams<{ sessionId: string }>();
+  // Il param può essere dateSlug (es. "2025-03-15T18:00") o CUID (retrocompatibilità)
+  const { session: sessionParam } = useParams<{ session: string }>();
+
   const [session, setSession] = useState<Session | null>(null);
+  const [realSessionId, setRealSessionId] = useState<string>("");
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [teams, setTeams] = useState<TeamsData | null>(null);
   const [teamsLoading, setTeamsLoading] = useState(true);
@@ -92,11 +98,26 @@ export default function SessionPage() {
       .catch(() => setCurrentUser(null));
   }, []);
 
-  const loadData = useCallback(async () => {
+  // Carica iscrizioni + squadre usando il vero CUID della sessione
+  const loadSecondaryData = useCallback(async (id: string) => {
+    const [regRes, teamsRes] = await Promise.all([
+      fetch(`/api/registrations?sessionId=${id}`),
+      fetch(`/api/teams/${id}`),
+    ]);
+    if (regRes.ok) setRegistrations(await regRes.json());
+    if (teamsRes.ok) {
+      const data: TeamsData = await teamsRes.json();
+      setTeams(data.generated ? data : null);
+    }
+    setTeamsLoading(false);
+  }, []);
+
+  // Polling: ricarica tutto con il CUID reale
+  const loadAll = useCallback(async (id: string) => {
     const [sessionRes, regRes, teamsRes] = await Promise.all([
-      fetch(`/api/sessions/${sessionId}`),
-      fetch(`/api/registrations?sessionId=${sessionId}`),
-      fetch(`/api/teams/${sessionId}`),
+      fetch(`/api/sessions/${id}`),
+      fetch(`/api/registrations?sessionId=${id}`),
+      fetch(`/api/teams/${id}`),
     ]);
     if (sessionRes.ok) setSession(await sessionRes.json());
     if (regRes.ok) setRegistrations(await regRes.json());
@@ -104,23 +125,42 @@ export default function SessionPage() {
       const data: TeamsData = await teamsRes.json();
       setTeams(data.generated ? data : null);
     }
-    setLoading(false);
     setTeamsLoading(false);
-  }, [sessionId]);
+  }, []);
 
+  // Caricamento iniziale: risolve il param (slug o CUID) → real session ID
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 30000);
+    setLoading(true);
+    fetch(`/api/sessions/${encodeURIComponent(sessionParam)}`)
+      .then((res) => (res.ok ? (res.json() as Promise<Session>) : Promise.reject()))
+      .then(async (s) => {
+        setSession(s);
+        setRealSessionId(s.id);
+        await loadSecondaryData(s.id);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        setTeamsLoading(false);
+      });
+  }, [sessionParam, loadSecondaryData]);
+
+  // Polling ogni 30s con il vero CUID
+  useEffect(() => {
+    if (!realSessionId) return;
+    const interval = setInterval(() => loadAll(realSessionId), 30000);
     return () => clearInterval(interval);
-  }, [loadData]);
+  }, [realSessionId, loadAll]);
 
   const sessionDate = session ? new Date(session.date) : null;
   const sessionEnd = session?.endTime ? new Date(session.endTime) : null;
   const status = sessionDate ? getSessionStatus(sessionDate, sessionEnd) : null;
 
-  const sessionUrl = typeof window !== "undefined"
-    ? window.location.href
-    : `https://karibu-baskin.vercel.app/allenamento/${sessionId}`;
+  // Il vero CUID della sessione (per API calls); sessionParam come fallback durante il primo caricamento
+  const sessionId = realSessionId || sessionParam;
+
+  const [sessionUrl, setSessionUrl] = useState(`https://karibu-baskin.vercel.app/allenamento/${sessionParam}`);
+  useEffect(() => { setSessionUrl(window.location.href); }, []);
 
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
@@ -169,7 +209,6 @@ export default function SessionPage() {
             {/* Torna indietro */}
             <Box sx={{ mb: 2 }}>
               <Button
-                component={Link}
                 href="/"
                 startIcon={<ArrowBackIcon sx={{ fontSize: "0.95rem !important" }} />}
                 size="small"
@@ -311,7 +350,7 @@ export default function SessionPage() {
                   currentUserId={currentUser?.id ?? null}
                   parentChildIds={parentChildren.map((c) => c.id)}
                   isStaff={isStaff}
-                  onUnregistered={loadData}
+                  onUnregistered={() => loadSecondaryData(sessionId)}
                 />
               </>
             ) : (
@@ -331,7 +370,7 @@ export default function SessionPage() {
                   >
                     <RegistrationForm
                       sessionId={sessionId}
-                      onRegistered={loadData}
+                      onRegistered={() => loadSecondaryData(sessionId)}
                       registeredNames={registrations.map((r) => r.name)}
                       registeredUserIds={registrations.map((r) => r.userId)}
                       registeredChildIds={registrations.map((r) => r.childId)}
@@ -348,7 +387,7 @@ export default function SessionPage() {
                       parentChildIds={parentChildren.map((c) => c.id)}
                       childUserIds={parentChildren.map((c) => c.userId).filter((id): id is string => !!id)}
                       isStaff={isStaff}
-                      onUnregistered={loadData}
+                      onUnregistered={() => loadSecondaryData(sessionId)}
                     />
                   </Box>
                 </Box>

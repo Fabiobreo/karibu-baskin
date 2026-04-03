@@ -31,6 +31,7 @@ interface SessionWithCount {
   title: string;
   date: string | Date;
   endTime: string | Date | null;
+  dateSlug: string | null;
   teams: object | null;
   _count: { registrations: number };
 }
@@ -127,8 +128,7 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                   {/* Apri pagina allenamento */}
                   <Tooltip title="Apri pagina allenamento">
                     <IconButton
-                      component={Link}
-                      href={`/allenamento/${s.id}`}
+                      href={`/allenamento/${s.dateSlug ?? s.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       color="default"

@@ -17,7 +17,7 @@ function formatCountdown(ms: number): string {
 
 export default function Countdown({ date }: { date: string | Date }) {
   const target = new Date(date).getTime();
-  const [remaining, setRemaining] = useState(target - Date.now());
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     setRemaining(target - Date.now());
@@ -29,6 +29,8 @@ export default function Countdown({ date }: { date: string | Date }) {
     return () => clearInterval(interval);
   }, [target]);
 
+  // Non renderizzare prima del mount (evita hydration mismatch)
+  if (remaining === null) return null;
   // Non mostrare se mancano più di 7 giorni
   if (remaining > 7 * 24 * 60 * 60 * 1000) return null;
   // Non mostrare se è passato da più di un'ora

@@ -23,6 +23,18 @@ enum Gender {
   FEMALE
 }
 
+enum MatchType {
+  LEAGUE      // campionato
+  TOURNAMENT  // torneo
+  FRIENDLY    // amichevole
+}
+
+enum MatchResult {
+  WIN
+  LOSS
+  DRAW
+}
+
 // ── Auth.js v5 — modelli standard (Prisma adapter) ───────────────────────────
 
 model User {
@@ -34,6 +46,7 @@ model User {
   createdAt     DateTime  @default(now())
 
   appRole   AppRole @default(GUEST)
+  slug      String? @unique  // es. "mario-rossi" — URL slug leggibile, generato dal nome
 
   // Campi atleta
   sportRole        Int?
@@ -45,13 +58,15 @@ model User {
   sportRoleSuggested        Int?
   sportRoleSuggestedVariant String?
 
-  accounts         Account[]
-  authSessions     Session[]
-  registrations    Registration[]
-  children         Child[]             @relation("ParentChildren")
-  childAccount     Child?              @relation("ChildUser")
+  accounts          Account[]
+  authSessions      Session[]
+  registrations     Registration[]
+  children          Child[]             @relation("ParentChildren")
+  childAccount      Child?              @relation("ChildUser")
   sportRoleHistory  SportRoleHistory[]
   pushSubscriptions PushSubscription[]
+  teamMemberships   TeamMembership[]
+  matchStats        PlayerMatchStats[]
 }
 
 model Account {
@@ -131,9 +146,11 @@ model Child {
   // Collegamento opzionale a un account User (se il figlio si registra in futuro)
   userId String? @unique
 
-  parent        User           @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  user          User?          @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
-  registrations Registration[]
+  parent          User             @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  user            User?            @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
+  registrations   Registration[]
+  teamMemberships TeamMembership[]
+  matchStats      PlayerMatchStats[]
 
   @@index([parentId])
 }
@@ -149,6 +166,7 @@ model TrainingSession {
   endTime       DateTime?       // orario di fine (nullable per retrocompatibilità)
   createdAt     DateTime       @default(now())
   teams         Json?
+  dateSlug      String?        @unique  // es. "2025-03-15T18:00" — URL slug leggibile
   registrations Registration[]
 
   @@index([date])
@@ -176,6 +194,112 @@ model Registration {
   @@unique([sessionId, userId])
   @@unique([sessionId, childId])
   @@index([sessionId, role])
+  @@index([userId])
+  @@index([childId])
+}
+
+// ── Squadre agonistiche ───────────────────────────────────────────────────────
+
+model Season {
+  label     String   @id          // es. "2025-26"
+  isCurrent Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model CompetitiveTeam {
+  id           String   @id @default(cuid())
+  name         String
+  season       String   // es. "2024-25", "2025-26"
+  championship String?  // es. "Gold Ovest", "Silver Ovest"
+  color        String?  // colore hex (es. "#E65100")
+  description  String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  memberships TeamMembership[]
+  matches     OfficialMatch[]
+
+  @@index([season])
+}
+
+model TeamMembership {
+  id        String   @id @default(cuid())
+  teamId    String
+  isCaptain Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Esattamente uno dei due deve essere valorizzato
+  userId  String?
+  childId String?
+
+  team  CompetitiveTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user  User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child?          @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@unique([teamId, childId])
+  @@index([teamId])
+  @@index([userId])
+  @@index([childId])
+}
+
+// ── Squadre avversarie ────────────────────────────────────────────────────────
+
+model OpposingTeam {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  matches OfficialMatch[]
+}
+
+// ── Partite ufficiali ─────────────────────────────────────────────────────────
+
+model OfficialMatch {
+  id         String       @id @default(cuid())
+  teamId     String
+  opponentId String
+  date       DateTime
+  isHome     Boolean      @default(true)
+  venue      String?
+  matchType  MatchType    @default(LEAGUE)
+  ourScore   Int?
+  theirScore Int?
+  result     MatchResult?
+  notes      String?      @db.Text
+  createdAt  DateTime     @default(now())
+
+  team        CompetitiveTeam    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  opponent    OpposingTeam       @relation(fields: [opponentId], references: [id])
+  playerStats PlayerMatchStats[]
+
+  @@index([teamId, date])
+  @@index([opponentId])
+}
+
+// ── Statistiche giocatore per partita ────────────────────────────────────────
+
+model PlayerMatchStats {
+  id            String @id @default(cuid())
+  matchId       String
+  points        Int    @default(0)  // punti segnati
+  baskets       Int    @default(0)  // canestri
+  fouls         Int    @default(0)  // falli
+  minutesPlayed Int?
+  notes         String? @db.Text
+
+  // Esattamente uno dei due deve essere valorizzato
+  userId  String?
+  childId String?
+
+  match OfficialMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child?        @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@unique([matchId, childId])
+  @@index([matchId])
   @@index([userId])
   @@index([childId])
 }

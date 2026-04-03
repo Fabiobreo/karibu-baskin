@@ -1,5 +1,5 @@
 // Service Worker — Karibu Baskin
-const VERSION = "karibu-v4";
+const VERSION = "karibu-v6";
 const STATIC_CACHE  = `${VERSION}-static`;
 const PAGE_CACHE    = `${VERSION}-pages`;
 const API_CACHE     = `${VERSION}-api`;
@@ -141,7 +141,6 @@ function isStaticAsset(pathname) {
     pathname === "/logo.png" ||
     pathname === "/manifest.json" ||
     pathname === "/offline.html" ||
-    pathname.startsWith("/_next/static/") ||
     pathname.match(/\.(ico|png|jpg|jpeg|svg|webp|woff2?|ttf)$/)
   );
 }

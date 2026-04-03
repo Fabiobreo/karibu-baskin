@@ -55,13 +55,13 @@ export async function POST(
   // Notifica push (fire-and-forget)
   const trainingSession = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
-    select: { title: true },
+    select: { title: true, dateSlug: true },
   });
   if (trainingSession) {
     sendPushToAll({
       title: "📋 Squadre pronte!",
       body: `Le squadre per "${trainingSession.title}" sono state generate.`,
-      url: `/allenamento/${sessionId}`,
+      url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
     }).catch(() => {});
   }
 

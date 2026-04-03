@@ -61,6 +61,7 @@ export default function AdminSessionForm({ onCreated }: Props) {
           title: title.trim(),
           date: dateTime.toISOString(),
           endTime: endDateTime?.toISOString() ?? null,
+          dateSlug: `${date}${time}`.replace(/-/g, "").replace(":", ""),  // es. "202503151800"
         }),
       });
 

@@ -61,7 +61,6 @@ export default function NuovoUtentePage() {
   return (
     <Box>
       <Button
-        component={Link}
         href="/admin/utenti"
         startIcon={<ArrowBackIcon />}
         sx={{ mb: 2 }}

@@ -32,7 +32,15 @@
       "Bash(find /d/Dev/Companies/HomeProjects/karibu-baskin/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec wc -l {} +)",
       "Bash(xargs grep:*)",
       "Bash(grep -rn \"TODO\\\\|FIXME\\\\|BUG\\\\|HACK\" /d/Dev/Companies/HomeProjects/karibu-baskin/src --include=*.tsx --include=*.ts)",
-      "Bash(wc -l /d/Dev/Companies/HomeProjects/karibu-baskin/src/components/RegistrationForm.tsx /d/Dev/Companies/HomeProjects/karibu-baskin/src/components/TeamDisplay.tsx /d/Dev/Companies/HomeProjects/karibu-baskin/src/components/AdminUserList.tsx /d/Dev/Companies/HomeProjects/karibu-baskin/src/app/allenamento/[sessionId]/page.tsx)"
+      "Bash(wc -l /d/Dev/Companies/HomeProjects/karibu-baskin/src/components/RegistrationForm.tsx /d/Dev/Companies/HomeProjects/karibu-baskin/src/components/TeamDisplay.tsx /d/Dev/Companies/HomeProjects/karibu-baskin/src/components/AdminUserList.tsx /d/Dev/Companies/HomeProjects/karibu-baskin/src/app/allenamento/[sessionId]/page.tsx)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(cmd /c \"cd /d D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin && npx tsc --noEmit 2>&1\")",
+      "Bash(cd /d D:DevCompaniesHomeProjectskaribu-baskin)",
+      "Bash(cmd /c \"npx tsc --noEmit 2>&1\")",
+      "Bash(cmd /c \"dir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\admin /b 2>&1\")",
+      "Bash(cmd /c \"dir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\admin\\\\ /b 2>&1\")",
+      "Bash(cmd /c \"dir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\ /b /s 2>&1\")",
+      "Bash(find \"D:/Dev/Companies/HomeProjects/karibu-baskin/src/app/admin/\\(dashboard\\)/squadre\" -type f)"
     ]
   }
 }

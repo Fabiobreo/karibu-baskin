@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
 import { sendPushToAll } from "@/lib/webpush";
+import { generateUserSlug } from "@/lib/slugUtils";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -21,18 +22,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       // Ad ogni accesso Google aggiorna nome e foto profilo nel DB.
+      // Se l'utente non ha ancora uno slug, lo genera ora.
       // Fire-and-forget: non blocca mai il login se fallisce.
       if (account?.provider === "google" && profile && user.email) {
         const picture = (profile as { picture?: string }).picture;
-        if (picture || profile.name) {
-          prisma.user.update({
-            where: { email: user.email },
+        (async () => {
+          // Recupera l'utente per verificare se ha già uno slug
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+            select: { id: true, slug: true },
+          });
+          if (!dbUser) return;
+
+          const slugToSet = (!dbUser.slug && (profile.name ?? user.name))
+            ? await generateUserSlug(profile.name ?? user.name ?? "")
+            : null;
+
+          await prisma.user.update({
+            where: { id: dbUser.id },
             data: {
               ...(profile.name ? { name: profile.name } : {}),
-              ...(picture    ? { image: picture }       : {}),
+              ...(picture ? { image: picture } : {}),
+              ...(slugToSet ? { slug: slugToSet } : {}),
             },
-          }).catch(() => {});
-        }
+          });
+        })().catch(() => {});
       }
       return true;
     },
@@ -44,6 +58,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   events: {
     async createUser({ user }) {
+      // Genera slug per il nuovo utente
+      if (user.name && user.id) {
+        generateUserSlug(user.name)
+          .then((slug) => {
+            if (slug) {
+              return prisma.user.update({ where: { id: user.id! }, data: { slug } });
+            }
+          })
+          .catch(() => {});
+      }
       // Notifica admin quando un nuovo utente si registra
       sendPushToAll(
         { title: "👤 Nuovo utente", body: `${user.name ?? user.email} si è registrato — in attesa di conferma.`, url: "/admin/utenti" },

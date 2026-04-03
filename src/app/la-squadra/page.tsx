@@ -5,6 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarIcon from "@mui/icons-material/Star";
 import Link from "next/link";
@@ -164,6 +165,13 @@ export default function LaSquadraPage() {
               </Grid>
             ))}
           </Grid>
+          <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+            <Link href="/squadre" style={{ textDecoration: "none" }}>
+              <Button variant="outlined" endIcon={<ArrowForwardIcon />} sx={{ fontWeight: 700 }}>
+                Vedi tutte le squadre
+              </Button>
+            </Link>
+          </Box>
         </Box>
 
         <Divider sx={{ mb: 7 }} />
