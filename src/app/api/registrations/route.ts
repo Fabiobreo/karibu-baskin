@@ -43,6 +43,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
   }
 
+  const sessionEnd = trainingSession.endTime
+    ?? new Date(trainingSession.date.getTime() + 2 * 60 * 60 * 1000);
+  if (new Date() > sessionEnd) {
+    return NextResponse.json({ error: "Le iscrizioni per questo allenamento sono chiuse" }, { status: 400 });
+  }
+
   const authSession = await auth();
   const userId = authSession?.user?.id ?? null;
 

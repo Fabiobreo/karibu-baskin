@@ -93,7 +93,18 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
   const [extraSeasons, setExtraSeasons] = useState<string[]>([]);
   const [autoSeason, setAutoSeason] = useState<string>("");
   const allSeasons = Array.from(new Set([...existingSeasons, ...extraSeasons, ...(autoSeason ? [autoSeason] : [])])).sort((a, b) => b.localeCompare(a));
-  const [activeSeason, setActiveSeason] = useState<string>(existingSeasons[0] ?? "");
+  const [activeSeason, setActiveSeason] = useState<string>(
+    initialSeasons.find((s) => s.isCurrent)?.label ?? existingSeasons[0] ?? ""
+  );
+  // Sync teams + rosaTeam quando initialTeams cambia (dopo router.refresh())
+  useEffect(() => {
+    setTeams(initialTeams);
+    setRosaTeam((prev) => {
+      if (!prev) return prev;
+      return initialTeams.find((t) => t.id === prev.id) ?? prev;
+    });
+  }, [initialTeams]);
+
   // Calcola stagione corrente lato client (evita hydration mismatch con new Date())
   useEffect(() => {
     const cur = currentSeasonLabel();

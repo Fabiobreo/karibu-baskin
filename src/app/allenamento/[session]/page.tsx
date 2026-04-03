@@ -163,6 +163,9 @@ export default function SessionPage() {
   useEffect(() => { setSessionUrl(window.location.href); }, []);
 
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
+  const isEnded = sessionDate
+    ? new Date() > (sessionEnd ?? new Date(sessionDate.getTime() + 2 * 60 * 60 * 1000))
+    : false;
 
   // Iscrizioni pertinenti all'utente (sé stesso o i propri figli)
   // Include anche la registrazione via childId se l'atleta ha un account collegato a un Child
@@ -368,15 +371,26 @@ export default function SessionPage() {
                     elevation={2}
                     sx={{ p: { xs: 2, sm: 3 }, flex: "0 0 auto", width: { xs: "100%", md: 340 } }}
                   >
-                    <RegistrationForm
-                      sessionId={sessionId}
-                      onRegistered={() => loadSecondaryData(sessionId)}
-                      registeredNames={registrations.map((r) => r.name)}
-                      registeredUserIds={registrations.map((r) => r.userId)}
-                      registeredChildIds={registrations.map((r) => r.childId)}
-                      currentUser={currentUser}
-                      children={parentChildren}
-                    />
+                    {isEnded ? (
+                      <Box sx={{ textAlign: "center", py: 2 }}>
+                        <Typography variant="body1" fontWeight={600} color="text.secondary">
+                          Allenamento terminato
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                          Le iscrizioni sono chiuse.
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <RegistrationForm
+                        sessionId={sessionId}
+                        onRegistered={() => loadSecondaryData(sessionId)}
+                        registeredNames={registrations.map((r) => r.name)}
+                        registeredUserIds={registrations.map((r) => r.userId)}
+                        registeredChildIds={registrations.map((r) => r.childId)}
+                        currentUser={currentUser}
+                        children={parentChildren}
+                      />
+                    )}
                   </Paper>
 
                   <Box sx={{ flex: 1, minWidth: 0 }}>

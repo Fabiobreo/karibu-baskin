@@ -168,7 +168,7 @@ export default function LaSquadraPage() {
           <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
             <Link href="/squadre" style={{ textDecoration: "none" }}>
               <Button variant="outlined" endIcon={<ArrowForwardIcon />} sx={{ fontWeight: 700 }}>
-                Vedi tutte le squadre
+                Vedi le squadre
               </Button>
             </Link>
           </Box>
