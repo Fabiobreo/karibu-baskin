@@ -19,9 +19,6 @@ import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
-import { useNotifications } from "@/context/NotificationContext";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import Badge from "@mui/material/Badge";
 
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
@@ -41,7 +38,6 @@ export default function SiteHeader() {
   const pathname = mounted ? pathnameRaw : null;
 
   const { data: session, status } = useSession();
-  const { unreadCount } = useNotifications();
 
   const user = session?.user;
   const effectiveRole = user?.appRole as AppRole | undefined;
@@ -184,115 +180,72 @@ export default function SiteHeader() {
         </Toolbar>
       </AppBar>
 
-      {/* Drawer mobile */}
+      {/* Drawer mobile — solo pagine secondarie */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}
-        PaperProps={{ sx: { width: 260, background: "#1A1A1A", color: "#fff", display: "flex", flexDirection: "column", height: "100%" } }}
+        PaperProps={{ sx: { width: 240, background: "#1A1A1A", color: "#fff", display: "flex", flexDirection: "column", height: "100%" } }}
       >
-        {/* Header: titolo + chiudi */}
+        {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5 }}>
-          <Typography variant="subtitle2" fontWeight={700}>Menu</Typography>
+          <Typography variant="subtitle2" fontWeight={700} sx={{ color: "rgba(255,255,255,0.5)", textTransform: "uppercase", fontSize: "0.7rem", letterSpacing: "0.08em" }}>
+            Esplora
+          </Typography>
           <IconButton color="inherit" onClick={() => setDrawerOpen(false)} size="small">
-            <CloseIcon />
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+        <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
-        {/* Profilo / Accedi */}
-        {user ? (
-          <>
-            <Link href="/profilo" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none", color: "inherit" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5, cursor: "pointer", "&:hover": { bgcolor: "rgba(255,255,255,0.06)" } }}>
-                <Avatar
-                  src={user.image ?? undefined}
-                  alt={user.name ?? "Utente"}
-                  sx={{ width: 38, height: 38, fontSize: "0.85rem", bgcolor: "primary.main", flexShrink: 0 }}
-                >
-                  {!user.image && initials}
-                </Avatar>
-                <Box>
-                  <Typography variant="body2" fontWeight={700}>{user.name}</Typography>
-                  <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>Il mio profilo</Typography>
-                </Box>
-              </Box>
-            </Link>
-            <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
-          </>
-        ) : (
-          <>
-            <Box sx={{ px: 2, py: 1.5 }}>
-              <Button
-                fullWidth variant="outlined" size="small"
-                onClick={() => { setDrawerOpen(false); router.push("/login"); }}
-                sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}
-              >
-                Accedi con Google
-              </Button>
-            </Box>
-            <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
-          </>
-        )}
-
-        {/* Nav links */}
-        <List disablePadding>
-          {NAV_LINKS.map((link) => {
+        {/* Pagine secondarie (escluse quelle già nel bottom nav) */}
+        <List disablePadding sx={{ flex: 1 }}>
+          {[
+            { label: "La Squadra", href: "/la-squadra" },
+            { label: "Il Baskin", href: "/il-baskin" },
+            { label: "Sponsor", href: "/sponsor" },
+            { label: "Contatti", href: "/contatti" },
+          ].map((link) => {
             const active = pathname === link.href;
             return (
               <ListItem key={link.href} disablePadding>
                 <ListItemButton
                   onClick={() => { setDrawerOpen(false); router.push(link.href); }}
                   sx={{
-                    color: active ? "#E65100" : "rgba(255,255,255,0.85)",
+                    py: 1.25,
+                    color: active ? "#E65100" : "rgba(255,255,255,0.8)",
                     borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
                   }}
                 >
-                  <ListItemText primary={link.label} primaryTypographyProps={{ fontWeight: active ? 700 : 400 }} />
+                  <ListItemText primary={link.label} primaryTypographyProps={{ fontWeight: active ? 700 : 400, fontSize: "0.95rem" }} />
                 </ListItemButton>
               </ListItem>
             );
           })}
-          {status === "authenticated" && (
-            <>
-              <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
-              <ListItem disablePadding>
-                <ListItemButton
-                  onClick={() => { setDrawerOpen(false); router.push("/notifiche"); }}
-                  sx={{ color: "rgba(255,255,255,0.85)" }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36 }}>
-                    <Badge badgeContent={mounted ? unreadCount : 0} color="error" max={99} invisible={!mounted || unreadCount === 0}>
-                      <NotificationsIcon fontSize="small" sx={{ color: "rgba(255,255,255,0.7)" }} />
-                    </Badge>
-                  </ListItemIcon>
-                  <ListItemText primary="Notifiche" />
-                </ListItemButton>
-              </ListItem>
-            </>
-          )}
+
+          {/* Admin */}
           {isStaff && (
             <>
-              <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", my: 0.5 }} />
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => { setDrawerOpen(false); router.push("/admin"); }}
-                  sx={{ color: "#E65100", fontWeight: 700, borderLeft: "3px solid #E65100" }}
+                  sx={{ py: 1.25, color: "#E65100", borderLeft: "3px solid #E65100" }}
                 >
-                  <ListItemText primary="Admin" />
+                  <ListItemText primary="Admin" primaryTypographyProps={{ fontWeight: 700, fontSize: "0.95rem" }} />
                 </ListItemButton>
               </ListItem>
             </>
           )}
         </List>
 
-        {/* Esci — sempre in fondo */}
+        {/* Esci — in fondo, solo se loggato */}
         {user && (
-          <Box sx={{ mt: "auto" }}>
-            <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+          <Box>
+            <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
             <ListItemButton
               onClick={() => { setDrawerOpen(false); signOut({ callbackUrl: "/" }); }}
-              sx={{ color: "#ef5350" }}
+              sx={{ py: 1.25, color: "#ef5350" }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}><LogoutIcon fontSize="small" sx={{ color: "#ef5350" }} /></ListItemIcon>
-              <ListItemText primary="Esci" />
+              <ListItemIcon sx={{ minWidth: 34 }}><LogoutIcon fontSize="small" sx={{ color: "#ef5350" }} /></ListItemIcon>
+              <ListItemText primary="Esci" primaryTypographyProps={{ fontSize: "0.95rem" }} />
             </ListItemButton>
           </Box>
         )}

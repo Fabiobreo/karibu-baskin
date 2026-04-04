@@ -41,7 +41,8 @@
       "Bash(cmd /c \"dir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\admin\\\\ /b 2>&1\")",
       "Bash(cmd /c \"dir D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\api\\\\ /b /s 2>&1\")",
       "Bash(find \"D:/Dev/Companies/HomeProjects/karibu-baskin/src/app/admin/\\(dashboard\\)/squadre\" -type f)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(ls \"D:\\\\Dev\\\\Companies\\\\HomeProjects\\\\karibu-baskin\\\\src\\\\app\\\\admin\\\\\\(dashboard\\)\")"
     ]
   }
 }

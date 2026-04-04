@@ -10,6 +10,8 @@ import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import OfflineBanner from "@/components/OfflineBanner";
 import Footer from "@/components/Footer";
+import BottomNav from "@/components/BottomNav";
+import Box from "@mui/material/Box";
 import "./globals.css";
 
 const inter = Inter({
@@ -69,11 +71,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ServiceWorkerRegistrar />
             <Providers>
               <ToastProvider>
-                <main style={{ flex: 1 }}>
+                <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
                   <OfflineBanner />
                   {children}
-                </main>
+                </Box>
                 <Footer />
+                <BottomNav />
               </ToastProvider>
             </Providers>
           </ThemeProvider>

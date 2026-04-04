@@ -15,74 +15,67 @@ export default function Footer() {
         mt: "auto",
         background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
         color: "rgba(255,255,255,0.85)",
-        pt: 2,
-        pb: 1.5,
+        py: 1,
         px: 2,
       }}
     >
       <Box
         sx={{
-          maxWidth: 600,
+          maxWidth: 900,
           mx: "auto",
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
-          gap: 2,
+          gap: 1.5,
+          flexWrap: "wrap",
+          justifyContent: { xs: "center", sm: "space-between" },
         }}
       >
-        {/* Logo + testo + social affiancati */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Image src="/logo.png" alt="Karibu Baskin" width={52} height={52} style={{ objectFit: "contain" }} />
-          <Box>
-            <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-              Karibu Baskin
-            </Typography>
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.45)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Montecchio Maggiore
-            </Typography>
-          </Box>
-          {/* Social */}
-          <Box sx={{ display: "flex", gap: 0.5, ml: 0.5 }}>
-            <IconButton
-              component="a"
-              href="https://www.instagram.com/karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#E1306C" }, p: 0.75 }}
-              aria-label="Instagram"
-            >
-              <InstagramIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://www.facebook.com/karibu.baskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#1877F2" }, p: 0.75 }}
-              aria-label="Facebook"
-            >
-              <FacebookIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://youtube.com/@karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#FF0000" }, p: 0.75 }}
-              aria-label="YouTube"
-            >
-              <YouTubeIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        </Box>
-
-        <Divider sx={{ width: "100%", borderColor: "rgba(255,255,255,0.08)" }} />
-
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
-            © {year} Karibu Baskin Montecchio Maggiore
+        {/* Logo + nome */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Image src="/logo.png" alt="Karibu Baskin" width={28} height={28} style={{ objectFit: "contain" }} />
+          <Typography variant="caption" fontWeight={700} sx={{ color: "rgba(255,255,255,0.75)", letterSpacing: "0.03em" }}>
+            Karibu Baskin
           </Typography>
         </Box>
+
+        {/* Social */}
+        <Box sx={{ display: "flex", gap: 0 }}>
+          <IconButton
+            component="a"
+            href="https://www.instagram.com/karibubaskin"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#E1306C" }, p: 0.5 }}
+            aria-label="Instagram"
+          >
+            <InstagramIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton
+            component="a"
+            href="https://www.facebook.com/karibu.baskin"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#1877F2" }, p: 0.5 }}
+            aria-label="Facebook"
+          >
+            <FacebookIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <IconButton
+            component="a"
+            href="https://youtube.com/@karibubaskin"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#FF0000" }, p: 0.5 }}
+            aria-label="YouTube"
+          >
+            <YouTubeIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
+
+        {/* Copyright */}
+        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem" }}>
+          © {year} Karibu Baskin · Montecchio Maggiore
+        </Typography>
       </Box>
     </Box>
   );
