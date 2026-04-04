@@ -82,6 +82,14 @@ export async function POST(req: NextRequest) {
     // Usa il ruolo confermato del figlio se disponibile, altrimenti quello scelto dal form
     const effectiveRole = child.sportRole ?? role;
 
+    // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
+    if (!child.sportRole) {
+      await prisma.child.update({
+        where: { id: childId },
+        data: { sportRole: role, sportRoleVariant: roleVariant ?? null },
+      });
+    }
+
     try {
       const registration = await prisma.registration.create({
         data: { sessionId, name: child.name, role: effectiveRole, childId },

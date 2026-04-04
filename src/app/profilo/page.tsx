@@ -33,7 +33,10 @@ export default async function ProfiloPage() {
     include: {
       children: {
         orderBy: { createdAt: "asc" as const },
-        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true, userId: true },
+        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true, userId: true, user: { select: { email: true, image: true } } },
+      },
+      childAccount: {
+        select: { _count: { select: { registrations: true } } },
       },
       sportRoleHistory: {
         orderBy: { changedAt: "desc" },
@@ -79,7 +82,7 @@ export default async function ProfiloPage() {
               sx={{ fontWeight: 600 }}
             />
             <Chip
-              label={`${user._count.registrations} allenamenti`}
+              label={`${user._count.registrations + (user.childAccount?._count?.registrations ?? 0)} allenamenti`}
               size="small"
               variant="outlined"
               sx={{ fontWeight: 600 }}

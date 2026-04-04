@@ -22,12 +22,18 @@ export default async function AdminPage() {
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [totalUsers, recentUsers, upcomingSessions, pendingRoleCount] = await Promise.all([
+  const [totalUsers, recentUsers, recentChildren, upcomingSessions, pendingRoleCount] = await Promise.all([
     prisma.user.count(),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
       select: { id: true, name: true, email: true, image: true, appRole: true, createdAt: true, sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true },
+    }),
+    prisma.child.findMany({
+      where: { userId: null },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: { id: true, name: true, sportRole: true, sportRoleVariant: true, createdAt: true, parent: { select: { name: true, email: true } } },
     }),
     prisma.trainingSession.count({ where: { date: { gte: now } } }),
     // Utenti con ruolo suggerito ma non ancora confermato
@@ -35,6 +41,12 @@ export default async function AdminPage() {
       where: { sportRoleSuggested: { not: null }, sportRole: null },
     }),
   ]);
+
+  // Unisce utenti e figli, ordina per data e prende i 5 più recenti
+  const recentAll = [
+    ...recentUsers.map((u) => ({ ...u, kind: "user" as const })),
+    ...recentChildren.map((c) => ({ ...c, kind: "child" as const })),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
 
   const recentCount = await prisma.user.count({
     where: { createdAt: { gte: thirtyDaysAgo } },
@@ -99,60 +111,64 @@ export default async function AdminPage() {
             </Typography>
           </Link>
         </Box>
+        <Box sx={{ overflowX: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell sx={{ pl: 0, width: 40 }} />
               <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Ruolo utente</TableCell>
+              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Ruolo utente</TableCell>
               <TableCell align="center" sx={{ fontWeight: 700 }}>Ruolo Baskin</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Iscritto il</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Iscritto il</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {recentUsers.map((user) => (
-              <TableRow key={user.id} hover>
+            {recentAll.map((row) => (
+              <TableRow key={`${row.kind}-${row.id}`} hover>
                 <TableCell sx={{ width: 40, pl: 0 }}>
-                  <Avatar src={user.image ?? undefined} sx={{ width: 30, height: 30, fontSize: 13 }}>
-                    {(user.name ?? user.email)[0].toUpperCase()}
+                  <Avatar
+                    src={row.kind === "user" ? (row.image ?? undefined) : undefined}
+                    sx={{ width: 30, height: 30, fontSize: 13, bgcolor: row.kind === "child" ? "grey.400" : undefined }}
+                  >
+                    {(row.name ?? (row.kind === "user" ? row.email : "?"))[0].toUpperCase()}
                   </Avatar>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>{user.name ?? "—"}</Typography>
-                  <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                  <Typography variant="body2" fontWeight={600}>{row.name ?? "—"}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {row.kind === "user" ? row.email : `Figlio di ${row.parent.name ?? row.parent.email}`}
+                  </Typography>
                 </TableCell>
-                <TableCell>
-                  <Chip
-                    label={ROLE_LABELS_IT[user.appRole] ?? user.appRole}
-                    size="small"
-                    color={ROLE_CHIP_COLORS[user.appRole] ?? "default"}
-                    sx={{ fontWeight: 600 }}
-                  />
+                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                  {row.kind === "user"
+                    ? <Chip label={ROLE_LABELS_IT[row.appRole]} size="small" color={ROLE_CHIP_COLORS[row.appRole]} sx={{ fontWeight: 600 }} />
+                    : <Chip label="Atleta" size="small" color="primary" sx={{ fontWeight: 600 }} />
+                  }
                 </TableCell>
                 <TableCell align="center">
-                  {user.sportRole
+                  {row.sportRole
                     ? <Chip
-                        label={sportRoleLabel(user.sportRole, user.sportRoleVariant)}
+                        label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
                         size="small"
-                        sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                        sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
                       />
-                    : user.sportRoleSuggested
+                    : row.kind === "user" && row.sportRoleSuggested
                       ? <Chip
-                          label={`${sportRoleLabel(user.sportRoleSuggested, user.sportRoleSuggestedVariant)} ?`}
+                          label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
                           size="small"
                           variant="outlined"
-                          sx={{ borderColor: ROLE_COLORS[user.sportRoleSuggested], color: ROLE_COLORS[user.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
+                          sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
                         />
                       : <Typography variant="body2" color="text.disabled">—</Typography>}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align="right" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   <Typography variant="caption" color="text.secondary">
-                    {format(new Date(user.createdAt), "d MMM yyyy", { locale: it })}
+                    {format(new Date(row.createdAt), "d MMM yyyy", { locale: it })}
                   </Typography>
                 </TableCell>
               </TableRow>
             ))}
-            {recentUsers.length === 0 && (
+            {recentAll.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 3, color: "text.secondary" }}>
                   Nessun utente ancora iscritto
@@ -161,6 +177,7 @@ export default async function AdminPage() {
             )}
           </TableBody>
         </Table>
+        </Box>
       </Paper>
 
     </Box>

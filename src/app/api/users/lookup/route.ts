@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (email) {
     const user = await prisma.user.findUnique({
       where: { email: email.trim().toLowerCase() },
-      select: { id: true, name: true, gender: true, birthDate: true },
+      select: { id: true, name: true, gender: true, birthDate: true, image: true },
     });
     if (!user) {
       return NextResponse.json({ error: "Nessun utente trovato" }, { status: 404 });
@@ -27,8 +27,11 @@ export async function GET(req: NextRequest) {
 
   if (name) {
     const users = await prisma.user.findMany({
-      where: { name: { contains: name.trim(), mode: "insensitive" } },
-      select: { id: true, name: true, gender: true, birthDate: true },
+      where: {
+        name: { contains: name.trim(), mode: "insensitive" },
+        id: { not: session.user.id },
+      },
+      select: { id: true, name: true, gender: true, birthDate: true, image: true },
       take: 5,
     });
     return NextResponse.json(users);

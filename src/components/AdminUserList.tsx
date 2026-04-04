@@ -62,6 +62,7 @@ type AdminRow =
   | (ChildEntry & { kind: "child" });
 
 interface EditState {
+  appRole: string;
   sportRole: string;
   sportRoleVariant: string;
   gender: string;
@@ -98,7 +99,7 @@ export default function AdminUserList({
 
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
-  const [editState, setEditState] = useState<EditState>({ sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
+  const [editState, setEditState] = useState<EditState>({ appRole: "", sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
   const [saving, setSaving] = useState(false);
   const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -230,6 +231,7 @@ export default function AdminUserList({
   function openEdit(row: AdminRow) {
     setEditRow(row);
     setEditState({
+      appRole: row.kind === "user" ? row.appRole : "",
       sportRole: row.sportRole?.toString() ?? "",
       sportRoleVariant: row.sportRoleVariant ?? "",
       gender: row.gender ?? "",
@@ -246,6 +248,9 @@ export default function AdminUserList({
       gender: editState.gender || null,
       birthDate: editState.birthDate || null,
     };
+    if (editRow.kind === "user" && editState.appRole) {
+      payload.appRole = editState.appRole;
+    }
     const url = editRow.kind === "user"
       ? `/api/users/${editRow.id}`
       : `/api/children/${editRow.id}`;
@@ -260,6 +265,7 @@ export default function AdminUserList({
       if (editRow.kind === "user") {
         setRows((prev) => prev.map((r) => r.id === editRow.id && r.kind === "user" ? {
           ...r,
+          appRole: updated.appRole ?? r.appRole,
           sportRole: updated.sportRole,
           sportRoleVariant: updated.sportRoleVariant,
           gender: updated.gender,
@@ -424,7 +430,7 @@ export default function AdminUserList({
       </Box>
 
       {/* ── Tabella ── */}
-      <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
+      <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -529,7 +535,7 @@ export default function AdminUserList({
                           </MenuItem>
                         ))}
                       </Select>
-                    : <Typography variant="body2" color="text.disabled" sx={{ pl: 0.5 }}>—</Typography>
+                    : <Chip label="Atleta" size="small" color="primary" sx={{ fontWeight: 600 }} />
                   }
                 </TableCell>
 
@@ -570,7 +576,7 @@ export default function AdminUserList({
                 {/* Azioni */}
                 <TableCell align="center">
                   <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                    <Tooltip title="Modifica dati atleta">
+                    <Tooltip title="Modifica utente">
                       <IconButton size="small" onClick={() => openEdit(row)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
@@ -636,13 +642,36 @@ export default function AdminUserList({
         </DialogActions>
       </Dialog>
 
-      {/* ── Dialog modifica atleta ── */}
+      {/* ── Dialog modifica utente ── */}
       <Dialog open={!!editRow} onClose={() => setEditRow(null)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
-          Dati atleta — {editRow?.name ?? (editRow?.kind === "user" ? editRow.email : "")}
+          Modifica — {editRow?.name ?? (editRow?.kind === "user" ? editRow.email : "")}
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
+            {/* Ruolo utente (solo per User con account) */}
+            {editRow?.kind === "user" && (
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                  Ruolo utente
+                </Typography>
+                <Select
+                  fullWidth size="small"
+                  value={editState.appRole}
+                  onChange={(e) => setEditState((s) => ({ ...s, appRole: e.target.value }))}
+                  renderValue={(val) => (
+                    <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                  )}
+                >
+                  {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
+                    <MenuItem key={r} value={r}>
+                      <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+            )}
+
             {/* Ruolo Baskin */}
             <Box>
               <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>

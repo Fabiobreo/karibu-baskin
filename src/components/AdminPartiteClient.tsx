@@ -231,17 +231,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
               }
             </Paper>
           ) : (
-            <Paper elevation={0} variant="outlined">
+            <Paper elevation={0} variant="outlined" sx={{ overflowX: "auto" }}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Squadra</TableCell>
+                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>Tipo</TableCell>
+                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>Tipo</TableCell>
                     <TableCell sx={{ fontWeight: 700 }} align="center">Risultato</TableCell>
                     <TableCell sx={{ fontWeight: 700 }} align="center">Punteggio</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">Stats</TableCell>
+                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }} align="center">Stats</TableCell>
                     <TableCell />
                   </TableRow>
                 </TableHead>
@@ -264,7 +264,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                           </Box>
                         </Box>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                         <Chip
                           label={m.team.name}
                           size="small"
@@ -280,7 +280,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                           <Typography variant="caption" color="text.secondary">{m.opponent.city}</Typography>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Chip label={MATCH_TYPE_LABELS[m.matchType]} size="small" variant="outlined" sx={{ fontSize: "0.68rem" }} />
                       </TableCell>
                       <TableCell align="center">
@@ -298,7 +298,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                           : <Typography variant="body2" color="text.disabled">—</Typography>
                         }
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                         <Typography variant="caption" color={m._count.playerStats > 0 ? "primary" : "text.disabled"}>
                           {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
                         </Typography>

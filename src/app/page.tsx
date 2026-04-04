@@ -4,92 +4,105 @@ import {
   Typography,
   Box,
   Grid2 as Grid,
+  Paper,
 } from "@mui/material";
 import SessionCard from "@/components/SessionCard";
+import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
 import type { TeamsData } from "@/components/TeamDisplay";
 import HeroSection from "@/components/HeroSection";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 export const revalidate = 0;
 
 export default async function HomePage() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
   const rawSessions = await prisma.trainingSession.findMany({
-    where: { date: { gte: new Date(Date.now() - 1000 * 60 * 60 * 24) } },
+    where: { date: { gte: startOfToday } },
     orderBy: { date: "asc" },
     include: { _count: { select: { registrations: true } } },
   });
 
-  const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as unknown as TeamsData | null }));
+  const sessions = rawSessions.map((s) => ({
+    ...s,
+    teams: s.teams as unknown as TeamsData | null,
+  })) satisfies SessionWithCount[];
 
-  // Raggruppa per giorno
-  const grouped = new Map<string, typeof sessions>();
-  sessions.forEach((s) => {
-    const key = format(new Date(s.date), "yyyy-MM-dd");
-    if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key)!.push(s);
+  const inCorso = sessions.filter((s) => {
+    const start = new Date(s.date);
+    const end = s.endTime
+      ? new Date(s.endTime)
+      : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    return now >= start && now <= end;
   });
+
+  const upcoming = sessions.filter((s) => new Date(s.date) > now);
 
   return (
     <>
       <SiteHeader />
       <HeroSection />
 
-      {/* ── Lista allenamenti ── */}
       <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-          <CalendarTodayIcon sx={{ color: "primary.main", fontSize: 22 }} />
-          <Typography variant="h5">
-            Prossimi allenamenti
-          </Typography>
-        </Box>
 
-        {sessions.length === 0 ? (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 8,
-              px: 3,
-              borderRadius: 3,
-              backgroundColor: "background.paper",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-            }}
-          >
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              Nessun allenamento programmato
-            </Typography>
-            <Typography variant="body2" color="text.disabled">
-              Gli allenamenti futuri appariranno qui non appena verranno aggiunti.
-            </Typography>
-          </Box>
-        ) : (
-          Array.from(grouped.entries()).map(([dateKey, daySessions]) => (
-            <Box key={dateKey} mb={4}>
-              <Typography
-                variant="overline"
+        {/* ── In corso ── */}
+        {inCorso.length > 0 && (
+          <Box sx={{ mb: 4 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+              <Box
                 sx={{
-                  fontWeight: 700,
-                  color: "primary.main",
-                  letterSpacing: "0.08em",
-                  fontSize: "0.75rem",
-                  display: "block",
-                  mb: 1.5,
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  bgcolor: "#2E7D32",
+                  flexShrink: 0,
+                  "@keyframes pulse": {
+                    "0%":   { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
+                    "70%":  { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
+                    "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
+                  },
+                  animation: "pulse 1.4s ease-in-out infinite",
                 }}
-              >
-                {format(new Date(dateKey), "EEEE d MMMM yyyy", { locale: it })}
+              />
+              <Typography variant="overline" fontWeight={700} sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}>
+                In corso ({inCorso.length})
               </Typography>
-              <Grid container spacing={2}>
-                {daySessions.map((s) => (
-                  <Grid key={s.id} size={{ xs: 12, sm: 6 }}>
-                    <SessionCard session={s} />
-                  </Grid>
-                ))}
-              </Grid>
             </Box>
-          ))
+            <Grid container spacing={2}>
+              {inCorso.map((s) => (
+                <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <SessionCard session={s} live />
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         )}
+
+        {/* ── Prossimi allenamenti ── */}
+        <Typography
+          variant="overline"
+          color="text.secondary"
+          fontWeight={700}
+          sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}
+        >
+          Prossimi allenamenti ({upcoming.length})
+        </Typography>
+
+        {upcoming.length === 0 ? (
+          <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}>
+            <Typography color="text.secondary">Nessun allenamento programmato.</Typography>
+          </Paper>
+        ) : (
+          <Grid container spacing={2}>
+            {upcoming.map((s) => (
+              <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <SessionCard session={s} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
       </Container>
     </>
   );

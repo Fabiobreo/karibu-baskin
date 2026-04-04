@@ -53,6 +53,19 @@ export async function PATCH(
       return NextResponse.json({ error: "Questo account è già collegato a un altro figlio" }, { status: 409 });
     }
 
+    // Promuovi GUEST → ATHLETE e copia il ruolo Baskin se il User non ne ha già uno
+    const userUpdates: Record<string, unknown> = {};
+    if (targetUser.appRole === "GUEST") {
+      userUpdates.appRole = "ATHLETE";
+    }
+    if (child.sportRole && !targetUser.sportRole) {
+      userUpdates.sportRole = child.sportRole;
+      userUpdates.sportRoleVariant = child.sportRoleVariant ?? null;
+    }
+    if (Object.keys(userUpdates).length > 0) {
+      await prisma.user.update({ where: { id: targetUser.id }, data: userUpdates });
+    }
+
     const updated = await prisma.child.update({
       where: { id: childId },
       data: { userId: targetUser.id },

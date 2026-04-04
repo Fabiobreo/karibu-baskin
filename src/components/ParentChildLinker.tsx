@@ -2,9 +2,9 @@
 import { useState } from "react";
 import {
   Box, TextField, Button, Typography, List, ListItem,
-  ListItemText, ListItemButton, IconButton, Paper, CircularProgress, Chip,
+  ListItemText, ListItemButton, ListItemAvatar, IconButton, Paper, CircularProgress, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Select, MenuItem, Stack, Alert,
+  Select, MenuItem, Stack, Alert, Avatar,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -32,6 +32,7 @@ export interface ChildData {
   gender: Gender | null;
   birthDate: string | Date | null;
   userId: string | null;
+  user?: { email: string; image: string | null } | null;
 }
 
 interface FoundUser {
@@ -39,6 +40,7 @@ interface FoundUser {
   name: string | null;
   gender: string | null;
   birthDate: string | null;
+  image: string | null;
 }
 
 type AddStep = "choice" | "email" | "name" | "confirm" | "sent" | "create";
@@ -280,55 +282,64 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   return (
     <Box>
       {children.length > 0 ? (
-        <Paper variant="outlined" sx={{ mb: 2 }}>
-          <List disablePadding>
-            {children.map((child, idx) => (
-              <ListItem
-                key={child.id}
-                divider={idx < children.length - 1}
-                secondaryAction={
-                  <Box sx={{ display: "flex", gap: 0.5 }}>
-                    {child.userId ? (
-                      <IconButton size="small" onClick={() => handleUnlink(child)} title="Scollega account">
-                        <LinkOffIcon fontSize="small" />
-                      </IconButton>
-                    ) : (
-                      <IconButton size="small" color="primary" onClick={() => { setLinkTarget(child); setLinkEmail(""); }} title="Collega account">
-                        <LinkIcon fontSize="small" />
-                      </IconButton>
+        <Stack spacing={1.5} sx={{ mb: 2 }}>
+          {children.map((child) => (
+            <Paper key={child.id} variant="outlined" sx={{ p: 2 }}>
+              <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
+                <Avatar
+                  src={child.user?.image ?? undefined}
+                  sx={{ width: 44, height: 44, flexShrink: 0, bgcolor: child.userId ? "primary.main" : "grey.400", fontSize: 17, mt: 0.25 }}
+                >
+                  {child.name[0].toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={700} noWrap>{child.name}</Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
+                    <Chip label="Atleta" size="small" color="primary" sx={{ fontSize: "0.7rem", fontWeight: 600 }} />
+                    {child.sportRole && (
+                      <Chip label={sportRoleLabel(child.sportRole, child.sportRoleVariant)} size="small"
+                        sx={{ bgcolor: ROLE_COLORS[child.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }} />
                     )}
-                    <IconButton size="small" onClick={() => openEdit(child)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDelete(child)} disabled={deletingId === child.id}>
-                      {deletingId === child.id ? <CircularProgress size={16} /> : <DeleteIcon fontSize="small" />}
-                    </IconButton>
+                    {child.gender && (
+                      <Chip label={GENDER_LABELS[child.gender]} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                    )}
+                    {child.userId
+                      ? <Chip label="Account collegato" size="small" color="success" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                      : <Chip label="Senza account" size="small" variant="outlined" sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }} />
+                    }
                   </Box>
-                }
-              >
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                      <Typography variant="body2" fontWeight={600}>{child.name}</Typography>
-                      {child.sportRole && (
-                        <Chip label={sportRoleLabel(child.sportRole, child.sportRoleVariant)} size="small"
-                          sx={{ bgcolor: ROLE_COLORS[child.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }} />
-                      )}
-                      {child.gender && (
-                        <Typography variant="caption" color="text.secondary">{GENDER_LABELS[child.gender]}</Typography>
-                      )}
-                      {child.userId
-                        ? <Chip label="Account collegato" size="small" color="success" variant="outlined" sx={{ fontSize: "0.65rem", height: 18 }} />
-                        : <Chip label="Senza account" size="small" variant="outlined" sx={{ fontSize: "0.65rem", height: 18, color: "text.disabled", borderColor: "divider" }} />
-                      }
-                    </Box>
-                  }
-                  primaryTypographyProps={{ component: "div" }}
-                />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+                  {child.birthDate && (
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                      Nato/a il {formatBirthDate(typeof child.birthDate === "string" ? child.birthDate : (child.birthDate as Date).toISOString())}
+                    </Typography>
+                  )}
+                  {child.userId && child.user?.email && (
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25 }}>
+                      {child.user.email}
+                    </Typography>
+                  )}
+                </Box>
+                <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
+                  {child.userId ? (
+                    <IconButton size="small" onClick={() => handleUnlink(child)} title="Scollega account">
+                      <LinkOffIcon fontSize="small" />
+                    </IconButton>
+                  ) : (
+                    <IconButton size="small" color="primary" onClick={() => { setLinkTarget(child); setLinkEmail(""); }} title="Collega account">
+                      <LinkIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                  <IconButton size="small" onClick={() => openEdit(child)}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" color="error" onClick={() => handleDelete(child)} disabled={deletingId === child.id}>
+                    {deletingId === child.id ? <CircularProgress size={16} /> : <DeleteIcon fontSize="small" />}
+                  </IconButton>
+                </Box>
+              </Box>
+            </Paper>
+          ))}
+        </Stack>
       ) : (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Nessun figlio aggiunto.
@@ -344,7 +355,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         <DialogTitle sx={{ fontWeight: 700 }}>Collega account — {linkTarget?.name}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Inserisci l&apos;email dell&apos;account Google con cui {linkTarget?.name} si logga nell&apos;app.
+            Inserisci l&apos;email dell&apos;account Google con cui {linkTarget?.name}{" "}si logga nell&apos;app.
           </Typography>
           <TextField
             label="Email account" type="email" value={linkEmail}
@@ -497,6 +508,11 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   {nameResults.map((u, idx) => (
                     <ListItem key={u.id} disablePadding divider={idx < nameResults.length - 1}>
                       <ListItemButton onClick={() => { setFoundUser(u); setAddStep("confirm"); }}>
+                        <ListItemAvatar>
+                          <Avatar src={u.image ?? undefined} sx={{ width: 36, height: 36, fontSize: 15 }}>
+                            {(u.name ?? "?")[0].toUpperCase()}
+                          </Avatar>
+                        </ListItemAvatar>
                         <ListItemText
                           primary={u.name ?? "—"}
                           secondary={[
@@ -531,6 +547,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 Sei il genitore di questa persona?
               </Typography>
               <Paper variant="outlined" sx={{ p: 2.5, width: "100%" }}>
+                <Avatar
+                  src={foundUser.image ?? undefined}
+                  sx={{ width: 64, height: 64, mx: "auto", mb: 1.5, fontSize: 24 }}
+                >
+                  {(foundUser.name ?? "?")[0].toUpperCase()}
+                </Avatar>
                 <Typography variant="h6" fontWeight={700} gutterBottom>
                   {foundUser.name ?? "—"}
                 </Typography>
