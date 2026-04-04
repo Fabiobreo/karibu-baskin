@@ -8,7 +8,6 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import LaunchIcon from "@mui/icons-material/Launch";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -58,7 +57,6 @@ export default function SessionCard({
   const status = getStatus(date, endTime);
   const hasTeams = !!s.teams;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
-  const iconColor = (muted && !live) ? "text.disabled" : "rgba(255,255,255,0.7)";
 
   return (
     <>
@@ -71,6 +69,11 @@ export default function SessionCard({
           display: "flex",
           flexDirection: "column",
           opacity: muted ? 0.72 : 1,
+          position: "relative",
+          // Cursore pointer sull'intera card
+          cursor: "pointer",
+          // Hover leggero sull'intera card (non interferisce col bottone)
+          "&:hover": { boxShadow: muted ? undefined : live ? 6 : 4 },
           ...(live && {
             outline: "2px solid #2E7D32",
             "@keyframes glow": {
@@ -82,6 +85,24 @@ export default function SessionCard({
           }),
         }}
       >
+        {/* Stretched link — copre tutta la card, bucato dal bottone tramite z-index */}
+        <Box
+          component={Link}
+          href={href}
+          aria-label={s.title}
+          sx={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            // Nasconde l'outline default del link (la card stessa fa da focus ring)
+            "&:focus-visible": {
+              outline: "2px solid",
+              outlineColor: "primary.main",
+              outlineOffset: "-2px",
+            },
+          }}
+        />
+
         {/* Intestazione */}
         <Box
           sx={{
@@ -95,28 +116,16 @@ export default function SessionCard({
             display: "flex",
             alignItems: "center",
             gap: 0.5,
+            position: "relative",
+            zIndex: 1,
+            pointerEvents: "none", // il click passa al link sottostante
           }}
         >
-          <Box
-            component={Link}
-            href={href}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-              textDecoration: "none",
-              "& .launch-icon": { opacity: 0, transition: "opacity 0.15s" },
-              "&:hover .launch-icon": { opacity: 1 },
-            }}
-          >
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ color: muted ? "text.primary" : "#fff" }}>
               {s.title}
             </Typography>
-            <LaunchIcon className="launch-icon" sx={{ fontSize: 13, color: iconColor, flexShrink: 0 }} />
           </Box>
-
           <Chip
             label={status.label}
             size="small"
@@ -131,7 +140,7 @@ export default function SessionCard({
         </Box>
 
         {/* Corpo */}
-        <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75 }}>
+        <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75, position: "relative", zIndex: 1, pointerEvents: "none" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <CalendarTodayIcon sx={{ fontSize: 14, color: "text.disabled" }} />
             <Typography variant="body2" color="text.secondary" noWrap>
@@ -166,12 +175,12 @@ export default function SessionCard({
           )}
         </Box>
 
-        {/* Bottone vedi squadre */}
+        {/* Bottone vedi squadre — z-index sopra il link, intercetta il click */}
         {hasTeams && (
-          <Box sx={{ px: 2, pb: 2, pt: 0 }}>
+          <Box sx={{ px: 2, pb: 2, pt: 0, position: "relative", zIndex: 1 }}>
             <Button
               size="small"
-              variant="outlined"
+              variant="contained"
               fullWidth
               startIcon={<SportsBasketballIcon sx={{ fontSize: "0.9rem !important" }} />}
               onClick={() => setTeamsOpen(true)}

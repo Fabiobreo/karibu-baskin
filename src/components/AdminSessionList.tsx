@@ -1,9 +1,6 @@
 "use client";
 import { useState } from "react";
 import {
-  List,
-  ListItem,
-  ListItemText,
   IconButton,
   Typography,
   Dialog,
@@ -16,11 +13,15 @@ import {
   Box,
   Tooltip,
   CircularProgress,
+  Paper,
+  Stack,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import GroupsIcon from "@mui/icons-material/Groups";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
@@ -97,75 +98,94 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
 
   return (
     <>
-      <List disablePadding>
+      <Stack spacing={1.5}>
         {sessions.map((s) => {
           const isGenerating = generating === s.id;
           const hasTeams = !!s.teams;
+          const href = `/allenamento/${s.dateSlug ?? s.id}`;
+          const date = new Date(s.date);
+          const endTime = s.endTime ? new Date(s.endTime) : null;
 
           return (
-            <ListItem
+            <Paper
               key={s.id}
-              divider
-              secondaryAction={
-                <Box sx={{ display: "flex", gap: 0.5 }}>
-                  {/* Genera squadre */}
+              variant="outlined"
+              sx={{ position: "relative", cursor: "pointer", "&:hover": { boxShadow: 2 }, overflow: "hidden" }}
+            >
+              {/* Stretched link */}
+              <Box
+                component={Link}
+                href={href}
+                aria-label={s.title}
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 0,
+                  "&:focus-visible": { outline: "2px solid", outlineColor: "primary.main", outlineOffset: "-2px" },
+                }}
+              />
+
+              <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
+                {/* Info principale — pointerEvents none per passare click al link */}
+                <Box sx={{ flex: 1, minWidth: 0, pointerEvents: "none", position: "relative", zIndex: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                    <Typography variant="subtitle2" fontWeight={700} noWrap>{s.title}</Typography>
+                    {hasTeams && (
+                      <Chip icon={<CheckCircleIcon />} label="Squadre pronte" size="small" color="success" variant="outlined"
+                        sx={{ fontSize: "0.65rem", height: 20 }} />
+                    )}
+                  </Box>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <CalendarTodayIcon sx={{ fontSize: 12, color: "text.disabled" }} />
+                      <Typography variant="caption" color="text.secondary">
+                        {format(date, "EEE d MMM yyyy", { locale: it })}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <AccessTimeIcon sx={{ fontSize: 12, color: "text.disabled" }} />
+                      <Typography variant="caption" color="text.secondary">
+                        {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <GroupsIcon sx={{ fontSize: 12, color: "text.disabled" }} />
+                      <Typography variant="caption" color="text.secondary">
+                        {s._count.registrations} iscritti
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {/* Azioni — z-index sopra il link */}
+                <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
                   <Tooltip title={hasTeams ? "Rigenera squadre" : "Genera squadre"}>
                     <span>
                       <IconButton
+                        size="small"
                         color={hasTeams ? "success" : "primary"}
                         onClick={() => setTeamPickSession(s)}
                         disabled={isGenerating || s._count.registrations === 0}
                       >
                         {isGenerating
-                          ? <CircularProgress size={20} />
+                          ? <CircularProgress size={18} />
                           : hasTeams
-                          ? <CheckCircleIcon />
-                          : <SportsBasketballIcon />}
+                          ? <CheckCircleIcon fontSize="small" />
+                          : <SportsBasketballIcon fontSize="small" />}
                       </IconButton>
                     </span>
                   </Tooltip>
-
-                  {/* Apri pagina allenamento */}
-                  <Tooltip title="Apri pagina allenamento">
-                    <IconButton
-                      href={`/allenamento/${s.dateSlug ?? s.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      color="default"
-                    >
-                      <OpenInNewIcon />
-                    </IconButton>
-                  </Tooltip>
-
-                  {/* Elimina */}
                   <Tooltip title="Elimina">
-                    <IconButton edge="end" color="error" onClick={() => setToDelete(s)}>
-                      <DeleteIcon />
+                    <IconButton size="small" color="error" onClick={() => setToDelete(s)}>
+                      <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Box>
-              }
-            >
-              <ListItemText
-                primary={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={600} noWrap>
-                      {s.title}
-                    </Typography>
-                    <Chip label={`${s._count.registrations} iscritti`} size="small" />
-                  </Box>
-                }
-                secondary={
-                  format(new Date(s.date), "EEEE d MMMM yyyy", { locale: it }) +
-                  " · " +
-                  format(new Date(s.date), "HH:mm") +
-                  (s.endTime ? `–${format(new Date(s.endTime), "HH:mm")}` : "")
-                }
-              />
-            </ListItem>
+              </Box>
+            </Paper>
           );
         })}
-      </List>
+      </Stack>
 
       {/* Dialogo scelta numero squadre */}
       <Dialog open={!!teamPickSession} onClose={() => setTeamPickSession(null)} maxWidth="xs" fullWidth>

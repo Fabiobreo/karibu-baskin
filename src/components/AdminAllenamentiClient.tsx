@@ -508,7 +508,11 @@ function SessionCard({
       elevation={muted ? 0 : live ? 4 : 2}
       variant={muted ? "outlined" : "elevation"}
       sx={{
-        overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", opacity: muted ? 0.72 : 1,
+        overflow: "hidden", height: "100%", display: "flex", flexDirection: "column",
+        opacity: muted ? 0.72 : 1,
+        position: "relative",
+        cursor: "pointer",
+        "&:hover": { boxShadow: muted ? undefined : live ? 6 : 4 },
         ...(live && {
           outline: "2px solid #2E7D32",
           "@keyframes glow": {
@@ -520,11 +524,23 @@ function SessionCard({
         }),
       }}
     >
+      {/* Stretched link — copre tutta la card */}
+      <Box
+        component={Link}
+        href={href}
+        aria-label={s.title}
+        sx={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          "&:focus-visible": { outline: "2px solid", outlineColor: "primary.main", outlineOffset: "-2px" },
+        }}
+      />
+
       {/* ── Intestazione ── */}
       <Box
         sx={{
-          px: 2,
-          py: 1.5,
+          px: 2, py: 1.5,
           background: muted
             ? "rgba(0,0,0,0.04)"
             : live
@@ -533,49 +549,33 @@ function SessionCard({
           display: "flex",
           alignItems: "center",
           gap: 0.5,
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        {/* Titolo cliccabile */}
-        <Box
-          component={Link}
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            textDecoration: "none",
-            "& .launch-icon": { opacity: 0, transition: "opacity 0.15s" },
-            "&:hover .launch-icon": { opacity: 1 },
-          }}
-        >
-          <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ color: muted ? "text.primary" : "#fff" }}>
-            {s.title}
-          </Typography>
-          <LaunchIcon className="launch-icon" sx={{ fontSize: 13, color: iconColor, flexShrink: 0 }} />
-        </Box>
+        {/* Titolo — non interattivo, passa il click al link */}
+        <Typography variant="subtitle1" fontWeight={700} noWrap
+          sx={{ flex: 1, minWidth: 0, color: muted ? "text.primary" : "#fff", pointerEvents: "none" }}>
+          {s.title}
+        </Typography>
 
-        {/* Chip stato */}
+        {/* Chip stato — non interattivo */}
         <Chip
           label={status.label}
           size="small"
           sx={{
             bgcolor: muted ? "action.selected" : status.color,
             color: muted ? "text.secondary" : "#fff",
-            fontWeight: 700,
-            fontSize: "0.68rem",
-            flexShrink: 0,
+            fontWeight: 700, fontSize: "0.68rem", flexShrink: 0,
+            pointerEvents: "none",
           }}
         />
 
-        {/* Menu kebab */}
+        {/* Menu kebab — interattivo, sopra il link */}
         <IconButton
           size="small"
-          onClick={(e) => setMenuAnchor(e.currentTarget)}
-          sx={{ color: iconColor, ml: 0.25, flexShrink: 0 }}
+          onClick={(e) => { e.preventDefault(); setMenuAnchor(e.currentTarget); }}
+          sx={{ color: muted ? "text.disabled" : "rgba(255,255,255,0.7)", ml: 0.25, flexShrink: 0 }}
         >
           <MoreVertIcon fontSize="small" />
         </IconButton>
@@ -598,28 +598,27 @@ function SessionCard({
       </Box>
 
       {/* ── Corpo ── */}
-      <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+      <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75, position: "relative", zIndex: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, pointerEvents: "none" }}>
           <CalendarTodayIcon sx={{ fontSize: 14, color: "text.disabled" }} />
           <Typography variant="body2" color="text.secondary" noWrap>
             {format(date, "EEEE d MMMM yyyy", { locale: it })}
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, pointerEvents: "none" }}>
           <AccessTimeIcon sx={{ fontSize: 14, color: "text.disabled" }} />
           <Typography variant="body2" color="text.secondary">
-            {format(date, "HH:mm")}
-            {endTime && `–${format(endTime, "HH:mm")}`}
+            {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
           </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, pointerEvents: "none" }}>
           <GroupsIcon sx={{ fontSize: 14, color: "text.disabled" }} />
           <Typography variant="body2" color="text.secondary">
             {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
           </Typography>
         </Box>
 
-        {/* ── Genera / rimuovi squadre ── */}
+        {/* ── Genera / rimuovi squadre — interattivi, sopra il link ── */}
         <Box sx={{ mt: "auto", pt: 1.5 }}>
           {hasTeams ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -629,13 +628,13 @@ function SessionCard({
                 size="small"
                 color="success"
                 variant="outlined"
-                sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+                sx={{ fontWeight: 600, fontSize: "0.72rem", pointerEvents: "none" }}
               />
               <Tooltip title="Rimuovi le squadre generate">
                 <Button
                   size="small"
                   color="error"
-                  onClick={onRemoveTeams}
+                  onClick={(e) => { e.preventDefault(); onRemoveTeams(); }}
                   disabled={isRemoving}
                   sx={{ fontSize: "0.72rem", minWidth: 0, px: 1 }}
                 >
@@ -645,13 +644,13 @@ function SessionCard({
             </Box>
           ) : (
             <Button
-              variant="outlined"
+              variant="contained"
               size="small"
               fullWidth
-              startIcon={isGenerating ? <CircularProgress size={14} /> : <SportsBasketballIcon />}
-              onClick={onGenerateTeams}
+              startIcon={isGenerating ? <CircularProgress size={14} color="inherit" /> : <SportsBasketballIcon />}
+              onClick={(e) => { e.preventDefault(); onGenerateTeams(); }}
               disabled={isGenerating || s._count.registrations === 0}
-              sx={{ fontSize: "0.78rem", borderStyle: "dashed" }}
+              sx={{ fontSize: "0.78rem" }}
             >
               {isGenerating ? "Generazione..." : "Genera squadre"}
             </Button>
