@@ -104,8 +104,8 @@ export default async function AdminPage() {
             <TableRow>
               <TableCell sx={{ pl: 0, width: 40 }} />
               <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Ruolo</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 700 }}>Baskin</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Ruolo utente</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700 }}>Ruolo Baskin</TableCell>
               <TableCell align="right" sx={{ fontWeight: 700 }}>Iscritto il</TableCell>
             </TableRow>
           </TableHead>

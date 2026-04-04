@@ -194,13 +194,18 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
 
   const now = new Date();
 
-  const upcoming = [...sessions]
+  const inCorso = [...sessions]
     .filter((s) => {
+      const start = new Date(s.date);
       const end = s.endTime
         ? new Date(s.endTime)
-        : new Date(new Date(s.date).getTime() + 2 * 60 * 60 * 1000);
-      return end >= now;
+        : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+      return now >= start && now <= end;
     })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const upcoming = [...sessions]
+    .filter((s) => new Date(s.date) > now)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const past = [...sessions]
@@ -228,6 +233,44 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
           Nuovo allenamento
         </Button>
       </Box>
+
+      {/* ── In corso ── */}
+      {inCorso.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+            <Box
+              sx={{
+                width: 10, height: 10, borderRadius: "50%", bgcolor: "#2E7D32", flexShrink: 0,
+                "@keyframes pulse": {
+                  "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
+                  "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
+                  "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
+                },
+                animation: "pulse 1.4s ease-in-out infinite",
+              }}
+            />
+            <Typography variant="overline" fontWeight={700} sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}>
+              In corso ({inCorso.length})
+            </Typography>
+          </Box>
+          <Grid container spacing={2}>
+            {inCorso.map((s) => (
+              <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <SessionCard
+                  session={s}
+                  generating={generating}
+                  removingTeams={removingTeams}
+                  onDelete={() => setToDelete(s)}
+                  onEdit={() => openEdit(s)}
+                  onGenerateTeams={() => setTeamPickSession(s)}
+                  onRemoveTeams={() => removeTeams(s)}
+                  live
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
 
       {/* ── Prossimi allenamenti ── */}
       <Typography variant="overline" color="text.secondary" fontWeight={700} sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}>
@@ -437,6 +480,7 @@ function SessionCard({
   onGenerateTeams,
   onRemoveTeams,
   muted = false,
+  live = false,
 }: {
   session: SessionWithCount;
   generating: string | null;
@@ -446,6 +490,7 @@ function SessionCard({
   onGenerateTeams: () => void;
   onRemoveTeams: () => void;
   muted?: boolean;
+  live?: boolean;
 }) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -460,9 +505,20 @@ function SessionCard({
 
   return (
     <Paper
-      elevation={muted ? 0 : 2}
+      elevation={muted ? 0 : live ? 4 : 2}
       variant={muted ? "outlined" : "elevation"}
-      sx={{ overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", opacity: muted ? 0.72 : 1 }}
+      sx={{
+        overflow: "hidden", height: "100%", display: "flex", flexDirection: "column", opacity: muted ? 0.72 : 1,
+        ...(live && {
+          outline: "2px solid #2E7D32",
+          "@keyframes glow": {
+            "0%": { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
+            "50%": { boxShadow: "0 0 18px 4px rgba(46,125,50,0.25)" },
+            "100%": { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
+          },
+          animation: "glow 2.5s ease-in-out infinite",
+        }),
+      }}
     >
       {/* ── Intestazione ── */}
       <Box
@@ -471,6 +527,8 @@ function SessionCard({
           py: 1.5,
           background: muted
             ? "rgba(0,0,0,0.04)"
+            : live
+            ? "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)"
             : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
           display: "flex",
           alignItems: "center",
@@ -567,7 +625,7 @@ function SessionCard({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Chip
                 icon={<CheckCircleIcon />}
-                label="Squadre generate"
+                label="Squadre pronte!"
                 size="small"
                 color="success"
                 variant="outlined"
