@@ -67,6 +67,7 @@ model User {
   pushSubscriptions PushSubscription[]
   teamMemberships   TeamMembership[]
   matchStats        PlayerMatchStats[]
+  notificationReads AppNotificationRead[]
 }
 
 model Account {
@@ -276,6 +277,43 @@ model OfficialMatch {
 
   @@index([teamId, date])
   @@index([opponentId])
+}
+
+// ── Statistiche giocatore per partita ────────────────────────────────────────
+
+// ── Notifiche in-app ─────────────────────────────────────────────────────────
+
+enum AppNotificationType {
+  NEW_TRAINING
+  TEAMS_READY
+  MATCH_RESULT
+  SYSTEM
+}
+
+model AppNotification {
+  id        String              @id @default(cuid())
+  type      AppNotificationType
+  title     String
+  body      String
+  url       String?
+  createdAt DateTime            @default(now())
+
+  reads AppNotificationRead[]
+
+  @@index([createdAt])
+}
+
+model AppNotificationRead {
+  id             String   @id @default(cuid())
+  notificationId String
+  userId         String
+  readAt         DateTime @default(now())
+
+  notification AppNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([userId])
 }
 
 // ── Statistiche giocatore per partita ────────────────────────────────────────

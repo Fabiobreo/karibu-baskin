@@ -18,6 +18,10 @@ import { useSession, signOut } from "next-auth/react";
 import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
+import NotificationBell from "@/components/notifications/NotificationBell";
+import { useNotifications } from "@/context/NotificationContext";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import Badge from "@mui/material/Badge";
 
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
@@ -37,6 +41,7 @@ export default function SiteHeader() {
   const pathname = mounted ? pathnameRaw : null;
 
   const { data: session, status } = useSession();
+  const { unreadCount } = useNotifications();
 
   const user = session?.user;
   const effectiveRole = user?.appRole as AppRole | undefined;
@@ -112,6 +117,11 @@ export default function SiteHeader() {
           )}
 
           <Box sx={{ flex: { xs: 1, md: 0 } }} />
+
+          {/* Campanellino notifiche (desktop) */}
+          <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <NotificationBell />
+          </Box>
 
           {/* Avatar utente loggato (desktop) */}
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
@@ -240,6 +250,24 @@ export default function SiteHeader() {
               </ListItem>
             );
           })}
+          {status === "authenticated" && (
+            <>
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />
+              <ListItem disablePadding>
+                <ListItemButton
+                  onClick={() => { setDrawerOpen(false); router.push("/notifiche"); }}
+                  sx={{ color: "rgba(255,255,255,0.85)" }}
+                >
+                  <ListItemIcon sx={{ minWidth: 36 }}>
+                    <Badge badgeContent={mounted ? unreadCount : 0} color="error" max={99} invisible={!mounted || unreadCount === 0}>
+                      <NotificationsIcon fontSize="small" sx={{ color: "rgba(255,255,255,0.7)" }} />
+                    </Badge>
+                  </ListItemIcon>
+                  <ListItemText primary="Notifiche" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          )}
           {isStaff && (
             <>
               <Divider sx={{ borderColor: "rgba(255,255,255,0.1)" }} />

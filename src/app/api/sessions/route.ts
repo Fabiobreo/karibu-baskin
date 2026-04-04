@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
+import { createAppNotification } from "@/lib/appNotifications";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -43,6 +44,12 @@ export async function POST(req: NextRequest) {
     : `ore ${format(session.date, "HH:mm")}`;
   sendPushToAll({
     title: "🏀 Nuovo allenamento",
+    body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
+    url: `/allenamento/${session.dateSlug ?? session.id}`,
+  }).catch(() => {});
+  createAppNotification({
+    type: "NEW_TRAINING",
+    title: "Nuovo allenamento",
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
   }).catch(() => {});
