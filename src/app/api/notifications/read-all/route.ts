@@ -11,7 +11,10 @@ export async function PATCH() {
   const userId = session.user.id;
 
   const unread = await prisma.appNotification.findMany({
-    where: { reads: { none: { userId } } },
+    where: {
+      reads: { none: { userId } },
+      OR: [{ targetUserId: null }, { targetUserId: userId }],
+    },
     select: { id: true },
   });
 

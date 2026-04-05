@@ -4,6 +4,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { it } from "date-fns/locale";
@@ -25,6 +26,7 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "NEW_TRAINING") return <SportsBasketballIcon fontSize="small" color="primary" />;
   if (type === "TEAMS_READY") return <GroupsIcon fontSize="small" color="success" />;
   if (type === "MATCH_RESULT") return <EmojiEventsIcon fontSize="small" color="warning" />;
+  if (type === "LINK_REQUEST" || type === "LINK_RESPONSE") return <FamilyRestroomIcon fontSize="small" color="secondary" />;
   return <NotificationsIcon fontSize="small" color="action" />;
 }
 

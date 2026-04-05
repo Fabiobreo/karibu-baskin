@@ -12,6 +12,7 @@ import OfflineBanner from "@/components/OfflineBanner";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import Box from "@mui/material/Box";
+import { auth } from "@/lib/authjs";
 import "./globals.css";
 
 const inter = Inter({
@@ -61,7 +62,9 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+
   return (
     <html lang="it" className={inter.variable}>
       <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -69,7 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <ServiceWorkerRegistrar />
-            <Providers>
+            <Providers session={session}>
               <ToastProvider>
                 <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
                   <OfflineBanner />

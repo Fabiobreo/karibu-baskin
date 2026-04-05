@@ -58,16 +58,19 @@ model User {
   sportRoleSuggested        Int?
   sportRoleSuggestedVariant String?
 
-  accounts          Account[]
-  authSessions      Session[]
-  registrations     Registration[]
-  children          Child[]             @relation("ParentChildren")
-  childAccount      Child?              @relation("ChildUser")
-  sportRoleHistory  SportRoleHistory[]
-  pushSubscriptions PushSubscription[]
-  teamMemberships   TeamMembership[]
-  matchStats        PlayerMatchStats[]
-  notificationReads AppNotificationRead[]
+  accounts              Account[]
+  authSessions          Session[]
+  registrations         Registration[]
+  children              Child[]               @relation("ParentChildren")
+  childAccount          Child?                @relation("ChildUser")
+  sportRoleHistory      SportRoleHistory[]
+  pushSubscriptions     PushSubscription[]
+  teamMemberships       TeamMembership[]
+  matchStats            PlayerMatchStats[]
+  notificationReads     AppNotificationRead[]
+  targetedNotifications AppNotification[]     @relation("TargetedNotifications")
+  sentLinkRequests      LinkRequest[]         @relation("SentLinkRequests")
+  receivedLinkRequests  LinkRequest[]         @relation("ReceivedLinkRequests")
 }
 
 model Account {
@@ -152,7 +155,24 @@ model Child {
   registrations   Registration[]
   teamMemberships TeamMembership[]
   matchStats      PlayerMatchStats[]
+  linkRequests    LinkRequest[]
 
+  @@index([parentId])
+}
+
+model LinkRequest {
+  id           String            @id @default(cuid())
+  childId      String
+  parentId     String
+  targetUserId String
+  status       LinkRequestStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+
+  child      Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+  parent     User  @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
+  targetUser User  @relation("ReceivedLinkRequests", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([targetUserId, status])
   @@index([parentId])
 }
 
@@ -288,6 +308,14 @@ enum AppNotificationType {
   TEAMS_READY
   MATCH_RESULT
   SYSTEM
+  LINK_REQUEST    // richiesta collegamento genitore-figlio
+  LINK_RESPONSE   // risposta alla richiesta (accettata/rifiutata)
+}
+
+enum LinkRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model AppNotification {
@@ -298,9 +326,14 @@ model AppNotification {
   url       String?
   createdAt DateTime            @default(now())
 
+  // Se impostato, la notifica è visibile solo a quell'utente
+  targetUserId String?
+  targetUser   User?   @relation("TargetedNotifications", fields: [targetUserId], references: [id], onDelete: Cascade)
+
   reads AppNotificationRead[]
 
   @@index([createdAt])
+  @@index([targetUserId])
 }
 
 model AppNotificationRead {

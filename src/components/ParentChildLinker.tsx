@@ -33,6 +33,7 @@ export interface ChildData {
   birthDate: string | Date | null;
   userId: string | null;
   user?: { email: string; image: string | null } | null;
+  pendingRequestId?: string | null; // richiesta di collegamento in attesa
 }
 
 interface FoundUser {
@@ -73,6 +74,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   const [nameResults, setNameResults] = useState<FoundUser[]>([]);
   const [nameSearched, setNameSearched] = useState(false);
   const [foundUser, setFoundUser] = useState<FoundUser | null>(null);
+  const [confirmName, setConfirmName] = useState(""); // usato solo se foundUser.name è null
   const [searching, setSearching] = useState(false);
   const [createForm, setCreateForm] = useState({ name: "", gender: "", birthDate: "" });
   const [creating, setCreating] = useState(false);
@@ -86,6 +88,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [linkTarget, setLinkTarget] = useState<ChildData | null>(null);
   const [linkEmail, setLinkEmail] = useState("");
+  const [linkEmailError, setLinkEmailError] = useState<string | null>(null);
   const [linking, setLinking] = useState(false);
 
   const { showToast } = useToast();
@@ -100,6 +103,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
     setNameResults([]);
     setNameSearched(false);
     setFoundUser(null);
+    setConfirmName("");
     setCreateForm({ name: "", gender: "", birthDate: "" });
   }
 
@@ -115,6 +119,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       if (res.ok) {
         const user: FoundUser = await res.json();
         setFoundUser(user);
+        setConfirmName(user.name ?? "");
         setAddStep("confirm");
       } else {
         setEmailError("Nessun utente trovato con questa email.");
@@ -146,9 +151,42 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
     }
   }
 
-  function handleConfirmYes() {
-    // Placeholder: in futuro invierà una mail di conferma al figlio/genitore
-    setAddStep("sent");
+  async function handleConfirmYes() {
+    if (!foundUser || !confirmName.trim()) return;
+    // Il figlio trovato va aggiunto come Child manuale + inviata richiesta di collegamento
+    setCreating(true);
+    try {
+      // 1. Crea il Child entry per il genitore
+      const createRes = await fetch("/api/users/me/children", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: confirmName.trim() }),
+      });
+      const newChild = await createRes.json();
+      if (!createRes.ok) {
+        showToast({ message: newChild.error ?? "Errore nella creazione", severity: "error" });
+        return;
+      }
+
+      // 2. Invia richiesta di collegamento
+      const linkRes = await fetch(`/api/children/${newChild.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ linkUserId: foundUser.id }),
+      });
+      const linkData = await linkRes.json();
+      if (!linkRes.ok) {
+        showToast({ message: linkData.error ?? "Errore nell'invio richiesta", severity: "error" });
+        return;
+      }
+
+      setChildren((prev) => [...prev, { ...newChild, pendingRequestId: linkData.requestId ?? null }]);
+      setAddStep("sent");
+    } catch {
+      showToast({ message: "Errore di rete", severity: "error" });
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function handleCreateManually() {
@@ -219,6 +257,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   async function handleLink() {
     if (!linkTarget || !linkEmail.trim()) return;
     setLinking(true);
+    setLinkEmailError(null);
     try {
       const res = await fetch(`/api/children/${linkTarget.id}`, {
         method: "PATCH",
@@ -226,11 +265,23 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         body: JSON.stringify({ linkEmail: linkEmail.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast({ message: data.error ?? "Errore nel collegamento", severity: "error" }); return; }
-      setChildren((prev) => prev.map((c) => c.id === linkTarget.id ? { ...c, userId: data.userId } : c));
-      showToast({ message: `Account collegato a ${linkTarget.name}`, severity: "success" });
+      if (!res.ok) {
+        setLinkEmailError(data.error ?? "Errore nel collegamento");
+        return;
+      }
+      if (data.pending) {
+        // Richiesta inviata, in attesa di conferma
+        setChildren((prev) => prev.map((c) =>
+          c.id === linkTarget.id ? { ...c, pendingRequestId: data.requestId ?? null } : c
+        ));
+        showToast({ message: `Richiesta inviata a ${linkTarget.name}`, severity: "info" });
+      } else {
+        setChildren((prev) => prev.map((c) => c.id === linkTarget.id ? { ...c, userId: data.userId } : c));
+        showToast({ message: `Account collegato a ${linkTarget.name}`, severity: "success" });
+      }
       setLinkTarget(null);
       setLinkEmail("");
+      setLinkEmailError(null);
     } catch {
       showToast({ message: "Errore di rete", severity: "error" });
     } finally {
@@ -305,7 +356,9 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     )}
                     {child.userId
                       ? <Chip label="Account collegato" size="small" color="success" variant="outlined" sx={{ fontSize: "0.7rem" }} />
-                      : <Chip label="Senza account" size="small" variant="outlined" sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }} />
+                      : child.pendingRequestId
+                        ? <Chip label="In attesa di conferma" size="small" color="warning" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                        : <Chip label="Senza account" size="small" variant="outlined" sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }} />
                     }
                   </Box>
                   {child.birthDate && (
@@ -324,8 +377,8 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     <IconButton size="small" onClick={() => handleUnlink(child)} title="Scollega account">
                       <LinkOffIcon fontSize="small" />
                     </IconButton>
-                  ) : (
-                    <IconButton size="small" color="primary" onClick={() => { setLinkTarget(child); setLinkEmail(""); }} title="Collega account">
+                  ) : child.pendingRequestId ? null : (
+                    <IconButton size="small" color="primary" onClick={() => { setLinkTarget(child); setLinkEmail(""); setLinkEmailError(null); }} title="Collega account">
                       <LinkIcon fontSize="small" />
                     </IconButton>
                   )}
@@ -351,27 +404,32 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       </Button>
 
       {/* ── Dialog collega account ── */}
-      <Dialog open={!!linkTarget} onClose={() => { setLinkTarget(null); setLinkEmail(""); }} maxWidth="xs" fullWidth>
+      <Dialog open={!!linkTarget} onClose={() => { setLinkTarget(null); setLinkEmail(""); setLinkEmailError(null); }} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>Collega account — {linkTarget?.name}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Inserisci l&apos;email dell&apos;account Google con cui {linkTarget?.name}{" "}si logga nell&apos;app.
+            Riceverà una notifica per confermare il collegamento.
           </Typography>
           <TextField
             label="Email account" type="email" value={linkEmail}
-            onChange={(e) => setLinkEmail(e.target.value)}
+            onChange={(e) => { setLinkEmail(e.target.value); setLinkEmailError(null); }}
             fullWidth size="small" autoFocus
+            error={!!linkEmailError}
             onKeyDown={(e) => e.key === "Enter" && handleLink()}
           />
+          {linkEmailError && (
+            <Alert severity="error" sx={{ mt: 1, py: 0.5 }}>{linkEmailError}</Alert>
+          )}
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
-            Una volta collegati, il genitore può iscrivere il figlio agli allenamenti e viceversa.
+            Una volta accettato, il genitore può iscrivere il figlio agli allenamenti e viceversa.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => { setLinkTarget(null); setLinkEmail(""); }} disabled={linking}>Annulla</Button>
+          <Button onClick={() => { setLinkTarget(null); setLinkEmail(""); setLinkEmailError(null); }} disabled={linking}>Annulla</Button>
           <Button variant="contained" onClick={handleLink} disabled={linking || !linkEmail.trim()}
             startIcon={linking ? <CircularProgress size={14} color="inherit" /> : <LinkIcon />}>
-            {linking ? "Collegamento..." : "Collega"}
+            {linking ? "Invio richiesta..." : "Invia richiesta"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -507,7 +565,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 <List disablePadding sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
                   {nameResults.map((u, idx) => (
                     <ListItem key={u.id} disablePadding divider={idx < nameResults.length - 1}>
-                      <ListItemButton onClick={() => { setFoundUser(u); setAddStep("confirm"); }}>
+                      <ListItemButton onClick={() => { setFoundUser(u); setConfirmName(u.name ?? ""); setAddStep("confirm"); }}>
                         <ListItemAvatar>
                           <Avatar src={u.image ?? undefined} sx={{ width: 36, height: 36, fontSize: 15 }}>
                             {(u.name ?? "?")[0].toUpperCase()}
@@ -542,30 +600,40 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
 
           {/* Step: conferma utente trovato */}
           {addStep === "confirm" && foundUser && (
-            <Stack spacing={2} sx={{ mt: 1, alignItems: "center", textAlign: "center" }}>
-              <Typography variant="body2" color="text.secondary">
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              <Typography variant="body2" color="text.secondary" textAlign="center">
                 Sei il genitore di questa persona?
               </Typography>
-              <Paper variant="outlined" sx={{ p: 2.5, width: "100%" }}>
-                <Avatar
-                  src={foundUser.image ?? undefined}
-                  sx={{ width: 64, height: 64, mx: "auto", mb: 1.5, fontSize: 24 }}
-                >
-                  {(foundUser.name ?? "?")[0].toUpperCase()}
-                </Avatar>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  {foundUser.name ?? "—"}
-                </Typography>
-                {foundUser.gender && (
-                  <Typography variant="body2" color="text.secondary">
-                    {GENDER_LABELS[foundUser.gender as Gender]}
-                  </Typography>
-                )}
-                {foundUser.birthDate && (
-                  <Typography variant="body2" color="text.secondary">
-                    Nato/a il {formatBirthDate(foundUser.birthDate)}
-                  </Typography>
-                )}
+              <Paper variant="outlined" sx={{ p: 2.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: foundUser.gender || foundUser.birthDate ? 1.5 : 0 }}>
+                  <Avatar
+                    src={foundUser.image ?? undefined}
+                    sx={{ width: 48, height: 48, flexShrink: 0, fontSize: 20 }}
+                  >
+                    {(confirmName || "?")[0].toUpperCase()}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    {foundUser.gender && (
+                      <Typography variant="caption" color="text.secondary">
+                        {GENDER_LABELS[foundUser.gender as Gender]}
+                      </Typography>
+                    )}
+                    {foundUser.birthDate && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Nato/a il {formatBirthDate(foundUser.birthDate)}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+                <TextField
+                  label="Nome e cognome nel tuo profilo *"
+                  value={confirmName}
+                  onChange={(e) => setConfirmName(e.target.value)}
+                  fullWidth size="small"
+                  inputProps={{ maxLength: 60 }}
+                  helperText={!foundUser.name ? "Questo utente non ha un nome — inseriscilo tu." : undefined}
+                  error={!foundUser.name && !confirmName.trim()}
+                />
               </Paper>
             </Stack>
           )}
@@ -577,7 +645,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               <Typography variant="body1" fontWeight={700}>Richiesta inviata!</Typography>
               <Typography variant="body2" color="text.secondary">
                 La richiesta di collegamento è stata inviata.
-                Ti avviseremo quando <strong>{foundUser?.name}</strong> la confermerà.
+                Ti avviseremo quando <strong>{confirmName || foundUser?.name}</strong> la confermerà.
               </Typography>
             </Stack>
           )}
@@ -637,9 +705,11 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           )}
           {addStep === "confirm" && (
             <>
-              <Button onClick={() => setAddStep("choice")}>No, riprova</Button>
-              <Button variant="contained" onClick={handleConfirmYes}>
-                Sì, è mio figlio/a
+              <Button onClick={() => setAddStep("choice")} disabled={creating}>No, riprova</Button>
+              <Button variant="contained" onClick={handleConfirmYes}
+                disabled={creating || !confirmName.trim()}
+                startIcon={creating ? <CircularProgress size={14} color="inherit" /> : undefined}>
+                {creating ? "Invio richiesta..." : "Sì, è mio figlio/a"}
               </Button>
             </>
           )}

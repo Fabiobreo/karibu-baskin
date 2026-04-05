@@ -11,6 +11,7 @@ import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS } from "@/lib/constants";
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
+import LinkRequestsSection from "@/components/LinkRequestsSection";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -161,6 +162,9 @@ export default async function ProfiloPage() {
             )}
           </Paper>
         )}
+
+        {/* Richieste di collegamento in attesa */}
+        <LinkRequestsSection />
 
         {/* Notifiche */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { sendPushToUser } from "@/lib/webpush";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(
@@ -25,26 +26,39 @@ export async function PATCH(
   }
 
   const body = await req.json().catch(() => ({}));
-  const { name, sportRole, sportRoleVariant, gender, birthDate, linkEmail, unlinkAccount } = body as {
+  const { name, sportRole, sportRoleVariant, gender, birthDate, linkEmail, linkUserId, unlinkAccount } = body as {
     name?: string;
     sportRole?: number | null;
     sportRoleVariant?: string | null;
     gender?: string | null;
     birthDate?: string | null;
-    linkEmail?: string;       // collega un account esistente tramite email
-    unlinkAccount?: boolean;  // scollega l'account collegato
+    linkEmail?: string;    // cerca utente per email e invia richiesta
+    linkUserId?: string;   // invia richiesta direttamente per userId noto
+    unlinkAccount?: boolean;
   };
 
-  // ── Collega account via email ─────────────────────────────────────────────
-  if (linkEmail !== undefined) {
-    const trimmedEmail = linkEmail.trim().toLowerCase();
-    if (!trimmedEmail) {
-      return NextResponse.json({ error: "Email non valida" }, { status: 400 });
+  // ── Invia richiesta di collegamento (via email o userId) ──────────────────
+  if (linkEmail !== undefined || linkUserId !== undefined) {
+    let targetUser: { id: string; name: string | null; email: string } | null = null;
+
+    if (linkUserId) {
+      targetUser = await prisma.user.findUnique({
+        where: { id: linkUserId },
+        select: { id: true, name: true, email: true },
+      });
+    } else if (linkEmail) {
+      const trimmedEmail = linkEmail.trim().toLowerCase();
+      if (!trimmedEmail) {
+        return NextResponse.json({ error: "Email non valida" }, { status: 400 });
+      }
+      targetUser = await prisma.user.findUnique({
+        where: { email: trimmedEmail },
+        select: { id: true, name: true, email: true },
+      });
     }
 
-    const targetUser = await prisma.user.findUnique({ where: { email: trimmedEmail } });
     if (!targetUser) {
-      return NextResponse.json({ error: "Nessun utente trovato con questa email" }, { status: 404 });
+      return NextResponse.json({ error: "Nessun utente trovato" }, { status: 404 });
     }
 
     // Verifica che quell'account non sia già collegato a un altro Child
@@ -53,24 +67,51 @@ export async function PATCH(
       return NextResponse.json({ error: "Questo account è già collegato a un altro figlio" }, { status: 409 });
     }
 
-    // Promuovi GUEST → ATHLETE e copia il ruolo Baskin se il User non ne ha già uno
-    const userUpdates: Record<string, unknown> = {};
-    if (targetUser.appRole === "GUEST") {
-      userUpdates.appRole = "ATHLETE";
-    }
-    if (child.sportRole && !targetUser.sportRole) {
-      userUpdates.sportRole = child.sportRole;
-      userUpdates.sportRoleVariant = child.sportRoleVariant ?? null;
-    }
-    if (Object.keys(userUpdates).length > 0) {
-      await prisma.user.update({ where: { id: targetUser.id }, data: userUpdates });
+    // Se già collegato a questo stesso child, restituisci il child aggiornato
+    if (alreadyLinked?.id === childId) {
+      return NextResponse.json(child);
     }
 
-    const updated = await prisma.child.update({
-      where: { id: childId },
-      data: { userId: targetUser.id },
+    // Richiesta già pendente?
+    const existingRequest = await prisma.linkRequest.findFirst({
+      where: { childId, targetUserId: targetUser.id, status: "PENDING" },
     });
-    return NextResponse.json(updated);
+    if (existingRequest) {
+      return NextResponse.json({ pending: true, requestId: existingRequest.id });
+    }
+
+    const parent = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true },
+    });
+
+    const linkRequest = await prisma.linkRequest.create({
+      data: {
+        childId,
+        parentId: session.user.id,
+        targetUserId: targetUser.id,
+      },
+    });
+
+    // Notifica in-app per il destinatario
+    await prisma.appNotification.create({
+      data: {
+        type: "LINK_REQUEST",
+        title: `${parent?.name ?? "Un genitore"} vuole collegarsi a te`,
+        body: `Hai ricevuto una richiesta di collegamento genitore-figlio per il profilo "${child.name}".`,
+        url: "/profilo#richieste",
+        targetUserId: targetUser.id,
+      },
+    });
+
+    // Push al destinatario
+    await sendPushToUser(targetUser.id, {
+      title: `${parent?.name ?? "Un genitore"} vuole collegarsi a te`,
+      body: `Richiesta di collegamento per il profilo "${child.name}". Vai al tuo profilo per rispondere.`,
+      url: "/profilo#richieste",
+    });
+
+    return NextResponse.json({ pending: true, requestId: linkRequest.id });
   }
 
   // ── Scollega account ──────────────────────────────────────────────────────

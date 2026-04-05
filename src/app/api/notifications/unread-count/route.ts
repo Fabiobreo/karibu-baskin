@@ -8,8 +8,12 @@ export async function GET() {
     return NextResponse.json({ count: 0 });
   }
 
+  const userId = session.user.id;
   const count = await prisma.appNotification.count({
-    where: { reads: { none: { userId: session.user.id } } },
+    where: {
+      reads: { none: { userId } },
+      OR: [{ targetUserId: null }, { targetUserId: userId }],
+    },
   });
 
   return NextResponse.json({ count });

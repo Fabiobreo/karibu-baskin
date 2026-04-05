@@ -14,8 +14,13 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit;
   const userId = session.user.id;
 
+  const visibleFilter = {
+    OR: [{ targetUserId: null }, { targetUserId: userId }],
+  };
+
   const [notifications, total] = await Promise.all([
     prisma.appNotification.findMany({
+      where: visibleFilter,
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
@@ -26,7 +31,7 @@ export async function GET(req: NextRequest) {
         },
       },
     }),
-    prisma.appNotification.count(),
+    prisma.appNotification.count({ where: visibleFilter }),
   ]);
 
   const mapped = notifications.map((n) => ({

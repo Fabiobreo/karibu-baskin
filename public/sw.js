@@ -153,16 +153,21 @@ function isApiCacheable(pathname) {
 
 self.addEventListener("push", (e) => {
   if (!e.data) return;
-  let data = { title: "Karibu Baskin", body: "", url: "/", icon: "/logo.png" };
+  let data = { title: "Karibu Baskin", body: "", url: "/", icon: "/logo.png", type: "" };
   try { data = { ...data, ...e.data.json() }; } catch {}
+
+  // Vibrazione e badge differenziati per tipo
+  const isLinkNotif = data.type === "LINK_REQUEST" || data.type === "LINK_RESPONSE";
+  const vibrate = isLinkNotif ? [200, 100, 200, 100, 200] : [100, 50, 100];
 
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: data.icon,
       badge: "/logo.png",
+      tag: isLinkNotif ? "link-request" : undefined,
       data: { url: data.url },
-      vibrate: [100, 50, 100],
+      vibrate,
     })
   );
 });
