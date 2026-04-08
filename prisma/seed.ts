@@ -261,12 +261,12 @@ async function demo() {
     // Rimuovi partita esistente con stesso team+avversario+data (entro 1 giorno)
     const dateFrom = new Date(m.date); dateFrom.setHours(0, 0, 0, 0);
     const dateTo   = new Date(m.date); dateTo.setHours(23, 59, 59, 999);
-    const existing = await prisma.officialMatch.findFirst({
+    const existing = await prisma.match.findFirst({
       where: { teamId: kapuleti.id, opponentId: opponents[m.oppName], date: { gte: dateFrom, lte: dateTo } },
     });
-    if (existing) await prisma.officialMatch.delete({ where: { id: existing.id } });
+    if (existing) await prisma.match.delete({ where: { id: existing.id } });
 
-    const match = await prisma.officialMatch.create({
+    const match = await prisma.match.create({
       data: {
         teamId: kapuleti.id,
         opponentId: opponents[m.oppName],
@@ -307,12 +307,12 @@ async function demo() {
   for (const m of montakkiMatchDefs) {
     const dateFrom = new Date(m.date); dateFrom.setHours(0, 0, 0, 0);
     const dateTo   = new Date(m.date); dateTo.setHours(23, 59, 59, 999);
-    const existing = await prisma.officialMatch.findFirst({
+    const existing = await prisma.match.findFirst({
       where: { teamId: montekki.id, opponentId: opponents[m.oppName], date: { gte: dateFrom, lte: dateTo } },
     });
-    if (existing) await prisma.officialMatch.delete({ where: { id: existing.id } });
+    if (existing) await prisma.match.delete({ where: { id: existing.id } });
 
-    const match = await prisma.officialMatch.create({
+    const match = await prisma.match.create({
       data: {
         teamId: montekki.id,
         opponentId: opponents[m.oppName],
@@ -340,7 +340,7 @@ async function demo() {
 
   // Kapuleti stats
   for (const { matchId, kapuletiUserIds } of kapuletiMatches) {
-    const match = await prisma.officialMatch.findUnique({ where: { id: matchId }, select: { result: true } });
+    const match = await prisma.match.findUnique({ where: { id: matchId }, select: { result: true } });
     if (!match?.result) continue; // partita futura, niente stats
 
     // Rimuovi stats esistenti per questo match
@@ -365,7 +365,7 @@ async function demo() {
 
   // Montekki stats
   for (const { matchId, montakkiUserIds } of montakkiMatches) {
-    const match = await prisma.officialMatch.findUnique({ where: { id: matchId }, select: { result: true } });
+    const match = await prisma.match.findUnique({ where: { id: matchId }, select: { result: true } });
     if (!match?.result) continue;
 
     await prisma.playerMatchStats.deleteMany({ where: { matchId } });

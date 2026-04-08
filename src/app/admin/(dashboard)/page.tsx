@@ -74,6 +74,7 @@ export default async function AdminPage() {
         />
         <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Gestione Squadre" color="#1565C0" />
         <NavCard href="/admin/partite" icon={<EmojiEventsIcon />} label="Gestione Partite" color="#2E7D32" />
+        <NavCard href="/admin/eventi" icon={<CalendarMonthIcon />} label="Gestione Eventi" color="#6A1B9A" />
       </Box>
 
       {/* Badge suggerimenti ruolo */}

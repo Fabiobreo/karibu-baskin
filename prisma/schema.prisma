@@ -181,16 +181,21 @@ model LinkRequest {
 // Rinominato in Prisma per evitare conflitti con AuthSession,
 // ma la tabella resta "Session" grazie a @@map
 model TrainingSession {
-  id            String         @id @default(cuid())
+  id            String          @id @default(cuid())
   title         String
   date          DateTime        // orario di inizio
   endTime       DateTime?       // orario di fine (nullable per retrocompatibilità)
-  createdAt     DateTime       @default(now())
+  createdAt     DateTime        @default(now())
   teams         Json?
-  dateSlug      String?        @unique  // es. "2025-03-15T18:00" — URL slug leggibile
+  dateSlug      String?         @unique  // es. "2025-03-15T18:00" — URL slug leggibile
   registrations Registration[]
 
+  // Squadra agonistica di riferimento (null = allenamento per tutti / misti per ruolo)
+  teamId String?
+  team   CompetitiveTeam? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
   @@index([date])
+  @@index([teamId])
   @@map("TrainingSession")
 }
 
@@ -236,8 +241,9 @@ model CompetitiveTeam {
   description  String?  @db.Text
   createdAt    DateTime @default(now())
 
-  memberships TeamMembership[]
-  matches     OfficialMatch[]
+  memberships       TeamMembership[]
+  matches           Match[]
+  trainingSessions  TrainingSession[]
 
   @@index([season])
 }
@@ -272,12 +278,12 @@ model OpposingTeam {
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
-  matches OfficialMatch[]
+  matches Match[]
 }
 
 // ── Partite ufficiali ─────────────────────────────────────────────────────────
 
-model OfficialMatch {
+model Match {
   id         String       @id @default(cuid())
   teamId     String
   opponentId String
@@ -297,6 +303,7 @@ model OfficialMatch {
 
   @@index([teamId, date])
   @@index([opponentId])
+  @@map("OfficialMatch")
 }
 
 // ── Statistiche giocatore per partita ────────────────────────────────────────
@@ -364,13 +371,28 @@ model PlayerMatchStats {
   userId  String?
   childId String?
 
-  match OfficialMatch @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  user  User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  child Child?        @relation(fields: [childId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@unique([matchId, userId])
   @@unique([matchId, childId])
   @@index([matchId])
   @@index([userId])
   @@index([childId])
+}
+
+// ── Eventi generici ───────────────────────────────────────────────────────────
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  date        DateTime
+  endDate     DateTime?  // per eventi multi-giorno (es. torneo)
+  location    String?
+  description String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([date])
 }

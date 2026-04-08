@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NotificationsIcon from "@mui/icons-material/NotificationsNone";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useSession } from "next-auth/react";
@@ -24,6 +25,7 @@ export default function BottomNav() {
   let active: string;
   if (pathname === "/") active = "/";
   else if (pathname.startsWith("/allenament")) active = "/allenamenti";
+  else if (pathname.startsWith("/calendario")) active = "/calendario";
   else if (pathname.startsWith("/notifiche")) active = "/notifiche";
   else if (pathname.startsWith("/profilo") || pathname.startsWith("/login")) active = "/profilo";
   else active = "";
@@ -75,6 +77,11 @@ export default function BottomNav() {
           label="Allenamenti"
           value="/allenamenti"
           icon={<SportsBasketballIcon fontSize="small" />}
+        />
+        <BottomNavigationAction
+          label="Calendario"
+          value="/calendario"
+          icon={<CalendarMonthIcon fontSize="small" />}
         />
         {status === "authenticated" && (
           <BottomNavigationAction

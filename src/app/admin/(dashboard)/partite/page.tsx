@@ -15,7 +15,7 @@ export default async function AdminPartitePage() {
       orderBy: { name: "asc" },
       select: { id: true, name: true, city: true },
     }),
-    prisma.officialMatch.findMany({
+    prisma.match.findMany({
       orderBy: { date: "desc" },
       include: {
         team: { select: { id: true, name: true, season: true, color: true } },

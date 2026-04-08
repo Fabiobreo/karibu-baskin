@@ -23,6 +23,7 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
   { label: "Allenamenti", href: "/allenamenti" },
+  { label: "Calendario", href: "/calendario" },
   { label: "La Squadra", href: "/la-squadra" },
   { label: "Il Baskin", href: "/il-baskin" },
   { label: "Sponsor", href: "/sponsor" },
@@ -202,6 +203,7 @@ export default function SiteHeader() {
             { label: "Il Baskin", href: "/il-baskin" },
             { label: "Sponsor", href: "/sponsor" },
             { label: "Contatti", href: "/contatti" },
+            { label: "Calendario", href: "/calendario" },
           ].map((link) => {
             const active = pathname === link.href;
             return (

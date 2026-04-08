@@ -8,7 +8,7 @@ type Params = { params: Promise<{ matchId: string }> };
 export async function GET(_req: Request, { params }: Params) {
   const { matchId } = await params;
 
-  const match = await prisma.officialMatch.findUnique({
+  const match = await prisma.match.findUnique({
     where: { id: matchId },
     include: {
       team: { select: { id: true, name: true, season: true, color: true, championship: true } },
@@ -44,7 +44,7 @@ export async function PUT(req: Request, { params }: Params) {
     opponentId?: string;
   };
 
-  const match = await prisma.officialMatch.update({
+  const match = await prisma.match.update({
     where: { id: matchId },
     data: {
       ...(body.date !== undefined && { date: new Date(body.date) }),
@@ -71,6 +71,6 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { matchId } = await params;
-  await prisma.officialMatch.delete({ where: { id: matchId } });
+  await prisma.match.delete({ where: { id: matchId } });
   return new NextResponse(null, { status: 204 });
 }

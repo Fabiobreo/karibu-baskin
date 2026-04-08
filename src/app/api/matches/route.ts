@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const teamId = searchParams.get("teamId");
 
-  const matches = await prisma.officialMatch.findMany({
+  const matches = await prisma.match.findMany({
     where: teamId ? { teamId } : undefined,
     orderBy: { date: "desc" },
     include: {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "teamId, opponentId e date obbligatori" }, { status: 400 });
   }
 
-  const match = await prisma.officialMatch.create({
+  const match = await prisma.match.create({
     data: {
       teamId: body.teamId,
       opponentId: body.opponentId,
