@@ -4,6 +4,8 @@ import {
 import SiteHeader from "@/components/SiteHeader";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import Image from "next/image";
 import Link from "next/link";
 
 const SPONSORS = [
@@ -11,31 +13,43 @@ const SPONSORS = [
     name: "Denis M. Photographer",
     category: "Fotografia",
     description: "Fotografo ufficiale della squadra. Immortala i momenti più belli in campo e fuori.",
+    url: "https://www.facebook.com/Denis.M.photographer",
+    logo: "/sponsors/denis.jpg",
   },
   {
     name: "Villani and Partners",
     category: "Servizi professionali",
     description: "Supporto professionale alle attività amministrative e legali dell'associazione.",
+    url: "https://villaniandpartners.eu/",
+    logo: "/sponsors/villani.png",
   },
   {
     name: "LLP",
     category: "Partner",
     description: "Partner storico del Karibu Baskin, al nostro fianco fin dai primi anni.",
+    url: "https://www.llp.it/",
+    logo: "/sponsors/LLP.png",
   },
   {
     name: "Tetti Tecchio",
     category: "Edilizia",
     description: "Sostegno concreto alle nostre iniziative e attività sportive sul territorio.",
+    url: "https://www.tettitecchio.it/",
+    logo: "/sponsors/tettitecchio.png",
   },
   {
     name: "Saby Sport",
     category: "Abbigliamento sportivo",
     description: "Fornitore ufficiale di abbigliamento e attrezzatura sportiva per le nostre squadre.",
+    url: "https://www.sabysport.com/",
+    logo: "/sponsors/sabysport.png",
   },
   {
     name: "CGRD",
     category: "Partner",
     description: "Partner che condivide i nostri valori di inclusione e sport per tutti.",
+    url: "https://www.cgrd.it/it/",
+    logo: "/sponsors/cgrd.png",
   },
 ];
 
@@ -86,7 +100,7 @@ export default function SponsorPage() {
           <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
             I nostri sponsor
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 600 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3}}>
             Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti la nostra missione di inclusione.
           </Typography>
           <Grid container spacing={2}>
@@ -94,24 +108,63 @@ export default function SponsorPage() {
               <Grid key={s.name} size={{ xs: 12, sm: 6 }}>
                 <Paper
                   elevation={0}
+                  component="a"
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
                     p: 2.5,
                     border: "1px solid rgba(0,0,0,0.07)",
                     height: "100%",
-                    transition: "border-color 0.2s, box-shadow 0.2s",
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: 2,
+                    alignItems: "flex-start",
+                    textDecoration: "none",
+                    color: "inherit",
+                    transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
                     "&:hover": {
                       borderColor: "primary.main",
                       boxShadow: "0 2px 12px rgba(230,81,0,0.1)",
+                      transform: "translateY(-2px)",
                     },
                   }}
                 >
-                  <Chip label={s.category} size="small" sx={{ mb: 1.5, fontWeight: 600, fontSize: "0.68rem" }} />
-                  <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.75 }}>
-                    {s.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                    {s.description}
-                  </Typography>
+                  {/* Logo */}
+                  <Box
+                    sx={{
+                      position: "relative",
+                      flexShrink: 0,
+                      width: 90,
+                      height: 90,
+                      borderRadius: 1,
+                      overflow: "hidden",
+                      bgcolor: "grey.50",
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  >
+                    <Image
+                      src={s.logo}
+                      alt={`Logo ${s.name}`}
+                      fill
+                      style={{ objectFit: "contain", padding: "8px" }}
+                    />
+                  </Box>
+
+                  {/* Testo */}
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Chip label={s.category} size="small" sx={{ mb: 1, fontWeight: 600, fontSize: "0.68rem" }} />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
+                      <Typography variant="subtitle1" fontWeight={700} noWrap>
+                        {s.name}
+                      </Typography>
+                      <OpenInNewIcon sx={{ fontSize: "0.9rem", color: "text.disabled", flexShrink: 0 }} />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                      {s.description}
+                    </Typography>
+                  </Box>
                 </Paper>
               </Grid>
             ))}
@@ -128,7 +181,7 @@ export default function SponsorPage() {
           <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
             Diventa sponsor
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 620 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità vera e
             in un progetto che dal 2015 porta valore al territorio vicentino. In cambio offriamo visibilità
             e un legame autentico con i nostri 80 atleti e le loro famiglie.

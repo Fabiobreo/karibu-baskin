@@ -24,14 +24,14 @@ import Link from "next/link";
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
 const TEAM_COLORS = [
-  { label: "Arancione", value: "#E65100" },
-  { label: "Blu",       value: "#1565C0" },
-  { label: "Verde",     value: "#2E7D32" },
-  { label: "Rosso",     value: "#C62828" },
-  { label: "Viola",     value: "#6A1B9A" },
+  { label: "Arancione", value: "#FF6D00" },
+  { label: "Blu",       value: "#1E88E5" },
+  { label: "Verde",     value: "#43A047" },
+  { label: "Rosso",     value: "#F44336" },
+  { label: "Viola",     value: "#8E24AA" },
   { label: "Nero",      value: "#1A1A1A" },
   { label: "Grigio",    value: "#757575" },
-  { label: "Oro",       value: "#F9A825" },
+  { label: "Oro",       value: "#FFB300" },
 ];
 
 // ── Stagione corrente automatica ──────────────────────────────────────────────
@@ -310,7 +310,9 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
           <Typography variant="body2" color="text.secondary">
             {teamsInSeason.length === 0
               ? "Nessuna squadra — aggiungine una."
-              : `${teamsInSeason.length} ${teamsInSeason.length === 1 ? "squadra" : "squadre"} in questa stagione`}
+              : teamsInSeason.length >= 2
+                ? "2/2 squadre — limite stagionale raggiunto"
+                : `1/2 squadre in questa stagione`}
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1 }}>
@@ -325,9 +327,18 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
               Segna come in corso
             </Button>
           )}
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Nuova squadra
-          </Button>
+          <Tooltip title={teamsInSeason.length >= 2 ? "Limite raggiunto: massimo 2 squadre per stagione" : ""}>
+            <span>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={openCreate}
+                disabled={teamsInSeason.length >= 2}
+              >
+                Nuova squadra
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
       </Box>
 
@@ -341,10 +352,10 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
                 textAlign: "center",
                 borderStyle: "dashed",
                 borderColor: "divider",
-                cursor: "pointer",
-                "&:hover": { borderColor: "primary.main", bgcolor: "primary.50" },
+                cursor: teamsInSeason.length < 2 ? "pointer" : "default",
+                "&:hover": teamsInSeason.length < 2 ? { borderColor: "primary.main", bgcolor: "primary.50" } : {},
               }}
-              onClick={openCreate}
+              onClick={teamsInSeason.length < 2 ? openCreate : undefined}
             >
               <AddIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
               <Typography variant="body1" color="text.secondary">

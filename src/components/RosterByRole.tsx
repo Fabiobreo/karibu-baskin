@@ -54,6 +54,9 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
     }
   }
 
+  // Only render columns for roles that have at least one registration
+  const activeRoles = ROLES.filter((role) => registrations.some((r) => r.role === role));
+
   if (registrations.length === 0) {
     return (
       <Paper variant="outlined" sx={{ overflow: "hidden" }}>
@@ -70,6 +73,7 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
 
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+      {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, bgcolor: "rgba(180,180,180)", px: 2, py: 1.5 }}>
         <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700, lineHeight: 1 }}>
           Iscritti
@@ -81,21 +85,48 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
         />
       </Box>
 
-      <Box sx={{ px: 2, pt: 1.5, pb: 2 }}>
-        {ROLES.map((role) => {
+      {/* Column grid — one column per active role */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: `repeat(${Math.min(activeRoles.length, 2)}, 1fr)`,
+            sm: `repeat(${Math.min(activeRoles.length, 3)}, 1fr)`,
+            md: `repeat(${activeRoles.length}, 1fr)`,
+          },
+          gap: "1px",
+          bgcolor: "divider",
+        }}
+      >
+        {activeRoles.map((role) => {
           const group = registrations.filter((r) => r.role === role);
-          if (group.length === 0) return null;
           return (
-            <Box key={role} sx={{ mb: 1.5 }}>
-              <Box sx={{ display: "inline-flex", alignItems: "center", mb: 0.8, borderRadius: "16px", overflow: "hidden", bgcolor: ROLE_COLORS[role], color: "#fff", fontSize: "0.8rem", lineHeight: 1 }}>
-                <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>
+            <Box
+              key={role}
+              sx={{ bgcolor: "background.paper", display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}
+            >
+              {/* Role header */}
+              <Box
+                sx={{
+                  bgcolor: ROLE_COLORS[role],
+                  px: 1.5,
+                  py: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  overflow: "hidden",
+                }}
+              >
+                <Typography sx={{ color: "#fff", fontWeight: 700, fontSize: "0.82rem", lineHeight: 1 }}>
                   {ROLE_LABELS[role]}
-                </Box>
-                <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
-                  {group.length} giocator{group.length > 1 ? "i" : "e"}
-                </Box>
+                </Typography>
+                <Typography sx={{ color: "rgba(255,255,255,0.75)", fontSize: "0.72rem", lineHeight: 1 }}>
+                  {group.length}
+                </Typography>
               </Box>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.8, pl: 0.3 }}>
+
+              {/* Athletes list */}
+              <Box sx={{ px: 1.25, py: 1, display: "flex", flexDirection: "column", gap: 0.6 }}>
                 {group.map((reg) => {
                   const isOwn = !!currentUserId && (
                     reg.userId === currentUserId ||
@@ -115,16 +146,27 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                       variant={highlighted ? "filled" : "outlined"}
                       onDelete={canDelete && !isDeleting ? () => handleUnregister(reg) : undefined}
                       disabled={isDeleting}
-                      title={isOwn ? "Clicca × per disiscriverti" : isOwnChild ? `Disiscrivi ${reg.name}` : isStaff ? `Rimuovi ${reg.name}` : undefined}
-                      sx={highlighted ? {
-                        backgroundColor: ROLE_COLORS[role],
-                        color: "#fff",
-                        fontWeight: 700,
-                        outline: "1px solid",
-                        outlineColor: ROLE_COLORS[role],
-                        outlineOffset: "2px",
-                        "& .MuiChip-deleteIcon": { color: "rgba(255,255,255,0.8)", "&:hover": { color: "#fff" } },
-                      } : undefined}
+                      title={
+                        isOwn ? "Clicca × per disiscriverti"
+                        : isOwnChild ? `Disiscrivi ${reg.name}`
+                        : isStaff ? `Rimuovi ${reg.name}`
+                        : undefined
+                      }
+                      sx={{
+                        width: "100%",
+                        maxWidth: "100%",
+                        justifyContent: "space-between",
+                        "& .MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 },
+                        ...(highlighted ? {
+                          backgroundColor: ROLE_COLORS[role],
+                          color: "#fff",
+                          fontWeight: 700,
+                          outline: "1px solid",
+                          outlineColor: ROLE_COLORS[role],
+                          outlineOffset: "2px",
+                          "& .MuiChip-deleteIcon": { color: "rgba(255,255,255,0.8)", "&:hover": { color: "#fff" } },
+                        } : {}),
+                      }}
                     />
                   );
                 })}

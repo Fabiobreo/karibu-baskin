@@ -29,6 +29,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Nome e stagione obbligatori" }, { status: 400 });
   }
 
+  const existingCount = await prisma.competitiveTeam.count({
+    where: { season: body.season.trim() },
+  });
+  if (existingCount >= 2) {
+    return NextResponse.json({ error: "Massimo 2 squadre per stagione" }, { status: 409 });
+  }
+
   const team = await prisma.competitiveTeam.create({
     data: {
       name: body.name.trim(),

@@ -10,6 +10,7 @@ import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import OfflineBanner from "@/components/OfflineBanner";
 import Footer from "@/components/Footer";
+import SponsorBanner from "@/components/SponsorBanner";
 import BottomNav from "@/components/BottomNav";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
@@ -78,6 +79,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <OfflineBanner />
                   {children}
                 </Box>
+                <SponsorBanner />
                 <Footer />
                 <BottomNav />
               </ToastProvider>

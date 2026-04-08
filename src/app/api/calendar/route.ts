@@ -77,7 +77,7 @@ export async function GET(req: Request) {
       title: t.title,
       date: t.date.toISOString(),
       endDate: t.endTime?.toISOString(),
-      color: t.team?.color ?? "#E65100",
+      color: t.team?.color ?? "#FF6D00",
       teamName: t.team?.name,
       href: `/allenamento/${t.dateSlug ?? t.id}`,
     })),
@@ -88,7 +88,7 @@ export async function GET(req: Request) {
         ? `vs ${m.opponent.name}`
         : `@ ${m.opponent.name}`,
       date: m.date.toISOString(),
-      color: m.team?.color ?? "#C62828",
+      color: m.team?.color ?? "#F44336",
       teamName: m.team?.name,
       opponent: m.opponent.name,
       isHome: m.isHome,
@@ -101,7 +101,7 @@ export async function GET(req: Request) {
       title: e.title,
       date: e.date.toISOString(),
       endDate: e.endDate?.toISOString(),
-      color: "#1565C0",
+      color: "#039BE5",
       location: e.location ?? undefined,
     })),
   ];

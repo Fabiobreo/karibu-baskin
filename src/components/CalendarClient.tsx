@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Box, Typography, IconButton, CircularProgress, Paper,
   Dialog, DialogContent, DialogActions, Button, Chip, Divider,
+  Tabs, Tab, TextField, ToggleButton, ToggleButtonGroup, MenuItem,
+  Select, FormControl, InputLabel, FormHelperText,
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -14,6 +16,9 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
 import GroupsIcon from "@mui/icons-material/Groups";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import AddIcon from "@mui/icons-material/Add";
+import HomeIcon from "@mui/icons-material/Home";
+import FlightIcon from "@mui/icons-material/Flight";
 import Link from "next/link";
 import {
   format,
@@ -28,6 +33,7 @@ import {
 } from "date-fns";
 import { it } from "date-fns/locale";
 import type { CalendarEvent } from "@/app/api/calendar/route";
+import { useToast } from "@/context/ToastContext";
 
 const DAY_LABELS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
@@ -47,13 +53,50 @@ const TYPE_LABELS: Record<string, string> = {
   event: "Evento",
 };
 
-export default function CalendarClient() {
+interface TeamInfo {
+  id: string;
+  name: string;
+  season: string;
+  color: string | null;
+}
+
+interface Props {
+  isStaff?: boolean;
+  isAdmin?: boolean;
+  teams?: TeamInfo[];
+}
+
+/** Restituisce la label stagione (es. "2025-26") per un dato mese del calendario. */
+function seasonForMonth(year: number, month: number): string {
+  // month è 0-indexed: 8 = settembre
+  const startYear = month >= 8 ? year : year - 1;
+  return `${startYear}-${String(startYear + 1).slice(-2)}`;
+}
+
+function isVisible(ev: CalendarEvent, hidden: Set<string>): boolean {
+  if (ev.type === "training") return !hidden.has("training");
+  if (ev.type === "event")    return !hidden.has("event");
+  if (ev.type === "match")    return !hidden.has(`match:${ev.color}`) && !hidden.has("match:*");
+  return true;
+}
+
+export default function CalendarClient({ isStaff = false, isAdmin = false, teams = [] }: Props) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
+  const [createDay, setCreateDay] = useState<Date | null>(null);
+  const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
+
+  function toggleKey(key: string) {
+    setHiddenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
 
   const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
 
@@ -85,25 +128,34 @@ export default function CalendarClient() {
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
   const eventsForDay = (day: Date) =>
-    events.filter((e) => isSameDay(new Date(e.date), day));
+    events.filter((e) => isSameDay(new Date(e.date), day) && isVisible(e, hiddenKeys));
+
+  function handleDayClick(day: Date) {
+    if (isStaff) setCreateDay(day);
+  }
 
   return (
     <Box>
       {/* Intestazione mese */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <IconButton onClick={prevMonth}><ChevronLeftIcon /></IconButton>
+        <IconButton onClick={prevMonth} size="small"><ChevronLeftIcon /></IconButton>
         <Typography
           variant="h5"
           fontWeight={700}
-          sx={{ textTransform: "capitalize", minWidth: 220, textAlign: "center" }}
+          sx={{
+            textTransform: "capitalize",
+            minWidth: { xs: 130, sm: 220 },
+            textAlign: "center",
+            fontSize: { xs: "1.05rem", sm: "1.5rem" },
+          }}
         >
           {format(new Date(year, month), "MMMM yyyy", { locale: it })}
         </Typography>
-        <IconButton onClick={nextMonth}><ChevronRightIcon /></IconButton>
+        <IconButton onClick={nextMonth} size="small"><ChevronRightIcon /></IconButton>
         <Typography
           variant="body2"
           onClick={goToday}
-          sx={{ ml: 1, cursor: "pointer", color: "primary.main", fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+          sx={{ ml: 0.5, cursor: "pointer", color: "primary.main", fontWeight: 600, "&:hover": { textDecoration: "underline" }, fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
         >
           Oggi
         </Typography>
@@ -116,7 +168,7 @@ export default function CalendarClient() {
             key={d}
             variant="body2"
             align="center"
-            sx={{ color: "text.secondary", fontWeight: 700, py: 1, fontSize: "0.8rem" }}
+            sx={{ color: "text.secondary", fontWeight: 700, py: 1, fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
           >
             {d}
           </Typography>
@@ -152,11 +204,15 @@ export default function CalendarClient() {
             return (
               <Box
                 key={day.toISOString()}
+                onClick={() => handleDayClick(day)}
                 sx={{
-                  minHeight: { xs: 86, sm: 116 },
+                  minHeight: { xs: 72, sm: 116 },
                   bgcolor: "background.paper",
                   p: { xs: "4px", sm: "6px" },
                   opacity: inMonth ? 1 : 0.38,
+                  cursor: isStaff ? "pointer" : "default",
+                  "&:hover": isStaff ? { bgcolor: "action.hover" } : {},
+                  transition: "background-color 0.12s",
                 }}
               >
                 <Typography
@@ -165,13 +221,13 @@ export default function CalendarClient() {
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    width: 26,
-                    height: 26,
+                    width: { xs: 22, sm: 26 },
+                    height: { xs: 22, sm: 26 },
                     borderRadius: "50%",
                     fontWeight: isCurrentDay ? 800 : 500,
                     bgcolor: isCurrentDay ? "primary.main" : "transparent",
                     color: isCurrentDay ? "#fff" : inMonth ? "text.primary" : "text.disabled",
-                    fontSize: "0.8rem",
+                    fontSize: { xs: "0.72rem", sm: "0.8rem" },
                     mb: "3px",
                     flexShrink: 0,
                   }}
@@ -179,13 +235,37 @@ export default function CalendarClient() {
                   {format(day, "d")}
                 </Typography>
 
-                <Box sx={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                {/* Desktop: chips */}
+                <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}>
                   {visible.map((ev) => (
-                    <EventChip key={ev.id} event={ev} onClick={() => setSelected(ev)} />
+                    <EventChip key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); setSelected(ev); }} />
                   ))}
                   {extra > 0 && (
                     <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.65rem", pl: "3px" }}>
                       +{extra} altri
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* Mobile: colored dots */}
+                <Box sx={{ display: { xs: "flex", sm: "none" }, gap: "3px", flexWrap: "wrap", mt: "2px" }}>
+                  {visible.map((ev) => (
+                    <Box
+                      key={ev.id}
+                      onClick={(e) => { e.stopPropagation(); setSelected(ev); }}
+                      sx={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: "50%",
+                        bgcolor: ev.color,
+                        flexShrink: 0,
+                        cursor: "pointer",
+                      }}
+                    />
+                  ))}
+                  {extra > 0 && (
+                    <Typography variant="caption" sx={{ fontSize: "0.55rem", color: "text.secondary", lineHeight: "7px" }}>
+                      +{extra}
                     </Typography>
                   )}
                 </Box>
@@ -196,21 +276,71 @@ export default function CalendarClient() {
       )}
 
       {/* Legenda */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 3 }}>
-        <LegendItem color="#E65100" icon={<SportsBasketballIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />} label="Allenamento" />
-        <LegendItem color="#C62828" icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />} label="Partita" />
-        <LegendItem color="#1565C0" icon={<EventNoteIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />} label="Evento" />
-      </Box>
+      {(() => {
+        const viewedSeason = seasonForMonth(year, month);
+        const seasonTeams = teams.filter((t) => t.season === viewedSeason);
+        return (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 3, alignItems: "center" }}>
+            <LegendItem
+              color="#FF6D00"
+              icon={<SportsBasketballIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+              label="Allenamento"
+              active={!hiddenKeys.has("training")}
+              onClick={() => toggleKey("training")}
+            />
+            {seasonTeams.length > 0 ? (
+              seasonTeams.map((t) => {
+                const matchKey = `match:${t.color ?? "#C62828"}`;
+                return (
+                  <LegendItem
+                    key={t.id}
+                    color={t.color ?? "#C62828"}
+                    icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+                    label={t.name}
+                    active={!hiddenKeys.has(matchKey)}
+                    onClick={() => toggleKey(matchKey)}
+                  />
+                );
+              })
+            ) : (
+              <LegendItem
+                color="#F44336"
+                icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+                label="Partita"
+                active={!hiddenKeys.has("match:*")}
+                onClick={() => toggleKey("match:*")}
+              />
+            )}
+            <LegendItem
+              color="#039BE5"
+              icon={<EventNoteIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+              label="Evento"
+              active={!hiddenKeys.has("event")}
+              onClick={() => toggleKey("event")}
+            />
+          </Box>
+        );
+      })()}
 
       {/* Modale dettaglio evento */}
       <EventDetailDialog event={selected} onClose={() => setSelected(null)} />
+
+      {/* Modale crea evento (solo staff) */}
+      {isStaff && (
+        <CreateEventDialog
+          day={createDay}
+          isAdmin={isAdmin}
+          onClose={() => setCreateDay(null)}
+          onCreated={() => { setCreateDay(null); fetchEvents(); }}
+        />
+      )}
     </Box>
   );
 }
 
 // ── Chip evento nella griglia ─────────────────────────────────────────────────
 
-function EventChip({ event, onClick }: { event: CalendarEvent; onClick: () => void }) {
+function EventChip({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
   const Icon =
     event.type === "training" ? SportsBasketballIcon
     : event.type === "match" ? EmojiEventsIcon
@@ -237,7 +367,7 @@ function EventChip({ event, onClick }: { event: CalendarEvent; onClick: () => vo
       <Typography
         variant="caption"
         noWrap
-        sx={{ color: "#fff", fontSize: { xs: "0.6rem", sm: "0.65rem" }, fontWeight: 600, lineHeight: 1.3 }}
+        sx={{ color: "#fff", fontSize: "0.65rem", fontWeight: 600, lineHeight: 1.3 }}
       >
         {event.title}
       </Typography>
@@ -369,6 +499,397 @@ function EventDetailDialog({ event, onClose }: { event: CalendarEvent | null; on
   );
 }
 
+// ── Modale crea evento ────────────────────────────────────────────────────────
+
+type CreateType = "training" | "event" | "match";
+
+interface CompetitiveTeam { id: string; name: string; season: string; }
+interface OpposingTeam { id: string; name: string; city?: string | null; }
+
+function CreateEventDialog({
+  day,
+  isAdmin,
+  onClose,
+  onCreated,
+}: {
+  day: Date | null;
+  isAdmin: boolean;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { showToast } = useToast();
+  const [tab, setTab] = useState<CreateType>("training");
+  const [loading, setLoading] = useState(false);
+
+  // Training fields
+  const [trainTitle, setTrainTitle] = useState("Allenamento settimanale");
+  const [trainStart, setTrainStart] = useState("18:00");
+  const [trainEnd, setTrainEnd] = useState("20:00");
+
+  // Event fields
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventEndDate, setEventEndDate] = useState("");
+
+  // Match fields
+  const [matchTeamId, setMatchTeamId] = useState("");
+  const [matchOpponentId, setMatchOpponentId] = useState("");
+  const [matchTime, setMatchTime] = useState("15:30");
+  const [matchIsHome, setMatchIsHome] = useState<"home" | "away">("home");
+  const [matchVenue, setMatchVenue] = useState("");
+  const [teams, setTeams] = useState<CompetitiveTeam[]>([]);
+  const [opponents, setOpponents] = useState<OpposingTeam[]>([]);
+  const [teamsLoading, setTeamsLoading] = useState(false);
+
+  // Error states
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const dateStr = day ? format(day, "yyyy-MM-dd") : "";
+  const dateLabelFull = day ? format(day, "EEEE d MMMM yyyy", { locale: it }) : "";
+
+  // Load teams/opponents when match tab is selected
+  useEffect(() => {
+    if (tab === "match" && isAdmin && teams.length === 0) {
+      setTeamsLoading(true);
+      Promise.all([
+        fetch("/api/competitive-teams").then((r) => r.json()),
+        fetch("/api/opposing-teams").then((r) => r.json()),
+      ])
+        .then(([t, o]: [CompetitiveTeam[], OpposingTeam[]]) => {
+          setTeams(t);
+          setOpponents(o);
+          if (t.length > 0) setMatchTeamId(t[0].id);
+        })
+        .catch(() => showToast({ message: "Errore nel caricamento squadre", severity: "error" }))
+        .finally(() => setTeamsLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  function resetForm() {
+    setTrainTitle("Allenamento settimanale");
+    setTrainStart("18:00");
+    setTrainEnd("20:00");
+    setEventTitle("");
+    setEventLocation("");
+    setEventEndDate("");
+    setMatchTeamId("");
+    setMatchOpponentId("");
+    setMatchTime("15:30");
+    setMatchIsHome("home");
+    setMatchVenue("");
+    setErrors({});
+  }
+
+  function handleClose() {
+    resetForm();
+    onClose();
+  }
+
+  function validate(): boolean {
+    const errs: Record<string, string> = {};
+    if (tab === "training") {
+      if (!trainTitle.trim()) errs.trainTitle = "Il titolo è obbligatorio";
+      if (!trainStart) errs.trainStart = "Orario obbligatorio";
+      if (trainEnd && trainEnd <= trainStart) errs.trainEnd = "Fine deve essere dopo l'inizio";
+    } else if (tab === "event") {
+      if (!eventTitle.trim()) errs.eventTitle = "Il titolo è obbligatorio";
+    } else if (tab === "match") {
+      if (!matchTeamId) errs.matchTeamId = "Seleziona una squadra";
+      if (!matchOpponentId) errs.matchOpponentId = "Seleziona un avversario";
+      if (!matchTime) errs.matchTime = "Orario obbligatorio";
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  async function handleSubmit() {
+    if (!day || !validate()) return;
+    setLoading(true);
+    try {
+      let res: Response;
+      if (tab === "training") {
+        const dateTime = new Date(`${dateStr}T${trainStart}:00`);
+        const endDateTime = trainEnd ? new Date(`${dateStr}T${trainEnd}:00`) : null;
+        res = await fetch("/api/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: trainTitle.trim(),
+            date: dateTime.toISOString(),
+            endTime: endDateTime?.toISOString() ?? null,
+            dateSlug: `${dateStr}${trainStart}`.replace(/-/g, "").replace(":", ""),
+          }),
+        });
+      } else if (tab === "event") {
+        res = await fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: eventTitle.trim(),
+            date: new Date(`${dateStr}T00:00:00`).toISOString(),
+            endDate: eventEndDate ? new Date(`${eventEndDate}T00:00:00`).toISOString() : null,
+            location: eventLocation.trim() || null,
+          }),
+        });
+      } else {
+        res = await fetch("/api/matches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            teamId: matchTeamId,
+            opponentId: matchOpponentId,
+            date: new Date(`${dateStr}T${matchTime}:00`).toISOString(),
+            isHome: matchIsHome === "home",
+            venue: matchVenue.trim() || null,
+          }),
+        });
+      }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showToast({ message: data.error ?? "Errore nella creazione", severity: "error" });
+        return;
+      }
+
+      const typeLabel = tab === "training" ? "Allenamento" : tab === "event" ? "Evento" : "Partita";
+      showToast({ message: `${typeLabel} creato con successo`, severity: "success" });
+      resetForm();
+      onCreated();
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!day) return null;
+
+  return (
+    <Dialog open onClose={handleClose} maxWidth="xs" fullWidth>
+      {/* Banner */}
+      <Box sx={{ bgcolor: "primary.main", px: 3, pt: 2.5, pb: 2, display: "flex", alignItems: "center", gap: 1.5 }}>
+        <Box sx={{ width: 36, height: 36, borderRadius: "50%", bgcolor: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <AddIcon sx={{ color: "#fff", fontSize: "1.2rem" }} />
+        </Box>
+        <Box>
+          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600, textTransform: "capitalize" }}>
+            {dateLabelFull}
+          </Typography>
+          <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }}>
+            Nuovo evento
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => { setTab(v as CreateType); setErrors({}); }}
+          variant="fullWidth"
+          textColor="primary"
+          indicatorColor="primary"
+        >
+          <Tab value="training" label="Allenamento" icon={<SportsBasketballIcon sx={{ fontSize: "1rem" }} />} iconPosition="start" sx={{ fontSize: "0.78rem", minHeight: 48 }} />
+          <Tab value="event" label="Evento" icon={<EventNoteIcon sx={{ fontSize: "1rem" }} />} iconPosition="start" sx={{ fontSize: "0.78rem", minHeight: 48 }} />
+          {isAdmin && (
+            <Tab value="match" label="Partita" icon={<EmojiEventsIcon sx={{ fontSize: "1rem" }} />} iconPosition="start" sx={{ fontSize: "0.78rem", minHeight: 48 }} />
+          )}
+        </Tabs>
+      </Box>
+
+      <DialogContent sx={{ pt: 2.5, pb: 1 }}>
+        {/* Training form */}
+        {tab === "training" && (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Titolo"
+              value={trainTitle}
+              onChange={(e) => { setTrainTitle(e.target.value); setErrors((p) => ({ ...p, trainTitle: undefined as unknown as string })); }}
+              fullWidth
+              size="small"
+              error={!!errors.trainTitle}
+              helperText={errors.trainTitle}
+              disabled={loading}
+            />
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                label="Inizio"
+                type="time"
+                value={trainStart}
+                onChange={(e) => { setTrainStart(e.target.value); setErrors((p) => ({ ...p, trainStart: undefined as unknown as string, trainEnd: undefined as unknown as string })); }}
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                sx={{ flex: 1 }}
+                error={!!errors.trainStart}
+                helperText={errors.trainStart}
+                disabled={loading}
+              />
+              <TextField
+                label="Fine"
+                type="time"
+                value={trainEnd}
+                onChange={(e) => { setTrainEnd(e.target.value); setErrors((p) => ({ ...p, trainEnd: undefined as unknown as string })); }}
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                sx={{ flex: 1 }}
+                error={!!errors.trainEnd}
+                helperText={errors.trainEnd}
+                disabled={loading}
+              />
+            </Box>
+          </Box>
+        )}
+
+        {/* Event form */}
+        {tab === "event" && (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Titolo"
+              value={eventTitle}
+              onChange={(e) => { setEventTitle(e.target.value); setErrors((p) => ({ ...p, eventTitle: undefined as unknown as string })); }}
+              fullWidth
+              size="small"
+              error={!!errors.eventTitle}
+              helperText={errors.eventTitle}
+              disabled={loading}
+              autoFocus
+            />
+            <TextField
+              label="Luogo (opzionale)"
+              value={eventLocation}
+              onChange={(e) => setEventLocation(e.target.value)}
+              fullWidth
+              size="small"
+              disabled={loading}
+            />
+            <TextField
+              label="Data fine (opzionale)"
+              type="date"
+              value={eventEndDate}
+              onChange={(e) => setEventEndDate(e.target.value)}
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: dateStr }}
+              fullWidth
+              disabled={loading}
+              helperText="Lascia vuoto per evento di un solo giorno"
+            />
+          </Box>
+        )}
+
+        {/* Match form */}
+        {tab === "match" && (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {teamsLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+                <CircularProgress size={28} />
+              </Box>
+            ) : teams.length === 0 ? (
+              <Typography color="text.secondary" variant="body2">
+                Nessuna squadra disponibile. Creane una nel pannello admin prima di aggiungere partite.
+              </Typography>
+            ) : (
+              <>
+                <FormControl size="small" error={!!errors.matchTeamId} fullWidth>
+                  <InputLabel shrink>Squadra</InputLabel>
+                  <Select
+                    value={matchTeamId}
+                    onChange={(e) => { setMatchTeamId(e.target.value); setErrors((p) => ({ ...p, matchTeamId: undefined as unknown as string })); }}
+                    label="Squadra"
+                    notched
+                    disabled={loading}
+                  >
+                    {teams.map((t) => (
+                      <MenuItem key={t.id} value={t.id}>{t.name} ({t.season})</MenuItem>
+                    ))}
+                  </Select>
+                  {errors.matchTeamId && <FormHelperText>{errors.matchTeamId}</FormHelperText>}
+                </FormControl>
+
+                <FormControl size="small" error={!!errors.matchOpponentId} fullWidth>
+                  <InputLabel shrink>Avversario</InputLabel>
+                  <Select
+                    value={matchOpponentId}
+                    onChange={(e) => { setMatchOpponentId(e.target.value); setErrors((p) => ({ ...p, matchOpponentId: undefined as unknown as string })); }}
+                    label="Avversario"
+                    notched
+                    disabled={loading}
+                    displayEmpty
+                  >
+                    <MenuItem value="" disabled><em>Seleziona avversario</em></MenuItem>
+                    {opponents.map((o) => (
+                      <MenuItem key={o.id} value={o.id}>{o.name}{o.city ? ` (${o.city})` : ""}</MenuItem>
+                    ))}
+                  </Select>
+                  {errors.matchOpponentId && <FormHelperText>{errors.matchOpponentId}</FormHelperText>}
+                </FormControl>
+
+                <TextField
+                  label="Orario"
+                  type="time"
+                  value={matchTime}
+                  onChange={(e) => { setMatchTime(e.target.value); setErrors((p) => ({ ...p, matchTime: undefined as unknown as string })); }}
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  error={!!errors.matchTime}
+                  helperText={errors.matchTime}
+                  disabled={loading}
+                />
+
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    Campo
+                  </Typography>
+                  <ToggleButtonGroup
+                    value={matchIsHome}
+                    exclusive
+                    onChange={(_, v) => { if (v) setMatchIsHome(v); }}
+                    size="small"
+                    disabled={loading}
+                  >
+                    <ToggleButton value="home" sx={{ gap: 0.5 }}>
+                      <HomeIcon sx={{ fontSize: "1rem" }} /> Casa
+                    </ToggleButton>
+                    <ToggleButton value="away" sx={{ gap: 0.5 }}>
+                      <FlightIcon sx={{ fontSize: "1rem" }} /> Trasferta
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Box>
+
+                <TextField
+                  label="Luogo (opzionale)"
+                  value={matchVenue}
+                  onChange={(e) => setMatchVenue(e.target.value)}
+                  fullWidth
+                  size="small"
+                  disabled={loading}
+                />
+              </>
+            )}
+          </Box>
+        )}
+      </DialogContent>
+
+      <Divider />
+
+      <DialogActions sx={{ px: 2.5, py: 1.5, gap: 1 }}>
+        <Button onClick={handleClose} color="inherit" size="small" disabled={loading}>Annulla</Button>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleSubmit}
+          disabled={loading || (tab === "match" && (teamsLoading || teams.length === 0))}
+          startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <AddIcon />}
+        >
+          {loading ? "Creazione..." : "Crea"}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
@@ -380,16 +901,52 @@ function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   );
 }
 
-function LegendItem({ color, icon, label }: { color: string; icon: React.ReactNode; label: string }) {
+function LegendItem({ color, icon, label, active = true, onClick }: {
+  color: string;
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+    <Box
+      onClick={onClick}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 0.75,
+        cursor: onClick ? "pointer" : "default",
+        opacity: active ? 1 : 0.38,
+        transition: "opacity 0.15s",
+        userSelect: "none",
+        "&:hover": onClick ? { opacity: active ? 0.75 : 0.55 } : {},
+      }}
+    >
       <Paper
         elevation={0}
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, bgcolor: color, borderRadius: "4px" }}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 20,
+          height: 20,
+          bgcolor: active ? color : "action.disabled",
+          borderRadius: "4px",
+          transition: "background-color 0.15s",
+        }}
       >
         {icon}
       </Paper>
-      <Typography variant="body2" color="text.secondary">{label}</Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          color: active ? "text.secondary" : "text.disabled",
+          textDecoration: active ? "none" : "line-through",
+          transition: "color 0.15s",
+        }}
+      >
+        {label}
+      </Typography>
     </Box>
   );
 }
