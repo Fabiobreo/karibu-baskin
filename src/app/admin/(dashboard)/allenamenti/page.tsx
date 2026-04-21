@@ -8,7 +8,10 @@ export const revalidate = 0;
 export default async function AdminAllenamentiPage() {
   const sessions = await prisma.trainingSession.findMany({
     orderBy: { date: "asc" },
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: { select: { registrations: true } },
+      restrictTeam: { select: { id: true, name: true, color: true } },
+    },
   });
 
   return <AdminAllenamentiClient initialSessions={sessions} />;

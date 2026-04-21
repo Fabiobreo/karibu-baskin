@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { ROLES } from "@/lib/constants";
 import { auth } from "@/lib/authjs";
+import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("sessionId");
@@ -19,13 +20,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { sessionId, role, name: bodyName, roleVariant, childId } = body as {
+  const { sessionId, role, name: bodyName, roleVariant, childId, note } = body as {
     sessionId?: string;
     role?: number;
     name?: string;
     roleVariant?: string;
     childId?: string;
+    note?: string;
   };
+
+  const trimmedNote = note?.trim().slice(0, 300) || null;
 
   if (!sessionId || !role) {
     return NextResponse.json(
@@ -38,7 +42,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ruolo non valido (1-5)" }, { status: 400 });
   }
 
-  const trainingSession = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
+  const trainingSession = await prisma.trainingSession.findUnique({
+    where: { id: sessionId },
+    select: {
+      date: true,
+      endTime: true,
+      allowedRoles: true,
+      restrictTeamId: true,
+      openRoles: true,
+    },
+  });
   if (!trainingSession) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
   }
@@ -48,6 +61,12 @@ export async function POST(req: NextRequest) {
   if (new Date() > sessionEnd) {
     return NextResponse.json({ error: "Le iscrizioni per questo allenamento sono chiuse" }, { status: 400 });
   }
+
+  const restrictions = {
+    allowedRoles: trainingSession.allowedRoles,
+    restrictTeamId: trainingSession.restrictTeamId,
+    openRoles: trainingSession.openRoles,
+  };
 
   const authSession = await auth();
   const userId = authSession?.user?.id ?? null;
@@ -66,6 +85,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
     }
 
+    // Usa il ruolo confermato del figlio se disponibile, altrimenti quello scelto dal form
+    const effectiveRole = child.sportRole ?? role;
+
+    // Controllo restrizioni
+    const parent = await prisma.user.findUnique({ where: { id: userId }, select: { appRole: true } });
+    if (parent?.appRole !== "COACH" && parent?.appRole !== "ADMIN") {
+      let isInRestrictedTeam = false;
+      if (restrictions.restrictTeamId) {
+        const membership = await prisma.teamMembership.findFirst({
+          where: { teamId: restrictions.restrictTeamId, childId },
+        });
+        isInRestrictedTeam = !!membership;
+      }
+      const check = checkRegistrationAllowed(restrictions, "ATHLETE", effectiveRole, isInRestrictedTeam);
+      if (!check.allowed) {
+        return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
+      }
+    }
+
     const existing = await prisma.registration.findFirst({ where: { sessionId, childId } });
     if (existing) {
       return NextResponse.json({ error: `${child.name} è già iscritto a questo allenamento` }, { status: 409 });
@@ -79,9 +117,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Usa il ruolo confermato del figlio se disponibile, altrimenti quello scelto dal form
-    const effectiveRole = child.sportRole ?? role;
-
     // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
     if (!child.sportRole) {
       await prisma.child.update({
@@ -92,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const registration = await prisma.registration.create({
-        data: { sessionId, name: child.name, role: effectiveRole, childId },
+        data: { sessionId, name: child.name, role: effectiveRole, childId, note: trimmedNote },
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
@@ -112,6 +147,19 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
+    }
+
+    // Controllo restrizioni (COACH/ADMIN/GUEST bypassati dentro checkRegistrationAllowed)
+    let isInRestrictedTeam = false;
+    if (restrictions.restrictTeamId) {
+      const membership = await prisma.teamMembership.findFirst({
+        where: { teamId: restrictions.restrictTeamId, userId },
+      });
+      isInRestrictedTeam = !!membership;
+    }
+    const check = checkRegistrationAllowed(restrictions, user.appRole, role, isInRestrictedTeam);
+    if (!check.allowed) {
+      return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
     }
 
     const name = user.name?.trim() || (bodyName?.trim() ?? "");
@@ -142,7 +190,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const registration = await prisma.registration.create({
-        data: { sessionId, name: name.slice(0, 60), role, userId },
+        data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote },
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
@@ -154,6 +202,12 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Iscrizione anonima ──────────────────────────────────────────────────────
+  // Utenti anonimi non possono iscriversi se ci sono restrizioni
+  const anonCheck = checkRegistrationAllowed(restrictions, null, role, false);
+  if (!anonCheck.allowed) {
+    return NextResponse.json({ error: anonCheck.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
+  }
+
   const trimmedName = bodyName?.trim().slice(0, 60) ?? "";
   if (!trimmedName) {
     return NextResponse.json({ error: "Nome obbligatorio per gli utenti non registrati" }, { status: 400 });
@@ -168,7 +222,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const registration = await prisma.registration.create({
-      data: { sessionId, name: trimmedName, role },
+      data: { sessionId, name: trimmedName, role, note: trimmedNote },
     });
     return NextResponse.json(registration, { status: 201 });
   } catch (err: unknown) {

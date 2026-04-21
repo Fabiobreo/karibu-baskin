@@ -11,6 +11,7 @@ export async function GET() {
     orderBy: { date: "asc" },
     include: {
       _count: { select: { registrations: true } },
+      restrictTeam: { select: { id: true, name: true, color: true } },
     },
   });
   return NextResponse.json(sessions);
@@ -22,7 +23,15 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { title, date, endTime, dateSlug } = body as { title?: string; date?: string; endTime?: string; dateSlug?: string };
+  const { title, date, endTime, dateSlug, allowedRoles, restrictTeamId, openRoles } = body as {
+    title?: string;
+    date?: string;
+    endTime?: string;
+    dateSlug?: string;
+    allowedRoles?: number[];
+    restrictTeamId?: string | null;
+    openRoles?: number[];
+  };
 
   if (!title?.trim() || !date) {
     return NextResponse.json({ error: "Titolo e data sono obbligatori" }, { status: 400 });
@@ -34,6 +43,9 @@ export async function POST(req: NextRequest) {
       date: new Date(date),
       endTime: endTime ? new Date(endTime) : null,
       ...(dateSlug ? { dateSlug } : {}),
+      allowedRoles: allowedRoles ?? [],
+      restrictTeamId: restrictTeamId ?? null,
+      openRoles: openRoles ?? [],
     },
     include: { _count: { select: { registrations: true } } },
   });

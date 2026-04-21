@@ -7,8 +7,10 @@ import {
   Alert,
   CircularProgress,
   Typography,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 
 interface Props {
   onCreated: () => void;
@@ -24,11 +26,18 @@ interface FieldErrors {
   endTime?: string;
 }
 
+const DEFAULT_RESTRICTIONS: RestrictionValue = {
+  allowedRoles: [],
+  restrictTeamId: null,
+  openRoles: [],
+};
+
 export default function AdminSessionForm({ onCreated, showTitle = true, formId, onLoadingChange }: Props) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("18:00");
   const [endTime, setEndTime] = useState("20:00");
+  const [restrictions, setRestrictions] = useState<RestrictionValue>(DEFAULT_RESTRICTIONS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -65,7 +74,10 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
           title: title.trim(),
           date: dateTime.toISOString(),
           endTime: endDateTime?.toISOString() ?? null,
-          dateSlug: `${date}${time}`.replace(/-/g, "").replace(":", ""),  // es. "202503151800"
+          dateSlug: `${date}${time}`.replace(/-/g, "").replace(":", ""),
+          allowedRoles: restrictions.allowedRoles,
+          restrictTeamId: restrictions.restrictTeamId,
+          openRoles: restrictions.openRoles,
         }),
       });
 
@@ -83,6 +95,7 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
       setDate("");
       setTime("18:00");
       setEndTime("20:00");
+      setRestrictions(DEFAULT_RESTRICTIONS);
       setFieldErrors({});
       onCreated();
     } catch {
@@ -155,8 +168,17 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
         />
       </Box>
 
+      <Divider sx={{ mb: 2 }} />
+
+      <SessionRestrictionEditor
+        value={restrictions}
+        onChange={setRestrictions}
+        disabled={loading}
+        seasonFilter={date ? seasonForDate(new Date(date)) : undefined}
+      />
+
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mt: 2 }}>
           {error}
         </Alert>
       )}
@@ -167,6 +189,7 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
           variant="contained"
           disabled={loading}
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
+          sx={{ mt: 2 }}
         >
           {loading ? "Creazione..." : "Crea allenamento"}
         </Button>

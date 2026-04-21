@@ -11,7 +11,10 @@ export async function GET(
   // Prova prima per ID (CUID), poi per dateSlug (es. "2025-03-15T18:00")
   const session = await prisma.trainingSession.findFirst({
     where: { OR: [{ id: sessionId }, { dateSlug: sessionId }] },
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: { select: { registrations: true } },
+      restrictTeam: { select: { id: true, name: true, color: true } },
+    },
   });
   if (!session) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
@@ -29,21 +32,30 @@ export async function PATCH(
 
   const { sessionId } = await params;
   const body = await req.json().catch(() => ({}));
-  const { title, date, endTime } = body as {
+  const { title, date, endTime, allowedRoles, restrictTeamId, openRoles } = body as {
     title?: string;
     date?: string;
     endTime?: string | null;
+    allowedRoles?: number[];
+    restrictTeamId?: string | null;
+    openRoles?: number[];
   };
 
   const data: Record<string, unknown> = {};
   if (title !== undefined) data.title = title.trim();
   if (date !== undefined) data.date = new Date(date);
   if ("endTime" in body) data.endTime = endTime ? new Date(endTime) : null;
+  if (allowedRoles !== undefined) data.allowedRoles = allowedRoles;
+  if ("restrictTeamId" in body) data.restrictTeamId = restrictTeamId ?? null;
+  if (openRoles !== undefined) data.openRoles = openRoles;
 
   const session = await prisma.trainingSession.update({
     where: { id: sessionId },
     data,
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: { select: { registrations: true } },
+      restrictTeam: { select: { id: true, name: true, color: true } },
+    },
   });
   return NextResponse.json(session);
 }

@@ -26,6 +26,10 @@ interface Session {
   date: string;
   endTime: string | null;
   dateSlug: string | null;
+  allowedRoles: number[];
+  restrictTeamId: string | null;
+  openRoles: number[];
+  restrictTeam: { id: string; name: string; color: string | null } | null;
   _count: { registrations: number };
 }
 
@@ -33,6 +37,7 @@ interface Registration {
   id: string;
   name: string;
   role: number;
+  note: string | null;
   createdAt: string;
   sessionId: string;
   userId: string | null;
@@ -389,6 +394,12 @@ export default function SessionPage() {
                         registeredChildIds={registrations.map((r) => r.childId)}
                         currentUser={currentUser}
                         children={parentChildren}
+                        restrictions={session ? {
+                          allowedRoles: session.allowedRoles ?? [],
+                          restrictTeamId: session.restrictTeamId ?? null,
+                          openRoles: session.openRoles ?? [],
+                          restrictTeamName: session.restrictTeam?.name ?? null,
+                        } : undefined}
                       />
                     )}
                   </Paper>

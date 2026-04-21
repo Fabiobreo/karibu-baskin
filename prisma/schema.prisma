@@ -192,10 +192,17 @@ model TrainingSession {
 
   // Squadra agonistica di riferimento (null = allenamento per tutti / misti per ruolo)
   teamId String?
-  team   CompetitiveTeam? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  team   CompetitiveTeam? @relation("TrainingTeam", fields: [teamId], references: [id], onDelete: SetNull)
+
+  // Restrizioni iscrizione
+  allowedRoles   Int[]            @default([])  // vuoto = tutti i ruoli ammessi
+  restrictTeamId String?                        // null = nessuna restrizione per squadra
+  openRoles      Int[]            @default([])  // ruoli esenti dalla restrizione di squadra
+  restrictTeam   CompetitiveTeam? @relation("TrainingRestriction", fields: [restrictTeamId], references: [id], onDelete: SetNull)
 
   @@index([date])
   @@index([teamId])
+  @@index([restrictTeamId])
   @@map("TrainingSession")
 }
 
@@ -204,6 +211,7 @@ model Registration {
   sessionId String
   name      String
   role      Int
+  note      String?  // comunicazione libera dell'atleta (es. "Devo uscire prima")
   createdAt DateTime @default(now())
 
   // Chi è iscritto (al più uno non-null):
@@ -241,9 +249,10 @@ model CompetitiveTeam {
   description  String?  @db.Text
   createdAt    DateTime @default(now())
 
-  memberships       TeamMembership[]
-  matches           Match[]
-  trainingSessions  TrainingSession[]
+  memberships          TeamMembership[]
+  matches              Match[]
+  trainingSessions     TrainingSession[] @relation("TrainingTeam")
+  restrictedSessions   TrainingSession[] @relation("TrainingRestriction")
 
   @@index([season])
 }

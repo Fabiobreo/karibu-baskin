@@ -34,6 +34,7 @@ import {
 import { it } from "date-fns/locale";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { useToast } from "@/context/ToastContext";
+import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 
 const DAY_LABELS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
@@ -64,13 +65,6 @@ interface Props {
   isStaff?: boolean;
   isAdmin?: boolean;
   teams?: TeamInfo[];
-}
-
-/** Restituisce la label stagione (es. "2025-26") per un dato mese del calendario. */
-function seasonForMonth(year: number, month: number): string {
-  // month è 0-indexed: 8 = settembre
-  const startYear = month >= 8 ? year : year - 1;
-  return `${startYear}-${String(startYear + 1).slice(-2)}`;
 }
 
 function isVisible(ev: CalendarEvent, hidden: Set<string>): boolean {
@@ -277,7 +271,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
 
       {/* Legenda */}
       {(() => {
-        const viewedSeason = seasonForMonth(year, month);
+        const viewedSeason = seasonForDate(new Date(year, month, 1));
         const seasonTeams = teams.filter((t) => t.season === viewedSeason);
         return (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 3, alignItems: "center" }}>
@@ -525,6 +519,7 @@ function CreateEventDialog({
   const [trainTitle, setTrainTitle] = useState("Allenamento settimanale");
   const [trainStart, setTrainStart] = useState("18:00");
   const [trainEnd, setTrainEnd] = useState("20:00");
+  const [trainRestrictions, setTrainRestrictions] = useState<RestrictionValue>({ allowedRoles: [], restrictTeamId: null, openRoles: [] });
 
   // Event fields
   const [eventTitle, setEventTitle] = useState("");
@@ -570,6 +565,7 @@ function CreateEventDialog({
     setTrainTitle("Allenamento settimanale");
     setTrainStart("18:00");
     setTrainEnd("20:00");
+    setTrainRestrictions({ allowedRoles: [], restrictTeamId: null, openRoles: [] });
     setEventTitle("");
     setEventLocation("");
     setEventEndDate("");
@@ -619,6 +615,9 @@ function CreateEventDialog({
             date: dateTime.toISOString(),
             endTime: endDateTime?.toISOString() ?? null,
             dateSlug: `${dateStr}${trainStart}`.replace(/-/g, "").replace(":", ""),
+            allowedRoles: trainRestrictions.allowedRoles,
+            restrictTeamId: trainRestrictions.restrictTeamId,
+            openRoles: trainRestrictions.openRoles,
           }),
         });
       } else if (tab === "event") {
@@ -739,6 +738,13 @@ function CreateEventDialog({
                 disabled={loading}
               />
             </Box>
+            <Divider />
+            <SessionRestrictionEditor
+              value={trainRestrictions}
+              onChange={setTrainRestrictions}
+              disabled={loading}
+              seasonFilter={day ? seasonForDate(day) : undefined}
+            />
           </Box>
         )}
 

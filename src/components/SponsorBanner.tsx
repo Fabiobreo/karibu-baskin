@@ -26,7 +26,8 @@ export default function SponsorBanner() {
         borderBottom: "1px solid",
         borderColor: "divider",
         bgcolor: "background.paper",
-        py: 1.5,
+        pt: 1.5,
+        pb: 2,
         overflow: "hidden",
         position: "relative",
         "&::before, &::after": {
@@ -130,6 +131,7 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
             src={sponsor.src}
             alt={sponsor.name}
             fill
+            sizes="110px"
             style={{ objectFit: "contain", padding: "4px" }}
           />
         ) : (
@@ -139,7 +141,7 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
         )}
       </Box>
 
-      <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.68rem", fontWeight: 500 }}>
+      <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.68rem", fontWeight: 500, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {sponsor.name}
       </Typography>
     </Box>

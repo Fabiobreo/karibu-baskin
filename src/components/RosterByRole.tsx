@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Box, Typography, Chip, CircularProgress, Paper } from "@mui/material";
+import { Box, Typography, Chip, CircularProgress, Paper, Tooltip } from "@mui/material";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 
@@ -8,6 +9,7 @@ interface Registration {
   id: string;
   name: string;
   role: number;
+  note?: string | null;
   createdAt: string | Date;
   sessionId: string;
   userId: string | null;
@@ -138,10 +140,24 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                   const highlighted = isOwn || isOwnChild;
                   const canDelete = isOwn || isOwnChild || isStaff;
                   const isDeleting = deletingId === reg.id;
-                  return (
+                  const hasNote = !!reg.note;
+
+                  const chipLabel = isDeleting
+                    ? <CircularProgress size={12} color="inherit" />
+                    : hasNote
+                      ? (
+                        <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
+                          <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {reg.name}
+                          </Box>
+                          <ChatBubbleOutlineIcon sx={{ fontSize: "0.65rem", flexShrink: 0, opacity: 0.75 }} />
+                        </Box>
+                      )
+                      : reg.name;
+
+                  const chip = (
                     <Chip
-                      key={reg.id}
-                      label={isDeleting ? <CircularProgress size={12} color="inherit" /> : reg.name}
+                      label={chipLabel}
                       size="small"
                       variant={highlighted ? "filled" : "outlined"}
                       onDelete={canDelete && !isDeleting ? () => handleUnregister(reg) : undefined}
@@ -156,7 +172,7 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                         width: "100%",
                         maxWidth: "100%",
                         justifyContent: "space-between",
-                        "& .MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 },
+                        "& .MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, display: "block" },
                         ...(highlighted ? {
                           backgroundColor: ROLE_COLORS[role],
                           color: "#fff",
@@ -168,6 +184,36 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                         } : {}),
                       }}
                     />
+                  );
+
+                  return (
+                    <Box key={reg.id}>
+                      {hasNote && !isStaff ? (
+                        <Tooltip title={reg.note!} arrow placement="top">
+                          <span style={{ display: "block" }}>{chip}</span>
+                        </Tooltip>
+                      ) : (
+                        chip
+                      )}
+                      {isStaff && hasNote && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            px: 1,
+                            mt: 0.25,
+                            mb: 0.25,
+                            fontSize: "0.65rem",
+                            fontStyle: "italic",
+                            color: "text.secondary",
+                            wordBreak: "break-word",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {reg.note}
+                        </Typography>
+                      )}
+                    </Box>
                   );
                 })}
               </Box>

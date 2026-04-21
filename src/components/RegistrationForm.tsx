@@ -2,14 +2,16 @@
 import { useState, useEffect } from "react";
 import {
   Box, TextField, Button, Typography, CircularProgress,
-  Chip, Avatar, Divider, ToggleButtonGroup, ToggleButton,
+  Chip, Avatar, Divider, ToggleButtonGroup, ToggleButton, Alert,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
+import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_COLORS, ROLE_LABELS, ROLES, sportRoleLabel } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import SportRoleQuestionnaire, { type SportRoleResult } from "@/components/SportRoleQuestionnaire";
+import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -40,6 +42,7 @@ interface Props {
   registeredChildIds: (string | null)[];
   currentUser?: CurrentUser | null;
   children?: ChildInfo[];
+  restrictions?: SessionRestrictions & { restrictTeamName?: string | null };
 }
 
 type Phase = "questionnaire" | "confirm";
@@ -55,6 +58,7 @@ export default function RegistrationForm({
   registeredChildIds,
   currentUser,
   children = [],
+  restrictions,
 }: Props) {
   const isParent = currentUser?.appRole === "PARENT";
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
@@ -126,6 +130,7 @@ export default function RegistrationForm({
   }, [subject, currentUser]);
 
   const [anonymousName, setAnonymousName] = useState("");
+  const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
@@ -159,6 +164,7 @@ export default function RegistrationForm({
       if (isAnon) body.name = name;
       if (chosenRole.variant) body.roleVariant = chosenRole.variant;
       if (subject !== "self") body.childId = subject;
+      if (note.trim()) body.note = note.trim();
 
       const res = await fetch("/api/registrations", {
         method: "POST",
@@ -178,6 +184,7 @@ export default function RegistrationForm({
       showToast({ message: `${displayName} iscritto/a con successo!`, severity: "success" });
 
       setAnonymousName("");
+      setNote("");
       if (hasConfirmedRole) {
         setPhase("confirm");
       } else {
@@ -247,6 +254,39 @@ export default function RegistrationForm({
     );
   }
 
+  // ── Restrizioni iscrizione ───────────────────────────────────────────────────
+  // Calcola il motivo di blocco client-side solo per restrizione di ruolo confermato
+  const restrictionBlock = (() => {
+    if (!restrictions || !hasRestrictions(restrictions)) return null;
+    if (!currentUser) return null;
+    const { appRole, sportRole } = currentUser;
+    if (appRole === "GUEST" || appRole === "COACH" || appRole === "ADMIN") return null;
+    if (restrictions.allowedRoles.length > 0 && sportRole !== null && !restrictions.allowedRoles.includes(sportRole)) {
+      return `Questo allenamento è riservato ai ruoli ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`;
+    }
+    return null;
+  })();
+
+  // Banner informativo sulle restrizioni (mostrato a tutti, anche se ammessi)
+  const restrictionInfo = (() => {
+    if (!restrictions || !hasRestrictions(restrictions)) return null;
+    const parts: string[] = [];
+    if (restrictions.allowedRoles.length > 0) {
+      parts.push(`Ruoli ammessi: ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`);
+    }
+    if (restrictions.restrictTeamId) {
+      const teamPart = restrictions.restrictTeamName
+        ? `Solo squadra "${restrictions.restrictTeamName}"`
+        : "Solo una squadra specifica";
+      if (restrictions.openRoles.length > 0) {
+        parts.push(`${teamPart} (+ ${restrictions.openRoles.map((r) => ROLE_LABELS[r]).join(", ")} aperti a tutti)`);
+      } else {
+        parts.push(teamPart);
+      }
+    }
+    return parts.join(" · ");
+  })();
+
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -254,6 +294,27 @@ export default function RegistrationForm({
       <Typography variant="h6" gutterBottom>
         Iscriviti all&apos;allenamento
       </Typography>
+
+      {/* Banner restrizioni */}
+      {restrictionInfo && (
+        <Alert
+          severity={restrictionBlock ? "error" : "info"}
+          icon={<LockIcon fontSize="small" />}
+          sx={{ mb: 2, fontSize: "0.8rem" }}
+        >
+          {restrictionBlock ?? restrictionInfo}
+        </Alert>
+      )}
+
+      {/* Blocco completo per restrizione di ruolo confermato */}
+      {restrictionBlock ? (
+        <Box sx={{ textAlign: "center", py: 1 }}>
+          <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
+          <Typography variant="body2" color="error.main" fontWeight={600}>
+            Non puoi iscriverti a questo allenamento
+          </Typography>
+        </Box>
+      ) : <>
 
       {/* ── Selettore soggetto (solo genitore con figli) ── */}
       {hasChildren && (
@@ -440,6 +501,21 @@ export default function RegistrationForm({
                 </Box>
               )}
 
+              <TextField
+                label="Comunicazioni (opzionale)"
+                placeholder={`es. Devo andare via alle 11:30`}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                fullWidth
+                size="small"
+                multiline
+                minRows={2}
+                inputProps={{ maxLength: 300 }}
+                disabled={loading}
+                helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
+                sx={{ mb: 1.5 }}
+              />
+
               <Button
                 variant="contained" fullWidth onClick={handleSubmit}
                 disabled={loading || isDuplicateName || (!currentUser && !anonymousName.trim())}
@@ -455,6 +531,7 @@ export default function RegistrationForm({
           )}
         </>
       )}
+      </>}
     </Box>
   );
 }
