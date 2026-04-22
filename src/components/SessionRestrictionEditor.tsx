@@ -92,9 +92,6 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
         {hasAnyRestriction && (
           <Chip label="attive" size="small" color="warning" sx={{ fontSize: "0.65rem", height: 18 }} />
         )}
-        {seasonFilter && (
-          <Chip label={seasonFilter} size="small" variant="outlined" sx={{ fontSize: "0.65rem", height: 18 }} />
-        )}
       </Box>
 
       {/* Ruoli ammessi */}

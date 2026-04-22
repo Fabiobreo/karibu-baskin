@@ -79,6 +79,15 @@ export default async function PlayerProfilePage({ params }: Props) {
 
   if (!user || user.appRole === "GUEST") notFound();
 
+  // Stagione sportiva corrente (es. "2025-26") — settembre o dopo = nuova stagione
+  const now = new Date();
+  const currentSeason = (() => {
+    const y = now.getFullYear();
+    const start = now.getMonth() >= 8 ? y : y - 1;
+    return `${start}-${String(start + 1).slice(-2)}`;
+  })();
+  const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
+
   // Aggregazioni statistiche
   const totalPoints = user.matchStats.reduce((s, ms) => s + ms.points, 0);
   const totalBaskets = user.matchStats.reduce((s, ms) => s + ms.baskets, 0);
@@ -116,13 +125,30 @@ export default async function PlayerProfilePage({ params }: Props) {
               <Typography variant="h3" fontWeight={800} sx={{ mb: 0.5, fontSize: { xs: "1.8rem", md: "2.5rem" } }}>
                 {user.name ?? "—"}
               </Typography>
-              {user.sportRole && (
-                <Chip
-                  label={sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)}
-                  size="small"
-                  sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700 }}
-                />
-              )}
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 0.5 }}>
+                {user.sportRole && (
+                  <Chip
+                    label={sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)}
+                    size="small"
+                    sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700 }}
+                  />
+                )}
+                {currentTeams.map((m) => (
+                  <Chip
+                    key={m.id}
+                    icon={m.isCaptain ? <EmojiEventsIcon sx={{ fontSize: "0.9rem !important", color: "#F9A825 !important" }} /> : undefined}
+                    label={m.team.name}
+                    size="small"
+                    sx={{
+                      bgcolor: m.team.color ? `${m.team.color}33` : "rgba(255,255,255,0.15)",
+                      color: "#fff",
+                      border: "1px solid",
+                      borderColor: m.team.color ?? "rgba(255,255,255,0.4)",
+                      fontWeight: 600,
+                    }}
+                  />
+                ))}
+              </Box>
             </Box>
           </Box>
         </Container>

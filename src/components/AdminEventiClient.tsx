@@ -10,8 +10,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import PlaceIcon from "@mui/icons-material/Place";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -34,6 +34,7 @@ const emptyForm = {
 
 export default function AdminEventiClient({ events: initialEvents }: { events: Event[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [events, setEvents] = useState(initialEvents);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,6 +42,15 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId) return;
+    const ev = initialEvents.find((e) => e.id === editId);
+    if (ev) openEdit(ev);
+    router.replace("/admin/eventi", { scroll: false });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openCreate = () => {
     setEditingId(null);

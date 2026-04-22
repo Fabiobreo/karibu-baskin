@@ -23,11 +23,26 @@ export async function GET() {
       sportRoleSuggested: true,
       sportRoleSuggestedVariant: true,
       childAccount: { select: { id: true } },
+      teamMemberships: {
+        select: {
+          teamId: true,
+          team: { select: { name: true, color: true, season: true } },
+        },
+      },
     },
   });
 
   if (!user) return NextResponse.json(null);
 
-  const { childAccount, ...rest } = user;
-  return NextResponse.json({ ...rest, linkedChildId: childAccount?.id ?? null });
+  const { childAccount, teamMemberships, ...rest } = user;
+  return NextResponse.json({
+    ...rest,
+    linkedChildId: childAccount?.id ?? null,
+    teamMemberships: teamMemberships.map((m) => ({
+      teamId: m.teamId,
+      teamName: m.team.name,
+      teamColor: m.team.color,
+      teamSeason: m.team.season,
+    })),
+  });
 }

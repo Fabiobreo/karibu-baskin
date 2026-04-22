@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
@@ -162,6 +163,21 @@ export async function DELETE(
   const isStaff = await isCoachOrAdmin();
   if (child.parentId !== session.user.id && !isStaff) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+
+  // Trova le sessioni con squadre generate che includono questo figlio,
+  // poi elimina le iscrizioni e azzera le squadre (evita riferimenti fantasma)
+  const childRegs = await prisma.registration.findMany({
+    where: { childId },
+    select: { sessionId: true },
+  });
+  if (childRegs.length > 0) {
+    const sessionIds = [...new Set(childRegs.map((r) => r.sessionId))];
+    await prisma.registration.deleteMany({ where: { childId } });
+    await prisma.trainingSession.updateMany({
+      where: { id: { in: sessionIds } },
+      data: { teams: Prisma.DbNull },
+    });
   }
 
   await prisma.child.delete({ where: { id: childId } });

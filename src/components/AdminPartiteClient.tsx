@@ -13,8 +13,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
@@ -75,8 +75,18 @@ const emptyMatchForm = {
   notes: "",
 };
 
+function getCurrentSeason() {
+  const n = new Date();
+  const y = n.getFullYear();
+  const s = n.getMonth() >= 8 ? y : y - 1;
+  return `${s}-${String(s + 1).slice(-2)}`;
+}
+
 export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentSeason = getCurrentSeason();
+  const currentSeasonTeams = teams.filter((t) => t.season === currentSeason);
   const [matches, setMatches] = useState(initialMatches);
   const [opponents, setOpponents] = useState(initialOpponents);
   const [tab, setTab] = useState(0); // 0=Partite, 1=Squadre avversarie
@@ -87,6 +97,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [opponentForm, setOpponentForm] = useState({ name: "", city: "" });
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+
+  // Auto-apri dialog di modifica se ?edit=[id] è presente nell'URL
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId) return;
+    const match = initialMatches.find((m) => m.id === editId);
+    if (match) openEdit(match);
+    // Rimuove il param dall'URL senza ricaricare la pagina
+    router.replace("/admin/partite", { scroll: false });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function openCreate() {
     setForm(emptyMatchForm);
@@ -161,6 +182,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         body: JSON.stringify(payload),
       });
       if (!res.ok) { setError("Errore nel salvataggio"); return; }
+      const saved = await res.json() as Match;
+      if (editMatch) {
+        setMatches((prev) => prev.map((m) => m.id === saved.id ? { ...saved, _count: m._count } : m));
+      } else {
+        setMatches((prev) => [saved, ...prev]);
+      }
       setMatchDialog(false);
       router.refresh();
     });
@@ -395,11 +422,11 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             <FormControl fullWidth required>
               <InputLabel>Nostra squadra</InputLabel>
               <Select value={form.teamId} label="Nostra squadra" onChange={(e) => setForm((f) => ({ ...f, teamId: e.target.value as string }))}>
-                {teams.map((t) => (
+                {(currentSeasonTeams.length > 0 ? currentSeasonTeams : teams).map((t) => (
                   <MenuItem key={t.id} value={t.id}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: t.color ?? "#E65100" }} />
-                      {t.name} — {t.season}
+                      {t.name}{currentSeasonTeams.length === 0 && ` — ${t.season}`}
                     </Box>
                   </MenuItem>
                 ))}

@@ -12,9 +12,27 @@ export async function GET() {
   const children = await prisma.child.findMany({
     where: { parentId: session.user.id },
     orderBy: { createdAt: "asc" },
+    include: {
+      teamMemberships: {
+        select: {
+          teamId: true,
+          team: { select: { name: true, color: true, season: true } },
+        },
+      },
+    },
   });
 
-  return NextResponse.json(children);
+  return NextResponse.json(
+    children.map(({ teamMemberships, ...child }) => ({
+      ...child,
+      teamMemberships: teamMemberships.map((m) => ({
+        teamId: m.teamId,
+        teamName: m.team.name,
+        teamColor: m.team.color,
+        teamSeason: m.team.season,
+      })),
+    }))
+  );
 }
 
 // POST /api/users/me/children — crea un nuovo figlio

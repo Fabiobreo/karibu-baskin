@@ -54,7 +54,7 @@ export async function PUT(req: Request, { params }: Params) {
       ...(body.ourScore !== undefined && { ourScore: body.ourScore }),
       ...(body.theirScore !== undefined && { theirScore: body.theirScore }),
       ...(body.result !== undefined && { result: body.result }),
-      ...(body.notes !== undefined && { notes: body.notes.trim() || null }),
+      ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
       ...(body.opponentId !== undefined && { opponentId: body.opponentId }),
     },
     include: {

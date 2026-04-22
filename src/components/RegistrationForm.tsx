@@ -15,6 +15,13 @@ import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRes
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
+export interface TeamMembershipInfo {
+  teamId: string;
+  teamName: string;
+  teamColor: string | null;
+  teamSeason: string;
+}
+
 export interface CurrentUser {
   id: string;
   name: string | null;
@@ -24,6 +31,7 @@ export interface CurrentUser {
   sportRoleSuggested: number | null;
   sportRoleSuggestedVariant: string | null;
   linkedChildId: string | null;
+  teamMemberships: TeamMembershipInfo[];
 }
 
 export interface ChildInfo {
@@ -32,6 +40,7 @@ export interface ChildInfo {
   sportRole: number | null;
   sportRoleVariant: string | null;
   userId: string | null;
+  teamMemberships: TeamMembershipInfo[];
 }
 
 interface Props {
@@ -130,6 +139,7 @@ export default function RegistrationForm({
   }, [subject, currentUser]);
 
   const [anonymousName, setAnonymousName] = useState("");
+  const [anonymousEmail, setAnonymousEmail] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
@@ -162,6 +172,7 @@ export default function RegistrationForm({
     try {
       const body: Record<string, unknown> = { sessionId, role: chosenRole.role };
       if (isAnon) body.name = name;
+      if (isAnon && anonymousEmail.trim()) body.anonymousEmail = anonymousEmail.trim();
       if (chosenRole.variant) body.roleVariant = chosenRole.variant;
       if (subject !== "self") body.childId = subject;
       if (note.trim()) body.note = note.trim();
@@ -255,15 +266,40 @@ export default function RegistrationForm({
   }
 
   // ── Restrizioni iscrizione ───────────────────────────────────────────────────
-  // Calcola il motivo di blocco client-side solo per restrizione di ruolo confermato
   const restrictionBlock = (() => {
     if (!restrictions || !hasRestrictions(restrictions)) return null;
-    if (!currentUser) return null;
-    const { appRole, sportRole } = currentUser;
-    if (appRole === "GUEST" || appRole === "COACH" || appRole === "ADMIN") return null;
-    if (restrictions.allowedRoles.length > 0 && sportRole !== null && !restrictions.allowedRoles.includes(sportRole)) {
+
+    const appRole = currentUser?.appRole ?? null; // null = anonimo
+
+    // COACH/ADMIN sempre ammessi
+    if (appRole === "COACH" || appRole === "ADMIN") return null;
+
+    // Ruolo del soggetto (confermato o scelto nel questionario)
+    const roleToCheck = confirmedRole ?? chosenRole?.role ?? null;
+
+    // Controllo ruoli ammessi (si applica a tutti: atleti, ospiti, anonimi)
+    if (restrictions.allowedRoles.length > 0 && roleToCheck !== null && !restrictions.allowedRoles.includes(roleToCheck)) {
       return `Questo allenamento è riservato ai ruoli ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`;
     }
+
+    // Controllo restrizione squadra (GUEST e anonimi esenti)
+    if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
+      // Se il ruolo è in openRoles, passa la restrizione squadra
+      if (roleToCheck !== null && restrictions.openRoles.includes(roleToCheck)) return null;
+      // Controlla appartenenza squadra solo quando il ruolo è noto
+      if (roleToCheck !== null) {
+        const subjectTeamMemberships = subject === "self"
+          ? (currentUser?.teamMemberships ?? [])
+          : (selectedChild?.teamMemberships ?? []);
+        if (!subjectTeamMemberships.some((m) => m.teamId === restrictions.restrictTeamId)) {
+          const teamName = restrictions.restrictTeamName
+            ? `"${restrictions.restrictTeamName}"`
+            : "una squadra specifica";
+          return `Questo allenamento è riservato ai membri di ${teamName}`;
+        }
+      }
+    }
+
     return null;
   })();
 
@@ -305,16 +341,6 @@ export default function RegistrationForm({
           {restrictionBlock ?? restrictionInfo}
         </Alert>
       )}
-
-      {/* Blocco completo per restrizione di ruolo confermato */}
-      {restrictionBlock ? (
-        <Box sx={{ textAlign: "center", py: 1 }}>
-          <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
-          <Typography variant="body2" color="error.main" fontWeight={600}>
-            Non puoi iscriverti a questo allenamento
-          </Typography>
-        </Box>
-      ) : <>
 
       {/* ── Selettore soggetto (solo genitore con figli) ── */}
       {hasChildren && (
@@ -377,34 +403,59 @@ export default function RegistrationForm({
               <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
                 {(currentUser.name ?? "?")[0].toUpperCase()}
               </Avatar>
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Typography variant="body2" fontWeight={600}>{currentUser.name ?? "Utente"}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {currentUser.appRole === "GUEST"
-                    ? "Ospite"
-                    : currentUser.appRole === "PARENT"
-                      ? "Genitore"
-                      : currentUser.appRole === "COACH"
-                        ? "Allenatore"
-                        : "Atleta"}
-                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {currentUser.appRole === "GUEST"
+                      ? "Ospite"
+                      : currentUser.appRole === "PARENT"
+                        ? "Genitore"
+                        : currentUser.appRole === "COACH"
+                          ? "Allenatore"
+                          : "Atleta"}
+                  </Typography>
+                  {currentUser.teamMemberships
+                    .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                    .map((m) => (
+                      <Chip
+                        key={m.teamId}
+                        label={m.teamName}
+                        size="small"
+                        sx={{ height: 16, fontSize: "0.65rem", fontWeight: 700, bgcolor: m.teamColor ?? "primary.main", color: "#fff", "& .MuiChip-label": { px: 0.75 } }}
+                      />
+                    ))}
+                </Box>
               </Box>
             </Box>
           )}
 
-          {/* Campo nome per anonimi */}
+          {/* Campo nome e email per anonimi */}
           {!currentUser && (
-            <TextField
-              label="Nome e cognome"
-              value={anonymousName}
-              onChange={(e) => setAnonymousName(e.target.value)}
-              fullWidth size="small"
-              inputProps={{ maxLength: 60 }}
-              sx={{ mb: 2 }}
-              disabled={loading}
-              error={isDuplicateName}
-              helperText={isDuplicateName ? "Questo nome è già iscritto" : ""}
-            />
+            <>
+              <TextField
+                label="Nome e cognome"
+                value={anonymousName}
+                onChange={(e) => setAnonymousName(e.target.value)}
+                fullWidth size="small"
+                inputProps={{ maxLength: 60 }}
+                sx={{ mb: 1.5 }}
+                disabled={loading}
+                error={isDuplicateName}
+                helperText={isDuplicateName ? "Questo nome è già iscritto" : ""}
+              />
+              <TextField
+                label="Email (opzionale)"
+                type="email"
+                value={anonymousEmail}
+                onChange={(e) => setAnonymousEmail(e.target.value)}
+                fullWidth size="small"
+                inputProps={{ maxLength: 254 }}
+                sx={{ mb: 2 }}
+                disabled={loading}
+                helperText="Serve per collegare questa iscrizione al tuo account futuro"
+              />
+            </>
           )}
 
           {/* Selezione ruolo */}
@@ -501,37 +552,46 @@ export default function RegistrationForm({
                 </Box>
               )}
 
-              <TextField
-                label="Comunicazioni (opzionale)"
-                placeholder={`es. Devo andare via alle 11:30`}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                fullWidth
-                size="small"
-                multiline
-                minRows={2}
-                inputProps={{ maxLength: 300 }}
-                disabled={loading}
-                helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
-                sx={{ mb: 1.5 }}
-              />
-
-              <Button
-                variant="contained" fullWidth onClick={handleSubmit}
-                disabled={loading || isDuplicateName || (!currentUser && !anonymousName.trim())}
-                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
-              >
-                {loading
-                  ? "Iscrizione in corso..."
-                  : subject !== "self"
-                    ? `Iscrivi ${selectedChild?.name}`
-                    : "Iscriviti"}
-              </Button>
+              {restrictionBlock ? (
+                <Box sx={{ textAlign: "center", py: 1 }}>
+                  <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
+                  <Typography variant="body2" color="error.main" fontWeight={600}>
+                    Non puoi iscriverti a questo allenamento
+                  </Typography>
+                </Box>
+              ) : (
+                <>
+                  <TextField
+                    label="Comunicazioni (opzionale)"
+                    placeholder={`es. Devo andare via alle 11:30`}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    fullWidth
+                    size="small"
+                    multiline
+                    minRows={2}
+                    inputProps={{ maxLength: 300 }}
+                    disabled={loading}
+                    helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
+                    sx={{ mb: 1.5 }}
+                  />
+                  <Button
+                    variant="contained" fullWidth onClick={handleSubmit}
+                    disabled={loading || isDuplicateName || (!currentUser && !anonymousName.trim())}
+                    startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
+                  >
+                    {loading
+                      ? "Iscrizione in corso..."
+                      : subject !== "self"
+                        ? `Iscrivi ${selectedChild?.name}`
+                        : "Iscriviti"}
+                  </Button>
+                </>
+              )}
             </>
           )}
         </>
       )}
-      </>}
     </Box>
   );
 }

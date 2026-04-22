@@ -44,6 +44,9 @@ export default async function ProfiloPage() {
         take: 5,
         select: { sportRole: true, changedAt: true },
       },
+      teamMemberships: {
+        include: { team: { select: { name: true, color: true, season: true } } },
+      },
       _count: { select: { registrations: true } },
     },
   });
@@ -54,6 +57,11 @@ export default async function ProfiloPage() {
   const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
   const isAthlete = effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
   const hasAthleteData = user.sportRole || user.gender || user.birthDate;
+
+  const now = new Date();
+  const seasonStart = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  const currentSeason = `${seasonStart}-${String(seasonStart + 1).slice(-2)}`;
+  const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
   return (
     <>
@@ -88,6 +96,14 @@ export default async function ProfiloPage() {
               variant="outlined"
               sx={{ fontWeight: 600 }}
             />
+            {currentTeams.map((m) => (
+              <Chip
+                key={m.id}
+                label={m.team.name}
+                size="small"
+                sx={{ fontWeight: 700, bgcolor: m.team.color ?? "primary.main", color: "#fff" }}
+              />
+            ))}
           </Box>
 
           {user.appRole === "GUEST" && (

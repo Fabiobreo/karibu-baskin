@@ -211,7 +211,8 @@ model Registration {
   sessionId String
   name      String
   role      Int
-  note      String?  // comunicazione libera dell'atleta (es. "Devo uscire prima")
+  note          String?  // comunicazione libera dell'atleta (es. "Devo uscire prima")
+  anonymousEmail String? // email opzionale per iscrizioni anonime (per riconoscimento futuro)
   createdAt DateTime @default(now())
 
   // Chi è iscritto (al più uno non-null):

@@ -20,13 +20,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { sessionId, role, name: bodyName, roleVariant, childId, note } = body as {
+  const { sessionId, role, name: bodyName, roleVariant, childId, note, anonymousEmail } = body as {
     sessionId?: string;
     role?: number;
     name?: string;
     roleVariant?: string;
     childId?: string;
     note?: string;
+    anonymousEmail?: string;
   };
 
   const trimmedNote = note?.trim().slice(0, 300) || null;
@@ -221,9 +222,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Questo nome è già iscritto all'allenamento" }, { status: 409 });
   }
 
+  const trimmedEmail = anonymousEmail?.trim().toLowerCase().slice(0, 254) || null;
+
   try {
     const registration = await prisma.registration.create({
-      data: { sessionId, name: trimmedName, role, note: trimmedNote },
+      data: { sessionId, name: trimmedName, role, note: trimmedNote, anonymousEmail: trimmedEmail },
     });
     return NextResponse.json(registration, { status: 201 });
   } catch (err: unknown) {

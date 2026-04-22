@@ -364,58 +364,47 @@ export default function SessionPage() {
             ) : (
               // ── Layout default ───────────────────────────────────────────────
               <>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    gap: 3,
-                    alignItems: "flex-start",
-                  }}
+                <Paper
+                  elevation={2}
+                  sx={{ p: { xs: 2, sm: 3 } }}
                 >
-                  <Paper
-                    elevation={2}
-                    sx={{ p: { xs: 2, sm: 3 }, flex: "0 0 auto", width: { xs: "100%", md: 340 } }}
-                  >
-                    {isEnded ? (
-                      <Box sx={{ textAlign: "center", py: 2 }}>
-                        <Typography variant="body1" fontWeight={600} color="text.secondary">
-                          Allenamento terminato
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                          Le iscrizioni sono chiuse.
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <RegistrationForm
-                        sessionId={sessionId}
-                        onRegistered={() => loadSecondaryData(sessionId)}
-                        registeredNames={registrations.map((r) => r.name)}
-                        registeredUserIds={registrations.map((r) => r.userId)}
-                        registeredChildIds={registrations.map((r) => r.childId)}
-                        currentUser={currentUser}
-                        children={parentChildren}
-                        restrictions={session ? {
-                          allowedRoles: session.allowedRoles ?? [],
-                          restrictTeamId: session.restrictTeamId ?? null,
-                          openRoles: session.openRoles ?? [],
-                          restrictTeamName: session.restrictTeam?.name ?? null,
-                        } : undefined}
-                      />
-                    )}
-                  </Paper>
-
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <RosterByRole
-                      registrations={registrations}
-                      currentUserId={currentUser?.id ?? null}
-                      linkedChildId={currentUser?.linkedChildId ?? null}
-                      parentChildIds={parentChildren.map((c) => c.id)}
-                      childUserIds={parentChildren.map((c) => c.userId).filter((id): id is string => !!id)}
-                      isStaff={isStaff}
-                      onUnregistered={() => loadSecondaryData(sessionId)}
+                  {isEnded ? (
+                    <Box sx={{ textAlign: "center", py: 2 }}>
+                      <Typography variant="body1" fontWeight={600} color="text.secondary">
+                        Allenamento terminato
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Le iscrizioni sono chiuse.
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <RegistrationForm
+                      sessionId={sessionId}
+                      onRegistered={() => loadSecondaryData(sessionId)}
+                      registeredNames={registrations.map((r) => r.name)}
+                      registeredUserIds={registrations.map((r) => r.userId)}
+                      registeredChildIds={registrations.map((r) => r.childId)}
+                      currentUser={currentUser}
+                      children={parentChildren}
+                      restrictions={session ? {
+                        allowedRoles: session.allowedRoles ?? [],
+                        restrictTeamId: session.restrictTeamId ?? null,
+                        openRoles: session.openRoles ?? [],
+                        restrictTeamName: session.restrictTeam?.name ?? null,
+                      } : undefined}
                     />
-                  </Box>
-                </Box>
+                  )}
+                </Paper>
+
+                <RosterByRole
+                  registrations={registrations}
+                  currentUserId={currentUser?.id ?? null}
+                  linkedChildId={currentUser?.linkedChildId ?? null}
+                  parentChildIds={parentChildren.map((c) => c.id)}
+                  childUserIds={parentChildren.map((c) => c.userId).filter((id): id is string => !!id)}
+                  isStaff={isStaff}
+                  onUnregistered={() => loadSecondaryData(sessionId)}
+                />
 
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
                   <Typography variant="h6" fontWeight={700} gutterBottom>

@@ -17,6 +17,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import GroupsIcon from "@mui/icons-material/Groups";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import Link from "next/link";
@@ -82,6 +83,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
   const [createDay, setCreateDay] = useState<Date | null>(null);
+  const [dayView, setDayView] = useState<Date | null>(null);
   const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
 
   function toggleKey(key: string) {
@@ -125,7 +127,13 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     events.filter((e) => isSameDay(new Date(e.date), day) && isVisible(e, hiddenKeys));
 
   function handleDayClick(day: Date) {
-    if (isStaff) setCreateDay(day);
+    const dayEvs = eventsForDay(day);
+    // Su mobile mostra sempre il day view; su desktop apre creazione solo per staff
+    if (window.innerWidth < 600) {
+      if (dayEvs.length > 0 || isStaff) setDayView(day);
+    } else if (isStaff) {
+      setCreateDay(day);
+    }
   }
 
   return (
@@ -204,8 +212,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                   bgcolor: "background.paper",
                   p: { xs: "4px", sm: "6px" },
                   opacity: inMonth ? 1 : 0.38,
-                  cursor: isStaff ? "pointer" : "default",
-                  "&:hover": isStaff ? { bgcolor: "action.hover" } : {},
+                  cursor: (isStaff || dayEvents.length > 0) ? "pointer" : "default",
+                  "&:hover": (isStaff || dayEvents.length > 0) ? { bgcolor: "action.hover" } : {},
                   transition: "background-color 0.12s",
                 }}
               >
@@ -241,24 +249,22 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                   )}
                 </Box>
 
-                {/* Mobile: colored dots */}
+                {/* Mobile: colored dots — click apre day view */}
                 <Box sx={{ display: { xs: "flex", sm: "none" }, gap: "3px", flexWrap: "wrap", mt: "2px" }}>
                   {visible.map((ev) => (
                     <Box
                       key={ev.id}
-                      onClick={(e) => { e.stopPropagation(); setSelected(ev); }}
                       sx={{
-                        width: 7,
-                        height: 7,
+                        width: 8,
+                        height: 8,
                         borderRadius: "50%",
                         bgcolor: ev.color,
                         flexShrink: 0,
-                        cursor: "pointer",
                       }}
                     />
                   ))}
                   {extra > 0 && (
-                    <Typography variant="caption" sx={{ fontSize: "0.55rem", color: "text.secondary", lineHeight: "7px" }}>
+                    <Typography variant="caption" sx={{ fontSize: "0.55rem", color: "text.secondary", lineHeight: "8px" }}>
                       +{extra}
                     </Typography>
                   )}
@@ -317,7 +323,17 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
       })()}
 
       {/* Modale dettaglio evento */}
-      <EventDetailDialog event={selected} onClose={() => setSelected(null)} />
+      <EventDetailDialog event={selected} onClose={() => setSelected(null)} isStaff={isStaff} />
+
+      {/* Modale day view (mobile) */}
+      <DayEventsDialog
+        day={dayView}
+        events={dayView ? eventsForDay(dayView) : []}
+        isStaff={isStaff}
+        onClose={() => setDayView(null)}
+        onSelectEvent={(ev) => { setDayView(null); setSelected(ev); }}
+        onAddEvent={() => { setCreateDay(dayView); setDayView(null); }}
+      />
 
       {/* Modale crea evento (solo staff) */}
       {isStaff && (
@@ -371,13 +387,24 @@ function EventChip({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
 
 // ── Modale dettaglio ──────────────────────────────────────────────────────────
 
-function EventDetailDialog({ event, onClose }: { event: CalendarEvent | null; onClose: () => void }) {
+function EventDetailDialog({
+  event, onClose, isStaff,
+}: {
+  event: CalendarEvent | null;
+  onClose: () => void;
+  isStaff: boolean;
+}) {
   if (!event) return null;
 
   const Icon =
     event.type === "training" ? SportsBasketballIcon
     : event.type === "match" ? EmojiEventsIcon
     : EventNoteIcon;
+
+  const editHref =
+    event.type === "training" ? (event.href ?? null)
+    : event.type === "match" ? `/admin/partite?edit=${event.id}`
+    : `/admin/eventi?edit=${event.id}`;
 
   const dateStart = new Date(event.date);
   const dateEnd = event.endDate ? new Date(event.endDate) : null;
@@ -418,7 +445,7 @@ function EventDetailDialog({ event, onClose }: { event: CalendarEvent | null; on
         >
           <Icon sx={{ color: "#fff", fontSize: "1.3rem" }} />
         </Box>
-        <Box sx={{ overflow: "hidden" }}>
+        <Box sx={{ overflow: "hidden", flex: 1 }}>
           <Chip
             label={TYPE_LABELS[event.type]}
             size="small"
@@ -428,6 +455,18 @@ function EventDetailDialog({ event, onClose }: { event: CalendarEvent | null; on
             {event.title}
           </Typography>
         </Box>
+        {isStaff && editHref && (
+          <IconButton
+            component={Link}
+            href={editHref}
+            onClick={onClose}
+            size="small"
+            sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" }, flexShrink: 0 }}
+            title="Modifica"
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+        )}
       </Box>
 
       <DialogContent sx={{ pt: 2.5, pb: 1 }}>
@@ -488,6 +527,85 @@ function EventDetailDialog({ event, onClose }: { event: CalendarEvent | null; on
             Vai alla pagina
           </Button>
         )}
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ── Day view dialog (mobile) ──────────────────────────────────────────────────
+
+function DayEventsDialog({
+  day, events, isStaff, onClose, onSelectEvent, onAddEvent,
+}: {
+  day: Date | null;
+  events: CalendarEvent[];
+  isStaff: boolean;
+  onClose: () => void;
+  onSelectEvent: (ev: CalendarEvent) => void;
+  onAddEvent: () => void;
+}) {
+  if (!day) return null;
+
+  const sorted = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const dayLabel = format(day, "EEEE d MMMM", { locale: it });
+
+  return (
+    <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
+      <Box sx={{ px: 2.5, pt: 2.5, pb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography variant="h6" fontWeight={700} sx={{ textTransform: "capitalize" }}>
+          {dayLabel}
+        </Typography>
+        {isStaff && (
+          <Button size="small" startIcon={<AddIcon />} onClick={onAddEvent} variant="outlined">
+            Aggiungi
+          </Button>
+        )}
+      </Box>
+      <DialogContent sx={{ pt: 0.5, pb: 1 }}>
+        {sorted.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+            Nessun evento in questo giorno.
+          </Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            {sorted.map((ev) => {
+              const Icon =
+                ev.type === "training" ? SportsBasketballIcon
+                : ev.type === "match" ? EmojiEventsIcon
+                : EventNoteIcon;
+              return (
+                <Box
+                  key={ev.id}
+                  onClick={() => onSelectEvent(ev)}
+                  sx={{
+                    display: "flex", alignItems: "center", gap: 1.5,
+                    p: 1.25, borderRadius: 1, cursor: "pointer",
+                    bgcolor: `${ev.color}18`,
+                    border: "1px solid", borderColor: `${ev.color}44`,
+                    "&:hover": { bgcolor: `${ev.color}28` },
+                  }}
+                >
+                  <Box sx={{
+                    width: 32, height: 32, borderRadius: "50%",
+                    bgcolor: ev.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  }}>
+                    <Icon sx={{ color: "#fff", fontSize: "1rem" }} />
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>{ev.title}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {format(new Date(ev.date), "HH:mm")}
+                      {ev.endDate && ` – ${format(new Date(ev.endDate), "HH:mm")}`}
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 2.5, py: 1.5 }}>
+        <Button onClick={onClose} color="inherit" size="small">Chiudi</Button>
       </DialogActions>
     </Dialog>
   );

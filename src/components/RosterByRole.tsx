@@ -147,7 +147,7 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                     : hasNote
                       ? (
                         <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
-                          <Box component="span" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <Box component="span" sx={{ wordBreak: "break-word", overflowWrap: "break-word" }}>
                             {reg.name}
                           </Box>
                           <ChatBubbleOutlineIcon sx={{ fontSize: "0.65rem", flexShrink: 0, opacity: 0.75 }} />
@@ -171,8 +171,9 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                       sx={{
                         width: "100%",
                         maxWidth: "100%",
+                        height: "auto",
                         justifyContent: "space-between",
-                        "& .MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, display: "block" },
+                        "& .MuiChip-label": { whiteSpace: "normal", wordBreak: "break-word", overflowWrap: "break-word", minWidth: 0, display: "block", py: "4px" },
                         ...(highlighted ? {
                           backgroundColor: ROLE_COLORS[role],
                           color: "#fff",

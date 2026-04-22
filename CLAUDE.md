@@ -35,41 +35,62 @@ npx tsc --noEmit     # type check — SEMPRE prima di fare push
 src/
 ├── app/
 │   ├── api/
-│   │   ├── auth/[...nextauth]/   # Auth.js handler
-│   │   ├── sessions/             # CRUD allenamenti (TrainingSession)
-│   │   ├── registrations/        # CRUD iscrizioni
-│   │   ├── teams/                # Generazione squadre
-│   │   ├── users/                # Gestione utenti + me/children
-│   │   ├── push/                 # Web Push (subscribe, vapid-public-key)
-│   │   └── test-login/           # Login fittizio per test (solo ENABLE_TEST_LOGIN=true)
+│   │   ├── auth/[...nextauth]/            # Auth.js handler
+│   │   ├── sessions/                      # CRUD allenamenti (TrainingSession)
+│   │   ├── registrations/                 # CRUD iscrizioni
+│   │   ├── teams/[sessionId]/             # Generazione squadre
+│   │   ├── users/                         # Gestione utenti + me/ + me/children + lookup
+│   │   ├── children/[childId]/            # Modifica/elimina figlio (PATCH/DELETE)
+│   │   ├── competitive-teams/             # CRUD squadre agonistiche + seasons/current
+│   │   ├── matches/                       # CRUD partite ufficiali + [matchId]/stats
+│   │   ├── opposing-teams/                # CRUD squadre avversarie
+│   │   ├── events/                        # CRUD eventi generici
+│   │   ├── calendar/                      # GET calendario (allenamenti + partite + eventi)
+│   │   ├── link-requests/                 # Richieste collegamento genitore-figlio
+│   │   ├── notifications/                 # Notifiche in-app (read, read-all, unread-count)
+│   │   ├── push/                          # Web Push (subscribe, vapid-public-key)
+│   │   └── test-login/                    # Login fittizio per test (solo ENABLE_TEST_LOGIN=true)
 │   ├── admin/
-│   │   ├── login/                # Login admin (solo Google)
-│   │   └── (dashboard)/          # Route group protette (utenti, sessioni)
-│   ├── allenamento/[sessionId]/  # Pagina allenamento pubblico
-│   ├── il-baskin/                # Regole del Baskin
-│   ├── la-squadra/               # Info squadra
-│   ├── contatti/                 # Contatti + mappa
-│   ├── sponsor/                  # Sponsor
-│   ├── login/                    # Login utente Google
-│   ├── profilo/                  # Profilo utente + dati atleta + notifiche
-│   ├── error.tsx                 # Pagina errore runtime (500)
-│   ├── global-error.tsx          # Errore critico root layout
-│   └── not-found.tsx             # Pagina 404
-├── components/                   # Componenti riutilizzabili (tutti PascalCase)
+│   │   ├── login/                         # Login admin (solo Google)
+│   │   └── (dashboard)/                   # Route group protette (COACH o superiore)
+│   │       ├── page.tsx                   # Dashboard admin
+│   │       ├── allenamenti/               # Gestione allenamenti
+│   │       ├── partite/                   # Gestione partite ufficiali
+│   │       ├── eventi/                    # Gestione eventi generici
+│   │       ├── squadre/                   # Gestione squadre agonistiche
+│   │       └── utenti/                    # Gestione utenti + /nuovo
+│   ├── allenamento/[session]/             # Pagina allenamento pubblico
+│   ├── allenamenti/                       # Lista allenamenti pubblica
+│   ├── calendario/                        # Calendario (allenamenti + partite + eventi)
+│   ├── giocatori/[slug]/                  # Profilo pubblico giocatore
+│   ├── squadre/                           # Lista squadre agonistiche
+│   ├── squadre/[season]/[slug]/           # Profilo squadra
+│   ├── notifiche/                         # Centro notifiche utente
+│   ├── il-baskin/                         # Regole del Baskin
+│   ├── la-squadra/                        # Info squadra
+│   ├── contatti/                          # Contatti + mappa
+│   ├── sponsor/                           # Sponsor
+│   ├── login/                             # Login utente Google
+│   ├── profilo/                           # Profilo utente + dati atleta + notifiche + figli
+│   ├── error.tsx                          # Pagina errore runtime (500)
+│   ├── global-error.tsx                   # Errore critico root layout
+│   └── not-found.tsx                      # Pagina 404
+├── components/                            # Componenti riutilizzabili (tutti PascalCase)
 ├── context/
-│   └── ToastContext.tsx           # Toast globali
+│   └── ToastContext.tsx                   # Toast globali
 ├── lib/
-│   ├── apiAuth.ts                # Helper auth per API route (isCoachOrAdmin, isAdminUser)
-│   ├── authjs.ts                 # Config Auth.js v5
-│   ├── authRoles.ts              # Gerarchia ruoli + helper hasRole()
-│   ├── constants.ts              # ROLE_LABELS, ROLE_COLORS, ROLES
-│   ├── db.ts                     # Prisma singleton
-│   ├── teamGenerator.ts          # Mulberry32 PRNG seeded shuffle
-│   ├── theme.ts                  # MUI theme
-│   └── webpush.ts                # Invio notifiche push (sendPushToAll)
-├── proxy.ts                      # Middleware (matcher vuoto — auth gestita nei layout/API)
+│   ├── apiAuth.ts                         # Helper auth per API route (isCoachOrAdmin, isAdminUser)
+│   ├── authjs.ts                          # Config Auth.js v5
+│   ├── authRoles.ts                       # Gerarchia ruoli + helper hasRole()
+│   ├── constants.ts                       # ROLE_LABELS, ROLE_COLORS, ROLES
+│   ├── db.ts                              # Prisma singleton
+│   ├── registrationRestrictions.ts        # Logica restrizioni iscrizioni (shared server+client)
+│   ├── teamGenerator.ts                   # Mulberry32 PRNG seeded shuffle
+│   ├── theme.ts                           # MUI theme
+│   └── webpush.ts                         # Invio notifiche push (sendPushToAll)
+├── proxy.ts                               # Middleware (matcher vuoto — auth gestita nei layout/API)
 └── types/
-    └── next-auth.d.ts            # Augmentazione tipi sessione
+    └── next-auth.d.ts                     # Augmentazione tipi sessione
 ```
 
 ## Convenzioni di codice
@@ -90,17 +111,30 @@ src/
 | Modello Prisma | Tabella DB | Scopo |
 |---|---|---|
 | `TrainingSession` | `TrainingSession` | Allenamenti |
-| `Registration` | `Registration` | Iscrizioni (userId opzionale) |
+| `Registration` | `Registration` | Iscrizioni (userId o childId o anonimo) |
 | `User` | `User` | Utenti Auth.js + dati atleta |
 | `Session` | `Session` | Sessioni OAuth (Auth.js) |
 | `Account` | `Account` | Provider OAuth (Google) |
-| `ParentChild` | `ParentChild` | Link genitore-figlio |
+| `Child` | `Child` | Figli senza account, gestiti dal genitore |
+| `LinkRequest` | `LinkRequest` | Richiesta collegamento genitore-figlio |
 | `SportRoleHistory` | `SportRoleHistory` | Storico cambi ruolo sportivo |
 | `PushSubscription` | `PushSubscription` | Subscription Web Push |
+| `Season` | `Season` | Stagioni sportive (es. "2025-26") |
+| `CompetitiveTeam` | `CompetitiveTeam` | Squadre agonistiche per stagione |
+| `TeamMembership` | `TeamMembership` | Appartenenza giocatore (User o Child) a una squadra |
+| `Match` | `OfficialMatch` | Partite ufficiali |
+| `OpposingTeam` | `OpposingTeam` | Squadre avversarie |
+| `PlayerMatchStats` | `PlayerMatchStats` | Statistiche giocatore per partita |
+| `Event` | `Event` | Eventi generici (tornei, trasferte…) |
+| `AppNotification` | `AppNotification` | Notifiche in-app |
+| `AppNotificationRead` | `AppNotificationRead` | Tracking lettura notifiche per utente |
 
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
+> **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
 
-**Campi atleta su User:** `sportRole Int?` (1-5), `gender Gender?` (MALE/FEMALE), `birthDate DateTime?`
+**Campi atleta su User:** `sportRole Int?` (1-5), `sportRoleVariant String?`, `gender Gender?`, `birthDate DateTime?`, `slug String?` (URL leggibile), `sportRoleSuggested Int?` (in attesa di conferma admin)
+
+**Campi Registration:** `role Int`, `note String?`, `anonymousEmail String?` (per riconoscimento iscrizioni anonime), `userId String?`, `childId String?` (al più uno non-null)
 
 ## Sistema di autenticazione
 
@@ -122,6 +156,21 @@ src/
 - Cookie name: `authjs.session-token` (dev) / `__Secure-authjs.session-token` (prod).
 
 **Preview ruolo:** rimosso completamente. File eliminati: `PreviewBanner.tsx`, `PreviewRoleContext.tsx`, `effectiveSession.ts`, `api/admin/preview/route.ts`.
+
+## Restrizioni iscrizione allenamenti
+
+La logica è in `src/lib/registrationRestrictions.ts` — usata sia server-side (API `POST /api/registrations`) che client-side (`RegistrationForm`).
+
+Campi su `TrainingSession`:
+- `allowedRoles Int[]` — ruoli sportivi ammessi (vuoto = tutti)
+- `restrictTeamId String?` — restringe a membri di una squadra specifica (null = nessuna restrizione)
+- `openRoles Int[]` — ruoli esenti dalla restrizione di squadra (es. ruolo 1 sempre ammesso)
+
+Comportamento `checkRegistrationAllowed()`:
+- COACH e ADMIN: sempre ammessi
+- GUEST / anonimo: bypass del controllo squadra, sottoposti solo a `allowedRoles`
+- ATHLETE/PARENT: controllo `allowedRoles` poi controllo squadra
+- Server-side: usa `user.sportRole ?? role` come ruolo effettivo (ignora il ruolo inviato nel form se l'utente ha un ruolo assegnato)
 
 ## Push notifications
 
@@ -159,14 +208,28 @@ Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/la-squadra`, `/contat
 
 ## Pagina allenamento (`/allenamento/[sessionId]`)
 
-Layout adattivo in base allo stato dell'utente:
+Layout: form iscrizione in cima, lista iscritti (`RosterByRole`) sotto — layout verticale unico.
 
-- **Utente non iscritto o squadre non generate:** form iscrizione + lista iscritti affiancati, sezione squadre in fondo
 - **Utente iscritto + squadre generate:** banner "La tua squadra" in cima, sezione squadre subito dopo, lista iscritti in fondo (form nascosto)
+- **Altrimenti:** form + lista iscritti in sequenza, sezione squadre in fondo
 
 `TeamDisplay` è un componente controllato: riceve `teams: TeamsData | null`, `teamsLoading`, `onTeamsGenerated` dalla pagina. Non fa fetch internamente.
 
 Rilevamento cambio iscritti (per alert "rigenera squadre"): confronto Set degli ID iscrizioni vs ID nelle squadre salvate — resistente a sostituzioni (un utente esce, uno entra).
+
+`RegistrationForm` — aspetti chiave:
+- `CurrentUser.teamMemberships: TeamMembershipInfo[]` (non più solo `teamMembershipIds`)
+- Badge squadra corrente mostrato nell'intestazione soggetto (stagione corrente filtrata)
+- Lock message sostituisce solo il pulsante di invio, lasciando visibile il risultato questionario e "Rifai il questionario"
+- Campo email mostrato per iscrizioni anonime
+
+## Calendario (`/calendario`)
+
+`CalendarClient` — comportamento:
+- **Mobile (< 600px):** click su giorno apre `DayEventsDialog` con lista eventi del giorno; se staff e nessun evento mostra "Aggiungi"
+- **Desktop:** click su giorno per staff crea allenamento/evento; per utenti normali apre il giorno se ci sono eventi
+- `EventDetailDialog` mostra pulsante matita (modifica) per staff, con link a `/admin/partite?edit=[id]` o `/admin/eventi?edit=[id]` o alla pagina allenamento
+- `AdminPartiteClient` e `AdminEventiClient`: su mount leggono `?edit=[id]` via `useSearchParams` e aprono automaticamente il dialog di modifica, poi puliscono l'URL
 
 ## Gestione utenti admin (`/admin/utenti`)
 
@@ -177,13 +240,27 @@ Rilevamento cambio iscritti (per alert "rigenera squadre"): confronto Set degli 
 - **Paginazione:** `TablePagination` con opzioni 10/25/50/100, default 25
 - **Eliminazione utente:** dialog di conferma, endpoint `DELETE /api/users/[userId]` (admin-only, non può eliminare sé stesso)
 
+## Gestione partite admin (`/admin/partite`)
+
+`AdminPartiteClient` — aspetti chiave:
+- Dropdown squadra filtra a `currentSeasonTeams` (stagione corrente), fallback a tutte le squadre se nessuna
+- Dopo salvataggio (PUT): aggiorna stato locale preservando `_count` dall'entry esistente (la risposta API non include `_count`)
+- `getCurrentSeason()`: calcola stagione come `YYYY-YY`, inizio da settembre
+
+## Eliminazione figlio (CASCADE manuale)
+
+`DELETE /api/children/[childId]`: prima di eliminare il figlio, cancella esplicitamente le sue iscrizioni e azzera il campo `teams` (JSON) degli allenamenti coinvolti con `Prisma.DbNull`. Necessario perché `Registration.child` ha `onDelete: SetNull` (non Cascade).
+
 ## Note importanti
 
 - **Generazione squadre:** deterministica con Mulberry32 PRNG seedato su `sessionId` — stesso seed = stesse squadre
 - **3 squadre:** supportate (Arancioni / Neri / Bianchi), opzione nel form admin
+- **Stagione corrente:** `month >= 8 ? year : year - 1` → formattata `YYYY-YY` (es. "2025-26")
 - **Neon branch:** usare branch separati per dev e prod; le variabili Vercel devono puntare al branch corretto per environment
 - **Build script:** `prisma db push` nel build sincronizza automaticamente il DB di produzione — sicuro per aggiungere colonne, fallisce se ci sono data-loss changes (comportamento voluto)
 - **TypeScript strict:** abilitato — nessuna eccezione; risolvere tutti gli errori prima del push
 - **Turbopack cache corrotta:** se si vedono errori `.sst` nei log, usare `npm run dev:clean`
 - **Mock users:** `prisma/seed.ts` crea utenti di test (es. `npx tsx prisma/seed.ts 15`) — ricordarsi di pulirli prima di andare in produzione
 - **`NextResponse.cookies.set()` bug Turbopack:** non usarlo per impostare cookie di sessione — usare `res.headers.set("Set-Cookie", ...)` con stringa manuale
+- **`Prisma.DbNull`:** usare `Prisma.DbNull` (importato da `@prisma/client`) per settare a null campi JSON nullable — `null` TypeScript non funziona con Prisma per i Json field
+- **`router.refresh()` e stato locale:** `router.refresh()` riesegue i Server Component ma non reinizializza lo stato React locale derivato dalle props; aggiornare direttamente lo stato locale dopo le mutazioni API quando serve reattività immediata

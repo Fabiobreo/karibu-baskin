@@ -44,11 +44,6 @@ export function checkRegistrationAllowed(
   // Nessuna restrizione → tutti ammessi
   if (!hasRestrictions(restrictions)) return { allowed: true };
 
-  // Utente anonimo non verificabile → blocca se ci sono restrizioni
-  if (appRole === null) {
-    return { allowed: false, reason: "Registrazione limitata agli atleti iscritti alla squadra" };
-  }
-
   // Controllo ruoli ammessi
   if (restrictions.allowedRoles.length > 0 && !restrictions.allowedRoles.includes(sportRole)) {
     return {
