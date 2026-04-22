@@ -366,7 +366,7 @@ export default function SessionPage() {
               <>
                 <Paper
                   elevation={2}
-                  sx={{ p: { xs: 2, sm: 3 } }}
+                  sx={{ p: { xs: 2, sm: 3 }, maxWidth: { sm: 520 }, mx: "auto", width: "100%" }}
                 >
                   {isEnded ? (
                     <Box sx={{ textAlign: "center", py: 2 }}>
