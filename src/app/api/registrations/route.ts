@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { sessionId, role, name: bodyName, roleVariant, childId, note, anonymousEmail } = body as {
+  const { sessionId, role, name: bodyName, roleVariant, childId, note, anonymousEmail, registeredAsCoach } = body as {
     sessionId?: string;
     role?: number;
     name?: string;
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     childId?: string;
     note?: string;
     anonymousEmail?: string;
+    registeredAsCoach?: boolean;
   };
 
   const trimmedNote = note?.trim().slice(0, 300) || null;
@@ -161,7 +162,7 @@ export async function POST(req: NextRequest) {
       });
       isInRestrictedTeam = !!membership;
     }
-    const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam);
+    const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam, registeredAsCoach ?? false);
     if (!check.allowed) {
       return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
     }
@@ -194,7 +195,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const registration = await prisma.registration.create({
-        data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote },
+        data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: registeredAsCoach ?? false },
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {

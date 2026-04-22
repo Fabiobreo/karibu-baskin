@@ -70,8 +70,12 @@ export default function RegistrationForm({
   restrictions,
 }: Props) {
   const isParent = currentUser?.appRole === "PARENT";
-  const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
+  const isCoach = currentUser?.appRole === "COACH";
+  const isStaff = isCoach || currentUser?.appRole === "ADMIN";
   const hasChildren = isParent && children.length > 0;
+
+  // Modalità iscrizione: "athlete" (default) o "coach" (solo per COACH)
+  const [coachMode, setCoachMode] = useState<"athlete" | "coach">("athlete");
 
   // Un figlio è "già iscritto" se ha childId in registeredChildIds
   // OPPURE se si è iscritto col suo account (userId in registeredUserIds)
@@ -159,7 +163,8 @@ export default function RegistrationForm({
   }
 
   async function handleSubmit() {
-    if (!chosenRole) return;
+    const isCoachRegistration = isCoach && coachMode === "coach";
+    if (!isCoachRegistration && !chosenRole) return;
 
     const isAnon = !currentUser;
     const name = isAnon ? anonymousName.trim() : null;
@@ -170,10 +175,14 @@ export default function RegistrationForm({
 
     setLoading(true);
     try {
-      const body: Record<string, unknown> = { sessionId, role: chosenRole.role };
+      const roleToSend = isCoachRegistration
+        ? (currentUser?.sportRole ?? 1)
+        : chosenRole!.role;
+      const body: Record<string, unknown> = { sessionId, role: roleToSend };
+      if (isCoachRegistration) body.registeredAsCoach = true;
       if (isAnon) body.name = name;
       if (isAnon && anonymousEmail.trim()) body.anonymousEmail = anonymousEmail.trim();
-      if (chosenRole.variant) body.roleVariant = chosenRole.variant;
+      if (!isCoachRegistration && chosenRole?.variant) body.roleVariant = chosenRole.variant;
       if (subject !== "self") body.childId = subject;
       if (note.trim()) body.note = note.trim();
 
@@ -331,8 +340,30 @@ export default function RegistrationForm({
         Iscriviti all&apos;allenamento
       </Typography>
 
-      {/* Banner restrizioni */}
-      {restrictionInfo && (
+      {/* Toggle Atleta / Allenatore (solo per COACH) */}
+      {isCoach && subject === "self" && (
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" sx={{ mb: 0.75 }}>
+            Come ti iscrivi?
+          </Typography>
+          <ToggleButtonGroup
+            exclusive
+            value={coachMode}
+            onChange={(_, val) => { if (val) setCoachMode(val as "athlete" | "coach"); }}
+            size="small"
+          >
+            <ToggleButton value="athlete" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
+              Atleta
+            </ToggleButton>
+            <ToggleButton value="coach" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
+              Allenatore
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+      )}
+
+      {/* Banner restrizioni (solo in modalità atleta) */}
+      {restrictionInfo && coachMode === "athlete" && (
         <Alert
           severity={restrictionBlock ? "error" : "info"}
           icon={<LockIcon fontSize="small" />}
@@ -385,8 +416,33 @@ export default function RegistrationForm({
         </>
       )}
 
-      {/* Se il soggetto corrente è già iscritto */}
-      {currentSubjectRegistered ? (
+      {/* Form semplificato per iscrizione come allenatore */}
+      {isCoach && coachMode === "coach" && !currentSubjectRegistered && (
+        <>
+          <Divider sx={{ mb: 2 }} />
+          <TextField
+            label="Comunicazioni (opzionale)"
+            placeholder="es. Devo andare via alle 11:30"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            fullWidth size="small" multiline minRows={2}
+            inputProps={{ maxLength: 300 }}
+            disabled={loading}
+            helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
+            sx={{ mb: 1.5 }}
+          />
+          <Button
+            variant="contained" fullWidth onClick={handleSubmit}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
+          >
+            {loading ? "Iscrizione in corso..." : "Iscriviti come allenatore"}
+          </Button>
+        </>
+      )}
+
+      {/* Form atleta (nascosto in modalità allenatore) */}
+      {(!isCoach || coachMode === "athlete") && (currentSubjectRegistered ? (
         <Box sx={{ textAlign: "center", py: 1.5 }}>
           <CheckCircleIcon color="success" sx={{ fontSize: 32, mb: 0.5 }} />
           <Typography variant="body2" fontWeight={600}>
@@ -618,7 +674,7 @@ export default function RegistrationForm({
             </>
           )}
         </>
-      )}
+      ))}
     </Box>
   );
 }

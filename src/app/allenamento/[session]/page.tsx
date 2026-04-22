@@ -42,6 +42,7 @@ interface Registration {
   sessionId: string;
   userId: string | null;
   childId: string | null;
+  registeredAsCoach: boolean;
 }
 
 interface StatusBadge {
@@ -346,7 +347,7 @@ export default function SessionPage() {
                   <TeamDisplay
                     sessionId={sessionId}
                     isStaff={isStaff}
-                    registrationIds={registrations.map((r) => r.id)}
+                    registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
                     teams={teams}
                     teamsLoading={teamsLoading}
                     onTeamsGenerated={(newTeams) => setTeams(newTeams)}
@@ -413,7 +414,7 @@ export default function SessionPage() {
                   <TeamDisplay
                     sessionId={sessionId}
                     isStaff={isStaff}
-                    registrationIds={registrations.map((r) => r.id)}
+                    registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
                     teams={teams}
                     teamsLoading={teamsLoading}
                     onTeamsGenerated={(newTeams) => setTeams(newTeams)}

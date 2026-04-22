@@ -14,6 +14,7 @@ interface Registration {
   sessionId: string;
   userId: string | null;
   childId?: string | null;
+  registeredAsCoach?: boolean;
 }
 
 interface Props {
@@ -29,6 +30,9 @@ interface Props {
 export default function RosterByRole({ registrations, currentUserId, linkedChildId, parentChildIds = [], childUserIds = [], isStaff, onUnregistered }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const { showToast } = useToast();
+
+  const athleteRegs = registrations.filter((r) => !r.registeredAsCoach);
+  const coachRegs = registrations.filter((r) => r.registeredAsCoach);
 
   async function handleUnregister(reg: Registration) {
     setDeletingId(reg.id);
@@ -56,8 +60,8 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
     }
   }
 
-  // Only render columns for roles that have at least one registration
-  const activeRoles = ROLES.filter((role) => registrations.some((r) => r.role === role));
+  // Only render columns for roles that have at least one athlete registration
+  const activeRoles = ROLES.filter((role) => athleteRegs.some((r) => r.role === role));
 
   if (registrations.length === 0) {
     return (
@@ -81,13 +85,21 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
           Iscritti
         </Typography>
         <Chip
-          label={`${registrations.length} atlet${registrations.length > 1 ? "i" : "a"}`}
+          label={`${athleteRegs.length} atlet${athleteRegs.length !== 1 ? "i" : "a"}`}
           size="small"
           sx={{ bgcolor: "rgba(255,255,255,0.25)", color: "#fff", fontWeight: 600 }}
         />
+        {coachRegs.length > 0 && (
+          <Chip
+            label={`${coachRegs.length} allenator${coachRegs.length !== 1 ? "i" : "e"}`}
+            size="small"
+            sx={{ bgcolor: "rgba(255,255,255,0.15)", color: "#fff", fontWeight: 600 }}
+          />
+        )}
       </Box>
 
       {/* Column grid — one column per active role */}
+      {activeRoles.length > 0 && (
       <Box
         sx={{
           display: "grid",
@@ -101,7 +113,7 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
         }}
       >
         {activeRoles.map((role) => {
-          const group = registrations.filter((r) => r.role === role);
+          const group = athleteRegs.filter((r) => r.role === role);
           return (
             <Box
               key={role}
@@ -222,6 +234,37 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
           );
         })}
       </Box>
+      )}
+
+      {/* Sezione allenatori presenti */}
+      {coachRegs.length > 0 && (
+        <Box sx={{ px: 2, py: 1.5, borderTop: "1px solid", borderColor: "divider" }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={700} display="block" sx={{ mb: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Allenatori presenti
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+            {coachRegs.map((reg) => {
+              const isOwn = !!currentUserId && reg.userId === currentUserId;
+              const canDelete = isOwn || isStaff;
+              const isDeleting = deletingId === reg.id;
+              return (
+                <Chip
+                  key={reg.id}
+                  label={isDeleting ? <CircularProgress size={12} color="inherit" /> : reg.name}
+                  size="small"
+                  variant={isOwn ? "filled" : "outlined"}
+                  onDelete={canDelete && !isDeleting ? () => handleUnregister(reg) : undefined}
+                  disabled={isDeleting}
+                  sx={{
+                    fontWeight: isOwn ? 700 : 400,
+                    ...(isOwn ? { bgcolor: "text.secondary", color: "#fff", "& .MuiChip-deleteIcon": { color: "rgba(255,255,255,0.8)", "&:hover": { color: "#fff" } } } : {}),
+                  }}
+                />
+              );
+            })}
+          </Box>
+        </Box>
+      )}
     </Paper>
   );
 }

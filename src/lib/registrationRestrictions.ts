@@ -24,19 +24,24 @@ export interface RestrictionCheckResult {
 /**
  * Controlla se un utente può iscriversi in base alle restrizioni della sessione.
  *
- * @param restrictions  - restrizioni della sessione
- * @param appRole       - ruolo applicativo dell'utente (null = anonimo)
- * @param sportRole     - ruolo sportivo usato per l'iscrizione (il ruolo inviato nel body)
+ * @param restrictions       - restrizioni della sessione
+ * @param appRole            - ruolo applicativo dell'utente (null = anonimo)
+ * @param sportRole          - ruolo sportivo usato per l'iscrizione
  * @param isInRestrictedTeam - true se l'utente/figlio è membro della squadra ristretta
+ * @param registeredAsCoach  - true se il coach si iscrive come allenatore (non atleta)
  */
 export function checkRegistrationAllowed(
   restrictions: SessionRestrictions,
   appRole: string | null,
   sportRole: number,
   isInRestrictedTeam: boolean,
+  registeredAsCoach = false,
 ): RestrictionCheckResult {
-  // Staff sempre ammesso
-  if (appRole === "COACH" || appRole === "ADMIN") return { allowed: true };
+  // ADMIN sempre ammesso
+  if (appRole === "ADMIN") return { allowed: true };
+
+  // Coach che si iscrive come allenatore: sempre ammesso senza restrizioni
+  if (registeredAsCoach) return { allowed: true };
 
   // Ospite sempre ammesso
   if (appRole === "GUEST") return { allowed: true };
