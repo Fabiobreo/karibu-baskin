@@ -150,6 +150,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Controllo restrizioni (COACH/ADMIN/GUEST bypassati dentro checkRegistrationAllowed)
+    const effectiveRole = user.sportRole ?? role;
     let isInRestrictedTeam = false;
     if (restrictions.restrictTeamId) {
       const membership = await prisma.teamMembership.findFirst({
@@ -157,7 +158,7 @@ export async function POST(req: NextRequest) {
       });
       isInRestrictedTeam = !!membership;
     }
-    const check = checkRegistrationAllowed(restrictions, user.appRole, role, isInRestrictedTeam);
+    const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam);
     if (!check.allowed) {
       return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
     }
