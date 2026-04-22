@@ -78,12 +78,17 @@ type Team = {
   memberships: Membership[];
 };
 
+type Child = { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null };
+
+// Valore nel Select: "u:{id}" per utenti, "c:{id}" per figli
+type SelectableEntry = { selectKey: string; id: string; kind: "user" | "child"; name: string | null; image?: string | null; sportRole: number | null; sportRoleVariant: string | null };
+
 type SeasonRecord = { label: string; isCurrent: boolean };
-type Props = { teams: Team[]; users: User[]; seasons: SeasonRecord[] };
+type Props = { teams: Team[]; users: User[]; children: Child[]; seasons: SeasonRecord[] };
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
-export default function AdminSquadreClient({ teams: initialTeams, users, seasons: initialSeasons }: Props) {
+export default function AdminSquadreClient({ teams: initialTeams, users, children, seasons: initialSeasons }: Props) {
   const router = useRouter();
   const [teams, setTeams] = useState(initialTeams);
   const [isPending, startTransition] = useTransition();
@@ -144,7 +149,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
   // Dialog rosa
   const [rosaTeam, setRosaTeam] = useState<Team | null>(null);
   const [addingMember, setAddingMember] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedKey, setSelectedKey] = useState("");
 
   // ── Stagioni ─────────────────────────────────────────────────────────────────
 
@@ -220,14 +225,15 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
   }
 
   async function handleAddMember() {
-    if (!rosaTeam || !selectedUserId) return;
+    if (!rosaTeam || !selectedKey) return;
+    const [kind, id] = selectedKey.split(":");
     startTransition(async () => {
       await fetch(`/api/competitive-teams/${rosaTeam.id}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: selectedUserId }),
+        body: JSON.stringify(kind === "c" ? { childId: id } : { userId: id }),
       });
-      setSelectedUserId("");
+      setSelectedKey("");
       setAddingMember(false);
       router.refresh();
     });
@@ -257,8 +263,15 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
 
   const teamsInSeason = teams.filter((t) => t.season === activeSeason);
 
-  const rosaAvailableUsers = rosaTeam
-    ? users.filter((u) => !rosaTeam.memberships.some((m) => m.userId === u.id))
+  const rosaAvailable: SelectableEntry[] = rosaTeam
+    ? [
+        ...users
+          .filter((u) => !rosaTeam.memberships.some((m) => m.userId === u.id))
+          .map((u) => ({ selectKey: `u:${u.id}`, id: u.id, kind: "user" as const, name: u.name, image: u.image, sportRole: u.sportRole, sportRoleVariant: u.sportRoleVariant })),
+        ...children
+          .filter((c) => !rosaTeam.memberships.some((m) => m.childId === c.id))
+          .map((c) => ({ selectKey: `c:${c.id}`, id: c.id, kind: "child" as const, name: c.name, image: null, sportRole: c.sportRole, sportRoleVariant: c.sportRoleVariant })),
+      ].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
     : [];
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -375,7 +388,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
                       colorName={colorName}
                       onEdit={() => openEdit(team)}
                       onDelete={() => handleDeleteTeam(team.id, team.name)}
-                      onRosa={() => { setRosaTeam(team); setAddingMember(false); setSelectedUserId(""); }}
+                      onRosa={() => { setRosaTeam(team); setAddingMember(false); setSelectedKey(""); }}
                     />
                   </Grid>
                 );
@@ -532,7 +545,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
                   variant="outlined"
                   startIcon={<AddIcon />}
                   onClick={() => setAddingMember(true)}
-                  disabled={rosaAvailableUsers.length === 0}
+                  disabled={rosaAvailable.length === 0}
                   sx={{ mb: 2 }}
                 >
                   Aggiungi atleta
@@ -545,19 +558,22 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
                   <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                     <FormControl size="small" sx={{ flex: 1, minWidth: 180 }}>
                       <InputLabel>Atleta</InputLabel>
-                      <Select value={selectedUserId} label="Atleta" onChange={(e) => setSelectedUserId(e.target.value as string)}>
-                        {rosaAvailableUsers.map((u) => (
-                          <MenuItem key={u.id} value={u.id}>
+                      <Select value={selectedKey} label="Atleta" onChange={(e) => setSelectedKey(e.target.value as string)}>
+                        {rosaAvailable.map((entry) => (
+                          <MenuItem key={entry.selectKey} value={entry.selectKey}>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Avatar src={u.image ?? undefined} sx={{ width: 22, height: 22, fontSize: 10 }}>
-                                {(u.name ?? "?")[0].toUpperCase()}
+                              <Avatar src={entry.image ?? undefined} sx={{ width: 22, height: 22, fontSize: 10 }}>
+                                {(entry.name ?? "?")[0].toUpperCase()}
                               </Avatar>
-                              {u.name ?? u.id}
-                              {u.sportRole && (
+                              {entry.name ?? entry.id}
+                              {entry.kind === "child" && (
+                                <Chip label="Figlio" size="small" sx={{ height: 15, fontSize: "0.58rem", fontWeight: 700 }} />
+                              )}
+                              {entry.sportRole && (
                                 <Chip
-                                  label={sportRoleLabel(u.sportRole, u.sportRoleVariant ?? null)}
+                                  label={sportRoleLabel(entry.sportRole, entry.sportRoleVariant ?? null)}
                                   size="small"
-                                  sx={{ bgcolor: ROLE_COLORS[u.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.58rem", height: 15, ml: 0.5 }}
+                                  sx={{ bgcolor: ROLE_COLORS[entry.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.58rem", height: 15, ml: 0.5 }}
                                 />
                               )}
                             </Box>
@@ -565,10 +581,10 @@ export default function AdminSquadreClient({ teams: initialTeams, users, seasons
                         ))}
                       </Select>
                     </FormControl>
-                    <Button variant="contained" size="small" disabled={!selectedUserId || isPending} onClick={handleAddMember}>
+                    <Button variant="contained" size="small" disabled={!selectedKey || isPending} onClick={handleAddMember}>
                       Aggiungi
                     </Button>
-                    <Button size="small" onClick={() => { setAddingMember(false); setSelectedUserId(""); }}>
+                    <Button size="small" onClick={() => { setAddingMember(false); setSelectedKey(""); }}>
                       Annulla
                     </Button>
                   </Box>

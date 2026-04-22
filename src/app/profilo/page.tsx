@@ -12,6 +12,7 @@ import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
 import PushNotificationToggle from "@/components/PushNotificationToggle";
 import LinkRequestsSection from "@/components/LinkRequestsSection";
+import ClaimAnonymousCard from "@/components/ClaimAnonymousCard";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -34,7 +35,7 @@ export default async function ProfiloPage() {
     include: {
       children: {
         orderBy: { createdAt: "asc" as const },
-        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true, userId: true, user: { select: { email: true, image: true } } },
+        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true, userId: true, user: { select: { email: true, image: true } }, teamMemberships: { include: { team: { select: { name: true, color: true, season: true } } } } },
       },
       childAccount: {
         select: { _count: { select: { registrations: true } } },
@@ -63,6 +64,18 @@ export default async function ProfiloPage() {
   const currentSeason = `${seasonStart}-${String(seasonStart + 1).slice(-2)}`;
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
+  // Iscrizioni anonime con stesso nome (per proposta di collegamento)
+  const anonymousMatches = user.name
+    ? await prisma.registration.findMany({
+        where: { userId: null, childId: null, name: { equals: user.name.trim(), mode: "insensitive" } },
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          session: { select: { id: true, date: true, dateSlug: true } },
+        },
+      })
+    : [];
+
   return (
     <>
       <SiteHeader />
@@ -70,6 +83,10 @@ export default async function ProfiloPage() {
         <Typography variant="h4" fontWeight={800} gutterBottom>
           Il mio profilo
         </Typography>
+
+        {anonymousMatches.length > 0 && (
+          <ClaimAnonymousCard sessions={anonymousMatches.map((r) => r.session)} />
+        )}
 
         {/* Card principale */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>

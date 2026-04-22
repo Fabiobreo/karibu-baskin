@@ -429,6 +429,33 @@ export default function RegistrationForm({
               </Box>
             </Box>
           )}
+          {/* Intestazione figlio selezionato (genitore) */}
+          {selectedChild && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+              <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
+                <ChildCareIcon sx={{ fontSize: 18 }} />
+              </Avatar>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" fontWeight={600}>{selectedChild.name}</Typography>
+                {selectedChild.teamMemberships
+                  .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                  .length > 0 && (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
+                    {selectedChild.teamMemberships
+                      .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                      .map((m) => (
+                        <Chip
+                          key={m.teamId}
+                          label={m.teamName}
+                          size="small"
+                          sx={{ height: 16, fontSize: "0.65rem", fontWeight: 700, bgcolor: m.teamColor ?? "primary.main", color: "#fff", "& .MuiChip-label": { px: 0.75 } }}
+                        />
+                      ))}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )}
 
           {/* Campo nome e email per anonimi */}
           {!currentUser && (

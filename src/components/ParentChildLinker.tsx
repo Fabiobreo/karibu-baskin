@@ -33,7 +33,8 @@ export interface ChildData {
   birthDate: string | Date | null;
   userId: string | null;
   user?: { email: string; image: string | null } | null;
-  pendingRequestId?: string | null; // richiesta di collegamento in attesa
+  pendingRequestId?: string | null;
+  teamMemberships?: { team: { name: string; color: string | null; season: string } }[];
 }
 
 interface FoundUser {
@@ -330,6 +331,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  const now = new Date();
+  const sy = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  const currentSeason = `${sy}-${String(sy + 1).slice(-2)}`;
+
   return (
     <Box>
       {children.length > 0 ? (
@@ -351,6 +356,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       <Chip label={sportRoleLabel(child.sportRole, child.sportRoleVariant)} size="small"
                         sx={{ bgcolor: ROLE_COLORS[child.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }} />
                     )}
+                    {child.teamMemberships
+                      ?.filter((m) => m.team.season === currentSeason)
+                      .map((m, i) => (
+                        <Chip key={i} label={m.team.name} size="small"
+                          sx={{ bgcolor: m.team.color ?? "primary.main", color: "#fff", fontWeight: 700, fontSize: "0.7rem" }} />
+                      ))}
                     {child.gender && (
                       <Chip label={GENDER_LABELS[child.gender]} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
                     )}

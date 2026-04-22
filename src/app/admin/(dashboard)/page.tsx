@@ -3,12 +3,14 @@ import {
   Box, Typography, Paper,
   Table, TableBody, TableCell, TableHead, TableRow, Avatar, Chip,
 } from "@mui/material";
+
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import AdminAnonymousRegistrations from "@/components/AdminAnonymousRegistrations";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -22,7 +24,7 @@ export default async function AdminPage() {
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [totalUsers, recentUsers, recentChildren, upcomingSessions, pendingRoleCount] = await Promise.all([
+  const [totalUsers, recentUsers, recentChildren, upcomingSessions, pendingRoleCount, recentAnonymous] = await Promise.all([
     prisma.user.count(),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
@@ -39,6 +41,15 @@ export default async function AdminPage() {
     // Utenti con ruolo suggerito ma non ancora confermato
     prisma.user.count({
       where: { sportRoleSuggested: { not: null }, sportRole: null },
+    }),
+    // Iscrizioni anonime (tutte, per raggruppamento per nome)
+    prisma.registration.findMany({
+      where: { userId: null, childId: null },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true, name: true, anonymousEmail: true, role: true, createdAt: true,
+        session: { select: { id: true, date: true, dateSlug: true } },
+      },
     }),
   ]);
 
@@ -180,6 +191,8 @@ export default async function AdminPage() {
         </Table>
         </Box>
       </Paper>
+
+      <AdminAnonymousRegistrations registrations={recentAnonymous} />
 
     </Box>
   );

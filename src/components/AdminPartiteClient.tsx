@@ -75,18 +75,18 @@ const emptyMatchForm = {
   notes: "",
 };
 
-function getCurrentSeason() {
-  const n = new Date();
-  const y = n.getFullYear();
-  const s = n.getMonth() >= 8 ? y : y - 1;
+function seasonForDate(dateStr: string): string {
+  const d = dateStr ? new Date(dateStr) : new Date();
+  const y = d.getFullYear();
+  const s = d.getMonth() >= 8 ? y : y - 1;
   return `${s}-${String(s + 1).slice(-2)}`;
 }
 
 export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentSeason = getCurrentSeason();
-  const currentSeasonTeams = teams.filter((t) => t.season === currentSeason);
+  const teamsForForm = teams.filter((t) => t.season === seasonForDate(form.date));
+  const displayTeams = teamsForForm.length > 0 ? teamsForForm : teams;
   const [matches, setMatches] = useState(initialMatches);
   const [opponents, setOpponents] = useState(initialOpponents);
   const [tab, setTab] = useState(0); // 0=Partite, 1=Squadre avversarie
@@ -422,11 +422,11 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             <FormControl fullWidth required>
               <InputLabel>Nostra squadra</InputLabel>
               <Select value={form.teamId} label="Nostra squadra" onChange={(e) => setForm((f) => ({ ...f, teamId: e.target.value as string }))}>
-                {(currentSeasonTeams.length > 0 ? currentSeasonTeams : teams).map((t) => (
+                {displayTeams.map((t) => (
                   <MenuItem key={t.id} value={t.id}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: t.color ?? "#E65100" }} />
-                      {t.name}{currentSeasonTeams.length === 0 && ` — ${t.season}`}
+                      {t.name}{teamsForForm.length === 0 && ` — ${t.season}`}
                     </Box>
                   </MenuItem>
                 ))}
@@ -473,7 +473,16 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
               label="Data e ora"
               type="datetime-local"
               value={form.date}
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+              onChange={(e) => {
+                const newDate = e.target.value;
+                const newSeason = seasonForDate(newDate);
+                const validTeams = teams.filter((t) => t.season === newSeason);
+                setForm((f) => ({
+                  ...f,
+                  date: newDate,
+                  teamId: validTeams.some((t) => t.id === f.teamId) ? f.teamId : (validTeams[0]?.id ?? f.teamId),
+                }));
+              }}
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
             />

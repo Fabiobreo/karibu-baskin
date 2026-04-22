@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { ROLES } from "@/lib/constants";
 import { auth } from "@/lib/authjs";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 
 export async function GET(req: NextRequest) {
@@ -235,4 +237,66 @@ export async function POST(req: NextRequest) {
     }
     throw err;
   }
+}
+
+export async function PATCH(req: NextRequest) {
+  if (!(await isCoachOrAdmin())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+
+  const body = await req.json() as {
+    ids: string[];
+    name?: string;
+    anonymousEmail?: string | null;
+    role?: number;
+  };
+
+  if (!body.ids?.length) {
+    return NextResponse.json({ error: "ids richiesti" }, { status: 400 });
+  }
+
+  const data: Record<string, unknown> = {};
+  if (body.name !== undefined) data.name = body.name.trim();
+  if ("anonymousEmail" in body) data.anonymousEmail = body.anonymousEmail?.trim() || null;
+  if (body.role !== undefined) data.role = body.role;
+
+  await prisma.registration.updateMany({
+    where: { id: { in: body.ids }, userId: null, childId: null },
+    data,
+  });
+
+  return NextResponse.json({ updated: body.ids.length });
+}
+
+export async function DELETE(req: NextRequest) {
+  if (!(await isCoachOrAdmin())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+
+  const name = req.nextUrl.searchParams.get("name");
+  if (!name?.trim()) {
+    return NextResponse.json({ error: "name richiesto" }, { status: 400 });
+  }
+
+  // Trova tutte le iscrizioni anonime con questo nome (case-insensitive)
+  const regs = await prisma.registration.findMany({
+    where: { userId: null, childId: null, name: { equals: name.trim(), mode: "insensitive" } },
+    select: { id: true, sessionId: true },
+  });
+
+  if (regs.length === 0) return new NextResponse(null, { status: 204 });
+
+  const sessionIds = [...new Set(regs.map((r) => r.sessionId))];
+
+  await prisma.registration.deleteMany({ where: { id: { in: regs.map((r) => r.id) } } });
+
+  // Azzera le squadre generate degli allenamenti coinvolti
+  for (const sessionId of sessionIds) {
+    await prisma.trainingSession.update({
+      where: { id: sessionId },
+      data: { teams: Prisma.DbNull },
+    });
+  }
+
+  return new NextResponse(null, { status: 204 });
 }

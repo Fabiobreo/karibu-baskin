@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Gestione Squadre | Admin" };
 export const revalidate = 0;
 
 export default async function AdminSquadrePage() {
-  const [teams, users, seasons] = await Promise.all([
+  const [teams, users, children, seasons] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
@@ -25,8 +25,12 @@ export default async function AdminSquadrePage() {
       orderBy: { name: "asc" },
       select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true },
     }),
+    prisma.child.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, sportRole: true, sportRoleVariant: true },
+    }),
     prisma.season.findMany(),
   ]);
 
-  return <AdminSquadreClient teams={teams} users={users} seasons={seasons} />;
+  return <AdminSquadreClient teams={teams} users={users} children={children} seasons={seasons} />;
 }

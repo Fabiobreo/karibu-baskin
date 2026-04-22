@@ -615,8 +615,9 @@ function DayEventsDialog({
 
 type CreateType = "training" | "event" | "match";
 
-interface CompetitiveTeam { id: string; name: string; season: string; }
+interface CompetitiveTeam { id: string; name: string; season: string; color?: string | null; }
 interface OpposingTeam { id: string; name: string; city?: string | null; }
+
 
 function CreateEventDialog({
   day,
@@ -671,7 +672,10 @@ function CreateEventDialog({
         .then(([t, o]: [CompetitiveTeam[], OpposingTeam[]]) => {
           setTeams(t);
           setOpponents(o);
-          if (t.length > 0) setMatchTeamId(t[0].id);
+          const season = seasonForDate(dateStr);
+          const seasonTeams = t.filter((team) => team.season === season);
+          const firstTeam = seasonTeams[0] ?? t[0];
+          if (firstTeam) setMatchTeamId(firstTeam.id);
         })
         .catch(() => showToast({ message: "Errore nel caricamento squadre", severity: "error" }))
         .finally(() => setTeamsLoading(false));
@@ -914,7 +918,11 @@ function CreateEventDialog({
               <Typography color="text.secondary" variant="body2">
                 Nessuna squadra disponibile. Creane una nel pannello admin prima di aggiungere partite.
               </Typography>
-            ) : (
+            ) : (() => {
+                const matchSeason = seasonForDate(dateStr);
+                const filteredTeams = teams.filter((t) => t.season === matchSeason);
+                const displayTeams = filteredTeams.length > 0 ? filteredTeams : teams;
+                return (
               <>
                 <FormControl size="small" error={!!errors.matchTeamId} fullWidth>
                   <InputLabel shrink>Squadra</InputLabel>
@@ -925,8 +933,8 @@ function CreateEventDialog({
                     notched
                     disabled={loading}
                   >
-                    {teams.map((t) => (
-                      <MenuItem key={t.id} value={t.id}>{t.name} ({t.season})</MenuItem>
+                    {displayTeams.map((t) => (
+                      <MenuItem key={t.id} value={t.id}>{t.name}{filteredTeams.length === 0 ? ` (${t.season})` : ""}</MenuItem>
                     ))}
                   </Select>
                   {errors.matchTeamId && <FormHelperText>{errors.matchTeamId}</FormHelperText>}
@@ -991,7 +999,9 @@ function CreateEventDialog({
                   disabled={loading}
                 />
               </>
-            )}
+                );
+              })()
+            }
           </Box>
         )}
       </DialogContent>
