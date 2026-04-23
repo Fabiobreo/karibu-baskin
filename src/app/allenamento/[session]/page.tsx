@@ -1,7 +1,8 @@
 "use client";
 // Route rinominata: [sessionId] → [session]
 // Il param può essere un dateSlug (es. "2025-03-15T18:00") o un CUID (retrocompatibilità)
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { useParams } from "next/navigation";
 import {
   Container, Typography, Box,
@@ -80,14 +81,41 @@ export default function SessionPage() {
   // Il param può essere dateSlug (es. "2025-03-15T18:00") o CUID (retrocompatibilità)
   const { session: sessionParam } = useParams<{ session: string }>();
 
-  const [session, setSession] = useState<Session | null>(null);
-  const [realSessionId, setRealSessionId] = useState<string>("");
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [teams, setTeams] = useState<TeamsData | null>(null);
-  const [teamsLoading, setTeamsLoading] = useState(true);
-  const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
   const [parentChildren, setParentChildren] = useState<ChildInfo[]>([]);
+
+  const swrOpts = { revalidateOnFocus: true, refreshInterval: 0 } as const;
+  const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject()));
+
+  // 1. Risolve slug/CUID → Session
+  const { data: session, isLoading: loading } = useSWR<Session>(
+    `/api/sessions/${encodeURIComponent(sessionParam)}`,
+    fetcher,
+    swrOpts,
+  );
+  const realSessionId = session?.id ?? "";
+
+  // 2. Iscrizioni — si aggiornano ogni volta che l'utente ritorna sulla tab
+  const regKey = realSessionId ? `/api/registrations?sessionId=${realSessionId}` : null;
+  const { data: registrations = [], mutate: mutateRegistrations } = useSWR<Registration[]>(
+    regKey,
+    fetcher,
+    swrOpts,
+  );
+
+  // 3. Squadre
+  const teamsKey = realSessionId ? `/api/teams/${realSessionId}` : null;
+  const { data: teamsRaw, isLoading: teamsLoading, mutate: mutateTeams } = useSWR<TeamsData>(
+    teamsKey,
+    fetcher,
+    swrOpts,
+  );
+  const teams: TeamsData | null = teamsRaw?.generated ? teamsRaw : null;
+
+  function refreshSecondary() {
+    mutateRegistrations();
+    mutateTeams();
+  }
 
   useEffect(() => {
     fetch("/api/users/me")
@@ -103,60 +131,6 @@ export default function SessionPage() {
       })
       .catch(() => setCurrentUser(null));
   }, []);
-
-  // Carica iscrizioni + squadre usando il vero CUID della sessione
-  const loadSecondaryData = useCallback(async (id: string) => {
-    const [regRes, teamsRes] = await Promise.all([
-      fetch(`/api/registrations?sessionId=${id}`),
-      fetch(`/api/teams/${id}`),
-    ]);
-    if (regRes.ok) setRegistrations(await regRes.json());
-    if (teamsRes.ok) {
-      const data: TeamsData = await teamsRes.json();
-      setTeams(data.generated ? data : null);
-    }
-    setTeamsLoading(false);
-  }, []);
-
-  // Polling: ricarica tutto con il CUID reale
-  const loadAll = useCallback(async (id: string) => {
-    const [sessionRes, regRes, teamsRes] = await Promise.all([
-      fetch(`/api/sessions/${id}`),
-      fetch(`/api/registrations?sessionId=${id}`),
-      fetch(`/api/teams/${id}`),
-    ]);
-    if (sessionRes.ok) setSession(await sessionRes.json());
-    if (regRes.ok) setRegistrations(await regRes.json());
-    if (teamsRes.ok) {
-      const data: TeamsData = await teamsRes.json();
-      setTeams(data.generated ? data : null);
-    }
-    setTeamsLoading(false);
-  }, []);
-
-  // Caricamento iniziale: risolve il param (slug o CUID) → real session ID
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/sessions/${encodeURIComponent(sessionParam)}`)
-      .then((res) => (res.ok ? (res.json() as Promise<Session>) : Promise.reject()))
-      .then(async (s) => {
-        setSession(s);
-        setRealSessionId(s.id);
-        await loadSecondaryData(s.id);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-        setTeamsLoading(false);
-      });
-  }, [sessionParam, loadSecondaryData]);
-
-  // Polling ogni 30s con il vero CUID
-  useEffect(() => {
-    if (!realSessionId) return;
-    const interval = setInterval(() => loadAll(realSessionId), 30000);
-    return () => clearInterval(interval);
-  }, [realSessionId, loadAll]);
 
   const sessionDate = session ? new Date(session.date) : null;
   const sessionEnd = session?.endTime ? new Date(session.endTime) : null;
@@ -350,7 +324,7 @@ export default function SessionPage() {
                     registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
                     teams={teams}
                     teamsLoading={teamsLoading}
-                    onTeamsGenerated={(newTeams) => setTeams(newTeams)}
+                    onTeamsGenerated={(newTeams) => mutateTeams(newTeams, false)}
                   />
                 </Paper>
 
@@ -359,7 +333,7 @@ export default function SessionPage() {
                   currentUserId={currentUser?.id ?? null}
                   parentChildIds={parentChildren.map((c) => c.id)}
                   isStaff={isStaff}
-                  onUnregistered={() => loadSecondaryData(sessionId)}
+                  onUnregistered={() => refreshSecondary()}
                 />
               </>
             ) : (
@@ -381,7 +355,7 @@ export default function SessionPage() {
                   ) : (
                     <RegistrationForm
                       sessionId={sessionId}
-                      onRegistered={() => loadSecondaryData(sessionId)}
+                      onRegistered={() => refreshSecondary()}
                       registeredNames={registrations.map((r) => r.name)}
                       registeredUserIds={registrations.map((r) => r.userId)}
                       registeredChildIds={registrations.map((r) => r.childId)}
@@ -404,7 +378,7 @@ export default function SessionPage() {
                   parentChildIds={parentChildren.map((c) => c.id)}
                   childUserIds={parentChildren.map((c) => c.userId).filter((id): id is string => !!id)}
                   isStaff={isStaff}
-                  onUnregistered={() => loadSecondaryData(sessionId)}
+                  onUnregistered={() => refreshSecondary()}
                 />
 
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
@@ -417,7 +391,7 @@ export default function SessionPage() {
                     registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
                     teams={teams}
                     teamsLoading={teamsLoading}
-                    onTeamsGenerated={(newTeams) => setTeams(newTeams)}
+                    onTeamsGenerated={(newTeams) => mutateTeams(newTeams, false)}
                   />
                 </Paper>
               </>

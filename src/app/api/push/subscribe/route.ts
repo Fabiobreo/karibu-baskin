@@ -5,37 +5,49 @@ import { auth } from "@/lib/authjs";
 // POST — salva subscription
 export async function POST(req: NextRequest) {
   const session = await auth();
-  const body = await req.json().catch(() => null);
+  const userId = session?.user?.id ?? null;
 
+  const body = await req.json().catch(() => null);
   if (!body?.endpoint || !body?.keys?.p256dh || !body?.keys?.auth) {
     return NextResponse.json({ error: "Subscription non valida" }, { status: 400 });
   }
 
+  // Verifica ownership: se l'endpoint esiste già legato a un altro utente, rifiuta
+  const existing = await prisma.pushSubscription.findUnique({
+    where: { endpoint: body.endpoint },
+    select: { userId: true },
+  });
+  if (existing && existing.userId && existing.userId !== userId) {
+    return NextResponse.json({ error: "Endpoint già registrato" }, { status: 409 });
+  }
+
   await prisma.pushSubscription.upsert({
     where: { endpoint: body.endpoint },
-    update: {
-      p256dh: body.keys.p256dh,
-      auth: body.keys.auth,
-      userId: session?.user?.id ?? null,
-    },
-    create: {
-      endpoint: body.endpoint,
-      p256dh: body.keys.p256dh,
-      auth: body.keys.auth,
-      userId: session?.user?.id ?? null,
-    },
+    update: { p256dh: body.keys.p256dh, auth: body.keys.auth, userId },
+    create: { endpoint: body.endpoint, p256dh: body.keys.p256dh, auth: body.keys.auth, userId },
   });
 
   return NextResponse.json({ ok: true });
 }
 
-// DELETE — rimuove subscription
+// DELETE — rimuove subscription (solo del richiedente autenticato)
 export async function DELETE(req: NextRequest) {
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
+
   const body = await req.json().catch(() => null);
   if (!body?.endpoint) {
     return NextResponse.json({ error: "Endpoint mancante" }, { status: 400 });
   }
 
-  await prisma.pushSubscription.deleteMany({ where: { endpoint: body.endpoint } });
+  // Se c'è un utente loggato, elimina solo se è la sua subscription
+  // Se non è loggato, elimina solo subscription anonime (userId null)
+  await prisma.pushSubscription.deleteMany({
+    where: {
+      endpoint: body.endpoint,
+      userId: userId ?? null,
+    },
+  });
+
   return NextResponse.json({ ok: true });
 }

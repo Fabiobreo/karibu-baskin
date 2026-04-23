@@ -171,6 +171,7 @@ model LinkRequest {
   targetUserId String
   status       LinkRequestStatus @default(PENDING)
   createdAt    DateTime          @default(now())
+  expiresAt    DateTime?         // null = non scade; PENDING scadute vengono ignorate
 
   child      Child @relation(fields: [childId], references: [id], onDelete: Cascade)
   parent     User  @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
@@ -395,6 +396,23 @@ model PlayerMatchStats {
   @@index([matchId])
   @@index([userId])
   @@index([childId])
+}
+
+// ── Audit log ────────────────────────────────────────────────────────────────
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String   // es. "UPDATE_ROLE", "DELETE_USER", "ADD_MEMBER", "REMOVE_MEMBER"
+  targetType String   // es. "User", "Child", "TeamMembership"
+  targetId   String
+  before     Json?    // snapshot prima della modifica
+  after      Json?    // snapshot dopo la modifica
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
 }
 
 // ── Eventi generici ───────────────────────────────────────────────────────────

@@ -37,6 +37,10 @@ export async function POST(
     return NextResponse.json({ error: "Richiesta già elaborata" }, { status: 409 });
   }
 
+  if (linkRequest.expiresAt && linkRequest.expiresAt < new Date()) {
+    return NextResponse.json({ error: "Richiesta scaduta" }, { status: 410 });
+  }
+
   const body = await req.json().catch(() => ({}));
   const { accept } = body as { accept?: boolean };
   if (typeof accept !== "boolean") {
@@ -109,6 +113,7 @@ export async function POST(
       ? `L'account è stato collegato a ${childName}.`
       : `La richiesta per ${childName} è stata rifiutata.`,
     url: "/profilo",
+    type: "LINK_RESPONSE",
   });
 
   return NextResponse.json({ status: newStatus });

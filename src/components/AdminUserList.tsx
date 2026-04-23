@@ -1,5 +1,6 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Box, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Avatar, Typography, Select, MenuItem, Chip,
@@ -71,31 +72,75 @@ interface EditState {
 
 // ── Componente ───────────────────────────────────────────────────────────────
 
+interface CurrentFilters {
+  search?: string;
+  appRole?: string;
+  sportRole?: string;
+  gender?: string;
+  sortBy?: string;
+  sortDir?: string;
+  limit?: number;
+}
+
 export default function AdminUserList({
   users: initialUsers,
   childEntries: initialChildren,
+  serverTotal,
+  serverPage = 1,
+  serverLimit = 25,
+  currentFilters = {},
 }: {
   users: UserEntry[];
   childEntries: ChildEntry[];
+  serverTotal?: number;
+  serverPage?: number;
+  serverLimit?: number;
+  currentFilters?: CurrentFilters;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [, startTransition] = useTransition();
+
+  // URL-driven filter state (initialised from server-rendered searchParams)
+  const [search, setSearch] = useState(currentFilters.search ?? "");
+  const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>(
+    currentFilters.appRole ? [currentFilters.appRole as AppRole] : []
+  );
+  const [filterSportRoles, setFilterSportRoles] = useState<string[]>(
+    currentFilters.sportRole ? [currentFilters.sportRole] : []
+  );
+  const [filterGender, setFilterGender] = useState(currentFilters.gender ?? "");
+
+  const [sortBy, setSortBy] = useState<SortColumn>((currentFilters.sortBy as SortColumn) ?? "createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">((currentFilters.sortDir as "asc" | "desc") ?? "desc");
+
+  // Server-side pagination (page is 1-based from server, MUI TablePagination is 0-based)
+  const serverDriven = serverTotal !== undefined;
+  const [page, setPage] = useState(serverDriven ? serverPage - 1 : 0);
+  const [rowsPerPage, setRowsPerPage] = useState(currentFilters.limit ?? serverLimit);
+
+  const pushFilters = useCallback((overrides: Partial<CurrentFilters & { page?: number }>) => {
+    const params = new URLSearchParams();
+    const merged = {
+      search, appRole: filterAppRoles[0] ?? "", sportRole: filterSportRoles[0] ?? "",
+      gender: filterGender, sortBy, sortDir, page: serverPage, limit: rowsPerPage,
+      ...overrides,
+    };
+    if (merged.search) params.set("search", merged.search);
+    if (merged.appRole) params.set("appRole", merged.appRole);
+    if (merged.sportRole) params.set("sportRole", merged.sportRole);
+    if (merged.gender) params.set("gender", merged.gender);
+    if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
+    if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
+    if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
+    if ((merged.limit ?? 25) !== 25) params.set("limit", String(merged.limit));
+    startTransition(() => router.push(`${pathname}?${params.toString()}`));
+  }, [search, filterAppRoles, filterSportRoles, filterGender, sortBy, sortDir, serverPage, rowsPerPage, pathname, router]);
+
   const [rows, setRows] = useState<AdminRow[]>(() => [
     ...initialUsers.map((u) => ({ ...u, kind: "user" as const })),
     ...initialChildren.map((c) => ({ ...c, kind: "child" as const })),
   ]);
-
-  // Filtri
-  const [search, setSearch] = useState("");
-  const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>([]);
-  const [filterSportRoles, setFilterSportRoles] = useState<string[]>([]); // "none" | "1"–"5"
-  const [filterGender, setFilterGender] = useState("");       // "" | "MALE" | "FEMALE" | "none"
-
-  // Ordinamento
-  const [sortBy, setSortBy] = useState<SortColumn>("createdAt");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-
-  // Paginazione
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
@@ -118,6 +163,9 @@ export default function AdminUserList({
     (search ? 1 : 0);
 
   const processed = useMemo(() => {
+    // Server already filtered and sorted — no client-side processing needed
+    if (serverDriven) return rows;
+
     let result = rows;
 
     if (search) {
@@ -174,18 +222,17 @@ export default function AdminUserList({
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [rows, search, filterAppRoles, filterSportRoles, filterGender, sortBy, sortDir]);
+  }, [rows, serverDriven, search, filterAppRoles, filterSportRoles, filterGender, sortBy, sortDir]);
 
-  const paginated = processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  // Server already paginates; client-mode slices locally
+  const paginated = serverDriven ? rows : processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   function handleSort(col: SortColumn) {
-    if (sortBy === col) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(col);
-      setSortDir("asc");
-    }
+    const newDir = sortBy === col ? (sortDir === "asc" ? "desc" : "asc") : "asc";
+    setSortBy(col);
+    setSortDir(newDir);
     setPage(0);
+    if (serverDriven) pushFilters({ sortBy: col, sortDir: newDir, page: 1 });
   }
 
   function resetFilters() {
@@ -194,20 +241,27 @@ export default function AdminUserList({
     setFilterSportRoles([]);
     setFilterGender("");
     setPage(0);
+    if (serverDriven) startTransition(() => router.push(pathname));
   }
 
   function toggleAppRole(role: AppRole) {
-    setFilterAppRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
+    // Single-select when server-driven (server only supports one appRole filter)
+    const newRoles = serverDriven
+      ? (filterAppRoles.includes(role) ? [] : [role])
+      : (filterAppRoles.includes(role) ? filterAppRoles.filter((r) => r !== role) : [...filterAppRoles, role]);
+    setFilterAppRoles(newRoles);
     setPage(0);
+    if (serverDriven) pushFilters({ appRole: newRoles[0] ?? "", page: 1 });
   }
 
   function toggleSportRole(val: string) {
-    setFilterSportRoles((prev) =>
-      prev.includes(val) ? prev.filter((r) => r !== val) : [...prev, val]
-    );
+    // Single-select when server-driven (server only supports one sportRole filter)
+    const newVals = serverDriven
+      ? (filterSportRoles.includes(val) ? [] : [val])
+      : (filterSportRoles.includes(val) ? filterSportRoles.filter((r) => r !== val) : [...filterSportRoles, val]);
+    setFilterSportRoles(newVals);
     setPage(0);
+    if (serverDriven) pushFilters({ sportRole: newVals[0] ?? "", page: 1 });
   }
 
   // ── Azioni tabella ────────────────────────────────────────────────────────
@@ -326,7 +380,11 @@ export default function AdminUserList({
         <TextField
           placeholder="Cerca per nome, email o genitore..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(0);
+            if (serverDriven) pushFilters({ search: e.target.value, page: 1 });
+          }}
           size="small"
           sx={{ width: { xs: "100%", sm: 280 } }}
           InputProps={{
@@ -338,9 +396,11 @@ export default function AdminUserList({
           }}
         />
         <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-          {processed.length !== rows.length
-            ? `${processed.length} di ${rows.length} (${userCount} utenti + ${childCount} figli senza account)`
-            : `${userCount} utenti + ${childCount} figli senza account`}
+          {serverDriven
+            ? `${serverTotal} totali (${userCount} utenti + ${childCount} figli senza account)`
+            : processed.length !== rows.length
+              ? `${processed.length} di ${rows.length} (${userCount} utenti + ${childCount} figli senza account)`
+              : `${userCount} utenti + ${childCount} figli senza account`}
         </Typography>
         {activeFilterCount > 0 && (
           <Button size="small" onClick={resetFilters} startIcon={
@@ -419,7 +479,12 @@ export default function AdminUserList({
             value={filterGender}
             exclusive
             size="small"
-            onChange={(_e, val) => { setFilterGender(val ?? ""); setPage(0); }}
+            onChange={(_e, val) => {
+              const v = val ?? "";
+              setFilterGender(v);
+              setPage(0);
+              if (serverDriven) pushFilters({ gender: v, page: 1 });
+            }}
           >
             <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>Tutti</ToggleButton>
             <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>M</ToggleButton>
@@ -607,11 +672,22 @@ export default function AdminUserList({
       {/* ── Paginazione ── */}
       <TablePagination
         component="div"
-        count={processed.length}
-        page={page}
-        onPageChange={(_e, p) => setPage(p)}
+        count={serverDriven ? (serverTotal ?? processed.length) : processed.length}
+        page={serverDriven ? serverPage - 1 : page}
+        onPageChange={(_e, p) => {
+          if (serverDriven) {
+            pushFilters({ page: p + 1 });
+          } else {
+            setPage(p);
+          }
+        }}
         rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value)); setPage(0); }}
+        onRowsPerPageChange={(e) => {
+          const newLimit = parseInt(e.target.value);
+          setRowsPerPage(newLimit);
+          setPage(0);
+          if (serverDriven) pushFilters({ limit: newLimit, page: 1 });
+        }}
         rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage="Righe:"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}

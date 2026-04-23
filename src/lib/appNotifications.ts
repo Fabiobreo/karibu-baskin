@@ -6,6 +6,7 @@ export interface AppNotificationPayload {
   title: string;
   body: string;
   url?: string;
+  targetUserId?: string;
 }
 
 export async function createAppNotification(payload: AppNotificationPayload): Promise<void> {

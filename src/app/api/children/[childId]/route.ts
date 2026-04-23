@@ -91,6 +91,7 @@ export async function PATCH(
         childId,
         parentId: session.user.id,
         targetUserId: targetUser.id,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 giorni
       },
     });
 
@@ -110,6 +111,7 @@ export async function PATCH(
       title: `${parent?.name ?? "Un genitore"} vuole collegarsi a te`,
       body: `Richiesta di collegamento per il profilo "${child.name}". Vai al tuo profilo per rispondere.`,
       url: "/profilo#richieste",
+      type: "LINK_REQUEST",
     });
 
     return NextResponse.json({ pending: true, requestId: linkRequest.id });

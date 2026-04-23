@@ -13,6 +13,7 @@ export interface PushPayload {
   body: string;
   url?: string;
   icon?: string;
+  type?: string;
 }
 
 function buildData(payload: PushPayload): string {
@@ -21,6 +22,7 @@ function buildData(payload: PushPayload): string {
     body: payload.body,
     url: payload.url ?? "/",
     icon: payload.icon ?? "/logo.png",
+    type: payload.type ?? "",
   });
 }
 
@@ -111,9 +113,25 @@ export async function sendPushToUsers(
 
 /**
  * Invia le notifiche push a un singolo utente tramite le sue subscription.
+ * Se notifType è specificato, rispetta le preferenze push dell'utente per quel tipo.
  */
-export async function sendPushToUser(userId: string, payload: PushPayload) {
-  const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+export async function sendPushToUser(
+  userId: string,
+  payload: PushPayload,
+  notifType?: ControllableNotifType,
+) {
+  const subs = await prisma.pushSubscription.findMany({
+    where: { userId },
+    include: notifType ? { user: { select: { notifPrefs: true } } } : undefined,
+  });
   if (subs.length === 0) return { sent: 0, removed: 0 };
-  return dispatchToSubs(subs, buildData(payload));
+
+  const targets = notifType
+    ? subs.filter((s) => {
+        const prefs = mergePrefs((s as { user?: { notifPrefs: unknown } }).user?.notifPrefs);
+        return prefs.push[notifType];
+      })
+    : subs;
+
+  return dispatchToSubs(targets, buildData(payload));
 }

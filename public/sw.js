@@ -24,6 +24,10 @@ const PRECACHE_PAGES = [
 const API_CACHE_PATTERNS = [
   /\/api\/sessions/,
   /\/api\/teams\//,
+  /\/api\/matches/,
+  /\/api\/competitive-teams/,
+  /\/api\/events/,
+  /\/api\/calendar/,
 ];
 
 // ── Install ────────────────────────────────────────────────────────────────
@@ -151,6 +155,8 @@ function isApiCacheable(pathname) {
 
 // ── Push notifications ─────────────────────────────────────────────────────
 
+const MUTABLE_TYPES = ["NEW_TRAINING", "TEAMS_READY", "MATCH_RESULT"];
+
 self.addEventListener("push", (e) => {
   if (!e.data) return;
   let data = { title: "Karibu Baskin", body: "", url: "/", icon: "/logo.png", type: "" };
@@ -160,20 +166,42 @@ self.addEventListener("push", (e) => {
   const isLinkNotif = data.type === "LINK_REQUEST" || data.type === "LINK_RESPONSE";
   const vibrate = isLinkNotif ? [200, 100, 200, 100, 200] : [100, 50, 100];
 
+  // Azione "Silenzia" solo per i tipi controllabili dall'utente
+  const actions = MUTABLE_TYPES.includes(data.type)
+    ? [{ action: "mute", title: "Non più queste" }]
+    : [];
+
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: data.icon,
       badge: "/logo.png",
       tag: isLinkNotif ? "link-request" : undefined,
-      data: { url: data.url },
+      data: { url: data.url, type: data.type },
       vibrate,
+      actions,
     })
   );
 });
 
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
+
+  // Azione "Silenzia questo tipo di notifica"
+  if (e.action === "mute") {
+    const type = e.notification.data?.type;
+    if (type && MUTABLE_TYPES.includes(type)) {
+      e.waitUntil(
+        fetch("/api/users/me/notif-prefs", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ push: { [type]: false } }),
+        }).catch(() => {})
+      );
+    }
+    return;
+  }
+
   const url = e.notification.data?.url ?? "/";
   e.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {

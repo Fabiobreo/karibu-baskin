@@ -50,7 +50,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { season, slug } = await params;
   const team = await getTeam(parseSeasonParam(season), slug);
   if (!team) return { title: "Squadra non trovata" };
-  return { title: `${team.name} (${team.season}) | Karibu Baskin` };
+  const title = `${team.name} — Stagione ${team.season} | Karibu Baskin`;
+  const description = team.championship
+    ? `${team.name} nel ${team.championship}. Roster, partite e statistiche della stagione ${team.season}.`
+    : `Roster, partite e statistiche di ${team.name} — stagione ${team.season}.`;
+  const url = `https://karibu-baskin.vercel.app/squadre/${season}/${slug}`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, url, type: "website" },
+    twitter: { card: "summary", title, description },
+  };
 }
 
 export const revalidate = 3600;

@@ -86,7 +86,13 @@ export default async function ProfiloPage() {
         </Typography>
 
         {anonymousMatches.length > 0 && (
-          <ClaimAnonymousCard sessions={anonymousMatches.map((r) => r.session)} />
+          <ClaimAnonymousCard
+            registrations={anonymousMatches.map((r) => ({
+              id: r.id,
+              date: r.session.date,
+              dateSlug: r.session.dateSlug,
+            }))}
+          />
         )}
 
         {/* Card principale */}

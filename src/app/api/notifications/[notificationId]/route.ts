@@ -14,6 +14,18 @@ export async function PATCH(
   const { notificationId } = await params;
   const userId = session.user.id;
 
+  // Verifica che la notifica esista e sia visibile a questo utente
+  const notification = await prisma.appNotification.findUnique({
+    where: { id: notificationId },
+    select: { targetUserId: true },
+  });
+  if (!notification) {
+    return NextResponse.json({ error: "Notifica non trovata" }, { status: 404 });
+  }
+  if (notification.targetUserId !== null && notification.targetUserId !== userId) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+
   await prisma.appNotificationRead.upsert({
     where: { notificationId_userId: { notificationId, userId } },
     create: { notificationId, userId },

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { PlayerStatsBatchSchema } from "@/lib/schemas/match";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -24,19 +25,15 @@ export async function PUT(req: Request, { params }: Params) {
   }
 
   const { matchId } = await params;
-  const body = await req.json() as Array<{
-    userId?: string;
-    childId?: string;
-    points?: number;
-    baskets?: number;
-    fouls?: number;
-    minutesPlayed?: number | null;
-    notes?: string;
-  }>;
-
-  if (!Array.isArray(body)) {
-    return NextResponse.json({ error: "Array di statistiche richiesto" }, { status: 400 });
+  const raw = await req.json().catch(() => null);
+  const parsed = PlayerStatsBatchSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati statistiche non validi" },
+      { status: 400 }
+    );
   }
+  const body = parsed.data;
 
   // Upsert ogni riga
   const results = await Promise.all(

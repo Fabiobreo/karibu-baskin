@@ -11,10 +11,11 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
+import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -24,7 +25,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     select: { name: true },
   });
   if (!user) return { title: "Giocatore non trovato" };
-  return { title: `${user.name ?? "Giocatore"} | Karibu Baskin` };
+  const title = `${user.name ?? "Giocatore"} | Karibu Baskin`;
+  const description = `Profilo di ${user.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore: statistiche, squadre e partite.`;
+  const url = `https://karibu-baskin.vercel.app/giocatori/${slug}`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, url, type: "profile" },
+    twitter: { card: "summary", title, description },
+  };
 }
 
 export const revalidate = 3600;
@@ -40,8 +49,10 @@ const RESULT_LABEL: Record<MatchResult, string> = {
   DRAW: "Pareggio",
 };
 
-export default async function PlayerProfilePage({ params }: Props) {
+export default async function PlayerProfilePage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const sp = await searchParams;
+  const seasonFilter = sp.season ?? null; // es. "2025-26"
 
   // Cerca per slug (es. "mario-rossi"), con fallback su ID (per link esistenti)
   const user = await prisma.user.findFirst({
@@ -67,7 +78,7 @@ export default async function PlayerProfilePage({ params }: Props) {
         include: {
           match: {
             include: {
-              team: { select: { id: true, name: true, color: true } },
+              team: { select: { id: true, name: true, color: true, season: true } },
               opponent: { select: { id: true, name: true, city: true } },
             },
           },
@@ -88,11 +99,22 @@ export default async function PlayerProfilePage({ params }: Props) {
   })();
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
+  // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
+  const seasons = Array.from(new Set([
+    ...user.matchStats.map((ms) => ms.match.team.season),
+    ...user.teamMemberships.map((m) => m.team.season),
+  ])).sort().reverse();
+
+  // Filtro stagione per le statistiche
+  const filteredStats = seasonFilter
+    ? user.matchStats.filter((ms) => ms.match.team.season === seasonFilter)
+    : user.matchStats;
+
   // Aggregazioni statistiche
-  const totalPoints = user.matchStats.reduce((s, ms) => s + ms.points, 0);
-  const totalBaskets = user.matchStats.reduce((s, ms) => s + ms.baskets, 0);
-  const totalFouls = user.matchStats.reduce((s, ms) => s + ms.fouls, 0);
-  const matchesPlayed = user.matchStats.length;
+  const totalPoints = filteredStats.reduce((s, ms) => s + ms.points, 0);
+  const totalBaskets = filteredStats.reduce((s, ms) => s + ms.baskets, 0);
+  const totalFouls = filteredStats.reduce((s, ms) => s + ms.fouls, 0);
+  const matchesPlayed = filteredStats.length;
 
   const hasStats = matchesPlayed > 0;
 
@@ -198,12 +220,28 @@ export default async function PlayerProfilePage({ params }: Props) {
         {/* Statistiche agonistiche */}
         {hasStats && (
           <>
-            <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
-              Statistiche
-            </Typography>
-            <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 3 }}>
-              Agonismo
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: 0.5, mb: 3 }}>
+              <Box>
+                <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+                  Statistiche
+                </Typography>
+                <Typography variant="h5" fontWeight={800}>
+                  Agonismo
+                </Typography>
+              </Box>
+              {seasons.length > 1 && (
+                <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+                  <Link href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
+                    <Chip label="Tutto" size="small" variant={!seasonFilter ? "filled" : "outlined"} color={!seasonFilter ? "primary" : "default"} sx={{ cursor: "pointer", fontWeight: 600 }} />
+                  </Link>
+                  {seasons.map((s) => (
+                    <Link key={s} href={`/giocatori/${slug}?season=${encodeURIComponent(s)}`} style={{ textDecoration: "none" }}>
+                      <Chip label={`Stagione ${s}`} size="small" variant={seasonFilter === s ? "filled" : "outlined"} color={seasonFilter === s ? "primary" : "default"} sx={{ cursor: "pointer", fontWeight: 600 }} />
+                    </Link>
+                  ))}
+                </Box>
+              )}
+            </Box>
             <Grid container spacing={2} sx={{ mb: 5 }}>
               {[
                 { label: "Partite", value: matchesPlayed, color: "#1565C0" },
@@ -244,7 +282,7 @@ export default async function PlayerProfilePage({ params }: Props) {
               </Typography>
               <Stack spacing={1.5}>
                 {user.teamMemberships.map((m) => (
-                  <Link key={m.id} href={`/squadre/${m.team.id}`} style={{ textDecoration: "none" }}>
+                  <Link key={m.id} href={`/squadre/${m.team.season}/${slugify(m.team.name)}`} style={{ textDecoration: "none" }}>
                     <Paper
                       elevation={0}
                       sx={{
@@ -286,7 +324,7 @@ export default async function PlayerProfilePage({ params }: Props) {
         )}
 
         {/* Partite giocate con statistiche */}
-        {user.matchStats.length > 0 && (
+        {filteredStats.length > 0 && (
           <>
             <Divider sx={{ mb: 5 }} />
             <Box>
@@ -300,7 +338,7 @@ export default async function PlayerProfilePage({ params }: Props) {
                 Statistiche per partita
               </Typography>
               <Stack spacing={1.5}>
-                {user.matchStats.map((ms) => (
+                {filteredStats.map((ms) => (
                   <Paper key={ms.id} elevation={0} sx={{ border: "1px solid rgba(0,0,0,0.07)", overflow: "hidden" }}>
                     <Box sx={{ display: "flex", alignItems: "stretch" }}>
                       <Box

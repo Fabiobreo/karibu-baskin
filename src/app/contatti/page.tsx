@@ -1,6 +1,7 @@
 import {
   Box, Container, Typography, Grid2 as Grid, Paper, Chip, Divider,
 } from "@mui/material";
+import ContactForm from "@/components/ContactForm";
 import SiteHeader from "@/components/SiteHeader";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
@@ -89,6 +90,10 @@ export default function ContattiPage() {
 
           {/* Colonna sinistra */}
           <Grid size={{ xs: 12, md: 6 }}>
+            {/* Form di contatto */}
+            <Paper elevation={0} sx={{ p: 3, mb: 4, border: "1px solid rgba(0,0,0,0.07)" }}>
+              <ContactForm />
+            </Paper>
 
             {/* Contatti diretti */}
             <Box sx={{ mb: 4 }}>

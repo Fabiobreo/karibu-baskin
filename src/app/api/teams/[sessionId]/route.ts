@@ -68,6 +68,7 @@ export async function POST(
       title: "📋 Squadre pronte!",
       body: `Le squadre per "${trainingSession.title}" sono state generate.`,
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
+      type: "TEAMS_READY",
     };
     sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch(() => {});
     createAppNotification({

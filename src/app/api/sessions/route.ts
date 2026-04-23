@@ -6,14 +6,32 @@ import { createAppNotification } from "@/lib/appNotifications";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const upcoming = searchParams.get("upcoming") === "true";
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "0", 10)));
+  const usePagination = limit > 0;
+
+  const now = new Date();
+
   const sessions = await prisma.trainingSession.findMany({
-    orderBy: { date: "asc" },
+    where: upcoming ? { date: { gte: now } } : undefined,
+    orderBy: { date: upcoming ? "asc" : "desc" },
+    ...(usePagination && { skip: (page - 1) * limit, take: limit }),
     include: {
       _count: { select: { registrations: true } },
       restrictTeam: { select: { id: true, name: true, color: true } },
     },
   });
+
+  if (usePagination) {
+    const total = await prisma.trainingSession.count({
+      where: upcoming ? { date: { gte: now } } : undefined,
+    });
+    return NextResponse.json({ sessions, total, page, limit, pages: Math.ceil(total / limit) });
+  }
+
   return NextResponse.json(sessions);
 }
 
@@ -58,6 +76,7 @@ export async function POST(req: NextRequest) {
     title: "🏀 Nuovo allenamento",
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
+    type: "NEW_TRAINING",
   }, false, "NEW_TRAINING").catch(() => {});
   createAppNotification({
     type: "NEW_TRAINING",

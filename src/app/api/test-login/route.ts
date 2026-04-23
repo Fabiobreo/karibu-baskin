@@ -21,13 +21,13 @@ const POSSIBLE_COOKIE_NAMES = [
 ];
 
 function getSessionCookieName(): string {
-  const secure = process.env.NODE_ENV === "production";
+  const secure = (process.env.NODE_ENV as string) === "production";
   return secure ? "__Secure-authjs.session-token" : "authjs.session-token";
 }
 
 // ── GET: diagnostica ──────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
-  if (process.env.ENABLE_TEST_LOGIN !== "true") {
+  if ((process.env.NODE_ENV as string) === "production" || process.env.ENABLE_TEST_LOGIN !== "true") {
     return NextResponse.json({ error: "Non disponibile" }, { status: 404 });
   }
 
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
 
 // ── POST: esegue il login ─────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  if (process.env.ENABLE_TEST_LOGIN !== "true") {
+  if ((process.env.NODE_ENV as string) === "production" || process.env.ENABLE_TEST_LOGIN !== "true") {
     return NextResponse.json({ error: "Non disponibile" }, { status: 404 });
   }
 
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
   });
 
   const cookieName = getSessionCookieName();
-  const secure = process.env.NODE_ENV === "production";
+  const secure = (process.env.NODE_ENV as string) === "production";
 
   // Costruisce il Set-Cookie header manualmente per evitare il bug Turbopack
   // con NextResponse.cookies.set() che a volte non scrive l'header

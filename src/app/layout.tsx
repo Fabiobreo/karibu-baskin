@@ -12,6 +12,7 @@ import OfflineBanner from "@/components/OfflineBanner";
 import Footer from "@/components/Footer";
 import SponsorBanner from "@/components/SponsorBanner";
 import BottomNav from "@/components/BottomNav";
+import SwUpdateToast from "@/components/SwUpdateToast";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
 import "./globals.css";
@@ -82,6 +83,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <SponsorBanner />
                 <Footer />
                 <BottomNav />
+                <SwUpdateToast />
               </ToastProvider>
             </Providers>
           </ThemeProvider>

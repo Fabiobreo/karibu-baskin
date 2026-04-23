@@ -1,0 +1,41 @@
+import { z } from "zod";
+
+export const MatchCreateSchema = z.object({
+  teamId: z.string().min(1),
+  opponentId: z.string().min(1),
+  date: z.string().datetime({ offset: true }).or(z.string().min(1)),
+  isHome: z.boolean().optional(),
+  venue: z.string().max(200).optional(),
+  matchType: z.enum(["LEAGUE", "TOURNAMENT", "FRIENDLY"]).optional(),
+  ourScore: z.number().int().min(0).optional(),
+  theirScore: z.number().int().min(0).optional(),
+  result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export const MatchUpdateSchema = z.object({
+  date: z.string().min(1).optional(),
+  isHome: z.boolean().optional(),
+  venue: z.string().max(200).optional(),
+  matchType: z.enum(["LEAGUE", "TOURNAMENT", "FRIENDLY"]).optional(),
+  ourScore: z.number().int().min(0).nullable().optional(),
+  theirScore: z.number().int().min(0).nullable().optional(),
+  result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
+  notes: z.string().max(2000).optional(),
+  opponentId: z.string().min(1).optional(),
+});
+
+export const PlayerStatsEntrySchema = z.object({
+  userId: z.string().optional(),
+  childId: z.string().optional(),
+  points: z.number().int().min(0).max(999).optional(),
+  baskets: z.number().int().min(0).max(999).optional(),
+  fouls: z.number().int().min(0).max(5).optional(),
+  minutesPlayed: z.number().int().min(0).max(120).nullable().optional(),
+  notes: z.string().max(500).optional(),
+}).refine(
+  (s) => !!(s.userId) !== !!(s.childId),
+  { message: "Esattamente uno tra userId e childId è richiesto" }
+);
+
+export const PlayerStatsBatchSchema = z.array(PlayerStatsEntrySchema).max(50);

@@ -1,24 +1,55 @@
 {
   "name": "Karibu Baskin Montecchio Maggiore",
   "short_name": "Karibu Baskin",
-  "description": "Iscrizioni allenamenti e gestione squadre",
+  "description": "Iscrizioni allenamenti, calendario e gestione squadre per la squadra di Baskin di Montecchio Maggiore.",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#F7F4F1",
   "theme_color": "#E65100",
   "orientation": "portrait-primary",
+  "lang": "it",
   "icons": [
     {
       "src": "/logo.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Prossimo allenamento",
+      "short_name": "Allenamento",
+      "description": "Vai all'allenamento più vicino",
+      "url": "/allenamenti",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Il mio profilo",
+      "short_name": "Profilo",
+      "description": "Visualizza il tuo profilo",
+      "url": "/profilo",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Calendario",
+      "short_name": "Calendario",
+      "description": "Vai al calendario eventi",
+      "url": "/calendario",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
     }
   ]
 }

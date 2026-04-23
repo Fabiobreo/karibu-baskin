@@ -9,10 +9,12 @@ export async function GET() {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
+  const now = new Date();
   const requests = await prisma.linkRequest.findMany({
     where: {
       targetUserId: session.user.id,
       status: "PENDING",
+      OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
     },
     include: {
       child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true } },

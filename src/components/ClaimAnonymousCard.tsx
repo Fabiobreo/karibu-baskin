@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Paper, Box, Typography, Button, Chip, Stack, CircularProgress,
+  Paper, Box, Typography, Button, Chip, Stack, CircularProgress, Checkbox, FormControlLabel,
 } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -10,13 +10,14 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
-type Session = { id: string; date: Date | string; dateSlug: string | null };
+type Registration = { id: string; date: Date | string; dateSlug: string | null };
 
-export default function ClaimAnonymousCard({ sessions }: { sessions: Session[] }) {
+export default function ClaimAnonymousCard({ registrations }: { registrations: Registration[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [answered, setAnswered] = useState<"yes" | "no" | null>(null);
   const [claimed, setClaimed] = useState(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set(registrations.map((r) => r.id)));
 
   if (answered === "no") return null;
 
@@ -38,9 +39,23 @@ export default function ClaimAnonymousCard({ sessions }: { sessions: Session[] }
     );
   }
 
-  function handleYes() {
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleClaim() {
+    if (selected.size === 0) return;
     startTransition(async () => {
-      const res = await fetch("/api/registrations/claim", { method: "POST" });
+      const res = await fetch("/api/registrations/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [...selected] }),
+      });
       if (res.ok) {
         const data = await res.json() as { claimed: number };
         setClaimed(data.claimed);
@@ -63,31 +78,41 @@ export default function ClaimAnonymousCard({ sessions }: { sessions: Session[] }
             Ti riconosco! Sei già stato/a agli allenamenti?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            Abbiamo trovato {sessions.length === 1 ? "un allenamento" : `${sessions.length} allenamenti`} a cui si è iscritto qualcuno con il tuo stesso nome:
+            Abbiamo trovato {registrations.length === 1 ? "un allenamento" : `${registrations.length} allenamenti`} a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero tu:
           </Typography>
-          <Stack direction="row" flexWrap="wrap" gap={0.75} sx={{ mb: 2 }}>
-            {sessions.map((s) => (
-              <Chip
-                key={s.id}
-                label={format(new Date(s.date), "d MMM yyyy", { locale: it })}
-                size="small"
-                variant="outlined"
-                sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+          <Stack spacing={0.25} sx={{ mb: 2 }}>
+            {registrations.map((r) => (
+              <FormControlLabel
+                key={r.id}
+                control={
+                  <Checkbox
+                    checked={selected.has(r.id)}
+                    onChange={() => toggle(r.id)}
+                    size="small"
+                    disabled={isPending}
+                  />
+                }
+                label={
+                  <Chip
+                    label={format(new Date(r.date), "d MMMM yyyy", { locale: it })}
+                    size="small"
+                    variant="outlined"
+                    sx={{ fontWeight: 600, fontSize: "0.72rem", cursor: "pointer" }}
+                  />
+                }
+                sx={{ ml: 0 }}
               />
             ))}
           </Stack>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Eri tu? Se sì, queste presenze verranno aggiunte al tuo profilo.
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
             <Button
               variant="contained"
               size="small"
-              onClick={handleYes}
-              disabled={isPending}
+              onClick={handleClaim}
+              disabled={isPending || selected.size === 0}
               startIcon={isPending ? <CircularProgress size={14} /> : undefined}
             >
-              Sì, ero io
+              Collega selezionati ({selected.size})
             </Button>
             <Button
               variant="outlined"
@@ -95,7 +120,7 @@ export default function ClaimAnonymousCard({ sessions }: { sessions: Session[] }
               onClick={() => setAnswered("no")}
               disabled={isPending}
             >
-              No, non ero io
+              Non ero io
             </Button>
           </Box>
         </Box>
