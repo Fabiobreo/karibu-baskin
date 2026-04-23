@@ -10,7 +10,8 @@ import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS } from "@/lib/constants";
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
-import PushNotificationToggle from "@/components/PushNotificationToggle";
+import NotificationPrefsPanel from "@/components/NotificationPrefsPanel";
+import { mergePrefs } from "@/lib/notifPrefs";
 import LinkRequestsSection from "@/components/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/ClaimAnonymousCard";
 import { format } from "date-fns";
@@ -204,10 +205,7 @@ export default async function ProfiloPage() {
           <Typography variant="subtitle1" fontWeight={700} gutterBottom>
             Notifiche
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Ricevi una notifica quando viene creato un nuovo allenamento o le squadre sono pronte.
-          </Typography>
-          <PushNotificationToggle />
+          <NotificationPrefsPanel initialPrefs={mergePrefs(user.notifPrefs)} />
         </Paper>
 
         {/* Sezione figli (solo PARENT e ADMIN) */}

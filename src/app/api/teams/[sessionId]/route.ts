@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { generateTeams } from "@/lib/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToAll } from "@/lib/webpush";
+import { sendPushToUsers } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 
 // GET — ritorna le squadre salvate in DB
@@ -53,17 +53,23 @@ export async function POST(
     data: { teams: teams as object },
   });
 
-  // Notifica push (fire-and-forget)
+  // Notifica push solo agli iscritti all'allenamento (fire-and-forget)
   const trainingSession = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
     select: { title: true, dateSlug: true },
   });
   if (trainingSession) {
-    sendPushToAll({
+    // Raccoglie gli userId degli iscritti come atleti (non allenatori)
+    const registeredUserIds = registrations
+      .filter((r) => !r.registeredAsCoach && r.userId)
+      .map((r) => r.userId as string);
+
+    const pushPayload = {
       title: "📋 Squadre pronte!",
       body: `Le squadre per "${trainingSession.title}" sono state generate.`,
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
-    }).catch(() => {});
+    };
+    sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch(() => {});
     createAppNotification({
       type: "TEAMS_READY",
       title: "Squadre pronte!",

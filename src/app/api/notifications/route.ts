@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
+import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifPrefs";
+import type { AppNotificationType } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -14,8 +16,17 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit;
   const userId = session.user.id;
 
+  // Recupera le preferenze in-app dell'utente
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { notifPrefs: true },
+  });
+  const prefs = mergePrefs(user?.notifPrefs);
+  const disabledTypes = CONTROLLABLE_TYPES.filter((t) => !prefs.inApp[t]) as AppNotificationType[];
+
   const visibleFilter = {
     OR: [{ targetUserId: null }, { targetUserId: userId }],
+    ...(disabledTypes.length > 0 && { NOT: { type: { in: disabledTypes } } }),
   };
 
   const [notifications, total] = await Promise.all([

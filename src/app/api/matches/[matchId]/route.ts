@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { sendPushToAll } from "@/lib/webpush";
+import { createAppNotification } from "@/lib/appNotifications";
 import type { MatchType, MatchResult } from "@prisma/client";
 
 type Params = { params: Promise<{ matchId: string }> };
@@ -44,6 +46,12 @@ export async function PUT(req: Request, { params }: Params) {
     opponentId?: string;
   };
 
+  // Leggi stato precedente per capire se il risultato è nuovo
+  const previous = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { result: true },
+  });
+
   const match = await prisma.match.update({
     where: { id: matchId },
     data: {
@@ -62,6 +70,21 @@ export async function PUT(req: Request, { params }: Params) {
       opponent: { select: { id: true, name: true, city: true } },
     },
   });
+
+  // Invia notifica solo quando il risultato viene impostato per la prima volta
+  if (body.result && !previous?.result && match.ourScore !== null && match.theirScore !== null) {
+    const RESULT_LABEL: Record<string, string> = { WIN: "Vittoria", LOSS: "Sconfitta", DRAW: "Pareggio" };
+    const label = RESULT_LABEL[body.result] ?? body.result;
+    const score = `${match.ourScore}–${match.theirScore}`;
+    const notifPayload = {
+      title: `🏀 ${label}! ${match.team.name} vs ${match.opponent.name}`,
+      body: `Risultato finale: ${score}`,
+      url: "/squadre",
+    };
+    sendPushToAll(notifPayload, false, "MATCH_RESULT").catch(() => {});
+    createAppNotification({ type: "MATCH_RESULT", ...notifPayload }).catch(() => {});
+  }
+
   return NextResponse.json(match);
 }
 

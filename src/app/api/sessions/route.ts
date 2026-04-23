@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     title: "🏀 Nuovo allenamento",
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
-  }).catch(() => {});
+  }, false, "NEW_TRAINING").catch(() => {});
   createAppNotification({
     type: "NEW_TRAINING",
     title: "Nuovo allenamento",

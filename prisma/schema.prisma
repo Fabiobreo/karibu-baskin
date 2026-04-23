@@ -58,6 +58,10 @@ model User {
   sportRoleSuggested        Int?
   sportRoleSuggestedVariant String?
 
+  // Preferenze notifiche: { push: { NEW_TRAINING: bool, ... }, inApp: { ... } }
+  // null = tutto abilitato (default)
+  notifPrefs Json?
+
   accounts              Account[]
   authSessions          Session[]
   registrations         Registration[]
