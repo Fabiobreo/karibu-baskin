@@ -133,7 +133,6 @@ export default function SponsorPage() {
                   {/* Logo */}
                   <Box
                     sx={{
-                      position: "relative",
                       flexShrink: 0,
                       width: 90,
                       height: 90,
@@ -142,12 +141,16 @@ export default function SponsorPage() {
                       bgcolor: "grey.50",
                       border: "1px solid",
                       borderColor: "divider",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
                     <Image
                       src={s.logo}
                       alt={`Logo ${s.name}`}
-                      fill
+                      width={90}
+                      height={90}
                       style={{ objectFit: "contain", padding: "8px" }}
                     />
                   </Box>

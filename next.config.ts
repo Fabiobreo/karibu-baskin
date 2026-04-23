@@ -14,6 +14,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https://lh3.googleusercontent.com",
       "font-src 'self'",
       "connect-src 'self' https://*.neon.tech wss:",
+      "frame-src https://maps.google.com https://www.google.com",
       "frame-ancestors 'none'",
     ].join("; "),
   },

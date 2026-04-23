@@ -85,14 +85,14 @@ function seasonForDate(dateStr: string): string {
 export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const teamsForForm = teams.filter((t) => t.season === seasonForDate(form.date));
-  const displayTeams = teamsForForm.length > 0 ? teamsForForm : teams;
   const [matches, setMatches] = useState(initialMatches);
   const [opponents, setOpponents] = useState(initialOpponents);
   const [tab, setTab] = useState(0); // 0=Partite, 1=Squadre avversarie
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [form, setForm] = useState(emptyMatchForm);
+  const teamsForForm = teams.filter((t) => t.season === seasonForDate(form.date));
+  const displayTeams = teamsForForm.length > 0 ? teamsForForm : teams;
   const [useNewOpponent, setUseNewOpponent] = useState(false);
   const [opponentForm, setOpponentForm] = useState({ name: "", city: "" });
   const [isPending, startTransition] = useTransition();

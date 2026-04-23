@@ -1,5 +1,9 @@
 "use server";
 
+import { Resend } from "resend";
+import ContactNotificationEmail from "@/emails/ContactNotificationEmail";
+import ContactConfirmationEmail from "@/emails/ContactConfirmationEmail";
+
 // In-memory rate limit: max 3 submissions per IP per 10 minutes
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
@@ -43,32 +47,37 @@ export async function submitContactForm(
 
   const apiKey = process.env.RESEND_API_KEY;
   const toEmail = process.env.CONTACT_EMAIL ?? "asdkaribubaskin@gmail.com";
+  const fromAddress = "Sito Karibu Baskin <noreply@karibubaskin.it>";
 
   if (!apiKey) {
-    // Fallback: log to console (dev/no-config scenario)
+    // Fallback per sviluppo senza API key configurata
     console.log("[ContactForm]", { name, email, message });
     return { success: true };
   }
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Sito Karibu Baskin <noreply@karibubaskin.it>",
-      to: [toEmail],
-      reply_to: email,
-      subject: `Messaggio dal sito — ${name}`,
-      text: `Da: ${name} <${email}>\n\n${message}`,
-    }),
+  const resend = new Resend(apiKey);
+
+  // 1. Notifica alla società con il messaggio ricevuto
+  const { error } = await resend.emails.send({
+    from: fromAddress,
+    to: [toEmail],
+    replyTo: email,
+    subject: `Nuovo messaggio dal sito — ${name}`,
+    react: ContactNotificationEmail({ senderName: name, senderEmail: email, message }),
   });
 
-  if (!res.ok) {
-    console.error("[ContactForm] Resend error", await res.text());
+  if (error) {
+    console.error("[ContactForm] Resend error", error);
     return { error: "Errore nell'invio. Riprova o contattaci direttamente via email." };
   }
+
+  // 2. Conferma automatica al mittente (fire-and-forget)
+  resend.emails.send({
+    from: fromAddress,
+    to: [email],
+    subject: "Abbiamo ricevuto il tuo messaggio — Karibu Baskin",
+    react: ContactConfirmationEmail({ senderName: name, message }),
+  }).catch(() => {});
 
   return { success: true };
 }

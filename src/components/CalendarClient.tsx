@@ -402,7 +402,7 @@ function EventDetailDialog({
     : EventNoteIcon;
 
   const editHref =
-    event.type === "training" ? (event.href ?? null)
+    event.type === "training" ? `/admin/allenamenti?edit=${event.id}`
     : event.type === "match" ? `/admin/partite?edit=${event.id}`
     : `/admin/eventi?edit=${event.id}`;
 

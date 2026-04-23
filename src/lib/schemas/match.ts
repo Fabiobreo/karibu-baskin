@@ -10,7 +10,7 @@ export const MatchCreateSchema = z.object({
   ourScore: z.number().int().min(0).optional(),
   theirScore: z.number().int().min(0).optional(),
   result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
-  notes: z.string().max(2000).optional(),
+  notes: z.string().max(2000).nullable().optional(),
 });
 
 export const MatchUpdateSchema = z.object({
@@ -21,7 +21,7 @@ export const MatchUpdateSchema = z.object({
   ourScore: z.number().int().min(0).nullable().optional(),
   theirScore: z.number().int().min(0).nullable().optional(),
   result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
-  notes: z.string().max(2000).optional(),
+  notes: z.string().max(2000).nullable().optional(),
   opponentId: z.string().min(1).optional(),
 });
 

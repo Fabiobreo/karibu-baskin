@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box, Typography, Paper, Button, Chip, IconButton, Tooltip,
   CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions,
@@ -70,6 +70,8 @@ function toLocalTimeString(d: Date) {
 // ── Componente principale ─────────────────────────────────────────────────────
 
 export default function AdminAllenamentiClient({ initialSessions }: { initialSessions: SessionWithCount[] }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [sessions, setSessions] = useState<SessionWithCount[]>(initialSessions);
   const [showForm, setShowForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
@@ -91,6 +93,16 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
   const [editLoading, setEditLoading] = useState(false);
 
   const { showToast } = useToast();
+
+  // Auto-apri dialog di modifica se ?edit=[id] è presente nell'URL (es. da calendario)
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId) return;
+    const session = initialSessions.find((s) => s.id === editId);
+    if (session) openEdit(session);
+    router.replace("/admin/allenamenti", { scroll: false });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadSessions() {
     const res = await fetch("/api/sessions");
@@ -532,7 +544,11 @@ function SessionCard({
       elevation={muted ? 0 : live ? 4 : 2}
       variant={muted ? "outlined" : "elevation"}
       onClick={(e) => {
-        if ((e.target as HTMLElement).closest("button, a, [role='button']")) return;
+        const target = e.target as HTMLElement;
+        // I Menu MUI sono Portal: i loro click risalgono l'albero React ma non il DOM.
+        // Se il target non è dentro il Paper, ignoriamo (es. click su MenuItem).
+        if (!(e.currentTarget as HTMLElement).contains(target)) return;
+        if (target.closest("button, a, [role='button']")) return;
         router.push(href);
       }}
       sx={{
