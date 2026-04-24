@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Box, Typography, Chip, CircularProgress, Paper, Tooltip } from "@mui/material";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import Link from "next/link";
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 
@@ -15,6 +16,7 @@ interface Registration {
   userId: string | null;
   childId?: string | null;
   registeredAsCoach?: boolean;
+  userSlug?: string | null;
 }
 
 interface Props {
@@ -174,6 +176,11 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                       variant={highlighted ? "filled" : "outlined"}
                       onDelete={canDelete && !isDeleting ? () => handleUnregister(reg) : undefined}
                       disabled={isDeleting}
+                      {...(reg.userSlug ? {
+                        component: Link,
+                        href: `/giocatori/${reg.userSlug}`,
+                        clickable: true,
+                      } : {})}
                       title={
                         isOwn ? "Clicca × per disiscriverti"
                         : isOwnChild ? `Disiscrivi ${reg.name}`
@@ -186,6 +193,7 @@ export default function RosterByRole({ registrations, currentUserId, linkedChild
                         height: "auto",
                         justifyContent: "space-between",
                         "& .MuiChip-label": { whiteSpace: "normal", wordBreak: "break-word", overflowWrap: "break-word", minWidth: 0, display: "block", py: "4px" },
+                        ...(reg.userSlug ? { cursor: "pointer" } : {}),
                         ...(highlighted ? {
                           backgroundColor: ROLE_COLORS[role],
                           color: "#fff",

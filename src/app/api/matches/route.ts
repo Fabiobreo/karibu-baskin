@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       theirScore: body.theirScore ?? null,
       result: resolvedResult,
       notes: body.notes?.trim() || null,
+      groupId: body.groupId ?? null,
     },
     include: {
       team: { select: { id: true, name: true, season: true } },

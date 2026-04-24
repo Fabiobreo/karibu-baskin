@@ -13,14 +13,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import GroupsIcon from "@mui/icons-material/Groups";
 import { useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
+import MatchCalloupsDialog from "@/components/MatchCalloupsDialog";
 
 type Team = { id: string; name: string; season: string; color: string | null };
 type OpposingTeam = { id: string; name: string; city: string | null };
+type Group = { id: string; name: string; season: string; championship: string | null; teamId: string; team: { id: string; name: string; color: string | null }; _count: { matches: number } };
 type Match = {
   id: string;
   teamId: string;
@@ -33,8 +36,10 @@ type Match = {
   theirScore: number | null;
   result: MatchResult | null;
   notes: string | null;
+  groupId: string | null;
   team: Team;
   opponent: OpposingTeam;
+  group: { id: string; name: string } | null;
   _count: { playerStats: number };
 };
 
@@ -42,6 +47,7 @@ type Props = {
   teams: Team[];
   opposingTeams: OpposingTeam[];
   matches: Match[];
+  groups: Group[];
 };
 
 const MATCH_TYPE_LABELS: Record<MatchType, string> = {
@@ -73,6 +79,7 @@ const emptyMatchForm = {
   theirScore: "",
   result: "" as MatchResult | "",
   notes: "",
+  groupId: "" as string,
 };
 
 function seasonForDate(dateStr: string): string {
@@ -82,12 +89,14 @@ function seasonForDate(dateStr: string): string {
   return `${s}-${String(s + 1).slice(-2)}`;
 }
 
-export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches }: Props) {
+export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches, groups: initialGroups }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [matches, setMatches] = useState(initialMatches);
   const [opponents, setOpponents] = useState(initialOpponents);
-  const [tab, setTab] = useState(0); // 0=Partite, 1=Squadre avversarie
+  const [groups, setGroups] = useState(initialGroups);
+  const [tab, setTab] = useState(0); // 0=Partite, 1=Squadre avversarie, 2=Gironi
+  const [groupForm, setGroupForm] = useState({ name: "", season: "", championship: "", teamId: "" });
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [form, setForm] = useState(emptyMatchForm);
@@ -97,6 +106,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [opponentForm, setOpponentForm] = useState({ name: "", city: "" });
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [callupMatch, setCallupMatch] = useState<Match | null>(null);
 
   // Auto-apri dialog di modifica se ?edit=[id] è presente nell'URL
   useEffect(() => {
@@ -130,6 +140,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       theirScore: match.theirScore !== null ? String(match.theirScore) : "",
       result: match.result ?? "",
       notes: match.notes ?? "",
+      groupId: match.groupId ?? "",
     });
     setEditMatch(match);
     setUseNewOpponent(false);
@@ -172,6 +183,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         theirScore: form.theirScore !== "" ? Number(form.theirScore) : null,
         result: form.result || null,
         notes: form.notes || null,
+        groupId: form.groupId || null,
       };
 
       const method = editMatch ? "PUT" : "POST";
@@ -243,6 +255,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       <Tabs value={tab} onChange={(_, v: number) => setTab(v)} sx={{ mb: 3, borderBottom: "1px solid rgba(0,0,0,0.1)" }}>
         <Tab label="Partite" />
         <Tab label="Squadre avversarie" />
+        <Tab label="Gironi" />
       </Tabs>
 
       {/* TAB 0: Partite */}
@@ -331,6 +344,11 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
+                        <Tooltip title="Convocati">
+                          <IconButton size="small" color="primary" onClick={() => setCallupMatch(m)}>
+                            <GroupsIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Modifica">
                           <IconButton size="small" onClick={() => openEdit(m)}><EditIcon fontSize="small" /></IconButton>
                         </Tooltip>
@@ -410,6 +428,142 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             </Paper>
           )}
         </Box>
+      )}
+
+      {/* TAB 2: Gironi */}
+      {tab === 2 && (
+        <Box>
+          <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
+            <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+              Crea girone
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+              <TextField
+                label="Nome girone"
+                size="small"
+                value={groupForm.name}
+                onChange={(e) => setGroupForm((f) => ({ ...f, name: e.target.value }))}
+                sx={{ flex: 2, minWidth: 160 }}
+                placeholder="es. Girone A Ovest"
+              />
+              <TextField
+                label="Stagione"
+                size="small"
+                value={groupForm.season}
+                onChange={(e) => setGroupForm((f) => ({ ...f, season: e.target.value }))}
+                sx={{ flex: 1, minWidth: 100 }}
+                placeholder="es. 2025-26"
+              />
+              <TextField
+                label="Campionato"
+                size="small"
+                value={groupForm.championship}
+                onChange={(e) => setGroupForm((f) => ({ ...f, championship: e.target.value }))}
+                sx={{ flex: 1, minWidth: 120 }}
+                placeholder="es. Gold"
+              />
+              <FormControl size="small" sx={{ flex: 2, minWidth: 160 }}>
+                <InputLabel>Squadra</InputLabel>
+                <Select
+                  value={groupForm.teamId}
+                  label="Squadra"
+                  onChange={(e) => setGroupForm((f) => ({ ...f, teamId: e.target.value as string }))}
+                >
+                  {teams.map((t) => (
+                    <MenuItem key={t.id} value={t.id}>
+                      {t.name} — {t.season}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                disabled={!groupForm.name.trim() || !groupForm.season.trim() || !groupForm.teamId || isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    const res = await fetch("/api/groups", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(groupForm),
+                    });
+                    if (!res.ok) return;
+                    const created = await res.json() as Group;
+                    setGroups((prev) => [...prev, created].sort((a, b) => b.season.localeCompare(a.season) || a.name.localeCompare(b.name)));
+                    setGroupForm({ name: "", season: "", championship: "", teamId: "" });
+                  });
+                }}
+              >
+                Crea
+              </Button>
+            </Box>
+          </Paper>
+
+          {groups.length === 0 ? (
+            <Typography variant="body2" color="text.disabled">Nessun girone creato.</Typography>
+          ) : (
+            <Paper elevation={0} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700 }}>Girone</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Stagione</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Campionato</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>Squadra</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">Partite</TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {groups.map((g) => (
+                    <TableRow key={g.id} hover>
+                      <TableCell><Typography variant="body2" fontWeight={700}>{g.name}</Typography></TableCell>
+                      <TableCell><Typography variant="body2">{g.season}</Typography></TableCell>
+                      <TableCell><Typography variant="body2" color="text.secondary">{g.championship ?? "—"}</Typography></TableCell>
+                      <TableCell>
+                        <Chip label={g.team.name} size="small" sx={{ bgcolor: g.team.color ?? "primary.main", color: "#fff", fontWeight: 700, fontSize: "0.68rem" }} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="caption" color={g._count.matches > 0 ? "primary" : "text.disabled"}>
+                          {g._count.matches}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Tooltip title="Elimina">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              if (!confirm(`Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`)) return;
+                              startTransition(async () => {
+                                await fetch(`/api/groups/${g.id}`, { method: "DELETE" });
+                                setGroups((prev) => prev.filter((x) => x.id !== g.id));
+                                setMatches((prev) => prev.map((m) => m.groupId === g.id ? { ...m, groupId: null, group: null } : m));
+                              });
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Paper>
+          )}
+        </Box>
+      )}
+
+      {/* Dialog convocati */}
+      {callupMatch && (
+        <MatchCalloupsDialog
+          open={!!callupMatch}
+          onClose={() => setCallupMatch(null)}
+          matchId={callupMatch.id}
+          teamId={callupMatch.teamId}
+          matchLabel={`${callupMatch.team.name} vs ${callupMatch.opponent.name} (${format(new Date(callupMatch.date), "d MMM yyyy", { locale: it })})`}
+        />
       )}
 
       {/* Dialog partita */}
@@ -552,6 +706,28 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 ))}
               </Select>
             </FormControl>
+
+            {groups.filter((g) => g.teamId === form.teamId || !form.teamId).length > 0 && (
+              <FormControl fullWidth>
+                <InputLabel shrink>Girone</InputLabel>
+                <Select
+                  value={form.groupId}
+                  label="Girone"
+                  notched
+                  displayEmpty
+                  onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value as string }))}
+                >
+                  <MenuItem value=""><em>Nessun girone</em></MenuItem>
+                  {groups
+                    .filter((g) => !form.teamId || g.teamId === form.teamId)
+                    .map((g) => (
+                      <MenuItem key={g.id} value={g.id}>
+                        {g.name} {g.championship ? `(${g.championship})` : ""} — {g.season}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            )}
 
             <TextField
               label="Note"

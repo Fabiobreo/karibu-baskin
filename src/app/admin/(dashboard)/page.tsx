@@ -10,6 +10,7 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import DownloadIcon from "@mui/icons-material/Download";
 import AdminAnonymousRegistrations from "@/components/AdminAnonymousRegistrations";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -86,6 +87,7 @@ export default async function AdminPage() {
         <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Gestione Squadre" color="#1565C0" />
         <NavCard href="/admin/partite" icon={<EmojiEventsIcon />} label="Gestione Partite" color="#2E7D32" />
         <NavCard href="/admin/eventi" icon={<CalendarMonthIcon />} label="Gestione Eventi" color="#6A1B9A" />
+        <NavCard href="/admin/esporta" icon={<DownloadIcon />} label="Esporta CSV" color="#37474F" />
       </Box>
 
       {/* Badge suggerimenti ruolo */}

@@ -71,6 +71,7 @@ model User {
   pushSubscriptions     PushSubscription[]
   teamMemberships       TeamMembership[]
   matchStats            PlayerMatchStats[]
+  callups               MatchCallup[]
   notificationReads     AppNotificationRead[]
   targetedNotifications AppNotification[]     @relation("TargetedNotifications")
   sentLinkRequests      LinkRequest[]         @relation("SentLinkRequests")
@@ -159,6 +160,7 @@ model Child {
   registrations   Registration[]
   teamMemberships TeamMembership[]
   matchStats      PlayerMatchStats[]
+  callups         MatchCallup[]
   linkRequests    LinkRequest[]
 
   @@index([parentId])
@@ -258,6 +260,7 @@ model CompetitiveTeam {
 
   memberships          TeamMembership[]
   matches              Match[]
+  groups               Group[]
   trainingSessions     TrainingSession[] @relation("TrainingTeam")
   restrictedSessions   TrainingSession[] @relation("TrainingRestriction")
 
@@ -297,6 +300,23 @@ model OpposingTeam {
   matches Match[]
 }
 
+// ── Gironi campionato ─────────────────────────────────────────────────────────
+
+model Group {
+  id           String   @id @default(cuid())
+  name         String   // es. "Girone A Ovest"
+  season       String   // es. "2025-26"
+  championship String?  // es. "Gold", "Silver"
+  teamId       String
+  createdAt    DateTime @default(now())
+
+  team    CompetitiveTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  matches Match[]
+
+  @@index([season])
+  @@index([teamId])
+}
+
 // ── Partite ufficiali ─────────────────────────────────────────────────────────
 
 model Match {
@@ -313,13 +333,36 @@ model Match {
   notes      String?      @db.Text
   createdAt  DateTime     @default(now())
 
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
   team        CompetitiveTeam    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   opponent    OpposingTeam       @relation(fields: [opponentId], references: [id])
   playerStats PlayerMatchStats[]
+  callups     MatchCallup[]
 
   @@index([teamId, date])
   @@index([opponentId])
+  @@index([groupId])
   @@map("OfficialMatch")
+}
+
+// ── Convocati per partita ─────────────────────────────────────────────────────
+
+model MatchCallup {
+  id      String @id @default(cuid())
+  matchId String
+
+  userId  String?
+  childId String?
+
+  match Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, userId])
+  @@unique([matchId, childId])
+  @@index([matchId])
 }
 
 // ── Statistiche giocatore per partita ────────────────────────────────────────
@@ -375,19 +418,20 @@ model AppNotificationRead {
 // ── Statistiche giocatore per partita ────────────────────────────────────────
 
 model PlayerMatchStats {
-  id            String @id @default(cuid())
-  matchId       String
-  points        Int    @default(0)  // punti segnati
-  baskets       Int    @default(0)  // canestri
-  fouls         Int    @default(0)  // falli
-  minutesPlayed Int?
-  notes         String? @db.Text
+  id      String @id @default(cuid())
+  matchId String
+  points  Int    @default(0)
+  baskets Int    @default(0)
+  fouls   Int    @default(0)
+  assists Int    @default(0)
+  rebounds Int   @default(0)
+  notes   String? @db.Text
 
   // Esattamente uno dei due deve essere valorizzato
   userId  String?
   childId String?
 
-  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  match Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
   user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
   child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
 

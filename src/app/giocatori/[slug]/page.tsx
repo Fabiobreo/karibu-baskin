@@ -114,6 +114,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const totalPoints = filteredStats.reduce((s, ms) => s + ms.points, 0);
   const totalBaskets = filteredStats.reduce((s, ms) => s + ms.baskets, 0);
   const totalFouls = filteredStats.reduce((s, ms) => s + ms.fouls, 0);
+  const totalAssists = filteredStats.reduce((s, ms) => s + ms.assists, 0);
+  const totalRebounds = filteredStats.reduce((s, ms) => s + ms.rebounds, 0);
   const matchesPlayed = filteredStats.length;
 
   const hasStats = matchesPlayed > 0;
@@ -247,6 +249,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 { label: "Partite", value: matchesPlayed, color: "#1565C0" },
                 { label: "Punti totali", value: totalPoints, color: "#E65100" },
                 { label: "Canestri", value: totalBaskets, color: "#2E7D32" },
+                { label: "Assist", value: totalAssists, color: "#7B1FA2" },
+                { label: "Rimbalzi", value: totalRebounds, color: "#00838F" },
                 { label: "Falli", value: totalFouls, color: "#C62828" },
                 { label: "Media punti", value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—", color: "#1A1A1A" },
                 { label: "Media canestri", value: matchesPlayed > 0 ? (totalBaskets / matchesPlayed).toFixed(1) : "—", color: "#555" },
@@ -372,10 +376,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                           <StatItem label="Punti" value={ms.points} />
                           <StatItem label="Canestri" value={ms.baskets} />
+                          {ms.assists > 0 && <StatItem label="Assist" value={ms.assists} />}
+                          {ms.rebounds > 0 && <StatItem label="Rimbalzi" value={ms.rebounds} />}
                           <StatItem label="Falli" value={ms.fouls} />
-                          {ms.minutesPlayed !== null && ms.minutesPlayed !== undefined && (
-                            <StatItem label="Minuti" value={ms.minutesPlayed} />
-                          )}
                         </Box>
                         {ms.notes && (
                           <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1 }}>

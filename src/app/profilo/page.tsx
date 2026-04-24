@@ -3,8 +3,10 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
   Container, Typography, Box, Paper, Avatar, Chip,
-  Divider, Stack,
+  Divider, Stack, Button,
 } from "@mui/material";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS } from "@/lib/constants";
@@ -49,6 +51,9 @@ export default async function ProfiloPage() {
       teamMemberships: {
         include: { team: { select: { name: true, color: true, season: true } } },
       },
+      registrations: {
+        select: { session: { select: { date: true } } },
+      },
       _count: { select: { registrations: true } },
     },
   });
@@ -64,6 +69,16 @@ export default async function ProfiloPage() {
   const seasonStart = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
   const currentSeason = `${seasonStart}-${String(seasonStart + 1).slice(-2)}`;
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
+
+  // Presenze per stagione
+  const attendanceBySeason = user.registrations.reduce<Record<string, number>>((acc, reg) => {
+    const d = new Date(reg.session.date);
+    const y = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1;
+    const season = `${y}-${String(y + 1).slice(-2)}`;
+    acc[season] = (acc[season] ?? 0) + 1;
+    return acc;
+  }, {});
+  const attendanceSeasons = Object.entries(attendanceBySeason).sort(([a], [b]) => b.localeCompare(a));
 
   // Iscrizioni anonime con stesso nome (per proposta di collegamento)
   const anonymousMatches = user.name
@@ -129,6 +144,19 @@ export default async function ProfiloPage() {
               />
             ))}
           </Box>
+
+          {user.slug && (
+            <Link href={`/giocatori/${user.slug}`} style={{ textDecoration: "none" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
+                sx={{ mt: 2, fontSize: "0.78rem", fontWeight: 600 }}
+              >
+                Vedi il tuo profilo pubblico
+              </Button>
+            </Link>
+          )}
 
           {user.appRole === "GUEST" && (
             <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1.5 }}>
@@ -200,6 +228,28 @@ export default async function ProfiloPage() {
                 Nessun dato atleta disponibile. L&apos;admin può impostare ruolo, genere e data di nascita.
               </Typography>
             )}
+          </Paper>
+        )}
+
+        {/* Presenze per stagione */}
+        {attendanceSeasons.length > 1 && (
+          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
+            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+              Presenze agli allenamenti
+            </Typography>
+            <Stack spacing={1}>
+              {attendanceSeasons.map(([season, count]) => (
+                <Row key={season} label={`Stagione ${season}`}>
+                  <Chip
+                    label={`${count} allenament${count !== 1 ? "i" : "o"}`}
+                    size="small"
+                    variant={season === currentSeason ? "filled" : "outlined"}
+                    color={season === currentSeason ? "primary" : "default"}
+                    sx={{ fontWeight: 600 }}
+                  />
+                </Row>
+              ))}
+            </Stack>
           </Paper>
         )}
 

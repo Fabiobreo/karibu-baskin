@@ -11,6 +11,7 @@ export const MatchCreateSchema = z.object({
   theirScore: z.number().int().min(0).optional(),
   result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
+  groupId: z.string().nullable().optional(),
 });
 
 export const MatchUpdateSchema = z.object({
@@ -23,6 +24,7 @@ export const MatchUpdateSchema = z.object({
   result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   opponentId: z.string().min(1).optional(),
+  groupId: z.string().nullable().optional(),
 });
 
 export const PlayerStatsEntrySchema = z.object({
@@ -31,7 +33,8 @@ export const PlayerStatsEntrySchema = z.object({
   points: z.number().int().min(0).max(999).optional(),
   baskets: z.number().int().min(0).max(999).optional(),
   fouls: z.number().int().min(0).max(5).optional(),
-  minutesPlayed: z.number().int().min(0).max(120).nullable().optional(),
+  assists: z.number().int().min(0).max(999).optional(),
+  rebounds: z.number().int().min(0).max(999).optional(),
   notes: z.string().max(500).optional(),
 }).refine(
   (s) => !!(s.userId) !== !!(s.childId),

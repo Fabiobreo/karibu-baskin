@@ -356,7 +356,8 @@ async function demo() {
           points: randInt(0, 18),
           baskets: randInt(0, 6),
           fouls: randInt(0, 4),
-          minutesPlayed: randInt(15, 40),
+          assists: randInt(0, 5),
+          rebounds: randInt(0, 8),
         },
       });
     }
@@ -379,7 +380,8 @@ async function demo() {
           points: randInt(0, 14),
           baskets: randInt(0, 5),
           fouls: randInt(0, 5),
-          minutesPlayed: randInt(10, 40),
+          assists: randInt(0, 4),
+          rebounds: randInt(0, 7),
         },
       });
     }

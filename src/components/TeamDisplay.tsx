@@ -18,6 +18,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -42,6 +43,7 @@ interface Props {
   sessionId: string;
   isStaff?: boolean;
   registrationIds?: string[];
+  slugMap?: Record<string, string>; // reg.id → user.slug
   // Stato squadre gestito dal parent
   teams: TeamsData | null;
   teamsLoading: boolean;
@@ -77,7 +79,7 @@ function RoleBadge({ role, count }: { role: number; count: number }) {
 
 // ── Layout mobile: colonne indipendenti impilate ──────────────────────────────
 
-export function TeamColumn({ name, athletes, color }: { name: string; athletes: TeamAthlete[]; color: string }) {
+export function TeamColumn({ name, athletes, color, slugMap = {} }: { name: string; athletes: TeamAthlete[]; color: string; slugMap?: Record<string, string> }) {
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden", height: "100%" }}>
       <Box sx={{ px: 2, py: 1.5, backgroundColor: color, display: "flex", alignItems: "center", gap: 1 }}>
@@ -99,11 +101,22 @@ export function TeamColumn({ name, athletes, color }: { name: string; athletes: 
               <RoleBadge role={role} count={group.length} />
             </Box>
             <List dense disablePadding>
-              {group.map((a) => (
-                <ListItem key={a.id} sx={{ py: 0, px: 3 }}>
-                  <ListItemText primary={a.name} />
-                </ListItem>
-              ))}
+              {group.map((a) => {
+                const slug = slugMap[a.id];
+                return (
+                  <ListItem key={a.id} sx={{ py: 0, px: 3 }}>
+                    <ListItemText
+                      primary={
+                        slug ? (
+                          <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
+                            {a.name}
+                          </Link>
+                        ) : a.name
+                      }
+                    />
+                  </ListItem>
+                );
+              })}
             </List>
           </Box>
         );
@@ -114,7 +127,7 @@ export function TeamColumn({ name, athletes, color }: { name: string; athletes: 
 
 // ── Layout desktop: griglia allineata cross-column ────────────────────────────
 
-export function AlignedTeamGrid({ teams }: { teams: TeamsData }) {
+export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slugMap?: Record<string, string> }) {
   const allTeams = [
     teams.teamA,
     teams.teamB,
@@ -163,14 +176,22 @@ export function AlignedTeamGrid({ teams }: { teams: TeamsData }) {
     // Righe atleti (padding con celle vuote fino a maxCount)
     for (let idx = 0; idx < maxCount; idx++) {
       groups.forEach((group, i) => {
+        const athlete = group[idx];
+        const slug = athlete ? slugMap[athlete.id] : undefined;
         cells.push(
           <Box key={`player-${role}-${idx}-${i}`} sx={{
             px: 3,
             minHeight: 32,
             display: "flex", alignItems: "center",
           }}>
-            {group[idx] && (
-              <Typography variant="body2">{group[idx].name}</Typography>
+            {athlete && (
+              slug ? (
+                <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{athlete.name}</Typography>
+                </Link>
+              ) : (
+                <Typography variant="body2">{athlete.name}</Typography>
+              )
             )}
           </Box>
         );
@@ -191,7 +212,7 @@ export function AlignedTeamGrid({ teams }: { teams: TeamsData }) {
 
 // ── TeamDisplay ───────────────────────────────────────────────────────────────
 
-export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams, teamsLoading, onTeamsGenerated }: Props) {
+export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugMap = {}, teams, teamsLoading, onTeamsGenerated }: Props) {
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
@@ -345,18 +366,18 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, teams
       )}
 
       {isDesktop ? (
-        <AlignedTeamGrid teams={teams} />
+        <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
         <Grid container spacing={2}>
           <Grid size={colSize}>
-            <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" />
+            <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" slugMap={slugMap} />
           </Grid>
           <Grid size={colSize}>
-            <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" />
+            <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" slugMap={slugMap} />
           </Grid>
           {teams.numTeams === 3 && teams.teamC && (
             <Grid size={colSize}>
-              <TeamColumn name="Bianchi" athletes={teams.teamC} color="#757575" />
+              <TeamColumn name="Bianchi" athletes={teams.teamC} color="#757575" slugMap={slugMap} />
             </Grid>
           )}
         </Grid>

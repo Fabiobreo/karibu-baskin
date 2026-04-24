@@ -82,6 +82,7 @@ export async function PUT(req: Request, { params }: Params) {
       result: resolvedResult,
       ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
       ...(body.opponentId !== undefined && { opponentId: body.opponentId }),
+      ...("groupId" in body && { groupId: body.groupId ?? null }),
     },
     include: {
       team: { select: { id: true, name: true, season: true } },

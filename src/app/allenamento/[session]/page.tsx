@@ -44,6 +44,7 @@ interface Registration {
   userId: string | null;
   childId: string | null;
   registeredAsCoach: boolean;
+  userSlug: string | null;
 }
 
 interface StatusBadge {
@@ -143,6 +144,11 @@ export default function SessionPage() {
   useEffect(() => { setSessionUrl(window.location.href); }, []);
 
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
+
+  // Mappa reg.id → user.slug per nomi clickabili in TeamDisplay
+  const slugMap = Object.fromEntries(
+    registrations.filter((r) => r.userSlug).map((r) => [r.id, r.userSlug!])
+  );
   const isEnded = sessionDate
     ? new Date() > (sessionEnd ?? new Date(sessionDate.getTime() + 2 * 60 * 60 * 1000))
     : false;
@@ -322,6 +328,7 @@ export default function SessionPage() {
                     sessionId={sessionId}
                     isStaff={isStaff}
                     registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
+                    slugMap={slugMap}
                     teams={teams}
                     teamsLoading={teamsLoading}
                     onTeamsGenerated={(newTeams) => mutateTeams(newTeams, false)}
@@ -389,6 +396,7 @@ export default function SessionPage() {
                     sessionId={sessionId}
                     isStaff={isStaff}
                     registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
+                    slugMap={slugMap}
                     teams={teams}
                     teamsLoading={teamsLoading}
                     onTeamsGenerated={(newTeams) => mutateTeams(newTeams, false)}

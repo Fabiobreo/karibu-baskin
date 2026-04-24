@@ -15,9 +15,12 @@ export async function GET(req: NextRequest) {
   const registrations = await prisma.registration.findMany({
     where: { sessionId },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+    include: { user: { select: { slug: true } } },
   });
 
-  return NextResponse.json(registrations);
+  return NextResponse.json(
+    registrations.map(({ user, ...r }) => ({ ...r, userSlug: user?.slug ?? null }))
+  );
 }
 
 export async function POST(req: NextRequest) {

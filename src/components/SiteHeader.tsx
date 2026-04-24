@@ -24,6 +24,8 @@ const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
   { label: "Allenamenti", href: "/allenamenti" },
   { label: "Calendario", href: "/calendario" },
+  { label: "Risultati", href: "/risultati" },
+  { label: "Classifiche", href: "/classifiche" },
   { label: "La Squadra", href: "/la-squadra" },
   { label: "Il Baskin", href: "/il-baskin" },
   { label: "Sponsor", href: "/sponsor" },
