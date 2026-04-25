@@ -8,6 +8,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import GroupsIcon from "@mui/icons-material/Groups";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -234,7 +235,18 @@ export default async function TeamProfilePage({ params }: Props) {
               </Typography>
               <Stack spacing={1.5}>
                 {team.matches.map((match) => (
-                  <Paper key={match.id} elevation={0} sx={{ border: "1px solid rgba(0,0,0,0.07)", overflow: "hidden" }}>
+                  // [CLAUDE - 01:00] link alla pagina di dettaglio partita
+                  <Link key={match.id} href={`/partite/${match.slug ?? match.id}`} style={{ textDecoration: "none" }}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        border: "1px solid rgba(0,0,0,0.07)",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        transition: "box-shadow 0.15s, border-color 0.15s",
+                        "&:hover": { boxShadow: "0 2px 12px rgba(0,0,0,0.1)", borderColor: "rgba(0,0,0,0.15)" },
+                      }}
+                    >
                     <Box sx={{ display: "flex", alignItems: "stretch" }}>
                       <Box
                         sx={{
@@ -278,7 +290,7 @@ export default async function TeamProfilePage({ params }: Props) {
                           </Box>
                         )}
 
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
                           <Chip
                             label={MATCH_TYPE_LABEL[match.matchType]}
                             size="small"
@@ -298,10 +310,12 @@ export default async function TeamProfilePage({ params }: Props) {
                               }}
                             />
                           )}
+                          <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled", ml: "auto" }} />
                         </Box>
                       </Box>
                     </Box>
-                  </Paper>
+                    </Paper>
+                  </Link>
                 ))}
               </Stack>
             </Box>

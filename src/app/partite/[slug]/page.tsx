@@ -11,7 +11,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { slugify } from "@/lib/slugUtils";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -78,7 +78,8 @@ export default async function MatchDetailPage({ params }: Props) {
   const hasStats  = match.playerStats.length > 0;
 
   const teamSeasonParam = match.team.season.replace("-", "");
-  const teamSlug        = match.team.name.toLowerCase().replace(/\s+/g, "-");
+  // [CLAUDE - 01:00] usa slugify per coerenza con squadre/[season]/[slug]
+  const teamSlug        = slugify(match.team.name);
 
   return (
     <>
