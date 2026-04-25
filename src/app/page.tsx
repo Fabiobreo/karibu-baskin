@@ -7,6 +7,7 @@ import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
 import type { TeamsData } from "@/components/TeamDisplay";
 import HeroSection from "@/components/HeroSection";
+import LoSapeviCard from "@/components/LoSapeviCard";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -128,6 +129,8 @@ export default async function HomePage() {
         )}
 
       </Container>
+
+      <LoSapeviCard />
 
       {/* ── Chi siamo ───────────────────────────────────────────────────────── */}
       <Box sx={{ bgcolor: "rgba(0,0,0,0.02)", borderTop: "1px solid rgba(0,0,0,0.05)", borderBottom: "1px solid rgba(0,0,0,0.05)", py: { xs: 6, md: 9 } }}>

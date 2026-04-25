@@ -9,6 +9,7 @@ import TimerIcon from "@mui/icons-material/Timer";
 import StarIcon from "@mui/icons-material/Star";
 import GradeIcon from "@mui/icons-material/Grade";
 import { ROLE_COLORS } from "@/lib/constants";
+import LoSapeviCarousel from "@/components/LoSapeviCarousel";
 
 const ROLES_INFO = [
   {
@@ -129,7 +130,7 @@ export default function IlBaskinPage() {
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
 
         {/* Storia */}
-        <Box sx={{ mb: 7 }}>
+        <Box sx={{ mb: 5 }}>
           <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
             Le origini
           </Typography>
@@ -146,7 +147,10 @@ export default function IlBaskinPage() {
           </Typography>
         </Box>
 
-        <Divider sx={{ mb: 7 }} />
+        {/* Lo sapevi? */}
+        <Box sx={{ mb: 5 }}>
+          <LoSapeviCarousel />
+        </Box>
 
         {/* Regole */}
         <Box sx={{ mb: 7 }}>
@@ -259,24 +263,6 @@ export default function IlBaskinPage() {
               </Paper>
             ))}
           </Stack>
-        </Box>
-
-        <Divider sx={{ my: 7 }} />
-
-        {/* Curiosità */}
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
-            Lo sapevi?
-          </Typography>
-          <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
-            Il Baskin è unico al mondo
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: "auto", lineHeight: 1.8 }}>
-            È l&apos;unico sport di squadra in cui persone con e senza disabilità giocano <strong>insieme</strong>,
-            non in categorie separate. Ogni giocatore difende contro il suo corrispondente di ruolo
-            e ogni canestro è un contributo reale alla vittoria della squadra.
-            Il regolamento ufficiale è curato dall&apos;EISI — Ente Italiano Sport Inclusivi.
-          </Typography>
         </Box>
 
       </Container>
