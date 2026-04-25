@@ -3,6 +3,7 @@ import {
   Container, Typography, Box, Paper, Chip, Stack, Divider,
   Table, TableHead, TableBody, TableRow, TableCell,
 } from "@mui/material";
+import GironeMatchList from "@/components/GironeMatchList";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -28,39 +29,45 @@ const RESULT_LABEL: Record<string, { label: string; color: string; bg: string }>
   LOSS: { label: "S", color: "#C62828", bg: "#FFEBEE" },
 };
 
+function groupsQuery(season: string) {
+  return prisma.group.findMany({
+    where: { season },
+    include: {
+      team: { select: { id: true, name: true, color: true } },
+      matches: {
+        where: { result: { not: null } },
+        select: {
+          id: true, date: true, result: true, ourScore: true, theirScore: true, isHome: true,
+          opponent: { select: { name: true } },
+        },
+        orderBy: { date: "asc" },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+}
+
 export default async function ClassifichePage({ searchParams }: Props) {
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null;
 
   const now = new Date();
-  const defaultSeason = (() => {
-    const y = now.getFullYear();
-    const s = now.getMonth() >= 8 ? y : y - 1;
-    return `${s}-${String(s + 1).slice(-2)}`;
-  })();
-  const activeSeason = seasonFilter ?? defaultSeason;
+  const currentYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  const currentSeason = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
+  const activeSeason = seasonFilter ?? currentSeason;
 
-  const [groups, seasons, allStats] = await Promise.all([
-    prisma.group.findMany({
-      where: { season: activeSeason },
-      include: {
-        team: { select: { id: true, name: true, color: true } },
-        matches: {
-          where: { result: { not: null } },
-          select: {
-            id: true, date: true, result: true, ourScore: true, theirScore: true, isHome: true,
-            opponent: { select: { name: true } },
-          },
-          orderBy: { date: "asc" },
-        },
-      },
-      orderBy: { name: "asc" },
-    }),
+  const [currentGroups, statGroups, seasons, allStats] = await Promise.all([
+    // Championship standings: always current season
+    groupsQuery(currentSeason),
+    // For the active-season groups (only needed if activeSeason differs from currentSeason)
+    activeSeason !== currentSeason ? groupsQuery(activeSeason) : Promise.resolve(null),
+    // Available seasons for the stats filter chip
     prisma.group.findMany({
       select: { season: true },
       distinct: ["season"],
       orderBy: { season: "desc" },
     }),
+    // Player stats for the selected season
     prisma.playerMatchStats.groupBy({
       by: ["userId"],
       where: {
@@ -99,7 +106,10 @@ export default async function ClassifichePage({ searchParams }: Props) {
     }));
 
   const availableSeasons = seasons.map((s) => s.season);
-  const hasData = groups.length > 0 || statRows.length > 0;
+  // Groups shown in the "active season" block (only when viewing a past season)
+  const activeGroups = statGroups ?? currentGroups;
+  const hasStats = statRows.length > 0;
+  const hasCurrentGroups = currentGroups.length > 0;
 
   return (
     <>
@@ -122,30 +132,15 @@ export default async function ClassifichePage({ searchParams }: Props) {
             </Typography>
           </Box>
           <Typography variant="h3" fontWeight={800} sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}>
-            Stagione {activeSeason}
+            Stagione {currentSeason}
           </Typography>
         </Container>
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        {/* Filtri stagione */}
-        {availableSeasons.length > 1 && (
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4 }}>
-            {availableSeasons.map((s) => (
-              <Link key={s} href={`/classifiche?season=${encodeURIComponent(s)}`} style={{ textDecoration: "none" }}>
-                <Chip
-                  label={`Stagione ${s}`}
-                  variant={activeSeason === s ? "filled" : "outlined"}
-                  color={activeSeason === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600 }}
-                />
-              </Link>
-            ))}
-          </Box>
-        )}
 
-        {/* Classifica campionato per girone */}
-        {groups.length > 0 && (
+        {/* ── Classifica campionato (sempre stagione corrente) ── */}
+        {hasCurrentGroups && (
           <Box sx={{ mb: 6 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
               <EmojiEventsIcon color="primary" />
@@ -153,23 +148,38 @@ export default async function ClassifichePage({ searchParams }: Props) {
                 Campionato
               </Typography>
             </Box>
-            <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Record per girone</Typography>
+            <Typography variant="h5" fontWeight={800} sx={{ mb: 1 }}>
+              Classifica campionato
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Stagione {currentSeason} — record per girone
+            </Typography>
 
             <Stack spacing={2}>
-              {groups.map((g) => {
+              {currentGroups.map((g) => {
                 const played = g.matches.length;
-                const wins = g.matches.filter((m) => m.result === "WIN").length;
-                const draws = g.matches.filter((m) => m.result === "DRAW").length;
+                const wins   = g.matches.filter((m) => m.result === "WIN").length;
+                const draws  = g.matches.filter((m) => m.result === "DRAW").length;
                 const losses = g.matches.filter((m) => m.result === "LOSS").length;
                 const points = wins * 2 + draws;
-                const pf = g.matches.reduce((s, m) => s + (m.ourScore ?? 0), 0);
-                const pa = g.matches.reduce((s, m) => s + (m.theirScore ?? 0), 0);
+                const pf     = g.matches.reduce((s, m) => s + (m.ourScore ?? 0), 0);
+                const pa     = g.matches.reduce((s, m) => s + (m.theirScore ?? 0), 0);
 
                 return (
                   <Paper key={g.id} elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
                     {/* Header */}
-                    <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5, bgcolor: "rgba(0,0,0,0.03)", borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
-                      <Chip label={g.team.name} size="small" sx={{ bgcolor: g.team.color ?? "#E65100", color: "#fff", fontWeight: 700 }} />
+                    <Box sx={{
+                      px: 2, py: 1.5,
+                      display: "flex", alignItems: "center", gap: 1.5,
+                      bgcolor: "rgba(0,0,0,0.03)",
+                      borderBottom: "1px solid rgba(0,0,0,0.07)",
+                      flexWrap: "wrap",
+                    }}>
+                      <Chip
+                        label={g.team.name}
+                        size="small"
+                        sx={{ bgcolor: g.team.color ?? "#E65100", color: "#fff", fontWeight: 700 }}
+                      />
                       <Typography variant="subtitle2" fontWeight={700}>{g.name}</Typography>
                       {g.championship && (
                         <Typography variant="caption" color="text.secondary">({g.championship})</Typography>
@@ -214,51 +224,7 @@ export default async function ClassifichePage({ searchParams }: Props) {
 
                         {/* Lista partite del girone */}
                         <Divider />
-                        <Box sx={{ overflowX: "auto" }}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow sx={{ bgcolor: "rgba(0,0,0,0.02)" }}>
-                                <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Data</TableCell>
-                                <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Avversario</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>C/T</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Risultato</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Punteggio</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {g.matches.map((m) => {
-                                const res = m.result ? RESULT_LABEL[m.result] : null;
-                                return (
-                                  <TableRow key={m.id} hover>
-                                    <TableCell sx={{ fontSize: "0.78rem", whiteSpace: "nowrap" }}>
-                                      {format(new Date(m.date), "d MMM yy", { locale: it })}
-                                    </TableCell>
-                                    <TableCell sx={{ fontSize: "0.78rem", fontWeight: 600 }}>
-                                      {m.opponent.name}
-                                    </TableCell>
-                                    <TableCell align="center">
-                                      <Typography variant="caption" color="text.secondary">
-                                        {m.isHome ? "C" : "T"}
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                      {res && (
-                                        <Chip
-                                          label={res.label}
-                                          size="small"
-                                          sx={{ bgcolor: res.bg, color: res.color, fontWeight: 800, height: 20, fontSize: "0.7rem" }}
-                                        />
-                                      )}
-                                    </TableCell>
-                                    <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}>
-                                      {m.ourScore ?? "–"} – {m.theirScore ?? "–"}
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </Box>
+                        <GironeMatchList matches={g.matches} />
                       </>
                     )}
                   </Paper>
@@ -268,29 +234,67 @@ export default async function ClassifichePage({ searchParams }: Props) {
           </Box>
         )}
 
-        {/* Classifica interna */}
-        {statRows.length > 0 && (
+        {/* ── Classifica interna (marcatori) ── */}
+        {(hasStats || availableSeasons.length > 1) && (
           <>
-            {groups.length > 0 && <Divider sx={{ mb: 5 }} />}
+            {hasCurrentGroups && <Divider sx={{ mb: 5 }} />}
+
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
               <LeaderboardIcon color="primary" />
               <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
                 Marcatori
               </Typography>
             </Box>
-            <Typography variant="h5" fontWeight={800} sx={{ mb: 1 }}>Classifica interna</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Clicca sull&apos;intestazione di una colonna per ordinare.
+            <Typography variant="h5" fontWeight={800} sx={{ mb: 1 }}>
+              Classifica interna
             </Typography>
-            <ClassificaInternaTable rows={statRows} />
+
+            {/* Filtri stagione */}
+            {availableSeasons.length > 1 && (
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 3, alignItems: "center" }}>
+                <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  Stagione:
+                </Typography>
+                {availableSeasons.map((s) => (
+                  <Link key={s} href={`/classifiche?season=${encodeURIComponent(s)}`} style={{ textDecoration: "none" }}>
+                    <Chip
+                      label={s}
+                      size="small"
+                      variant={activeSeason === s ? "filled" : "outlined"}
+                      color={activeSeason === s ? "primary" : "default"}
+                      sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.72rem" }}
+                    />
+                  </Link>
+                ))}
+              </Box>
+            )}
+
+            {hasStats ? (
+              <>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Filtra per ruolo o clicca sull&apos;intestazione per ordinare.
+                  {activeSeason !== currentSeason && (
+                    <> Dati relativi alla stagione {activeSeason}.</>
+                  )}
+                </Typography>
+                <ClassificaInternaTable rows={statRows} />
+              </>
+            ) : (
+              <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
+                <Typography color="text.secondary">
+                  Nessun dato disponibile per la stagione {activeSeason}.
+                </Typography>
+              </Paper>
+            )}
           </>
         )}
 
-        {!hasData && (
+        {/* Nessun dato del tutto */}
+        {!hasCurrentGroups && !hasStats && availableSeasons.length === 0 && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <LeaderboardIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
-              Nessun dato disponibile per la stagione {activeSeason}
+              Nessun dato disponibile per la stagione {currentSeason}
             </Typography>
             <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
               Le classifiche verranno aggiornate con l&apos;avanzare della stagione.

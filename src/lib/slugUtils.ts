@@ -46,3 +46,29 @@ export async function generateUserSlug(name: string): Promise<string> {
 export function sessionDateSlug(date: string, time: string): string {
   return `${date}T${time}`;
 }
+
+/**
+ * Genera uno slug univoco per una partita.
+ * Formato: "{team-slug}-vs-{opponent-slug}-{YYYY-MM-DD}"
+ * Se esiste già, aggiunge suffisso numerico: "-2", "-3", ecc.
+ */
+export async function generateMatchSlug(
+  teamName: string,
+  opponentName: string,
+  date: Date,
+): Promise<string> {
+  const dateStr = date.toISOString().slice(0, 10); // YYYY-MM-DD
+  const base = `${slugify(teamName)}-vs-${slugify(opponentName)}-${dateStr}`;
+
+  const existing = await prisma.match.findUnique({ where: { slug: base } });
+  if (!existing) return base;
+
+  let n = 2;
+  while (n < 1000) {
+    const candidate = `${base}-${n}`;
+    const found = await prisma.match.findUnique({ where: { slug: candidate } });
+    if (!found) return candidate;
+    n++;
+  }
+  return base; // fallback (non dovrebbe mai succedere)
+}

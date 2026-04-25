@@ -321,6 +321,7 @@ model Group {
 
 model Match {
   id         String       @id @default(cuid())
+  slug       String?      @unique  // es. "kapuleti-vs-roma-baskin-2025-10-12"
   teamId     String
   opponentId String
   date       DateTime

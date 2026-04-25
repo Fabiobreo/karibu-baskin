@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/db";
 import {
-  Box, Container, Typography, Paper, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Avatar, Chip, Select, MenuItem,
+  Box, Container, Typography, Chip,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import ClassificaTableClient from "@/components/ClassificaTableClient";
+import type { ClassificaRow } from "@/components/ClassificaTableClient";
 
 export const metadata: Metadata = { title: "Classifica | Karibu Baskin" };
 export const revalidate = 3600;
@@ -64,22 +64,7 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
   const userMap = new Map(users.map((u) => [u.id, u]));
   const childMap = new Map(children.map((c) => [c.id, c]));
 
-  interface Row {
-    id: string;
-    name: string;
-    image: string | null;
-    sportRole: number | null;
-    sportRoleVariant: string | null;
-    slug: string | null;
-    kind: "user" | "child";
-    matches: number;
-    points: number;
-    baskets: number;
-    fouls: number;
-    avgPoints: number;
-  }
-
-  const rows: Row[] = [];
+  const rows: ClassificaRow[] = [];
   for (const s of stats) {
     const matches = s._count.matchId;
     const points = s._sum.points ?? 0;
@@ -150,75 +135,7 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
             </Typography>
           </Box>
         ) : (
-          <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ "& th": { fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "text.secondary" } }}>
-                  <TableCell sx={{ width: 36, pl: 2 }}>#</TableCell>
-                  <TableCell>Giocatore</TableCell>
-                  <TableCell align="center">Partite</TableCell>
-                  <TableCell align="center" sx={{ color: "primary.main !important" }}>Punti</TableCell>
-                  <TableCell align="center">Canestri</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Media pt.</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Falli</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row, i) => {
-                  const medal = i === 0 ? "#F9A825" : i === 1 ? "#9E9E9E" : i === 2 ? "#A1662F" : null;
-                  const playerHref = row.kind === "user" && row.slug ? `/giocatori/${row.slug}?season=${encodeURIComponent(selectedSeason)}` : null;
-
-                  return (
-                    <TableRow
-                      key={row.id}
-                      hover
-                      sx={i < 3 ? { bgcolor: `${medal}08` } : undefined}
-                      component={playerHref ? Link : "tr"}
-                      {...(playerHref ? { href: playerHref, style: { textDecoration: "none", color: "inherit" } } : {})}
-                    >
-                      <TableCell sx={{ pl: 2 }}>
-                        {medal
-                          ? <EmojiEventsIcon sx={{ fontSize: 18, color: medal, verticalAlign: "middle" }} />
-                          : <Typography variant="body2" color="text.disabled" fontWeight={600}>{i + 1}</Typography>}
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Avatar src={row.image ?? undefined} sx={{ width: 28, height: 28, fontSize: 12, bgcolor: row.kind === "child" ? "grey.400" : undefined }}>
-                            {(row.name)[0].toUpperCase()}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body2" fontWeight={700} noWrap>{row.name}</Typography>
-                            {row.sportRole && (
-                              <Chip
-                                label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
-                                size="small"
-                                sx={{ fontSize: "0.62rem", height: 16, bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700 }}
-                              />
-                            )}
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body2" fontWeight={600}>{row.matches}</Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body2" fontWeight={800} color="primary">{row.points}</Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="body2" fontWeight={600}>{row.baskets}</Typography>
-                      </TableCell>
-                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        <Typography variant="body2" color="text.secondary">{row.avgPoints.toFixed(1)}</Typography>
-                      </TableCell>
-                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        <Typography variant="body2" color="text.secondary">{row.fouls}</Typography>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <ClassificaTableClient rows={rows} selectedSeason={selectedSeason} />
         )}
       </Container>
     </>

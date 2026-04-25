@@ -4,6 +4,7 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { MatchUpdateSchema } from "@/lib/schemas/match";
+import { generateMatchSlug } from "@/lib/slugUtils";
 import type { MatchResult } from "@prisma/client";
 
 type Params = { params: Promise<{ matchId: string }> };
@@ -48,10 +49,10 @@ export async function PUT(req: Request, { params }: Params) {
   }
   const body = parsed.data;
 
-  // Leggi stato precedente per capire se il risultato è nuovo
+  // Leggi stato precedente per capire se il risultato è nuovo e se manca lo slug
   const previous = await prisma.match.findUnique({
     where: { id: matchId },
-    select: { result: true, ourScore: true, theirScore: true },
+    select: { result: true, ourScore: true, theirScore: true, slug: true, teamId: true, opponentId: true, date: true },
   });
 
   // 2.3 — Auto-derive result from scores (takes precedence over explicit result field)
@@ -70,9 +71,25 @@ export async function PUT(req: Request, { params }: Params) {
     resolvedResult = derived;
   }
 
+  // Genera slug se manca (backfill per partite create prima dell'introduzione dello slug)
+  let slugToSet: string | null | undefined = undefined; // undefined = non aggiornare
+  if (!previous?.slug) {
+    const teamId     = body.opponentId ? (previous?.teamId ?? "") : (previous?.teamId ?? "");
+    const opponentId = body.opponentId ?? previous?.opponentId ?? "";
+    const matchDate  = body.date ? new Date(body.date) : (previous?.date ?? new Date());
+    const [teamRec, oppRec] = await Promise.all([
+      prisma.competitiveTeam.findUnique({ where: { id: teamId }, select: { name: true } }),
+      prisma.opposingTeam.findUnique({ where: { id: opponentId }, select: { name: true } }),
+    ]);
+    if (teamRec && oppRec) {
+      slugToSet = await generateMatchSlug(teamRec.name, oppRec.name, matchDate);
+    }
+  }
+
   const match = await prisma.match.update({
     where: { id: matchId },
     data: {
+      ...(slugToSet !== undefined && { slug: slugToSet }),
       ...(body.date !== undefined && { date: new Date(body.date) }),
       ...(body.isHome !== undefined && { isHome: body.isHome }),
       ...(body.venue !== undefined && { venue: body.venue.trim() || null }),

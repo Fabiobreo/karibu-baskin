@@ -5,7 +5,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem,
   FormControl, InputLabel, CircularProgress, Alert, Table, TableHead,
   TableBody, TableRow, TableCell, Tooltip, FormControlLabel, Switch,
-  Divider, Tabs, Tab,
+  Divider, Tabs, Tab, TablePagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -107,6 +107,14 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [callupMatch, setCallupMatch] = useState<Match | null>(null);
+
+  // Paginazione per ciascun tab
+  const [matchPage,    setMatchPage]    = useState(0);
+  const [matchRpp,     setMatchRpp]     = useState(25);
+  const [oppPage,      setOppPage]      = useState(0);
+  const [oppRpp,       setOppRpp]       = useState(25);
+  const [groupPage,    setGroupPage]    = useState(0);
+  const [groupRpp,     setGroupRpp]     = useState(25);
 
   // Auto-apri dialog di modifica se ?edit=[id] è presente nell'URL
   useEffect(() => {
@@ -286,7 +294,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {matches.map((m) => (
+                  {matches.slice(matchPage * matchRpp, (matchPage + 1) * matchRpp).map((m) => (
                     <TableRow key={m.id} hover>
                       <TableCell>
                         <Box>
@@ -362,6 +370,18 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                component="div"
+                count={matches.length}
+                page={matchPage}
+                onPageChange={(_, p) => setMatchPage(p)}
+                rowsPerPage={matchRpp}
+                onRowsPerPageChange={(e) => { setMatchRpp(parseInt(e.target.value)); setMatchPage(0); }}
+                rowsPerPageOptions={[10, 25, 50]}
+                labelRowsPerPage="Righe:"
+                labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+                sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+              />
             </Paper>
           )}
         </>
@@ -410,7 +430,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {opponents.map((o) => (
+                  {opponents.slice(oppPage * oppRpp, (oppPage + 1) * oppRpp).map((o) => (
                     <TableRow key={o.id} hover>
                       <TableCell><Typography variant="body2" fontWeight={600}>{o.name}</Typography></TableCell>
                       <TableCell><Typography variant="body2" color="text.secondary">{o.city ?? "—"}</Typography></TableCell>
@@ -425,6 +445,18 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                component="div"
+                count={opponents.length}
+                page={oppPage}
+                onPageChange={(_, p) => setOppPage(p)}
+                rowsPerPage={oppRpp}
+                onRowsPerPageChange={(e) => { setOppRpp(parseInt(e.target.value)); setOppPage(0); }}
+                rowsPerPageOptions={[10, 25, 50]}
+                labelRowsPerPage="Righe:"
+                labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+                sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+              />
             </Paper>
           )}
         </Box>
@@ -515,7 +547,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {groups.map((g) => (
+                  {groups.slice(groupPage * groupRpp, (groupPage + 1) * groupRpp).map((g) => (
                     <TableRow key={g.id} hover>
                       <TableCell><Typography variant="body2" fontWeight={700}>{g.name}</Typography></TableCell>
                       <TableCell><Typography variant="body2">{g.season}</Typography></TableCell>
@@ -550,6 +582,18 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                component="div"
+                count={groups.length}
+                page={groupPage}
+                onPageChange={(_, p) => setGroupPage(p)}
+                rowsPerPage={groupRpp}
+                onRowsPerPageChange={(e) => { setGroupRpp(parseInt(e.target.value)); setGroupPage(0); }}
+                rowsPerPageOptions={[10, 25, 50]}
+                labelRowsPerPage="Righe:"
+                labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+                sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+              />
             </Paper>
           )}
         </Box>

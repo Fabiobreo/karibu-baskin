@@ -157,9 +157,11 @@ export default function AdminUserList({
   const [activeTab, setActiveTab] = useState(0);
 
   // Stato locale per il tab figli (sempre client-side, sono pochi)
-  const [childSearch, setChildSearch] = useState("");
-  const [childSortBy, setChildSortBy] = useState<"name" | "createdAt" | "sportRole">("name");
-  const [childSortDir, setChildSortDir] = useState<"asc" | "desc">("asc");
+  const [childSearch, setChildSearch]     = useState("");
+  const [childSortBy, setChildSortBy]     = useState<"name" | "createdAt" | "sportRole">("name");
+  const [childSortDir, setChildSortDir]   = useState<"asc" | "desc">("asc");
+  const [childPage, setChildPage]         = useState(0);
+  const [childRowsPerPage, setChildRowsPerPage] = useState(25);
 
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
@@ -723,7 +725,7 @@ export default function AdminUserList({
             <TextField
               placeholder="Cerca per nome o genitore..."
               value={childSearch}
-              onChange={(e) => setChildSearch(e.target.value)}
+              onChange={(e) => { setChildSearch(e.target.value); setChildPage(0); }}
               size="small"
               sx={{ width: { xs: "100%", sm: 280 } }}
               InputProps={{
@@ -791,7 +793,7 @@ export default function AdminUserList({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredChildren.map((row) => (
+                {filteredChildren.slice(childPage * childRowsPerPage, (childPage + 1) * childRowsPerPage).map((row) => (
                   <TableRow key={`child-${row.id}`} hover>
                     {/* Nome */}
                     <TableCell>
@@ -870,6 +872,17 @@ export default function AdminUserList({
               </TableBody>
             </Table>
           </TableContainer>
+          <TablePagination
+            component="div"
+            count={filteredChildren.length}
+            page={childPage}
+            onPageChange={(_, p) => setChildPage(p)}
+            rowsPerPage={childRowsPerPage}
+            onRowsPerPageChange={(e) => { setChildRowsPerPage(parseInt(e.target.value)); setChildPage(0); }}
+            rowsPerPageOptions={[10, 25, 50]}
+            labelRowsPerPage="Righe:"
+            labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+          />
         </>
       )}
 

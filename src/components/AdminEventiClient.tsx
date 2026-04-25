@@ -3,7 +3,7 @@
 import {
   Box, Typography, Paper, Button, TextField, Stack, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
-  Alert, Table, TableHead, TableBody, TableRow, TableCell, Tooltip,
+  Alert, Table, TableHead, TableBody, TableRow, TableCell, Tooltip, TablePagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -42,6 +42,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [page, setPage]               = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     const editId = searchParams.get("edit");
@@ -140,7 +142,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
             </TableRow>
           </TableHead>
           <TableBody>
-            {events.map((ev) => (
+            {events.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map((ev) => (
               <TableRow key={ev.id} hover>
                 <TableCell>
                   <Typography variant="body2" fontWeight={600}>{ev.title}</Typography>
@@ -196,6 +198,18 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          component="div"
+          count={events.length}
+          page={page}
+          onPageChange={(_, p) => setPage(p)}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value)); setPage(0); }}
+          rowsPerPageOptions={[10, 25, 50]}
+          labelRowsPerPage="Righe:"
+          labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+          sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+        />
       </Paper>
 
       {/* Dialog crea/modifica */}

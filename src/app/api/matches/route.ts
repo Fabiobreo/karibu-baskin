@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { MatchCreateSchema } from "@/lib/schemas/match";
+import { generateMatchSlug } from "@/lib/slugUtils";
 import type { MatchResult } from "@prisma/client";
 
 function deriveResult(ourScore: number, theirScore: number): MatchResult {
@@ -51,11 +52,23 @@ export async function POST(req: Request) {
     resolvedResult = derived;
   }
 
+  const matchDate = new Date(body.date);
+
+  // Fetch team and opponent names for slug generation
+  const [team, opponent] = await Promise.all([
+    prisma.competitiveTeam.findUnique({ where: { id: body.teamId }, select: { name: true } }),
+    prisma.opposingTeam.findUnique({ where: { id: body.opponentId }, select: { name: true } }),
+  ]);
+  const slug = team && opponent
+    ? await generateMatchSlug(team.name, opponent.name, matchDate)
+    : null;
+
   const match = await prisma.match.create({
     data: {
+      slug,
       teamId: body.teamId,
       opponentId: body.opponentId,
-      date: new Date(body.date),
+      date: matchDate,
       isHome: body.isHome ?? true,
       venue: body.venue?.trim() || null,
       matchType: body.matchType ?? "LEAGUE",
