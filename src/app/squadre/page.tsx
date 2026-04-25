@@ -19,6 +19,13 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+const STATS = [
+  { value: "2015", label: "Anno di fondazione" },
+  { value: "80+", label: "Atleti tesserati" },
+  { value: "2", label: "Squadre in campo" },
+  { value: "1°", label: "Titolo regionale 2018" },
+];
+
 export default async function SquadrePage() {
   const [teams, seasonRecords] = await Promise.all([
     prisma.competitiveTeam.findMany({
@@ -38,16 +45,9 @@ export default async function SquadrePage() {
 
   const allSeasons = Object.keys(bySeason).sort((a, b) => b.localeCompare(a));
 
-  // Suddividi in corrente / future / passate
   const currentTeams = currentSeason ? (bySeason[currentSeason] ?? []) : [];
-  const futureSeasons = currentSeason
-    ? allSeasons.filter((s) => s > currentSeason)
-    : [];
-  const pastSeasons = currentSeason
-    ? allSeasons.filter((s) => s < currentSeason)
-    : [];
-
-  // Fallback: nessuna stagione marcata come corrente
+  const futureSeasons = currentSeason ? allSeasons.filter((s) => s > currentSeason) : [];
+  const pastSeasons = currentSeason ? allSeasons.filter((s) => s < currentSeason) : [];
   const noCurrentSet = !currentSeason;
 
   return (
@@ -69,17 +69,35 @@ export default async function SquadrePage() {
         <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
         <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip label="Agonismo" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
+          <Chip label="Chi siamo" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
           <Typography variant="h3" fontWeight={800} sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}>
-            Le nostre squadre
+            ASD Karibu Baskin
           </Typography>
           <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, maxWidth: 540, mx: "auto", fontSize: { xs: "1rem", md: "1.1rem" } }}>
-            Le formazioni agonistiche del Karibu Baskin nei campionati regionali veneti.
+            Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre nei campionati veneti.
           </Typography>
         </Container>
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+
+        {/* Stats */}
+        <Grid container spacing={2} sx={{ mb: 7 }}>
+          {STATS.map((s) => (
+            <Grid key={s.label} size={{ xs: 6, md: 3 }}>
+              <Paper elevation={0} sx={{ p: 2.5, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}>
+                <Typography variant="h4" fontWeight={800} color="primary" sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}>
+                  {s.value}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                  {s.label}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Divider sx={{ mb: 7 }} />
 
         {/* Nessuna squadra */}
         {allSeasons.length === 0 && (
@@ -143,19 +161,10 @@ export default async function SquadrePage() {
                     <Typography variant="h5" fontWeight={800} color="text.secondary" sx={{ mb: 3, fontSize: { xs: "1.4rem", md: "1.7rem" } }}>
                       Prossima stagione
                     </Typography>
-                    <Box
-                      sx={{
-                        border: "2px dashed",
-                        borderColor: "divider",
-                        borderRadius: 2,
-                        p: { xs: 2, md: 3 },
-                      }}
-                    >
+                    <Box sx={{ border: "2px dashed", borderColor: "divider", borderRadius: 2, p: { xs: 2, md: 3 } }}>
                       <TeamGrid teams={bySeason[season]} muted />
                       {bySeason[season].length === 0 && (
-                        <Typography variant="body2" color="text.disabled">
-                          Squadre in definizione.
-                        </Typography>
+                        <Typography variant="body2" color="text.disabled">Squadre in definizione.</Typography>
                       )}
                     </Box>
                   </Box>

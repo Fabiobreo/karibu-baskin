@@ -5,13 +5,16 @@ import {
   AppBar, Toolbar, Box, Button, IconButton,
   Drawer, List, ListItem, ListItemButton,
   ListItemText, Divider, Typography, Avatar,
-  Menu, MenuItem, ListItemIcon, Skeleton,
+  Menu, MenuItem, ListItemIcon, Skeleton, Collapse,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -20,25 +23,33 @@ import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
 
+// Voci semplici del nav
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
   { label: "Allenamenti", href: "/allenamenti" },
   { label: "Calendario", href: "/calendario" },
+  // "Partite" è un dropdown — gestito separatamente
+  { label: "Squadre", href: "/squadre" },
+  { label: "Il Baskin", href: "/il-baskin" },
+  { label: "Contatti", href: "/contatti" },
+];
+
+// Voci dropdown "Partite"
+const PARTITE_LINKS = [
   { label: "Risultati", href: "/risultati" },
   { label: "Classifiche", href: "/classifiche" },
-  { label: "La Squadra", href: "/la-squadra" },
-  { label: "Il Baskin", href: "/il-baskin" },
-  { label: "Sponsor", href: "/sponsor" },
-  { label: "Contatti", href: "/contatti" },
 ];
 
 export default function SiteHeader() {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [partiteAnchor, setPartiteAnchor] = useState<null | HTMLElement>(null);
+  const [partiteOpen, setPartiteOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathnameRaw = usePathname();
   const pathname = mounted ? pathnameRaw : null;
+  const partiteActive = pathname === "/risultati" || pathname === "/classifiche";
 
   const { data: session, status } = useSession();
 
@@ -68,28 +79,70 @@ export default function SiteHeader() {
           </Link>
 
           {/* Nav desktop */}
-          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5, ml: 3, flex: 1 }}>
+          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 0.5, ml: 3, flex: 1, alignItems: "center" }}>
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href;
+              // Inserisci dropdown "Partite" dopo "Calendario"
+              const isAfterCalendario = link.href === "/squadre";
               return (
-                <Button
-                  key={link.href}
-                  onClick={() => router.push(link.href)}
-                  size="small"
-                  sx={{
-                    color: active ? "#fff" : "rgba(255,255,255,0.6)",
-                    fontWeight: active ? 700 : 500,
-                    fontSize: "0.85rem",
-                    borderBottom: active ? "2px solid #E65100" : "2px solid transparent",
-                    borderRadius: 0,
-                    pb: "2px",
-                    minWidth: link.iconOnly ? 36 : undefined,
-                    px: link.iconOnly ? 1 : undefined,
-                    "&:hover": { color: "#fff", backgroundColor: "transparent" },
-                  }}
-                >
-                  {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
-                </Button>
+                <Box key={link.href} sx={{ display: "contents" }}>
+                  {isAfterCalendario && (
+                    <>
+                      <Button
+                        size="small"
+                        onClick={(e) => setPartiteAnchor(e.currentTarget)}
+                        endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+                        sx={{
+                          color: partiteActive ? "#fff" : "rgba(255,255,255,0.6)",
+                          fontWeight: partiteActive ? 700 : 500,
+                          fontSize: "0.85rem",
+                          borderBottom: partiteActive ? "2px solid #E65100" : "2px solid transparent",
+                          borderRadius: 0,
+                          pb: "2px",
+                          "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                        }}
+                      >
+                        Partite
+                      </Button>
+                      <Menu
+                        anchorEl={partiteAnchor}
+                        open={Boolean(partiteAnchor)}
+                        onClose={() => setPartiteAnchor(null)}
+                        transformOrigin={{ horizontal: "left", vertical: "top" }}
+                        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+                        PaperProps={{ sx: { mt: 0.5, minWidth: 150 } }}
+                      >
+                        {PARTITE_LINKS.map((pl) => (
+                          <MenuItem
+                            key={pl.href}
+                            selected={pathname === pl.href}
+                            onClick={() => { setPartiteAnchor(null); router.push(pl.href); }}
+                            sx={{ fontSize: "0.9rem", fontWeight: pathname === pl.href ? 700 : 400 }}
+                          >
+                            {pl.label}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                    </>
+                  )}
+                  <Button
+                    onClick={() => router.push(link.href)}
+                    size="small"
+                    sx={{
+                      color: active ? "#fff" : "rgba(255,255,255,0.6)",
+                      fontWeight: active ? 700 : 500,
+                      fontSize: "0.85rem",
+                      borderBottom: active ? "2px solid #E65100" : "2px solid transparent",
+                      borderRadius: 0,
+                      pb: "2px",
+                      minWidth: link.iconOnly ? 36 : undefined,
+                      px: link.iconOnly ? 1 : undefined,
+                      "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                    }}
+                  >
+                    {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
+                  </Button>
+                </Box>
               );
             })}
           </Box>
@@ -198,14 +251,77 @@ export default function SiteHeader() {
         </Box>
         <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
-        {/* Pagine secondarie (escluse quelle già nel bottom nav) */}
+        {/* Nav mobile */}
         <List disablePadding sx={{ flex: 1 }}>
+          {/* Voci semplici prima di "Partite" */}
           {[
-            { label: "La Squadra", href: "/la-squadra" },
-            { label: "Il Baskin", href: "/il-baskin" },
-            { label: "Sponsor", href: "/sponsor" },
-            { label: "Contatti", href: "/contatti" },
+            { label: "Allenamenti", href: "/allenamenti" },
             { label: "Calendario", href: "/calendario" },
+          ].map((link) => {
+            const active = pathname === link.href;
+            return (
+              <ListItem key={link.href} disablePadding>
+                <ListItemButton
+                  onClick={() => { setDrawerOpen(false); router.push(link.href); }}
+                  sx={{
+                    py: 1.25,
+                    color: active ? "#E65100" : "rgba(255,255,255,0.8)",
+                    borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                  }}
+                >
+                  <ListItemText primary={link.label} primaryTypographyProps={{ fontWeight: active ? 700 : 400, fontSize: "0.95rem" }} />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+
+          {/* Partite — voce padre espandibile */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => setPartiteOpen((o) => !o)}
+              sx={{
+                py: 1.25,
+                color: partiteActive ? "#E65100" : "rgba(255,255,255,0.8)",
+                borderLeft: partiteActive ? "3px solid #E65100" : "3px solid transparent",
+              }}
+            >
+              <ListItemText primary="Partite" primaryTypographyProps={{ fontWeight: partiteActive ? 700 : 400, fontSize: "0.95rem" }} />
+              {partiteOpen
+                ? <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                : <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              }
+            </ListItemButton>
+          </ListItem>
+
+          {/* Voci figlio: Risultati + Classifiche */}
+          <Collapse in={partiteOpen} timeout="auto" unmountOnExit>
+            <List disablePadding>
+              {PARTITE_LINKS.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <ListItem key={link.href} disablePadding>
+                    <ListItemButton
+                      onClick={() => { setDrawerOpen(false); router.push(link.href); }}
+                      sx={{
+                        py: 1,
+                        pl: 4,
+                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
+                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                      }}
+                    >
+                      <ListItemText primary={link.label} primaryTypographyProps={{ fontWeight: active ? 700 : 400, fontSize: "0.88rem" }} />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Collapse>
+
+          {/* Voci dopo "Partite" */}
+          {[
+            { label: "Squadre", href: "/squadre" },
+            { label: "Il Baskin", href: "/il-baskin" },
+            { label: "Contatti", href: "/contatti" },
           ].map((link) => {
             const active = pathname === link.href;
             return (

@@ -121,7 +121,7 @@ export default function IlBaskinPage() {
             Il Baskin
           </Typography>
           <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, maxWidth: 580, mx: "auto", fontSize: { xs: "1rem", md: "1.1rem" } }}>
-            Il basket integrato nato per permettere a persone con e senza disabilità di giocare insieme, nella stessa squadra, con pari dignità e un ruolo reale nel gioco.
+            Il basket inclusivo nato per permettere a persone con e senza disabilità di giocare insieme, nella stessa squadra, con pari dignità e un ruolo reale nel gioco.
           </Typography>
         </Container>
       </Box>
