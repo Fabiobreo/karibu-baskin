@@ -50,6 +50,7 @@ export async function GET(req: Request) {
       where: { date: { gte: start, lt: end } },
       select: {
         id: true,
+        slug: true,
         date: true,
         isHome: true,
         venue: true,
@@ -94,6 +95,7 @@ export async function GET(req: Request) {
       isHome: m.isHome,
       result: m.result,
       location: m.venue ?? undefined,
+      href: `/partite/${m.slug ?? m.id}`,
     })),
     ...events.map((e) => ({
       id: e.id,

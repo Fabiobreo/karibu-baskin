@@ -573,31 +573,42 @@ function DayEventsDialog({
                 ev.type === "training" ? SportsBasketballIcon
                 : ev.type === "match" ? EmojiEventsIcon
                 : EventNoteIcon;
-              return (
-                <Box
-                  key={ev.id}
-                  onClick={() => onSelectEvent(ev)}
-                  sx={{
-                    display: "flex", alignItems: "center", gap: 1.5,
-                    p: 1.25, borderRadius: 1, cursor: "pointer",
-                    bgcolor: `${ev.color}18`,
-                    border: "1px solid", borderColor: `${ev.color}44`,
-                    "&:hover": { bgcolor: `${ev.color}28` },
-                  }}
-                >
+
+              const rowSx = {
+                display: "flex", alignItems: "center", gap: 1.5,
+                p: 1.25, borderRadius: 1, cursor: "pointer",
+                bgcolor: `${ev.color}18`,
+                border: "1px solid", borderColor: `${ev.color}44`,
+                "&:hover": { bgcolor: `${ev.color}28` },
+                textDecoration: "none", color: "inherit",
+              };
+
+              const inner = (
+                <>
                   <Box sx={{
                     width: 32, height: 32, borderRadius: "50%",
                     bgcolor: ev.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                   }}>
                     <Icon sx={{ color: "#fff", fontSize: "1rem" }} />
                   </Box>
-                  <Box sx={{ minWidth: 0 }}>
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Typography variant="body2" fontWeight={600} noWrap>{ev.title}</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {format(new Date(ev.date), "HH:mm")}
                       {ev.endDate && ` – ${format(new Date(ev.endDate), "HH:mm")}`}
                     </Typography>
                   </Box>
+                  <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled", flexShrink: 0 }} />
+                </>
+              );
+
+              return ev.href ? (
+                <Box key={ev.id} component={Link} href={ev.href} onClick={onClose} sx={rowSx}>
+                  {inner}
+                </Box>
+              ) : (
+                <Box key={ev.id} onClick={() => onSelectEvent(ev)} sx={rowSx}>
+                  {inner}
                 </Box>
               );
             })}

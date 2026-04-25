@@ -101,8 +101,11 @@ export async function PUT(req: Request, { params }: Params) {
       ...(body.opponentId !== undefined && { opponentId: body.opponentId }),
       ...("groupId" in body && { groupId: body.groupId ?? null }),
     },
-    include: {
-      team: { select: { id: true, name: true, season: true } },
+    select: {
+      id: true, slug: true, date: true, isHome: true, venue: true,
+      matchType: true, ourScore: true, theirScore: true, result: true,
+      notes: true, groupId: true, teamId: true, opponentId: true, createdAt: true,
+      team:     { select: { id: true, name: true, season: true } },
       opponent: { select: { id: true, name: true, city: true } },
     },
   });
@@ -114,8 +117,9 @@ export async function PUT(req: Request, { params }: Params) {
     const score = `${match.ourScore}–${match.theirScore}`;
     const msgTitle = `🏀 ${label}! ${match.team.name} vs ${match.opponent.name}`;
     const msgBody = `Risultato finale: ${score}`;
-    sendPushToAll({ title: msgTitle, body: msgBody, url: "/squadre", type: "MATCH_RESULT" }, false, "MATCH_RESULT").catch(() => {});
-    createAppNotification({ type: "MATCH_RESULT", title: msgTitle, body: msgBody, url: "/squadre" }).catch(() => {});
+    const matchUrl = `/partite/${match.slug ?? matchId}`;
+    sendPushToAll({ title: msgTitle, body: msgBody, url: matchUrl, type: "MATCH_RESULT" }, false, "MATCH_RESULT").catch(() => {});
+    createAppNotification({ type: "MATCH_RESULT", title: msgTitle, body: msgBody, url: matchUrl }).catch(() => {});
   }
 
   return NextResponse.json(match);

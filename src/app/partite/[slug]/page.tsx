@@ -91,13 +91,7 @@ export default async function MatchDetailPage({ params }: Props) {
         <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 300, height: 300, borderRadius: "50%", bgcolor: "rgba(255,255,255,0.02)", pointerEvents: "none" }} />
 
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          {/* Back */}
-          <Link href="/risultati" style={{ textDecoration: "none" }}>
-            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, mb: 3, color: "rgba(255,255,255,0.5)", fontSize: "0.82rem", fontWeight: 600, "&:hover": { color: "#fff" }, transition: "color 0.15s" }}>
-              <ArrowBackIcon sx={{ fontSize: 15 }} /> Torna ai risultati
-            </Box>
-          </Link>
-
+          
           {/* Contenuto centrato */}
           <Box sx={{ textAlign: "center" }}>
 

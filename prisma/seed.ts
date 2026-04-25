@@ -50,6 +50,16 @@ function toMatchSlug(teamName: string, oppName: string, date: Date): string {
   return `${toSlug(teamName)}-vs-${toSlug(oppName)}-${dateStr}`;
 }
 
+/**
+ * Genera il dateSlug nel formato compatto "YYYYMMDDHHmm" (es. "202604291800").
+ * Stesso formato usato dall'admin form: `${date}${time}`.replace(/-/g,"").replace(":","")
+ * NON usare toISOString() che restituisce UTC.
+ */
+function toDateSlug(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${pad(date.getHours())}${pad(date.getMinutes())}`;
+}
+
 /** Email mock da nome */
 function toEmail(name: string): string {
   return `${name.toLowerCase().replace(/ /g, ".")}@mock.test`;
@@ -240,8 +250,27 @@ async function nuke() {
     select: { id: true, name: true },
   });
   if (mockTeams.length > 0) {
+    // Prima elimina gli allenamenti legati a queste squadre (onDelete: SetNull, non Cascade)
+    await prisma.trainingSession.deleteMany({
+      where: { teamId: { in: mockTeams.map((t) => t.id) } },
+    });
+
     await prisma.competitiveTeam.deleteMany({ where: { season: SEASON } });
     console.log(`  ✓ ${mockTeams.length} squadre competitive (${SEASON}) eliminate`);
+  }
+
+  // Elimina anche gli allenamenti mock con titoli noti che potrebbero essere rimasti
+  // orfani (teamId = null) da run precedenti a causa di OnDelete: SetNull
+  const MOCK_TRAINING_TITLES = [
+    "Allenamento Kapuleti",
+    "Allenamento Montekki",
+    "Allenamento congiunto",
+  ];
+  const deletedTraining = await prisma.trainingSession.deleteMany({
+    where: { title: { in: MOCK_TRAINING_TITLES } },
+  });
+  if (deletedTraining.count > 0) {
+    console.log(`  ✓ ${deletedTraining.count} allenamenti mock eliminati`);
   }
 
   // 3. Squadre avversarie senza più partite
@@ -551,15 +580,15 @@ async function seed() {
   ];
 
   for (const t of trainingDefs) {
-    const isoSlug = t.date.toISOString().slice(0, 16); // "2025-05-03T18:00"
+    const dateSlug = toDateSlug(t.date); // ora locale, es. "2026-04-28T18:00"
     await prisma.trainingSession.upsert({
-      where:  { dateSlug: isoSlug },
+      where:  { dateSlug },
       update: {},
       create: {
         title:        t.title,
         date:         t.date,
         endTime:      t.endTime,
-        dateSlug:     isoSlug,
+        dateSlug,
         teamId:       t.teamId,
         allowedRoles: t.allowedRoles,
       },
