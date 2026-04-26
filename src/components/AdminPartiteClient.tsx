@@ -14,12 +14,14 @@ import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
 import MatchCalloupsDialog from "@/components/MatchCalloupsDialog";
+import MatchStatsDialog from "@/components/MatchStatsDialog"; // [CLAUDE 03:00]
 
 type Team = { id: string; name: string; season: string; color: string | null };
 type OpposingTeam = { id: string; name: string; city: string | null };
@@ -107,6 +109,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [callupMatch, setCallupMatch] = useState<Match | null>(null);
+  const [statsMatch,  setStatsMatch]  = useState<Match | null>(null); // [CLAUDE 03:00]
 
   // Paginazione per ciascun tab
   const [matchPage,    setMatchPage]    = useState(0);
@@ -355,6 +358,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         <Tooltip title="Convocati">
                           <IconButton size="small" color="primary" onClick={() => setCallupMatch(m)}>
                             <GroupsIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {/* [CLAUDE 03:00] */}
+                        <Tooltip title="Statistiche giocatori">
+                          <IconButton size="small" color="primary" onClick={() => setStatsMatch(m)}>
+                            <LeaderboardIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Modifica">
@@ -607,6 +616,21 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
           matchId={callupMatch.id}
           teamId={callupMatch.teamId}
           matchLabel={`${callupMatch.team.name} vs ${callupMatch.opponent.name} (${format(new Date(callupMatch.date), "d MMM yyyy", { locale: it })})`}
+        />
+      )}
+
+      {/* [CLAUDE 03:00] Dialog statistiche giocatori */}
+      {statsMatch && (
+        <MatchStatsDialog
+          open={!!statsMatch}
+          onClose={() => setStatsMatch(null)}
+          matchId={statsMatch.id}
+          matchLabel={`${statsMatch.team.name} vs ${statsMatch.opponent.name} (${format(new Date(statsMatch.date), "d MMM yyyy", { locale: it })})`}
+          onStatsSaved={(count) => {
+            setMatches((prev) => prev.map((m) =>
+              m.id === statsMatch.id ? { ...m, _count: { playerStats: count } } : m
+            ));
+          }}
         />
       )}
 
