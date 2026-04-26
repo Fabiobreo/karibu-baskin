@@ -15,6 +15,7 @@ export interface MatchStatRow {
   assists: number;
   rebounds: number;
   fouls: number;
+  notes?: string | null;
   user: { id: string; name: string | null; image: string | null; slug: string | null; sportRole: number | null; sportRoleVariant: string | null } | null;
   child: { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null } | null;
 }
@@ -78,6 +79,12 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                             size="small"
                             sx={{ bgcolor: ROLE_COLORS[role], color: "#fff", fontWeight: 600, fontSize: "0.55rem", height: 13, mt: 0.2 }}
                           />
+                        )}
+                        {/* [CLAUDE - 07:00] note partita visibili anche sulla pagina dettaglio match */}
+                        {stat.notes && (
+                          <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 0.3, fontStyle: "italic", fontSize: "0.7rem", maxWidth: 200, lineHeight: 1.3 }}>
+                            {stat.notes}
+                          </Typography>
                         )}
                       </Box>
                     </Box>

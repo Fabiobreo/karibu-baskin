@@ -10,13 +10,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/allenamenti`, priority: 0.9, changeFrequency: "daily" },
     { url: `${BASE}/calendario`, priority: 0.8, changeFrequency: "daily" },
     { url: `${BASE}/squadre`, priority: 0.8, changeFrequency: "weekly" },
+    { url: `${BASE}/risultati`, priority: 0.75, changeFrequency: "weekly" },
+    { url: `${BASE}/classifiche`, priority: 0.75, changeFrequency: "weekly" },
     { url: `${BASE}/il-baskin`, priority: 0.6, changeFrequency: "monthly" },
     { url: `${BASE}/la-squadra`, priority: 0.6, changeFrequency: "monthly" },
     { url: `${BASE}/contatti`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];
 
-  const [teams, players, sessions] = await Promise.all([
+  // [CLAUDE - 07:00] aggiunto fetch partite per includere /partite/[slug] e /risultati /classifiche nel sitemap
+  const [teams, players, sessions, matches] = await Promise.all([
     prisma.competitiveTeam.findMany({
       select: { name: true, season: true, createdAt: true },
       orderBy: { createdAt: "desc" },
@@ -30,6 +33,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { dateSlug: true, id: true, date: true },
       orderBy: { date: "desc" },
       take: 20,
+    }),
+    prisma.match.findMany({
+      select: { slug: true, id: true, date: true },
+      orderBy: { date: "desc" },
     }),
   ]);
 
@@ -56,5 +63,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.75,
   }));
 
-  return [...staticPages, ...teamPages, ...playerPages, ...sessionPages];
+  const matchPages: MetadataRoute.Sitemap = matches.map((m) => ({
+    url: `${BASE}/partite/${m.slug ?? m.id}`,
+    lastModified: m.date,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...teamPages, ...playerPages, ...sessionPages, ...matchPages];
 }
