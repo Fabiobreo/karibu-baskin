@@ -105,8 +105,10 @@ export async function PUT(req: Request, { params }: Params) {
       id: true, slug: true, date: true, isHome: true, venue: true,
       matchType: true, ourScore: true, theirScore: true, result: true,
       notes: true, groupId: true, teamId: true, opponentId: true, createdAt: true,
-      team:     { select: { id: true, name: true, season: true } },
+      // [CLAUDE - 12:00] include color e group per allineare la risposta al tipo Match del client
+      team:     { select: { id: true, name: true, season: true, color: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      group:    { select: { id: true, name: true } },
     },
   });
 
