@@ -63,7 +63,7 @@ function computeStandings(
     e.played++;
     e.goalsFor += gf;
     e.goalsAgainst += ga;
-    if (gf > ga) { e.won++;  e.points += 3; }
+    if (gf > ga) { e.won++;  e.points += 2; }
     else if (gf === ga) { e.drawn++; e.points += 1; }
     else { e.lost++; }
   }

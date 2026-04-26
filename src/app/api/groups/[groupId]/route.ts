@@ -46,7 +46,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     entry.played++;
     entry.goalsFor  += gf;
     entry.goalsAgainst += ga;
-    if (gf > ga) { entry.won++;  entry.points += 3; }
+    if (gf > ga) { entry.won++;  entry.points += 2; }
     else if (gf === ga) { entry.drawn++; entry.points += 1; }
     else { entry.lost++; }
   }
