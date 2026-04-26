@@ -46,6 +46,8 @@ interface StatRow {
   rebounds: string;
   fouls: string;
   notes: string;
+  // [CLAUDE - 07:00] track whether DB record already exists to avoid creating all-zero entries on first open
+  hasExistingStats: boolean;
 }
 
 type StatField = "points" | "baskets" | "assists" | "rebounds" | "fouls";
@@ -105,6 +107,8 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
             rebounds: String(ex?.rebounds ?? 0),
             fouls:    String(ex?.fouls    ?? 0),
             notes:    ex?.notes ?? "",
+            // [CLAUDE - 07:00] true se esiste già nel DB, false se nuovo (da convocato)
+            hasExistingStats: ex !== undefined,
           };
         });
 
@@ -127,16 +131,31 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
     setSaving(true);
     setError("");
     try {
-      const payload = rows.map((r) => ({
-        ...(r.userId   ? { userId:   r.userId   } : {}),
-        ...(r.childId  ? { childId:  r.childId  } : {}),
-        points:   parseInt(r.points   || "0", 10),
-        baskets:  parseInt(r.baskets  || "0", 10),
-        assists:  parseInt(r.assists  || "0", 10),
-        rebounds: parseInt(r.rebounds || "0", 10),
-        fouls:    parseInt(r.fouls    || "0", 10),
-        ...(r.notes.trim() ? { notes: r.notes.trim() } : {}),
-      }));
+      // [CLAUDE - 07:00] Evita di creare record con tutti zeri per i convocati
+      // che non hanno ancora statistiche nel DB. Se il record esiste già (hasExistingStats),
+      // viene sempre incluso per permettere di azzerare valori precedentemente inseriti.
+      const payload = rows
+        .filter((r) => {
+          if (r.hasExistingStats) return true;
+          return (
+            parseInt(r.points   || "0", 10) > 0 ||
+            parseInt(r.baskets  || "0", 10) > 0 ||
+            parseInt(r.assists  || "0", 10) > 0 ||
+            parseInt(r.rebounds || "0", 10) > 0 ||
+            parseInt(r.fouls    || "0", 10) > 0 ||
+            r.notes.trim().length > 0
+          );
+        })
+        .map((r) => ({
+          ...(r.userId   ? { userId:   r.userId   } : {}),
+          ...(r.childId  ? { childId:  r.childId  } : {}),
+          points:   parseInt(r.points   || "0", 10),
+          baskets:  parseInt(r.baskets  || "0", 10),
+          assists:  parseInt(r.assists  || "0", 10),
+          rebounds: parseInt(r.rebounds || "0", 10),
+          fouls:    parseInt(r.fouls    || "0", 10),
+          ...(r.notes.trim() ? { notes: r.notes.trim() } : {}),
+        }));
       const res = await fetch(`/api/matches/${matchId}/stats`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -146,7 +165,7 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
         setError("Errore nel salvataggio delle statistiche");
         return;
       }
-      onStatsSaved?.(rows.length);
+      onStatsSaved?.(payload.length);
       onClose();
     } catch {
       setError("Errore di rete");
