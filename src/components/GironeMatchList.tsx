@@ -5,11 +5,14 @@ import {
   Box, Table, TableHead, TableRow, TableCell, TableBody,
   TablePagination, Chip, Typography,
 } from "@mui/material";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
 export interface GironeMatchItem {
   id: string;
+  slug: string | null;
   date: Date | string;
   result: string | null;
   ourScore: number | null;
@@ -41,13 +44,21 @@ export default function GironeMatchList({ matches }: { matches: GironeMatchItem[
               <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>C/T</TableCell>
               <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Risultato</TableCell>
               <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Punteggio</TableCell>
+              <TableCell sx={{ width: 24 }} />
             </TableRow>
           </TableHead>
           <TableBody>
             {paginated.map((m) => {
-              const res = m.result ? RESULT_LABEL[m.result] : null;
+              const res  = m.result ? RESULT_LABEL[m.result] : null;
+              const href = `/partite/${m.slug ?? m.id}`;
               return (
-                <TableRow key={m.id} hover>
+                <TableRow
+                  key={m.id}
+                  hover
+                  component={Link}
+                  href={href}
+                  style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                >
                   <TableCell sx={{ fontSize: "0.78rem", whiteSpace: "nowrap" }}>
                     {format(new Date(m.date), "d MMM yy", { locale: it })}
                   </TableCell>
@@ -70,6 +81,9 @@ export default function GironeMatchList({ matches }: { matches: GironeMatchItem[
                   </TableCell>
                   <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}>
                     {m.ourScore ?? "–"} – {m.theirScore ?? "–"}
+                  </TableCell>
+                  <TableCell sx={{ pr: 1.5 }}>
+                    <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled", display: "block" }} />
                   </TableCell>
                 </TableRow>
               );

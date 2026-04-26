@@ -37,7 +37,7 @@ function groupsQuery(season: string) {
       matches: {
         where: { result: { not: null } },
         select: {
-          id: true, date: true, result: true, ourScore: true, theirScore: true, isHome: true,
+          id: true, slug: true, date: true, result: true, ourScore: true, theirScore: true, isHome: true,
           opponent: { select: { name: true } },
         },
         orderBy: { date: "asc" },
