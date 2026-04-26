@@ -54,13 +54,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
   // Partite nostre
   for (const m of group.matches) {
     if (m.ourScore == null || m.theirScore == null) continue;
-    const ours     = getOrCreate(group.team.id,  group.team.name,   true);
-    const theirs   = getOrCreate(m.opponent.id,  m.opponent.name,   false);
-    const [ourGF, ourGA] = m.isHome
-      ? [m.ourScore, m.theirScore]
-      : [m.ourScore, m.theirScore];
-    addResult(ours,   ourGF, ourGA);
-    addResult(theirs, ourGA, ourGF);
+    const ours   = getOrCreate(group.team.id,  group.team.name,  true);
+    const theirs = getOrCreate(m.opponent.id,  m.opponent.name,  false);
+    // [CLAUDE - 03:00] ourScore/theirScore sono già relativi a noi (non home/away) — nessun swap necessario
+    addResult(ours,   m.ourScore,   m.theirScore);
+    addResult(theirs, m.theirScore, m.ourScore);
   }
 
   // Partite esterne

@@ -159,7 +159,7 @@ export default async function ClassifichePage({ searchParams }: Props) {
                 const wins   = g.matches.filter((m) => m.result === "WIN").length;
                 const draws  = g.matches.filter((m) => m.result === "DRAW").length;
                 const losses = g.matches.filter((m) => m.result === "LOSS").length;
-                const points = wins * 2 + draws;
+                const points = wins * 3 + draws; // [CLAUDE - 03:00] era 2*V+P, corretto a 3*V+P per coerenza con gironi/[groupId]/page.tsx
                 const pf     = g.matches.reduce((s, m) => s + (m.ourScore ?? 0), 0);
                 const pa     = g.matches.reduce((s, m) => s + (m.theirScore ?? 0), 0);
 
