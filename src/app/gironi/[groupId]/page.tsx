@@ -5,6 +5,7 @@ import {
   Table, TableHead, TableBody, TableRow, TableCell,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
+import GironeOurMatchRow from "@/components/GironeOurMatchRow";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import { format } from "date-fns";
@@ -256,7 +257,7 @@ export default async function GironePage({ params }: Params) {
                           const awayScore = m.isHome ? m.theirScore : m.ourScore;
                           const href = `/partite/${m.slug ?? m.id}`;
                           return (
-                            <TableRow key={m.id} hover onClick={() => { if (typeof window !== "undefined") window.location.href = href; }} sx={{ cursor: "pointer" }}>
+                            <GironeOurMatchRow key={m.id} href={href}>
                               <TableCell sx={{ width: 90, color: "text.secondary", fontSize: "0.75rem" }}>
                                 {format(new Date(m.date), "d MMM", { locale: it })}
                               </TableCell>
@@ -272,7 +273,7 @@ export default async function GironePage({ params }: Params) {
                                   />
                                 )}
                               </TableCell>
-                            </TableRow>
+                            </GironeOurMatchRow>
                           );
                         } else {
                           const gm = ev.data;
