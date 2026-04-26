@@ -230,6 +230,33 @@ export default async function MatchDetailPage({ params }: Props) {
           ))}
         </Box>
 
+        {/* [CLAUDE - 07:30] note partita — il campo esiste nel DB ma non era mostrato pubblicamente */}
+        {match.notes && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              mb: 4,
+              border: "1px solid rgba(0,0,0,0.07)",
+              borderLeft: "4px solid",
+              borderLeftColor: "primary.main",
+              bgcolor: "rgba(230,81,0,0.03)",
+            }}
+          >
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              fontWeight={700}
+              sx={{ textTransform: "uppercase", letterSpacing: "0.08em", display: "block", mb: 0.75, fontSize: "0.62rem" }}
+            >
+              Note
+            </Typography>
+            <Typography variant="body2" sx={{ fontStyle: "italic", lineHeight: 1.6, whiteSpace: "pre-line" }}>
+              {match.notes}
+            </Typography>
+          </Paper>
+        )}
+
         {/* Stats */}
         {hasStats ? (
           <>
