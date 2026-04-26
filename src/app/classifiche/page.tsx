@@ -56,11 +56,10 @@ export default async function ClassifichePage({ searchParams }: Props) {
   const currentSeason = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
   const activeSeason = seasonFilter ?? currentSeason;
 
-  const [currentGroups, statGroups, seasons, allStats] = await Promise.all([
+  // [CLAUDE - 05:00] removed dead statGroups query — activeGroups was computed but never referenced in JSX
+  const [currentGroups, seasons, allStats] = await Promise.all([
     // Championship standings: always current season
     groupsQuery(currentSeason),
-    // For the active-season groups (only needed if activeSeason differs from currentSeason)
-    activeSeason !== currentSeason ? groupsQuery(activeSeason) : Promise.resolve(null),
     // Available seasons for the stats filter chip
     prisma.group.findMany({
       select: { season: true },
@@ -106,8 +105,6 @@ export default async function ClassifichePage({ searchParams }: Props) {
     }));
 
   const availableSeasons = seasons.map((s) => s.season);
-  // Groups shown in the "active season" block (only when viewing a past season)
-  const activeGroups = statGroups ?? currentGroups;
   const hasStats = statRows.length > 0;
   const hasCurrentGroups = currentGroups.length > 0;
 

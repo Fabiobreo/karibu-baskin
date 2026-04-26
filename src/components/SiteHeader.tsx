@@ -49,7 +49,8 @@ export default function SiteHeader() {
   const [mounted, setMounted] = useState(false);
   const pathnameRaw = usePathname();
   const pathname = mounted ? pathnameRaw : null;
-  const partiteActive = pathname === "/risultati" || pathname === "/classifiche";
+  // [CLAUDE - 05:00] include /partite/* so the dropdown is highlighted on match detail pages
+  const partiteActive = pathname === "/risultati" || pathname === "/classifiche" || (pathname?.startsWith("/partite") ?? false);
 
   const { data: session, status } = useSession();
 
