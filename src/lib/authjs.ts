@@ -15,6 +15,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // Permette di collegare l'account Google a utenti pre-creati dall'admin via email.
+      // Intenzionale: senza questa opzione, un utente pre-creato non riuscirebbe a fare login.
       allowDangerousEmailAccountLinking: true,
     }),
   ],
@@ -46,7 +48,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               ...(slugToSet ? { slug: slugToSet } : {}),
             },
           });
-        })().catch(() => {});
+        // [CLAUDE - 09:00] Logga errori invece di ingoiarli silenziosamente (visibili nei log Vercel)
+        })().catch((err) => console.error("[authjs] signIn profile update failed:", err));
       }
       return true;
     },
@@ -66,7 +69,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               return prisma.user.update({ where: { id: user.id! }, data: { slug } });
             }
           })
-          .catch(() => {});
+          // [CLAUDE - 09:00] Logga errori invece di ingoiarli silenziosamente (visibili nei log Vercel)
+          .catch((err) => console.error("[authjs] createUser slug generation failed:", err));
       }
       // Notifica admin quando un nuovo utente si registra
       sendPushToAll(
