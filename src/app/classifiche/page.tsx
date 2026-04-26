@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/db";
 import {
   Container, Typography, Box, Paper, Chip, Stack, Divider,
-  Table, TableHead, TableBody, TableRow, TableCell,
+  Table, TableHead, TableBody, TableRow, TableCell, Button,
 } from "@mui/material";
 import GironeMatchList from "@/components/GironeMatchList";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { format } from "date-fns";
@@ -181,6 +182,13 @@ export default async function ClassifichePage({ searchParams }: Props) {
                       {g.championship && (
                         <Typography variant="caption" color="text.secondary">({g.championship})</Typography>
                       )}
+                      <Box sx={{ ml: "auto" }}>
+                        <Link href={`/gironi/${g.id}`} style={{ textDecoration: "none" }}>
+                          <Button size="small" endIcon={<OpenInNewIcon sx={{ fontSize: "14px !important" }} />} sx={{ fontSize: "0.72rem" }}>
+                            Girone completo
+                          </Button>
+                        </Link>
+                      </Box>
                     </Box>
 
                     {played === 0 ? (

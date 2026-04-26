@@ -520,7 +520,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childre
       {/* ── Dialog: gestione rosa ──────────────────────────────────────────────── */}
       <Dialog
         open={!!rosaTeam}
-        onClose={() => { setRosaTeam(null); syncRosaTeam(teams); }}
+        onClose={() => setRosaTeam(null)}
         maxWidth="sm"
         fullWidth
         PaperProps={{ sx: { maxHeight: "85vh" } }}

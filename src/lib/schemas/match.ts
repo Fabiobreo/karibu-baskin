@@ -11,6 +11,7 @@ export const MatchCreateSchema = z.object({
   theirScore: z.number().int().min(0).optional(),
   result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
+  matchday: z.number().int().min(1).nullable().optional(),
   groupId: z.string().nullable().optional(),
 });
 
@@ -24,6 +25,7 @@ export const MatchUpdateSchema = z.object({
   result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   opponentId: z.string().min(1).optional(),
+  matchday: z.number().int().min(1).nullable().optional(),
   groupId: z.string().nullable().optional(),
 });
 

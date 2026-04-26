@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Box, Table, TableHead, TableRow, TableCell, TableBody,
   TablePagination, Chip, Typography,
 } from "@mui/material";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -28,6 +28,7 @@ const RESULT_LABEL: Record<string, { label: string; color: string; bg: string }>
 };
 
 export default function GironeMatchList({ matches }: { matches: GironeMatchItem[] }) {
+  const router = useRouter();
   const [page, setPage]               = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -55,9 +56,8 @@ export default function GironeMatchList({ matches }: { matches: GironeMatchItem[
                 <TableRow
                   key={m.id}
                   hover
-                  component={Link}
-                  href={href}
-                  style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                  onClick={() => router.push(href)}
+                  sx={{ cursor: "pointer" }}
                 >
                   <TableCell sx={{ fontSize: "0.78rem", whiteSpace: "nowrap" }}>
                     {format(new Date(m.date), "d MMM yy", { locale: it })}

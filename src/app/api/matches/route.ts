@@ -21,6 +21,7 @@ export async function GET(req: Request) {
     include: {
       team: { select: { id: true, name: true, season: true, color: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      group: { select: { id: true, name: true } },
       _count: { select: { playerStats: true } },
     },
   });
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
       theirScore: body.theirScore ?? null,
       result: resolvedResult,
       notes: body.notes?.trim() || null,
+      matchday: body.matchday ?? null,
       groupId: body.groupId ?? null,
     },
     include: {

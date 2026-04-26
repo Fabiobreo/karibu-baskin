@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table, TableBody, TableCell, TableHead, TableRow,
   TableContainer, TablePagination, Paper, Box, Typography, Avatar, Chip,
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import Link from "next/link";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 
 export interface ClassificaRow {
@@ -31,6 +31,7 @@ export default function ClassificaTableClient({
   rows: ClassificaRow[];
   selectedSeason: string;
 }) {
+  const router = useRouter();
   const [page, setPage]               = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
@@ -78,9 +79,11 @@ export default function ClassificaTableClient({
               <TableRow
                 key={row.id}
                 hover
-                sx={rank < 3 ? { bgcolor: `${medal}08` } : undefined}
-                component={playerHref ? Link : "tr"}
-                {...(playerHref ? { href: playerHref, style: { textDecoration: "none", color: "inherit" } } : {})}
+                onClick={playerHref ? () => router.push(playerHref) : undefined}
+                sx={{
+                  ...(rank < 3 ? { bgcolor: `${medal}08` } : {}),
+                  ...(playerHref ? { cursor: "pointer" } : {}),
+                }}
               >
                 <TableCell sx={{ pl: 2 }}>
                   {medal

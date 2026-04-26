@@ -293,11 +293,14 @@ model TeamMembership {
 model OpposingTeam {
   id        String   @id @default(cuid())
   name      String
+  slug      String?  @unique
   city      String?
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
-  matches Match[]
+  matches        Match[]
+  homeGroupMatches GroupMatch[] @relation("GroupMatchHome")
+  awayGroupMatches GroupMatch[] @relation("GroupMatchAway")
 }
 
 // ── Gironi campionato ─────────────────────────────────────────────────────────
@@ -310,11 +313,34 @@ model Group {
   teamId       String
   createdAt    DateTime @default(now())
 
-  team    CompetitiveTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  matches Match[]
+  team         CompetitiveTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  matches      Match[]
+  groupMatches GroupMatch[]
 
   @@index([season])
   @@index([teamId])
+}
+
+// ── Risultati partite tra altre squadre del girone ────────────────────────────
+
+model GroupMatch {
+  id         String    @id @default(cuid())
+  groupId    String
+  matchday   Int?
+  date       DateTime?
+  homeTeamId String
+  awayTeamId String
+  homeScore  Int?
+  awayScore  Int?
+  createdAt  DateTime  @default(now())
+
+  group    Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  homeTeam OpposingTeam @relation("GroupMatchHome", fields: [homeTeamId], references: [id])
+  awayTeam OpposingTeam @relation("GroupMatchAway", fields: [awayTeamId], references: [id])
+
+  @@index([groupId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
 }
 
 // ── Partite ufficiali ─────────────────────────────────────────────────────────
@@ -334,8 +360,9 @@ model Match {
   notes      String?      @db.Text
   createdAt  DateTime     @default(now())
 
-  groupId String?
-  group   Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  matchday Int?
+  groupId  String?
+  group    Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   team        CompetitiveTeam    @relation(fields: [teamId], references: [id], onDelete: Cascade)
   opponent    OpposingTeam       @relation(fields: [opponentId], references: [id])

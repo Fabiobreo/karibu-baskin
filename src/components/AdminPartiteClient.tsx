@@ -15,6 +15,7 @@ import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import TableRowsIcon from "@mui/icons-material/TableRows";
 import { useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
@@ -38,11 +39,24 @@ type Match = {
   theirScore: number | null;
   result: MatchResult | null;
   notes: string | null;
+  matchday: number | null;
   groupId: string | null;
   team: Team;
   opponent: OpposingTeam;
   group: { id: string; name: string } | null;
   _count: { playerStats: number };
+};
+
+type GroupMatchItem = {
+  id: string;
+  matchday: number | null;
+  date: string | null;
+  homeTeamId: string;
+  awayTeamId: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeTeam: { id: string; name: string };
+  awayTeam: { id: string; name: string };
 };
 
 type Props = {
@@ -81,6 +95,7 @@ const emptyMatchForm = {
   theirScore: "",
   result: "" as MatchResult | "",
   notes: "",
+  matchday: "" as string,
   groupId: "" as string,
 };
 
@@ -119,7 +134,14 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [callupMatch, setCallupMatch] = useState<Match | null>(null);
-  const [statsMatch,  setStatsMatch]  = useState<Match | null>(null); // [CLAUDE 03:00]
+  const [statsMatch,  setStatsMatch]  = useState<Match | null>(null);
+
+  // Dialog gestione risultati esterni girone
+  const [gmGroup,   setGmGroup]   = useState<Group | null>(null);
+  const [gmMatches, setGmMatches] = useState<GroupMatchItem[]>([]);
+  const [gmLoading, setGmLoading] = useState(false);
+  const [gmForm,    setGmForm]    = useState({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
+  const [gmError,   setGmError]   = useState("");
 
   // Paginazione per ciascun tab
   const [matchPage,    setMatchPage]    = useState(0);
@@ -161,6 +183,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       theirScore: match.theirScore !== null ? String(match.theirScore) : "",
       result: match.result ?? "",
       notes: match.notes ?? "",
+      matchday: match.matchday !== null ? String(match.matchday) : "",
       groupId: match.groupId ?? "",
     });
     setEditMatch(match);
@@ -204,6 +227,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         theirScore: form.theirScore !== "" ? Number(form.theirScore) : null,
         result: form.result || null,
         notes: form.notes || null,
+        matchday: form.matchday !== "" ? Number(form.matchday) : null,
         groupId: form.groupId || null,
       };
 
@@ -260,6 +284,48 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
       setOpponents((prev) => prev.filter((o) => o.id !== id));
     });
+  }
+
+  async function openGmDialog(group: Group) {
+    setGmGroup(group);
+    setGmError("");
+    setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
+    setGmLoading(true);
+    const res = await fetch(`/api/groups/${group.id}`);
+    if (res.ok) {
+      const data = await res.json() as { groupMatches: GroupMatchItem[] };
+      setGmMatches(data.groupMatches ?? []);
+    }
+    setGmLoading(false);
+  }
+
+  async function handleAddGm() {
+    if (!gmGroup || !gmForm.homeTeamId || !gmForm.awayTeamId) {
+      setGmError("Seleziona entrambe le squadre"); return;
+    }
+    setGmError("");
+    const res = await fetch(`/api/groups/${gmGroup.id}/matches`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        matchday:  gmForm.matchday  !== "" ? Number(gmForm.matchday)  : null,
+        date:      gmForm.date      !== "" ? gmForm.date              : null,
+        homeTeamId: gmForm.homeTeamId,
+        awayTeamId: gmForm.awayTeamId,
+        homeScore: gmForm.homeScore !== "" ? Number(gmForm.homeScore) : null,
+        awayScore: gmForm.awayScore !== "" ? Number(gmForm.awayScore) : null,
+      }),
+    });
+    if (!res.ok) { setGmError("Errore nel salvataggio"); return; }
+    const created = await res.json() as GroupMatchItem;
+    setGmMatches((prev) => [...prev, created].sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)));
+    setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
+  }
+
+  async function handleDeleteGm(id: string) {
+    if (!gmGroup) return;
+    await fetch(`/api/groups/${gmGroup.id}/matches/${id}`, { method: "DELETE" });
+    setGmMatches((prev) => prev.filter((m) => m.id !== id));
   }
 
   return (
@@ -591,6 +657,11 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
+                        <Tooltip title="Risultati esterni">
+                          <IconButton size="small" color="primary" onClick={() => openGmDialog(g)}>
+                            <TableRowsIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Elimina">
                           <IconButton
                             size="small"
@@ -654,6 +725,130 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
           }}
         />
       )}
+
+      {/* Dialog risultati esterni girone */}
+      <Dialog open={!!gmGroup} onClose={() => setGmGroup(null)} maxWidth="md" fullWidth PaperProps={{ sx: { maxHeight: "85vh" } }}>
+        {gmGroup && (
+          <>
+            <DialogTitle fontWeight={700}>
+              Risultati esterni — {gmGroup.name}
+              {gmGroup.championship && <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>({gmGroup.championship})</Typography>}
+            </DialogTitle>
+            <DialogContent>
+              {gmError && <Alert severity="error" sx={{ mb: 2 }}>{gmError}</Alert>}
+
+              {/* Form aggiunta */}
+              <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2.5 }}>
+                <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+                  Aggiungi risultato
+                </Typography>
+                <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+                  <TextField
+                    label="Giornata"
+                    type="number"
+                    size="small"
+                    value={gmForm.matchday}
+                    onChange={(e) => setGmForm((f) => ({ ...f, matchday: e.target.value }))}
+                    sx={{ width: 90 }}
+                    slotProps={{ htmlInput: { min: 1 } }}
+                  />
+                  <TextField
+                    label="Data"
+                    type="date"
+                    size="small"
+                    value={gmForm.date}
+                    onChange={(e) => setGmForm((f) => ({ ...f, date: e.target.value }))}
+                    sx={{ width: 150 }}
+                    slotProps={{ inputLabel: { shrink: true } }}
+                  />
+                  <FormControl size="small" sx={{ flex: 2, minWidth: 150 }}>
+                    <InputLabel>Casa</InputLabel>
+                    <Select value={gmForm.homeTeamId} label="Casa" onChange={(e) => setGmForm((f) => ({ ...f, homeTeamId: e.target.value as string }))}>
+                      {opponents.map((o) => <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    label="Pt Casa"
+                    type="number"
+                    size="small"
+                    value={gmForm.homeScore}
+                    onChange={(e) => setGmForm((f) => ({ ...f, homeScore: e.target.value }))}
+                    sx={{ width: 80 }}
+                    slotProps={{ htmlInput: { min: 0 } }}
+                  />
+                  <TextField
+                    label="Pt Ospiti"
+                    type="number"
+                    size="small"
+                    value={gmForm.awayScore}
+                    onChange={(e) => setGmForm((f) => ({ ...f, awayScore: e.target.value }))}
+                    sx={{ width: 80 }}
+                    slotProps={{ htmlInput: { min: 0 } }}
+                  />
+                  <FormControl size="small" sx={{ flex: 2, minWidth: 150 }}>
+                    <InputLabel>Ospiti</InputLabel>
+                    <Select value={gmForm.awayTeamId} label="Ospiti" onChange={(e) => setGmForm((f) => ({ ...f, awayTeamId: e.target.value as string }))}>
+                      {opponents.map((o) => <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddGm} disabled={!gmForm.homeTeamId || !gmForm.awayTeamId}>
+                    Aggiungi
+                  </Button>
+                </Box>
+              </Paper>
+
+              {/* Lista risultati */}
+              {gmLoading ? (
+                <Box sx={{ textAlign: "center", py: 3 }}><CircularProgress size={28} /></Box>
+              ) : gmMatches.length === 0 ? (
+                <Typography variant="body2" color="text.disabled" sx={{ textAlign: "center", py: 3 }}>
+                  Nessun risultato esterno inserito.
+                </Typography>
+              ) : (
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>Ris.</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
+                      <TableCell />
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {gmMatches.map((m) => (
+                      <TableRow key={m.id} hover>
+                        <TableCell><Typography variant="body2" color="text.secondary">{m.matchday ?? "—"}</Typography></TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {m.date ? format(new Date(m.date), "d MMM yy", { locale: it }) : "—"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell><Typography variant="body2" fontWeight={600}>{m.homeTeam.name}</Typography></TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2" fontWeight={700}>
+                            {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} – ${m.awayScore}` : "— – —"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell><Typography variant="body2" fontWeight={600}>{m.awayTeam.name}</Typography></TableCell>
+                        <TableCell align="right">
+                          <IconButton size="small" color="error" onClick={() => handleDeleteGm(m.id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2 }}>
+              <Button onClick={() => setGmGroup(null)}>Chiudi</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
 
       {/* Dialog partita */}
       <Dialog open={matchDialog} onClose={() => setMatchDialog(false)} maxWidth="sm" fullWidth>
@@ -817,25 +1012,36 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             </FormControl>
 
             {groups.filter((g) => g.teamId === form.teamId || !form.teamId).length > 0 && (
-              <FormControl fullWidth>
-                <InputLabel shrink>Girone</InputLabel>
-                <Select
-                  value={form.groupId}
-                  label="Girone"
-                  notched
-                  displayEmpty
-                  onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value as string }))}
-                >
-                  <MenuItem value=""><em>Nessun girone</em></MenuItem>
-                  {groups
-                    .filter((g) => !form.teamId || g.teamId === form.teamId)
-                    .map((g) => (
-                      <MenuItem key={g.id} value={g.id}>
-                        {g.name} {g.championship ? `(${g.championship})` : ""} — {g.season}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <FormControl sx={{ flex: 2 }}>
+                  <InputLabel shrink>Girone</InputLabel>
+                  <Select
+                    value={form.groupId}
+                    label="Girone"
+                    notched
+                    displayEmpty
+                    onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value as string }))}
+                  >
+                    <MenuItem value=""><em>Nessun girone</em></MenuItem>
+                    {groups
+                      .filter((g) => !form.teamId || g.teamId === form.teamId)
+                      .map((g) => (
+                        <MenuItem key={g.id} value={g.id}>
+                          {g.name} {g.championship ? `(${g.championship})` : ""} — {g.season}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Giornata"
+                  type="number"
+                  value={form.matchday}
+                  onChange={(e) => setForm((f) => ({ ...f, matchday: e.target.value }))}
+                  sx={{ flex: 1 }}
+                  slotProps={{ htmlInput: { min: 1 } }}
+                  placeholder="es. 3"
+                />
+              </Box>
             )}
 
             <TextField
