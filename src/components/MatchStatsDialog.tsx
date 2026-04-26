@@ -244,7 +244,9 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                           onChange={(e) => updateNote(row.key, e.target.value)}
                           size="small"
                           placeholder="Opzionale"
-                          inputProps={{ maxLength: 500, style: { padding: "4px 8px", fontSize: "0.78rem" } }}
+                          slotProps={{
+                            htmlInput: { maxLength: 500, style: { padding: "4px 8px", fontSize: "0.78rem" } },
+                          }}
                           sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
                         />
                       </TableCell>

@@ -6,6 +6,7 @@ import {
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -342,52 +343,67 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 Statistiche per partita
               </Typography>
               <Stack spacing={1.5}>
+                {/* [CLAUDE - 06:00] rende cliccabili le card partita coerente con squadra/[slug] e GironeMatchList */}
                 {filteredStats.map((ms) => (
-                  <Paper key={ms.id} elevation={0} sx={{ border: "1px solid rgba(0,0,0,0.07)", overflow: "hidden" }}>
-                    <Box sx={{ display: "flex", alignItems: "stretch" }}>
-                      <Box
-                        sx={{
-                          width: 6,
-                          flexShrink: 0,
-                          backgroundColor: ms.match.result ? RESULT_COLOR[ms.match.result] : "rgba(0,0,0,0.08)",
-                        }}
-                      />
-                      <Box sx={{ flex: 1, p: 2 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mb: 1 }}>
-                          <Box>
-                            <Typography variant="body2" fontWeight={700}>
-                              {ms.match.team.name} vs {ms.match.opponent.name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {format(new Date(ms.match.date), "d MMMM yyyy", { locale: it })}
-                              {ms.match.ourScore !== null && ms.match.theirScore !== null
-                                ? `  ·  ${ms.match.ourScore} – ${ms.match.theirScore}`
-                                : ""}
-                            </Typography>
+                  <Link key={ms.id} href={`/partite/${ms.match.slug ?? ms.match.id}`} style={{ textDecoration: "none" }}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        border: "1px solid rgba(0,0,0,0.07)",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        transition: "box-shadow 0.12s, transform 0.12s",
+                        "&:hover": { boxShadow: 2, transform: "translateX(3px)" },
+                      }}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "stretch" }}>
+                        <Box
+                          sx={{
+                            width: 6,
+                            flexShrink: 0,
+                            backgroundColor: ms.match.result ? RESULT_COLOR[ms.match.result] : "rgba(0,0,0,0.08)",
+                          }}
+                        />
+                        <Box sx={{ flex: 1, p: 2 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mb: 1 }}>
+                            <Box>
+                              <Typography variant="body2" fontWeight={700}>
+                                {ms.match.team.name} vs {ms.match.opponent.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {format(new Date(ms.match.date), "d MMMM yyyy", { locale: it })}
+                                {ms.match.ourScore !== null && ms.match.theirScore !== null
+                                  ? `  ·  ${ms.match.ourScore} – ${ms.match.theirScore}`
+                                  : ""}
+                              </Typography>
+                            </Box>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              {ms.match.result && (
+                                <Chip
+                                  label={RESULT_LABEL[ms.match.result]}
+                                  size="small"
+                                  sx={{ backgroundColor: RESULT_COLOR[ms.match.result], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}
+                                />
+                              )}
+                              <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                            </Box>
                           </Box>
-                          {ms.match.result && (
-                            <Chip
-                              label={RESULT_LABEL[ms.match.result]}
-                              size="small"
-                              sx={{ backgroundColor: RESULT_COLOR[ms.match.result], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}
-                            />
+                          <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                            <StatItem label="Punti" value={ms.points} />
+                            <StatItem label="Canestri" value={ms.baskets} />
+                            {ms.assists > 0 && <StatItem label="Assist" value={ms.assists} />}
+                            {ms.rebounds > 0 && <StatItem label="Rimbalzi" value={ms.rebounds} />}
+                            <StatItem label="Falli" value={ms.fouls} />
+                          </Box>
+                          {ms.notes && (
+                            <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1 }}>
+                              {ms.notes}
+                            </Typography>
                           )}
                         </Box>
-                        <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                          <StatItem label="Punti" value={ms.points} />
-                          <StatItem label="Canestri" value={ms.baskets} />
-                          {ms.assists > 0 && <StatItem label="Assist" value={ms.assists} />}
-                          {ms.rebounds > 0 && <StatItem label="Rimbalzi" value={ms.rebounds} />}
-                          <StatItem label="Falli" value={ms.fouls} />
-                        </Box>
-                        {ms.notes && (
-                          <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1 }}>
-                            {ms.notes}
-                          </Typography>
-                        )}
                       </Box>
-                    </Box>
-                  </Paper>
+                    </Paper>
+                  </Link>
                 ))}
               </Stack>
             </Box>
