@@ -29,6 +29,7 @@ interface ExistingStat {
   assists: number;
   rebounds: number;
   fouls: number;
+  notes?: string | null;
 }
 
 interface StatRow {
@@ -44,6 +45,7 @@ interface StatRow {
   assists: string;
   rebounds: string;
   fouls: string;
+  notes: string;
 }
 
 type StatField = "points" | "baskets" | "assists" | "rebounds" | "fouls";
@@ -102,6 +104,7 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
             assists:  String(ex?.assists  ?? 0),
             rebounds: String(ex?.rebounds ?? 0),
             fouls:    String(ex?.fouls    ?? 0),
+            notes:    ex?.notes ?? "",
           };
         });
 
@@ -113,6 +116,11 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
 
   function update(key: string, field: StatField, value: string) {
     setRows((prev) => prev.map((r) => r.key === key ? { ...r, [field]: value } : r));
+  }
+
+  // [CLAUDE 05:00] notes ha tipo stringa, aggiornamento separato dai campi numerici
+  function updateNote(key: string, value: string) {
+    setRows((prev) => prev.map((r) => r.key === key ? { ...r, notes: value } : r));
   }
 
   async function handleSave() {
@@ -127,6 +135,7 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
         assists:  parseInt(r.assists  || "0", 10),
         rebounds: parseInt(r.rebounds || "0", 10),
         fouls:    parseInt(r.fouls    || "0", 10),
+        ...(r.notes.trim() ? { notes: r.notes.trim() } : {}),
       }));
       const res = await fetch(`/api/matches/${matchId}/stats`, {
         method: "PUT",
@@ -172,7 +181,7 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
         ) : (
           <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", mt: 1 }}>
             <Box sx={{ overflowX: "auto" }}>
-              <Table size="small" sx={{ minWidth: 480 }}>
+              <Table size="small" sx={{ minWidth: 620 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
                     <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
@@ -186,6 +195,10 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                         {col.label}
                       </TableCell>
                     ))}
+                    {/* [CLAUDE 05:00] colonna note per annotazioni per giocatore */}
+                    <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }} title="Note (opzionale)">
+                      Note
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -224,6 +237,17 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                           />
                         </TableCell>
                       ))}
+                      {/* [CLAUDE 05:00] campo note opzionale per annotazioni per giocatore */}
+                      <TableCell sx={{ py: 0.5, px: 0.75 }}>
+                        <TextField
+                          value={row.notes}
+                          onChange={(e) => updateNote(row.key, e.target.value)}
+                          size="small"
+                          placeholder="Opzionale"
+                          inputProps={{ maxLength: 500, style: { padding: "4px 8px", fontSize: "0.78rem" } }}
+                          sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
