@@ -2,61 +2,42 @@
 
 ## Cosa ho fatto e perché
 
-### 1. `SiteHeader.tsx` — Highlight "Partite" nel nav su pagine dettaglio partita
+**Cleanup: eliminazione definitiva del dead code "preview ruolo"**
 
-**Problema:** La variabile `partiteActive` controllava solo i path `/risultati` e `/classifiche`. Navigando su una pagina dettaglio partita (`/partite/[slug]`), il dropdown "Partite" nel nav non veniva evidenziato (testo grigio invece che bianco + sottolineatura arancione), rendendo difficile capire dove si trovava l'utente.
+Il `CLAUDE.md` dichiarava già esplicitamente 4 file come "rimosso completamente":
 
-**Fix:** Aggiunto `pathname?.startsWith("/partite")` alla condizione.
+> Preview ruolo: rimosso completamente. File eliminati: `PreviewBanner.tsx`, `PreviewRoleContext.tsx`, `effectiveSession.ts`, `api/admin/preview/route.ts`.
 
-### 2. `classifiche/page.tsx` — Rimossa query DB e variabile dead code
+In realtà tutti e quattro i file erano ancora presenti nel repository, senza che nessun altro file li importasse.
 
-**Problema:** La pagina eseguiva una seconda query `groupsQuery(activeSeason)` quando la stagione selezionata differiva dalla stagione corrente, ma il risultato veniva assegnato a `statGroups` → `activeGroups`, una variabile **mai usata nel JSX**. Il commento diceva "Groups shown in the active season block" ma il blocco non era mai stato completato, sprecando un round-trip al DB.
+**File eliminati:**
 
-**Fix:** Rimosso la query `statGroups` dal `Promise.all` e eliminata la variabile `activeGroups`. La sezione "Classifica campionato" mostra sempre la stagione corrente (comportamento voluto per design).
-
-## File modificati
-
-| File | Tipo |
+| File | Contenuto |
 |---|---|
-| `src/components/SiteHeader.tsx` | Bug fix (1 riga) |
-| `src/app/classifiche/page.tsx` | Refactoring (rimozione dead code + query DB) |
+| `src/components/PreviewBanner.tsx` | Banner UI per mostrare il ruolo in preview |
+| `src/context/PreviewRoleContext.tsx` | Context React + hook `usePreviewRole()` |
+| `src/lib/effectiveSession.ts` | `getEffectiveSession()` che leggeva il cookie `preview_role` |
+| `src/app/api/admin/preview/route.ts` | Endpoint `POST/DELETE /api/admin/preview` |
 
-### Diff sintetico
+## Verifica
 
-**SiteHeader.tsx**
-```diff
-- const partiteActive = pathname === "/risultati" || pathname === "/classifiche";
-+ const partiteActive = pathname === "/risultati" || pathname === "/classifiche" || (pathname?.startsWith("/partite") ?? false);
-```
-
-**classifiche/page.tsx**
-```diff
-- const [currentGroups, statGroups, seasons, allStats] = await Promise.all([
-+ const [currentGroups, seasons, allStats] = await Promise.all([
-    groupsQuery(currentSeason),
--   activeSeason !== currentSeason ? groupsQuery(activeSeason) : Promise.resolve(null),
-    ...
-  ]);
-- const activeGroups = statGroups ?? currentGroups;
-```
+- `grep -rn` → **0 import** dei file eliminati nel resto del codebase
+- `npx tsc --noEmit` → **nessun errore**
 
 ## Come testare
 
-1. **Nav highlight:** Aprire una partita dal `/risultati` → il dropdown "Partite" nella navbar deve essere bianco+sottolineato anziché grigio.
-2. **Classifiche performance:** Con DevTools Network tab, navigare su `/classifiche` e poi su `/classifiche?season=XXXX` — la pagina non deve più fare una seconda chiamata DB per i gruppi della stagione passata.
-3. **TypeScript:** `npx tsc --noEmit` — nessun errore (verificato).
+1. `npx tsc --noEmit` — nessun errore
+2. `npm run dev` — app si avvia normalmente
+3. Nessuna funzionalità UI cambiata (il feature era già non accessibile)
 
 ## Come fare rollback
 
 ```bash
-git revert HEAD
-# oppure
-git checkout main -- src/components/SiteHeader.tsx src/app/classifiche/page.tsx
+git revert HEAD --no-edit
 ```
 
 ## Livello di confidenza: ALTO
 
-- Cambiamenti minimali e chirurgici
-- Type check passa senza errori
-- Il comportamento visibile (nav highlight) è verificabile immediatamente
-- La rimozione del dead code è provata da: `activeGroups` non appare mai nel JSX
+- Zero import verificati con grep su tutto src/
+- TypeScript passa senza errori
+- Nessuna logica attiva modificata
