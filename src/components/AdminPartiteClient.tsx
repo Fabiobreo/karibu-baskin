@@ -289,7 +289,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                     <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
                     <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>Tipo</TableCell>
+                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>Tipo / Girone</TableCell>
                     <TableCell sx={{ fontWeight: 700 }} align="center">Risultato</TableCell>
                     <TableCell sx={{ fontWeight: 700 }} align="center">Punteggio</TableCell>
                     <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }} align="center">Stats</TableCell>
@@ -333,6 +333,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       </TableCell>
                       <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Chip label={MATCH_TYPE_LABELS[m.matchType]} size="small" variant="outlined" sx={{ fontSize: "0.68rem" }} />
+                        {/* [CLAUDE - 09:00] mostra il girone sotto il tipo — dato già disponibile dopo il fix 08:00 */}
+                        {m.group?.name && (
+                          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25, fontSize: "0.68rem" }}>
+                            {m.group.name}
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell align="center">
                         {m.result && (
