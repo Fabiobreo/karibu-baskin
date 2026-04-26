@@ -101,7 +101,6 @@ export async function PUT(req: Request, { params }: Params) {
       ...(body.opponentId !== undefined && { opponentId: body.opponentId }),
       ...("groupId" in body && { groupId: body.groupId ?? null }),
     },
-    // [CLAUDE - 08:00] include color, championship e group coerenti con il tipo Match del client
     select: {
       id: true, slug: true, date: true, isHome: true, venue: true,
       matchType: true, ourScore: true, theirScore: true, result: true,
