@@ -142,6 +142,8 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [gmLoading, setGmLoading] = useState(false);
   const [gmForm,    setGmForm]    = useState({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
   const [gmError,   setGmError]   = useState("");
+  // [CLAUDE - 04:00] stato per modifica inline risultati esterni
+  const [editGm,    setEditGm]    = useState<GroupMatchItem | null>(null);
 
   // Paginazione per ciascun tab
   const [matchPage,    setMatchPage]    = useState(0);
@@ -289,6 +291,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   async function openGmDialog(group: Group) {
     setGmGroup(group);
     setGmError("");
+    setEditGm(null);
     setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
     setGmLoading(true);
     const res = await fetch(`/api/groups/${group.id}`);
@@ -299,26 +302,44 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     setGmLoading(false);
   }
 
-  async function handleAddGm() {
+  // [CLAUDE - 04:00] gestisce sia creazione che modifica di un risultato esterno girone
+  async function handleSaveGm() {
     if (!gmGroup || !gmForm.homeTeamId || !gmForm.awayTeamId) {
       setGmError("Seleziona entrambe le squadre"); return;
     }
     setGmError("");
-    const res = await fetch(`/api/groups/${gmGroup.id}/matches`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        matchday:  gmForm.matchday  !== "" ? Number(gmForm.matchday)  : null,
-        date:      gmForm.date      !== "" ? gmForm.date              : null,
-        homeTeamId: gmForm.homeTeamId,
-        awayTeamId: gmForm.awayTeamId,
-        homeScore: gmForm.homeScore !== "" ? Number(gmForm.homeScore) : null,
-        awayScore: gmForm.awayScore !== "" ? Number(gmForm.awayScore) : null,
-      }),
-    });
-    if (!res.ok) { setGmError("Errore nel salvataggio"); return; }
-    const created = await res.json() as GroupMatchItem;
-    setGmMatches((prev) => [...prev, created].sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)));
+    const payload = {
+      matchday:   gmForm.matchday   !== "" ? Number(gmForm.matchday)   : null,
+      date:       gmForm.date       !== "" ? gmForm.date               : null,
+      homeTeamId: gmForm.homeTeamId,
+      awayTeamId: gmForm.awayTeamId,
+      homeScore:  gmForm.homeScore  !== "" ? Number(gmForm.homeScore)  : null,
+      awayScore:  gmForm.awayScore  !== "" ? Number(gmForm.awayScore)  : null,
+    };
+
+    if (editGm) {
+      const res = await fetch(`/api/groups/${gmGroup.id}/matches/${editGm.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) { setGmError("Errore nel salvataggio"); return; }
+      const updated = await res.json() as GroupMatchItem;
+      setGmMatches((prev) =>
+        prev.map((m) => m.id === updated.id ? updated : m)
+            .sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999))
+      );
+      setEditGm(null);
+    } else {
+      const res = await fetch(`/api/groups/${gmGroup.id}/matches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) { setGmError("Errore nel salvataggio"); return; }
+      const created = await res.json() as GroupMatchItem;
+      setGmMatches((prev) => [...prev, created].sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)));
+    }
     setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
   }
 
@@ -737,10 +758,10 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             <DialogContent>
               {gmError && <Alert severity="error" sx={{ mb: 2 }}>{gmError}</Alert>}
 
-              {/* Form aggiunta */}
-              <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2.5 }}>
-                <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
-                  Aggiungi risultato
+              {/* Form aggiunta / modifica */}
+              <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2.5, borderColor: editGm ? "primary.main" : "divider" }}>
+                <Typography variant="caption" fontWeight={700} color={editGm ? "primary" : "text.secondary"} sx={{ display: "block", mb: 1.5 }}>
+                  {editGm ? "Modifica risultato" : "Aggiungi risultato"}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                   <TextField
@@ -791,9 +812,14 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       {opponents.map((o) => <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>)}
                     </Select>
                   </FormControl>
-                  <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddGm} disabled={!gmForm.homeTeamId || !gmForm.awayTeamId}>
-                    Aggiungi
+                  <Button variant="contained" startIcon={editGm ? <EditIcon /> : <AddIcon />} onClick={handleSaveGm} disabled={!gmForm.homeTeamId || !gmForm.awayTeamId}>
+                    {editGm ? "Salva" : "Aggiungi"}
                   </Button>
+                  {editGm && (
+                    <Button variant="outlined" onClick={() => { setEditGm(null); setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" }); setGmError(""); }}>
+                      Annulla
+                    </Button>
+                  )}
                 </Box>
               </Paper>
 
@@ -833,6 +859,21 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         </TableCell>
                         <TableCell><Typography variant="body2" fontWeight={600}>{m.awayTeam.name}</Typography></TableCell>
                         <TableCell align="right">
+                          {/* [CLAUDE - 04:00] pulsante modifica inline */}
+                          <IconButton size="small" onClick={() => {
+                            setGmForm({
+                              matchday:   m.matchday !== null ? String(m.matchday) : "",
+                              date:       m.date ? (typeof m.date === "string" ? m.date.slice(0, 10) : m.date) : "",
+                              homeTeamId: m.homeTeamId,
+                              awayTeamId: m.awayTeamId,
+                              homeScore:  m.homeScore !== null ? String(m.homeScore) : "",
+                              awayScore:  m.awayScore !== null ? String(m.awayScore) : "",
+                            });
+                            setEditGm(m);
+                            setGmError("");
+                          }}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
                           <IconButton size="small" color="error" onClick={() => handleDeleteGm(m.id)}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
