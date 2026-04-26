@@ -288,16 +288,20 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     });
   }
 
+  // [CLAUDE - 08:00] reset gmMatches immediatamente per evitare dati obsoleti del girone precedente
   async function openGmDialog(group: Group) {
     setGmGroup(group);
     setGmError("");
     setEditGm(null);
+    setGmMatches([]);
     setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
     setGmLoading(true);
     const res = await fetch(`/api/groups/${group.id}`);
     if (res.ok) {
       const data = await res.json() as { groupMatches: GroupMatchItem[] };
       setGmMatches(data.groupMatches ?? []);
+    } else {
+      setGmError("Errore nel caricamento dei risultati del girone");
     }
     setGmLoading(false);
   }
