@@ -91,6 +91,16 @@ function seasonForDate(dateStr: string): string {
   return `${s}-${String(s + 1).slice(-2)}`;
 }
 
+// [CLAUDE - 01:00] Auto-calcola l'esito dai punteggi per evitare mismatch con il server
+function deriveResultFromScores(ourScore: string, theirScore: string): MatchResult | "" {
+  const our = parseInt(ourScore, 10);
+  const their = parseInt(theirScore, 10);
+  if (isNaN(our) || isNaN(their)) return "";
+  if (our > their) return "WIN";
+  if (our < their) return "LOSS";
+  return "DRAW";
+}
+
 export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches, groups: initialGroups }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -204,7 +214,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) { setError("Errore nel salvataggio"); return; }
+      if (!res.ok) {
+        // [CLAUDE - 01:00] Mostra il messaggio specifico del server (es. mismatch risultato/punteggio)
+        const errData = await res.json().catch(() => ({})) as { error?: string };
+        setError(errData.error ?? "Errore nel salvataggio");
+        return;
+      }
       const saved = await res.json() as Match;
       if (editMatch) {
         setMatches((prev) => prev.map((m) => m.id === saved.id ? { ...saved, _count: m._count } : m));
@@ -757,7 +772,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 label="Nostri punti"
                 type="number"
                 value={form.ourScore}
-                onChange={(e) => setForm((f) => ({ ...f, ourScore: e.target.value }))}
+                onChange={(e) => {
+                  // [CLAUDE - 01:00] Auto-calcola l'esito quando entrambi i punteggi sono presenti
+                  const ourScore = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    ourScore,
+                    ...(ourScore !== "" && f.theirScore !== "" && {
+                      result: deriveResultFromScores(ourScore, f.theirScore),
+                    }),
+                  }));
+                }}
                 sx={{ flex: 1 }}
                 slotProps={{ htmlInput: { min: 0 } }}
               />
@@ -765,7 +790,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 label="Punti avversario"
                 type="number"
                 value={form.theirScore}
-                onChange={(e) => setForm((f) => ({ ...f, theirScore: e.target.value }))}
+                onChange={(e) => {
+                  // [CLAUDE - 01:00] Auto-calcola l'esito quando entrambi i punteggi sono presenti
+                  const theirScore = e.target.value;
+                  setForm((f) => ({
+                    ...f,
+                    theirScore,
+                    ...(f.ourScore !== "" && theirScore !== "" && {
+                      result: deriveResultFromScores(f.ourScore, theirScore),
+                    }),
+                  }));
+                }}
                 sx={{ flex: 1 }}
                 slotProps={{ htmlInput: { min: 0 } }}
               />
