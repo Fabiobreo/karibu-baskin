@@ -78,9 +78,11 @@ export async function POST(req: Request) {
       notes: body.notes?.trim() || null,
       groupId: body.groupId ?? null,
     },
+    // [CLAUDE - 08:00] include color, championship e group coerenti con il tipo Match del client
     include: {
-      team: { select: { id: true, name: true, season: true } },
+      team: { select: { id: true, name: true, season: true, color: true, championship: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      group: { select: { id: true, name: true } },
     },
   });
   return NextResponse.json(match, { status: 201 });
