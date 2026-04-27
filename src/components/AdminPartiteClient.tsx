@@ -2,7 +2,7 @@
 
 import {
   Box, Typography, Paper, Button, TextField, Stack, Chip, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Select, MenuItem,
   FormControl, InputLabel, CircularProgress, Alert, Table, TableHead,
   TableBody, TableRow, TableCell, Tooltip, FormControlLabel, Switch,
   Divider, Tabs, Tab, TablePagination, Skeleton,
@@ -143,6 +143,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [gmError,   setGmError]   = useState("");
   const [editGm,    setEditGm]    = useState<GroupMatchItem | null>(null);
 
+  // Dialog di conferma generica
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+    open: false, title: "", message: "", onConfirm: () => {},
+  });
+  function openConfirm(title: string, message: string, onConfirm: () => void) {
+    setConfirmDialog({ open: true, title, message, onConfirm });
+  }
+  function closeConfirm() {
+    setConfirmDialog((prev) => ({ ...prev, open: false }));
+  }
+
   // Paginazione per ciascun tab
   const [matchPage,    setMatchPage]    = useState(0);
   const [matchRpp,     setMatchRpp]     = useState(25);
@@ -254,12 +265,15 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     });
   }
 
-  async function handleDeleteMatch(id: string) {
-    if (!confirm("Eliminare questa partita? Verranno eliminate anche le statistiche dei giocatori.")) return;
-    startTransition(async () => {
-      await fetch(`/api/matches/${id}`, { method: "DELETE" });
-      setMatches((prev) => prev.filter((m) => m.id !== id));
-    });
+  function handleDeleteMatch(id: string) {
+    openConfirm(
+      "Elimina partita",
+      "Eliminare questa partita? Verranno eliminate anche le statistiche dei giocatori.",
+      () => startTransition(async () => {
+        await fetch(`/api/matches/${id}`, { method: "DELETE" });
+        setMatches((prev) => prev.filter((m) => m.id !== id));
+      }),
+    );
   }
 
   async function handleSaveOpponent() {
@@ -277,12 +291,15 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     });
   }
 
-  async function handleDeleteOpponent(id: string, name: string) {
-    if (!confirm(`Eliminare la squadra avversaria "${name}"?`)) return;
-    startTransition(async () => {
-      await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
-      setOpponents((prev) => prev.filter((o) => o.id !== id));
-    });
+  function handleDeleteOpponent(id: string, name: string) {
+    openConfirm(
+      "Elimina squadra avversaria",
+      `Eliminare la squadra avversaria "${name}"?`,
+      () => startTransition(async () => {
+        await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
+        setOpponents((prev) => prev.filter((o) => o.id !== id));
+      }),
+    );
   }
 
   async function openGmDialog(group: Group) {
@@ -384,7 +401,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             </Paper>
           ) : (
             <Paper elevation={0} variant="outlined" sx={{ overflowX: "auto" }}>
-              <Table size="small">
+              <Table size="small" aria-label="Lista partite ufficiali">
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
@@ -535,7 +552,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             <Typography variant="body2" color="text.disabled">Nessuna squadra avversaria registrata.</Typography>
           ) : (
             <Paper elevation={0} variant="outlined">
-              <Table size="small">
+              <Table size="small" aria-label="Lista squadre avversarie">
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
@@ -649,7 +666,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             <Typography variant="body2" color="text.disabled">Nessun girone creato.</Typography>
           ) : (
             <Paper elevation={0} variant="outlined">
-              <Table size="small">
+              <Table size="small" aria-label="Lista gironi">
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Girone</TableCell>
@@ -685,14 +702,15 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                             size="small"
                             color="error"
                             aria-label="Elimina girone"
-                            onClick={() => {
-                              if (!confirm(`Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`)) return;
-                              startTransition(async () => {
+                            onClick={() => openConfirm(
+                              "Elimina girone",
+                              `Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`,
+                              () => startTransition(async () => {
                                 await fetch(`/api/groups/${g.id}`, { method: "DELETE" });
                                 setGroups((prev) => prev.filter((x) => x.id !== g.id));
                                 setMatches((prev) => prev.map((m) => m.groupId === g.id ? { ...m, groupId: null, group: null } : m));
-                              });
-                            }}
+                              }),
+                            )}
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -822,7 +840,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
               {/* Lista risultati */}
               {gmLoading ? (
-                <Table size="small">
+                <Table size="small" aria-label="Risultati girone in caricamento">
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
@@ -851,7 +869,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   Nessun risultato esterno inserito.
                 </Typography>
               ) : (
-                <Table size="small">
+                <Table size="small" aria-label="Risultati partite girone">
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
@@ -1121,6 +1139,29 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             startIcon={isPending ? <CircularProgress size={16} /> : undefined}
           >
             {editMatch ? "Salva" : "Aggiungi partita"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Dialog conferma eliminazione ── */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={closeConfirm}
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-description"
+      >
+        <DialogTitle id="confirm-dialog-title">{confirmDialog.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-dialog-description">{confirmDialog.message}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeConfirm}>Annulla</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => { closeConfirm(); confirmDialog.onConfirm(); }}
+          >
+            Elimina
           </Button>
         </DialogActions>
       </Dialog>

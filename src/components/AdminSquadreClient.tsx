@@ -2,7 +2,7 @@
 
 import {
   Box, Typography, Paper, Button, TextField, Stack, Chip, Avatar, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Select, MenuItem, FormControl,
   InputLabel, Tooltip, CircularProgress, Divider, Alert, Grid2 as Grid,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -146,6 +146,17 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   const [teamForm, setTeamForm] = useState({ name: "", championship: "", color: TEAM_COLORS[0].value, description: "" });
   const [teamError, setTeamError] = useState("");
 
+  // Dialog conferma generica
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+    open: false, title: "", message: "", onConfirm: () => {},
+  });
+  function openConfirm(title: string, message: string, onConfirm: () => void) {
+    setConfirmDialog({ open: true, title, message, onConfirm });
+  }
+  function closeConfirm() {
+    setConfirmDialog((prev) => ({ ...prev, open: false }));
+  }
+
   // Dialog rosa
   const [rosaTeam, setRosaTeam] = useState<Team | null>(null);
   const [addingMember, setAddingMember] = useState(false);
@@ -206,12 +217,15 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
     });
   }
 
-  async function handleDeleteTeam(teamId: string, teamName: string) {
-    if (!confirm(`Eliminare "${teamName}"? Verranno eliminati anche rosa e partite associate.`)) return;
-    startTransition(async () => {
-      await fetch(`/api/competitive-teams/${teamId}`, { method: "DELETE" });
-      setTeams((prev) => prev.filter((t) => t.id !== teamId));
-    });
+  function handleDeleteTeam(teamId: string, teamName: string) {
+    openConfirm(
+      "Elimina squadra",
+      `Eliminare "${teamName}"? Verranno eliminati anche rosa e partite associate.`,
+      () => startTransition(async () => {
+        await fetch(`/api/competitive-teams/${teamId}`, { method: "DELETE" });
+        setTeams((prev) => prev.filter((t) => t.id !== teamId));
+      }),
+    );
   }
 
   // ── Rosa ─────────────────────────────────────────────────────────────────────
@@ -666,6 +680,29 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
             </DialogActions>
           </>
         )}
+      </Dialog>
+
+      {/* ── Dialog conferma eliminazione ── */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={closeConfirm}
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-description"
+      >
+        <DialogTitle id="confirm-dialog-title">{confirmDialog.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="confirm-dialog-description">{confirmDialog.message}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeConfirm}>Annulla</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => { closeConfirm(); confirmDialog.onConfirm(); }}
+          >
+            Elimina
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

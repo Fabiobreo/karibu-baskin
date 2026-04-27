@@ -537,7 +537,7 @@ export default function AdminUserList({
 
           {/* ── Tabella utenti ── */}
           <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}>
-            <Table size="small">
+            <Table size="small" aria-label="Lista utenti">
               <TableHead>
                 <TableRow>
                   <TableCell>
@@ -748,7 +748,7 @@ export default function AdminUserList({
 
           {/* ── Tabella figli ── */}
           <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}>
-            <Table size="small">
+            <Table size="small" aria-label="Lista figli">
               <TableHead>
                 <TableRow>
                   <TableCell>
