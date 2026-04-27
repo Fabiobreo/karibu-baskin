@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (quattordicesima sessione)
+
+**File modificati:** `src/app/allenamenti/page.tsx`, `src/app/allenamento/[session]/page.tsx`, `src/app/api/teams/[sessionId]/route.ts`, `src/components/AllenamentiClient.tsx`, `src/components/RosterByRole.tsx`, `src/components/SessionCard.tsx`, `src/lib/teamGenerator.ts`, `src/lib/teamGenerator.test.ts`, `src/lib/notifPrefs.test.ts`
+
+**Cosa è stato fatto:** Completata feature parzialmente implementata. I dati `seasonAttended`/`seasonTotal`/`isLoggedIn` erano già fetchati server-side in `allenamenti/page.tsx` ma non renderizzati nel client. Aggiunto banner "Presenze stagione" con `LinearProgress` (colore adattivo: verde ≥75%, arancione ≥50%, giallo sotto). Committati anche tutti i WIP uncommittati trovati: redesign `AllenamentiClient` (hero card per il prossimo allenamento, `SessionRow` raggruppate per mese, chip "Sei iscritto"), redesign `allenamento/[session]/page.tsx` (countdown live, `SummaryCard` per sessioni terminate, layout 2 colonne desktop con form sticky), estrazione `AthletePill` da `RosterByRole`, aggiunta prop `isRegistered` a `SessionCard`, refactoring `teamGenerator` per bande (low R1-R2 / high R3-R5) invece di per-ruolo + fix coaches esclusi dalla generazione. Fix 2 pre-existing bug: TS2352 in `notifPrefs.test.ts`, test `teamGenerator` aggiornato per riflettere le nuove garanzie della distribuzione per fasce. `tsc --noEmit` pulito, 90 test verdi.
+
+**Commit:** `71bc33b` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (tredicesima sessione)
 
 **File aggiunti:** `src/lib/slugUtils.test.ts`, `src/lib/notifPrefs.test.ts`
