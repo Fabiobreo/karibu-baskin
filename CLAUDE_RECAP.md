@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (sedicesima sessione)
+
+**File aggiunti:** `src/lib/appNotifications.test.ts`, `src/lib/audit.test.ts`
+
+**Cosa è stato fatto:** Scritti unit test per `appNotifications.ts` e `audit.ts` — gli ultimi due lib core senza copertura (citati nel TODO). Entrambi usano Prisma, quindi i test sfruttano `vi.mock('@/lib/db')` per isolare il DB. Testati: payload corretto passato a `prisma.appNotification.create`, conversione `null→undefined` per i campi `before`/`after` in `logAudit`, gestione campi opzionali assenti, propagazione errori DB, e tutte le `AuditAction` valide. Suite totale: 107 test (+9), tutti verdi.
+
+**Commit:** `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (quindicesima sessione)
 
 **File aggiunti:** `src/lib/rateLimit.ts`, `src/lib/rateLimit.test.ts`
