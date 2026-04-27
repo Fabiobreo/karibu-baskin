@@ -140,7 +140,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     <Box>
       {/* Intestazione mese */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <IconButton onClick={prevMonth} size="small"><ChevronLeftIcon /></IconButton>
+        <IconButton onClick={prevMonth} size="small" aria-label="Mese precedente"><ChevronLeftIcon /></IconButton>
         <Typography
           variant="h5"
           fontWeight={700}
@@ -153,7 +153,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         >
           {format(new Date(year, month), "MMMM yyyy", { locale: it })}
         </Typography>
-        <IconButton onClick={nextMonth} size="small"><ChevronRightIcon /></IconButton>
+        <IconButton onClick={nextMonth} size="small" aria-label="Mese successivo"><ChevronRightIcon /></IconButton>
         <Typography
           variant="body2"
           onClick={goToday}
@@ -490,6 +490,7 @@ function EventDetailDialog({
             size="small"
             sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" }, flexShrink: 0 }}
             title="Modifica"
+            aria-label="Modifica evento"
           >
             <EditIcon fontSize="small" />
           </IconButton>

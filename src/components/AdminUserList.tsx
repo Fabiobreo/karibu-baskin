@@ -467,6 +467,7 @@ export default function AdminUserList({
                     color={filterAppRoles.includes(role) ? ROLE_CHIP_COLORS[role] : "default"}
                     variant={filterAppRoles.includes(role) ? "filled" : "outlined"}
                     onClick={() => toggleAppRole(role)}
+                    aria-pressed={filterAppRoles.includes(role)}
                     sx={{ cursor: "pointer", fontWeight: filterAppRoles.includes(role) ? 700 : 400 }}
                   />
                 ))}
@@ -484,6 +485,7 @@ export default function AdminUserList({
                   size="small"
                   variant={filterSportRoles.includes("none") ? "filled" : "outlined"}
                   onClick={() => toggleSportRole("none")}
+                  aria-pressed={filterSportRoles.includes("none")}
                   sx={{ cursor: "pointer", fontWeight: filterSportRoles.includes("none") ? 700 : 400 }}
                 />
                 {[1, 2, 3, 4, 5].map((r) => {
@@ -495,6 +497,7 @@ export default function AdminUserList({
                       size="small"
                       variant={active ? "filled" : "outlined"}
                       onClick={() => toggleSportRole(r.toString())}
+                      aria-pressed={active}
                       sx={{
                         cursor: "pointer",
                         fontWeight: active ? 700 : 400,
@@ -660,12 +663,12 @@ export default function AdminUserList({
                       <TableCell align="center">
                         <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                           <Tooltip title="Modifica utente">
-                            <IconButton size="small" onClick={() => openEdit(row)}>
+                            <IconButton size="small" aria-label="Modifica utente" onClick={() => openEdit(row)}>
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Elimina utente">
-                            <IconButton size="small" color="error" onClick={() => setDeleteRow(row)}>
+                            <IconButton size="small" aria-label="Elimina utente" color="error" onClick={() => setDeleteRow(row)}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
@@ -846,12 +849,12 @@ export default function AdminUserList({
                     <TableCell align="center">
                       <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                         <Tooltip title="Modifica figlio">
-                          <IconButton size="small" onClick={() => openEdit({ ...row, kind: "child" })}>
+                          <IconButton size="small" aria-label="Modifica figlio" onClick={() => openEdit({ ...row, kind: "child" })}>
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Elimina figlio">
-                          <IconButton size="small" color="error" onClick={() => setDeleteRow({ ...row, kind: "child" })}>
+                          <IconButton size="small" aria-label="Elimina figlio" color="error" onClick={() => setDeleteRow({ ...row, kind: "child" })}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>

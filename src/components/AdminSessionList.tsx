@@ -164,6 +164,7 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                       <IconButton
                         size="small"
                         color={hasTeams ? "success" : "primary"}
+                        aria-label={hasTeams ? "Rigenera squadre" : "Genera squadre"}
                         onClick={() => setTeamPickSession(s)}
                         disabled={isGenerating || s._count.registrations === 0}
                       >
@@ -176,7 +177,7 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                     </span>
                   </Tooltip>
                   <Tooltip title="Elimina">
-                    <IconButton size="small" color="error" onClick={() => setToDelete(s)}>
+                    <IconButton size="small" color="error" aria-label="Elimina allenamento" onClick={() => setToDelete(s)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>

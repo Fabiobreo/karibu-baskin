@@ -468,21 +468,21 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip title="Convocati">
-                          <IconButton size="small" color="primary" onClick={() => setCallupMatch(m)}>
+                          <IconButton size="small" color="primary" aria-label="Convocati partita" onClick={() => setCallupMatch(m)}>
                             <GroupsIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         {/* [CLAUDE 03:00] */}
                         <Tooltip title="Statistiche giocatori">
-                          <IconButton size="small" color="primary" onClick={() => setStatsMatch(m)}>
+                          <IconButton size="small" color="primary" aria-label="Statistiche giocatori" onClick={() => setStatsMatch(m)}>
                             <LeaderboardIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Modifica">
-                          <IconButton size="small" onClick={() => openEdit(m)}><EditIcon fontSize="small" /></IconButton>
+                          <IconButton size="small" aria-label="Modifica partita" onClick={() => openEdit(m)}><EditIcon fontSize="small" /></IconButton>
                         </Tooltip>
                         <Tooltip title="Elimina">
-                          <IconButton size="small" color="error" onClick={() => handleDeleteMatch(m.id)}>
+                          <IconButton size="small" color="error" aria-label="Elimina partita" onClick={() => handleDeleteMatch(m.id)}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -557,7 +557,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       <TableCell><Typography variant="body2" color="text.secondary">{o.city ?? "—"}</Typography></TableCell>
                       <TableCell align="right">
                         <Tooltip title="Elimina">
-                          <IconButton size="small" color="error" onClick={() => handleDeleteOpponent(o.id, o.name)}>
+                          <IconButton size="small" color="error" aria-label="Elimina squadra avversaria" onClick={() => handleDeleteOpponent(o.id, o.name)}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -683,7 +683,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip title="Risultati esterni">
-                          <IconButton size="small" color="primary" onClick={() => openGmDialog(g)}>
+                          <IconButton size="small" color="primary" aria-label="Risultati esterni girone" onClick={() => openGmDialog(g)}>
                             <TableRowsIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -691,6 +691,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                           <IconButton
                             size="small"
                             color="error"
+                            aria-label="Elimina girone"
                             onClick={() => {
                               if (!confirm(`Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`)) return;
                               startTransition(async () => {
@@ -888,7 +889,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         <TableCell><Typography variant="body2" fontWeight={600}>{m.awayTeam.name}</Typography></TableCell>
                         <TableCell align="right">
                           {/* [CLAUDE - 04:00] pulsante modifica inline */}
-                          <IconButton size="small" onClick={() => {
+                          <IconButton size="small" aria-label="Modifica partita girone" onClick={() => {
                             setGmForm({
                               matchday:   m.matchday !== null ? String(m.matchday) : "",
                               date:       m.date ? (typeof m.date === "string" ? m.date.slice(0, 10) : m.date) : "",
@@ -902,7 +903,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                           }}>
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" color="error" onClick={() => handleDeleteGm(m.id)}>
+                          <IconButton size="small" color="error" aria-label="Elimina partita girone" onClick={() => handleDeleteGm(m.id)}>
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </TableCell>

@@ -230,12 +230,12 @@ export default function AdminAnonymousRegistrations({ registrations }: { registr
                   <TableCell align="right" sx={{ pr: 0 }}>
                     <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
                       <Tooltip title="Modifica">
-                        <IconButton size="small" disabled={isPending} onClick={() => openEdit(group)}>
+                        <IconButton size="small" aria-label="Modifica iscrizione anonima" disabled={isPending} onClick={() => openEdit(group)}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Elimina tutte le iscrizioni di questo nome">
-                        <IconButton size="small" color="error" disabled={isPending} onClick={() => setConfirmGroup(group)}>
+                        <IconButton size="small" aria-label="Elimina tutte le iscrizioni di questo nome" color="error" disabled={isPending} onClick={() => setConfirmGroup(group)}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>

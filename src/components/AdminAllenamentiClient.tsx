@@ -603,6 +603,7 @@ function SessionCard({
         {/* Menu kebab */}
         <IconButton
           size="small"
+          aria-label="Azioni allenamento"
           onClick={(e) => { e.stopPropagation(); setMenuAnchor(e.currentTarget); }}
           sx={{ color: muted ? "text.disabled" : "rgba(255,255,255,0.7)", ml: 0.25, flexShrink: 0 }}
         >

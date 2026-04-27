@@ -181,10 +181,10 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 </TableCell>
                 <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                   <Tooltip title="Modifica">
-                    <IconButton size="small" onClick={() => openEdit(ev)}><EditIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" aria-label="Modifica evento" onClick={() => openEdit(ev)}><EditIcon fontSize="small" /></IconButton>
                   </Tooltip>
                   <Tooltip title="Elimina">
-                    <IconButton size="small" color="error" onClick={() => setDeleteId(ev.id)}><DeleteIcon fontSize="small" /></IconButton>
+                    <IconButton size="small" aria-label="Elimina evento" color="error" onClick={() => setDeleteId(ev.id)}><DeleteIcon fontSize="small" /></IconButton>
                   </Tooltip>
                 </TableCell>
               </TableRow>
