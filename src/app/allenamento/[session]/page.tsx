@@ -1,17 +1,16 @@
 "use client";
-// Route rinominata: [sessionId] → [session]
-// Il param può essere un dateSlug (es. "2025-03-15T18:00") o un CUID (retrocompatibilità)
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { useParams } from "next/navigation";
 import {
   Container, Typography, Box,
-  Paper, Chip, Skeleton, Button,
+  Paper, Chip, Skeleton, Button, Grid2 as Grid,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { format } from "date-fns";
@@ -20,6 +19,7 @@ import RegistrationForm, { type CurrentUser, type ChildInfo } from "@/components
 import RosterByRole from "@/components/RosterByRole";
 import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import ShareSection from "@/components/ShareSection";
+import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
 
 interface Session {
   id: string;
@@ -78,8 +78,89 @@ function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
   return { label: `Tra ${diffDays} giorni`, bgcolor: "#1565C0" };
 }
 
+// ── Riepilogo allenamento passato ─────────────────────────────────────────────
+
+function SummaryCard({
+  registrations,
+  teams,
+}: {
+  registrations: Registration[];
+  teams: TeamsData | null;
+}) {
+  const athleteRegs = registrations.filter((r) => !r.registeredAsCoach);
+  const coachRegs = registrations.filter((r) => r.registeredAsCoach);
+  const roleBreakdown = ROLES
+    .map((role) => ({ role, count: athleteRegs.filter((r) => r.role === role).length }))
+    .filter((r) => r.count > 0);
+
+  return (
+    <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+      <Typography variant="h6" fontWeight={700} gutterBottom>
+        Riepilogo
+      </Typography>
+
+      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: roleBreakdown.length > 0 ? 2 : 0 }}>
+        <Chip
+          icon={<GroupsIcon />}
+          label={`${athleteRegs.length} ${athleteRegs.length === 1 ? "atleta" : "atleti"}`}
+          variant="outlined"
+        />
+        {coachRegs.length > 0 && (
+          <Chip
+            label={`${coachRegs.length} ${coachRegs.length === 1 ? "allenatore" : "allenatori"}`}
+            variant="outlined"
+          />
+        )}
+        {teams && (
+          <Chip
+            icon={<CheckCircleIcon />}
+            label="Squadre generate"
+            color="success"
+            variant="outlined"
+          />
+        )}
+      </Box>
+
+      {roleBreakdown.length > 0 && (
+        <Box sx={{ display: "flex", gap: 1.25, flexWrap: "wrap" }}>
+          {roleBreakdown.map(({ role, count }) => (
+            <Box
+              key={role}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                bgcolor: ROLE_COLORS[role],
+                color: "#fff",
+                borderRadius: 1.5,
+                px: 1.75,
+                py: 0.75,
+                minWidth: 52,
+              }}
+            >
+              <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1, fontSize: "1.2rem" }}>
+                {count}
+              </Typography>
+              <Typography sx={{ fontWeight: 600, opacity: 0.85, fontSize: "0.62rem", mt: 0.25 }}>
+                {ROLE_LABELS[role]}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {athleteRegs.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          Nessun partecipante registrato.
+        </Typography>
+      )}
+    </Paper>
+  );
+}
+
+// ── Pagina ────────────────────────────────────────────────────────────────────
+
 export default function SessionPage() {
-  // Il param può essere dateSlug (es. "2025-03-15T18:00") o CUID (retrocompatibilità)
   const { session: sessionParam } = useParams<{ session: string }>();
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
@@ -88,7 +169,6 @@ export default function SessionPage() {
   const swrOpts = { revalidateOnFocus: true, refreshInterval: 0 } as const;
   const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject()));
 
-  // 1. Risolve slug/CUID → Session
   const { data: session, isLoading: loading } = useSWR<Session>(
     `/api/sessions/${encodeURIComponent(sessionParam)}`,
     fetcher,
@@ -96,7 +176,6 @@ export default function SessionPage() {
   );
   const realSessionId = session?.id ?? "";
 
-  // 2. Iscrizioni — si aggiornano ogni volta che l'utente ritorna sulla tab
   const regKey = realSessionId ? `/api/registrations?sessionId=${realSessionId}` : null;
   const { data: registrations = [], mutate: mutateRegistrations } = useSWR<Registration[]>(
     regKey,
@@ -104,7 +183,6 @@ export default function SessionPage() {
     swrOpts,
   );
 
-  // 3. Squadre
   const teamsKey = realSessionId ? `/api/teams/${realSessionId}` : null;
   const { data: teamsRaw, isLoading: teamsLoading, mutate: mutateTeams } = useSWR<TeamsData>(
     teamsKey,
@@ -137,15 +215,47 @@ export default function SessionPage() {
   const sessionEnd = session?.endTime ? new Date(session.endTime) : null;
   const status = sessionDate ? getSessionStatus(sessionDate, sessionEnd) : null;
 
-  // Il vero CUID della sessione (per API calls); sessionParam come fallback durante il primo caricamento
   const sessionId = realSessionId || sessionParam;
 
   const [sessionUrl, setSessionUrl] = useState(`https://karibu-baskin.vercel.app/allenamento/${sessionParam}`);
   useEffect(() => { setSessionUrl(window.location.href); }, []);
 
+  // ── Countdown live ──────────────────────────────────────────────────────────
+  const [countdown, setCountdown] = useState<string | null>(null);
+  useEffect(() => {
+    const dateStr = session?.date ?? null;
+    const endStr = session?.endTime ?? null;
+    if (!dateStr) { setCountdown(null); return; }
+
+    const sd = new Date(dateStr);
+    const se = endStr ? new Date(endStr) : new Date(sd.getTime() + 2 * 60 * 60 * 1000);
+
+    function update() {
+      const now = new Date();
+      if (now < sd) {
+        const isToday = sd.toDateString() === now.toDateString();
+        if (!isToday) { setCountdown(null); return; }
+        const diff = sd.getTime() - now.getTime();
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        setCountdown(diff < 2 * 60 * 1000 ? "Sta per iniziare!" : h > 0 ? `Inizia fra ${h}h ${m}min` : `Inizia fra ${m} minuti`);
+      } else if (now <= se) {
+        const diff = se.getTime() - now.getTime();
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        setCountdown(diff < 60 * 1000 ? "Sta per finire" : h > 0 ? `Finisce fra ${h}h ${m}min` : `Finisce fra ${m} minuti`);
+      } else {
+        setCountdown(null);
+      }
+    }
+
+    update();
+    const id = setInterval(update, 30_000);
+    return () => clearInterval(id);
+  }, [session?.date, session?.endTime]);
+
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
-  // Mappa reg.id → user.slug per nomi clickabili in TeamDisplay
   const slugMap = Object.fromEntries(
     registrations.filter((r) => r.userSlug).map((r) => [r.id, r.userSlug!])
   );
@@ -153,8 +263,6 @@ export default function SessionPage() {
     ? new Date() > (sessionEnd ?? new Date(sessionDate.getTime() + 2 * 60 * 60 * 1000))
     : false;
 
-  // Iscrizioni pertinenti all'utente (sé stesso o i propri figli)
-  // Include anche la registrazione via childId se l'atleta ha un account collegato a un Child
   const myRegistration = currentUser
     ? registrations.find((r) =>
         r.userId === currentUser.id ||
@@ -164,7 +272,6 @@ export default function SessionPage() {
   const childRegistrations = parentChildren.length > 0
     ? registrations.filter((r) => r.childId && parentChildren.some((c) => c.id === r.childId))
     : [];
-  // Layout "squadre prima" solo se l'utente è effettivamente in una squadra generata
   const myTeam = myRegistration && teams
     ? TEAM_META.find((t) => {
       const list = t.key === "teamC" ? teams.teamC : teams[t.key];
@@ -173,11 +280,34 @@ export default function SessionPage() {
     : null;
   const teamFirstLayout = !!myTeam;
 
+  // Props condivisi tra i vari layout
+  const rosterProps = {
+    registrations,
+    currentUserId: currentUser?.id ?? null,
+    linkedChildId: currentUser?.linkedChildId ?? null,
+    parentChildIds: parentChildren.map((c) => c.id),
+    childUserIds: parentChildren.map((c) => c.userId).filter((id): id is string => !!id),
+    isStaff,
+    onUnregistered: refreshSecondary,
+  };
+
+  const teamDisplayProps = {
+    sessionId,
+    isStaff,
+    registrationIds: registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id),
+    slugMap,
+    teams,
+    teamsLoading,
+    onTeamsGenerated: (newTeams: TeamsData) => mutateTeams(newTeams, false),
+  };
+
+  void childRegistrations;
+
   return (
     <>
       <SiteHeader />
 
-      {/* ── Hero "Match Day Card" ── */}
+      {/* ── Hero ── */}
       {loading ? (
         <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 0 }} />
       ) : session && sessionDate ? (
@@ -195,10 +325,9 @@ export default function SessionPage() {
           <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
 
           <Box sx={{ maxWidth: "md", mx: "auto", position: "relative" }}>
-            {/* Torna indietro */}
             <Box sx={{ mb: 2 }}>
               <Button
-                href="/"
+                href="/allenamenti"
                 startIcon={<ArrowBackIcon sx={{ fontSize: "0.95rem !important" }} />}
                 size="small"
                 sx={{
@@ -214,7 +343,6 @@ export default function SessionPage() {
               </Button>
             </Box>
 
-            {/* Titolo */}
             <Typography
               variant="h4"
               component="h1"
@@ -228,7 +356,6 @@ export default function SessionPage() {
               {session.title}
             </Typography>
 
-            {/* Badge stato */}
             {status && (
               <Chip
                 label={status.label}
@@ -238,13 +365,21 @@ export default function SessionPage() {
                   color: "#fff",
                   fontWeight: 700,
                   fontSize: "0.72rem",
-                  mb: 2,
+                  mb: countdown ? 0.75 : 2,
                   letterSpacing: 0.5,
                 }}
               />
             )}
 
-            {/* Data e orario */}
+            {countdown && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 2 }}>
+                <AccessTimeIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.55)" }} />
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+                  {countdown}
+                </Typography>
+              </Box>
+            )}
+
             <Box
               sx={{
                 display: "flex",
@@ -269,7 +404,6 @@ export default function SessionPage() {
               </Box>
             </Box>
 
-            {/* Condivisione */}
             <ShareSection
               sessionTitle={session.title}
               sessionUrl={sessionUrl}
@@ -290,7 +424,7 @@ export default function SessionPage() {
         ) : session ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
 
-            {/* Banner "la tua squadra" — visibile solo se iscritto e squadre generate */}
+            {/* Banner "la tua squadra" */}
             {myTeam && (
               <Paper
                 elevation={0}
@@ -316,53 +450,52 @@ export default function SessionPage() {
               </Paper>
             )}
 
-            {teamFirstLayout ? (
-              // ── Layout iscritto + squadre generate ──────────────────────────
-              // banner "la tua squadra" già mostrato sopra; qui squadre → iscritti
+            {/* ── Stato: terminato ── */}
+            {isEnded ? (
+              <>
+                <SummaryCard registrations={registrations} teams={teams} />
+                <RosterByRole {...rosterProps} />
+                <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Typography variant="h6" fontWeight={700} gutterBottom>Squadre</Typography>
+                  <TeamDisplay {...teamDisplayProps} />
+                </Paper>
+              </>
+            ) : teamFirstLayout ? (
+              /* ── Stato: iscritto + squadre generate ── */
               <>
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Typography variant="h6" fontWeight={700} gutterBottom>
-                    Squadre
-                  </Typography>
-                  <TeamDisplay
-                    sessionId={sessionId}
-                    isStaff={isStaff}
-                    registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
-                    slugMap={slugMap}
-                    teams={teams}
-                    teamsLoading={teamsLoading}
-                    onTeamsGenerated={(newTeams) => mutateTeams(newTeams, false)}
-                  />
+                  <Typography variant="h6" fontWeight={700} gutterBottom>Squadre</Typography>
+                  <TeamDisplay {...teamDisplayProps} />
                 </Paper>
-
-                <RosterByRole
-                  registrations={registrations}
-                  currentUserId={currentUser?.id ?? null}
-                  parentChildIds={parentChildren.map((c) => c.id)}
-                  isStaff={isStaff}
-                  onUnregistered={() => refreshSecondary()}
-                />
+                <RosterByRole {...rosterProps} />
               </>
             ) : (
-              // ── Layout default ───────────────────────────────────────────────
-              <>
-                <Paper
-                  elevation={2}
-                  sx={{ p: { xs: 2, sm: 3 }, maxWidth: { sm: 520 }, mx: "auto", width: "100%" }}
-                >
-                  {isEnded ? (
-                    <Box sx={{ textAlign: "center", py: 2 }}>
-                      <Typography variant="body1" fontWeight={600} color="text.secondary">
-                        Allenamento terminato
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        Le iscrizioni sono chiuse.
-                      </Typography>
-                    </Box>
-                  ) : (
+              /* ── Stato: default — layout a due colonne su desktop ── */
+              <Grid container spacing={3} alignItems="flex-start">
+                {/* Sinistra (desktop): roster + squadre */}
+                <Grid size={{ xs: 12, md: 7 }} sx={{ order: { xs: 2, md: 1 } }}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    <RosterByRole {...rosterProps} />
+                    <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                      <Typography variant="h6" fontWeight={700} gutterBottom>Squadre</Typography>
+                      <TeamDisplay {...teamDisplayProps} />
+                    </Paper>
+                  </Box>
+                </Grid>
+
+                {/* Destra (desktop): form iscrizione sticky */}
+                <Grid size={{ xs: 12, md: 5 }} sx={{ order: { xs: 1, md: 2 } }}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: { xs: 2, sm: 3 },
+                      position: { md: "sticky" },
+                      top: { md: 24 },
+                    }}
+                  >
                     <RegistrationForm
                       sessionId={sessionId}
-                      onRegistered={() => refreshSecondary()}
+                      onRegistered={refreshSecondary}
                       registeredNames={registrations.map((r) => r.name)}
                       registeredUserIds={registrations.map((r) => r.userId)}
                       registeredChildIds={registrations.map((r) => r.childId)}
@@ -375,34 +508,9 @@ export default function SessionPage() {
                         restrictTeamName: session.restrictTeam?.name ?? null,
                       } : undefined}
                     />
-                  )}
-                </Paper>
-
-                <RosterByRole
-                  registrations={registrations}
-                  currentUserId={currentUser?.id ?? null}
-                  linkedChildId={currentUser?.linkedChildId ?? null}
-                  parentChildIds={parentChildren.map((c) => c.id)}
-                  childUserIds={parentChildren.map((c) => c.userId).filter((id): id is string => !!id)}
-                  isStaff={isStaff}
-                  onUnregistered={() => refreshSecondary()}
-                />
-
-                <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Typography variant="h6" fontWeight={700} gutterBottom>
-                    Squadre
-                  </Typography>
-                  <TeamDisplay
-                    sessionId={sessionId}
-                    isStaff={isStaff}
-                    registrationIds={registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id)}
-                    slugMap={slugMap}
-                    teams={teams}
-                    teamsLoading={teamsLoading}
-                    onTeamsGenerated={(newTeams) => mutateTeams(newTeams, false)}
-                  />
-                </Paper>
-              </>
+                  </Paper>
+                </Grid>
+              </Grid>
             )}
 
           </Box>

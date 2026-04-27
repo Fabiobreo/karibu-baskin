@@ -1,5 +1,3 @@
-import { ROLES } from "./constants";
-
 export interface Athlete {
   id: string;
   name: string;
@@ -42,22 +40,46 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
   return a;
 }
 
+// Distribuisce round-robin partendo dal bucket più scarso (minimize imbalance)
+function distributeRoundRobin(athletes: Athlete[], buckets: Athlete[][]): void {
+  const k = buckets.length;
+  const start = buckets.reduce(
+    (minI, b, i) => (b.length < buckets[minI].length ? i : minI),
+    0,
+  );
+  athletes.forEach((a, i) => buckets[(i + start) % k].push(a));
+}
+
 export function generateTeams(
   athletes: Athlete[],
   sessionId: string,
-  numTeams: 2 | 3 = 2
+  numTeams: 2 | 3 = 2,
 ): Teams {
   const buckets: Athlete[][] = Array.from({ length: numTeams }, () => []);
 
-  // Per ogni ruolo, mescola in modo deterministico e distribuisce round-robin
-  ROLES.forEach((role) => {
-    const group = athletes.filter((a) => a.role === role);
-    const seed = stringToSeed(`${sessionId}-${role}`);
-    const shuffled = seededShuffle(group, seed);
-    shuffled.forEach((athlete, i) => {
-      buckets[i % numTeams].push(athlete);
-    });
-  });
+  // Dividi in gruppo basso (R1+R2) e alto (R3+R4+R5)
+  const low = athletes.filter((a) => a.role <= 2);
+  const high = athletes.filter((a) => a.role >= 3);
+
+  // Mescola ciascun gruppo in modo deterministico
+  const shuffledLow = seededShuffle(low, stringToSeed(`${sessionId}-low`));
+  const shuffledHigh = seededShuffle(high, stringToSeed(`${sessionId}-high`));
+
+  // Distribuisci round-robin bilanciato: prima il gruppo basso, poi l'alto
+  // (il secondo parte dal bucket con meno giocatori per ridurre lo sbilanciamento)
+  distributeRoundRobin(shuffledLow, buckets);
+  distributeRoundRobin(shuffledHigh, buckets);
+
+  // Check finale sul totale: se la differenza è > 1 sposta un giocatore
+  // (può accadere quando entrambi i gruppi hanno resto nella divisione)
+  const maxLen = () => Math.max(...buckets.map((b) => b.length));
+  const minLen = () => Math.min(...buckets.map((b) => b.length));
+
+  if (maxLen() - minLen() > 1) {
+    const from = buckets.reduce((a, _, i) => (buckets[i].length > buckets[a].length ? i : a), 0);
+    const to = buckets.reduce((a, _, i) => (buckets[i].length < buckets[a].length ? i : a), 0);
+    buckets[to].push(buckets[from].pop()!);
+  }
 
   return {
     teamA: buckets[0],

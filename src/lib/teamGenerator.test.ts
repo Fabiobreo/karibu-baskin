@@ -52,15 +52,19 @@ describe("generateTeams — 2 squadre", () => {
     expect(ids1).not.toEqual(ids2);
   });
 
-  it("atleti dello stesso ruolo sono distribuiti tra le squadre (bilanciamento)", () => {
-    // Con 2 atleti per ruolo e 2 squadre, ogni squadra deve avere 1 per ruolo
+  it("band bassa (R1-R2) e alta (R3-R5) sono distribuite in modo bilanciato", () => {
+    // L'algoritmo distribuisce per fasce (low/high), non per singolo ruolo
     const result = generateTeams(athletes, "session-abc", 2);
-    for (const role of [1, 2, 3, 4, 5]) {
-      const inA = result.teamA.filter((a) => a.role === role).length;
-      const inB = result.teamB.filter((a) => a.role === role).length;
-      expect(inA + inB).toBe(2);
-      expect(Math.abs(inA - inB)).toBeLessThanOrEqual(1);
-    }
+    const lowA = result.teamA.filter((a) => a.role <= 2).length;
+    const lowB = result.teamB.filter((a) => a.role <= 2).length;
+    const highA = result.teamA.filter((a) => a.role >= 3).length;
+    const highB = result.teamB.filter((a) => a.role >= 3).length;
+    expect(lowA + lowB).toBe(4);   // 2 atleti per ruolo × 2 ruoli bassi
+    expect(highA + highB).toBe(6); // 2 atleti per ruolo × 3 ruoli alti
+    expect(Math.abs(lowA - lowB)).toBeLessThanOrEqual(1);
+    expect(Math.abs(highA - highB)).toBeLessThanOrEqual(1);
+    // Totale: max 1 di differenza tra le squadre
+    expect(Math.abs(result.teamA.length - result.teamB.length)).toBeLessThanOrEqual(1);
   });
 });
 

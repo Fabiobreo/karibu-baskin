@@ -47,7 +47,7 @@ describe("mergePrefs()", () => {
   it("chiavi extra nel payload vengono ignorate silenziosamente", () => {
     const stored = { push: { NEW_TRAINING: false }, extraKey: "ignored" };
     const result = mergePrefs(stored);
-    expect((result as Record<string, unknown>).extraKey).toBeUndefined();
+    expect((result as unknown as Record<string, unknown>).extraKey).toBeUndefined();
   });
 
   it("non muta DEFAULT_PREFS", () => {

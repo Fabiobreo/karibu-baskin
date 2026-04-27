@@ -45,10 +45,12 @@ export default function SessionCard({
   session: s,
   muted = false,
   live = false,
+  isRegistered = false,
 }: {
   session: SessionWithCount;
   muted?: boolean;
   live?: boolean;
+  isRegistered?: boolean;
 }) {
   const [teamsOpen, setTeamsOpen] = useState(false);
 
@@ -161,8 +163,17 @@ export default function SessionCard({
             </Typography>
           </Box>
 
-          {hasTeams && (
-            <Box sx={{ mt: "auto", pt: 1.5 }}>
+          <Box sx={{ mt: "auto", pt: 1.5, display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+            {isRegistered && (
+              <Chip
+                icon={<CheckCircleIcon />}
+                label="Sei iscritto"
+                size="small"
+                color="success"
+                sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+              />
+            )}
+            {hasTeams && (
               <Chip
                 icon={<CheckCircleIcon />}
                 label="Squadre pronte!"
@@ -171,8 +182,8 @@ export default function SessionCard({
                 variant="outlined"
                 sx={{ fontWeight: 600, fontSize: "0.72rem" }}
               />
-            </Box>
-          )}
+            )}
+          </Box>
         </Box>
 
         {/* Bottone vedi squadre — z-index sopra il link, intercetta il click */}

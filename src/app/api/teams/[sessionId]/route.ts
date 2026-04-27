@@ -46,7 +46,8 @@ export async function POST(
     return NextResponse.json({ error: "Nessun atleta iscritto" }, { status: 400 });
   }
 
-  const teams = generateTeams(registrations, sessionId, numTeams);
+  const athletes = registrations.filter((r) => !r.registeredAsCoach);
+  const teams = generateTeams(athletes, sessionId, numTeams);
 
   await prisma.trainingSession.update({
     where: { id: sessionId },

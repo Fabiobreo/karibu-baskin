@@ -1,3 +1,4 @@
+import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { Container } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
@@ -8,15 +9,26 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Allenamenti | Karibu Baskin" };
 export const revalidate = 0;
 
+function getSeasonStart(): Date {
+  const now = new Date();
+  const year = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+  return new Date(year, 7, 1);
+}
+
 export default async function AllenamentiPage() {
   const now = new Date();
+  const userSession = await auth();
+  const userId = userSession?.user?.id ?? null;
 
   const rawSessions = await prisma.trainingSession.findMany({
     orderBy: { date: "asc" },
     include: { _count: { select: { registrations: true } } },
   });
 
-  const sessions = rawSessions.map((s) => ({ ...s, teams: s.teams as unknown as TeamsData | null }));
+  const sessions = rawSessions.map((s) => ({
+    ...s,
+    teams: s.teams as unknown as TeamsData | null,
+  }));
 
   const inCorso = sessions.filter((s) => {
     const start = new Date(s.date);
@@ -26,10 +38,7 @@ export default async function AllenamentiPage() {
     return now >= start && now <= end;
   });
 
-  const upcoming = sessions.filter((s) => {
-    const start = new Date(s.date);
-    return start > now;
-  });
+  const upcoming = sessions.filter((s) => new Date(s.date) > now);
 
   const past = sessions
     .filter((s) => {
@@ -40,11 +49,47 @@ export default async function AllenamentiPage() {
     })
     .reverse();
 
+  let registeredSessionIds: string[] = [];
+  let seasonAttended = 0;
+  let seasonTotal = 0;
+
+  if (userId) {
+    const seasonStart = getSeasonStart();
+    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+
+    seasonTotal = sessions.filter((s) => {
+      const d = new Date(s.date);
+      return d >= seasonStart && d < now;
+    }).length;
+
+    const [upcomingRegs, pastRegs] = await Promise.all([
+      prisma.registration.findMany({
+        where: { userId, session: { date: { gte: threeHoursAgo } } },
+        select: { sessionId: true },
+      }),
+      prisma.registration.findMany({
+        where: { userId, session: { date: { gte: seasonStart, lt: now } } },
+        select: { sessionId: true },
+      }),
+    ]);
+
+    registeredSessionIds = upcomingRegs.map((r) => r.sessionId);
+    seasonAttended = pastRegs.length;
+  }
+
   return (
     <>
       <SiteHeader />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <AllenamentiClient inCorso={inCorso} upcoming={upcoming} past={past} />
+        <AllenamentiClient
+          inCorso={inCorso}
+          upcoming={upcoming}
+          past={past}
+          registeredSessionIds={registeredSessionIds}
+          seasonAttended={seasonAttended}
+          seasonTotal={seasonTotal}
+          isLoggedIn={!!userId}
+        />
       </Container>
     </>
   );
