@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { CallupsSchema } from "@/lib/schemas/match";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -25,9 +26,12 @@ export async function PUT(req: Request, { params }: Params) {
   }
 
   const { matchId } = await params;
-  const body = await req.json().catch(() => ({})) as { userIds?: string[]; childIds?: string[] };
-  const userIds = body.userIds ?? [];
-  const childIds = body.childIds ?? [];
+  const raw = await req.json().catch(() => null);
+  const parsed = CallupsSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Payload non valido" }, { status: 400 });
+  }
+  const { userIds, childIds } = parsed.data;
 
   // Verifica che la partita esista
   const match = await prisma.match.findUnique({ where: { id: matchId }, select: { id: true } });

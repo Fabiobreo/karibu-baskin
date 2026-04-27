@@ -44,3 +44,8 @@ export const PlayerStatsEntrySchema = z.object({
 );
 
 export const PlayerStatsBatchSchema = z.array(PlayerStatsEntrySchema).max(50);
+
+export const CallupsSchema = z.object({
+  userIds: z.array(z.string().min(1)).max(100).default([]),
+  childIds: z.array(z.string().min(1)).max(100).default([]),
+});
