@@ -10,6 +10,8 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { computeStandings } from "@/lib/standings";
+import type { StandingEntry } from "@/lib/standings";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -40,53 +42,7 @@ type GroupMatchRow = {
   awayTeam: { id: string; name: string };
 };
 
-type StandingEntry = {
-  id: string; name: string; isOurs: boolean;
-  played: number; won: number; drawn: number; lost: number;
-  goalsFor: number; goalsAgainst: number; points: number;
-};
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function computeStandings(
-  ourTeam: { id: string; name: string },
-  ourMatches: OurMatch[],
-  groupMatches: GroupMatchRow[],
-): StandingEntry[] {
-  const map = new Map<string, StandingEntry>();
-
-  function getOrCreate(id: string, name: string, isOurs: boolean): StandingEntry {
-    if (!map.has(id)) map.set(id, { id, name, isOurs, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0 });
-    return map.get(id)!;
-  }
-
-  function addResult(e: StandingEntry, gf: number, ga: number) {
-    e.played++;
-    e.goalsFor += gf;
-    e.goalsAgainst += ga;
-    if (gf > ga) { e.won++;  e.points += 2; }
-    else if (gf === ga) { e.drawn++; e.points += 1; }
-    else { e.lost++; }
-  }
-
-  for (const m of ourMatches) {
-    if (m.ourScore == null || m.theirScore == null) continue;
-    addResult(getOrCreate(ourTeam.id, ourTeam.name, true),    m.ourScore,   m.theirScore);
-    addResult(getOrCreate(m.opponent.id, m.opponent.name, false), m.theirScore, m.ourScore);
-  }
-
-  for (const gm of groupMatches) {
-    if (gm.homeScore == null || gm.awayScore == null) continue;
-    addResult(getOrCreate(gm.homeTeam.id, gm.homeTeam.name, false), gm.homeScore, gm.awayScore);
-    addResult(getOrCreate(gm.awayTeam.id, gm.awayTeam.name, false), gm.awayScore, gm.homeScore);
-  }
-
-  return Array.from(map.values()).sort((a, b) =>
-    b.points - a.points ||
-    (b.goalsFor - b.goalsAgainst) - (a.goalsFor - a.goalsAgainst) ||
-    b.goalsFor - a.goalsFor
-  );
-}
 
 // Un "evento" di calendario per la vista per giornata
 type MatchEvent =

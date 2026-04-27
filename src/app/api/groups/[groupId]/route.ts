@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { computeStandings } from "@/lib/standings";
 
 type Params = { params: Promise<{ groupId: string }> };
 
@@ -29,52 +30,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (!group) return NextResponse.json({ error: "Girone non trovato" }, { status: 404 });
 
-  // ── Calcola classifica ───────────────────────────────────────────────────────
-  type StandingEntry = {
-    id: string; name: string; isOurs: boolean;
-    played: number; won: number; drawn: number; lost: number;
-    goalsFor: number; goalsAgainst: number; points: number;
-  };
-  const map = new Map<string, StandingEntry>();
-
-  function getOrCreate(id: string, name: string, isOurs: boolean): StandingEntry {
-    if (!map.has(id)) map.set(id, { id, name, isOurs, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0 });
-    return map.get(id)!;
-  }
-
-  function addResult(entry: StandingEntry, gf: number, ga: number) {
-    entry.played++;
-    entry.goalsFor  += gf;
-    entry.goalsAgainst += ga;
-    if (gf > ga) { entry.won++;  entry.points += 2; }
-    else if (gf === ga) { entry.drawn++; entry.points += 1; }
-    else { entry.lost++; }
-  }
-
-  // Partite nostre
-  for (const m of group.matches) {
-    if (m.ourScore == null || m.theirScore == null) continue;
-    const ours   = getOrCreate(group.team.id,  group.team.name,  true);
-    const theirs = getOrCreate(m.opponent.id,  m.opponent.name,  false);
-    // [CLAUDE - 03:00] ourScore/theirScore sono già relativi a noi (non home/away) — nessun swap necessario
-    addResult(ours,   m.ourScore,   m.theirScore);
-    addResult(theirs, m.theirScore, m.ourScore);
-  }
-
-  // Partite esterne
-  for (const gm of group.groupMatches) {
-    if (gm.homeScore == null || gm.awayScore == null) continue;
-    const home = getOrCreate(gm.homeTeamId, gm.homeTeam.name, false);
-    const away = getOrCreate(gm.awayTeamId, gm.awayTeam.name, false);
-    addResult(home, gm.homeScore, gm.awayScore);
-    addResult(away, gm.awayScore, gm.homeScore);
-  }
-
-  const standings = Array.from(map.values()).sort((a, b) =>
-    b.points - a.points ||
-    (b.goalsFor - b.goalsAgainst) - (a.goalsFor - a.goalsAgainst) ||
-    b.goalsFor - a.goalsFor
-  );
+  // [CLAUDE - 09:00] logica classifica estratta in @/lib/standings per evitare duplicazione
+  const standings = computeStandings(group.team, group.matches, group.groupMatches);
 
   return NextResponse.json({ ...group, standings });
 }
