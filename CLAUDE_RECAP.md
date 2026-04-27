@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (ottava sessione)
+
+**File modificati:** `src/components/CalendarClient.tsx`, `src/components/AdminAllenamentiClient.tsx`, `src/components/AdminAnonymousRegistrations.tsx`, `src/components/AdminEventiClient.tsx`, `src/components/AdminPartiteClient.tsx`, `src/components/AdminSessionList.tsx`, `src/components/AdminUserList.tsx`
+
+**Cosa è stato fatto:** Miglioramenti accessibilità (a11y) su tutti i componenti admin. Aggiunti `aria-label` descrittivi a tutti i bottoni icona (`IconButton`) che ne erano privi — prev/next mese nel calendario, kebab menu allenamenti, edit/delete per eventi, partite (con convocati, statistiche, gironi), avversarie, iscrizioni anonime, utenti, figli. Aggiunti `aria-pressed` sui chip filtro in `AdminUserList` (ruolo utente, ruolo Baskin) per comunicare lo stato selezionato agli screen reader. TypeScript `tsc --noEmit` pulito.
+
+**Commit:** `d63debd` su `feature/claude-2026-04-28-08`
+
+---
+
 # CLAUDE_RECAP — run automatica (settima sessione)
 
 **File modificati:** `src/app/api/registrations/route.ts`, `src/lib/schemas/registration.ts`
