@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (nona sessione)
+
+**File aggiunti:** `src/lib/schemas/competitiveTeam.ts`
+**File modificati:** `src/app/api/competitive-teams/route.ts`, `src/app/api/competitive-teams/[teamId]/route.ts`
+
+**Cosa è stato fatto:** Trovato bug reale: `PUT /api/competitive-teams/[teamId]` usava `body.name !== undefined && { name: body.name.trim() }` senza verificare che la stringa non fosse vuota — era possibile salvare un nome squadra `""`. Aggiunto `CompetitiveTeamCreateSchema` e `CompetitiveTeamUpdateSchema` in `src/lib/schemas/competitiveTeam.ts` (Zod v4, pattern `safeParse` coerente col resto della codebase). Rimpiazza la type assertion `as {...}` in entrambe le route. `tsc --noEmit` pulito, 67 test verdi.
+
+**Commit:** `e5e4955` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (ottava sessione)
 
 **File modificati:** `src/components/CalendarClient.tsx`, `src/components/AdminAllenamentiClient.tsx`, `src/components/AdminAnonymousRegistrations.tsx`, `src/components/AdminEventiClient.tsx`, `src/components/AdminPartiteClient.tsx`, `src/components/AdminSessionList.tsx`, `src/components/AdminUserList.tsx`

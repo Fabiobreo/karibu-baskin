@@ -19,20 +19,15 @@ Stack suggerito: **Vitest** (compatibile con Next.js App Router, veloce) + **@te
 
 ---
 
-### 2. Validazione input nelle API route
-**File:** `src/app/api/events/route.ts`, `src/app/api/opposing-teams/route.ts`, `src/app/api/sessions/route.ts`
+### 2. Validazione input nelle API route *(parzialmente completato)*
+**Route validate con Zod:** events, opposing-teams, sessions, registrations, competitive-teams ✅
 
-Molte route fanno `as { campo: tipo }` sul body JSON senza validazione. Esempio:
-
-```ts
-// Attuale — nessuna validazione
-const { name, date } = await req.json() as { name: string; date: string }
-
-// Corretto — Zod già usato in alcune route (matches), estenderlo a tutte
-const body = CreateEventSchema.parse(await req.json())
-```
-
-Usare Zod coerentemente (già dipendenza nel progetto grazie a `matches`). Le route `PUT` e `PATCH` sono le più esposte.
+Route che usano ancora type assertion (`as { ... }`) senza Zod:
+- `src/app/api/groups/route.ts` (POST)
+- `src/app/api/groups/[groupId]/route.ts` (PUT)
+- `src/app/api/groups/[groupId]/matches/route.ts` (POST)
+- `src/app/api/children/[childId]/route.ts` (PATCH)
+- `src/app/api/users/me/children/route.ts` (POST)
 
 ---
 
