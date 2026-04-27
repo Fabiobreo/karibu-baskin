@@ -97,13 +97,10 @@ L'opzione è intenzionale (per collegare utenti pre-creati dall'admin), ma non �
 
 ## 🟢 Bassa priorità / Miglioramenti futuri
 
-### 11. ESLint + Prettier — configurazione mancante
-**File:** root del progetto
+### 11. ESLint + Prettier ✅ COMPLETATO (parziale)
+**File:** `eslint.config.mjs`, `package.json`
 
-Non c'è `.eslintrc` né `.prettierrc`. Next.js include ESLint di default ma senza regole custom. Aggiungere almeno:
-- `eslint-plugin-jsx-a11y` per intercettare problemi di accessibilità in CI
-- `eslint-plugin-unicorn` per convenzioni coerenti
-- `prettier` con configurazione condivisa
+Installato `eslint` + `eslint-config-next@16.2.3` (include `jsx-a11y`). Creato `eslint.config.mjs`. Script `lint` in package.json. 0 errori, 23 warning. Prettier non ancora configurato.
 
 ---
 

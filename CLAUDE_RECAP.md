@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (undicesima sessione)
+
+**File aggiunti:** `eslint.config.mjs`
+**File modificati:** `package.json`, `package-lock.json`, `src/components/AdminSquadreClient.tsx`, `src/components/RegistrationForm.tsx`, `src/app/admin/(dashboard)/squadre/page.tsx`, `src/app/allenamento/[session]/page.tsx`, `src/app/global-error.tsx`
+
+**Cosa è stato fatto:** Installato ESLint (`eslint` + `eslint-config-next@16.2.3`, che include `eslint-plugin-jsx-a11y`). Creato `eslint.config.mjs` in flat config format (ESLint 9). Aggiunto script `lint` in `package.json`. Fix di bug reali scoperti da ESLint: `react/no-children-prop` — rinominata la prop `children` in `AdminSquadreClient` (→ `childPlayers`) e in `RegistrationForm` (→ `parentChildren`), aggiornati i rispettivi caller; in `global-error.tsx` aggiunti `eslint-disable` per `no-img-element` e `no-html-link-for-pages` (il componente non può usare `next/image`/`next/link` perché sostituisce il root layout). Regole `react-hooks/set-state-in-effect` e `immutability` degradate a warning (pattern usati correttamente). Risultato: `npm run lint` → 0 errori, 23 warning; `tsc --noEmit` pulito; 67 test verdi.
+
+**Commit:** `6ea5bb9` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (decima sessione)
 
 **File aggiunti:** `src/lib/schemas/group.ts`, `src/lib/schemas/child.ts`
