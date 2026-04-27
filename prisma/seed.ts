@@ -177,37 +177,87 @@ type MatchDef = {
   oppName: string;
   date: Date;
   isHome: boolean;
+  matchday?: number;
   our?: number;
   their?: number;
   result?: MatchResult;
 };
 
+type GroupMatchDef = {
+  homeName: string;
+  awayName: string;
+  date: Date;
+  matchday?: number;
+  homeScore?: number;
+  awayScore?: number;
+};
+
 const KAPULETI_MATCHES: MatchDef[] = [
-  { oppName: "Falchi Vicenza", date: past(91),   isHome: true,  our: 72, their: 58, result: "WIN"  },
-  { oppName: "Aquile Padova",  date: past(77),   isHome: false, our: 45, their: 61, result: "LOSS" },
-  { oppName: "Leoni Verona",   date: past(63),   isHome: true,  our: 83, their: 67, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: past(56),   isHome: false, our: 60, their: 55, result: "WIN"  },
-  { oppName: "Orsi Bassano",   date: past(49),   isHome: true,  our: 78, their: 74, result: "WIN"  },
-  { oppName: "Delfini Rovigo", date: past(42),   isHome: false, our: 55, their: 66, result: "LOSS" },
-  { oppName: "Leoni Verona",   date: past(35),   isHome: false, our: 71, their: 68, result: "WIN"  },
-  { oppName: "Falchi Vicenza", date: past(21),   isHome: false, our: 63, their: 59, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: past(7),    isHome: true,  our: 80, their: 72, result: "WIN"  },
-  { oppName: "Orsi Bassano",   date: future(7),  isHome: false },
-  { oppName: "Aquile Padova",  date: future(21), isHome: true  },
-  { oppName: "Delfini Rovigo", date: future(35), isHome: true  },
+  { oppName: "Falchi Vicenza", date: past(91),   isHome: true,  matchday: 1, our: 72, their: 58, result: "WIN"  },
+  { oppName: "Aquile Padova",  date: past(77),   isHome: false, matchday: 2, our: 45, their: 61, result: "LOSS" },
+  { oppName: "Leoni Verona",   date: past(63),   isHome: true,  matchday: 3, our: 83, their: 67, result: "WIN"  },
+  { oppName: "Tigri Treviso",  date: past(56),   isHome: false, matchday: 3, our: 60, their: 55, result: "WIN"  },
+  { oppName: "Orsi Bassano",   date: past(49),   isHome: true,  matchday: 4, our: 78, their: 74, result: "WIN"  },
+  { oppName: "Delfini Rovigo", date: past(42),   isHome: false, matchday: 4, our: 55, their: 66, result: "LOSS" },
+  { oppName: "Leoni Verona",   date: past(35),   isHome: false, matchday: 5, our: 71, their: 68, result: "WIN"  },
+  { oppName: "Falchi Vicenza", date: past(21),   isHome: false, matchday: 6, our: 63, their: 59, result: "WIN"  },
+  { oppName: "Tigri Treviso",  date: past(7),    isHome: true,  matchday: 6, our: 80, their: 72, result: "WIN"  },
+  { oppName: "Orsi Bassano",   date: future(7),  isHome: false, matchday: 6 },
+  { oppName: "Aquile Padova",  date: future(21), isHome: true,  matchday: 7 },
+  { oppName: "Delfini Rovigo", date: future(35), isHome: true,  matchday: 7 },
 ];
 
 const MONTEKKI_MATCHES: MatchDef[] = [
-  { oppName: "Lupi Belluno",   date: past(88),   isHome: true,  our: 52, their: 48, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: past(74),   isHome: false, our: 38, their: 55, result: "LOSS" },
-  { oppName: "Falchi Vicenza", date: past(60),   isHome: true,  our: 61, their: 61, result: "DRAW" },
-  { oppName: "Aquile Padova",  date: past(46),   isHome: false, our: 44, their: 50, result: "LOSS" },
-  { oppName: "Leoni Verona",   date: past(32),   isHome: true,  our: 58, their: 47, result: "WIN"  },
-  { oppName: "Lupi Belluno",   date: past(18),   isHome: false, our: 49, their: 53, result: "LOSS" },
-  { oppName: "Orsi Bassano",   date: past(4),    isHome: true,  our: 67, their: 52, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: future(4),  isHome: false },
-  { oppName: "Falchi Vicenza", date: future(18), isHome: true  },
-  { oppName: "Aquile Padova",  date: future(32), isHome: false },
+  { oppName: "Lupi Belluno",   date: past(88),   isHome: true,  matchday: 1, our: 52, their: 48, result: "WIN"  },
+  { oppName: "Tigri Treviso",  date: past(74),   isHome: false, matchday: 2, our: 38, their: 55, result: "LOSS" },
+  { oppName: "Falchi Vicenza", date: past(60),   isHome: true,  matchday: 3, our: 61, their: 61, result: "DRAW" },
+  { oppName: "Aquile Padova",  date: past(46),   isHome: false, matchday: 4, our: 44, their: 50, result: "LOSS" },
+  { oppName: "Leoni Verona",   date: past(32),   isHome: true,  matchday: 4, our: 58, their: 47, result: "WIN"  },
+  { oppName: "Lupi Belluno",   date: past(18),   isHome: false, matchday: 5, our: 49, their: 53, result: "LOSS" },
+  { oppName: "Orsi Bassano",   date: past(4),    isHome: true,  matchday: 5, our: 67, their: 52, result: "WIN"  },
+  { oppName: "Tigri Treviso",  date: future(4),  isHome: false, matchday: 5 },
+  { oppName: "Falchi Vicenza", date: future(18), isHome: true,  matchday: 6 },
+  { oppName: "Aquile Padova",  date: future(32), isHome: false, matchday: 6 },
+];
+
+// Partite tra le altre squadre del Girone A Ovest — Gold (senza Kapuleti)
+const KAPULETI_GROUP_MATCHES: GroupMatchDef[] = [
+  { homeName: "Falchi Vicenza",  awayName: "Aquile Padova",  date: past(92), matchday: 1, homeScore: 68, awayScore: 54 },
+  { homeName: "Leoni Verona",    awayName: "Tigri Treviso",  date: past(91), matchday: 1, homeScore: 72, awayScore: 65 },
+  { homeName: "Delfini Rovigo",  awayName: "Orsi Bassano",   date: past(90), matchday: 1, homeScore: 48, awayScore: 62 },
+  { homeName: "Aquile Padova",   awayName: "Leoni Verona",   date: past(78), matchday: 2, homeScore: 55, awayScore: 70 },
+  { homeName: "Tigri Treviso",   awayName: "Falchi Vicenza", date: past(77), matchday: 2, homeScore: 61, awayScore: 74 },
+  { homeName: "Orsi Bassano",    awayName: "Delfini Rovigo", date: past(76), matchday: 2, homeScore: 59, awayScore: 53 },
+  { homeName: "Falchi Vicenza",  awayName: "Leoni Verona",   date: past(64), matchday: 3, homeScore: 77, awayScore: 68 },
+  { homeName: "Aquile Padova",   awayName: "Delfini Rovigo", date: past(63), matchday: 3, homeScore: 66, awayScore: 58 },
+  { homeName: "Tigri Treviso",   awayName: "Orsi Bassano",   date: past(62), matchday: 3, homeScore: 63, awayScore: 57 },
+  { homeName: "Leoni Verona",    awayName: "Orsi Bassano",   date: past(50), matchday: 4, homeScore: 80, awayScore: 55 },
+  { homeName: "Delfini Rovigo",  awayName: "Tigri Treviso",  date: past(49), matchday: 4, homeScore: 50, awayScore: 68 },
+  { homeName: "Orsi Bassano",    awayName: "Aquile Padova",  date: past(36), matchday: 5, homeScore: 44, awayScore: 71 },
+  { homeName: "Leoni Verona",    awayName: "Delfini Rovigo", date: past(35), matchday: 5, homeScore: 75, awayScore: 60 },
+  { homeName: "Aquile Padova",   awayName: "Falchi Vicenza", date: future(9),  matchday: 6 },
+  { homeName: "Orsi Bassano",    awayName: "Leoni Verona",   date: future(10), matchday: 6 },
+  { homeName: "Falchi Vicenza",  awayName: "Delfini Rovigo", date: future(22), matchday: 7 },
+  { homeName: "Tigri Treviso",   awayName: "Aquile Padova",  date: future(22), matchday: 7 },
+];
+
+// Partite tra le altre squadre del Girone B Ovest — Silver (senza Montekki)
+const MONTEKKI_GROUP_MATCHES: GroupMatchDef[] = [
+  { homeName: "Lupi Belluno",    awayName: "Falchi Vicenza", date: past(89), matchday: 1, homeScore: 44, awayScore: 61 },
+  { homeName: "Aquile Padova",   awayName: "Tigri Treviso",  date: past(89), matchday: 1, homeScore: 58, awayScore: 67 },
+  { homeName: "Leoni Verona",    awayName: "Orsi Bassano",   date: past(88), matchday: 1, homeScore: 70, awayScore: 53 },
+  { homeName: "Falchi Vicenza",  awayName: "Aquile Padova",  date: past(75), matchday: 2, homeScore: 72, awayScore: 60 },
+  { homeName: "Tigri Treviso",   awayName: "Leoni Verona",   date: past(74), matchday: 2, homeScore: 65, awayScore: 72 },
+  { homeName: "Orsi Bassano",    awayName: "Lupi Belluno",   date: past(73), matchday: 2, homeScore: 49, awayScore: 55 },
+  { homeName: "Lupi Belluno",    awayName: "Leoni Verona",   date: past(61), matchday: 3, homeScore: 52, awayScore: 66 },
+  { homeName: "Aquile Padova",   awayName: "Orsi Bassano",   date: past(60), matchday: 3, homeScore: 63, awayScore: 50 },
+  { homeName: "Falchi Vicenza",  awayName: "Tigri Treviso",  date: past(59), matchday: 3, homeScore: 78, awayScore: 55 },
+  { homeName: "Leoni Verona",    awayName: "Aquile Padova",  date: past(33), matchday: 4, homeScore: 61, awayScore: 68 },
+  { homeName: "Orsi Bassano",    awayName: "Falchi Vicenza", date: past(32), matchday: 4, homeScore: 47, awayScore: 73 },
+  { homeName: "Tigri Treviso",   awayName: "Lupi Belluno",   date: past(31), matchday: 4, homeScore: 74, awayScore: 50 },
+  { homeName: "Falchi Vicenza",  awayName: "Leoni Verona",   date: future(6),  matchday: 5 },
+  { homeName: "Lupi Belluno",    awayName: "Aquile Padova",  date: future(6),  matchday: 5 },
+  { homeName: "Orsi Bassano",    awayName: "Tigri Treviso",  date: future(20), matchday: 6 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -506,6 +556,7 @@ async function seed() {
           opponentId: opponents[m.oppName],
           date:       m.date,
           isHome:     m.isHome,
+          matchday:   m.matchday ?? null,
           matchType:  "LEAGUE" as MatchType,
           ourScore:   m.our   ?? null,
           theirScore: m.their ?? null,
@@ -537,6 +588,34 @@ async function seed() {
 
   await createMatches(kapuleti.id, kapGroup.id, KAPULETI_MATCHES, kapUserIds, "Kapuleti");
   await createMatches(montekki.id, monGroup.id, MONTEKKI_MATCHES, monUserIds, "Montekki");
+
+  async function createGroupMatches(
+    groupId: string,
+    defs: GroupMatchDef[],
+    label: string,
+  ) {
+    console.log(`\n📋 Partite girone ${label}...`);
+    for (const gm of defs) {
+      await prisma.groupMatch.create({
+        data: {
+          groupId,
+          homeTeamId: opponents[gm.homeName],
+          awayTeamId: opponents[gm.awayName],
+          date:       gm.date,
+          matchday:   gm.matchday ?? null,
+          homeScore:  gm.homeScore ?? null,
+          awayScore:  gm.awayScore ?? null,
+        },
+      });
+      const score = gm.homeScore !== undefined
+        ? `${gm.homeScore}–${gm.awayScore}`
+        : "da giocare";
+      console.log(`  ✓ ${gm.homeName} vs ${gm.awayName} — ${score}`);
+    }
+  }
+
+  await createGroupMatches(kapGroup.id, KAPULETI_GROUP_MATCHES, "Gold Ovest");
+  await createGroupMatches(monGroup.id, MONTEKKI_GROUP_MATCHES, "Silver Ovest");
 
   // ── Allenamenti ──────────────────────────────────────────────────────────────
   console.log("\n📅 Allenamenti...");
@@ -597,8 +676,10 @@ async function seed() {
   }
 
   // ── Riepilogo ────────────────────────────────────────────────────────────────
-  const kapPlayed = KAPULETI_MATCHES.filter((m) => m.result).length;
-  const monPlayed = MONTEKKI_MATCHES.filter((m) => m.result).length;
+  const kapPlayed     = KAPULETI_MATCHES.filter((m) => m.result).length;
+  const monPlayed     = MONTEKKI_MATCHES.filter((m) => m.result).length;
+  const kapGmPlayed   = KAPULETI_GROUP_MATCHES.filter((m) => m.homeScore !== undefined).length;
+  const monGmPlayed   = MONTEKKI_GROUP_MATCHES.filter((m) => m.homeScore !== undefined).length;
 
   console.log(`
 ✅ Seed completato!
@@ -612,6 +693,8 @@ async function seed() {
    🆚 Avversarie:        ${OPPOSING_TEAMS.length}
    🏅 Partite Kapuleti:  ${KAPULETI_MATCHES.length} (${kapPlayed} giocate)
    🏅 Partite Montekki:  ${MONTEKKI_MATCHES.length} (${monPlayed} giocate)
+   📋 Partite girone Gold:   ${KAPULETI_GROUP_MATCHES.length} (${kapGmPlayed} giocate)
+   📋 Partite girone Silver: ${MONTEKKI_GROUP_MATCHES.length} (${monGmPlayed} giocate)
    📅 Allenamenti:       ${trainingDefs.length} futuri
 
    Per pulire: npx tsx prisma/seed.ts nuke
