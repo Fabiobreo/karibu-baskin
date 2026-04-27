@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { GroupCreateSchema } from "@/lib/schemas/group";
 
 export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");
@@ -25,23 +26,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const body = await req.json().catch(() => ({})) as {
-    name?: string;
-    season?: string;
-    championship?: string;
-    teamId?: string;
-  };
-
-  if (!body.name?.trim() || !body.season?.trim() || !body.teamId) {
-    return NextResponse.json({ error: "name, season e teamId sono obbligatori" }, { status: 400 });
+  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
+  const body = await req.json().catch(() => ({}));
+  const parsed = GroupCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
 
   const group = await prisma.group.create({
     data: {
-      name: body.name.trim(),
-      season: body.season.trim(),
-      championship: body.championship?.trim() || null,
-      teamId: body.teamId,
+      name: parsed.data.name.trim(),
+      season: parsed.data.season.trim(),
+      championship: parsed.data.championship?.trim() || null,
+      teamId: parsed.data.teamId,
     },
     include: {
       team: { select: { id: true, name: true, color: true } },

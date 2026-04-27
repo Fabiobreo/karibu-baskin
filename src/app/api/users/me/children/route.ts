@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
+import { ChildCreateSchema } from "@/lib/schemas/child";
 
 // GET /api/users/me/children — figli del genitore loggato
 export async function GET() {
@@ -42,27 +43,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
+  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
+  // Fix: gender accettava qualsiasi stringa; ora solo "MALE" | "FEMALE" | null
   const body = await req.json().catch(() => ({}));
-  const { name, sportRole, sportRoleVariant, gender, birthDate } = body as {
-    name?: string;
-    sportRole?: number | null;
-    sportRoleVariant?: string | null;
-    gender?: string | null;
-    birthDate?: string | null;
-  };
-
-  const trimmedName = name?.trim().slice(0, 60) ?? "";
-  if (!trimmedName) {
-    return NextResponse.json({ error: "Il nome è obbligatorio" }, { status: 400 });
+  const parsed = ChildCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
+
+  const { name, sportRole, sportRoleVariant, gender, birthDate } = parsed.data;
 
   const child = await prisma.child.create({
     data: {
       parentId: session.user.id,
-      name: trimmedName,
+      name: name.trim(),
       sportRole: sportRole ?? null,
       sportRoleVariant: sportRoleVariant ?? null,
-      gender: (gender as "MALE" | "FEMALE" | null) ?? null,
+      gender: gender ?? null,
       birthDate: birthDate ? new Date(birthDate) : null,
     },
   });

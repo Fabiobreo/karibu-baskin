@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { GroupMatchCreateSchema } from "@/lib/schemas/group";
 
 type Params = { params: Promise<{ groupId: string }> };
 
@@ -10,20 +11,16 @@ export async function POST(req: NextRequest, { params }: Params) {
   }
 
   const { groupId } = await params;
-  const body = await req.json().catch(() => ({})) as {
-    matchday?: number | null;
-    date?: string | null;
-    homeTeamId?: string;
-    awayTeamId?: string;
-    homeScore?: number | null;
-    awayScore?: number | null;
-  };
 
-  if (!body.homeTeamId || !body.awayTeamId) {
-    return NextResponse.json({ error: "homeTeamId e awayTeamId sono obbligatori" }, { status: 400 });
-  }
-  if (body.homeTeamId === body.awayTeamId) {
-    return NextResponse.json({ error: "Le squadre devono essere diverse" }, { status: 400 });
+  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
+  // Il refine() cattura homeTeamId === awayTeamId prima del DB hit
+  const body = await req.json().catch(() => ({}));
+  const parsed = GroupMatchCreateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
 
   const group = await prisma.group.findUnique({ where: { id: groupId } });
@@ -32,16 +29,16 @@ export async function POST(req: NextRequest, { params }: Params) {
   const match = await prisma.groupMatch.create({
     data: {
       groupId,
-      matchday:  body.matchday  ?? null,
-      date:      body.date ? new Date(body.date) : null,
-      homeTeamId: body.homeTeamId,
-      awayTeamId: body.awayTeamId,
-      homeScore: body.homeScore ?? null,
-      awayScore: body.awayScore ?? null,
+      matchday: parsed.data.matchday ?? null,
+      date: parsed.data.date ? new Date(parsed.data.date) : null,
+      homeTeamId: parsed.data.homeTeamId,
+      awayTeamId: parsed.data.awayTeamId,
+      homeScore: parsed.data.homeScore ?? null,
+      awayScore: parsed.data.awayScore ?? null,
     },
     include: {
       homeTeam: { select: { id: true, name: true, slug: true } },
-      awayTeam: { select: { id: true, name: true, slug: true } },
+      awayTeam:  { select: { id: true, name: true, slug: true } },
     },
   });
 

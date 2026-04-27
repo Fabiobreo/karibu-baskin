@@ -4,6 +4,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUser } from "@/lib/webpush";
+import { ChildPatchSchema } from "@/lib/schemas/child";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(
@@ -26,17 +27,17 @@ export async function PATCH(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
+  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
+  // Fix: gender accettava qualsiasi stringa; linkEmail ora validata come email
   const body = await req.json().catch(() => ({}));
-  const { name, sportRole, sportRoleVariant, gender, birthDate, linkEmail, linkUserId, unlinkAccount } = body as {
-    name?: string;
-    sportRole?: number | null;
-    sportRoleVariant?: string | null;
-    gender?: string | null;
-    birthDate?: string | null;
-    linkEmail?: string;    // cerca utente per email e invia richiesta
-    linkUserId?: string;   // invia richiesta direttamente per userId noto
-    unlinkAccount?: boolean;
-  };
+  const parsed = ChildPatchSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
+  }
+  const { name, sportRole, sportRoleVariant, gender, birthDate, linkEmail, linkUserId, unlinkAccount } = parsed.data;
 
   // ── Invia richiesta di collegamento (via email o userId) ──────────────────
   if (linkEmail !== undefined || linkUserId !== undefined) {

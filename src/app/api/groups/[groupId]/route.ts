@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { computeStandings } from "@/lib/standings";
+import { GroupUpdateSchema } from "@/lib/schemas/group";
 
 type Params = { params: Promise<{ groupId: string }> };
 
@@ -42,16 +43,24 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   const { groupId } = await params;
-  const body = await req.json().catch(() => ({})) as {
-    name?: string;
-    championship?: string | null;
-  };
+
+  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
+  const body = await req.json().catch(() => ({}));
+  const parsed = GroupUpdateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
+  }
 
   const group = await prisma.group.update({
     where: { id: groupId },
     data: {
-      ...(body.name ? { name: body.name.trim() } : {}),
-      ...("championship" in body ? { championship: body.championship?.trim() || null } : {}),
+      ...(parsed.data.name !== undefined ? { name: parsed.data.name.trim() } : {}),
+      ...("championship" in parsed.data
+        ? { championship: parsed.data.championship?.trim() || null }
+        : {}),
     },
     include: {
       team: { select: { id: true, name: true, color: true } },
