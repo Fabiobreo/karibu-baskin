@@ -5,6 +5,7 @@ import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas/registration";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("sessionId");
@@ -24,6 +25,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(ip, "registrations", 20, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche secondo." }, { status: 429 });
+  }
+
   const raw = await req.json().catch(() => null);
   const parsed = RegistrationPostSchema.safeParse(raw);
   if (!parsed.success) {

@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // POST — salva subscription
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(ip, "push-subscribe", 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche secondo." }, { status: 429 });
+  }
+
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
