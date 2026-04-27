@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (decima sessione)
+
+**File aggiunti:** `src/lib/schemas/group.ts`, `src/lib/schemas/child.ts`
+**File modificati:** `src/app/api/groups/route.ts`, `src/app/api/groups/[groupId]/route.ts`, `src/app/api/groups/[groupId]/matches/route.ts`, `src/app/api/children/[childId]/route.ts`, `src/app/api/users/me/children/route.ts`
+
+**Cosa è stato fatto:** Completata la validazione Zod sulle ultime 5 route che usavano ancora type assertion `as { ... }`. Fix reali: `gender` accettava qualsiasi stringa (ora solo `"MALE"|"FEMALE"|null`), `linkEmail` non veniva validata come email (ora validata da Zod prima di arrivare al handler), `sportRole` non era limitato a 1-5. Il `GroupMatchCreateSchema` include un `refine()` che cattura `homeTeamId === awayTeamId` prima del DB hit. `tsc --noEmit` pulito, 67 test verdi.
+
+**Commit:** `d333e1d` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (nona sessione)
 
 **File aggiunti:** `src/lib/schemas/competitiveTeam.ts`

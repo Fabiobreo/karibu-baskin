@@ -19,15 +19,8 @@ Stack suggerito: **Vitest** (compatibile con Next.js App Router, veloce) + **@te
 
 ---
 
-### 2. Validazione input nelle API route *(parzialmente completato)*
-**Route validate con Zod:** events, opposing-teams, sessions, registrations, competitive-teams ✅
-
-Route che usano ancora type assertion (`as { ... }`) senza Zod:
-- `src/app/api/groups/route.ts` (POST)
-- `src/app/api/groups/[groupId]/route.ts` (PUT)
-- `src/app/api/groups/[groupId]/matches/route.ts` (POST)
-- `src/app/api/children/[childId]/route.ts` (PATCH)
-- `src/app/api/users/me/children/route.ts` (POST)
+### 2. Validazione input nelle API route ✅ COMPLETATO
+**Tutte le route ora validate con Zod:** events, opposing-teams, sessions, registrations, competitive-teams, groups (POST/PUT), groups/matches (POST), children/[childId] (PATCH), users/me/children (POST)
 
 ---
 
