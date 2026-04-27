@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (quarta sessione)
+
+**File aggiunti:** `src/app/calendario/error.tsx`, `src/app/squadre/error.tsx`, `src/app/allenamento/[session]/error.tsx`, `src/app/allenamenti/error.tsx`
+
+**Cosa è stato fatto:** Aggiunti error boundary locali per le 4 route pubbliche critiche che mancavano. Prima, un errore Prisma/DB su `calendario`, `squadre` o `allenamenti` crashava l'intera pagina con il fallback 500 generico. Ora ogni route mostra un messaggio contestuale (es. "Calendario non disponibile") con pulsante "Riprova". TypeScript `tsc --noEmit` passa senza errori.
+
+**Commit:** `3f59213` su `feature/claude-2026-04-28-08`
+
+---
+
 # CLAUDE_RECAP — run automatica 09:00
 
 **File modificato:** `src/lib/authjs.ts`
