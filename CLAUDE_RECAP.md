@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (diciottesima sessione)
+
+**File aggiunti:** `src/app/api/registrations/[regId]/route.test.ts`
+
+**Cosa è stato fatto:** Scritti 12 test per `DELETE /api/registrations/[regId]`, la route di cancellazione iscrizione che aveva zero copertura nonostante la logica di autorizzazione complessa (5 percorsi distinti). Coperti: 404 non trovata, 401 non autenticato, 401 utente non correlato (via userId e via childId), 401 iscrizione anonima senza staff, 204 owner, 204 staff su qualsiasi tipo (incluso anonimo), 204 genitore via childId, 204 account collegato del figlio via childId, 204 genitore via userId, 401 genitore su atleta non figlio. Suite totale: 137 test (+12), tutti verdi.
+
+**Commit:** `64e4842` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (diciassettesima sessione)
 
 **File aggiunti:** `src/app/api/registrations/route.test.ts`, `src/app/api/teams/[sessionId]/route.test.ts`

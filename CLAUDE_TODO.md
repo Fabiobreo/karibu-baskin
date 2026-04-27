@@ -14,6 +14,7 @@ Coperti: lib core (`authRoles`, `teamGenerator`, `registrationRestrictions`, `st
 Manca ancora:
 - ~~Integration test per API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)~~ ✅ FATTO (diciassettesima sessione)
 - ~~Unit test per `audit.ts` e `appNotifications.ts`~~ ✅ FATTO (sedicesima sessione)
+- ~~Test per `DELETE /api/registrations/[regId]` (logica auth multi-percorso)~~ ✅ FATTO (diciottesima sessione)
 - Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---
