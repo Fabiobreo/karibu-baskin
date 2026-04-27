@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
+import { SessionCreateSchema } from "@/lib/schemas/session";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -40,20 +41,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => ({}));
-  const { title, date, endTime, dateSlug, allowedRoles, restrictTeamId, openRoles } = body as {
-    title?: string;
-    date?: string;
-    endTime?: string;
-    dateSlug?: string;
-    allowedRoles?: number[];
-    restrictTeamId?: string | null;
-    openRoles?: number[];
-  };
-
-  if (!title?.trim() || !date) {
-    return NextResponse.json({ error: "Titolo e data sono obbligatori" }, { status: 400 });
+  // [CLAUDE - 09:00] Validazione Zod — previene titoli vuoti e array ruoli malformati
+  const raw = await req.json().catch(() => null);
+  const parsed = SessionCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
   }
+  const { title, date, endTime, dateSlug, allowedRoles, restrictTeamId, openRoles } = parsed.data;
 
   const session = await prisma.trainingSession.create({
     data: {

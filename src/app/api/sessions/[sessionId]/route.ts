@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { SessionUpdateSchema } from "@/lib/schemas/session";
 
 export async function GET(
   _req: NextRequest,
@@ -30,24 +31,22 @@ export async function PATCH(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  const { sessionId } = await params;
-  const body = await req.json().catch(() => ({}));
-  const { title, date, endTime, allowedRoles, restrictTeamId, openRoles } = body as {
-    title?: string;
-    date?: string;
-    endTime?: string | null;
-    allowedRoles?: number[];
-    restrictTeamId?: string | null;
-    openRoles?: number[];
-  };
+  // [CLAUDE - 09:00] Validazione Zod — previene titoli vuoti e array ruoli malformati
+  const raw = await req.json().catch(() => null);
+  const parsed = SessionUpdateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+  }
+  const body = parsed.data;
 
+  const { sessionId } = await params;
   const data: Record<string, unknown> = {};
-  if (title !== undefined) data.title = title.trim();
-  if (date !== undefined) data.date = new Date(date);
-  if ("endTime" in body) data.endTime = endTime ? new Date(endTime) : null;
-  if (allowedRoles !== undefined) data.allowedRoles = allowedRoles;
-  if ("restrictTeamId" in body) data.restrictTeamId = restrictTeamId ?? null;
-  if (openRoles !== undefined) data.openRoles = openRoles;
+  if (body.title !== undefined) data.title = body.title.trim();
+  if (body.date !== undefined) data.date = new Date(body.date);
+  if ("endTime" in body) data.endTime = body.endTime ? new Date(body.endTime) : null;
+  if (body.allowedRoles !== undefined) data.allowedRoles = body.allowedRoles;
+  if ("restrictTeamId" in body) data.restrictTeamId = body.restrictTeamId ?? null;
+  if (body.openRoles !== undefined) data.openRoles = body.openRoles;
 
   const session = await prisma.trainingSession.update({
     where: { id: sessionId },

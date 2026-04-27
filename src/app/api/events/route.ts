@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { EventCreateSchema } from "@/lib/schemas/event";
 
 export async function GET() {
   const events = await prisma.event.findMany({
@@ -14,17 +15,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const body = await req.json() as {
-    title?: string;
-    date?: string;
-    endDate?: string;
-    location?: string;
-    description?: string;
-  };
-
-  if (!body.title?.trim() || !body.date) {
-    return NextResponse.json({ error: "Titolo e data obbligatori" }, { status: 400 });
+  // [CLAUDE - 09:00] Validazione Zod — previene titoli vuoti e date malformate
+  const raw = await req.json().catch(() => null);
+  const parsed = EventCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
   }
+  const body = parsed.data;
 
   const event = await prisma.event.create({
     data: {

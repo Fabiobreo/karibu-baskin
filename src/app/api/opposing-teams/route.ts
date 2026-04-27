@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { OpposingTeamCreateSchema } from "@/lib/schemas/opposingTeam";
 
 export async function GET() {
   const teams = await prisma.opposingTeam.findMany({
@@ -15,11 +16,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const body = await req.json() as { name: string; city?: string; notes?: string };
-
-  if (!body.name?.trim()) {
-    return NextResponse.json({ error: "Nome obbligatorio" }, { status: 400 });
+  // [CLAUDE - 09:00] Validazione Zod — previene nomi vuoti e payload malformati
+  const raw = await req.json().catch(() => null);
+  const parsed = OpposingTeamCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
   }
+  const body = parsed.data;
 
   const team = await prisma.opposingTeam.create({
     data: {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { OpposingTeamUpdateSchema } from "@/lib/schemas/opposingTeam";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -9,15 +10,21 @@ export async function PUT(req: Request, { params }: Params) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const { id } = await params;
-  const body = await req.json() as { name?: string; city?: string; notes?: string };
+  // [CLAUDE - 09:00] Validazione Zod — previene nome vuoto (bug: "   ".trim() = "")
+  const raw = await req.json().catch(() => null);
+  const parsed = OpposingTeamUpdateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+  }
+  const body = parsed.data;
 
+  const { id } = await params;
   const team = await prisma.opposingTeam.update({
     where: { id },
     data: {
       ...(body.name !== undefined && { name: body.name.trim() }),
-      ...(body.city !== undefined && { city: body.city.trim() || null }),
-      ...(body.notes !== undefined && { notes: body.notes.trim() || null }),
+      ...(body.city !== undefined && { city: body.city?.trim() || null }),
+      ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
     },
   });
   return NextResponse.json(team);
