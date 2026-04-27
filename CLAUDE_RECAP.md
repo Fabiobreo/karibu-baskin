@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (sesta sessione)
+
+**File modificati:** `src/components/CalendarClient.tsx`, `src/components/AdminPartiteClient.tsx`
+
+**Cosa è stato fatto:** Sostituiti i `CircularProgress` centrati con `Skeleton` MUI nei due punti di caricamento più visibili: la griglia del calendario (42 celle skeleton 7×6 che anticipano il layout reale del mese) e la tabella risultati girone in `AdminPartiteClient` (3 righe skeleton a 6 colonne). Riduce il layout shift e migliora la perceived performance. TypeScript `tsc --noEmit` pulito.
+
+**Commit:** `52470c3` su `feature/claude-2026-04-28-08`
+
+---
+
 # CLAUDE_RECAP — run automatica (quinta sessione)
 
 **File aggiunti:** `src/lib/standings.ts`, `src/lib/standings.test.ts`
