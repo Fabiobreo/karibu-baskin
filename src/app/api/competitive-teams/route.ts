@@ -18,7 +18,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 09:00] Validazione Zod — rimpiazza type assertion senza controlli
   const parsed = CompetitiveTeamCreateSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json(

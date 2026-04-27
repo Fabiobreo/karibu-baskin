@@ -49,7 +49,6 @@ export default function SiteHeader() {
   const [mounted, setMounted] = useState(false);
   const pathnameRaw = usePathname();
   const pathname = mounted ? pathnameRaw : null;
-  // [CLAUDE - 06:00] include /partite/* and /gironi/* so the dropdown is highlighted on detail pages
   const partiteActive = pathname === "/risultati" || pathname === "/classifiche"
     || (pathname?.startsWith("/partite") ?? false)
     || (pathname?.startsWith("/gironi") ?? false);

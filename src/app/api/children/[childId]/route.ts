@@ -27,7 +27,6 @@ export async function PATCH(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
   // Fix: gender accettava qualsiasi stringa; linkEmail ora validata come email
   const body = await req.json().catch(() => ({}));
   const parsed = ChildPatchSchema.safeParse(body);

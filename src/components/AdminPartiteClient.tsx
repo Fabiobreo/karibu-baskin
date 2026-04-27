@@ -22,7 +22,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
 import MatchCalloupsDialog from "@/components/MatchCalloupsDialog";
-import MatchStatsDialog from "@/components/MatchStatsDialog"; // [CLAUDE 03:00]
+import MatchStatsDialog from "@/components/MatchStatsDialog";
 
 type Team = { id: string; name: string; season: string; color: string | null };
 type OpposingTeam = { id: string; name: string; city: string | null };
@@ -106,7 +106,6 @@ function seasonForDate(dateStr: string): string {
   return `${s}-${String(s + 1).slice(-2)}`;
 }
 
-// [CLAUDE - 01:00] Auto-calcola l'esito dai punteggi per evitare mismatch con il server
 function deriveResultFromScores(ourScore: string, theirScore: string): MatchResult | "" {
   const our = parseInt(ourScore, 10);
   const their = parseInt(theirScore, 10);
@@ -142,7 +141,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [gmLoading, setGmLoading] = useState(false);
   const [gmForm,    setGmForm]    = useState({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
   const [gmError,   setGmError]   = useState("");
-  // [CLAUDE - 04:00] stato per modifica inline risultati esterni
   const [editGm,    setEditGm]    = useState<GroupMatchItem | null>(null);
 
   // Paginazione per ciascun tab
@@ -241,7 +239,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        // [CLAUDE - 01:00] Mostra il messaggio specifico del server (es. mismatch risultato/punteggio)
         const errData = await res.json().catch(() => ({})) as { error?: string };
         setError(errData.error ?? "Errore nel salvataggio");
         return;
@@ -288,7 +285,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     });
   }
 
-  // [CLAUDE - 08:00] reset gmMatches immediatamente per evitare dati obsoleti del girone precedente
   async function openGmDialog(group: Group) {
     setGmGroup(group);
     setGmError("");
@@ -306,7 +302,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     setGmLoading(false);
   }
 
-  // [CLAUDE - 04:00] gestisce sia creazione che modifica di un risultato esterno girone
   async function handleSaveGm() {
     if (!gmGroup || !gmForm.homeTeamId || !gmForm.awayTeamId) {
       setGmError("Seleziona entrambe le squadre"); return;
@@ -439,7 +434,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       </TableCell>
                       <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Chip label={MATCH_TYPE_LABELS[m.matchType]} size="small" variant="outlined" sx={{ fontSize: "0.68rem" }} />
-                        {/* [CLAUDE - 09:00] mostra il girone sotto il tipo — dato già disponibile dopo il fix 08:00 */}
                         {m.group?.name && (
                           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25, fontSize: "0.68rem" }}>
                             {m.group.name}
@@ -472,7 +466,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                             <GroupsIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        {/* [CLAUDE 03:00] */}
                         <Tooltip title="Statistiche giocatori">
                           <IconButton size="small" color="primary" aria-label="Statistiche giocatori" onClick={() => setStatsMatch(m)}>
                             <LeaderboardIcon fontSize="small" />
@@ -737,7 +730,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         />
       )}
 
-      {/* [CLAUDE 03:00] Dialog statistiche giocatori */}
       {statsMatch && (
         <MatchStatsDialog
           open={!!statsMatch}
@@ -830,7 +822,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
               {/* Lista risultati */}
               {gmLoading ? (
-                // [CLAUDE - 06:30] Skeleton tabella risultati girone — anticipa struttura a 6 colonne
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -888,7 +879,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         </TableCell>
                         <TableCell><Typography variant="body2" fontWeight={600}>{m.awayTeam.name}</Typography></TableCell>
                         <TableCell align="right">
-                          {/* [CLAUDE - 04:00] pulsante modifica inline */}
                           <IconButton size="small" aria-label="Modifica partita girone" onClick={() => {
                             setGmForm({
                               matchday:   m.matchday !== null ? String(m.matchday) : "",
@@ -1038,7 +1028,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 type="number"
                 value={form.ourScore}
                 onChange={(e) => {
-                  // [CLAUDE - 01:00] Auto-calcola l'esito quando entrambi i punteggi sono presenti
                   const ourScore = e.target.value;
                   setForm((f) => ({
                     ...f,
@@ -1056,7 +1045,6 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 type="number"
                 value={form.theirScore}
                 onChange={(e) => {
-                  // [CLAUDE - 01:00] Auto-calcola l'esito quando entrambi i punteggi sono presenti
                   const theirScore = e.target.value;
                   setForm((f) => ({
                     ...f,

@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// [CLAUDE - 09:00] Schema Zod per creazione/modifica squadre agonistiche
 // Fix: PUT senza questo schema permetteva name = "" (stringa vuota)
 export const CompetitiveTeamCreateSchema = z.object({
   name: z.string().min(1, "Nome obbligatorio").max(200),

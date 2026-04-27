@@ -179,7 +179,6 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
 
       {/* Griglia */}
       {loading ? (
-        // [CLAUDE - 06:30] Skeleton griglia calendario — stessa struttura della griglia reale
         <Box
           sx={{
             display: "grid",

@@ -1,6 +1,5 @@
 "use client";
 
-// [CLAUDE - 07:00] Client wrapper per le righe delle nostre partite nel girone.
 // Necessario perché gironi/[groupId]/page.tsx è un Server Component e non può
 // usare onClick (gli event handler non funzionano in RSC — il click sarebbe silenzioso).
 import { useRouter } from "next/navigation";

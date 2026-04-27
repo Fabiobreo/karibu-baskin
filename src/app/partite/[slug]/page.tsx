@@ -78,7 +78,6 @@ export default async function MatchDetailPage({ params }: Props) {
   const hasStats  = match.playerStats.length > 0;
 
   const teamSeasonParam = match.team.season.replace("-", "");
-  // [CLAUDE - 01:00] usa slugify per coerenza con squadre/[season]/[slug]
   const teamSlug        = slugify(match.team.name);
 
   return (
@@ -230,7 +229,6 @@ export default async function MatchDetailPage({ params }: Props) {
           ))}
         </Box>
 
-        {/* [CLAUDE - 07:30] note partita — il campo esiste nel DB ma non era mostrato pubblicamente */}
         {match.notes && (
           <Paper
             elevation={0}

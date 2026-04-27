@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// [CLAUDE - 10:00] Zod schemas per gironi e partite di girone
 export const GroupCreateSchema = z.object({
   name: z.string().min(1, "Nome obbligatorio").max(200),
   season: z

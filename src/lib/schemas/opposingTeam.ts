@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// [CLAUDE - 09:00] Schema Zod per creazione/modifica squadre avversarie
 export const OpposingTeamCreateSchema = z.object({
   name: z.string().min(1, "Nome obbligatorio").max(200),
   city: z.string().max(200).optional(),

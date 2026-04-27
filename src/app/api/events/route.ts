@@ -15,7 +15,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 09:00] Validazione Zod — previene titoli vuoti e date malformate
   const raw = await req.json().catch(() => null);
   const parsed = EventCreateSchema.safeParse(raw);
   if (!parsed.success) {

@@ -12,7 +12,6 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { groupId } = await params;
 
-  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
   // Il refine() cattura homeTeamId === awayTeamId prima del DB hit
   const body = await req.json().catch(() => ({}));
   const parsed = GroupMatchCreateSchema.safeParse(body);

@@ -18,7 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];
 
-  // [CLAUDE - 07:00] aggiunto fetch partite per includere /partite/[slug] e /risultati /classifiche nel sitemap
   const [teams, players, sessions, matches] = await Promise.all([
     prisma.competitiveTeam.findMany({
       select: { name: true, season: true, createdAt: true },

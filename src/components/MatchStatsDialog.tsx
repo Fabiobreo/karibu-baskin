@@ -1,6 +1,5 @@
 "use client";
 
-// [CLAUDE 03:00] Dialogo admin per inserimento statistiche giocatori per partita
 
 import { useState, useEffect } from "react";
 import {
@@ -46,7 +45,6 @@ interface StatRow {
   rebounds: string;
   fouls: string;
   notes: string;
-  // [CLAUDE - 07:00] track whether DB record already exists to avoid creating all-zero entries on first open
   hasExistingStats: boolean;
 }
 
@@ -107,7 +105,6 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
             rebounds: String(ex?.rebounds ?? 0),
             fouls:    String(ex?.fouls    ?? 0),
             notes:    ex?.notes ?? "",
-            // [CLAUDE - 07:00] true se esiste già nel DB, false se nuovo (da convocato)
             hasExistingStats: ex !== undefined,
           };
         });
@@ -122,7 +119,6 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
     setRows((prev) => prev.map((r) => r.key === key ? { ...r, [field]: value } : r));
   }
 
-  // [CLAUDE 05:00] notes ha tipo stringa, aggiornamento separato dai campi numerici
   function updateNote(key: string, value: string) {
     setRows((prev) => prev.map((r) => r.key === key ? { ...r, notes: value } : r));
   }
@@ -131,7 +127,6 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
     setSaving(true);
     setError("");
     try {
-      // [CLAUDE - 07:00] Evita di creare record con tutti zeri per i convocati
       // che non hanno ancora statistiche nel DB. Se il record esiste già (hasExistingStats),
       // viene sempre incluso per permettere di azzerare valori precedentemente inseriti.
       const payload = rows
@@ -214,7 +209,6 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                         {col.label}
                       </TableCell>
                     ))}
-                    {/* [CLAUDE 05:00] colonna note per annotazioni per giocatore */}
                     <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }} title="Note (opzionale)">
                       Note
                     </TableCell>
@@ -256,7 +250,6 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                           />
                         </TableCell>
                       ))}
-                      {/* [CLAUDE 05:00] campo note opzionale per annotazioni per giocatore */}
                       <TableCell sx={{ py: 0.5, px: 0.75 }}>
                         <TextField
                           value={row.notes}

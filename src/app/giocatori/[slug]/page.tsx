@@ -343,7 +343,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 Statistiche per partita
               </Typography>
               <Stack spacing={1.5}>
-                {/* [CLAUDE - 06:00] rende cliccabili le card partita coerente con squadra/[slug] e GironeMatchList */}
                 {filteredStats.map((ms) => (
                   <Link key={ms.id} href={`/partite/${ms.match.slug ?? ms.match.id}`} style={{ textDecoration: "none" }}>
                     <Paper

@@ -26,7 +26,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
   const body = await req.json().catch(() => ({}));
   const parsed = GroupCreateSchema.safeParse(body);
   if (!parsed.success) {

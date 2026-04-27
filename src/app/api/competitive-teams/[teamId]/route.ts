@@ -42,7 +42,6 @@ export async function PUT(req: Request, { params }: Params) {
 
   const { teamId } = await params;
 
-  // [CLAUDE - 09:00] Validazione Zod — il vecchio codice permetteva name="" (stringa vuota)
   const parsed = CompetitiveTeamUpdateSchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json(

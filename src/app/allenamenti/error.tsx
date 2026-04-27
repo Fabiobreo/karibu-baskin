@@ -1,5 +1,4 @@
 "use client";
-// [CLAUDE - 09:00] Error boundary locale per la lista allenamenti — evita crash su errori DB
 import { useEffect } from "react";
 import ErrorPage from "@/components/ErrorPage";
 

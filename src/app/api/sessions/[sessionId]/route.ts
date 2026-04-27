@@ -31,7 +31,6 @@ export async function PATCH(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  // [CLAUDE - 09:00] Validazione Zod — previene titoli vuoti e array ruoli malformati
   const raw = await req.json().catch(() => null);
   const parsed = SessionUpdateSchema.safeParse(raw);
   if (!parsed.success) {

@@ -1,4 +1,3 @@
-// [CLAUDE - 09:00] Unit test per gerarchia ruoli e helper hasRole
 import { describe, it, expect } from "vitest";
 import { hasRole, canManageSessions, canRegister, ROLE_HIERARCHY } from "./authRoles";
 import type { AppRole } from "@prisma/client";

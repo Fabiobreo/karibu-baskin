@@ -80,7 +80,6 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                             sx={{ bgcolor: ROLE_COLORS[role], color: "#fff", fontWeight: 600, fontSize: "0.55rem", height: 13, mt: 0.2 }}
                           />
                         )}
-                        {/* [CLAUDE - 07:00] note partita visibili anche sulla pagina dettaglio match */}
                         {stat.notes && (
                           <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 0.3, fontStyle: "italic", fontSize: "0.7rem", maxWidth: 200, lineHeight: 1.3 }}>
                             {stat.notes}

@@ -1,4 +1,3 @@
-// [CLAUDE - 09:00] Unit test per computeStandings (classifica girone Baskin)
 import { describe, it, expect } from "vitest";
 import { computeStandings } from "./standings";
 

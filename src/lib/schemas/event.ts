@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// [CLAUDE - 09:00] Schema Zod per creazione/modifica eventi
 export const EventCreateSchema = z.object({
   title: z.string().min(1, "Titolo obbligatorio").max(200),
   date: z.string().min(1, "Data obbligatoria"),

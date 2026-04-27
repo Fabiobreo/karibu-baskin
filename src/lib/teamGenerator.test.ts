@@ -1,4 +1,3 @@
-// [CLAUDE - 09:00] Unit test per l'algoritmo deterministico di generazione squadre
 import { describe, it, expect } from "vitest";
 import { generateTeams, type Athlete } from "./teamGenerator";
 

@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// [CLAUDE - 10:00] Zod schemas per creazione/modifica figli
 const GenderEnum = z.enum(["MALE", "FEMALE"]).nullable().optional();
 const SportRoleField = z.number().int().min(1).max(5).nullable().optional();
 

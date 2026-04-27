@@ -31,7 +31,6 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (!group) return NextResponse.json({ error: "Girone non trovato" }, { status: 404 });
 
-  // [CLAUDE - 09:00] logica classifica estratta in @/lib/standings per evitare duplicazione
   const standings = computeStandings(group.team, group.matches, group.groupMatches);
 
   return NextResponse.json({ ...group, standings });
@@ -44,7 +43,6 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const { groupId } = await params;
 
-  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
   const body = await req.json().catch(() => ({}));
   const parsed = GroupUpdateSchema.safeParse(body);
   if (!parsed.success) {

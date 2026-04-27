@@ -235,7 +235,6 @@ export default async function TeamProfilePage({ params }: Props) {
               </Typography>
               <Stack spacing={1.5}>
                 {team.matches.map((match) => (
-                  // [CLAUDE - 01:00] link alla pagina di dettaglio partita
                   <Link key={match.id} href={`/partite/${match.slug ?? match.id}`} style={{ textDecoration: "none" }}>
                     <Paper
                       elevation={0}

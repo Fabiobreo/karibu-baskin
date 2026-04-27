@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  // [CLAUDE - 10:00] Validazione Zod — rimpiazza type assertion as { ... }
   // Fix: gender accettava qualsiasi stringa; ora solo "MALE" | "FEMALE" | null
   const body = await req.json().catch(() => ({}));
   const parsed = ChildCreateSchema.safeParse(body);

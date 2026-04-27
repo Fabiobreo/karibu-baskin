@@ -1,5 +1,4 @@
 "use client";
-// [CLAUDE - 09:00] Error boundary locale per la pagina allenamento — copre errori di render imprevisti
 import { useEffect } from "react";
 import ErrorPage from "@/components/ErrorPage";
 

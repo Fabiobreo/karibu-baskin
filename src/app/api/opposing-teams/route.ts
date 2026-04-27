@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 09:00] Validazione Zod — previene nomi vuoti e payload malformati
   const raw = await req.json().catch(() => null);
   const parsed = OpposingTeamCreateSchema.safeParse(raw);
   if (!parsed.success) {

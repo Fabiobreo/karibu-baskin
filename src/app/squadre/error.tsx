@@ -1,5 +1,4 @@
 "use client";
-// [CLAUDE - 09:00] Error boundary locale per la pagina squadre — evita crash dell'intera app su errori DB
 import { useEffect } from "react";
 import ErrorPage from "@/components/ErrorPage";
 

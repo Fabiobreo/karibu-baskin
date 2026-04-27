@@ -57,7 +57,6 @@ export default async function ClassifichePage({ searchParams }: Props) {
   const currentSeason = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
   const activeSeason = seasonFilter ?? currentSeason;
 
-  // [CLAUDE - 05:00] removed dead statGroups query — activeGroups was computed but never referenced in JSX
   const [currentGroups, seasons, allStats] = await Promise.all([
     // Championship standings: always current season
     groupsQuery(currentSeason),

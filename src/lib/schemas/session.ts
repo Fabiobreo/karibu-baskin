@@ -2,7 +2,6 @@ import { z } from "zod";
 
 const sportRoleArray = z.array(z.number().int().min(1).max(5)).optional();
 
-// [CLAUDE - 09:00] Schema Zod per creazione/modifica allenamenti
 export const SessionCreateSchema = z.object({
   title: z.string().min(1, "Titolo obbligatorio").max(200),
   date: z.string().min(1, "Data obbligatoria"),

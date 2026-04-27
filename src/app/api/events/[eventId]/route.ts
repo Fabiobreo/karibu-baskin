@@ -10,7 +10,6 @@ export async function PUT(req: Request, { params }: Params) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 09:00] Validazione Zod — previene titoli vuoti (bug: "   ".trim() = "")
   const raw = await req.json().catch(() => null);
   const parsed = EventUpdateSchema.safeParse(raw);
   if (!parsed.success) {

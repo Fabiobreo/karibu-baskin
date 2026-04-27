@@ -48,7 +48,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               ...(slugToSet ? { slug: slugToSet } : {}),
             },
           });
-        // [CLAUDE - 09:00] Logga errori invece di ingoiarli silenziosamente (visibili nei log Vercel)
         })().catch((err) => console.error("[authjs] signIn profile update failed:", err));
       }
       return true;
@@ -69,7 +68,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               return prisma.user.update({ where: { id: user.id! }, data: { slug } });
             }
           })
-          // [CLAUDE - 09:00] Logga errori invece di ingoiarli silenziosamente (visibili nei log Vercel)
           .catch((err) => console.error("[authjs] createUser slug generation failed:", err));
       }
       // Notifica admin quando un nuovo utente si registra

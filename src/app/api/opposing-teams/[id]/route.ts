@@ -10,7 +10,6 @@ export async function PUT(req: Request, { params }: Params) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 09:00] Validazione Zod — previene nome vuoto (bug: "   ".trim() = "")
   const raw = await req.json().catch(() => null);
   const parsed = OpposingTeamUpdateSchema.safeParse(raw);
   if (!parsed.success) {

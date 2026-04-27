@@ -1,4 +1,3 @@
-// [CLAUDE - 09:00] Unit test per la logica critica di ammissione agli allenamenti
 import { describe, it, expect } from "vitest";
 import {
   checkRegistrationAllowed,

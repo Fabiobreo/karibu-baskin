@@ -24,7 +24,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // [CLAUDE - 08:30] Validazione Zod — previene sessionId vuoti, ruoli fuori range e email malformate
   const raw = await req.json().catch(() => null);
   const parsed = RegistrationPostSchema.safeParse(raw);
   if (!parsed.success) {
@@ -233,7 +232,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  // [CLAUDE - 08:30] Validazione Zod PATCH — previene ids vuoti e ruoli non validi
   const rawPatch = await req.json().catch(() => null);
   const parsedPatch = RegistrationPatchSchema.safeParse(rawPatch);
   if (!parsedPatch.success) {
