@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (quindicesima sessione)
+
+**File aggiunti:** `src/lib/rateLimit.ts`, `src/lib/rateLimit.test.ts`
+**File modificati:** `src/app/api/registrations/route.ts`, `src/app/api/push/subscribe/route.ts`
+
+**Cosa è stato fatto:** Implementato rate limiter in-memory a sliding window per IP su due endpoint pubblici senza protezione (`POST /api/registrations`, `POST /api/push/subscribe`). Limiti: 20 req/min per iscrizioni, 10 req/min per push subscribe. Risposta 429 con messaggio italiano in caso di superamento. Funzione `getClientIp()` legge `X-Forwarded-For` (header Vercel). Cleanup automatico delle entry scadute. Aggiunti 8 unit test (tutti verdi). Suite totale: 98 test. `tsc --noEmit` pulito.
+
+**Commit:** `47d3bad` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (quattordicesima sessione)
 
 **File modificati:** `src/app/allenamenti/page.tsx`, `src/app/allenamento/[session]/page.tsx`, `src/app/api/teams/[sessionId]/route.ts`, `src/components/AllenamentiClient.tsx`, `src/components/RosterByRole.tsx`, `src/components/SessionCard.tsx`, `src/lib/teamGenerator.ts`, `src/lib/teamGenerator.test.ts`, `src/lib/notifPrefs.test.ts`

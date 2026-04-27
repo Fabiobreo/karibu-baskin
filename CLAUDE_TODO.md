@@ -6,8 +6,8 @@ Analisi automatica del codebase. Ordinata per priorità (Alta → Bassa).
 
 ## 🔴 Alta priorità
 
-### 1. Test — copertura parziale (90 test verdi)
-**File:** `src/lib/*.test.ts` — coperti: `authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`
+### 1. Test — copertura parziale (98 test verdi)
+**File:** `src/lib/*.test.ts` — coperti: `authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`, `rateLimit`
 
 Lib core testate. Manca ancora:
 - Integration test per API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)
@@ -16,10 +16,8 @@ Lib core testate. Manca ancora:
 
 ---
 
-### 2. Rate limiting sugli endpoint pubblici
-**File:** `src/app/api/registrations/route.ts`, `src/app/api/push/route.ts`
-
-Nessun rate limiting. Un utente può inviare centinaia di iscrizioni o subscribe push in loop. Soluzione semplice con Vercel: aggiungere `@vercel/kv` + sliding window, oppure usare middleware Vercel Edge con `next-rate-limit`.
+### ~~2. Rate limiting sugli endpoint pubblici~~ ✅ FATTO (quindicesima sessione)
+Implementato in-memory sliding window rate limiter su `POST /api/registrations` (20 req/min) e `POST /api/push/subscribe` (10 req/min). File: `src/lib/rateLimit.ts`, 8 unit test verdi.
 
 ---
 
