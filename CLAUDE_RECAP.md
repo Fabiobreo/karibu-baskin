@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (tredicesima sessione)
+
+**File aggiunti:** `src/lib/slugUtils.test.ts`, `src/lib/notifPrefs.test.ts`
+**File modificati:** `src/lib/slugUtils.ts`
+
+**Cosa è stato fatto:** Rilevato che tutti i test precedenti (67) erano già presenti e verdi. Identificati due lib puri non ancora coperti da test: `slugUtils.ts` e `notifPrefs.ts`. Scritti 23 nuovi test: 14 per `slugify()` e `sessionDateSlug()`, 9 per `mergePrefs()`. I test hanno rivelato **2 bug reali in `slugify()`**: (1) underscore (`_`) veniva rimosso dalla regex `/[^a-z0-9\s-]/g` invece di essere convertito in trattino — fix: aggiunto `_` nella classe di caratteri da mantenere e gestito poi da `[\s_]+`; (2) stringhe con soli caratteri speciali producevano `-` invece di `""` (es. `"!!! ---"` → `"-"`) — fix: aggiunto `.replace(/^-+|-+$/g, "")` in coda. 90 test verdi totali.
+
+**Commit:** su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (dodicesima sessione)
 
 **File aggiunti:** `.prettierrc`, `.prettierignore`

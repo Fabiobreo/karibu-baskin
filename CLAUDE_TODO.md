@@ -6,16 +6,13 @@ Analisi automatica del codebase. Ordinata per priorità (Alta → Bassa).
 
 ## 🔴 Alta priorità
 
-### 1. Test — copertura zero
-**File:** tutta la directory `src/`
+### 1. Test — copertura parziale (90 test verdi)
+**File:** `src/lib/*.test.ts` — coperti: `authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`
 
-Non esiste nessun file di test. Aggiungere almeno:
-- Unit test per `src/lib/registrationRestrictions.ts` — logica critica per ammissione agli allenamenti
-- Unit test per `src/lib/teamGenerator.ts` — algoritmo deterministico, testabile facilmente
-- Unit test per `src/lib/authRoles.ts` — helper `hasRole()` e gerarchia ruoli
-- Integration test per le API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)
-
-Stack suggerito: **Vitest** (compatibile con Next.js App Router, veloce) + **@testing-library/react** per componenti.
+Lib core testate. Manca ancora:
+- Integration test per API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)
+- Unit test per `audit.ts` (richiede mock Prisma) e `appNotifications.ts`
+- Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---
 
