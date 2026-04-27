@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (dodicesima sessione)
+
+**File aggiunti:** `.prettierrc`, `.prettierignore`
+**File modificati:** `package.json`, `package-lock.json`, `src/components/AdminPartiteClient.tsx`, `src/components/AdminSquadreClient.tsx`, `src/components/AdminUserList.tsx`, `src/lib/schemas/match.ts`, `src/app/api/matches/[matchId]/callups/route.ts`
+
+**Cosa è stato fatto (commit 1/2):** Committati i cambiamenti pendenti: `window.confirm()` sostituito con Dialog MUI in `AdminPartiteClient` (3 operazioni: elimina partita, elimina avversaria, elimina girone) e `AdminSquadreClient` (elimina squadra) — pattern `openConfirm/closeConfirm` con Dialog riutilizzabile. Aggiunti `aria-label` alle tabelle in `AdminPartiteClient` (5 tabelle) e `AdminUserList` (2 tabelle). Aggiunto Prettier 3.8.3 come devDependency con `.prettierrc` e script `format`/`format:check`. Commit: `50de8fb`.
+
+**Cosa è stato fatto (commit 2/2):** Fix bug reale: `PUT /api/matches/[matchId]/callups` accettava `userIds` e `childIds` come tipo `as { userIds?: string[]; childIds?: string[] }` senza validare che fossero effettivamente array. Se inviato come stringa, il `.map()` iterava i caratteri → righe DB corrotte senza errore visibile. Aggiunto `CallupsSchema` in `src/lib/schemas/match.ts` (array di stringhe non vuote, max 100 elementi per campo) e applicato alla route con pattern `safeParse`. `tsc --noEmit` pulito, 67 test verdi. Commit: `38891c1`.
+
+---
+
 # CLAUDE_RECAP — run automatica (undicesima sessione)
 
 **File aggiunti:** `eslint.config.mjs`
