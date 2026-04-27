@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (diciassettesima sessione)
+
+**File aggiunti:** `src/app/api/registrations/route.test.ts`, `src/app/api/teams/[sessionId]/route.test.ts`
+
+**Cosa è stato fatto:** Scritti handler test per le due API route critiche segnalate nel TODO come prive di copertura. I test usano `vi.mock` su prisma, auth, rateLimit, apiAuth, webpush e appNotifications per testare la logica del handler in isolamento. `POST /api/registrations`: 13 test (rate limit 429, validazione Zod 400, sessione non trovata 404, sessione terminata 400, iscrizione anonima success/missing-name/duplicate/403-restriction/email-normalize, utente loggato success/duplicate/user-not-found). `POST /api/teams/[sessionId]`: 4 test (401 non autorizzato, 400 nessun iscritto, 200 squadre generate, esclusione coach dall'algoritmo). Suite totale: 125 test (+18), tutti verdi. `tsc --noEmit` pulito.
+
+**Commit:** `d7d4c01` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (sedicesima sessione)
 
 **File aggiunti:** `src/lib/appNotifications.test.ts`, `src/lib/audit.test.ts`

@@ -6,12 +6,14 @@ Analisi automatica del codebase. Ordinata per priorità (Alta → Bassa).
 
 ## 🔴 Alta priorità
 
-### 1. Test — copertura parziale (107 test verdi)
-**File:** `src/lib/*.test.ts` — coperti: `authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`, `rateLimit`, `audit`, `appNotifications`
+### 1. Test — copertura parziale (125 test verdi)
+**File:** `src/lib/*.test.ts` e `src/app/api/**/*.test.ts`
 
-Lib core testate. Manca ancora:
-- Integration test per API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)
-- ~~Unit test per `audit.ts` e `appNotifications.ts`~~ ✅ FATTO (sedicesima sessione) — usa `vi.mock('@/lib/db')`
+Coperti: lib core (`authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`, `rateLimit`, `audit`, `appNotifications`) + handler (`registrations`, `teams/[sessionId]`).
+
+Manca ancora:
+- ~~Integration test per API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)~~ ✅ FATTO (diciassettesima sessione)
+- ~~Unit test per `audit.ts` e `appNotifications.ts`~~ ✅ FATTO (sedicesima sessione)
 - Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---
