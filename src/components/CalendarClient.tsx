@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Box, Typography, IconButton, CircularProgress, Paper,
+  Box, Typography, IconButton, CircularProgress, Paper, Skeleton,
   Dialog, DialogContent, DialogActions, Button, Chip, Divider,
   Tabs, Tab, TextField, ToggleButton, ToggleButtonGroup, MenuItem,
   Select, FormControl, InputLabel, FormHelperText,
@@ -179,8 +179,35 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
 
       {/* Griglia */}
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-          <CircularProgress size={36} />
+        // [CLAUDE - 06:30] Skeleton griglia calendario — stessa struttura della griglia reale
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: "1px",
+            bgcolor: "divider",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 1,
+            overflow: "hidden",
+          }}
+        >
+          {Array.from({ length: 42 }).map((_, i) => (
+            <Box
+              key={i}
+              sx={{
+                minHeight: { xs: 72, sm: 116 },
+                bgcolor: "background.paper",
+                p: { xs: "4px", sm: "6px" },
+              }}
+            >
+              <Skeleton variant="circular" width={26} height={26} sx={{ mb: "3px" }} />
+              <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}>
+                {i % 4 === 0 && <Skeleton variant="rounded" height={20} />}
+                {i % 7 === 1 && <Skeleton variant="rounded" height={20} />}
+              </Box>
+            </Box>
+          ))}
         </Box>
       ) : (
         <Box

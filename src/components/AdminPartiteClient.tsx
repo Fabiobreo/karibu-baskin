@@ -5,7 +5,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem,
   FormControl, InputLabel, CircularProgress, Alert, Table, TableHead,
   TableBody, TableRow, TableCell, Tooltip, FormControlLabel, Switch,
-  Divider, Tabs, Tab, TablePagination,
+  Divider, Tabs, Tab, TablePagination, Skeleton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -829,7 +829,31 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
               {/* Lista risultati */}
               {gmLoading ? (
-                <Box sx={{ textAlign: "center", py: 3 }}><CircularProgress size={28} /></Box>
+                // [CLAUDE - 06:30] Skeleton tabella risultati girone — anticipa struttura a 6 colonne
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>Ris.</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
+                      <TableCell />
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {[0, 1, 2].map((i) => (
+                      <TableRow key={i}>
+                        <TableCell><Skeleton width={20} /></TableCell>
+                        <TableCell><Skeleton width={60} /></TableCell>
+                        <TableCell><Skeleton width={90} /></TableCell>
+                        <TableCell align="center"><Skeleton width={40} sx={{ mx: "auto" }} /></TableCell>
+                        <TableCell><Skeleton width={90} /></TableCell>
+                        <TableCell><Skeleton width={50} /></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               ) : gmMatches.length === 0 ? (
                 <Typography variant="body2" color="text.disabled" sx={{ textAlign: "center", py: 3 }}>
                   Nessun risultato esterno inserito.
