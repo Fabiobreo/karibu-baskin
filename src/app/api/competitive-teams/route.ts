@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { CompetitiveTeamCreateSchema } from "@/lib/schemas/competitiveTeam";
 
 export async function GET() {
   const teams = await prisma.competitiveTeam.findMany({
@@ -17,20 +18,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const body = await req.json() as {
-    name: string;
-    season: string;
-    championship?: string;
-    color?: string;
-    description?: string;
-  };
-
-  if (!body.name?.trim() || !body.season?.trim()) {
-    return NextResponse.json({ error: "Nome e stagione obbligatori" }, { status: 400 });
+  // [CLAUDE - 09:00] Validazione Zod — rimpiazza type assertion senza controlli
+  const parsed = CompetitiveTeamCreateSchema.safeParse(await req.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
+  const body = parsed.data;
 
   const existingCount = await prisma.competitiveTeam.count({
-    where: { season: body.season.trim() },
+    where: { season: body.season },
   });
   if (existingCount >= 2) {
     return NextResponse.json({ error: "Massimo 2 squadre per stagione" }, { status: 409 });
@@ -39,7 +38,7 @@ export async function POST(req: Request) {
   const team = await prisma.competitiveTeam.create({
     data: {
       name: body.name.trim(),
-      season: body.season.trim(),
+      season: body.season,
       championship: body.championship?.trim() || null,
       color: body.color?.trim() || null,
       description: body.description?.trim() || null,

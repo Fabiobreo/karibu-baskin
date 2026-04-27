@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { CompetitiveTeamUpdateSchema } from "@/lib/schemas/competitiveTeam";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -40,22 +41,25 @@ export async function PUT(req: Request, { params }: Params) {
   }
 
   const { teamId } = await params;
-  const body = await req.json() as {
-    name?: string;
-    season?: string;
-    championship?: string;
-    color?: string;
-    description?: string;
-  };
+
+  // [CLAUDE - 09:00] Validazione Zod — il vecchio codice permetteva name="" (stringa vuota)
+  const parsed = CompetitiveTeamUpdateSchema.safeParse(await req.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
+  }
+  const body = parsed.data;
 
   const team = await prisma.competitiveTeam.update({
     where: { id: teamId },
     data: {
       ...(body.name !== undefined && { name: body.name.trim() }),
-      ...(body.season !== undefined && { season: body.season.trim() }),
-      ...(body.championship !== undefined && { championship: body.championship.trim() || null }),
-      ...(body.color !== undefined && { color: body.color.trim() || null }),
-      ...(body.description !== undefined && { description: body.description.trim() || null }),
+      ...(body.season !== undefined && { season: body.season }),
+      ...(body.championship !== undefined && { championship: body.championship?.trim() || null }),
+      ...(body.color !== undefined && { color: body.color?.trim() || null }),
+      ...(body.description !== undefined && { description: body.description?.trim() || null }),
     },
   });
   return NextResponse.json(team);
