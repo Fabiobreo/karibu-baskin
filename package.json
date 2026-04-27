@@ -13,7 +13,8 @@
     "db:studio": "prisma studio",
     "email:dev": "react-email dev --dir src/emails --port 3333",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -45,6 +46,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.3",
     "prisma": "^6.5.0",
     "react-email": "^6.0.0",
     "rimraf": "^6.1.3",

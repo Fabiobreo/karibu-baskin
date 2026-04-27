@@ -30,6 +30,7 @@ export default function GlobalError({
         fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
         gap: "16px",
       }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- global-error non può usare next/image: sostituisce il root layout */}
         <img src="/logo.png" alt="Karibu Baskin" style={{ width: 72, height: 72, objectFit: "contain", opacity: 0.85 }} />
         <div style={{ fontSize: "5rem", fontWeight: 900, color: "#E65100", lineHeight: 1 }}>500</div>
         <h1 style={{ fontSize: "1.3rem", fontWeight: 800, margin: 0 }}>Errore critico</h1>
@@ -47,6 +48,7 @@ export default function GlobalError({
           >
             Riprova
           </button>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- global-error non può usare next/link: sostituisce il root layout */}
           <a
             href="/"
             style={{

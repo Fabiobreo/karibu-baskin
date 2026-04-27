@@ -367,7 +367,7 @@ export default function SessionPage() {
                       registeredUserIds={registrations.map((r) => r.userId)}
                       registeredChildIds={registrations.map((r) => r.childId)}
                       currentUser={currentUser}
-                      children={parentChildren}
+                      parentChildren={parentChildren}
                       restrictions={session ? {
                         allowedRoles: session.allowedRoles ?? [],
                         restrictTeamId: session.restrictTeamId ?? null,

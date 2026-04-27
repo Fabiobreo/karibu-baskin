@@ -84,11 +84,11 @@ type Child = { id: string; name: string; sportRole: number | null; sportRoleVari
 type SelectableEntry = { selectKey: string; id: string; kind: "user" | "child"; name: string | null; image?: string | null; sportRole: number | null; sportRoleVariant: string | null };
 
 type SeasonRecord = { label: string; isCurrent: boolean };
-type Props = { teams: Team[]; users: User[]; children: Child[]; seasons: SeasonRecord[] };
+type Props = { teams: Team[]; users: User[]; childPlayers: Child[]; seasons: SeasonRecord[] };
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
-export default function AdminSquadreClient({ teams: initialTeams, users, children, seasons: initialSeasons }: Props) {
+export default function AdminSquadreClient({ teams: initialTeams, users, childPlayers, seasons: initialSeasons }: Props) {
   const router = useRouter();
   const [teams, setTeams] = useState(initialTeams);
   const [isPending, startTransition] = useTransition();
@@ -268,7 +268,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childre
         ...users
           .filter((u) => !rosaTeam.memberships.some((m) => m.userId === u.id))
           .map((u) => ({ selectKey: `u:${u.id}`, id: u.id, kind: "user" as const, name: u.name, image: u.image, sportRole: u.sportRole, sportRoleVariant: u.sportRoleVariant })),
-        ...children
+        ...childPlayers
           .filter((c) => !rosaTeam.memberships.some((m) => m.childId === c.id))
           .map((c) => ({ selectKey: `c:${c.id}`, id: c.id, kind: "child" as const, name: c.name, image: null, sportRole: c.sportRole, sportRoleVariant: c.sportRoleVariant })),
       ].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))

@@ -50,7 +50,7 @@ interface Props {
   registeredUserIds: (string | null)[];
   registeredChildIds: (string | null)[];
   currentUser?: CurrentUser | null;
-  children?: ChildInfo[];
+  parentChildren?: ChildInfo[];
   restrictions?: SessionRestrictions & { restrictTeamName?: string | null };
 }
 
@@ -66,13 +66,13 @@ export default function RegistrationForm({
   registeredUserIds,
   registeredChildIds,
   currentUser,
-  children = [],
+  parentChildren = [],
   restrictions,
 }: Props) {
   const isParent = currentUser?.appRole === "PARENT";
   const isCoach = currentUser?.appRole === "COACH";
   const isStaff = isCoach || currentUser?.appRole === "ADMIN";
-  const hasChildren = isParent && children.length > 0;
+  const hasChildren = isParent && parentChildren.length > 0;
 
   // Modalità iscrizione: "athlete" (default) o "coach" (solo per COACH)
   const [coachMode, setCoachMode] = useState<"athlete" | "coach">("athlete");
@@ -82,7 +82,7 @@ export default function RegistrationForm({
   const registeredUserIdSet = new Set(registeredUserIds.filter(Boolean) as string[]);
   const effectiveRegisteredChildIds = [
     ...registeredChildIds,
-    ...children
+    ...parentChildren
       .filter((c) => c.userId && registeredUserIdSet.has(c.userId))
       .map((c) => c.id),
   ];
@@ -95,11 +95,11 @@ export default function RegistrationForm({
     (!!currentUser.linkedChildId && registeredChildIds.includes(currentUser.linkedChildId))
   );
   const defaultSubject: Subject = isParent
-    ? (children.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ?? children[0]?.id ?? "self")
+    ? (parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ?? parentChildren[0]?.id ?? "self")
     : "self";
   const [subject, setSubject] = useState<Subject>(defaultSubject);
 
-  const selectedChild = subject !== "self" ? children.find((c) => c.id === subject) ?? null : null;
+  const selectedChild = subject !== "self" ? parentChildren.find((c) => c.id === subject) ?? null : null;
 
   // Ruolo confermato per il soggetto corrente
   const confirmedRole = subject === "self"
@@ -118,14 +118,14 @@ export default function RegistrationForm({
 
   // Quando arrivano i figli (fetch asincrona), seleziona automaticamente il primo disponibile
   useEffect(() => {
-    if (!isParent || children.length === 0) return;
+    if (!isParent || parentChildren.length === 0) return;
     // Aggiorna solo se il soggetto è ancora "self" (valore iniziale prima che i figli fossero disponibili)
     if (subject === "self") {
-      const firstAvailable = children.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ?? children[0];
+      const firstAvailable = parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ?? parentChildren[0];
       setSubject(firstAvailable.id);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [children]);
+  }, [parentChildren]);
 
   // Ricalcola quando cambia il soggetto o arriva currentUser
   useEffect(() => {
@@ -230,14 +230,14 @@ export default function RegistrationForm({
   }
 
   // Se è un genitore e tutti i figli sono già iscritti, mostra il messaggio
-  const allChildrenRegistered = hasChildren && children.every((c) => effectiveRegisteredChildIds.includes(c.id));
+  const allChildrenRegistered = hasChildren && parentChildren.every((c) => effectiveRegisteredChildIds.includes(c.id));
   if (isParent && hasChildren && allChildrenRegistered) {
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
         <Typography variant="body1" fontWeight={600}>
-          {children.length === 1
-            ? `${children[0].name} è già iscritto/a`
+          {parentChildren.length === 1
+            ? `${parentChildren[0].name} è già iscritto/a`
             : "Tutti i tuoi figli sono già iscritti"}
         </Typography>
       </Box>
@@ -381,7 +381,7 @@ export default function RegistrationForm({
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 2 }}>
             {/* Opzione: ogni figlio */}
-            {children.map((child) => {
+            {parentChildren.map((child) => {
               const alreadyIn = effectiveRegisteredChildIds.includes(child.id);
               const isSelected = subject === child.id;
               return (
