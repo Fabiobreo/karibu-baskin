@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (quinta sessione)
+
+**File aggiunti:** `src/lib/standings.ts`, `src/lib/standings.test.ts`
+**File modificati:** `src/app/gironi/[groupId]/page.tsx`, `src/app/api/groups/[groupId]/route.ts`
+
+**Cosa è stato fatto:** La funzione `computeStandings` (classifica girone Baskin) era duplicata identicamente in due file. Estratta in `src/lib/standings.ts` con tipi condivisi (`StandingEntry`). Aggiunti 16 unit test che coprono il punteggio Baskin V=2/P=1/S=0, tiebreaker goal-difference, flag `isOurs`, e vari edge case. Totale test: 67 (tutti verdi). `tsc --noEmit` pulito.
+
+**Commit:** `13909dc` su `feature/claude-2026-04-28-08`
+
+---
+
 # CLAUDE_RECAP — run automatica (quarta sessione)
 
 **File aggiunti:** `src/app/calendario/error.tsx`, `src/app/squadre/error.tsx`, `src/app/allenamento/[session]/error.tsx`, `src/app/allenamenti/error.tsx`
