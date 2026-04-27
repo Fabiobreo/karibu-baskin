@@ -1,3 +1,13 @@
+# CLAUDE_RECAP — run automatica (settima sessione)
+
+**File modificati:** `src/app/api/registrations/route.ts`, `src/lib/schemas/registration.ts`
+
+**Cosa è stato fatto:** `RegistrationPostSchema` era già definito in `lib/schemas/registration.ts` ma non veniva usato — il POST usava `body as { ... }` senza controlli. Applicato il schema al POST e aggiunto `RegistrationPatchSchema` per il PATCH. Rimosso l'import inutilizzato `ROLES` (ora la validazione del range 1-5 è nel schema). 67 test passano, `tsc --noEmit` pulito.
+
+**Commit:** `3ddc97a` su `feature/claude-2026-04-28-08`
+
+---
+
 # CLAUDE_RECAP — run automatica (sesta sessione)
 
 **File modificati:** `src/components/CalendarClient.tsx`, `src/components/AdminPartiteClient.tsx`
