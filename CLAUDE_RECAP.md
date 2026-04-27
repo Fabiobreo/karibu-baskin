@@ -14,4 +14,15 @@
 
 **Cosa è stato fatto:** Prima infrastruttura test del progetto — installato Vitest, creati 51 unit test per le 3 librerie core senza dipendenze esterne: logica restrizioni iscrizione (27 test), gerarchia ruoli (17 test), generatore squadre deterministico (13 test). Tutti e 51 i test passano al primo tentativo.
 
-**Commit:** da fare su `feature/claude-2026-04-28-08`
+**Commit:** `1c5aaf9` su `feature/claude-2026-04-28-08`
+
+---
+
+# CLAUDE_RECAP — run automatica (terza sessione)
+
+**File aggiunti:** `src/lib/schemas/event.ts`, `src/lib/schemas/session.ts`, `src/lib/schemas/opposingTeam.ts`  
+**File modificati:** `src/app/api/events/route.ts`, `src/app/api/events/[eventId]/route.ts`, `src/app/api/sessions/route.ts`, `src/app/api/sessions/[sessionId]/route.ts`, `src/app/api/opposing-teams/route.ts`, `src/app/api/opposing-teams/[id]/route.ts`
+
+**Cosa è stato fatto:** Aggiunta validazione Zod su 6 API route che usavano `as { ... }` senza controlli. Risolto un bug reale: `PUT /api/events/[eventId]` poteva salvare un titolo vuoto se inviato come `"   "` (`.trim()` riduceva a `""`). Pattern ora coerente con `matches/route.ts`. TypeScript `tsc --noEmit` passa senza errori.
+
+**Commit:** `c5ca4df` su `feature/claude-2026-04-28-08`
