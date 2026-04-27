@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { ROLES } from "@/lib/constants";
 import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
+import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas/registration";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("sessionId");
@@ -24,30 +24,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
-  const { sessionId, role, name: bodyName, roleVariant, childId, note, anonymousEmail, registeredAsCoach } = body as {
-    sessionId?: string;
-    role?: number;
-    name?: string;
-    roleVariant?: string;
-    childId?: string;
-    note?: string;
-    anonymousEmail?: string;
-    registeredAsCoach?: boolean;
-  };
+  // [CLAUDE - 08:30] Validazione Zod — previene sessionId vuoti, ruoli fuori range e email malformate
+  const raw = await req.json().catch(() => null);
+  const parsed = RegistrationPostSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+  }
+  const { sessionId, role, name: bodyName, roleVariant, childId, note, anonymousEmail, registeredAsCoach } = parsed.data;
 
   const trimmedNote = note?.trim().slice(0, 300) || null;
-
-  if (!sessionId || !role) {
-    return NextResponse.json(
-      { error: "sessionId e ruolo sono obbligatori" },
-      { status: 400 }
-    );
-  }
-
-  if (!ROLES.includes(role as (typeof ROLES)[number])) {
-    return NextResponse.json({ error: "Ruolo non valido (1-5)" }, { status: 400 });
-  }
 
   const trainingSession = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
@@ -248,16 +233,13 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
-  const body = await req.json() as {
-    ids: string[];
-    name?: string;
-    anonymousEmail?: string | null;
-    role?: number;
-  };
-
-  if (!body.ids?.length) {
-    return NextResponse.json({ error: "ids richiesti" }, { status: 400 });
+  // [CLAUDE - 08:30] Validazione Zod PATCH — previene ids vuoti e ruoli non validi
+  const rawPatch = await req.json().catch(() => null);
+  const parsedPatch = RegistrationPatchSchema.safeParse(rawPatch);
+  if (!parsedPatch.success) {
+    return NextResponse.json({ error: parsedPatch.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
   }
+  const body = parsedPatch.data;
 
   const data: Record<string, unknown> = {};
   if (body.name !== undefined) data.name = body.name.trim();

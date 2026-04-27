@@ -11,6 +11,14 @@ export const RegistrationPostSchema = z.object({
   registeredAsCoach: z.boolean().optional(),
 });
 
+// [CLAUDE - 08:30] Schema PATCH iscrizioni anonime (admin)
+export const RegistrationPatchSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1),
+  name: z.string().min(1).max(60).optional(),
+  anonymousEmail: z.string().email().max(254).or(z.literal("")).nullable().optional(),
+  role: z.number().int().min(1).max(5).optional(),
+});
+
 export const TeamMemberSchema = z.object({
   userId: z.string().optional(),
   childId: z.string().optional(),
