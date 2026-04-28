@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (ventitreesima sessione)
+
+**File aggiunti:** `src/app/api/children/[childId]/route.test.ts`
+
+**Cosa è stato fatto:** Aggiunti 24 test per `PATCH /api/children/[childId]` e `DELETE /api/children/[childId]` — la route con la logica di CASCADE manuale più critica del progetto (citata esplicitamente in CLAUDE.md). `DELETE` copre: 401 non autenticato, 404 figlio non trovato, 403 non genitore/non staff, 204 successo genitore, 204 successo staff, CASCADE: deleteMany delle iscrizioni prima di eliminare, updateMany per azzerare `teams` nelle sessioni interessate con deduplicazione dei sessionId, assenza di chiamate DB inutili se il figlio non ha iscrizioni. `PATCH` copre: 401, 404, 403, 400 gender/sportRole/linkEmail non validi, 400 nome vuoto dopo trim, aggiornamento dati base con trim nome, link flow (404 utente non trovato, 409 account già collegato ad altro figlio, risposta idempotente se già collegato allo stesso figlio, pending se richiesta già esistente, creazione LinkRequest+notifica in-app+push notification), unlink account. Suite totale: 243 test (era 219). Tutti verdi.
+
+---
+
 # CLAUDE_RECAP — run automatica (ventiduesima sessione)
 
 **File aggiunti:** `src/app/api/users/route.test.ts`
