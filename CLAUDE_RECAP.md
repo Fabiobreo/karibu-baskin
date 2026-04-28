@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (ventesima sessione)
+
+**File aggiunti:** `src/app/api/users/[userId]/route.test.ts`
+
+**Cosa è stato fatto:** Aggiunti 19 test per `PATCH /api/users/[userId]` e `DELETE /api/users/[userId]` — la route admin più critica senza copertura. I test verificano: accesso admin-only, validazione input (appRole/gender/sportRole/sportRoleVariant), creazione `SportRoleHistory` solo quando il ruolo cambia davvero, invio push notification al primo assegnamento e agli aggiornamenti, prevenzione auto-eliminazione admin, audit log condizionale. Suite totale: 171 test (era 152).
+
+---
+
 # CLAUDE_RECAP — run automatica (diciannovesima sessione)
 
 **File aggiunti:** `src/app/api/sessions/route.test.ts`

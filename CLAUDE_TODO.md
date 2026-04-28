@@ -6,7 +6,7 @@ Analisi automatica del codebase. Ordinata per priorità (Alta → Bassa).
 
 ## 🔴 Alta priorità
 
-### 1. Test — copertura parziale (125 test verdi)
+### 1. Test — copertura parziale (171 test verdi)
 **File:** `src/lib/*.test.ts` e `src/app/api/**/*.test.ts`
 
 Coperti: lib core (`authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`, `rateLimit`, `audit`, `appNotifications`) + handler (`registrations`, `teams/[sessionId]`).
@@ -16,6 +16,7 @@ Manca ancora:
 - ~~Unit test per `audit.ts` e `appNotifications.ts`~~ ✅ FATTO (sedicesima sessione)
 - ~~Test per `DELETE /api/registrations/[regId]` (logica auth multi-percorso)~~ ✅ FATTO (diciottesima sessione)
 - ~~Test per `GET /api/sessions` e `POST /api/sessions`~~ ✅ FATTO (diciannovesima sessione) — bonus: fix bug `usePagination` sempre true
+- ~~Test per `PATCH/DELETE /api/users/[userId]`~~ ✅ FATTO (ventesima sessione) — 19 test: auth, validazione input, SportRoleHistory, push notification, audit log
 - Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---
