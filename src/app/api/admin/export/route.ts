@@ -47,6 +47,11 @@ export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");
   const teamId = req.nextUrl.searchParams.get("teamId");
 
+  // [CLAUDE - 08:30] Validazione formato stagione per prevenire Date invalide in Prisma
+  if (season && !/^\d{4}-\d{2}$/.test(season)) {
+    return NextResponse.json({ error: "Formato stagione non valido (YYYY-YY)" }, { status: 400 });
+  }
+
   // ── Rosa giocatori ──────────────────────────────────────────────────────────
   if (type === "rosa") {
     const users = await prisma.user.findMany({

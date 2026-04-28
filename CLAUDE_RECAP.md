@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (venticinquesima sessione)
+
+**File modificato:** `src/app/api/admin/export/route.ts`
+
+**Cosa è stato fatto:** Fix bug #2 da CLAUDE_TODO.md (🔴 CRITICO). Il parametro `season` da query string veniva usato direttamente in costruttori `new Date()` senza validazione — un valore malformato (es. `abc-xyz`) generava Invalid Date passato silenziosamente a Prisma. Aggiunta validazione regex `^\d{4}-\d{2}$` subito dopo la lettura dei parametri: restituisce 400 se il formato non è `YYYY-YY`. `tsc --noEmit` pulito.
+
+---
+
 # CLAUDE_RECAP — run automatica (ventiquattresima sessione)
 
 **File aggiunti:** `src/app/api/notifications/route.test.ts`, `src/app/api/notifications/unread-count/route.test.ts`, `src/app/api/notifications/read-all/route.test.ts`, `src/app/api/notifications/[notificationId]/route.test.ts`
