@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (ventunesima sessione)
+
+**File aggiunti:** `src/app/api/sessions/[sessionId]/route.test.ts`
+
+**Cosa è stato fatto:** Aggiunti 18 test per `GET /api/sessions/[sessionId]`, `PATCH /api/sessions/[sessionId]` e `DELETE /api/sessions/[sessionId]`. Coperti: GET restituisce sessione per ID o dateSlug (OR clause), 404 se non trovata, _count e restrictTeam inclusi; PATCH 401 senza auth, 400 JSON non valido, 400 titolo vuoto (Zod), trim titolo, conversione date, endTime→null, allowedRoles/openRoles, restrictTeamId→null, assenza di campi non inviati nel payload DB, where clause corretta; DELETE 401 senza auth, 204 successo, where clause corretta, body vuoto. Suite totale: 189 test (era 171).
+
+---
+
 # CLAUDE_RECAP — run automatica (ventesima sessione)
 
 **File aggiunti:** `src/app/api/users/[userId]/route.test.ts`
