@@ -11,8 +11,9 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const upcoming = searchParams.get("upcoming") === "true";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "0", 10)));
-  const usePagination = limit > 0;
+  const rawLimit = parseInt(searchParams.get("limit") ?? "0", 10);
+  const usePagination = rawLimit > 0;
+  const limit = usePagination ? Math.min(100, Math.max(1, rawLimit)) : 0;
 
   const now = new Date();
 
