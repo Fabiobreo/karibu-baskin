@@ -1,3 +1,14 @@
+# CLAUDE_RECAP — run automatica (diciannovesima sessione)
+
+**File aggiunti:** `src/app/api/sessions/route.test.ts`
+**File modificati:** `src/app/api/sessions/route.ts`
+
+**Cosa è stato fatto:** Scritti 15 test per `GET /api/sessions` e `POST /api/sessions`. La scrittura dei test ha rilevato un **bug reale**: `Math.max(1, 0)` nella logica di paginazione rendeva `usePagination` sempre `true`, lasciando il path non-paginato (risposta array diretta) completamente irraggiungibile — codice morto. Fix: separato `rawLimit` per calcolare il flag prima del clamping. Coperti: GET senza paginazione (array diretto), filtraggio `upcoming=true`, ordinamento, modalità paginata con total/pages, skip corretto, clamp `limit` a 100, clamp `page` a 1; POST: 401 senza auth, 400 JSON invalido, 400 campi mancanti, 201 successo con title trimmed, campi opzionali, notifiche fire-and-forget. Suite totale: 152 test (+15), tutti verdi. `tsc --noEmit` pulito.
+
+**Commit:** `86bc727` su `develop`
+
+---
+
 # CLAUDE_RECAP — run automatica (diciottesima sessione)
 
 **File aggiunti:** `src/app/api/registrations/[regId]/route.test.ts`

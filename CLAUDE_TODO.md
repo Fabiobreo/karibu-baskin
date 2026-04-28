@@ -15,6 +15,7 @@ Manca ancora:
 - ~~Integration test per API route critiche (`POST /api/registrations`, `POST /api/teams/[sessionId]`)~~ ✅ FATTO (diciassettesima sessione)
 - ~~Unit test per `audit.ts` e `appNotifications.ts`~~ ✅ FATTO (sedicesima sessione)
 - ~~Test per `DELETE /api/registrations/[regId]` (logica auth multi-percorso)~~ ✅ FATTO (diciottesima sessione)
+- ~~Test per `GET /api/sessions` e `POST /api/sessions`~~ ✅ FATTO (diciannovesima sessione) — bonus: fix bug `usePagination` sempre true
 - Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---
