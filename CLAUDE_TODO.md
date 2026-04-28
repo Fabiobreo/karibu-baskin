@@ -18,6 +18,7 @@ Manca ancora:
 - ~~Test per `GET /api/sessions` e `POST /api/sessions`~~ ✅ FATTO (diciannovesima sessione) — bonus: fix bug `usePagination` sempre true
 - ~~Test per `PATCH/DELETE /api/users/[userId]`~~ ✅ FATTO (ventesima sessione) — 19 test: auth, validazione input, SportRoleHistory, push notification, audit log
 - ~~Test per `GET/PATCH/DELETE /api/sessions/[sessionId]`~~ ✅ FATTO (ventunesima sessione) — 18 test: lookup ID/dateSlug, 404, trim, date, endTime null, allowedRoles, restrictTeamId, auth, 204
+- ~~Test per `GET /api/users` e `POST /api/users`~~ ✅ FATTO (ventiduesima sessione) — 30 test: filtri search/appRole/sportRole/gender, ordinamento, paginazione, validazione email/campi, 409 duplicato; identificato codice morto nel path non-paginato
 - Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---

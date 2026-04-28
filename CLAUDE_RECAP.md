@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (ventiduesima sessione)
+
+**File aggiunti:** `src/app/api/users/route.test.ts`
+
+**Cosa è stato fatto:** Aggiunti 30 test per `GET /api/users` e `POST /api/users` — l'endpoint admin lista-utenti con la logica di filtro/ordinamento/paginazione più complessa del progetto. `GET` copre: 403 senza auth admin, risposta paginata (sempre, per via del clamp), skip corretto, clamp limit a 100, clamp page a 1, filtro `search` (OR su nome/email), filtri `appRole`/`sportRole`/`gender` (valore numerico, "none"→null, valori non validi ignorati), ordinamento per tutti i campi (name, sportRole, appRole, createdAt). `POST` copre: 401, email obbligatoria e validazione formato, validazione appRole/gender/sportRole, 409 email duplicata, 201 successo, normalizzazione email in lowercase, appRole GUEST di default, trim nome, creazione con campi opzionali. La scrittura dei test ha anche identificato che il percorso "risposta array non paginata" in `GET /api/users` è **codice morto** (il Math.max(1,…) rende limit ≥ 1, quindi `if (limit > 0)` è sempre vero). Suite totale: 219 test (era 189). Tutti verdi.
+
+---
+
 # CLAUDE_RECAP — run automatica (ventunesima sessione)
 
 **File aggiunti:** `src/app/api/sessions/[sessionId]/route.test.ts`
