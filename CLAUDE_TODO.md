@@ -6,7 +6,7 @@ Analisi automatica del codebase. Ordinata per priorità (Alta → Bassa).
 
 ## 🔴 Alta priorità
 
-### 1. Test — copertura parziale (171 test verdi)
+### 1. Test — copertura parziale (268 test verdi)
 **File:** `src/lib/*.test.ts` e `src/app/api/**/*.test.ts`
 
 Coperti: lib core (`authRoles`, `teamGenerator`, `registrationRestrictions`, `standings`, `slugUtils`, `notifPrefs`, `rateLimit`, `audit`, `appNotifications`) + handler (`registrations`, `teams/[sessionId]`).
@@ -20,6 +20,7 @@ Manca ancora:
 - ~~Test per `GET/PATCH/DELETE /api/sessions/[sessionId]`~~ ✅ FATTO (ventunesima sessione) — 18 test: lookup ID/dateSlug, 404, trim, date, endTime null, allowedRoles, restrictTeamId, auth, 204
 - ~~Test per `GET /api/users` e `POST /api/users`~~ ✅ FATTO (ventiduesima sessione) — 30 test: filtri search/appRole/sportRole/gender, ordinamento, paginazione, validazione email/campi, 409 duplicato; identificato codice morto nel path non-paginato
 - ~~Test per `PATCH/DELETE /api/children/[childId]` (CASCADE manuale, link/unlink account)~~ ✅ FATTO (ventitreesima sessione) — 24 test: auth, 404, 403, CASCADE deleteMany+updateMany, deduplicazione sessionId, link flow completo, unlink
+- ~~Test per le 4 route notifiche (`GET`, `unread-count`, `read-all`, `[notificationId]`)~~ ✅ FATTO (ventiquattresima sessione) — 25 test: auth, paginazione, clamp, filtro preferenze, visibilità broadcast/diretta, isRead mapping, idempotenza upsert, comportamento speciale unread-count senza auth (200 anziché 401)
 - Test per componenti UI critici (richiederebbe `@testing-library/react`)
 
 ---

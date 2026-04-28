@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (ventiquattresima sessione)
+
+**File aggiunti:** `src/app/api/notifications/route.test.ts`, `src/app/api/notifications/unread-count/route.test.ts`, `src/app/api/notifications/read-all/route.test.ts`, `src/app/api/notifications/[notificationId]/route.test.ts`
+
+**Cosa è stato fatto:** Aggiunti 25 test per le 4 route del sistema notifiche. `GET /api/notifications`: 10 test — 401 senza auth, paginazione corretta (skip=page-1×limit), clamp limit a 50 e page a 1, filtro NOT sui tipi disabilitati nelle preferenze utente (`mergePrefs`+`CONTROLLABLE_TYPES`), assenza del filtro NOT se tutte le preferenze sono attive, filtro visibilità (OR broadcast/diretto), derivazione `isRead` da `reads.length`, omissione del campo `reads` interno nella risposta, `hasMore` true/false. `GET /api/notifications/unread-count`: 4 test — comportamento speciale senza auth (restituisce `{count:0}` con 200 invece di 401, senza toccare il DB), conteggio corretto per utente autenticato, where clause precisa. `PATCH /api/notifications/read-all`: 4 test — 401 senza auth, `{marked:0}` senza chiamata createMany se non ci sono non lette, createMany con `skipDuplicates:true` per tutti gli ID non letti, where clause broadcast/diretto. `PATCH /api/notifications/[notificationId]`: 6 test — 401, 404, 403 notifica di altro utente, 200 broadcast (targetUserId null), 200 notifica diretta all'utente corrente, upsert idempotente (update:{} vuoto). Suite totale: 268 test (era 243). Tutti verdi. `tsc --noEmit` pulito.
+
+---
+
 # CLAUDE_RECAP — run automatica (ventitreesima sessione)
 
 **File aggiunti:** `src/app/api/children/[childId]/route.test.ts`
