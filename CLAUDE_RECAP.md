@@ -1,3 +1,11 @@
+# CLAUDE_RECAP — run automatica (ventiseiesima sessione)
+
+**File modificati:** `src/app/api/registrations/[regId]/route.ts`, `src/app/api/registrations/[regId]/route.test.ts`
+
+**Cosa è stato fatto:** Fix bug sicurezza #1 da CLAUDE_TODO.md (🔴 CRITICO). In `DELETE /api/registrations/[regId]`, la condizione `child?.userId === currentUserId` permetteva all'account atleta collegato a un figlio di cancellare la registrazione del figlio stesso — solo il genitore (`parentId`) deve avere questo potere. Rimossa la clausola `child?.userId`, aggiornato `select` della query Prisma (rimosso `userId`). Test aggiornato: il test che verificava il permesso dell'account collegato ora verifica il 401 atteso. 268/268 test verdi. `tsc --noEmit` pulito.
+
+---
+
 # CLAUDE_RECAP — run automatica (venticinquesima sessione)
 
 **File modificato:** `src/app/api/admin/export/route.ts`

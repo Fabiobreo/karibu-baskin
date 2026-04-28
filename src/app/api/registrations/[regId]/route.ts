@@ -27,12 +27,12 @@ export async function DELETE(
   let isAllowed = false;
   if (!isOwner && !isStaff && currentUserId) {
     if (registration.childId) {
-      // Registrazione via childId: controlla atleta collegato o genitore
+      // [CLAUDE - 07:00] Fix security: solo il genitore (parentId) può cancellare — non l'account atleta collegato
       const child = await prisma.child.findUnique({
         where: { id: registration.childId },
-        select: { userId: true, parentId: true },
+        select: { parentId: true },
       });
-      isAllowed = child?.userId === currentUserId || child?.parentId === currentUserId;
+      isAllowed = child?.parentId === currentUserId;
     } else if (registration.userId) {
       // Registrazione via userId: controlla se è un figlio del genitore loggato
       const childOfParent = await prisma.child.findFirst({

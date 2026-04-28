@@ -128,18 +128,19 @@ describe("DELETE /api/registrations/[regId]", () => {
     expect(res.status).toBe(204);
     expect(p.child.findUnique).toHaveBeenCalledWith({
       where: { id: "child-1" },
-      select: { userId: true, parentId: true },
+      select: { parentId: true },
     });
   });
 
-  it("permette all'account collegato del figlio di eliminare la propria iscrizione (via childId)", async () => {
+  it("nega all'account atleta collegato di eliminare l'iscrizione del figlio (via childId)", async () => {
+    // [CLAUDE - 07:00] Security fix: solo parentId autorizzato — userId (atleta collegato) non deve poter cancellare
     p.registration.findUnique.mockResolvedValue({ userId: null, childId: "child-1" });
     mockAuth.mockResolvedValue({ user: { id: "linked-user-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
-    p.child.findUnique.mockResolvedValue({ userId: "linked-user-1", parentId: "parent-2" });
+    p.child.findUnique.mockResolvedValue({ parentId: "parent-2" });
     const [req, ctx] = makeDELETE("reg-8");
     const res = await DELETE(req, ctx);
-    expect(res.status).toBe(204);
+    expect(res.status).toBe(401);
   });
 
   it("nega accesso a un utente non correlato su iscrizione via childId", async () => {

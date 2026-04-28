@@ -6,26 +6,7 @@ Analisi codebase con priorità d'intervento. Aggiornato automaticamente.
 
 ## 🔴 CRITICO — Fixare subito
 
-### 1. **Bug sicurezza: Authorization bypass su cancellazione iscrizione figlio**
-**File:** `src/app/api/registrations/[regId]/route.ts:28-42`
-
-Logica: `if (child?.userId === currentUserId || child?.parentId === currentUserId)`. Permette a QUALUNQUE utente il cui ID coincide con `child.userId` di cancellare l'iscrizione, anche se non è il genitore.
-
-**Fix:** Linea 29 — rimuovere il check `child?.userId === currentUserId`. Controllare solo `child?.parentId`.
-
-```typescript
-// PRIMA
-if (registration.childId) {
-  const child = await prisma.child.findUnique({ where: { id: registration.childId } });
-  isAllowed = child?.userId === currentUserId || child?.parentId === currentUserId;
-}
-
-// DOPO
-if (registration.childId) {
-  const child = await prisma.child.findUnique({ where: { id: registration.childId } });
-  isAllowed = child?.parentId === currentUserId;
-}
-```
+*(nessun item critico aperto)*
 
 ---
 
