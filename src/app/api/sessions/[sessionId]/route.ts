@@ -43,6 +43,7 @@ export async function PATCH(
   if (body.title !== undefined) data.title = body.title.trim();
   if (body.date !== undefined) data.date = new Date(body.date);
   if ("endTime" in body) data.endTime = body.endTime ? new Date(body.endTime) : null;
+  if (body.dateSlug !== undefined) data.dateSlug = body.dateSlug;
   if (body.allowedRoles !== undefined) data.allowedRoles = body.allowedRoles;
   if ("restrictTeamId" in body) data.restrictTeamId = body.restrictTeamId ?? null;
   if (body.openRoles !== undefined) data.openRoles = body.openRoles;

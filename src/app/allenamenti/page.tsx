@@ -19,10 +19,14 @@ export default async function AllenamentiPage() {
   const now = new Date();
   const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
+  const isStaff = userSession?.user?.appRole === "COACH" || userSession?.user?.appRole === "ADMIN";
 
   const rawSessions = await prisma.trainingSession.findMany({
     orderBy: { date: "asc" },
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: { select: { registrations: true } },
+      restrictTeam: { select: { id: true, name: true, color: true } },
+    },
   });
 
   const sessions = rawSessions.map((s) => ({
@@ -89,6 +93,7 @@ export default async function AllenamentiPage() {
           seasonAttended={seasonAttended}
           seasonTotal={seasonTotal}
           isLoggedIn={!!userId}
+          isStaff={isStaff}
         />
       </Container>
     </>

@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
 import type { MatchResult, MatchType } from "@prisma/client";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const metadata: Metadata = {
   title: "Risultati | Karibu Baskin",
@@ -44,16 +45,9 @@ const MATCH_TYPE_LABEL: Record<MatchType, string> = {
   FRIENDLY:   "Amichevole",
 };
 
-function currentSeason(): string {
-  const now = new Date();
-  const y   = now.getFullYear();
-  const s   = now.getMonth() >= 8 ? y : y - 1;
-  return `${s}-${String(s + 1).slice(-2)}`;
-}
-
 export default async function RisultatiPage({ searchParams }: Props) {
   const sp     = await searchParams;
-  const season = sp.season ?? currentSeason();
+  const season = sp.season ?? getCurrentSeason();
 
   // Stagioni disponibili (per i chip filtro)
   const allSeasons = await prisma.competitiveTeam.findMany({

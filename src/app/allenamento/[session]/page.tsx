@@ -1,16 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Container, Typography, Box,
   Paper, Chip, Skeleton, Button, Grid2 as Grid,
+  IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Alert, Divider, CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import EditIcon from "@mui/icons-material/Edit";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import LockIcon from "@mui/icons-material/Lock";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { format } from "date-fns";
@@ -19,7 +26,17 @@ import RegistrationForm, { type CurrentUser, type ChildInfo } from "@/components
 import RosterByRole from "@/components/RosterByRole";
 import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import ShareSection from "@/components/ShareSection";
+import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
+
+function toLocalDateString(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function toLocalTimeString(d: Date) {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
 interface Session {
   id: string;
@@ -158,18 +175,61 @@ function SummaryCard({
   );
 }
 
+// ── Header sezione Squadre ────────────────────────────────────────────────────
+
+function TeamsHeader({ teams, isStaff, removingTeams, onRemoveTeams }: {
+  teams: TeamsData | null;
+  isStaff: boolean;
+  removingTeams: boolean;
+  onRemoveTeams: () => void;
+}) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+      <Typography variant="h6" fontWeight={700}>Squadre</Typography>
+      {isStaff && teams && (
+        <Tooltip title="Rimuovi squadre generate">
+          <span>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={onRemoveTeams}
+              disabled={removingTeams}
+              sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
+            >
+              {removingTeams
+                ? <CircularProgress size={16} color="error" />
+                : <DeleteOutlineIcon fontSize="small" />}
+            </IconButton>
+          </span>
+        </Tooltip>
+      )}
+    </Box>
+  );
+}
+
 // ── Pagina ────────────────────────────────────────────────────────────────────
 
 export default function SessionPage() {
   const { session: sessionParam } = useParams<{ session: string }>();
+  const router = useRouter();
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
   const [parentChildren, setParentChildren] = useState<ChildInfo[]>([]);
 
+  // Edit state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editTime, setEditTime] = useState("");
+  const [editEndTime, setEditEndTime] = useState("");
+  const [editRestrictions, setEditRestrictions] = useState<RestrictionValue>(DEFAULT_RESTRICTIONS);
+  const [editError, setEditError] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+
   const swrOpts = { revalidateOnFocus: true, refreshInterval: 0 } as const;
   const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject()));
 
-  const { data: session, isLoading: loading } = useSWR<Session>(
+  const { data: session, isLoading: loading, mutate: mutateSession } = useSWR<Session>(
     `/api/sessions/${encodeURIComponent(sessionParam)}`,
     fetcher,
     swrOpts,
@@ -255,6 +315,77 @@ export default function SessionPage() {
   }, [session?.date, session?.endTime]);
 
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
+
+  const [removingTeams, setRemovingTeams] = useState(false);
+  async function handleRemoveTeams() {
+    if (!realSessionId) return;
+    setRemovingTeams(true);
+    try {
+      const res = await fetch(`/api/teams/${realSessionId}`, { method: "DELETE" });
+      if (res.ok) mutateTeams(undefined, false);
+    } finally {
+      setRemovingTeams(false);
+    }
+  }
+
+  function openEdit() {
+    if (!session) return;
+    const date = new Date(session.date);
+    const end = session.endTime ? new Date(session.endTime) : null;
+    setEditTitle(session.title);
+    setEditDate(toLocalDateString(date));
+    setEditTime(toLocalTimeString(date));
+    setEditEndTime(end ? toLocalTimeString(end) : "");
+    setEditRestrictions({
+      allowedRoles: session.allowedRoles ?? [],
+      restrictTeamId: session.restrictTeamId ?? null,
+      openRoles: session.openRoles ?? [],
+    });
+    setEditError("");
+    setEditOpen(true);
+  }
+
+  async function handleSaveEdit() {
+    if (!session) return;
+    if (!editTitle.trim()) { setEditError("Il titolo è obbligatorio"); return; }
+    if (!editDate) { setEditError("La data è obbligatoria"); return; }
+    if (editEndTime && editEndTime <= editTime) { setEditError("L'orario di fine deve essere dopo l'inizio"); return; }
+    setEditLoading(true);
+    setEditError("");
+    try {
+      const dateTime = new Date(`${editDate}T${editTime}:00`);
+      const endDateTime = editEndTime ? new Date(`${editDate}T${editEndTime}:00`) : null;
+      const dateSlug = `${editDate}${editTime}`.replace(/-/g, "").replace(":", "");
+      const res = await fetch(`/api/sessions/${session.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          date: dateTime.toISOString(),
+          endTime: endDateTime?.toISOString() ?? null,
+          dateSlug,
+          allowedRoles: editRestrictions.allowedRoles,
+          restrictTeamId: editRestrictions.restrictTeamId,
+          openRoles: editRestrictions.openRoles,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setEditError(data.error ?? "Errore nel salvataggio");
+        return;
+      }
+      setEditOpen(false);
+      if (dateSlug !== sessionParam) {
+        router.replace(`/allenamento/${dateSlug}`);
+      } else {
+        await mutateSession();
+      }
+    } catch {
+      setEditError("Errore di rete, riprova");
+    } finally {
+      setEditLoading(false);
+    }
+  }
 
   const slugMap = Object.fromEntries(
     registrations.filter((r) => r.userSlug).map((r) => [r.id, r.userSlug!])
@@ -343,32 +474,63 @@ export default function SessionPage() {
               </Button>
             </Box>
 
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                fontWeight: 800,
-                lineHeight: 1.15,
-                mb: 1.5,
-                fontSize: { xs: "1.7rem", sm: "2.2rem", md: "2.6rem" },
-              }}
-            >
-              {session.title}
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 1.5 }}>
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{
+                  fontWeight: 800,
+                  lineHeight: 1.15,
+                  fontSize: { xs: "1.7rem", sm: "2.2rem", md: "2.6rem" },
+                  flex: 1,
+                }}
+              >
+                {session.title}
+              </Typography>
+              {isStaff && (
+                <Tooltip title="Modifica allenamento">
+                  <IconButton
+                    onClick={openEdit}
+                    size="small"
+                    sx={{
+                      color: "rgba(255,255,255,0.55)",
+                      mt: 0.5,
+                      flexShrink: 0,
+                      "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.1)" },
+                    }}
+                  >
+                    <EditIcon sx={{ fontSize: "1.1rem" }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
 
             {status && (
-              <Chip
-                label={status.label}
-                size="small"
-                sx={{
-                  bgcolor: status.bgcolor,
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: "0.72rem",
-                  mb: countdown ? 0.75 : 2,
-                  letterSpacing: 0.5,
-                }}
-              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: countdown ? 0.75 : 2 }}>
+                <Chip
+                  label={status.label}
+                  size="small"
+                  sx={{ bgcolor: status.bgcolor, color: "#fff", fontWeight: 700, fontSize: "0.72rem", letterSpacing: 0.5 }}
+                />
+                {(session.allowedRoles && session.allowedRoles.length > 0 || session.restrictTeamId) && (
+                  <Chip
+                    icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
+                    label={session.restrictTeam
+                      ? `Solo ${session.restrictTeam.name}${session.allowedRoles?.length ? ` · ${session.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                      : session.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+                    size="small"
+                    sx={{ bgcolor: "warning.light", color: "warning.contrastText", fontWeight: 600, fontSize: "0.7rem" }}
+                  />
+                )}
+                {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
+                  <Chip
+                    icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
+                    label={`${session.openRoles.map((r) => `Ruolo ${r}`).join(", ")} ${session.openRoles.length === 1 ? "aperto" : "aperti"} a tutti`}
+                    size="small"
+                    sx={{ bgcolor: "success.light", color: "success.contrastText", fontWeight: 600, fontSize: "0.7rem" }}
+                  />
+                )}
+              </Box>
             )}
 
             {countdown && (
@@ -413,6 +575,77 @@ export default function SessionPage() {
         </Box>
       ) : null}
 
+      {/* ── Dialog: modifica allenamento ── */}
+      <Dialog open={editOpen} onClose={() => !editLoading && setEditOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle fontWeight={700}>Modifica allenamento</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+            {editError && <Alert severity="error">{editError}</Alert>}
+            <TextField
+              label="Titolo"
+              value={editTitle}
+              onChange={(e) => { setEditTitle(e.target.value); setEditError(""); }}
+              fullWidth size="small"
+              disabled={editLoading}
+              autoFocus
+            />
+            <TextField
+              label="Data"
+              type="date"
+              value={editDate}
+              onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
+              size="small"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              disabled={editLoading}
+            />
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                label="Inizio"
+                type="time"
+                value={editTime}
+                onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                disabled={editLoading}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Fine"
+                type="time"
+                value={editEndTime}
+                onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                disabled={editLoading}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+            <Divider />
+            <SessionRestrictionEditor
+              value={editRestrictions}
+              onChange={setEditRestrictions}
+              disabled={editLoading}
+              seasonFilter={editDate ? seasonForDate(new Date(editDate)) : undefined}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button onClick={() => setEditOpen(false)} disabled={editLoading} color="inherit">
+            Annulla
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveEdit}
+            disabled={editLoading}
+            startIcon={editLoading ? <CircularProgress size={16} color="inherit" /> : <EventAvailableIcon />}
+            sx={{ px: 3 }}
+          >
+            {editLoading ? "Salvataggio..." : "Salva modifiche"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* ── Contenuto principale ── */}
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 4 } }}>
         {loading ? (
@@ -456,7 +689,7 @@ export default function SessionPage() {
                 <SummaryCard registrations={registrations} teams={teams} />
                 <RosterByRole {...rosterProps} />
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Typography variant="h6" fontWeight={700} gutterBottom>Squadre</Typography>
+                  <TeamsHeader teams={teams} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
                   <TeamDisplay {...teamDisplayProps} />
                 </Paper>
               </>
@@ -464,7 +697,7 @@ export default function SessionPage() {
               /* ── Stato: iscritto + squadre generate ── */
               <>
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Typography variant="h6" fontWeight={700} gutterBottom>Squadre</Typography>
+                  <TeamsHeader teams={teams} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
                   <TeamDisplay {...teamDisplayProps} />
                 </Paper>
                 <RosterByRole {...rosterProps} />
@@ -477,7 +710,7 @@ export default function SessionPage() {
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     <RosterByRole {...rosterProps} />
                     <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                      <Typography variant="h6" fontWeight={700} gutterBottom>Squadre</Typography>
+                      <TeamsHeader teams={teams} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
                       <TeamDisplay {...teamDisplayProps} />
                     </Paper>
                   </Box>

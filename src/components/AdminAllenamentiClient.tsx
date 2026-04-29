@@ -135,6 +135,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
     try {
       const dateTime = new Date(`${editDate}T${editTime}:00`);
       const endDateTime = editEndTime ? new Date(`${editDate}T${editEndTime}:00`) : null;
+      const dateSlug = `${editDate}${editTime}`.replace(/-/g, "").replace(":", "");
       const res = await fetch(`/api/sessions/${editSession.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -142,6 +143,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
           title: editTitle.trim(),
           date: dateTime.toISOString(),
           endTime: endDateTime?.toISOString() ?? null,
+          dateSlug,
           allowedRoles: editRestrictions.allowedRoles,
           restrictTeamId: editRestrictions.restrictTeamId,
           openRoles: editRestrictions.openRoles,
@@ -677,7 +679,7 @@ function SessionCard({
                 variant="outlined"
                 sx={{ fontWeight: 600, fontSize: "0.72rem" }}
               />
-              <Tooltip title="Rimuovi le squadre generate">
+              <Tooltip title="Rimuovi squadre">
                 <Button
                   size="small"
                   color="error"

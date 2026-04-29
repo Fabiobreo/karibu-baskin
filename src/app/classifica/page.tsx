@@ -8,16 +8,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import ClassificaTableClient from "@/components/ClassificaTableClient";
 import type { ClassificaRow } from "@/components/ClassificaTableClient";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const metadata: Metadata = { title: "Classifica | Karibu Baskin" };
 export const revalidate = 3600;
-
-function getCurrentSeason(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const start = now.getMonth() >= 8 ? y : y - 1;
-  return `${start}-${String(start + 1).slice(-2)}`;
-}
 
 type SearchParams = Promise<Record<string, string | undefined>>;
 

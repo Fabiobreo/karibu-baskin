@@ -78,7 +78,7 @@ export default async function AdminPage() {
           color="#E65100"
         />
         <NavCard
-          href="/admin/allenamenti"
+          href="/allenamenti"
           icon={<CalendarMonthIcon />}
           label="Gestione Allenamenti"
           stat={upcomingSessions > 0 ? `${upcomingSessions} ${upcomingSessions === 1 ? "prossimo" : "prossimi"}` : "Nessuno in programma"}

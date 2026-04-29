@@ -16,6 +16,7 @@ export const SessionUpdateSchema = z.object({
   title: z.string().min(1, "Il titolo non può essere vuoto").max(200).optional(),
   date: z.string().min(1).optional(),
   endTime: z.string().nullable().optional(),
+  dateSlug: z.string().optional(),
   allowedRoles: sportRoleArray,
   restrictTeamId: z.string().nullable().optional(),
   openRoles: sportRoleArray,

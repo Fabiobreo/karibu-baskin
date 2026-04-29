@@ -40,14 +40,12 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
   return a;
 }
 
-// Distribuisce round-robin partendo dal bucket più scarso (minimize imbalance)
-function distributeRoundRobin(athletes: Athlete[], buckets: Athlete[][]): void {
-  const k = buckets.length;
-  const start = buckets.reduce(
-    (minI, b, i) => (b.length < buckets[minI].length ? i : minI),
-    0,
-  );
-  athletes.forEach((a, i) => buckets[(i + start) % k].push(a));
+// Assegna un atleta al bucket con il conteggio minore nell'array dato
+function assignToSmallest(athlete: Athlete, buckets: Athlete[][], groupCounts: number[]): void {
+  const minVal = Math.min(...groupCounts);
+  const idx = groupCounts.indexOf(minVal);
+  buckets[idx].push(athlete);
+  groupCounts[idx]++;
 }
 
 export function generateTeams(
@@ -56,28 +54,59 @@ export function generateTeams(
   numTeams: 2 | 3 = 2,
 ): Teams {
   const buckets: Athlete[][] = Array.from({ length: numTeams }, () => []);
+  const lowCounts = new Array<number>(numTeams).fill(0);
+  const highCounts = new Array<number>(numTeams).fill(0);
 
-  // Dividi in gruppo basso (R1+R2) e alto (R3+R4+R5)
-  const low = athletes.filter((a) => a.role <= 2);
-  const high = athletes.filter((a) => a.role >= 3);
+  const lowLeftovers: Athlete[] = [];
+  const highLeftovers: Athlete[] = [];
 
-  // Mescola ciascun gruppo in modo deterministico
-  const shuffledLow = seededShuffle(low, stringToSeed(`${sessionId}-low`));
-  const shuffledHigh = seededShuffle(high, stringToSeed(`${sessionId}-high`));
+  // Passo 1: per ogni ruolo, distribuisci floor(count/numTeams) atleti a ciascuna
+  // squadra in modo uniforme; i rimanenti vanno nel pool avanzi del gruppo (low/high)
+  for (let role = 1; role <= 5; role++) {
+    const isLow = role <= 2;
+    const group = seededShuffle(
+      athletes.filter((a) => a.role === role),
+      stringToSeed(`${sessionId}-r${role}`),
+    );
+    const base = Math.floor(group.length / numTeams);
 
-  // Distribuisci round-robin bilanciato: prima il gruppo basso, poi l'alto
-  // (il secondo parte dal bucket con meno giocatori per ridurre lo sbilanciamento)
-  distributeRoundRobin(shuffledLow, buckets);
-  distributeRoundRobin(shuffledHigh, buckets);
+    for (let t = 0; t < numTeams; t++) {
+      const slice = group.slice(t * base, (t + 1) * base);
+      buckets[t].push(...slice);
+      if (isLow) lowCounts[t] += slice.length;
+      else highCounts[t] += slice.length;
+    }
 
-  // Check finale sul totale: se la differenza è > 1 sposta un giocatore
-  // (può accadere quando entrambi i gruppi hanno resto nella divisione)
-  const maxLen = () => Math.max(...buckets.map((b) => b.length));
-  const minLen = () => Math.min(...buckets.map((b) => b.length));
+    const leftovers = group.slice(numTeams * base);
+    if (isLow) lowLeftovers.push(...leftovers);
+    else highLeftovers.push(...leftovers);
+  }
 
-  if (maxLen() - minLen() > 1) {
-    const from = buckets.reduce((a, _, i) => (buckets[i].length > buckets[a].length ? i : a), 0);
-    const to = buckets.reduce((a, _, i) => (buckets[i].length < buckets[a].length ? i : a), 0);
+  // Passo 2: distribuisci gli avanzi low bilanciando il totale R1+R2 per squadra
+  const shuffledLowLeftovers = seededShuffle(
+    lowLeftovers,
+    stringToSeed(`${sessionId}-low-leftovers`),
+  );
+  for (const a of shuffledLowLeftovers) {
+    assignToSmallest(a, buckets, lowCounts);
+  }
+
+  // Passo 3: distribuisci gli avanzi high bilanciando il totale R3+R4+R5 per squadra
+  const shuffledHighLeftovers = seededShuffle(
+    highLeftovers,
+    stringToSeed(`${sessionId}-high-leftovers`),
+  );
+  for (const a of shuffledHighLeftovers) {
+    assignToSmallest(a, buckets, highCounts);
+  }
+
+  // Passo 4: correzione finale — se la differenza di dimensioni è > 1 sposta un atleta
+  const sizes = buckets.map((b) => b.length);
+  const maxLen = Math.max(...sizes);
+  const minLen = Math.min(...sizes);
+  if (maxLen - minLen > 1) {
+    const from = sizes.indexOf(maxLen);
+    const to = sizes.indexOf(minLen);
     buckets[to].push(buckets[from].pop()!);
   }
 

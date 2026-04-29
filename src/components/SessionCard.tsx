@@ -2,12 +2,19 @@
 import { useState } from "react";
 import {
   Box, Typography, Paper, Chip, Button,
+  IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress, Tooltip,
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import LockIcon from "@mui/icons-material/Lock";
+import LockOpenIcon from "@mui/icons-material/LockOpen";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -23,6 +30,10 @@ export interface SessionWithCount {
   endTime: string | Date | null;
   dateSlug: string | null;
   teams: TeamsData | null;
+  allowedRoles?: number[];
+  restrictTeamId?: string | null;
+  openRoles?: number[];
+  restrictTeam?: { id: string; name: string; color: string | null } | null;
   _count: { registrations: number };
 }
 
@@ -46,13 +57,28 @@ export default function SessionCard({
   muted = false,
   live = false,
   isRegistered = false,
+  isStaff = false,
+  onEdit,
+  onDelete,
+  onGenerateTeams,
+  onRemoveTeams,
+  generating = false,
+  removingTeams = false,
 }: {
   session: SessionWithCount;
   muted?: boolean;
   live?: boolean;
   isRegistered?: boolean;
+  isStaff?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onGenerateTeams?: () => void;
+  onRemoveTeams?: () => void;
+  generating?: boolean;
+  removingTeams?: boolean;
 }) {
   const [teamsOpen, setTeamsOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   const date = new Date(s.date);
   const endTime = s.endTime ? new Date(s.endTime) : null;
@@ -79,8 +105,8 @@ export default function SessionCard({
           ...(live && {
             outline: "2px solid #2E7D32",
             "@keyframes glow": {
-              "0%":   { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
-              "50%":  { boxShadow: "0 0 18px 4px rgba(46,125,50,0.25)" },
+              "0%": { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
+              "50%": { boxShadow: "0 0 18px 4px rgba(46,125,50,0.25)" },
               "100%": { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
             },
             animation: "glow 2.5s ease-in-out infinite",
@@ -113,8 +139,8 @@ export default function SessionCard({
             background: muted
               ? "rgba(0,0,0,0.04)"
               : live
-              ? "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)"
-              : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+                ? "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)"
+                : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
             display: "flex",
             alignItems: "center",
             gap: 0.5,
@@ -139,6 +165,34 @@ export default function SessionCard({
               flexShrink: 0,
             }}
           />
+          {isStaff && (
+            <IconButton
+              size="small"
+              aria-label="Azioni allenamento"
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
+              sx={{ color: muted ? "text.disabled" : "rgba(255,255,255,0.7)", ml: 0.25, flexShrink: 0, pointerEvents: "auto" }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          )}
+          {isStaff && (
+            <Menu
+              anchorEl={menuAnchor}
+              open={!!menuAnchor}
+              onClose={() => setMenuAnchor(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
+                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>Modifica</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
+                <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                <ListItemText>Elimina</ListItemText>
+              </MenuItem>
+            </Menu>
+          )}
         </Box>
 
         {/* Corpo */}
@@ -162,8 +216,26 @@ export default function SessionCard({
               {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
             </Typography>
           </Box>
+          {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
+            <Chip
+              icon={<LockIcon sx={{ fontSize: "0.8rem !important" }} />}
+              label={s.restrictTeam
+                ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+              size="small"
+              sx={{ fontSize: "0.68rem", height: 20, bgcolor: "warning.light", color: "warning.contrastText", alignSelf: "flex-start" }}
+            />
+          )}
+          {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+            <Chip
+              icon={<LockOpenIcon sx={{ fontSize: "0.8rem !important" }} />}
+              label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")} ${s.openRoles.length === 1 ? "aperto" : "aperti"} a tutti`}
+              size="small"
+              sx={{ fontSize: "0.68rem", height: 20, bgcolor: "success.light", color: "success.contrastText", alignSelf: "flex-start" }}
+            />
+          )}
 
-          <Box sx={{ mt: "auto", pt: 1.5, display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+          <Box sx={{ mt: "auto", pt: 0.5, display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
             {isRegistered && (
               <Chip
                 icon={<CheckCircleIcon />}
@@ -182,6 +254,36 @@ export default function SessionCard({
                 variant="outlined"
                 sx={{ fontWeight: 600, fontSize: "0.72rem" }}
               />
+            )}
+            {hasTeams && isStaff && (
+              <Tooltip title="Rimuovi squadre">
+                <span style={{ pointerEvents: "auto" }}>
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+                    disabled={removingTeams}
+                    sx={{ fontSize: "0.72rem", minWidth: 0, px: 1 }}
+                  >
+                    {removingTeams ? <CircularProgress size={12} color="error" /> : "Rimuovi"}
+                  </Button>
+                </span>
+              </Tooltip>
+            )}
+            {!hasTeams && isStaff && (
+              <span style={{ pointerEvents: "auto" }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  fullWidth
+                  startIcon={generating ? <CircularProgress size={14} color="inherit" /> : <SportsBasketballIcon />}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+                  disabled={generating || s._count.registrations === 0}
+                  sx={{ fontSize: "0.78rem" }}
+                >
+                  {generating ? "Generazione..." : "Genera squadre"}
+                </Button>
+              </span>
             )}
           </Box>
         </Box>
