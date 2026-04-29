@@ -7,6 +7,7 @@ import {
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
+import SportsIcon from "@mui/icons-material/Sports";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -52,11 +53,18 @@ function getStatus(date: Date, endTime: Date | null): StatusInfo {
   return { label: `Tra ${diffDays} giorni`, color: "#1565C0" };
 }
 
+const TEAM_META = [
+  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
+  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
+  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
+];
+
 export default function SessionCard({
   session: s,
   muted = false,
   live = false,
   isRegistered = false,
+  myRegistrationId = null,
   isStaff = false,
   onEdit,
   onDelete,
@@ -69,6 +77,7 @@ export default function SessionCard({
   muted?: boolean;
   live?: boolean;
   isRegistered?: boolean;
+  myRegistrationId?: string | null;
   isStaff?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -85,6 +94,9 @@ export default function SessionCard({
   const status = getStatus(date, endTime);
   const hasTeams = !!s.teams;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
+  const myTeam = myRegistrationId && s.teams
+    ? TEAM_META.find((t) => s.teams![t.key]?.some((a) => a.id === myRegistrationId)) ?? null
+    : null;
 
   return (
     <>
@@ -196,96 +208,130 @@ export default function SessionCard({
         </Box>
 
         {/* Corpo */}
-        <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75, position: "relative", zIndex: 1, pointerEvents: "none" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <CalendarTodayIcon sx={{ fontSize: 14, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary" noWrap>
-              {format(date, "EEEE d MMMM yyyy", { locale: it })}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <AccessTimeIcon sx={{ fontSize: 14, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary">
-              {format(date, "HH:mm")}
-              {endTime && `–${format(endTime, "HH:mm")}`}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <GroupsIcon sx={{ fontSize: 14, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary">
-              {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
-            </Typography>
-          </Box>
-          {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
-            <Chip
-              icon={<LockIcon sx={{ fontSize: "0.8rem !important" }} />}
-              label={s.restrictTeam
-                ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
-              size="small"
-              sx={{ fontSize: "0.68rem", height: 20, bgcolor: "warning.light", color: "warning.contrastText", alignSelf: "flex-start" }}
-            />
-          )}
-          {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
-            <Chip
-              icon={<LockOpenIcon sx={{ fontSize: "0.8rem !important" }} />}
-              label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")} ${s.openRoles.length === 1 ? "aperto" : "aperti"} a tutti`}
-              size="small"
-              sx={{ fontSize: "0.68rem", height: 20, bgcolor: "success.light", color: "success.contrastText", alignSelf: "flex-start" }}
-            />
-          )}
+        <Box sx={{ flex: 1, display: "flex", position: "relative", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
+          {/* Info colonna sinistra */}
+          <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75, minWidth: 0 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <CalendarTodayIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {format(date, "EEEE d MMMM yyyy", { locale: it })}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <AccessTimeIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+              <Typography variant="body2" color="text.secondary">
+                {format(date, "HH:mm")}
+                {endTime && `–${format(endTime, "HH:mm")}`}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <GroupsIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+              <Typography variant="body2" color="text.secondary">
+                {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
+              </Typography>
+            </Box>
+            {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
+              <Chip
+                icon={<LockIcon sx={{ fontSize: "0.8rem !important" }} />}
+                label={s.restrictTeam
+                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                  : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+                size="small"
+                sx={{ fontSize: "0.68rem", height: 20, bgcolor: "warning.light", color: "warning.contrastText", alignSelf: "flex-start" }}
+              />
+            )}
+            {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+              <Chip
+                icon={<LockOpenIcon sx={{ fontSize: "0.8rem !important" }} />}
+                label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")}`}
+                size="small"
+                sx={{ fontSize: "0.68rem", height: 20, bgcolor: "success.light", color: "success.contrastText", alignSelf: "flex-start" }}
+              />
+            )}
 
-          <Box sx={{ mt: "auto", pt: 0.5, display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
-            {isRegistered && (
-              <Chip
-                icon={<CheckCircleIcon />}
-                label="Sei iscritto"
-                size="small"
-                color="success"
-                sx={{ fontWeight: 600, fontSize: "0.72rem" }}
-              />
-            )}
-            {hasTeams && (
-              <Chip
-                icon={<CheckCircleIcon />}
-                label="Squadre pronte!"
-                size="small"
-                color="success"
-                variant="outlined"
-                sx={{ fontWeight: 600, fontSize: "0.72rem" }}
-              />
-            )}
-            {hasTeams && isStaff && (
-              <Tooltip title="Rimuovi squadre">
+            <Box sx={{ mt: "auto", pt: 0.5, display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
+              {!myTeam && isRegistered && (
+                <Chip
+                  icon={<CheckCircleIcon />}
+                  label="Sei iscritto"
+                  size="small"
+                  color="success"
+                  sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+                />
+              )}
+              {hasTeams && !myTeam && (
+                <Chip
+                  icon={<CheckCircleIcon />}
+                  label="Squadre pronte!"
+                  size="small"
+                  color="success"
+                  variant="outlined"
+                  sx={{ fontWeight: 600, fontSize: "0.72rem" }}
+                />
+              )}
+              {hasTeams && isStaff && (
+                <Tooltip title="Rimuovi squadre">
+                  <span style={{ pointerEvents: "auto" }}>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+                      disabled={removingTeams}
+                      sx={{ fontSize: "0.72rem", minWidth: 0, px: 1 }}
+                    >
+                      {removingTeams ? <CircularProgress size={12} color="error" /> : "Rimuovi"}
+                    </Button>
+                  </span>
+                </Tooltip>
+              )}
+              {!hasTeams && isStaff && (
                 <span style={{ pointerEvents: "auto" }}>
                   <Button
+                    variant="contained"
                     size="small"
-                    color="error"
-                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
-                    disabled={removingTeams}
-                    sx={{ fontSize: "0.72rem", minWidth: 0, px: 1 }}
+                    fullWidth
+                    startIcon={generating ? <CircularProgress size={14} color="inherit" /> : <SportsBasketballIcon />}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+                    disabled={generating || s._count.registrations === 0}
+                    sx={{ fontSize: "0.78rem" }}
                   >
-                    {removingTeams ? <CircularProgress size={12} color="error" /> : "Rimuovi"}
+                    {generating ? "Generazione..." : "Genera squadre"}
                   </Button>
                 </span>
-              </Tooltip>
-            )}
-            {!hasTeams && isStaff && (
-              <span style={{ pointerEvents: "auto" }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  fullWidth
-                  startIcon={generating ? <CircularProgress size={14} color="inherit" /> : <SportsBasketballIcon />}
-                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
-                  disabled={generating || s._count.registrations === 0}
-                  sx={{ fontSize: "0.78rem" }}
-                >
-                  {generating ? "Generazione..." : "Genera squadre"}
-                </Button>
-              </span>
-            )}
+              )}
+            </Box>
           </Box>
+
+          {/* Pannello squadra destra */}
+          {myTeam && (
+            <Box
+              sx={{
+                width: { xs: 64, sm: 76 },
+                borderLeft: `3px solid ${myTeam.color}`,
+                bgcolor: `${myTeam.color}18`,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.5,
+                flexShrink: 0,
+                px: 0.5,
+              }}
+            >
+              <GroupsIcon sx={{ color: myTeam.color, fontSize: 22 }} />
+              <Typography
+                sx={{
+                  color: myTeam.color,
+                  fontWeight: 800,
+                  fontSize: "0.65rem",
+                  textAlign: "center",
+                  lineHeight: 1.2,
+                }}
+              >
+                {myTeam.name}
+              </Typography>
+            </Box>
+          )}
         </Box>
 
         {/* Bottone vedi squadre — z-index sopra il link, intercetta il click */}
@@ -293,13 +339,13 @@ export default function SessionCard({
           <Box sx={{ px: 2, pb: 2, pt: 0, position: "relative", zIndex: 1 }}>
             <Button
               size="small"
-              variant="contained"
+              variant={myTeam ? "outlined" : "contained"}
               fullWidth
               startIcon={<SportsBasketballIcon sx={{ fontSize: "0.9rem !important" }} />}
               onClick={() => setTeamsOpen(true)}
               sx={{ fontSize: "0.78rem" }}
             >
-              Vedi squadre
+              {myTeam ? "Vedi tutte le squadre" : "Vedi squadre"}
             </Button>
           </Box>
         )}

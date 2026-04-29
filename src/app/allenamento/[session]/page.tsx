@@ -177,16 +177,17 @@ function SummaryCard({
 
 // ── Header sezione Squadre ────────────────────────────────────────────────────
 
-function TeamsHeader({ teams, isStaff, removingTeams, onRemoveTeams }: {
+function TeamsHeader({ teams, isStaff, isEnded = false, removingTeams, onRemoveTeams }: {
   teams: TeamsData | null;
   isStaff: boolean;
+  isEnded?: boolean;
   removingTeams: boolean;
   onRemoveTeams: () => void;
 }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
       <Typography variant="h6" fontWeight={700}>Squadre</Typography>
-      {isStaff && teams && (
+      {isStaff && teams && !isEnded && (
         <Tooltip title="Rimuovi squadre generate">
           <span>
             <IconButton
@@ -689,8 +690,8 @@ export default function SessionPage() {
                 <SummaryCard registrations={registrations} teams={teams} />
                 <RosterByRole {...rosterProps} />
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                  <TeamsHeader teams={teams} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
-                  <TeamDisplay {...teamDisplayProps} />
+                  <TeamsHeader teams={teams} isStaff={isStaff} isEnded removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
+                  <TeamDisplay {...teamDisplayProps} isStaff={false} />
                 </Paper>
               </>
             ) : teamFirstLayout ? (

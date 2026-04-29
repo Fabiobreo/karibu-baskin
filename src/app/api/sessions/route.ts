@@ -6,6 +6,7 @@ import { createAppNotification } from "@/lib/appNotifications";
 import { SessionCreateSchema } from "@/lib/schemas/session";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -49,18 +50,26 @@ export async function POST(req: NextRequest) {
   }
   const { title, date, endTime, dateSlug, allowedRoles, restrictTeamId, openRoles } = parsed.data;
 
-  const session = await prisma.trainingSession.create({
-    data: {
-      title: title.trim(),
-      date: new Date(date),
-      endTime: endTime ? new Date(endTime) : null,
-      ...(dateSlug ? { dateSlug } : {}),
-      allowedRoles: allowedRoles ?? [],
-      restrictTeamId: restrictTeamId ?? null,
-      openRoles: openRoles ?? [],
-    },
-    include: { _count: { select: { registrations: true } } },
-  });
+  let session;
+  try {
+    session = await prisma.trainingSession.create({
+      data: {
+        title: title.trim(),
+        date: new Date(date),
+        endTime: endTime ? new Date(endTime) : null,
+        ...(dateSlug ? { dateSlug } : {}),
+        allowedRoles: allowedRoles ?? [],
+        restrictTeamId: restrictTeamId ?? null,
+        openRoles: openRoles ?? [],
+      },
+      include: { _count: { select: { registrations: true } } },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Esiste già un allenamento in questa data e orario" }, { status: 409 });
+    }
+    throw err;
+  }
 
   // Notifica push (fire-and-forget)
   const timeRange = session.endTime

@@ -56,6 +56,22 @@ function toLocalTimeString(d: Date) {
 }
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
+// ── Costanti squadre ──────────────────────────────────────────────────────────
+
+const TEAM_META = [
+  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
+  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
+  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
+];
+
+function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | null) {
+  if (!teams || !registrationId) return null;
+  return TEAM_META.find((t) => {
+    const list = teams[t.key];
+    return list?.some((a) => a.id === registrationId);
+  }) ?? null;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function groupByMonth(
@@ -75,6 +91,7 @@ function groupByMonth(
 function HeroCard({
   session: s,
   isRegistered,
+  myRegistrationId = null,
   isStaff = false,
   onEdit,
   onDelete,
@@ -85,6 +102,7 @@ function HeroCard({
 }: {
   session: SessionWithCount;
   isRegistered: boolean;
+  myRegistrationId?: string | null;
   isStaff?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -99,6 +117,7 @@ function HeroCard({
   const endTime = s.endTime ? new Date(s.endTime) : null;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
   const hasTeams = !!s.teams;
+  const myTeam = findMyTeam(s.teams, myRegistrationId);
 
   const now = new Date();
   const diffDays = Math.round(
@@ -141,18 +160,6 @@ function HeroCard({
             pointerEvents: "none",
           }}
         >
-          <Typography
-            variant="overline"
-            sx={{
-              color: "rgba(255,255,255,0.45)",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              display: "block",
-              mb: 0.5,
-            }}
-          >
-            Prossimo allenamento
-          </Typography>
           <Box
             sx={{
               display: "flex",
@@ -162,12 +169,12 @@ function HeroCard({
             }}
           >
             <Typography
-              variant="h5"
+              variant="h4"
               fontWeight={800}
               sx={{
                 color: "#fff",
                 lineHeight: 1.2,
-                fontSize: { xs: "1.3rem", sm: "1.6rem" },
+                fontSize: { xs: "1.3rem", sm: "1.5rem" },
               }}
             >
               {s.title}
@@ -203,12 +210,6 @@ function HeroCard({
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
-              {!hasTeams && (
-                <MenuItem onClick={() => { setMenuAnchor(null); onGenerateTeams?.(); }}>
-                  <ListItemIcon><SportsBasketballIcon fontSize="small" /></ListItemIcon>
-                  <ListItemText>Genera squadre</ListItemText>
-                </MenuItem>
-              )}
               <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
                 <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
                 <ListItemText>Modifica</ListItemText>
@@ -268,7 +269,7 @@ function HeroCard({
           {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
             <Chip
               icon={<LockOpenIcon sx={{ fontSize: "0.8rem !important" }} />}
-              label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")} ${s.openRoles.length === 1 ? "aperto" : "aperti"} a tutti`}
+              label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")}`}
               size="small"
               sx={{ fontSize: "0.68rem", height: 20, bgcolor: "success.light", color: "success.contrastText" }}
             />
@@ -289,12 +290,21 @@ function HeroCard({
           }}
         >
           {isRegistered ? (
-            <Chip
-              icon={<CheckCircleIcon />}
-              label="Sei iscritto"
-              color="success"
-              sx={{ fontWeight: 700, pointerEvents: "auto" }}
-            />
+            myTeam ? (
+              <Chip
+                icon={<GroupsIcon sx={{ fontSize: "0.9rem !important" }} />}
+                label={`${myTeam.name}`}
+                size="small"
+                sx={{ bgcolor: myTeam.color, color: "#fff", fontWeight: 700, fontSize: "0.78rem", pointerEvents: "auto" }}
+              />
+            ) : (
+              <Chip
+                icon={<CheckCircleIcon />}
+                label="Sei iscritto"
+                color="success"
+                sx={{ fontWeight: 700, pointerEvents: "auto" }}
+              />
+            )
           ) : (
             <Button
               component={Link}
@@ -365,6 +375,8 @@ function SessionRow({
   isRegistered = false,
   muted = false,
   isStaff = false,
+  generating = false,
+  removingTeams = false,
   onEdit,
   onDelete,
   onGenerateTeams,
@@ -374,42 +386,53 @@ function SessionRow({
   isRegistered?: boolean;
   muted?: boolean;
   isStaff?: boolean;
+  generating?: boolean;
+  removingTeams?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   onGenerateTeams?: () => void;
   onRemoveTeams?: () => void;
 }) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [teamsOpen, setTeamsOpen] = useState(false);
   const date = new Date(s.date);
   const endTime = s.endTime ? new Date(s.endTime) : null;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
 
   return (
+    <>
     <Box
-      component={Link}
-      href={href}
       sx={{
+        position: "relative",
         display: "flex",
         alignItems: "center",
         gap: { xs: 1.5, sm: 2 },
         px: { xs: 1.5, sm: 2 },
         py: 1.25,
-        borderRadius: 0,
-        textDecoration: "none",
-        color: "inherit",
         opacity: muted ? 0.62 : 1,
         "&:hover": { bgcolor: "action.hover" },
         transition: "background-color 0.15s",
       }}
     >
-      {/* Giorno numero + abbreviazione */}
+      {/* Stretched link */}
       <Box
+        component={Link}
+        href={href}
+        aria-label={s.title}
         sx={{
-          width: { xs: 36, sm: 44 },
-          textAlign: "center",
-          flexShrink: 0,
+          position: "absolute",
+          inset: 0,
+          zIndex: 0,
+          "&:focus-visible": {
+            outline: "2px solid",
+            outlineColor: "primary.main",
+            outlineOffset: "-2px",
+          },
         }}
-      >
+      />
+
+      {/* Giorno numero + abbreviazione */}
+      <Box sx={{ width: { xs: 36, sm: 44 }, textAlign: "center", flexShrink: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
         <Typography
           variant="caption"
           sx={{
@@ -424,16 +447,13 @@ function SessionRow({
         >
           {format(date, "EEE", { locale: it })}
         </Typography>
-        <Typography
-          fontWeight={800}
-          sx={{ lineHeight: 1.3, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}
-        >
+        <Typography fontWeight={800} sx={{ lineHeight: 1.3, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}>
           {format(date, "d")}
         </Typography>
       </Box>
 
       {/* Titolo + orario */}
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Box sx={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
         <Typography variant="body2" fontWeight={600} noWrap>
           {s.title}
         </Typography>
@@ -469,74 +489,96 @@ function SessionRow({
         </Box>
       </Box>
 
-      {/* Icone di stato */}
-      {isRegistered && (
-        <CheckCircleIcon
-          sx={{ color: "success.main", fontSize: 18, flexShrink: 0 }}
-        />
-      )}
-      {s.teams && !isRegistered && (
-        <SportsBasketballIcon
-          sx={{
-            color: "primary.main",
-            fontSize: 15,
-            flexShrink: 0,
-            opacity: 0.6,
-          }}
-        />
-      )}
+      {/* Icone di stato + controlli — sopra il link */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
+        {isRegistered && (
+          <CheckCircleIcon sx={{ color: "success.main", fontSize: 18 }} />
+        )}
 
-      {isStaff && s.teams && (
-        <IconButton
-          size="small"
-          color="error"
-          aria-label="Rimuovi squadre"
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
-          sx={{ flexShrink: 0, opacity: 0.6, "&:hover": { opacity: 1 } }}
-        >
-          <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-      )}
-
-      {isStaff ? (
-        <>
+        {/* Basketball icon: cliccabile se ci sono squadre, altrimenti icona generazione per staff */}
+        {s.teams ? (
           <IconButton
             size="small"
-            aria-label="Azioni allenamento"
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
-            sx={{ color: "text.disabled", flexShrink: 0, mr: -0.5 }}
+            aria-label="Vedi squadre"
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setTeamsOpen(true); }}
+            sx={{ color: "primary.main", opacity: 0.7, p: 0.25, "&:hover": { opacity: 1 } }}
           >
-            <MoreVertIcon sx={{ fontSize: 18 }} />
+            <SportsBasketballIcon sx={{ fontSize: 16 }} />
           </IconButton>
-          <Menu
-            anchorEl={menuAnchor}
-            open={!!menuAnchor}
-            onClose={() => setMenuAnchor(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
+        ) : (isStaff && !muted && (
+          <IconButton
+            size="small"
+            aria-label="Genera squadre"
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+            disabled={generating}
+            sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
           >
-            {!s.teams && (
-              <MenuItem onClick={() => { setMenuAnchor(null); onGenerateTeams?.(); }}>
-                <ListItemIcon><SportsBasketballIcon fontSize="small" /></ListItemIcon>
-                <ListItemText>Genera squadre</ListItemText>
+            {generating
+              ? <CircularProgress size={13} color="inherit" />
+              : <SportsBasketballIcon sx={{ fontSize: 16 }} />}
+          </IconButton>
+        ))}
+
+        {/* Rimuovi squadre: solo staff, solo se non passato */}
+        {isStaff && s.teams && !muted && (
+          <IconButton
+            size="small"
+            color="error"
+            aria-label="Rimuovi squadre"
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+            disabled={removingTeams}
+            sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
+          >
+            {removingTeams
+              ? <CircularProgress size={13} color="error" />
+              : <DeleteOutlineIcon sx={{ fontSize: 16 }} />}
+          </IconButton>
+        )}
+
+        {isStaff ? (
+          <>
+            <IconButton
+              size="small"
+              aria-label="Azioni allenamento"
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
+              sx={{ color: "text.disabled", mr: -0.5 }}
+            >
+              <MoreVertIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+            <Menu
+              anchorEl={menuAnchor}
+              open={!!menuAnchor}
+              onClose={() => setMenuAnchor(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
+                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>Modifica</ListItemText>
               </MenuItem>
-            )}
-            <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
-              <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-              <ListItemText>Modifica</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
-              <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-              <ListItemText>Elimina</ListItemText>
-            </MenuItem>
-          </Menu>
-        </>
-      ) : (
-        <ChevronRightIcon
-          sx={{ color: "text.disabled", fontSize: 18, flexShrink: 0 }}
-        />
-      )}
+              <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
+                <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                <ListItemText>Elimina</ListItemText>
+              </MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <ChevronRightIcon sx={{ color: "text.disabled", fontSize: 18 }} />
+        )}
+      </Box>
     </Box>
+
+    {s.teams && (
+      <TeamsModal
+        open={teamsOpen}
+        onClose={() => setTeamsOpen(false)}
+        sessionTitle={s.title}
+        teamA={s.teams.teamA}
+        teamB={s.teams.teamB}
+        teamC={s.teams.teamC}
+      />
+    )}
+  </>
   );
 }
 
@@ -545,18 +587,28 @@ function SessionRow({
 const PAST_PAGE_SIZE = 6;
 
 function deriveSections(sessions: SessionWithCount[], now: Date) {
+  const asc = (a: SessionWithCount, b: SessionWithCount) =>
+    new Date(a.date).getTime() - new Date(b.date).getTime();
+  const desc = (a: SessionWithCount, b: SessionWithCount) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime();
+
   const inCorso = sessions.filter((s) => {
     const start = new Date(s.date);
     const end = s.endTime ? new Date(s.endTime) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
     return now >= start && now <= end;
-  });
-  const upcoming = sessions.filter((s) => new Date(s.date) > now);
+  }).sort(asc);
+
+  const upcoming = sessions
+    .filter((s) => new Date(s.date) > now)
+    .sort(asc);
+
   const past = sessions
     .filter((s) => {
       const end = s.endTime ? new Date(s.endTime) : new Date(new Date(s.date).getTime() + 2 * 60 * 60 * 1000);
       return end < now;
     })
-    .reverse();
+    .sort(desc);
+
   return { inCorso, upcoming, past };
 }
 
@@ -565,6 +617,7 @@ export default function AllenamentiClient({
   upcoming: initUpcoming,
   past: initPast,
   registeredSessionIds,
+  registrationIdBySession = {},
   seasonAttended,
   seasonTotal,
   isLoggedIn,
@@ -574,6 +627,7 @@ export default function AllenamentiClient({
   upcoming: SessionWithCount[];
   past: SessionWithCount[];
   registeredSessionIds: string[];
+  registrationIdBySession?: Record<string, string>;
   seasonAttended: number;
   seasonTotal: number;
   isLoggedIn: boolean;
@@ -745,7 +799,19 @@ export default function AllenamentiClient({
   }
 
   const registeredSet = new Set(registeredSessionIds);
-  const [nextSession, ...restUpcoming] = upcoming;
+  const [firstSession, secondSession, ...remainingUpcoming] = upcoming;
+
+  function isSameDay(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+  }
+
+  const showSecondHero = !!secondSession &&
+    isSameDay(new Date(firstSession.date), new Date(secondSession.date));
+
+  const heroSessions = showSecondHero ? [firstSession, secondSession] : [firstSession];
+  const restUpcoming = showSecondHero ? remainingUpcoming : (secondSession ? [secondSession, ...remainingUpcoming] : remainingUpcoming);
   const monthGroups = groupByMonth(restUpcoming);
   const pastVisible = past.slice(0, pastPage * PAST_PAGE_SIZE);
   const hasMorePast = pastVisible.length < past.length;
@@ -798,6 +864,7 @@ export default function AllenamentiClient({
                 session={s}
                 live
                 isRegistered={registeredSet.has(s.id)}
+                myRegistrationId={registrationIdBySession[s.id] ?? null}
                 isStaff={isStaff}
                 onEdit={() => openEdit(s)}
                 onDelete={() => setToDelete(s)}
@@ -824,18 +891,40 @@ export default function AllenamentiClient({
         </Paper>
       ) : (
         <>
-          {/* Hero — prossimo */}
-          <HeroCard
-            session={nextSession}
-            isRegistered={registeredSet.has(nextSession.id)}
-            isStaff={isStaff}
-            onEdit={() => openEdit(nextSession)}
-            onDelete={() => setToDelete(nextSession)}
-            onGenerateTeams={() => setTeamPickSession(nextSession)}
-            onRemoveTeams={() => handleRemoveTeams(nextSession)}
-            generating={generating === nextSession.id}
-            removingTeams={removingTeams === nextSession.id}
-          />
+          {/* Sezione prossimi */}
+          <Box sx={{ mb: 2 }}>
+            <Typography
+              variant="overline"
+              fontWeight={700}
+              sx={{ color: "text.disabled", letterSpacing: "0.1em" }}
+            >
+              Prossimi allenamenti
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: showSecondHero ? { xs: "1fr", sm: "1fr 1fr" } : "1fr",
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            {heroSessions.map((s) => (
+              <HeroCard
+                key={s.id}
+                session={s}
+                isRegistered={registeredSet.has(s.id)}
+                myRegistrationId={registrationIdBySession[s.id] ?? null}
+                isStaff={isStaff}
+                onEdit={() => openEdit(s)}
+                onDelete={() => setToDelete(s)}
+                onGenerateTeams={() => setTeamPickSession(s)}
+                onRemoveTeams={() => handleRemoveTeams(s)}
+                generating={generating === s.id}
+                removingTeams={removingTeams === s.id}
+              />
+            ))}
+          </Box>
 
           {/* Gruppi per mese */}
           {monthGroups.map(([month, sessions]) => (
@@ -882,6 +971,8 @@ export default function AllenamentiClient({
                       session={s}
                       isRegistered={registeredSet.has(s.id)}
                       isStaff={isStaff}
+                      generating={generating === s.id}
+                      removingTeams={removingTeams === s.id}
                       onEdit={() => openEdit(s)}
                       onDelete={() => setToDelete(s)}
                       onGenerateTeams={() => setTeamPickSession(s)}
@@ -926,8 +1017,6 @@ export default function AllenamentiClient({
                       isStaff={isStaff}
                       onEdit={() => openEdit(s)}
                       onDelete={() => setToDelete(s)}
-                      onGenerateTeams={() => setTeamPickSession(s)}
-                      onRemoveTeams={() => handleRemoveTeams(s)}
                     />
                   </Box>
                 ))}

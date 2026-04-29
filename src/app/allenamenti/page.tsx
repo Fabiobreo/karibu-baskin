@@ -54,6 +54,8 @@ export default async function AllenamentiPage() {
     .reverse();
 
   let registeredSessionIds: string[] = [];
+  // mappa sessionId → registrationId (per trovare la squadra dell'utente)
+  let registrationIdBySession: Record<string, string> = {};
   let seasonAttended = 0;
   let seasonTotal = 0;
 
@@ -69,7 +71,7 @@ export default async function AllenamentiPage() {
     const [upcomingRegs, pastRegs] = await Promise.all([
       prisma.registration.findMany({
         where: { userId, session: { date: { gte: threeHoursAgo } } },
-        select: { sessionId: true },
+        select: { id: true, sessionId: true },
       }),
       prisma.registration.findMany({
         where: { userId, session: { date: { gte: seasonStart, lt: now } } },
@@ -78,6 +80,7 @@ export default async function AllenamentiPage() {
     ]);
 
     registeredSessionIds = upcomingRegs.map((r) => r.sessionId);
+    registrationIdBySession = Object.fromEntries(upcomingRegs.map((r) => [r.sessionId, r.id]));
     seasonAttended = pastRegs.length;
   }
 
@@ -90,6 +93,7 @@ export default async function AllenamentiPage() {
           upcoming={upcoming}
           past={past}
           registeredSessionIds={registeredSessionIds}
+          registrationIdBySession={registrationIdBySession}
           seasonAttended={seasonAttended}
           seasonTotal={seasonTotal}
           isLoggedIn={!!userId}

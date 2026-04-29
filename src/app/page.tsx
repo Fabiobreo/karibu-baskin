@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/authjs";
 import {
   Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack,
 } from "@mui/material";
@@ -43,6 +44,9 @@ export default async function HomePage() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+  const userSession = await auth();
+  const userId = userSession?.user?.id ?? null;
+
   const rawSessions = await prisma.trainingSession.findMany({
     where: { date: { gte: startOfToday } },
     orderBy: { date: "asc" },
@@ -63,6 +67,17 @@ export default async function HomePage() {
   });
 
   const upcoming = sessions.filter((s) => new Date(s.date) > now);
+
+  // Recupera le iscrizioni dell'utente per le sessioni visibili
+  let registrationIdBySession: Record<string, string> = {};
+  if (userId && (inCorso.length > 0 || upcoming.length > 0)) {
+    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const regs = await prisma.registration.findMany({
+      where: { userId, session: { date: { gte: threeHoursAgo } } },
+      select: { id: true, sessionId: true },
+    });
+    registrationIdBySession = Object.fromEntries(regs.map((r) => [r.sessionId, r.id]));
+  }
 
   return (
     <>
@@ -97,7 +112,12 @@ export default async function HomePage() {
             <Grid container spacing={2}>
               {inCorso.map((s) => (
                 <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <SessionCard session={s} live />
+                  <SessionCard
+                    session={s}
+                    live
+                    isRegistered={!!registrationIdBySession[s.id]}
+                    myRegistrationId={registrationIdBySession[s.id] ?? null}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -122,7 +142,11 @@ export default async function HomePage() {
           <Grid container spacing={2}>
             {upcoming.map((s) => (
               <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <SessionCard session={s} />
+                <SessionCard
+                  session={s}
+                  isRegistered={!!registrationIdBySession[s.id]}
+                  myRegistrationId={registrationIdBySession[s.id] ?? null}
+                />
               </Grid>
             ))}
           </Grid>
