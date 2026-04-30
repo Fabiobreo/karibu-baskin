@@ -32,10 +32,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [status]);
 
   useEffect(() => {
-    if (status !== "authenticated") {
-      setUnreadCount(0);
-      return;
-    }
+    if (status !== "authenticated") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCount();
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") fetchCount();
@@ -55,8 +53,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setUnreadCount(0);
   }, []);
 
+  const effectiveUnreadCount = status === "authenticated" ? unreadCount : 0;
+
   return (
-    <NotificationContext.Provider value={{ unreadCount, refreshCount: fetchCount, markAllRead }}>
+    <NotificationContext.Provider value={{ unreadCount: effectiveUnreadCount, refreshCount: fetchCount, markAllRead }}>
       {children}
     </NotificationContext.Provider>
   );

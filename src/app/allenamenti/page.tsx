@@ -61,26 +61,30 @@ export default async function AllenamentiPage() {
 
   if (userId) {
     const seasonStart = getSeasonStart();
-    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
 
     seasonTotal = sessions.filter((s) => {
       const d = new Date(s.date);
       return d >= seasonStart && d < now;
     }).length;
 
-    const [upcomingRegs, pastRegs] = await Promise.all([
-      prisma.registration.findMany({
-        where: { userId, session: { date: { gte: threeHoursAgo } } },
-        select: { id: true, sessionId: true },
-      }),
+    // Sessioni attive (in corso + prossime) — query per ID esatto, senza finestra temporale
+    const activeSessionIds = [...inCorso, ...upcoming].map((s) => s.id);
+
+    const [activeRegs, pastRegs] = await Promise.all([
+      activeSessionIds.length > 0
+        ? prisma.registration.findMany({
+            where: { userId, sessionId: { in: activeSessionIds } },
+            select: { id: true, sessionId: true },
+          })
+        : Promise.resolve([]),
       prisma.registration.findMany({
         where: { userId, session: { date: { gte: seasonStart, lt: now } } },
         select: { sessionId: true },
       }),
     ]);
 
-    registeredSessionIds = upcomingRegs.map((r) => r.sessionId);
-    registrationIdBySession = Object.fromEntries(upcomingRegs.map((r) => [r.sessionId, r.id]));
+    registeredSessionIds = activeRegs.map((r) => r.sessionId);
+    registrationIdBySession = Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]));
     seasonAttended = pastRegs.length;
   }
 
