@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import ClassificaInternaTable from "@/components/ClassificaInternaTable";
 import type { PlayerStatRow } from "@/components/ClassificaInternaTable";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const metadata: Metadata = {
   title: "Classifiche | Karibu Baskin",
@@ -52,9 +53,7 @@ export default async function ClassifichePage({ searchParams }: Props) {
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null;
 
-  const now = new Date();
-  const currentYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-  const currentSeason = `${currentYear}-${String(currentYear + 1).slice(-2)}`;
+  const currentSeason = getCurrentSeason();
   const activeSeason = seasonFilter ?? currentSeason;
 
   const [currentGroups, seasons, allStats] = await Promise.all([

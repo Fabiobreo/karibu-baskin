@@ -12,6 +12,7 @@ import { ROLE_COLORS, ROLE_LABELS, ROLES, sportRoleLabel } from "@/lib/constants
 import { useToast } from "@/context/ToastContext";
 import SportRoleQuestionnaire, { type SportRoleResult } from "@/components/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -474,7 +475,7 @@ export default function RegistrationForm({
                           : "Atleta"}
                   </Typography>
                   {currentUser.teamMemberships
-                    .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                    .filter((m) => m.teamSeason === getCurrentSeason())
                     .map((m) => (
                       <Chip
                         key={m.teamId}
@@ -496,11 +497,11 @@ export default function RegistrationForm({
               <Box sx={{ minWidth: 0 }}>
                 <Typography variant="body2" fontWeight={600}>{selectedChild.name}</Typography>
                 {selectedChild.teamMemberships
-                  .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                  .filter((m) => m.teamSeason === getCurrentSeason())
                   .length > 0 && (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
                     {selectedChild.teamMemberships
-                      .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                      .filter((m) => m.teamSeason === getCurrentSeason())
                       .map((m) => (
                         <Chip
                           key={m.teamId}

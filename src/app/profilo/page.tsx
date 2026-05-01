@@ -18,6 +18,7 @@ import LinkRequestsSection from "@/components/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/ClaimAnonymousCard";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const revalidate = 0;
 
@@ -65,16 +66,12 @@ export default async function ProfiloPage() {
   const isAthlete = effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
   const hasAthleteData = user.sportRole || user.gender || user.birthDate;
 
-  const now = new Date();
-  const seasonStart = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-  const currentSeason = `${seasonStart}-${String(seasonStart + 1).slice(-2)}`;
+  const currentSeason = getCurrentSeason();
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
   // Presenze per stagione
   const attendanceBySeason = user.registrations.reduce<Record<string, number>>((acc, reg) => {
-    const d = new Date(reg.session.date);
-    const y = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1;
-    const season = `${y}-${String(y + 1).slice(-2)}`;
+    const season = getCurrentSeason(reg.session.date);
     acc[season] = (acc[season] ?? 0) + 1;
     return acc;
   }, {});

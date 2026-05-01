@@ -5,15 +5,10 @@ import SiteHeader from "@/components/SiteHeader";
 import AllenamentiClient from "@/components/AllenamentiClient";
 import type { TeamsData } from "@/components/TeamDisplay";
 import type { Metadata } from "next";
+import { getSeasonStartDate } from "@/lib/seasonUtils";
 
 export const metadata: Metadata = { title: "Allenamenti | Karibu Baskin" };
 export const revalidate = 0;
-
-function getSeasonStart(): Date {
-  const now = new Date();
-  const year = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
-  return new Date(year, 7, 1);
-}
 
 export default async function AllenamentiPage() {
   const now = new Date();
@@ -60,7 +55,7 @@ export default async function AllenamentiPage() {
   let seasonTotal = 0;
 
   if (userId) {
-    const seasonStart = getSeasonStart();
+    const seasonStart = getSeasonStartDate();
 
     seasonTotal = sessions.filter((s) => {
       const d = new Date(s.date);

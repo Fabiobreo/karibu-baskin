@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import { slugify } from "@/lib/slugUtils";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
 
@@ -91,13 +92,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   if (!user || user.appRole === "GUEST") notFound();
 
-  // Stagione sportiva corrente (es. "2025-26") — settembre o dopo = nuova stagione
-  const now = new Date();
-  const currentSeason = (() => {
-    const y = now.getFullYear();
-    const start = now.getMonth() >= 8 ? y : y - 1;
-    return `${start}-${String(start + 1).slice(-2)}`;
-  })();
+  const currentSeason = getCurrentSeason();
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)

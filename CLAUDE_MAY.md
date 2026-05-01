@@ -177,3 +177,44 @@
 - `src/lib/schemas/session.test.ts`
 
 **Stato finale:** TypeScript 0 errori · 25 test files (335 test)
+
+---
+
+## 2026-05-01 (sessione 6)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 25 test files (335 test)
+
+### Azioni compiute
+
+**1. `src/lib/schemas/registration.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `RegistrationPostSchema`, `RegistrationPatchSchema` e `TeamMemberSchema`.
+- Casi coperti: payload minimo e completo, sessionId vuoto, ruoli fuori range (0, 6), ruolo non intero, name/note/roleVariant oltre limite, anonymousEmail malformata/vuota/troppo lunga, ids array vuoto, anonymousEmail nullable, refine userId XOR childId su TeamMemberSchema.
+
+**2. `src/lib/schemas/entities.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `ChildCreateSchema`, `ChildPatchSchema`, `EventCreateSchema`, `EventUpdateSchema`, `CompetitiveTeamCreateSchema`, `CompetitiveTeamUpdateSchema`, `OpposingTeamCreateSchema`, `OpposingTeamUpdateSchema`, `GroupCreateSchema`, `GroupUpdateSchema`, `GroupMatchCreateSchema`.
+- Casi chiave: formato stagione YYYY-YY, colore hex valido/non valido, refine homeTeamId ≠ awayTeamId su GroupMatchCreateSchema, gender enum, linkEmail valida/non valida, punteggio negativo.
+
+**3. Eliminazione duplicati inline di `getCurrentSeason` / `getSeasonStartDate`**
+- Trovate 8 occorrenze di calcoli inline per la stagione sportiva identici a quelli già centralizzati in `seasonUtils.ts`.
+- `allenamenti/page.tsx`: rimossa funzione locale `getSeasonStart()`, aggiunto import `getSeasonStartDate` da `seasonUtils`.
+- `profilo/page.tsx`: rimosso calcolo inline `seasonStart`/`currentSeason`, aggiunto import `getCurrentSeason`; semplificato anche il calcolo `attendanceBySeason` usando `getCurrentSeason(date)`.
+- `giocatori/[slug]/page.tsx`: rimosso IIFE locale, aggiunto import `getCurrentSeason`.
+- `classifiche/page.tsx`: rimosso calcolo inline `currentYear`/`currentSeason`, aggiunto import `getCurrentSeason`.
+- `ParentChildLinker.tsx`: rimosso calcolo inline `sy`/`currentSeason`, aggiunto import `getCurrentSeason`.
+- `RegistrationForm.tsx`: rimossi 3 IIFE identici `(() => { ... })()`, aggiunto import `getCurrentSeason`, sostituiti con `getCurrentSeason()`.
+- `SessionRestrictionEditor.tsx`: sostituita la funzione locale `seasonForDate` (identica a `getCurrentSeason`) con `export const seasonForDate = getCurrentSeason` — mantiene retrocompatibilità con i 6 file che la importano già.
+
+**File modificati:**
+- `src/app/allenamenti/page.tsx`
+- `src/app/profilo/page.tsx`
+- `src/app/giocatori/[slug]/page.tsx`
+- `src/app/classifiche/page.tsx`
+- `src/components/ParentChildLinker.tsx`
+- `src/components/RegistrationForm.tsx`
+- `src/components/SessionRestrictionEditor.tsx`
+
+**File creati:**
+- `src/lib/schemas/registration.test.ts`
+- `src/lib/schemas/entities.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 27 test files (439 test)
