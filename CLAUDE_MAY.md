@@ -95,3 +95,24 @@
 - Aggiunto controllo `res.ok` in `handleDeleteGm`: se il server restituisce errore, imposta `gmError` invece di rimuovere il risultato.
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning
+
+---
+
+## 2026-05-01 (sessione 4)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning
+
+### Azioni compiute
+
+**1. `src/components/AdminUserList.tsx` — Estrazione handleChildSort + slotProps**
+- Estratta la funzione `handleChildSort(col)` che accorpa la logica toggle-direzione ripetuta identicamente 3 volte negli onClick dei `TableSortLabel` della tabella figli (nome / ruolo Baskin / aggiunto il). Ogni handler era 3 righe `const newDir… setChildSortBy… setChildSortDir`; ora è una sola chiamata.
+- Sostituiti i 2 `InputProps={{ startAdornment: … }}` (barra ricerca utenti e barra ricerca figli) con `slotProps={{ input: { startAdornment: … } }}` (API corrente MUI v6).
+- Sostituito `InputLabelProps={{ shrink: true }}` nel campo data di nascita del dialog modifica con `slotProps={{ inputLabel: { shrink: true } }}`.
+
+**2. `src/components/RegistrationForm.tsx` — slotProps**
+- Sostituiti i 3 `inputProps={{ maxLength: … }}` (campo note allenatore, campo nome anonimo, campo email anonima, campo note atleta) con `slotProps={{ htmlInput: { maxLength: … } }}`.
+
+**3. `src/components/AdminAllenamentiClient.tsx` — slotProps**
+- Sostituiti i 3 `InputLabelProps={{ shrink: true }}` nei campi data/ora di inizio/fine del dialog modifica allenamento con `slotProps={{ inputLabel: { shrink: true } }}`.
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning
