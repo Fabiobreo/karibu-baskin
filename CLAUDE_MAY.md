@@ -245,3 +245,34 @@
 - `src/app/allenamento/[session]/page.tsx` (3 occorrenze: `getSessionStatus`, countdown effect, `isEnded`)
 
 **Stato finale:** TypeScript 0 errori · 27 test files (453 test)
+
+---
+
+## 2026-05-01 (sessione 8)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 27 test files (453 test)
+
+### Azioni compiute
+
+**1. `src/app/api/registrations/route.test.ts` — Copertura path childId + PATCH + DELETE**
+- Aggiornato il mock Prisma per includere `child.update`, `registration.findMany`, `registration.updateMany`, `registration.deleteMany`, `trainingSession.update` (necessari per i nuovi handler).
+- Aggiunti 8 test per il path `childId` (iscrizione figlio tramite genitore):
+  - 401 senza autenticazione, 404 figlio non trovato, 403 parentId non coincidente, 403 ruolo non ammesso, 409 figlio già iscritto, 409 figlio già iscritto tramite account collegato, 201 creazione ok, salvataggio ruolo suggerito quando assente.
+- Aggiunti 2 test per utente loggato: salvataggio `sportRoleSuggested` e 409 tramite genitore (linked child).
+- Aggiunti 3 test per `PATCH`: 403 non-staff, 400 body non valido, 200 con updated count corretto.
+- Aggiunti 4 test per `DELETE` (bulk per nome): 403 non-staff, 400 nome mancante, 204 senza iscrizioni trovate, 204 con delete + reset squadre allenamenti coinvolti.
+
+**2. `src/app/api/registrations/claim/route.test.ts` — Nuovo file di test**
+- Copertura completa del handler POST: 401 non autenticato, 401 senza nome sessione, fallback globale per nome, claim selettivo per ids, claimed=0 se nessun id eleggibile, fallback quando ids=[] (array vuoto).
+
+**3. `src/app/api/matches/route.test.ts` — Nuovo file di test**
+- Copertura completa di GET e POST: GET con e senza filtro teamId, POST 403 non-admin, 400 body non valido, 400 JSON malformato, 201 creazione ok, derivazione automatica risultato (WIN/DRAW/LOSS), 400 risultato esplicito incongruente, generazione slug, slug null quando team/avversario non trovati.
+
+**File modificati:**
+- `src/app/api/registrations/route.test.ts` (esteso)
+
+**File creati:**
+- `src/app/api/registrations/claim/route.test.ts`
+- `src/app/api/matches/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 29 test files (489 test)
