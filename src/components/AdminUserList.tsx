@@ -250,6 +250,12 @@ export default function AdminUserList({
     });
   }, [rows, childSearch, childSortBy, childSortDir]);
 
+  function handleChildSort(col: "name" | "createdAt" | "sportRole") {
+    const newDir = childSortBy === col ? (childSortDir === "asc" ? "desc" : "asc") : "asc";
+    setChildSortBy(col);
+    setChildSortDir(newDir);
+  }
+
   function handleSort(col: SortColumn) {
     const newDir = sortBy === col ? (sortDir === "asc" ? "desc" : "asc") : "asc";
     setSortBy(col);
@@ -425,12 +431,14 @@ export default function AdminUserList({
               }}
               size="small"
               sx={{ width: { xs: "100%", sm: 280 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
@@ -731,12 +739,14 @@ export default function AdminUserList({
               onChange={(e) => { setChildSearch(e.target.value); setChildPage(0); }}
               size="small"
               sx={{ width: { xs: "100%", sm: 280 } }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
@@ -755,11 +765,7 @@ export default function AdminUserList({
                     <TableSortLabel
                       active={childSortBy === "name"}
                       direction={childSortBy === "name" ? childSortDir : "asc"}
-                      onClick={() => {
-                        const newDir = childSortBy === "name" ? (childSortDir === "asc" ? "desc" : "asc") : "asc";
-                        setChildSortBy("name");
-                        setChildSortDir(newDir);
-                      }}
+                      onClick={() => handleChildSort("name")}
                     >
                       Nome
                     </TableSortLabel>
@@ -769,11 +775,7 @@ export default function AdminUserList({
                     <TableSortLabel
                       active={childSortBy === "sportRole"}
                       direction={childSortBy === "sportRole" ? childSortDir : "asc"}
-                      onClick={() => {
-                        const newDir = childSortBy === "sportRole" ? (childSortDir === "asc" ? "desc" : "asc") : "asc";
-                        setChildSortBy("sportRole");
-                        setChildSortDir(newDir);
-                      }}
+                      onClick={() => handleChildSort("sportRole")}
                     >
                       Baskin
                     </TableSortLabel>
@@ -783,11 +785,7 @@ export default function AdminUserList({
                     <TableSortLabel
                       active={childSortBy === "createdAt"}
                       direction={childSortBy === "createdAt" ? childSortDir : "asc"}
-                      onClick={() => {
-                        const newDir = childSortBy === "createdAt" ? (childSortDir === "asc" ? "desc" : "asc") : "asc";
-                        setChildSortBy("createdAt");
-                        setChildSortDir(newDir);
-                      }}
+                      onClick={() => handleChildSort("createdAt")}
                     >
                       Aggiunto il
                     </TableSortLabel>
@@ -1019,7 +1017,7 @@ export default function AdminUserList({
                 fullWidth size="small" type="date"
                 value={editState.birthDate}
                 onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
             </Box>
 

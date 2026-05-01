@@ -416,7 +416,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
               onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
               size="small"
               fullWidth
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               disabled={editLoading}
             />
             <Box sx={{ display: "flex", gap: 2 }}>
@@ -426,7 +426,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
                 value={editTime}
                 onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />
@@ -436,7 +436,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
                 value={editEndTime}
                 onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />

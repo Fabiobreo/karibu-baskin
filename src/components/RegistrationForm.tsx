@@ -428,7 +428,7 @@ export default function RegistrationForm({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             fullWidth size="small" multiline minRows={2}
-            inputProps={{ maxLength: 300 }}
+            slotProps={{ htmlInput: { maxLength: 300 } }}
             disabled={loading}
             helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
             sx={{ mb: 1.5 }}
@@ -523,7 +523,7 @@ export default function RegistrationForm({
                 value={anonymousName}
                 onChange={(e) => setAnonymousName(e.target.value)}
                 fullWidth size="small"
-                inputProps={{ maxLength: 60 }}
+                slotProps={{ htmlInput: { maxLength: 60 } }}
                 sx={{ mb: 1.5 }}
                 disabled={loading}
                 error={isDuplicateName}
@@ -535,7 +535,7 @@ export default function RegistrationForm({
                 value={anonymousEmail}
                 onChange={(e) => setAnonymousEmail(e.target.value)}
                 fullWidth size="small"
-                inputProps={{ maxLength: 254 }}
+                slotProps={{ htmlInput: { maxLength: 254 } }}
                 sx={{ mb: 2 }}
                 disabled={loading}
                 helperText="Serve per collegare questa iscrizione al tuo account futuro"
@@ -655,7 +655,7 @@ export default function RegistrationForm({
                     size="small"
                     multiline
                     minRows={2}
-                    inputProps={{ maxLength: 300 }}
+                    slotProps={{ htmlInput: { maxLength: 300 } }}
                     disabled={loading}
                     helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
                     sx={{ mb: 1.5 }}
