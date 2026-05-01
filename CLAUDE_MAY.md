@@ -276,3 +276,40 @@
 - `src/app/api/matches/route.test.ts`
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning · 29 test files (489 test)
+
+---
+
+## 2026-05-02
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 29 test files (489 test)
+
+### Azioni compiute
+
+**1. `src/lib/schemas/group.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `GroupCreateSchema`, `GroupUpdateSchema` e `GroupMatchCreateSchema`.
+- Casi chiave: formato stagione `YYYY-YY` (rifiuta `YYYY-YYYY` e testo libero), `teamId` obbligatorio, `championship` oltre 200 caratteri, refine `homeTeamId ≠ awayTeamId` con relativo messaggio d'errore, `matchday` min 1 (rifiuta 0), `homeScore` null (partita non disputata), `awayScore` negativo.
+
+**2. `src/lib/schemas/competitiveTeam.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `CompetitiveTeamCreateSchema` e `CompetitiveTeamUpdateSchema`.
+- Casi chiave: colore hex `#RRGGBB` valido (maiuscolo/minuscolo/misto), rifiuto shorthand `#RGB`, rifiuto senza `#`, rifiuto caratteri non esadecimali, formato stagione, `color`/`championship`/`description` null per reset in update.
+
+**3. `src/lib/schemas/child.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `ChildCreateSchema` e `ChildPatchSchema`.
+- Casi coperti: `sportRole` range 1-5 (rifiuta 0 e 6), non intero, null; `gender` enum MALE/FEMALE (rifiuta OTHER), null; `sportRoleVariant` max 50 caratteri; `linkEmail` valida/non valida; `unlinkAccount` boolean.
+
+**4. `src/lib/schemas/event.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `EventCreateSchema` e `EventUpdateSchema`.
+- Casi coperti: titolo/data obbligatori, messaggi d'errore localizzati, `endDate`/`location`/`description` nullable in update, limiti caratteri.
+
+**5. `src/lib/schemas/opposingTeam.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `OpposingTeamCreateSchema` e `OpposingTeamUpdateSchema`.
+- Casi coperti: nome obbligatorio, limiti `city` e `notes`, reset con null in update.
+
+**File creati:**
+- `src/lib/schemas/group.test.ts`
+- `src/lib/schemas/competitiveTeam.test.ts`
+- `src/lib/schemas/child.test.ts`
+- `src/lib/schemas/event.test.ts`
+- `src/lib/schemas/opposingTeam.test.ts`
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 34 test files (592 test)
