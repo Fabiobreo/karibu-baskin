@@ -1,5 +1,32 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione automatica)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 34 test files (592 test)
+
+### Azioni compiute
+
+**1. `src/app/api/competitive-teams/route.test.ts` — Nuovo file di test**
+- Aggiunta copertura completa per GET e POST.
+- Casi chiave: GET restituisce lista squadre + array vuoto; POST 403 non-admin, 400 body non valido (nome mancante), 400 stagione formato errato (`YYYY-YYYY`), 409 quando già 2 squadre per stagione (business rule critica), 201 creazione con trim nome, 201 seconda squadra (count=1), 400 JSON malformato.
+
+**2. `src/app/api/competitive-teams/[teamId]/route.test.ts` — Nuovo file di test**
+- Aggiunta copertura per GET, PUT, DELETE.
+- Casi chiave: GET 200 con memberships + matches, 404 non trovata; PUT 403 non-admin, 400 colore hex errato, 200 con trim nome, 200 reset colore a null; DELETE 403 non-admin, 204 con chiamata prisma.delete corretta.
+
+**3. `src/app/api/matches/[matchId]/route.test.ts` — Nuovo file di test**
+- Aggiunta copertura per GET, PUT (complesso), DELETE.
+- Casi chiave: GET 200 con playerStats, 404 non trovata; PUT 403 non-admin, 400 JSON malformato, 200 aggiornamento base, derivazione automatica WIN/LOSS dai punteggi, 400 risultato esplicito incongruente con punteggio, invio push notification al primo risultato (fire-and-forget), nessuna push se risultato già impostato; DELETE 403 non-admin, 204.
+
+**File creati:**
+- `src/app/api/competitive-teams/route.test.ts`
+- `src/app/api/competitive-teams/[teamId]/route.test.ts`
+- `src/app/api/matches/[matchId]/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 37 test files (621 test)
+
+---
+
 ## 2026-04-30
 
 **Stato di salute iniziale:** TypeScript 0 errori · ESLint 24 warning (0 errori)
