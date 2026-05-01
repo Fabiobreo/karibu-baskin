@@ -28,13 +28,7 @@ import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import ShareSection from "@/components/ShareSection";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
-
-function toLocalDateString(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function toLocalTimeString(d: Date) {
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
+import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 

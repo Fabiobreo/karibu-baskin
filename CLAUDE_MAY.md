@@ -116,3 +116,37 @@
 - Sostituiti i 3 `InputLabelProps={{ shrink: true }}` nei campi data/ora di inizio/fine del dialog modifica allenamento con `slotProps={{ inputLabel: { shrink: true } }}`.
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning
+
+---
+
+## 2026-05-01 (sessione 5)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 19 test files (257 test)
+
+### Azioni compiute
+
+**1. `src/lib/dateUtils.ts` — Nuovo file (shared utility)**
+- Estratte `toLocalDateString(d: Date)` e `toLocalTimeString(d: Date)` che erano definite identicamente in 3 file separati (`AllenamentiClient.tsx`, `AdminAllenamentiClient.tsx`, `allenamento/[session]/page.tsx`).
+- I 3 file ora importano da `@/lib/dateUtils` invece di ridefinire localmente le funzioni.
+
+**File modificati:**
+- `src/lib/dateUtils.ts` (creato)
+- `src/components/AllenamentiClient.tsx` (import sostituisce definizione locale)
+- `src/components/AdminAllenamentiClient.tsx` (idem)
+- `src/app/allenamento/[session]/page.tsx` (idem)
+
+**2. `src/lib/schemas/match.ts` + route match — Estrazione `deriveResult`**
+- La funzione `deriveResult(ourScore, theirScore): MatchResult` era duplicata identicamente in `src/app/api/matches/route.ts` e `src/app/api/matches/[matchId]/route.ts`.
+- Estratta come export named in `src/lib/schemas/match.ts` (dove vengono già importati i Zod schema) ed eliminata dai due route file.
+
+**File modificati:**
+- `src/lib/schemas/match.ts` (aggiunta `deriveResult` + import `MatchResult`)
+- `src/app/api/matches/route.ts` (rimossa def locale, aggiunto import)
+- `src/app/api/matches/[matchId]/route.ts` (rimossa def locale, aggiunto import)
+
+**3. `src/lib/schemas/match.test.ts` — Nuovo file di test**
+- Aggiunta suite di test per tutte le funzioni e schemi del file `match.ts`.
+- Copertura: `deriveResult` (WIN/LOSS/DRAW), `MatchCreateSchema` (campi obbligatori, valori non validi, limiti), `MatchUpdateSchema` (tutti opzionali, reset con null), `PlayerStatsEntrySchema` (refinement userId XOR childId, limiti fouls/points/notes), `PlayerStatsBatchSchema` (max 50 voci), `CallupsSchema` (default array vuoti, max 100 voci).
+- Totale: 301 test, 22 test file — tutti verdi.
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 22 test files (301 test)

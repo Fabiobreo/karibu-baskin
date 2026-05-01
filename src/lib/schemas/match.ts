@@ -1,4 +1,12 @@
 import { z } from "zod";
+import type { MatchResult } from "@prisma/client";
+
+/** Derives WIN/LOSS/DRAW from raw scores. */
+export function deriveResult(ourScore: number, theirScore: number): MatchResult {
+  if (ourScore > theirScore) return "WIN";
+  if (ourScore < theirScore) return "LOSS";
+  return "DRAW";
+}
 
 export const MatchCreateSchema = z.object({
   teamId: z.string().min(1),

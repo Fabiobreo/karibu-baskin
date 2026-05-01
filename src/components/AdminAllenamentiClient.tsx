@@ -60,12 +60,7 @@ function getStatus(date: Date, endTime: Date | null): StatusInfo {
   return { label: `Tra ${diffDays} giorni`, color: "#1565C0" };
 }
 
-function toLocalDateString(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function toLocalTimeString(d: Date) {
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
+import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
 
 // ── Componente principale ─────────────────────────────────────────────────────
 

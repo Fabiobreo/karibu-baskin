@@ -3,17 +3,10 @@ import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
-import { MatchUpdateSchema } from "@/lib/schemas/match";
+import { MatchUpdateSchema, deriveResult } from "@/lib/schemas/match";
 import { generateMatchSlug } from "@/lib/slugUtils";
-import type { MatchResult } from "@prisma/client";
 
 type Params = { params: Promise<{ matchId: string }> };
-
-function deriveResult(ourScore: number, theirScore: number): MatchResult {
-  if (ourScore > theirScore) return "WIN";
-  if (ourScore < theirScore) return "LOSS";
-  return "DRAW";
-}
 
 export async function GET(_req: Request, { params }: Params) {
   const { matchId } = await params;

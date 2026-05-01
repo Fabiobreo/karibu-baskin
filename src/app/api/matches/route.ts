@@ -1,15 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { MatchCreateSchema } from "@/lib/schemas/match";
+import { MatchCreateSchema, deriveResult } from "@/lib/schemas/match";
 import { generateMatchSlug } from "@/lib/slugUtils";
 import type { MatchResult } from "@prisma/client";
-
-function deriveResult(ourScore: number, theirScore: number): MatchResult {
-  if (ourScore > theirScore) return "WIN";
-  if (ourScore < theirScore) return "LOSS";
-  return "DRAW";
-}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
