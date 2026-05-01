@@ -106,6 +106,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     }
   }, [monthKey]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
   const prevMonth = () => {
@@ -702,6 +703,7 @@ function CreateEventDialog({
   // Load teams/opponents when match tab is selected
   useEffect(() => {
     if (tab === "match" && isAdmin && teams.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTeamsLoading(true);
       Promise.all([
         fetch("/api/competitive-teams").then((r) => r.json()),

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useHasMounted } from "@/lib/useHasMounted";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BottomNavigation, BottomNavigationAction, Badge, Avatar, Box, Paper,
@@ -17,8 +17,7 @@ export default function BottomNav() {
   const pathnameRaw = usePathname();
   const { data: session, status } = useSession();
   const { unreadCount } = useNotifications();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const mounted = useHasMounted();
 
   // Calcola la voce attiva in base al pathname
   const pathname = mounted ? pathnameRaw : "/";

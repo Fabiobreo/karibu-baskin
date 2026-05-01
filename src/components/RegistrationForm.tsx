@@ -122,6 +122,7 @@ export default function RegistrationForm({
     // Aggiorna solo se il soggetto è ancora "self" (valore iniziale prima che i figli fossero disponibili)
     if (subject === "self") {
       const firstAvailable = parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ?? parentChildren[0];
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubject(firstAvailable.id);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,6 +134,7 @@ export default function RegistrationForm({
     const r = subject === "self" ? currentUser?.sportRole : selectedChild?.sportRole;
     const v = subject === "self" ? currentUser?.sportRoleVariant : selectedChild?.sportRoleVariant;
     if (r != null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase("confirm");
       setChosenRole({ role: r, variant: v ?? undefined });
     } else {

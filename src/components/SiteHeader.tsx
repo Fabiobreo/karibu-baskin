@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useHasMounted } from "@/lib/useHasMounted";
 import { useRouter } from "next/navigation";
 import {
   AppBar, Toolbar, Box, Button, IconButton,
@@ -46,7 +47,7 @@ export default function SiteHeader() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [partiteAnchor, setPartiteAnchor] = useState<null | HTMLElement>(null);
   const [partiteOpen, setPartiteOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHasMounted();
   const pathnameRaw = usePathname();
   const pathname = mounted ? pathnameRaw : null;
   const partiteActive = pathname === "/risultati" || pathname === "/classifiche"
@@ -61,8 +62,6 @@ export default function SiteHeader() {
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
     : "?";
-  useEffect(() => { setMounted(true); }, []);
-
   return (
     <>
       <AppBar position="sticky" color="secondary" elevation={0} sx={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>

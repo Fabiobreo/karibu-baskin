@@ -42,6 +42,7 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
   const [loadingTeams, setLoadingTeams] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingTeams(true);
     fetch("/api/competitive-teams")
       .then((r) => r.json())

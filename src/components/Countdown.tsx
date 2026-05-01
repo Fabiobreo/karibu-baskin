@@ -20,6 +20,7 @@ export default function Countdown({ date }: { date: string | Date }) {
   const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRemaining(target - Date.now());
     const interval = setInterval(() => {
       const r = target - Date.now();

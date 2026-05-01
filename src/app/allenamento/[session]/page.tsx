@@ -279,6 +279,7 @@ export default function SessionPage() {
   const sessionId = realSessionId || sessionParam;
 
   const [sessionUrl, setSessionUrl] = useState(`https://karibu-baskin.vercel.app/allenamento/${sessionParam}`);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setSessionUrl(window.location.href); }, []);
 
   // ── Countdown live ──────────────────────────────────────────────────────────
@@ -286,6 +287,7 @@ export default function SessionPage() {
   useEffect(() => {
     const dateStr = session?.date ?? null;
     const endStr = session?.endTime ?? null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!dateStr) { setCountdown(null); return; }
 
     const sd = new Date(dateStr);
