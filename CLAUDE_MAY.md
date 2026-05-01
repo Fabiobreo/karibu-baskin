@@ -52,3 +52,22 @@
   - `src/app/allenamento/[session]/page.tsx` (countdown + sessionUrl)
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning (−22)
+
+---
+
+## 2026-05-01 (sessione 2)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 268 test passati
+
+### Azioni compiute
+
+**1. `src/components/AllenamentiClient.tsx`**
+- Aggiunto `isSameDay` all'import da `date-fns` (già dipendenza del progetto).
+- Rimossa la funzione `isSameDay` definita localmente inline (righe ~804-808) che duplicava quella di date-fns.
+
+**2. `src/components/AdminPartiteClient.tsx`**
+- Aggiunto import di `seasonForDate` da `@/components/SessionRestrictionEditor` (funzione già esportata, identica alla copia locale).
+- Rimossa la funzione `seasonForDate` definita localmente (righe ~102-107), eliminando la duplicazione.
+- Estratta la costante `EMPTY_GM_FORM` per il reset del form del girone, che appariva letteralmente 3 volte come oggetto inline identico (`{ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" }`).
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 268 test passati

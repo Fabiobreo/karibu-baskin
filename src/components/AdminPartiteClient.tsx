@@ -23,6 +23,7 @@ import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
 import MatchCalloupsDialog from "@/components/MatchCalloupsDialog";
 import MatchStatsDialog from "@/components/MatchStatsDialog";
+import { seasonForDate } from "@/components/SessionRestrictionEditor";
 
 type Team = { id: string; name: string; season: string; color: string | null };
 type OpposingTeam = { id: string; name: string; city: string | null };
@@ -99,12 +100,7 @@ const emptyMatchForm = {
   groupId: "" as string,
 };
 
-function seasonForDate(dateStr: string): string {
-  const d = dateStr ? new Date(dateStr) : new Date();
-  const y = d.getFullYear();
-  const s = d.getMonth() >= 8 ? y : y - 1;
-  return `${s}-${String(s + 1).slice(-2)}`;
-}
+const EMPTY_GM_FORM = { matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" };
 
 function deriveResultFromScores(ourScore: string, theirScore: string): MatchResult | "" {
   const our = parseInt(ourScore, 10);
@@ -139,7 +135,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [gmGroup,   setGmGroup]   = useState<Group | null>(null);
   const [gmMatches, setGmMatches] = useState<GroupMatchItem[]>([]);
   const [gmLoading, setGmLoading] = useState(false);
-  const [gmForm,    setGmForm]    = useState({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
+  const [gmForm,    setGmForm]    = useState(EMPTY_GM_FORM);
   const [gmError,   setGmError]   = useState("");
   const [editGm,    setEditGm]    = useState<GroupMatchItem | null>(null);
 
@@ -307,7 +303,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     setGmError("");
     setEditGm(null);
     setGmMatches([]);
-    setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
+    setGmForm(EMPTY_GM_FORM);
     setGmLoading(true);
     const res = await fetch(`/api/groups/${group.id}`);
     if (res.ok) {
@@ -356,7 +352,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       const created = await res.json() as GroupMatchItem;
       setGmMatches((prev) => [...prev, created].sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)));
     }
-    setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" });
+    setGmForm(EMPTY_GM_FORM);
   }
 
   async function handleDeleteGm(id: string) {
@@ -831,7 +827,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                     {editGm ? "Salva" : "Aggiungi"}
                   </Button>
                   {editGm && (
-                    <Button variant="outlined" onClick={() => { setEditGm(null); setGmForm({ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" }); setGmError(""); }}>
+                    <Button variant="outlined" onClick={() => { setEditGm(null); setGmForm(EMPTY_GM_FORM); setGmError(""); }}>
                       Annulla
                     </Button>
                   )}

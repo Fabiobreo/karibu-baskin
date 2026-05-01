@@ -41,7 +41,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import TeamsModal from "@/components/TeamsModal";
@@ -800,12 +800,6 @@ export default function AllenamentiClient({
 
   const registeredSet = new Set(registeredSessionIds);
   const [firstSession, secondSession, ...remainingUpcoming] = upcoming;
-
-  function isSameDay(a: Date, b: Date) {
-    return a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate();
-  }
 
   const showSecondHero = !!secondSession &&
     isSameDay(new Date(firstSession.date), new Date(secondSession.date));
