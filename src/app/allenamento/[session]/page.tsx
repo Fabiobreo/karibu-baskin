@@ -28,7 +28,7 @@ import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import ShareSection from "@/components/ShareSection";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
-import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
+import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
@@ -71,7 +71,7 @@ const TEAM_META = [
 
 function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
   const now = new Date();
-  const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
+  const end = sessionEndDate(date, endTime);
 
   if (now >= date && now <= end) {
     return { label: "In corso", bgcolor: "#2E7D32" };
@@ -285,7 +285,7 @@ export default function SessionPage() {
     if (!dateStr) { setCountdown(null); return; }
 
     const sd = new Date(dateStr);
-    const se = endStr ? new Date(endStr) : new Date(sd.getTime() + 2 * 60 * 60 * 1000);
+    const se = sessionEndDate(sd, endStr ? new Date(endStr) : null);
 
     function update() {
       const now = new Date();
@@ -388,7 +388,7 @@ export default function SessionPage() {
     registrations.filter((r) => r.userSlug).map((r) => [r.id, r.userSlug!])
   );
   const isEnded = sessionDate
-    ? new Date() > (sessionEnd ?? new Date(sessionDate.getTime() + 2 * 60 * 60 * 1000))
+    ? new Date() > sessionEndDate(sessionDate, sessionEnd)
     : false;
 
   const myRegistration = currentUser

@@ -49,7 +49,7 @@ type StatusInfo = { label: string; color: string };
 
 function getStatus(date: Date, endTime: Date | null): StatusInfo {
   const now = new Date();
-  const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
+  const end = sessionEndDate(date, endTime);
   if (now >= date && now <= end) return { label: "In corso", color: "#2E7D32" };
   if (now > end) return { label: "Terminato", color: "#9E9E9E" };
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -60,7 +60,7 @@ function getStatus(date: Date, endTime: Date | null): StatusInfo {
   return { label: `Tra ${diffDays} giorni`, color: "#1565C0" };
 }
 
-import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
+import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
@@ -223,9 +223,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
   const inCorso = [...sessions]
     .filter((s) => {
       const start = new Date(s.date);
-      const end = s.endTime
-        ? new Date(s.endTime)
-        : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+      const end = sessionEndDate(start, s.endTime ? new Date(s.endTime) : null);
       return now >= start && now <= end;
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -236,9 +234,7 @@ export default function AdminAllenamentiClient({ initialSessions }: { initialSes
 
   const past = [...sessions]
     .filter((s) => {
-      const end = s.endTime
-        ? new Date(s.endTime)
-        : new Date(new Date(s.date).getTime() + 2 * 60 * 60 * 1000);
+      const end = sessionEndDate(new Date(s.date), s.endTime ? new Date(s.endTime) : null);
       return end < now;
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

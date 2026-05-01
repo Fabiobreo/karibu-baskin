@@ -7,3 +7,10 @@ export function toLocalDateString(d: Date): string {
 export function toLocalTimeString(d: Date): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
+
+const SESSION_DURATION_MS = 2 * 60 * 60 * 1000; // 2 ore di default
+
+/** Restituisce l'orario di fine sessione: endTime se presente, altrimenti start + 2 ore. */
+export function sessionEndDate(start: Date, endTime?: Date | null): Date {
+  return endTime ?? new Date(start.getTime() + SESSION_DURATION_MS);
+}

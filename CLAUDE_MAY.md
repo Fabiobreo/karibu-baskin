@@ -218,3 +218,30 @@
 - `src/lib/schemas/entities.test.ts`
 
 **Stato finale:** TypeScript 0 errori · 27 test files (439 test)
+
+---
+
+## 2026-05-01 (sessione 7)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 27 test files (439 test)
+
+### Azioni compiute
+
+**1. `src/lib/registrationRestrictions.test.ts` — Copertura test mancante**
+- Aggiunti 10 test per casi non coperti:
+  - `COACH` come atleta (registeredAsCoach=false) con restrizione ruolo → bloccato; con restrizione squadra non-membro → bloccato; con restrizione squadra membro → ammesso.
+  - `null` (anonimo) con restrizione ruolo (ruolo fuori lista) → bloccato; con ruolo in lista → ammesso; con restrizione squadra → bloccato; con ruolo aperto → ammesso; con restrizione combinata → bloccato per ruolo poi per squadra.
+- La suite di test documenta ora il comportamento preciso: COACH senza `registeredAsCoach=true` segue le stesse regole di ATHLETE/PARENT; gli anonimi sono bloccati da team restriction (isInRestrictedTeam sempre false) ma bypassati da ruoli aperti.
+
+**2. `src/lib/dateUtils.ts` — Estrazione `sessionEndDate`**
+- Aggiunta funzione `sessionEndDate(start, endTime?)` che centralizza il calcolo dell'orario di fine sessione: usa `endTime` se presente, altrimenti `start + 2 ore`.
+- Rimossi 5 calcoli inline `endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000)` ripetuti nei file che già importavano `dateUtils`.
+
+**File modificati:**
+- `src/lib/dateUtils.ts` (aggiunta `sessionEndDate`)
+- `src/lib/dateUtils.test.ts` (aggiunta suite di 4 test per `sessionEndDate`)
+- `src/components/AllenamentiClient.tsx` (2 occorrenze migrated)
+- `src/components/AdminAllenamentiClient.tsx` (3 occorrenze: `getStatus`, `inCorso`, `past`)
+- `src/app/allenamento/[session]/page.tsx` (3 occorrenze: `getSessionStatus`, countdown effect, `isEnded`)
+
+**Stato finale:** TypeScript 0 errori · 27 test files (453 test)

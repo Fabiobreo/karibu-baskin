@@ -48,7 +48,7 @@ import TeamsModal from "@/components/TeamsModal";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import AdminSessionForm from "@/components/AdminSessionForm";
 
-import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
+import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
 // ── Costanti squadre ──────────────────────────────────────────────────────────
@@ -589,7 +589,7 @@ function deriveSections(sessions: SessionWithCount[], now: Date) {
 
   const inCorso = sessions.filter((s) => {
     const start = new Date(s.date);
-    const end = s.endTime ? new Date(s.endTime) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const end = sessionEndDate(start, s.endTime ? new Date(s.endTime) : null);
     return now >= start && now <= end;
   }).sort(asc);
 
@@ -599,7 +599,7 @@ function deriveSections(sessions: SessionWithCount[], now: Date) {
 
   const past = sessions
     .filter((s) => {
-      const end = s.endTime ? new Date(s.endTime) : new Date(new Date(s.date).getTime() + 2 * 60 * 60 * 1000);
+      const end = sessionEndDate(new Date(s.date), s.endTime ? new Date(s.endTime) : null);
       return end < now;
     })
     .sort(desc);

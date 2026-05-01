@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toLocalDateString, toLocalTimeString } from "./dateUtils";
+import { toLocalDateString, toLocalTimeString, sessionEndDate } from "./dateUtils";
 
 describe("toLocalDateString()", () => {
   it("formatta una data come YYYY-MM-DD", () => {
@@ -33,5 +33,30 @@ describe("toLocalTimeString()", () => {
 
   it("gestisce orario di fine giornata", () => {
     expect(toLocalTimeString(new Date(2025, 0, 1, 23, 59))).toBe("23:59");
+  });
+});
+
+describe("sessionEndDate()", () => {
+  const start = new Date(2025, 5, 9, 18, 0, 0);
+
+  it("usa endTime quando fornito", () => {
+    const end = new Date(2025, 5, 9, 20, 30, 0);
+    expect(sessionEndDate(start, end)).toBe(end);
+  });
+
+  it("usa start + 2 ore quando endTime è null", () => {
+    const result = sessionEndDate(start, null);
+    expect(result.getTime()).toBe(start.getTime() + 2 * 60 * 60 * 1000);
+  });
+
+  it("usa start + 2 ore quando endTime è undefined", () => {
+    const result = sessionEndDate(start);
+    expect(result.getTime()).toBe(start.getTime() + 2 * 60 * 60 * 1000);
+  });
+
+  it("il fallback a 2 ore produce l'orario corretto", () => {
+    const result = sessionEndDate(new Date(2025, 5, 9, 19, 0, 0));
+    expect(result.getHours()).toBe(21);
+    expect(result.getMinutes()).toBe(0);
   });
 });
