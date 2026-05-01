@@ -266,8 +266,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       "Elimina partita",
       "Eliminare questa partita? Verranno eliminate anche le statistiche dei giocatori.",
       () => startTransition(async () => {
-        await fetch(`/api/matches/${id}`, { method: "DELETE" });
-        setMatches((prev) => prev.filter((m) => m.id !== id));
+        const res = await fetch(`/api/matches/${id}`, { method: "DELETE" });
+        if (res.ok) setMatches((prev) => prev.filter((m) => m.id !== id));
+        else setError("Errore nell'eliminazione della partita");
       }),
     );
   }
@@ -292,8 +293,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       "Elimina squadra avversaria",
       `Eliminare la squadra avversaria "${name}"?`,
       () => startTransition(async () => {
-        await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
-        setOpponents((prev) => prev.filter((o) => o.id !== id));
+        const res = await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
+        if (res.ok) setOpponents((prev) => prev.filter((o) => o.id !== id));
+        else setError("Errore nell'eliminazione della squadra avversaria");
       }),
     );
   }
@@ -357,8 +359,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
   async function handleDeleteGm(id: string) {
     if (!gmGroup) return;
-    await fetch(`/api/groups/${gmGroup.id}/matches/${id}`, { method: "DELETE" });
-    setGmMatches((prev) => prev.filter((m) => m.id !== id));
+    const res = await fetch(`/api/groups/${gmGroup.id}/matches/${id}`, { method: "DELETE" });
+    if (res.ok) setGmMatches((prev) => prev.filter((m) => m.id !== id));
+    else setGmError("Errore nell'eliminazione del risultato");
   }
 
   return (

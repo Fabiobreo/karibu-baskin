@@ -71,3 +71,27 @@
 - Estratta la costante `EMPTY_GM_FORM` per il reset del form del girone, che appariva letteralmente 3 volte come oggetto inline identico (`{ matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" }`).
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning · 268 test passati
+
+---
+
+## 2026-05-01 (sessione 3)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning
+
+### Azioni compiute
+
+**1. `src/components/AllenamentiClient.tsx`**
+- Rinominata la variabile di destructuring `sessions` in `monthSessions` nel `monthGroups.map(([month, sessions]) => ...)` per eliminare il shadowing della variabile di stato esterna `sessions`, riducendo rischi di confusione e bug silenti.
+- Sostituiti 3 occorrenze di `InputLabelProps={{ shrink: true }}` (deprecated MUI v6) con `slotProps={{ inputLabel: { shrink: true } }}` nei campi data/ora del dialog di modifica allenamento.
+
+**2. `src/components/CalendarClient.tsx`**
+- Sostituiti i type hack `undefined as unknown as string` con `""` nelle 5 chiamate `setErrors(...)` che puliscono i campi di errore durante la digitazione — più leggibili e type-safe.
+- Sostituiti 3 occorrenze di `InputLabelProps={{ shrink: true }}` (deprecated MUI v6) con `slotProps={{ inputLabel: { shrink: true } }}` nei campi time/date del dialog crea evento.
+- Sostituito `inputProps={{ min: dateStr }}` (deprecated) con `slotProps={{ htmlInput: { min: dateStr } }}` nel campo data fine evento.
+
+**3. `src/components/AdminPartiteClient.tsx`**
+- Aggiunto controllo `res.ok` in `handleDeleteMatch`: se il server restituisce errore, aggiorna `error` state invece di rimuovere l'elemento dall'elenco (previene desync tra UI e DB).
+- Aggiunto controllo `res.ok` in `handleDeleteOpponent`: stesso pattern di sicurezza.
+- Aggiunto controllo `res.ok` in `handleDeleteGm`: se il server restituisce errore, imposta `gmError` invece di rimuovere il risultato.
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning

@@ -921,7 +921,7 @@ export default function AllenamentiClient({
           </Box>
 
           {/* Gruppi per mese */}
-          {monthGroups.map(([month, sessions]) => (
+          {monthGroups.map(([month, monthSessions]) => (
             <Box key={month} sx={{ mb: 2.5 }}>
               <Box
                 sx={{
@@ -949,8 +949,8 @@ export default function AllenamentiClient({
                   color="text.disabled"
                   sx={{ whiteSpace: "nowrap" }}
                 >
-                  {sessions.length}{" "}
-                  {sessions.length === 1 ? "allenamento" : "allenamenti"}
+                  {monthSessions.length}{" "}
+                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
                 </Typography>
               </Box>
               <Paper
@@ -958,7 +958,7 @@ export default function AllenamentiClient({
                 variant="outlined"
                 sx={{ borderRadius: 2, overflow: "hidden" }}
               >
-                {sessions.map((s, i) => (
+                {monthSessions.map((s, i) => (
                   <Box key={s.id}>
                     {i > 0 && <Divider />}
                     <SessionRow
@@ -1094,7 +1094,7 @@ export default function AllenamentiClient({
               onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
               size="small"
               fullWidth
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               disabled={editLoading}
             />
             <Box sx={{ display: "flex", gap: 2 }}>
@@ -1104,7 +1104,7 @@ export default function AllenamentiClient({
                 value={editTime}
                 onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />
@@ -1114,7 +1114,7 @@ export default function AllenamentiClient({
                 value={editEndTime}
                 onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />

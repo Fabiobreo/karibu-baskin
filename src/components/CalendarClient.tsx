@@ -867,7 +867,7 @@ function CreateEventDialog({
             <TextField
               label="Titolo"
               value={trainTitle}
-              onChange={(e) => { setTrainTitle(e.target.value); setErrors((p) => ({ ...p, trainTitle: undefined as unknown as string })); }}
+              onChange={(e) => { setTrainTitle(e.target.value); setErrors((p) => ({ ...p, trainTitle: "" })); }}
               fullWidth
               size="small"
               error={!!errors.trainTitle}
@@ -879,9 +879,9 @@ function CreateEventDialog({
                 label="Inizio"
                 type="time"
                 value={trainStart}
-                onChange={(e) => { setTrainStart(e.target.value); setErrors((p) => ({ ...p, trainStart: undefined as unknown as string, trainEnd: undefined as unknown as string })); }}
+                onChange={(e) => { setTrainStart(e.target.value); setErrors((p) => ({ ...p, trainStart: "", trainEnd: "" })); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ flex: 1 }}
                 error={!!errors.trainStart}
                 helperText={errors.trainStart}
@@ -891,9 +891,9 @@ function CreateEventDialog({
                 label="Fine"
                 type="time"
                 value={trainEnd}
-                onChange={(e) => { setTrainEnd(e.target.value); setErrors((p) => ({ ...p, trainEnd: undefined as unknown as string })); }}
+                onChange={(e) => { setTrainEnd(e.target.value); setErrors((p) => ({ ...p, trainEnd: "" })); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ flex: 1 }}
                 error={!!errors.trainEnd}
                 helperText={errors.trainEnd}
@@ -916,7 +916,7 @@ function CreateEventDialog({
             <TextField
               label="Titolo"
               value={eventTitle}
-              onChange={(e) => { setEventTitle(e.target.value); setErrors((p) => ({ ...p, eventTitle: undefined as unknown as string })); }}
+              onChange={(e) => { setEventTitle(e.target.value); setErrors((p) => ({ ...p, eventTitle: "" })); }}
               fullWidth
               size="small"
               error={!!errors.eventTitle}
@@ -938,8 +938,7 @@ function CreateEventDialog({
               value={eventEndDate}
               onChange={(e) => setEventEndDate(e.target.value)}
               size="small"
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ min: dateStr }}
+              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: dateStr } }}
               fullWidth
               disabled={loading}
               helperText="Lascia vuoto per evento di un solo giorno"
@@ -968,7 +967,7 @@ function CreateEventDialog({
                   <InputLabel shrink>Squadra</InputLabel>
                   <Select
                     value={matchTeamId}
-                    onChange={(e) => { setMatchTeamId(e.target.value); setErrors((p) => ({ ...p, matchTeamId: undefined as unknown as string })); }}
+                    onChange={(e) => { setMatchTeamId(e.target.value); setErrors((p) => ({ ...p, matchTeamId: "" })); }}
                     label="Squadra"
                     notched
                     disabled={loading}
@@ -984,7 +983,7 @@ function CreateEventDialog({
                   <InputLabel shrink>Avversario</InputLabel>
                   <Select
                     value={matchOpponentId}
-                    onChange={(e) => { setMatchOpponentId(e.target.value); setErrors((p) => ({ ...p, matchOpponentId: undefined as unknown as string })); }}
+                    onChange={(e) => { setMatchOpponentId(e.target.value); setErrors((p) => ({ ...p, matchOpponentId: "" })); }}
                     label="Avversario"
                     notched
                     disabled={loading}
@@ -1002,9 +1001,9 @@ function CreateEventDialog({
                   label="Orario"
                   type="time"
                   value={matchTime}
-                  onChange={(e) => { setMatchTime(e.target.value); setErrors((p) => ({ ...p, matchTime: undefined as unknown as string })); }}
+                  onChange={(e) => { setMatchTime(e.target.value); setErrors((p) => ({ ...p, matchTime: "" })); }}
                   size="small"
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                   error={!!errors.matchTime}
                   helperText={errors.matchTime}
                   disabled={loading}
