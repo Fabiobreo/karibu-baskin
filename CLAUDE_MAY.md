@@ -150,3 +150,30 @@
 - Totale: 301 test, 22 test file — tutti verdi.
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning · 22 test files (301 test)
+
+---
+
+## 2026-05-01
+
+**Stato di salute iniziale:** TypeScript 0 errori · 22 test files (301 test)
+
+### Azioni compiute
+
+**1. `src/lib/seasonUtils.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `getCurrentSeason()` e `getSeasonStartDate()`, entrambe prive di test nonostante siano utility critiche usate in tutto il codebase.
+- Casi coperti: confine agosto/settembre (mese 7 vs 8), input stringa ISO, anni di cambio decennio (2009-10), confine luglio/agosto per `getSeasonStartDate`.
+
+**2. `src/lib/dateUtils.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `toLocalDateString()` e `toLocalTimeString()`.
+- Casi coperti: padding zero su mese/giorno/ore/minuti, fine anno (dic 31), mezzanotte (00:00), fine giornata (23:59).
+
+**3. `src/lib/schemas/session.test.ts` — Nuovo file di test**
+- Aggiunta copertura per `SessionCreateSchema` e `SessionUpdateSchema`.
+- Casi coperti: payload minimo e completo, titolo vuoto/troppo lungo, data vuota, `allowedRoles`/`openRoles` fuori range (0 e 6), valori non interi, `restrictTeamId` null, `endTime` null per aggiornamento.
+
+**File creati:**
+- `src/lib/seasonUtils.test.ts`
+- `src/lib/dateUtils.test.ts`
+- `src/lib/schemas/session.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 25 test files (335 test)
