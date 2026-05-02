@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -26,7 +27,7 @@ vi.mock("@/lib/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { POST } from "./route";
+import { GET, POST, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
@@ -115,5 +116,84 @@ describe("POST /api/teams/[sessionId]", () => {
     const allPlayers = [...json.teamA, ...json.teamB];
     expect(allPlayers.find((a: { id: string }) => a.id === "r7")).toBeUndefined();
     expect(allPlayers.length).toBe(athletes.length);
+  });
+});
+
+describe("GET /api/teams/[sessionId]", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    p.trainingSession.findUnique.mockResolvedValue(null);
+  });
+
+  function makeGet(): NextRequest {
+    return new NextRequest("http://localhost/api/teams/sess-1");
+  }
+
+  it("restituisce 404 se la sessione non esiste", async () => {
+    const res = await GET(makeGet(), mockParams);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toBeTruthy();
+  });
+
+  it("restituisce generated=false se teams è null", async () => {
+    p.trainingSession.findUnique.mockResolvedValue({ teams: null });
+    const res = await GET(makeGet(), mockParams);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.generated).toBe(false);
+    expect(json.teamA).toEqual([]);
+    expect(json.teamB).toEqual([]);
+  });
+
+  it("restituisce le squadre salvate con generated=true", async () => {
+    const savedTeams = { teamA: [{ id: "r1" }], teamB: [{ id: "r2" }] };
+    p.trainingSession.findUnique.mockResolvedValue({ teams: savedTeams });
+    const res = await GET(makeGet(), mockParams);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.generated).toBe(true);
+    expect(json.teamA).toEqual([{ id: "r1" }]);
+    expect(json.teamB).toEqual([{ id: "r2" }]);
+  });
+});
+
+describe("DELETE /api/teams/[sessionId]", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsCoachOrAdmin.mockResolvedValue(false);
+    p.trainingSession.update.mockResolvedValue({});
+  });
+
+  function makeDEL(): NextRequest {
+    return new NextRequest("http://localhost/api/teams/sess-1", { method: "DELETE" });
+  }
+
+  it("restituisce 401 se l'utente non è coach/admin", async () => {
+    const res = await DELETE(makeDEL(), mockParams);
+    expect(res.status).toBe(401);
+    expect(p.trainingSession.update).not.toHaveBeenCalled();
+  });
+
+  it("azzera le squadre e restituisce ok", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    const res = await DELETE(makeDEL(), mockParams);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(p.trainingSession.update).toHaveBeenCalledOnce();
+    const call = p.trainingSession.update.mock.calls[0][0];
+    expect(call.where).toEqual({ id: "sess-1" });
+    expect(call.data.teams).toBe(Prisma.DbNull);
+  });
+
+  it("restituisce 404 se la sessione non esiste (P2025)", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.trainingSession.update.mockRejectedValue(p2025);
+    const res = await DELETE(makeDEL(), mockParams);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toMatch(/non trovato/i);
   });
 });

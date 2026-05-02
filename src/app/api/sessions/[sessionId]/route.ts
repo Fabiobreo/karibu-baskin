@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { SessionUpdateSchema } from "@/lib/schemas/session";
@@ -48,14 +49,22 @@ export async function PATCH(
   if ("restrictTeamId" in body) data.restrictTeamId = body.restrictTeamId ?? null;
   if (body.openRoles !== undefined) data.openRoles = body.openRoles;
 
-  const session = await prisma.trainingSession.update({
-    where: { id: sessionId },
-    data,
-    include: {
-      _count: { select: { registrations: true } },
-      restrictTeam: { select: { id: true, name: true, color: true } },
-    },
-  });
+  let session;
+  try {
+    session = await prisma.trainingSession.update({
+      where: { id: sessionId },
+      data,
+      include: {
+        _count: { select: { registrations: true } },
+        restrictTeam: { select: { id: true, name: true, color: true } },
+      },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
   return NextResponse.json(session);
 }
 
@@ -68,6 +77,13 @@ export async function DELETE(
   }
 
   const { sessionId } = await params;
-  await prisma.trainingSession.delete({ where: { id: sessionId } });
+  try {
+    await prisma.trainingSession.delete({ where: { id: sessionId } });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
   return new NextResponse(null, { status: 204 });
 }

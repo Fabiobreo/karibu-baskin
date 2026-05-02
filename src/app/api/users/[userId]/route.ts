@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type { AppRole, Gender } from "@prisma/client";
 import { isAdminUser } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
@@ -92,7 +93,7 @@ export async function PATCH(
       },
     });
   } catch (err: unknown) {
-    if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2025") {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
       return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
     }
     throw err;
@@ -144,6 +145,9 @@ export async function DELETE(
   }
 
   const deleted = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true, appRole: true } });
+  if (!deleted) {
+    return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
+  }
   await prisma.user.delete({ where: { id: userId } });
 
   if (session?.user?.id) {

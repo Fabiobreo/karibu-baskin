@@ -1,5 +1,47 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 12)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 64 test files (893 test)
+
+### Audit iniziale
+- 893 test verdi, 0 errori TypeScript, ESLint 0 warning.
+- API test coverage quasi completa: unici route senza test sono `auth/[...nextauth]` (Auth.js boilerplate) e `test-login` (solo dev).
+- Rilevati 3 bug: P2025 non gestito in `sessions/[sessionId]` PATCH/DELETE e `teams/[sessionId]` DELETE → 500 invece di 404. Pattern P2025 inconsistente in `users/[userId]` (controllo manuale vs `instanceof`). DELETE utente non short-circuitava su utente inesistente.
+
+### Azioni compiute
+
+**1. `src/app/api/sessions/[sessionId]/route.ts` — P2025 per PATCH e DELETE**
+- Aggiunto import `Prisma` da `@prisma/client`.
+- Avvolti `prisma.trainingSession.update()` e `prisma.trainingSession.delete()` in try/catch con `instanceof Prisma.PrismaClientKnownRequestError && code === "P2025"` → 404.
+- Prima di questa fix: PATCH o DELETE su sessionId inesistente restituivano 500.
+
+**2. `src/app/api/teams/[sessionId]/route.ts` — P2025 per DELETE**
+- Avvolto `prisma.trainingSession.update()` in DELETE con lo stesso pattern P2025 → 404.
+
+**3. `src/app/api/users/[userId]/route.ts` — Hardening DELETE + pattern P2025 consistente**
+- Sostituito controllo manuale `typeof err === "object" && "code" in err` con `instanceof Prisma.PrismaClientKnownRequestError` nel PATCH (pattern consistente con resto del codebase).
+- Aggiunto import `Prisma` da `@prisma/client`.
+- DELETE: aggiunto guard esplicito `if (!deleted) return 404` dopo `findUnique` — previene P2025 non gestito se l'utente viene eliminato tra il findUnique e il delete.
+
+**4. Nuovi test e aggiornamenti**
+- `src/app/api/sessions/[sessionId]/route.test.ts`: aggiunti `Prisma` import + test P2025 per PATCH (404) e DELETE (404). +2 test.
+- `src/app/api/teams/[sessionId]/route.test.ts`: aggiunti `Prisma` + `GET`/`DELETE` import; nuovi test suite per GET (404 sessione mancante, generated=false, squadre salvate) e DELETE (401, 200 ok + verifica DbNull, 404 P2025). +7 test.
+- `src/app/api/users/[userId]/route.test.ts`: aggiornato mock P2025 PATCH da `Object.assign(new Error, {code})` a `new Prisma.PrismaClientKnownRequestError(...)`; aggiunto test DELETE 404 (utente non trovato, verifica che `delete` non venga chiamato). +1 test.
+
+### File modificati
+- `src/app/api/sessions/[sessionId]/route.ts`
+- `src/app/api/sessions/[sessionId]/route.test.ts`
+- `src/app/api/teams/[sessionId]/route.ts`
+- `src/app/api/teams/[sessionId]/route.test.ts`
+- `src/app/api/users/[userId]/route.ts`
+- `src/app/api/users/[userId]/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 64 test files (902 test)
+
+---
+
+
 ## 2026-05-02 (sessione 11)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 61 test files (862 test)
