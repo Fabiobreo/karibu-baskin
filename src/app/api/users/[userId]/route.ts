@@ -81,14 +81,22 @@ export async function PATCH(
     }
   }
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data,
-    select: {
-      id: true, name: true, email: true, appRole: true,
-      sportRole: true, sportRoleVariant: true, gender: true, birthDate: true,
-    },
-  });
+  let user;
+  try {
+    user = await prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true, name: true, email: true, appRole: true,
+        sportRole: true, sportRoleVariant: true, gender: true, birthDate: true,
+      },
+    });
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2025") {
+      return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
 
   // Audit log
   const actorId = actorSession?.user?.id;

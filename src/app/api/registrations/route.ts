@@ -284,12 +284,10 @@ export async function DELETE(req: NextRequest) {
   await prisma.registration.deleteMany({ where: { id: { in: regs.map((r) => r.id) } } });
 
   // Azzera le squadre generate degli allenamenti coinvolti
-  for (const sessionId of sessionIds) {
-    await prisma.trainingSession.update({
-      where: { id: sessionId },
-      data: { teams: Prisma.DbNull },
-    });
-  }
+  await prisma.trainingSession.updateMany({
+    where: { id: { in: sessionIds } },
+    data: { teams: Prisma.DbNull },
+  });
 
   return new NextResponse(null, { status: 204 });
 }

@@ -16,7 +16,7 @@ vi.mock("@/lib/db", () => {
   return {
     prisma: {
       registration,
-      trainingSession: { findUnique: vi.fn(), update: vi.fn() },
+      trainingSession: { findUnique: vi.fn(), update: vi.fn(), updateMany: vi.fn() },
       user,
       child,
       teamMembership: { findFirst: vi.fn() },
@@ -46,7 +46,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
   registration: { findFirst: Mock; findMany: Mock; create: Mock; updateMany: Mock; deleteMany: Mock };
-  trainingSession: { findUnique: Mock; update: Mock };
+  trainingSession: { findUnique: Mock; update: Mock; updateMany: Mock };
   user: { findUnique: Mock; update: Mock };
   child: { findUnique: Mock; update: Mock };
   teamMembership: { findFirst: Mock };
@@ -377,6 +377,7 @@ describe("DELETE /api/registrations (bulk per nome)", () => {
     p.registration.findMany.mockResolvedValue([]);
     p.registration.deleteMany.mockResolvedValue({ count: 0 });
     p.trainingSession.update.mockResolvedValue(undefined);
+    p.trainingSession.updateMany.mockResolvedValue({ count: 0 });
   });
 
   it("restituisce 403 per utente non staff", async () => {
@@ -411,6 +412,9 @@ describe("DELETE /api/registrations (bulk per nome)", () => {
     const res = await DELETE(req);
     expect(res.status).toBe(204);
     expect(p.registration.deleteMany).toHaveBeenCalledWith({ where: { id: { in: ["r1", "r2"] } } });
-    expect(p.trainingSession.update).toHaveBeenCalledTimes(2);
+    expect(p.trainingSession.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ["sess-1", "sess-2"] } },
+      data: { teams: expect.anything() },
+    });
   });
 });

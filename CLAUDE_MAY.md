@@ -1,5 +1,38 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 6)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 46 test files (719 test)
+
+### Audit iniziale
+- Tutti 719 test verdi, 0 errori TypeScript.
+- Scansione completa delle 45 route API per: N+1 query, input validation mancante, error handling, auth check.
+
+### Azioni compiute
+
+**1. `src/app/api/registrations/route.ts` — Fix N+1 in DELETE anonime**
+- Il handler `DELETE` iterava con `for...of` chiamando `prisma.trainingSession.update()` una volta per sessione coinvolta — N query separate invece di 1.
+- Sostituito con `prisma.trainingSession.updateMany({ where: { id: { in: sessionIds } }, data: { teams: Prisma.DbNull } })` — pattern già usato nel handler `DELETE /api/children/[childId]`.
+
+**2. `src/app/api/matches/[matchId]/stats/route.ts` — Rimozione duplicazione dati upsert**
+- Il handler `PUT` ripeteva identicamente l'oggetto `{ points, baskets, fouls, assists, rebounds, notes }` due volte (una per `userId`, una per `childId`), sia in `create` che in `update`, per ~45 righe duplicate.
+- Estratto l'oggetto `data` come variabile condivisa; i due branch differiscono ora solo nel `where` e nel campo identity (`userId`/`childId`). Riduzione da ~45 a ~22 righe nel loop.
+
+**3. `src/app/api/users/[userId]/route.ts` — Gestione P2025 su PATCH**
+- `prisma.user.update()` non era avvolto in try/catch: se `userId` non esisteva, Prisma lanciava un errore P2025 non gestito → risposta 500 invece di 404.
+- Aggiunto blocco `try/catch` che intercetta `code === "P2025"` e restituisce `{ error: "Utente non trovato" }` con status 404. Gli altri errori vengono rilanciati normalmente.
+
+### File modificati
+- `src/app/api/registrations/route.ts`
+- `src/app/api/registrations/route.test.ts` (mock aggiornato: `trainingSession.updateMany`, assertion migrata da `.update×2` a `.updateMany` con sessionIds)
+- `src/app/api/matches/[matchId]/stats/route.ts`
+- `src/app/api/users/[userId]/route.ts`
+- `src/app/api/users/[userId]/route.test.ts` (aggiunto test P2025 → 404)
+
+**Stato finale:** TypeScript 0 errori · 46 test files (720 test)
+
+---
+
 ## 2026-05-02 (sessione 5)
 
 **Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 42 test files (688 test)

@@ -206,6 +206,16 @@ describe("PATCH /api/users/[userId]", () => {
       expect.objectContaining({ action: "UPDATE_ROLE", actorId: "admin-1" })
     );
   });
+
+  it("restituisce 404 se l'utente non esiste (P2025)", async () => {
+    const p2025 = Object.assign(new Error("Record not found"), { code: "P2025" });
+    p.user.update.mockRejectedValue(p2025);
+    const [req, ctx] = makePATCH("non-existent", { appRole: "COACH" });
+    const res = await PATCH(req, ctx);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toMatch(/non trovato/i);
+  });
 });
 
 describe("DELETE /api/users/[userId]", () => {
