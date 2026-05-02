@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { computeStandings } from "@/lib/standings";
@@ -55,21 +56,27 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 
-  const group = await prisma.group.update({
-    where: { id: groupId },
-    data: {
-      ...(parsed.data.name !== undefined ? { name: parsed.data.name.trim() } : {}),
-      ...("championship" in parsed.data
-        ? { championship: parsed.data.championship?.trim() || null }
-        : {}),
-    },
-    include: {
-      team: { select: { id: true, name: true, color: true } },
-      _count: { select: { matches: true } },
-    },
-  });
-
-  return NextResponse.json(group);
+  try {
+    const group = await prisma.group.update({
+      where: { id: groupId },
+      data: {
+        ...(parsed.data.name !== undefined ? { name: parsed.data.name.trim() } : {}),
+        ...("championship" in parsed.data
+          ? { championship: parsed.data.championship?.trim() || null }
+          : {}),
+      },
+      include: {
+        team: { select: { id: true, name: true, color: true } },
+        _count: { select: { matches: true } },
+      },
+    });
+    return NextResponse.json(group);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Girone non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
@@ -79,7 +86,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
   const { groupId } = await params;
   await prisma.match.updateMany({ where: { groupId }, data: { groupId: null } });
-  await prisma.group.delete({ where: { id: groupId } });
-
+  try {
+    await prisma.group.delete({ where: { id: groupId } });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Girone non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
   return new NextResponse(null, { status: 204 });
 }

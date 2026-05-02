@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -222,6 +223,21 @@ describe("PUT /api/matches/[matchId]", () => {
     expect(pushArgs[0].type).toBe("MATCH_RESULT");
   });
 
+  it("restituisce 404 se la partita non esiste (P2025 via findUnique null)", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    p.match.findUnique.mockResolvedValue(null);
+    const req = new Request("http://localhost", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isHome: false }),
+    });
+    const res = await PUT(req, makeParams("missing"));
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toContain("non trovata");
+    expect(p.match.update).not.toHaveBeenCalled();
+  });
+
   it("non invia push se il risultato era già impostato", async () => {
     mockIsAdmin.mockResolvedValue(true);
     p.match.findUnique.mockResolvedValue({
@@ -262,5 +278,15 @@ describe("DELETE /api/matches/[matchId]", () => {
     const res = await DELETE(new Request("http://localhost"), makeParams("match-1"));
     expect(res.status).toBe(204);
     expect(p.match.delete).toHaveBeenCalledWith({ where: { id: "match-1" } });
+  });
+
+  it("restituisce 404 se la partita non esiste (P2025)", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.match.delete.mockRejectedValue(p2025);
+    const res = await DELETE(new Request("http://localhost"), makeParams("missing"));
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toContain("non trovata");
   });
 });

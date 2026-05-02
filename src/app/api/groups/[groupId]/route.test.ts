@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -161,6 +162,21 @@ describe("PUT /api/groups/[groupId]", () => {
     const data = p.group.update.mock.calls[0][0].data;
     expect("name" in data).toBe(false);
   });
+
+  it("restituisce 404 se il girone non esiste (P2025)", async () => {
+    mockIsCoach.mockResolvedValue(true);
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.group.update.mockRejectedValue(p2025);
+    const req = new NextRequest("http://localhost/api/groups/missing", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Girone X" }),
+    });
+    const res = await PUT(req, makeParams("missing"));
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toContain("non trovato");
+  });
 });
 
 describe("DELETE /api/groups/[groupId]", () => {
@@ -193,5 +209,16 @@ describe("DELETE /api/groups/[groupId]", () => {
     const req = new NextRequest("http://localhost/api/groups/g-1", { method: "DELETE" });
     const res = await DELETE(req, makeParams("g-1"));
     expect(res.status).toBe(204);
+  });
+
+  it("restituisce 404 se il girone non esiste (P2025)", async () => {
+    mockIsCoach.mockResolvedValue(true);
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.group.delete.mockRejectedValue(p2025);
+    const req = new NextRequest("http://localhost/api/groups/missing", { method: "DELETE" });
+    const res = await DELETE(req, makeParams("missing"));
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toContain("non trovato");
   });
 });

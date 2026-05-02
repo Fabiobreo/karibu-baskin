@@ -1,5 +1,48 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 13)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 64 test files (902 test)
+
+### Audit iniziale
+- 902 test verdi, 0 errori TypeScript.
+- Copertura API quasi completa: solo `auth/[...nextauth]` (Auth.js boilerplate) e `test-login` (dev-only) senza test.
+- Rilevati 6 bug P2025 → 500 nei route `groups/[groupId]` (PUT + DELETE), `matches/[matchId]` (PUT missing null-check + DELETE), `competitive-teams/[teamId]` (PUT + DELETE).
+
+### Azioni compiute
+
+**1. `src/app/api/groups/[groupId]/route.ts` — P2025 per PUT e DELETE**
+- Aggiunto import `Prisma` da `@prisma/client`.
+- PUT: avvolto `prisma.group.update()` in try/catch con P2025 → 404.
+- DELETE: avvolto `prisma.group.delete()` in try/catch con P2025 → 404 (dopo l'`updateMany` sulle partite).
+
+**2. `src/app/api/matches/[matchId]/route.ts` — null-check su `previous` (PUT) e P2025 per DELETE**
+- Aggiunto import `Prisma` da `@prisma/client`.
+- PUT: aggiunto guard `if (!previous) return 404` dopo `findUnique` — impedisce che `prisma.match.update()` venga chiamato su una partita inesistente (e quindi P2025 → 500).
+- DELETE: avvolto `prisma.match.delete()` in try/catch con P2025 → 404.
+
+**3. `src/app/api/competitive-teams/[teamId]/route.ts` — P2025 per PUT e DELETE**
+- Aggiunto import `Prisma` da `@prisma/client`.
+- PUT: avvolto `prisma.competitiveTeam.update()` in try/catch con P2025 → 404.
+- DELETE: avvolto `prisma.competitiveTeam.delete()` in try/catch con P2025 → 404.
+
+**4. Test aggiornati (+6 test)**
+- `src/app/api/competitive-teams/[teamId]/route.test.ts`: aggiunto `Prisma` import + test P2025 per PUT (404) e DELETE (404).
+- `src/app/api/matches/[matchId]/route.test.ts`: aggiunto `Prisma` import + test P2025 per PUT null-check (404, verifica che `update` non venga chiamato) e DELETE (404).
+- `src/app/api/groups/[groupId]/route.test.ts`: aggiunto `Prisma` import + test P2025 per PUT (404) e DELETE (404).
+
+### File modificati
+- `src/app/api/groups/[groupId]/route.ts`
+- `src/app/api/groups/[groupId]/route.test.ts`
+- `src/app/api/matches/[matchId]/route.ts`
+- `src/app/api/matches/[matchId]/route.test.ts`
+- `src/app/api/competitive-teams/[teamId]/route.ts`
+- `src/app/api/competitive-teams/[teamId]/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 64 test files (908 test)
+
+---
+
 ## 2026-05-02 (sessione 12)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 64 test files (893 test)

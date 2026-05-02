@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
@@ -47,6 +48,9 @@ export async function PUT(req: Request, { params }: Params) {
     where: { id: matchId },
     select: { result: true, ourScore: true, theirScore: true, slug: true, teamId: true, opponentId: true, date: true },
   });
+  if (!previous) {
+    return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+  }
 
   // 2.3 — Auto-derive result from scores (takes precedence over explicit result field)
   const incomingOur = body.ourScore !== undefined ? body.ourScore : previous?.ourScore;
@@ -126,6 +130,13 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { matchId } = await params;
-  await prisma.match.delete({ where: { id: matchId } });
+  try {
+    await prisma.match.delete({ where: { id: matchId } });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+    }
+    throw err;
+  }
   return new NextResponse(null, { status: 204 });
 }
