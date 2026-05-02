@@ -115,17 +115,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
-    if (!child.sportRole) {
-      await prisma.child.update({
-        where: { id: childId },
-        data: { sportRole: role, sportRoleVariant: roleVariant ?? null },
-      });
-    }
-
     try {
-      const registration = await prisma.registration.create({
-        data: { sessionId, name: child.name, role: effectiveRole, childId, note: trimmedNote },
+      const registration = await prisma.$transaction(async (tx) => {
+        // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
+        if (!child.sportRole) {
+          await tx.child.update({
+            where: { id: childId },
+            data: { sportRole: role, sportRoleVariant: roleVariant ?? null },
+          });
+        }
+        return tx.registration.create({
+          data: { sessionId, name: child.name, role: effectiveRole, childId, note: trimmedNote },
+        });
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
@@ -180,16 +181,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!user.sportRole) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { sportRoleSuggested: role, sportRoleSuggestedVariant: roleVariant ?? null },
-      });
-    }
-
     try {
-      const registration = await prisma.registration.create({
-        data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: registeredAsCoach ?? false },
+      const registration = await prisma.$transaction(async (tx) => {
+        if (!user.sportRole) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { sportRoleSuggested: role, sportRoleSuggestedVariant: roleVariant ?? null },
+          });
+        }
+        return tx.registration.create({
+          data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: registeredAsCoach ?? false },
+        });
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {

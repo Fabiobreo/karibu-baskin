@@ -2,32 +2,28 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
 
-vi.mock("@/lib/db", () => ({
-  prisma: {
-    registration: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      create: vi.fn(),
-      updateMany: vi.fn(),
-      deleteMany: vi.fn(),
+vi.mock("@/lib/db", () => {
+  // Shared mock objects so $transaction callback reuses the same spies as the outer prisma
+  const registration = {
+    findFirst: vi.fn(),
+    findMany: vi.fn(),
+    create: vi.fn(),
+    updateMany: vi.fn(),
+    deleteMany: vi.fn(),
+  };
+  const user = { findUnique: vi.fn(), update: vi.fn() };
+  const child = { findUnique: vi.fn(), update: vi.fn() };
+  return {
+    prisma: {
+      registration,
+      trainingSession: { findUnique: vi.fn(), update: vi.fn() },
+      user,
+      child,
+      teamMembership: { findFirst: vi.fn() },
+      $transaction: vi.fn((cb: (tx: unknown) => unknown) => cb({ registration, user, child })),
     },
-    trainingSession: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    user: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    child: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    teamMembership: {
-      findFirst: vi.fn(),
-    },
-  },
-}));
+  };
+});
 
 vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
@@ -54,6 +50,7 @@ type PrismaMock = {
   user: { findUnique: Mock; update: Mock };
   child: { findUnique: Mock; update: Mock };
   teamMembership: { findFirst: Mock };
+  $transaction: Mock;
 };
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;

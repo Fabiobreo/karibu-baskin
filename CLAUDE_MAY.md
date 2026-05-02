@@ -1,5 +1,37 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 3)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 40 test files (649 test)
+
+### Azioni compiute
+
+**1. `src/app/api/admin/export/route.ts` — Fix CSV formula injection**
+- Aggiunta funzione `sanitizeCsvValue(s)` che prefissa con `'` (apostrofo) i valori che iniziano con i caratteri `=`, `+`, `-`, `@`, `\t`, `\r` — caratteri interpretati da Excel e Google Sheets come inizio formula.
+- Applicata la sanitizzazione dentro `csvRow()` prima dell'escape delle virgolette.
+- La funzione è locale e non richiede dipendenze esterne.
+
+**2. `src/app/api/registrations/route.ts` — Atomicità con `prisma.$transaction`**
+- Il percorso iscrizione figlio (lines ~118-136) aggiornava `child.sportRole` e poi creava la Registration in due operazioni distinte: se la creazione falliva (es. errore di DB non P2002), il ruolo del figlio veniva aggiornato senza iscrizione corrispondente.
+- Stessa vulnerabilità nel percorso utente loggato (lines ~183-200): `user.sportRoleSuggested` veniva scritto prima della creazione iscrizione.
+- Entrambe le sezioni sono ora avvolte in `prisma.$transaction(async (tx) => { ... })`, garantendo atomicità: o entrambe le scritture avvengono o nessuna.
+
+**3. `src/app/api/admin/export/route.test.ts` — Nuovo file di test**
+- Prima copertura completa per l'endpoint CSV export (non aveva test).
+- Casi coperti: 403 non-staff, 400 formato stagione non valido, 400 tipo export non valido; per `rosa`: header CSV, dati atleta, filename con/senza stagione, protezione formula injection con `=`, `+`, `-`; per `presenze`: header, righe presenze, distinzione Coach/Atleta, filename con stagione; per `stats`: header, dati giocatore+partita, filename, CSV vuoto (solo header) se nessuna statistica.
+
+**File modificati:**
+- `src/app/api/admin/export/route.ts` (CSV injection fix)
+- `src/app/api/registrations/route.ts` ($transaction)
+- `src/app/api/registrations/route.test.ts` (mock aggiornato con $transaction + tipo PrismaMock)
+
+**File creati:**
+- `src/app/api/admin/export/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 41 test files (666 test)
+
+---
+
 ## 2026-05-02 (sessione 2)
 
 **Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 37 test files (621 test)
