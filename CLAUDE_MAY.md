@@ -1,5 +1,37 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 5)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 42 test files (688 test)
+
+### Azioni compiute
+
+**1. `src/app/api/opposing-teams/route.test.ts` — Nuovo file di test (GET + POST)**
+- Prima copertura del route GET/POST per le squadre avversarie.
+- Casi coperti: GET lista squadre, GET array vuoto; POST 403 non-admin, 400 body senza nome, 400 JSON non valido, 201 creazione con trim nome e city, 201 con city=null e notes=null se non forniti.
+
+**2. `src/app/api/opposing-teams/[id]/route.test.ts` — Nuovo file di test (PUT + DELETE)**
+- Prima copertura del route PUT/DELETE per singola squadra avversaria.
+- Casi coperti: PUT 403 non-admin, 400 JSON non valido, 200 aggiornamento con trim, 200 city=null per stringa vuota, 200 campi non forniti non aggiornati; DELETE 403 non-admin, 204 eliminazione con chiamata Prisma corretta.
+
+**3. `src/app/api/matches/[matchId]/callups/route.test.ts` — Nuovo file di test (GET + PUT)**
+- Prima copertura dell'endpoint convocati partita (operazione batch con `$transaction`).
+- Casi coperti: GET lista convocati, GET array vuoto; PUT 403 non-staff, 400 payload non valido, 404 partita inesistente, 200 sostituzione convocati con totale corretto, 200 lista vuota (rimozione tutti).
+
+**4. `src/app/api/matches/[matchId]/stats/route.test.ts` — Nuovo file di test (GET + PUT)**
+- Prima copertura dell'endpoint statistiche partita (upsert batch per userId o childId).
+- Casi coperti: GET statistiche, GET array vuoto; PUT 403 non-admin, 400 payload non array, 400 JSON non valido, upsert per userId (where matchId_userId), upsert per childId (where matchId_childId), default 0 per campi numerici mancanti, notes null per stringa vuota, array vuoto senza chiamate upsert.
+
+**File creati:**
+- `src/app/api/opposing-teams/route.test.ts`
+- `src/app/api/opposing-teams/[id]/route.test.ts`
+- `src/app/api/matches/[matchId]/callups/route.test.ts`
+- `src/app/api/matches/[matchId]/stats/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 46 test files (719 test)
+
+---
+
 ## 2026-05-02 (sessione 4)
 
 **Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 41 test files (666 test)
