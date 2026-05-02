@@ -1,5 +1,41 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 11)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 61 test files (862 test)
+
+### Audit iniziale
+- 862 test verdi, 0 errori TypeScript, ESLint 0 warning.
+- 3 route API ancora senza copertura test: `push/vapid-public-key/route.ts`, `push/subscribe/route.ts`, `calendar/export.ics/route.ts`.
+
+### Azioni compiute
+
+**1. `src/app/api/push/vapid-public-key/route.test.ts` — Nuovo file di test (GET)**
+- Prima copertura dell'endpoint che espone la chiave VAPID pubblica al client.
+- Casi coperti: 200 con chiave presente nell'env, 500 se `NEXT_PUBLIC_VAPID_PUBLIC_KEY` non è configurata.
+- Utilizza `vi.resetModules()` per isolare le importazioni tra casi con env diversa.
+- 2 test.
+
+**2. `src/app/api/push/subscribe/route.test.ts` — Nuovo file di test (POST + DELETE)**
+- Prima copertura dell'endpoint di gestione subscription Web Push.
+- POST: 429 rate limit superato, 400 endpoint mancante, 400 keys.p256dh mancante, 400 keys.auth mancante, 400 body non-JSON, 409 endpoint già registrato da altro utente, 200 subscription per utente autenticato (upsert con userId), 200 subscription anonima (userId null), 200 aggiornamento subscription esistente stesso utente senza 409.
+- DELETE: 400 endpoint mancante, 400 body non-JSON, 200 elimina subscription anonima (userId null), 200 elimina subscription utente autenticato (userId corretto).
+- 13 test.
+
+**3. `src/app/api/calendar/export.ics/route.test.ts` — Nuovo file di test (GET)**
+- Prima copertura dell'endpoint di esportazione calendario ICS.
+- Casi coperti: Content-Type text/calendar, Content-Disposition con nome file, Cache-Control no-store; calendario vuoto con struttura VCALENDAR; VEVENT allenamento con endTime e location di default; fallback endTime +90min; VEVENT partita in casa (vs) e trasferta (@) con venue; location default partita in casa; VEVENT evento con description, location e endDate; fallback endDate +1h; escape corretto di virgole e punto-e-virgola nel SUMMARY; presenza di tutti e 3 i tipi di VEVENT simultaneamente.
+- 14 test.
+
+### File creati
+- `src/app/api/push/vapid-public-key/route.test.ts`
+- `src/app/api/push/subscribe/route.test.ts`
+- `src/app/api/calendar/export.ics/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 64 test files (891 test)
+
+---
+
 ## 2026-05-02 (sessione 10)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 58 test files (836 test)
