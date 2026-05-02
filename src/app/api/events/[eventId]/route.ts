@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { EventUpdateSchema } from "@/lib/schemas/event";
@@ -18,17 +19,24 @@ export async function PUT(req: Request, { params }: Params) {
   const body = parsed.data;
 
   const { eventId } = await params;
-  const event = await prisma.event.update({
-    where: { id: eventId },
-    data: {
-      ...(body.title !== undefined && { title: body.title.trim() }),
-      ...(body.date !== undefined && { date: new Date(body.date) }),
-      ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),
-      ...(body.location !== undefined && { location: body.location?.trim() || null }),
-      ...(body.description !== undefined && { description: body.description?.trim() || null }),
-    },
-  });
-  return NextResponse.json(event);
+  try {
+    const event = await prisma.event.update({
+      where: { id: eventId },
+      data: {
+        ...(body.title !== undefined && { title: body.title.trim() }),
+        ...(body.date !== undefined && { date: new Date(body.date) }),
+        ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),
+        ...(body.location !== undefined && { location: body.location?.trim() || null }),
+        ...(body.description !== undefined && { description: body.description?.trim() || null }),
+      },
+    });
+    return NextResponse.json(event);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Evento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
@@ -37,6 +45,13 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { eventId } = await params;
-  await prisma.event.delete({ where: { id: eventId } });
+  try {
+    await prisma.event.delete({ where: { id: eventId } });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Evento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
   return new NextResponse(null, { status: 204 });
 }

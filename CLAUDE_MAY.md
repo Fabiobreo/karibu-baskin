@@ -1,5 +1,39 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 2)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 37 test files (621 test)
+
+### Azioni compiute
+
+**1. `src/app/api/events/[eventId]/route.ts` — Fix bug P2025 (500 → 404)**
+- `PUT` e `DELETE` non gestivano l'errore Prisma `P2025` (record non trovato): il server restituiva 500 invece di un 404 leggibile.
+- Aggiunti blocchi `try/catch` su entrambi i handler con `instanceof Prisma.PrismaClientKnownRequestError && code === "P2025"` → `{ error: "Evento non trovato" }, { status: 404 }`.
+
+**2. `src/app/api/events/route.test.ts` — Nuovo file di test (GET + POST)**
+- Copertura completa per i due handler del file `events/route.ts`.
+- Casi coperti: GET lista eventi ordinata, GET array vuoto; POST 403 non-staff, 400 body senza titolo, 400 titolo stringa vuota (messaggio "Titolo obbligatorio"), 400 JSON malformato, 201 creazione con trim nome e location, 201 con endDate + description, 201 con endDate=null se non fornita.
+
+**3. `src/app/api/events/[eventId]/route.test.ts` — Nuovo file di test (PUT + DELETE)**
+- Copertura completa per i due handler del file `events/[eventId]/route.ts`.
+- Casi coperti: PUT 403 non-staff, 400 JSON malformato, 400 titolo vuoto, 404 evento inesistente (P2025), 200 aggiornamento con trim, 200 endDate=null, 200 location=null per stringa vuota; DELETE 403 non-staff, 404 evento inesistente (P2025), 204 eliminazione corretta.
+
+**4. `src/app/api/link-requests/[requestId]/respond/route.test.ts` — Nuovo file di test**
+- Copertura del handler `POST respond` (logica complessa: accept/reject, transaction Prisma, push notification).
+- Casi coperti: 401 non autenticato, 404 richiesta non trovata, 403 utente non destinatario, 409 richiesta già elaborata, 410 richiesta scaduta, 400 campo `accept` non boolean, 200 accettazione con push, 200 rifiuto con push, verifica che le operazioni avvengano dentro `$transaction`.
+
+**File modificati:**
+- `src/app/api/events/[eventId]/route.ts` (fix P2025)
+
+**File creati:**
+- `src/app/api/events/route.test.ts`
+- `src/app/api/events/[eventId]/route.test.ts`
+- `src/app/api/link-requests/[requestId]/respond/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 40 test files (649 test)
+
+---
+
 ## 2026-05-02 (sessione automatica)
 
 **Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 34 test files (592 test)
