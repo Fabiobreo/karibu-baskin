@@ -1,5 +1,45 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 9)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 54 test files (798 test)
+
+### Audit iniziale
+- 798 test verdi, 0 errori TypeScript.
+- Identificate 12 route API ancora senza copertura test; selezionate 4 route prioritarie (notif-prefs, users/lookup, members POST, members PATCH+DELETE).
+
+### Azioni compiute
+
+**1. `src/app/api/users/me/notif-prefs/route.test.ts` — Nuovo file di test (GET + PATCH)**
+- Prima copertura endpoint preferenze notifiche utente.
+- GET: 401 non autenticato, default prefs con notifPrefs null in DB, merge prefs parziali con defaults, query DB con userId corretto.
+- PATCH: 401 non autenticato, 400 JSON non valido, aggiornamento push.NEW_TRAINING, aggiornamento inApp.MATCH_RESULT, ignora chiavi arbitrarie non in CONTROLLABLE_TYPES, coerce truthy/falsy a boolean, chiama prisma.user.update con prefs aggiornate, merge patch su prefs salvate nel DB.
+
+**2. `src/app/api/users/lookup/route.test.ts` — Nuovo file di test (GET email + name)**
+- Prima copertura endpoint ricerca utenti (usato nel form collegamento genitore-figlio).
+- 401 non autenticato, 400 senza parametri email/name.
+- Email: 404 nessun utente, 200 utente trovato, normalizzazione lowercase prima della query.
+- Name: array vuoto, array risultati, esclude l'utente corrente (id: { not: session.userId }), limit 5, query case-insensitive contains.
+
+**3. `src/app/api/competitive-teams/[teamId]/members/route.test.ts` — Nuovo file di test (POST)**
+- Prima copertura endpoint aggiunta membro a squadra agonistica.
+- 403 non-admin, 400 JSON non valido, 400 né userId né childId, 400 entrambi userId e childId, 201 con userId, 201 con childId, notifica app inviata all'utente aggiunto (userId), nessuna notifica per childId, isCaptain passato correttamente.
+
+**4. `src/app/api/competitive-teams/[teamId]/members/[membershipId]/route.test.ts` — Nuovo file di test (PATCH + DELETE)**
+- Prima copertura endpoint aggiornamento/rimozione singola membership.
+- PATCH: 403 non-admin, 200 isCaptain=true, 200 isCaptain=false (default quando non fornito).
+- DELETE: 403 non-admin, 204 con chiamata prisma.delete verificata, notifica "Rimosso da una squadra" inviata all'utente rimosso (userId), nessuna notifica se childId.
+
+### File creati
+- `src/app/api/users/me/notif-prefs/route.test.ts`
+- `src/app/api/users/lookup/route.test.ts`
+- `src/app/api/competitive-teams/[teamId]/members/route.test.ts`
+- `src/app/api/competitive-teams/[teamId]/members/[membershipId]/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 58 test files (836 test)
+
+---
+
 ## 2026-05-02 (sessione 7)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 50 test files (720 test)
