@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
-      if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2002") {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json({ error: `${child.name} è già iscritto a questo allenamento` }, { status: 409 });
       }
       throw err;
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
-      if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2002") {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json({ error: "Sei già iscritto a questo allenamento" }, { status: 409 });
       }
       throw err;
@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(registration, { status: 201 });
   } catch (err: unknown) {
-    if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2002") {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       return NextResponse.json({ error: "Questo nome è già iscritto all'allenamento" }, { status: 409 });
     }
     throw err;

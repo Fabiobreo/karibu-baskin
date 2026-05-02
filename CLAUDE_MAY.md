@@ -693,3 +693,29 @@
 - `src/lib/schemas/opposingTeam.test.ts`
 
 **Stato finale:** TypeScript 0 errori · ESLint 0 warning · 34 test files (592 test)
+
+## 2026-05-02 (sessione 13)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 64 test files (891 test)
+
+### Audit iniziale
+- 891 test verdi, 0 errori TypeScript.
+
+### Miglioramenti applicati
+
+**`src/app/api/registrations/route.ts`**
+- Sostituito il controllo manuale errore P2002 (`typeof err === "object" && "code" in err`) con `Prisma.PrismaClientKnownRequestError`, pattern corretto per Prisma. Era ripetuto 3 volte con type cast inelegante.
+
+**`src/lib/webpush.ts`**
+- Corretto conteggio `sent` in `dispatchToSubs`: ora conta i risultati `fulfilled` invece di `subs.length - expired.length`. Il vecchio calcolo contava come inviati anche push falliti per errori 5xx o di rete.
+
+**`src/lib/teamGenerator.test.ts`**
+- Aggiunto test bilanciamento per `numTeams=3` (mancante).
+- Aggiunto test che esercita step 4 (correzione finale) con 4 atleti ruolo 1 + 4 ruolo 3 su 3 squadre — senza correzione si otterrebbe [4,2,2].
+
+**Stato finale:** TypeScript 0 errori · 64 test files (893 test)
+
+**File modificati:**
+- `src/app/api/registrations/route.ts`
+- `src/lib/webpush.ts`
+- `src/lib/teamGenerator.test.ts`

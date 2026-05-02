@@ -54,7 +54,8 @@ async function dispatchToSubs(
   });
 
   await cleanupExpired(expired);
-  return { sent: subs.length - expired.length, removed: expired.length };
+  const sent = results.filter((r) => r.status === "fulfilled").length;
+  return { sent, removed: expired.length };
 }
 
 /**
