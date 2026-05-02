@@ -38,6 +38,48 @@
 
 ---
 
+## 2026-05-02 (sessione 8)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 50 test files (748 test)
+
+### Audit iniziale
+- 748 test verdi, 0 errori TypeScript.
+- Identificate 4 route API `groups/` senza alcuna copertura test.
+- Rilevato body non validato in `PUT /api/groups/[groupId]/matches/[matchId]` (accettava qualsiasi tipo senza schema Zod).
+
+### Azioni compiute
+
+**1. `src/lib/schemas/group.ts` — Aggiunto `GroupMatchUpdateSchema`**
+- Nuovo schema Zod per il body del PUT su partite di girone: tutti i campi opzionali, punteggi `>= 0`, refine che blocca `homeTeamId === awayTeamId`.
+
+**2. `src/app/api/groups/[groupId]/matches/[matchId]/route.ts` — Aggiunta validazione input PUT**
+- Sostituito cast manuale del body con `GroupMatchUpdateSchema.safeParse()`.
+- Cambiato `catch(() => ({}))` in `catch(() => null)` con guard esplicita → 400 su JSON non valido.
+
+**3. `src/app/api/groups/[groupId]/route.ts` — Hardening JSON parsing PUT**
+- Cambiato `catch(() => ({}))` in `catch(() => null)` con guard esplicita per coerenza con la policy degli altri endpoint: JSON non parseable → 400.
+
+**4. Nuovi test: copertura completa delle route `groups/`**
+- `src/app/api/groups/route.test.ts` — GET (filtri season/teamId) + POST (403, 400, 201, trim, championship)
+- `src/app/api/groups/[groupId]/route.test.ts` — GET (200, 404) + PUT (403, 400, 200, trim) + DELETE (403, cascade updateMany + delete, 204)
+- `src/app/api/groups/[groupId]/matches/route.test.ts` — POST (403, 400, 404 girone, 201, conversione Date)
+- `src/app/api/groups/[groupId]/matches/[matchId]/route.test.ts` — PUT (403, 400 JSON/score/squadre-uguali, 404, 200, no modifica campi assenti, azzeramento null) + DELETE (403, 404, 204)
+
+### File modificati
+- `src/lib/schemas/group.ts`
+- `src/app/api/groups/[groupId]/route.ts`
+- `src/app/api/groups/[groupId]/matches/[matchId]/route.ts`
+
+### File creati
+- `src/app/api/groups/route.test.ts`
+- `src/app/api/groups/[groupId]/route.test.ts`
+- `src/app/api/groups/[groupId]/matches/route.test.ts`
+- `src/app/api/groups/[groupId]/matches/[matchId]/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 54 test files (798 test)
+
+---
+
 ## 2026-05-02 (sessione 6)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 46 test files (719 test)

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { GroupMatchUpdateSchema } from "@/lib/schemas/group";
 
 type Params = { params: Promise<{ groupId: string; matchId: string }> };
 
@@ -10,14 +11,19 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   const { groupId, matchId } = await params;
-  const body = await req.json().catch(() => ({})) as {
-    matchday?: number | null;
-    date?: string | null;
-    homeTeamId?: string;
-    awayTeamId?: string;
-    homeScore?: number | null;
-    awayScore?: number | null;
-  };
+
+  const raw = await req.json().catch(() => null);
+  if (raw === null) {
+    return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
+  }
+  const parsed = GroupMatchUpdateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 },
+    );
+  }
+  const body = parsed.data;
 
   const match = await prisma.groupMatch.findUnique({ where: { id: matchId } });
   if (!match || match.groupId !== groupId) {

@@ -26,3 +26,17 @@ export const GroupMatchCreateSchema = z
   .refine((b) => b.homeTeamId !== b.awayTeamId, {
     message: "Le squadre devono essere diverse",
   });
+
+export const GroupMatchUpdateSchema = z
+  .object({
+    homeTeamId: z.string().min(1).optional(),
+    awayTeamId: z.string().min(1).optional(),
+    matchday: z.number().int().min(1).nullable().optional(),
+    date: z.string().nullable().optional(),
+    homeScore: z.number().int().min(0).nullable().optional(),
+    awayScore: z.number().int().min(0).nullable().optional(),
+  })
+  .refine(
+    (b) => b.homeTeamId === undefined || b.awayTeamId === undefined || b.homeTeamId !== b.awayTeamId,
+    { message: "Le squadre devono essere diverse" },
+  );

@@ -43,7 +43,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const { groupId } = await params;
 
-  const body = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => null);
+  if (body === null) {
+    return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
+  }
   const parsed = GroupUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
