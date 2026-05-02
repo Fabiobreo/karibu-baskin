@@ -1,5 +1,43 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 7)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 50 test files (720 test)
+
+### Audit iniziale
+- 720 test verdi, 0 errori TypeScript.
+- Identificate 20 route API senza copertura test; selezionate 4 a priorità elevata per questa sessione.
+
+### Azioni compiute
+
+**1. `src/app/api/users/me/route.test.ts` — Nuovo file di test (GET profilo utente)**
+- Prima copertura dell'endpoint GET più chiamato dell'app (profilo utente corrente).
+- Casi coperti: 401 non autenticato, null per utente non in DB, profilo base con `linkedChildId: null`, mapping `childAccount.id → linkedChildId`, trasformazione `teamMemberships` nel formato atteso, query DB con id corretto dalla sessione.
+- La chiave `childAccount` non compare mai nella risposta (rimossa nello spread): test verifica questo comportamento.
+
+**2. `src/app/api/users/me/children/route.test.ts` — Nuovo file di test (GET + POST figli)**
+- Prima copertura dell'endpoint di gestione figli del genitore loggato.
+- GET: 401 non autenticato, array vuoto, figli con teamMemberships formattati, query filtrata per parentId.
+- POST: 401 non autenticato, 400 JSON non valido, 400 nome mancante, 400 nome stringa vuota ("obbligatorio"), 400 gender non valido (es. "OTHER"), 201 con trim nome e parentId corretto, null per sportRole/birthDate non forniti, Date per birthDate stringa ISO.
+
+**3. `src/app/api/link-requests/route.test.ts` — Nuovo file di test (GET richieste in attesa)**
+- Prima copertura dell'endpoint che restituisce richieste collegamento genitore-figlio in attesa.
+- Casi coperti: 401 non autenticato, array vuoto, lista richieste con child e parent inclusi, filtro per targetUserId dalla sessione, ordinamento per createdAt desc.
+
+**4. `src/app/api/link-requests/[requestId]/route.test.ts` — Nuovo file di test (DELETE)**
+- Prima copertura dell'endpoint di cancellazione richiesta (solo il richiedente può cancellare).
+- Casi coperti: 401 non autenticato, 404 richiesta non trovata, 403 utente non è il richiedente (parentId diverso), 409 richiesta già elaborata (status ≠ PENDING), 204 eliminazione corretta con chiamata Prisma verificata.
+
+### File creati
+- `src/app/api/users/me/route.test.ts`
+- `src/app/api/users/me/children/route.test.ts`
+- `src/app/api/link-requests/route.test.ts`
+- `src/app/api/link-requests/[requestId]/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 50 test files (748 test)
+
+---
+
 ## 2026-05-02 (sessione 6)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 46 test files (719 test)
