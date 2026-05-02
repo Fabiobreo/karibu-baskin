@@ -1,5 +1,41 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 10)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 58 test files (836 test)
+
+### Audit iniziale
+- 836 test verdi, 0 errori TypeScript.
+- Identificate 3 route API senza copertura test: `calendar/route.ts` (aggregazione allenamenti+partite+eventi con filtro mese), `cron/cleanup-notifications/route.ts` (pulizia notifiche/link-request scaduti con auth Bearer), `competitive-teams/seasons/current/route.ts` (PUT stagione corrente).
+
+### Azioni compiute
+
+**1. `src/app/api/calendar/route.test.ts` — Nuovo file di test (GET)**
+- Prima copertura dell'endpoint calendario, che aggrega 3 entità distinte (TrainingSession, Match, Event) con filtro mese e ordinamento cronologico.
+- Casi coperti: 200 array vuoto; mapping allenamento (type/title/color/teamName/href da dateSlug); fallback href su id quando dateSlug è null; colore default #FF6D00 senza team; mapping partita in casa (titolo "vs X") e trasferta (titolo "@ X"); fallback href partita su id; colore default #F44336 senza team; mapping evento (color #039BE5, location, endDate); ordinamento crescente con le 3 entità; filtro date con mese YYYY-MM valido; fallback a mese corrente senza parametro e con parametro non valido.
+- 13 test.
+
+**2. `src/app/api/cron/cleanup-notifications/route.test.ts` — Nuovo file di test (GET)**
+- Prima copertura del cron di pulizia DB (eseguito ogni domenica da Vercel Cron).
+- Casi coperti: 401 senza Authorization, 401 con token errato, 200 con token corretto; verifica che deleteMany notifiche usi `reads: { some: {} }`; verifica che deleteMany link-request usi `status: "PENDING"`; verifica cutoff 90 giorni con precisione ±100ms; 0 elementi eliminati con mock vuoti.
+- 6 test.
+
+**3. `src/app/api/competitive-teams/seasons/current/route.test.ts` — Nuovo file di test (PUT)**
+- Prima copertura dell'endpoint che imposta la stagione corrente.
+- Casi coperti: 401 non-coach/admin, 400 body senza label, 400 label stringa vuota, 200 label valida; verifica che `$transaction` contenga 2 operazioni; verifica `season.updateMany({ isCurrent: false })` prima dell'upsert; verifica `season.upsert` con campi create/update corretti.
+- 7 test.
+
+### File creati
+- `src/app/api/calendar/route.test.ts`
+- `src/app/api/cron/cleanup-notifications/route.test.ts`
+- `src/app/api/competitive-teams/seasons/current/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 61 test files (862 test)
+
+---
+
+
+
 ## 2026-05-02 (sessione 9)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 54 test files (798 test)
