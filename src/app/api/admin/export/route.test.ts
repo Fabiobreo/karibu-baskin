@@ -146,6 +146,54 @@ describe("GET /api/admin/export", () => {
       expect(text).toContain("'+1234");
       expect(text).toContain("'-ROUND");
     });
+
+    it("protegge i valori che iniziano con @ dalla formula injection", async () => {
+      p.user.findMany.mockResolvedValue([
+        {
+          name: "@SUM(A1:A10)",
+          email: "safe@example.com",
+          appRole: "ATHLETE",
+          sportRole: null,
+          sportRoleVariant: null,
+          gender: null,
+          birthDate: null,
+          teamMemberships: [],
+          _count: { registrations: 0 },
+        },
+      ]);
+      const res = await GET(makeGet({ type: "rosa" }));
+      const text = await res.text();
+      expect(text).toContain("'@SUM");
+      expect(text).not.toContain('"@SUM');
+    });
+
+    it("protegge i valori che iniziano con tab dalla formula injection", async () => {
+      p.user.findMany.mockResolvedValue([
+        {
+          name: "\tmalicious",
+          email: "safe@example.com",
+          appRole: "ATHLETE",
+          sportRole: null,
+          sportRoleVariant: null,
+          gender: null,
+          birthDate: null,
+          teamMemberships: [],
+          _count: { registrations: 0 },
+        },
+      ]);
+      const res = await GET(makeGet({ type: "rosa" }));
+      const text = await res.text();
+      expect(text).toContain("'\tmalicious");
+    });
+
+    it("include il BOM UTF-8 nell'output CSV (bytes EF BB BF)", async () => {
+      p.user.findMany.mockResolvedValue([]);
+      const res = await GET(makeGet({ type: "rosa" }));
+      const buf = Buffer.from(await res.arrayBuffer());
+      expect(buf[0]).toBe(0xef);
+      expect(buf[1]).toBe(0xbb);
+      expect(buf[2]).toBe(0xbf);
+    });
   });
 
   describe("type=presenze", () => {

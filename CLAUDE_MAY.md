@@ -1,5 +1,35 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-02 (sessione 4)
+
+**Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 41 test files (666 test)
+
+### Azioni compiute
+
+**1. `src/lib/webpush.test.ts` — Nuovo file di test (copertura completa)**
+- Prima copertura di `webpush.ts`, la utility più critica senza test: gestisce push notification a tutti gli utenti.
+- Mock di `web-push` (default export `sendNotification`) e `@/lib/db` (prisma.pushSubscription).
+- Copertura `sendPushToAll()`: invia a tutti (adminOnly=false), filtra solo ADMIN (adminOnly=true), rispetta preferenze utente per notifType, subscription anonima (no userId) sempre inviata, rimozione DB subscription scadute (410/404), 404 come scaduta, nessuna deleteMany se nessuna scaduta, payload JSON con url/icon/type, default url=/ icon=/logo.png, lista vuota.
+- Copertura `sendPushToUsers()`: ritorno immediato con userIds=[], filtro userId in query Prisma, preferenze notifType, invio senza filtro se notifType non fornito.
+- Copertura `sendPushToUser()`: ritorno immediato senza subscription, invio a tutte le subscription dell'utente, preferenze notifType, include user nella query solo se notifType fornito, rimozione scadute per singolo utente.
+
+**2. `src/app/api/admin/export/route.test.ts` — Aggiunta edge case CSV injection**
+- Aggiunti 3 nuovi test nel blocco `type=rosa`:
+  - Protezione valori che iniziano con `@` (`@SUM(A1:A10)` → `'@SUM`)
+  - Protezione valori che iniziano con tab (`\tmalicious` → `'\tmalicious`)
+  - BOM UTF-8 verificato via `arrayBuffer()` (bytes EF BB BF) — `response.text()` strippa il BOM per spec WHATWG, quindi necessario leggere i byte raw
+
+**File creati:**
+- `src/lib/webpush.test.ts`
+
+**File modificati:**
+- `src/app/api/admin/export/route.test.ts` (3 test aggiunti)
+
+**Stato finale:** TypeScript 0 errori · ESLint 0 warning · 42 test files (688 test)
+
+---
+
+
 ## 2026-05-02 (sessione 3)
 
 **Stato di salute iniziale:** TypeScript 0 errori · ESLint 0 warning · 40 test files (649 test)
