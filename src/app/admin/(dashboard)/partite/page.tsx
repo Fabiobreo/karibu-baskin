@@ -3,7 +3,7 @@ import AdminPartiteClient from "@/components/AdminPartiteClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Partite | Admin" };
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function AdminPartitePage() {
   const [teams, opposingTeams, matches, groups] = await Promise.all([

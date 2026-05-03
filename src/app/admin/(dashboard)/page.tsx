@@ -18,7 +18,7 @@ import { it } from "date-fns/locale";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function AdminPage() {
   const now = new Date();

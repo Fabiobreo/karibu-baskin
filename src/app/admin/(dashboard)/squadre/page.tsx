@@ -3,7 +3,7 @@ import AdminSquadreClient from "@/components/AdminSquadreClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Squadre | Admin" };
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function AdminSquadrePage() {
   const [teams, users, children, seasons] = await Promise.all([

@@ -1,0 +1,35 @@
+# Dipendenze
+node_modules/
+
+# Build output
+.next/
+out/
+build/
+coverage/
+
+# Lock files (grandi, non utili da leggere)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# File env con segreti
+.env
+.env.local
+.env.development
+.env.production
+.env*.local
+
+# Vercel
+.vercel/
+
+# Git
+.git/
+
+# Log
+*.log
+npm-debug.log*
+yarn-debug.log*
