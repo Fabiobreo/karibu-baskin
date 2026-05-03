@@ -9,7 +9,7 @@ export default function OfflineBanner() {
   const [justReconnected, setJustReconnected] = useState(false);
 
   useEffect(() => {
-    // Stato iniziale
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOffline(!navigator.onLine);
 
     function handleOffline() {

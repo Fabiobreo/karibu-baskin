@@ -38,49 +38,26 @@ export async function PUT(req: Request, { params }: Params) {
   // Upsert ogni riga
   const results = await Promise.all(
     body.map((s) => {
+      const data = {
+        points: s.points ?? 0,
+        baskets: s.baskets ?? 0,
+        fouls: s.fouls ?? 0,
+        assists: s.assists ?? 0,
+        rebounds: s.rebounds ?? 0,
+        notes: s.notes?.trim() || null,
+      };
       if (s.userId) {
         return prisma.playerMatchStats.upsert({
           where: { matchId_userId: { matchId, userId: s.userId } },
-          create: {
-            matchId,
-            userId: s.userId,
-            points: s.points ?? 0,
-            baskets: s.baskets ?? 0,
-            fouls: s.fouls ?? 0,
-            assists: s.assists ?? 0,
-            rebounds: s.rebounds ?? 0,
-            notes: s.notes?.trim() || null,
-          },
-          update: {
-            points: s.points ?? 0,
-            baskets: s.baskets ?? 0,
-            fouls: s.fouls ?? 0,
-            assists: s.assists ?? 0,
-            rebounds: s.rebounds ?? 0,
-            notes: s.notes?.trim() || null,
-          },
+          create: { matchId, userId: s.userId, ...data },
+          update: data,
         });
-      } else if (s.childId) {
+      }
+      if (s.childId) {
         return prisma.playerMatchStats.upsert({
           where: { matchId_childId: { matchId, childId: s.childId } },
-          create: {
-            matchId,
-            childId: s.childId,
-            points: s.points ?? 0,
-            baskets: s.baskets ?? 0,
-            fouls: s.fouls ?? 0,
-            assists: s.assists ?? 0,
-            rebounds: s.rebounds ?? 0,
-            notes: s.notes?.trim() || null,
-          },
-          update: {
-            points: s.points ?? 0,
-            baskets: s.baskets ?? 0,
-            fouls: s.fouls ?? 0,
-            assists: s.assists ?? 0,
-            rebounds: s.rebounds ?? 0,
-            notes: s.notes?.trim() || null,
-          },
+          create: { matchId, childId: s.childId, ...data },
+          update: data,
         });
       }
       return null;

@@ -104,6 +104,28 @@ describe("checkRegistrationAllowed — coach che si iscrive come allenatore", ()
   });
 });
 
+describe("checkRegistrationAllowed — COACH come atleta (registeredAsCoach=false)", () => {
+  it("COACH come atleta con ruolo ammesso → allowed", () => {
+    expect(checkRegistrationAllowed(roleRestriction, "COACH", 3, false)).toEqual({ allowed: true });
+  });
+
+  it("COACH come atleta con ruolo non ammesso → blocked", () => {
+    const result = checkRegistrationAllowed(roleRestriction, "COACH", 1, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/ruoli/i);
+  });
+
+  it("COACH come atleta con restrizione team, non membro → blocked", () => {
+    const result = checkRegistrationAllowed(teamRestriction, "COACH", 3, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/squadra/i);
+  });
+
+  it("COACH come atleta con restrizione team, membro → allowed", () => {
+    expect(checkRegistrationAllowed(teamRestriction, "COACH", 3, true)).toEqual({ allowed: true });
+  });
+});
+
 describe("checkRegistrationAllowed — nessuna restrizione", () => {
   it("ATHLETE ammesso senza restrizioni", () => {
     expect(checkRegistrationAllowed(noRestrictions, "ATHLETE", 3, false)).toEqual({ allowed: true });
@@ -179,5 +201,39 @@ describe("checkRegistrationAllowed — restrizioni combinate (ruolo + squadra)",
     const result = checkRegistrationAllowed(fullRestriction, "ATHLETE", 2, true);
     expect(result.allowed).toBe(false);
     expect(result.reason).toMatch(/ruoli/i);
+  });
+});
+
+describe("checkRegistrationAllowed — anonimo (null) con restrizioni", () => {
+  it("anonimo bloccato da restrizione ruolo (ruolo non nella lista)", () => {
+    const result = checkRegistrationAllowed(roleRestriction, null, 1, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/ruoli/i);
+  });
+
+  it("anonimo ammesso se il ruolo è nella lista allowedRoles", () => {
+    expect(checkRegistrationAllowed(roleRestriction, null, 3, false)).toEqual({ allowed: true });
+  });
+
+  it("anonimo bloccato da restrizione squadra (isInRestrictedTeam sempre false)", () => {
+    const result = checkRegistrationAllowed(teamRestriction, null, 3, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/squadra/i);
+  });
+
+  it("anonimo con ruolo aperto bypassa la restrizione di squadra", () => {
+    expect(checkRegistrationAllowed(teamRestrictionWithOpenRoles, null, 1, false)).toEqual({ allowed: true });
+  });
+
+  it("anonimo bloccato da restrizione combinata: ruolo non ammesso", () => {
+    const result = checkRegistrationAllowed(fullRestriction, null, 2, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/ruoli/i);
+  });
+
+  it("anonimo bloccato da restrizione combinata: ruolo ok ma non membro", () => {
+    const result = checkRegistrationAllowed(fullRestriction, null, 3, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/squadra/i);
   });
 });

@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 interface CompetitiveTeam {
   id: string;
@@ -29,19 +30,14 @@ interface Props {
 }
 
 /** Calcola la stagione sportiva (es. "2025-26") per una data ISO o oggetto Date. */
-export function seasonForDate(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const year = d.getFullYear();
-  const month = d.getMonth(); // 0-indexed; 8 = settembre
-  const startYear = month >= 8 ? year : year - 1;
-  return `${startYear}-${String(startYear + 1).slice(-2)}`;
-}
+export const seasonForDate = getCurrentSeason;
 
 export default function SessionRestrictionEditor({ value, onChange, disabled, seasonFilter }: Props) {
   const [allTeams, setAllTeams] = useState<CompetitiveTeam[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingTeams(true);
     fetch("/api/competitive-teams")
       .then((r) => r.json())

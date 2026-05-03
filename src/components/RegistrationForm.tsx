@@ -12,6 +12,7 @@ import { ROLE_COLORS, ROLE_LABELS, ROLES, sportRoleLabel } from "@/lib/constants
 import { useToast } from "@/context/ToastContext";
 import SportRoleQuestionnaire, { type SportRoleResult } from "@/components/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -122,6 +123,7 @@ export default function RegistrationForm({
     // Aggiorna solo se il soggetto è ancora "self" (valore iniziale prima che i figli fossero disponibili)
     if (subject === "self") {
       const firstAvailable = parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ?? parentChildren[0];
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubject(firstAvailable.id);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,6 +135,7 @@ export default function RegistrationForm({
     const r = subject === "self" ? currentUser?.sportRole : selectedChild?.sportRole;
     const v = subject === "self" ? currentUser?.sportRoleVariant : selectedChild?.sportRoleVariant;
     if (r != null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase("confirm");
       setChosenRole({ role: r, variant: v ?? undefined });
     } else {
@@ -426,7 +429,7 @@ export default function RegistrationForm({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             fullWidth size="small" multiline minRows={2}
-            inputProps={{ maxLength: 300 }}
+            slotProps={{ htmlInput: { maxLength: 300 } }}
             disabled={loading}
             helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
             sx={{ mb: 1.5 }}
@@ -472,7 +475,7 @@ export default function RegistrationForm({
                           : "Atleta"}
                   </Typography>
                   {currentUser.teamMemberships
-                    .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                    .filter((m) => m.teamSeason === getCurrentSeason())
                     .map((m) => (
                       <Chip
                         key={m.teamId}
@@ -494,11 +497,11 @@ export default function RegistrationForm({
               <Box sx={{ minWidth: 0 }}>
                 <Typography variant="body2" fontWeight={600}>{selectedChild.name}</Typography>
                 {selectedChild.teamMemberships
-                  .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                  .filter((m) => m.teamSeason === getCurrentSeason())
                   .length > 0 && (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
                     {selectedChild.teamMemberships
-                      .filter((m) => m.teamSeason === (() => { const n = new Date(); const y = n.getFullYear(); const s = n.getMonth() >= 8 ? y : y - 1; return `${s}-${String(s+1).slice(-2)}`; })())
+                      .filter((m) => m.teamSeason === getCurrentSeason())
                       .map((m) => (
                         <Chip
                           key={m.teamId}
@@ -521,7 +524,7 @@ export default function RegistrationForm({
                 value={anonymousName}
                 onChange={(e) => setAnonymousName(e.target.value)}
                 fullWidth size="small"
-                inputProps={{ maxLength: 60 }}
+                slotProps={{ htmlInput: { maxLength: 60 } }}
                 sx={{ mb: 1.5 }}
                 disabled={loading}
                 error={isDuplicateName}
@@ -533,7 +536,7 @@ export default function RegistrationForm({
                 value={anonymousEmail}
                 onChange={(e) => setAnonymousEmail(e.target.value)}
                 fullWidth size="small"
-                inputProps={{ maxLength: 254 }}
+                slotProps={{ htmlInput: { maxLength: 254 } }}
                 sx={{ mb: 2 }}
                 disabled={loading}
                 helperText="Serve per collegare questa iscrizione al tuo account futuro"
@@ -653,7 +656,7 @@ export default function RegistrationForm({
                     size="small"
                     multiline
                     minRows={2}
-                    inputProps={{ maxLength: 300 }}
+                    slotProps={{ htmlInput: { maxLength: 300 } }}
                     disabled={loading}
                     helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
                     sx={{ mb: 1.5 }}

@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Badge, IconButton, Popover } from "@mui/material";
+import { useHasMounted } from "@/lib/useHasMounted";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { useSession } from "next-auth/react";
@@ -10,10 +11,8 @@ import NotificationDropdown from "./NotificationDropdown";
 export default function NotificationBell() {
   const { status } = useSession();
   const { unreadCount } = useNotifications();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHasMounted();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-  useEffect(() => { setMounted(true); }, []);
 
   if (status !== "authenticated") return null;
 

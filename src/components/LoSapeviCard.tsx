@@ -14,6 +14,7 @@ export default function LoSapeviCard() {
 
   useEffect(() => {
     const idx = Math.floor(Math.random() * LO_SAPEVI.length);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setItem(LO_SAPEVI[idx]);
   }, []);
 

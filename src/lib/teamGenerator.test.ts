@@ -96,6 +96,37 @@ describe("generateTeams — 3 squadre", () => {
     expect(r1.teamB.map((a) => a.id)).toEqual(r2.teamB.map((a) => a.id));
     expect(r1.teamC?.map((a) => a.id)).toEqual(r2.teamC?.map((a) => a.id));
   });
+
+  it("differenza massima 1 tra le 3 squadre (bilanciamento)", () => {
+    const result = generateTeams(athletes, "session-3teams-balance", 3);
+    const sizes = [result.teamA.length, result.teamB.length, (result.teamC ?? []).length];
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+  });
+
+  it("step 4 — corregge sbilanciamento quando low e high leftovers finiscono nella stessa squadra", () => {
+    // 4 atleti role 1 (low) + 4 atleti role 3 (high): con 3 squadre base=1 per ruolo
+    // → 1 leftover per gruppo, entrambi assegnati alla stessa squadra (team A) → [4,2,2]
+    // step 4 sposta un atleta → max-min ≤ 1
+    const uneven: Athlete[] = [
+      { id: "a1", name: "A1", role: 1 },
+      { id: "a2", name: "A2", role: 1 },
+      { id: "a3", name: "A3", role: 1 },
+      { id: "a4", name: "A4", role: 1 },
+      { id: "b1", name: "B1", role: 3 },
+      { id: "b2", name: "B2", role: 3 },
+      { id: "b3", name: "B3", role: 3 },
+      { id: "b4", name: "B4", role: 3 },
+    ];
+    const result = generateTeams(uneven, "session-step4", 3);
+    const sizes = [result.teamA.length, result.teamB.length, (result.teamC ?? []).length];
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+    const allIds = [
+      ...result.teamA,
+      ...result.teamB,
+      ...(result.teamC ?? []),
+    ].map((a) => a.id).sort();
+    expect(allIds).toEqual(uneven.map((a) => a.id).sort());
+  });
 });
 
 describe("generateTeams — edge case", () => {

@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -206,6 +207,16 @@ describe("PATCH /api/sessions/[sessionId]", () => {
     const call = p.trainingSession.update.mock.calls[0][0];
     expect(call.where).toEqual({ id: "sess-xyz" });
   });
+
+  it("restituisce 404 se la sessione non esiste (P2025)", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.trainingSession.update.mockRejectedValue(p2025);
+    const res = await PATCH(...makePATCH("inesistente", { title: "Test" }));
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toMatch(/non trovato/i);
+  });
 });
 
 describe("DELETE /api/sessions/[sessionId]", () => {
@@ -241,5 +252,15 @@ describe("DELETE /api/sessions/[sessionId]", () => {
     expect(res.status).toBe(204);
     const text = await res.text();
     expect(text).toBe("");
+  });
+
+  it("restituisce 404 se la sessione non esiste (P2025)", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.trainingSession.delete.mockRejectedValue(p2025);
+    const res = await DELETE(...makeDELETE("inesistente"));
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toMatch(/non trovato/i);
   });
 });

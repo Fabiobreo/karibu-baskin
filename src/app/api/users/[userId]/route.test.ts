@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -206,6 +207,16 @@ describe("PATCH /api/users/[userId]", () => {
       expect.objectContaining({ action: "UPDATE_ROLE", actorId: "admin-1" })
     );
   });
+
+  it("restituisce 404 se l'utente non esiste (P2025)", async () => {
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    p.user.update.mockRejectedValue(p2025);
+    const [req, ctx] = makePATCH("non-existent", { appRole: "COACH" });
+    const res = await PATCH(req, ctx);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toMatch(/non trovato/i);
+  });
 });
 
 describe("DELETE /api/users/[userId]", () => {
@@ -260,5 +271,15 @@ describe("DELETE /api/users/[userId]", () => {
     await DELETE(req, ctx);
     expect(p.user.delete).toHaveBeenCalled();
     expect(mockLogAudit).not.toHaveBeenCalled();
+  });
+
+  it("restituisce 404 se l'utente da eliminare non esiste", async () => {
+    p.user.findUnique.mockResolvedValue(null);
+    const [req, ctx] = makeDELETE("non-existent");
+    const res = await DELETE(req, ctx);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toMatch(/non trovato/i);
+    expect(p.user.delete).not.toHaveBeenCalled();
   });
 });

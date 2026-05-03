@@ -41,19 +41,14 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import TeamsModal from "@/components/TeamsModal";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import AdminSessionForm from "@/components/AdminSessionForm";
 
-function toLocalDateString(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function toLocalTimeString(d: Date) {
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
+import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
 // ── Costanti squadre ──────────────────────────────────────────────────────────
@@ -594,7 +589,7 @@ function deriveSections(sessions: SessionWithCount[], now: Date) {
 
   const inCorso = sessions.filter((s) => {
     const start = new Date(s.date);
-    const end = s.endTime ? new Date(s.endTime) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const end = sessionEndDate(start, s.endTime ? new Date(s.endTime) : null);
     return now >= start && now <= end;
   }).sort(asc);
 
@@ -604,7 +599,7 @@ function deriveSections(sessions: SessionWithCount[], now: Date) {
 
   const past = sessions
     .filter((s) => {
-      const end = s.endTime ? new Date(s.endTime) : new Date(new Date(s.date).getTime() + 2 * 60 * 60 * 1000);
+      const end = sessionEndDate(new Date(s.date), s.endTime ? new Date(s.endTime) : null);
       return end < now;
     })
     .sort(desc);
@@ -801,12 +796,6 @@ export default function AllenamentiClient({
   const registeredSet = new Set(registeredSessionIds);
   const [firstSession, secondSession, ...remainingUpcoming] = upcoming;
 
-  function isSameDay(a: Date, b: Date) {
-    return a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate();
-  }
-
   const showSecondHero = !!secondSession &&
     isSameDay(new Date(firstSession.date), new Date(secondSession.date));
 
@@ -927,7 +916,7 @@ export default function AllenamentiClient({
           </Box>
 
           {/* Gruppi per mese */}
-          {monthGroups.map(([month, sessions]) => (
+          {monthGroups.map(([month, monthSessions]) => (
             <Box key={month} sx={{ mb: 2.5 }}>
               <Box
                 sx={{
@@ -955,8 +944,8 @@ export default function AllenamentiClient({
                   color="text.disabled"
                   sx={{ whiteSpace: "nowrap" }}
                 >
-                  {sessions.length}{" "}
-                  {sessions.length === 1 ? "allenamento" : "allenamenti"}
+                  {monthSessions.length}{" "}
+                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
                 </Typography>
               </Box>
               <Paper
@@ -964,7 +953,7 @@ export default function AllenamentiClient({
                 variant="outlined"
                 sx={{ borderRadius: 2, overflow: "hidden" }}
               >
-                {sessions.map((s, i) => (
+                {monthSessions.map((s, i) => (
                   <Box key={s.id}>
                     {i > 0 && <Divider />}
                     <SessionRow
@@ -1100,7 +1089,7 @@ export default function AllenamentiClient({
               onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
               size="small"
               fullWidth
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               disabled={editLoading}
             />
             <Box sx={{ display: "flex", gap: 2 }}>
@@ -1110,7 +1099,7 @@ export default function AllenamentiClient({
                 value={editTime}
                 onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />
@@ -1120,7 +1109,7 @@ export default function AllenamentiClient({
                 value={editEndTime}
                 onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />

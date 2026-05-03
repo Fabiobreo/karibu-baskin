@@ -101,8 +101,12 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   const [activeSeason, setActiveSeason] = useState<string>(
     initialSeasons.find((s) => s.isCurrent)?.label ?? existingSeasons[0] ?? ""
   );
+  // Dichiarato qui per evitare TDZ: usato nell'effect sottostante
+  const [rosaTeam, setRosaTeam] = useState<Team | null>(null);
+
   // Sync teams + rosaTeam quando initialTeams cambia (dopo router.refresh())
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTeams(initialTeams);
     setRosaTeam((prev) => {
       if (!prev) return prev;
@@ -113,6 +117,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   // Calcola stagione corrente lato client (evita hydration mismatch con new Date())
   useEffect(() => {
     const cur = currentSeasonLabel();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAutoSeason(cur);
     if (!activeSeason) setActiveSeason(cur);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -158,7 +163,6 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   }
 
   // Dialog rosa
-  const [rosaTeam, setRosaTeam] = useState<Team | null>(null);
   const [addingMember, setAddingMember] = useState(false);
   const [selectedKey, setSelectedKey] = useState("");
 

@@ -74,6 +74,7 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError("");
     setLoading(true);
 

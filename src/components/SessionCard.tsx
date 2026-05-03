@@ -7,7 +7,6 @@ import {
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
-import SportsIcon from "@mui/icons-material/Sports";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -15,7 +14,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";

@@ -5,15 +5,10 @@ import SiteHeader from "@/components/SiteHeader";
 import AllenamentiClient from "@/components/AllenamentiClient";
 import type { TeamsData } from "@/components/TeamDisplay";
 import type { Metadata } from "next";
+import { getSeasonStartDate } from "@/lib/seasonUtils";
 
 export const metadata: Metadata = { title: "Allenamenti | Karibu Baskin" };
 export const revalidate = 0;
-
-function getSeasonStart(): Date {
-  const now = new Date();
-  const year = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
-  return new Date(year, 7, 1);
-}
 
 export default async function AllenamentiPage() {
   const now = new Date();
@@ -60,27 +55,31 @@ export default async function AllenamentiPage() {
   let seasonTotal = 0;
 
   if (userId) {
-    const seasonStart = getSeasonStart();
-    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const seasonStart = getSeasonStartDate();
 
     seasonTotal = sessions.filter((s) => {
       const d = new Date(s.date);
       return d >= seasonStart && d < now;
     }).length;
 
-    const [upcomingRegs, pastRegs] = await Promise.all([
-      prisma.registration.findMany({
-        where: { userId, session: { date: { gte: threeHoursAgo } } },
-        select: { id: true, sessionId: true },
-      }),
+    // Sessioni attive (in corso + prossime) — query per ID esatto, senza finestra temporale
+    const activeSessionIds = [...inCorso, ...upcoming].map((s) => s.id);
+
+    const [activeRegs, pastRegs] = await Promise.all([
+      activeSessionIds.length > 0
+        ? prisma.registration.findMany({
+            where: { userId, sessionId: { in: activeSessionIds } },
+            select: { id: true, sessionId: true },
+          })
+        : Promise.resolve([]),
       prisma.registration.findMany({
         where: { userId, session: { date: { gte: seasonStart, lt: now } } },
         select: { sessionId: true },
       }),
     ]);
 
-    registeredSessionIds = upcomingRegs.map((r) => r.sessionId);
-    registrationIdBySession = Object.fromEntries(upcomingRegs.map((r) => [r.sessionId, r.id]));
+    registeredSessionIds = activeRegs.map((r) => r.sessionId);
+    registrationIdBySession = Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]));
     seasonAttended = pastRegs.length;
   }
 

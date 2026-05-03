@@ -66,14 +66,21 @@ export default async function HomePage() {
     return now >= start && now <= end;
   });
 
-  const upcoming = sessions.filter((s) => new Date(s.date) > now);
+  const allUpcoming = sessions.filter((s) => new Date(s.date) > now);
+
+  // Mostra 2 prossimi se stesso giorno, altrimenti solo 1
+  const first = allUpcoming[0] ?? null;
+  const second = allUpcoming[1] ?? null;
+  const sameDay = first && second &&
+    new Date(first.date).toDateString() === new Date(second.date).toDateString();
+  const upcoming = sameDay ? [first, second] : (first ? [first] : []);
 
   // Recupera le iscrizioni dell'utente per le sessioni visibili
   let registrationIdBySession: Record<string, string> = {};
-  if (userId && (inCorso.length > 0 || upcoming.length > 0)) {
-    const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const visibleIds = [...inCorso, ...upcoming].map((s) => s.id);
+  if (userId && visibleIds.length > 0) {
     const regs = await prisma.registration.findMany({
-      where: { userId, session: { date: { gte: threeHoursAgo } } },
+      where: { userId, sessionId: { in: visibleIds } },
       select: { id: true, sessionId: true },
     });
     registrationIdBySession = Object.fromEntries(regs.map((r) => [r.sessionId, r.id]));
@@ -88,30 +95,24 @@ export default async function HomePage() {
 
         {/* ── In corso ── */}
         {inCorso.length > 0 && (
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: 3 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-              <Box
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  bgcolor: "#2E7D32",
-                  flexShrink: 0,
-                  "@keyframes pulse": {
-                    "0%":   { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
-                    "70%":  { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
-                    "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
-                  },
-                  animation: "pulse 1.4s ease-in-out infinite",
-                }}
-              />
+              <Box sx={{
+                width: 8, height: 8, borderRadius: "50%", bgcolor: "#2E7D32", flexShrink: 0,
+                "@keyframes pulse": {
+                  "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
+                  "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
+                  "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
+                },
+                animation: "pulse 1.4s ease-in-out infinite",
+              }} />
               <Typography variant="overline" fontWeight={700} sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}>
-                In corso ({inCorso.length})
+                In corso
               </Typography>
             </Box>
             <Grid container spacing={2}>
               {inCorso.map((s) => (
-                <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid key={s.id} size={{ xs: 12, sm: inCorso.length > 1 ? 6 : 12 }}>
                   <SessionCard
                     session={s}
                     live
@@ -125,31 +126,24 @@ export default async function HomePage() {
         )}
 
         {/* ── Prossimi allenamenti ── */}
-        <Typography
-          variant="overline"
-          color="text.secondary"
-          fontWeight={700}
-          sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}
-        >
-          Prossimi allenamenti ({upcoming.length})
-        </Typography>
-
-        {upcoming.length === 0 ? (
-          <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}>
-            <Typography color="text.secondary">Nessun allenamento programmato.</Typography>
-          </Paper>
-        ) : (
-          <Grid container spacing={2}>
-            {upcoming.map((s) => (
-              <Grid key={s.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <SessionCard
-                  session={s}
-                  isRegistered={!!registrationIdBySession[s.id]}
-                  myRegistrationId={registrationIdBySession[s.id] ?? null}
-                />
-              </Grid>
-            ))}
-          </Grid>
+        {upcoming.length > 0 && (
+          <>
+            <Typography variant="overline" color="text.secondary" fontWeight={700}
+              sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}>
+              Prossimi allenamenti
+            </Typography>
+            <Grid container spacing={2}>
+              {upcoming.map((s) => (
+                <Grid key={s.id} size={{ xs: 12, sm: upcoming.length > 1 ? 6 : 12 }}>
+                  <SessionCard
+                    session={s}
+                    isRegistered={!!registrationIdBySession[s.id]}
+                    myRegistrationId={registrationIdBySession[s.id] ?? null}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </>
         )}
 
       </Container>

@@ -19,6 +19,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useToast } from "@/context/ToastContext";
 import { ROLE_COLORS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import type { Gender } from "@prisma/client";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -331,9 +332,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  const now = new Date();
-  const sy = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-  const currentSeason = `${sy}-${String(sy + 1).slice(-2)}`;
+  const currentSeason = getCurrentSeason();
 
   return (
     <Box>

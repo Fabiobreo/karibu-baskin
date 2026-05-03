@@ -94,10 +94,17 @@ export async function DELETE(
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  await prisma.trainingSession.update({
-    where: { id: sessionId },
-    data: { teams: Prisma.DbNull },
-  });
+  try {
+    await prisma.trainingSession.update({
+      where: { id: sessionId },
+      data: { teams: Prisma.DbNull },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
+    }
+    throw err;
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -50,6 +50,7 @@ export default function NotifichePage() {
       return;
     }
     if (status === "authenticated") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchPage(1, false).finally(() => setLoading(false));
     }
   }, [status, router, fetchPage]);

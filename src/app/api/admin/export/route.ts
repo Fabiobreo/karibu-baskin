@@ -4,11 +4,16 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { ROLE_LABELS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import type { AppRole, Gender } from "@prisma/client";
 
+// Prefixes formula-trigger characters to prevent CSV injection in Excel/Sheets
+function sanitizeCsvValue(s: string): string {
+  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+}
+
 function csvRow(values: (string | number | null | undefined)[]): string {
   return values
     .map((v) => {
       const s = v == null ? "" : String(v);
-      return `"${s.replace(/"/g, '""')}"`;
+      return `"${sanitizeCsvValue(s).replace(/"/g, '""')}"`;
     })
     .join(";");
 }
@@ -47,7 +52,6 @@ export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");
   const teamId = req.nextUrl.searchParams.get("teamId");
 
-  // [CLAUDE - 08:30] Validazione formato stagione per prevenire Date invalide in Prisma
   if (season && !/^\d{4}-\d{2}$/.test(season)) {
     return NextResponse.json({ error: "Formato stagione non valido (YYYY-YY)" }, { status: 400 });
   }

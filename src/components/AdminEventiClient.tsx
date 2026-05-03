@@ -45,15 +45,6 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [page, setPage]               = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  useEffect(() => {
-    const editId = searchParams.get("edit");
-    if (!editId) return;
-    const ev = initialEvents.find((e) => e.id === editId);
-    if (ev) openEdit(ev);
-    router.replace("/admin/eventi", { scroll: false });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
@@ -73,6 +64,16 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     setError("");
     setDialogOpen(true);
   };
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId) return;
+    const ev = initialEvents.find((e) => e.id === editId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (ev) openEdit(ev);
+    router.replace("/admin/eventi", { scroll: false });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSave = async () => {
     if (!form.title.trim() || !form.date) {

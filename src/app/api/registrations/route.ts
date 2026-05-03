@@ -115,21 +115,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
-    if (!child.sportRole) {
-      await prisma.child.update({
-        where: { id: childId },
-        data: { sportRole: role, sportRoleVariant: roleVariant ?? null },
-      });
-    }
-
     try {
-      const registration = await prisma.registration.create({
-        data: { sessionId, name: child.name, role: effectiveRole, childId, note: trimmedNote },
+      const registration = await prisma.$transaction(async (tx) => {
+        // Se il figlio non ha ancora un ruolo confermato, salva il ruolo scelto come proposta
+        if (!child.sportRole) {
+          await tx.child.update({
+            where: { id: childId },
+            data: { sportRole: role, sportRoleVariant: roleVariant ?? null },
+          });
+        }
+        return tx.registration.create({
+          data: { sessionId, name: child.name, role: effectiveRole, childId, note: trimmedNote },
+        });
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
-      if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2002") {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json({ error: `${child.name} è già iscritto a questo allenamento` }, { status: 409 });
       }
       throw err;
@@ -180,20 +181,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!user.sportRole) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { sportRoleSuggested: role, sportRoleSuggestedVariant: roleVariant ?? null },
-      });
-    }
-
     try {
-      const registration = await prisma.registration.create({
-        data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: registeredAsCoach ?? false },
+      const registration = await prisma.$transaction(async (tx) => {
+        if (!user.sportRole) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { sportRoleSuggested: role, sportRoleSuggestedVariant: roleVariant ?? null },
+          });
+        }
+        return tx.registration.create({
+          data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: registeredAsCoach ?? false },
+        });
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
-      if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2002") {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
         return NextResponse.json({ error: "Sei già iscritto a questo allenamento" }, { status: 409 });
       }
       throw err;
@@ -227,7 +229,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(registration, { status: 201 });
   } catch (err: unknown) {
-    if (err && typeof err === "object" && "code" in err && (err as { code: string }).code === "P2002") {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       return NextResponse.json({ error: "Questo nome è già iscritto all'allenamento" }, { status: 409 });
     }
     throw err;
@@ -282,12 +284,10 @@ export async function DELETE(req: NextRequest) {
   await prisma.registration.deleteMany({ where: { id: { in: regs.map((r) => r.id) } } });
 
   // Azzera le squadre generate degli allenamenti coinvolti
-  for (const sessionId of sessionIds) {
-    await prisma.trainingSession.update({
-      where: { id: sessionId },
-      data: { teams: Prisma.DbNull },
-    });
-  }
+  await prisma.trainingSession.updateMany({
+    where: { id: { in: sessionIds } },
+    data: { teams: Prisma.DbNull },
+  });
 
   return new NextResponse(null, { status: 204 });
 }
