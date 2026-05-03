@@ -1,5 +1,3 @@
-// [CLAUDE - 07:00] Centralizza il calcolo stagione sportiva, rimpiazza 14+ occorrenze duplicate
-
 /**
  * Restituisce la stringa stagione (es. "2025-26") per una data.
  * La stagione inizia a settembre (mese indice 8).

@@ -27,6 +27,8 @@ vi.mock("@/lib/appNotifications", () => ({
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { createAppNotification } from "@/lib/appNotifications";
+import { Prisma } from "@prisma/client";
 
 type PrismaMock = {
   trainingSession: {
@@ -222,7 +224,23 @@ describe("POST /api/sessions", () => {
       makePost({ title: "Allenamento", date: "2025-06-05T18:00:00Z" }),
     );
     expect(res.status).toBe(201);
-    // sendPushToAll viene chiamato ma non atteso
     expect(sendPushToAll).toHaveBeenCalledOnce();
+    expect(createAppNotification).toHaveBeenCalledOnce();
+  });
+
+  it("restituisce 409 se esiste già un allenamento nella stessa data (P2002)", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.trainingSession.create.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "5.0.0",
+      }),
+    );
+    const res = await POST(
+      makePost({ title: "Allenamento Duplicato", date: "2025-06-01T18:00:00Z" }),
+    );
+    expect(res.status).toBe(409);
+    const json = await res.json();
+    expect(json.error).toMatch(/allenamento/i);
   });
 });

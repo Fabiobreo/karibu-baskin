@@ -1,5 +1,42 @@
 # CLAUDE_MAY.md — Log sessioni automatiche
 
+## 2026-05-03 (sessione 14)
+
+**Stato di salute iniziale:** TypeScript 0 errori · 64 test files (908 test)
+
+### Audit iniziale
+- 908 test verdi, 0 errori TypeScript, 0 warning ESLint.
+- Copertura API quasi completa: solo `auth/[...nextauth]` (Auth.js boilerplate) e `test-login` (dev-only) senza test.
+- Trovati 4 commenti `[CLAUDE - HH:MM]` stale che violano la convenzione "no task-context comments" di CLAUDE.md.
+- Mancante test per P2002 → 409 in `sessions/route.test.ts` (path coperto nel route ma non esercitato nel test).
+- Test fire-and-forget in `sessions/route.test.ts` verificava solo `sendPushToAll`, non `createAppNotification` (entrambe fire-and-forget nel POST).
+
+### Azioni compiute
+
+**1. Rimozione commenti `[CLAUDE - HH:MM]` stale (4 file)**
+- `src/lib/seasonUtils.ts:1` — rimosso `// [CLAUDE - 07:00] Centralizza il calcolo stagione sportiva...`
+- `src/app/api/admin/export/route.ts:55` — rimosso `// [CLAUDE - 08:30] Validazione formato stagione...`
+- `src/app/api/registrations/[regId]/route.ts:30` — rimosso `// [CLAUDE - 07:00] Fix security: solo il genitore...`
+- `src/app/api/registrations/[regId]/route.test.ts:136` — rimosso `// [CLAUDE - 07:00] Security fix: solo parentId...`
+- Motivazione: commenti che referenziano il task/fix di una sessione precedente rotano con il codice e non aggiungono informazione non ovvia.
+
+**2. `src/app/api/sessions/route.test.ts` — 2 miglioramenti test**
+- Aggiunto import `Prisma` da `@prisma/client` e `createAppNotification` da `@/lib/appNotifications`.
+- Aggiunto test `409 P2002`: verifica che `POST /api/sessions` risponda 409 quando Prisma lancia `PrismaClientKnownRequestError` con codice `P2002` (allenamento duplicato per data/orario).
+- Aggiunta asserzione `expect(createAppNotification).toHaveBeenCalledOnce()` nel test fire-and-forget esistente — copre il secondo canale notifica oltre a `sendPushToAll`.
+- +1 test.
+
+### File modificati
+- `src/lib/seasonUtils.ts`
+- `src/app/api/admin/export/route.ts`
+- `src/app/api/registrations/[regId]/route.ts`
+- `src/app/api/registrations/[regId]/route.test.ts`
+- `src/app/api/sessions/route.test.ts`
+
+**Stato finale:** TypeScript 0 errori · 64 test files (909 test)
+
+---
+
 ## 2026-05-02 (sessione 13)
 
 **Stato di salute iniziale:** TypeScript 0 errori · 64 test files (902 test)

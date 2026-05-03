@@ -133,7 +133,6 @@ describe("DELETE /api/registrations/[regId]", () => {
   });
 
   it("nega all'account atleta collegato di eliminare l'iscrizione del figlio (via childId)", async () => {
-    // [CLAUDE - 07:00] Security fix: solo parentId autorizzato — userId (atleta collegato) non deve poter cancellare
     p.registration.findUnique.mockResolvedValue({ userId: null, childId: "child-1" });
     mockAuth.mockResolvedValue({ user: { id: "linked-user-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
