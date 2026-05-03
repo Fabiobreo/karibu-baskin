@@ -6,7 +6,7 @@ import {
 import SessionCard from "@/components/SessionCard";
 import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
-import type { TeamsData } from "@/components/TeamDisplay";
+import { parseTeamsData } from "@/lib/schemas/session";
 import HeroSection from "@/components/HeroSection";
 import LoSapeviCard from "@/components/LoSapeviCard";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -55,7 +55,7 @@ export default async function HomePage() {
 
   const sessions = rawSessions.map((s) => ({
     ...s,
-    teams: s.teams as unknown as TeamsData | null,
+    teams: parseTeamsData(s.teams),
   })) satisfies SessionWithCount[];
 
   const inCorso = sessions.filter((s) => {

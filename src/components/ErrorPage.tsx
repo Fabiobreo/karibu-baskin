@@ -9,9 +9,10 @@ interface Props {
   description: string;
   showReset?: boolean;
   onReset?: () => void;
+  digest?: string;
 }
 
-export default function ErrorPage({ code, title, description, showReset, onReset }: Props) {
+export default function ErrorPage({ code, title, description, showReset, onReset, digest }: Props) {
   return (
     <Box
       sx={{
@@ -75,6 +76,21 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       >
         {description}
       </Typography>
+
+      {/* Digest — codice di riferimento per supporto */}
+      {digest && (
+        <Typography
+          sx={{
+            color: "rgba(255,255,255,0.25)",
+            fontSize: "0.72rem",
+            fontFamily: "monospace",
+            mb: 2,
+            mt: -2,
+          }}
+        >
+          ref: {digest}
+        </Typography>
+      )}
 
       {/* Azioni */}
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>

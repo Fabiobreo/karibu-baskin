@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
 import { useToast } from "@/context/ToastContext";
+import type { TeamsData } from "@/components/TeamDisplay";
 
 interface SessionWithCount {
   id: string;
@@ -33,7 +34,7 @@ interface SessionWithCount {
   date: string | Date;
   endTime: string | Date | null;
   dateSlug: string | null;
-  teams: object | null;
+  teams: TeamsData | null;
   _count: { registrations: number };
 }
 

@@ -11,7 +11,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    console.error("[global error boundary]", { name: error.name, message: error.message, digest: error.digest });
   }, [error]);
 
   return (
@@ -37,6 +37,11 @@ export default function GlobalError({
         <p style={{ color: "rgba(255,255,255,0.45)", maxWidth: 360, lineHeight: 1.7, margin: 0, fontSize: "0.95rem" }}>
           Si è verificato un errore grave nell&apos;applicazione. Riprova oppure torna alla home.
         </p>
+        {error.digest && (
+          <p style={{ color: "rgba(255,255,255,0.2)", margin: 0, fontSize: "0.7rem", fontFamily: "monospace" }}>
+            ref: {error.digest}
+          </p>
+        )}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
           <button
             onClick={reset}

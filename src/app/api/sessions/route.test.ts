@@ -24,10 +24,16 @@ vi.mock("@/lib/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/rateLimit", () => ({
+  checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 59 }),
+  getClientIp: vi.fn().mockReturnValue("127.0.0.1"),
+}));
+
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { createAppNotification } from "@/lib/appNotifications";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { Prisma } from "@prisma/client";
 
 type PrismaMock = {
@@ -134,6 +140,13 @@ describe("GET /api/sessions", () => {
     await GET(makeGet({ limit: "5", page: "-5" }));
     const call = p.trainingSession.findMany.mock.calls[0][0];
     expect(call.skip).toBe(0);
+  });
+
+  it("restituisce 429 quando il rate limit è superato", async () => {
+    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({ allowed: false, remaining: 0 });
+    const res = await GET(makeGet());
+    expect(res.status).toBe(429);
+    expect(p.trainingSession.findMany).not.toHaveBeenCalled();
   });
 });
 

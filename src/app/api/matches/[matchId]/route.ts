@@ -6,6 +6,8 @@ import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { MatchUpdateSchema, deriveResult } from "@/lib/schemas/match";
 import { generateMatchSlug } from "@/lib/slugUtils";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -117,14 +119,15 @@ export async function PUT(req: Request, { params }: Params) {
     const msgTitle = `🏀 ${label}! ${match.team.name} vs ${match.opponent.name}`;
     const msgBody = `Risultato finale: ${score}`;
     const matchUrl = `/partite/${match.slug ?? matchId}`;
-    sendPushToAll({ title: msgTitle, body: msgBody, url: matchUrl, type: "MATCH_RESULT" }, false, "MATCH_RESULT").catch(() => {});
-    createAppNotification({ type: "MATCH_RESULT", title: msgTitle, body: msgBody, url: matchUrl }).catch(() => {});
+    sendPushToAll({ title: msgTitle, body: msgBody, url: matchUrl, type: "MATCH_RESULT" }, false, "MATCH_RESULT").catch((err) => console.error("[push] match result", err));
+    createAppNotification({ type: "MATCH_RESULT", title: msgTitle, body: msgBody, url: matchUrl }).catch((err) => console.error("[notification] match result", err));
   }
 
   return NextResponse.json(match);
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
+  const session = await auth();
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -137,6 +140,9 @@ export async function DELETE(_req: Request, { params }: Params) {
       return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
     }
     throw err;
+  }
+  if (session?.user?.id) {
+    logAudit({ actorId: session.user.id, action: "DELETE_MATCH", targetType: "Match", targetId: matchId }).catch((err) => console.error("[audit] delete match", err));
   }
   return new NextResponse(null, { status: 204 });
 }

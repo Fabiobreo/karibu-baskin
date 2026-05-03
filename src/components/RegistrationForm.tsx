@@ -149,11 +149,12 @@ export default function RegistrationForm({
   const [anonymousEmail, setAnonymousEmail] = useState("");
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [optimisticSubjects, setOptimisticSubjects] = useState<Set<string>>(new Set());
   const { showToast } = useToast();
 
-  const currentSubjectRegistered = subject === "self"
-    ? selfRegistered
-    : effectiveRegisteredChildIds.includes(subject);
+  const currentSubjectRegistered =
+    (subject === "self" ? selfRegistered : effectiveRegisteredChildIds.includes(subject)) ||
+    optimisticSubjects.has(subject);
 
   const isDuplicateName =
     !currentUser &&
@@ -176,6 +177,8 @@ export default function RegistrationForm({
       return;
     }
 
+    const submittedSubject = subject;
+    setOptimisticSubjects((prev) => new Set(prev).add(submittedSubject));
     setLoading(true);
     try {
       const roleToSend = isCoachRegistration
@@ -196,6 +199,7 @@ export default function RegistrationForm({
       });
 
       if (!res.ok) {
+        setOptimisticSubjects((prev) => { const s = new Set(prev); s.delete(submittedSubject); return s; });
         const data = await res.json();
         showToast({ message: data.error ?? "Errore durante l'iscrizione", severity: "error" });
         return;
@@ -216,6 +220,7 @@ export default function RegistrationForm({
       }
       onRegistered();
     } catch {
+      setOptimisticSubjects((prev) => { const s = new Set(prev); s.delete(submittedSubject); return s; });
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setLoading(false);

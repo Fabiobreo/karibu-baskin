@@ -3,6 +3,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { EventUpdateSchema } from "@/lib/schemas/event";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -40,6 +42,7 @@ export async function PUT(req: Request, { params }: Params) {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
+  const session = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -52,6 +55,9 @@ export async function DELETE(_req: Request, { params }: Params) {
       return NextResponse.json({ error: "Evento non trovato" }, { status: 404 });
     }
     throw err;
+  }
+  if (session?.user?.id) {
+    logAudit({ actorId: session.user.id, action: "DELETE_EVENT", targetType: "Event", targetId: eventId }).catch((err) => console.error("[audit] delete event", err));
   }
   return new NextResponse(null, { status: 204 });
 }

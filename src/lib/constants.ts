@@ -1,4 +1,16 @@
-import type { Gender } from "@prisma/client";
+import type { AppRole, Gender } from "@prisma/client";
+
+export const ROLE_LABELS_IT: Record<AppRole, string> = {
+  GUEST: "Ospite",
+  ATHLETE: "Atleta",
+  PARENT: "Genitore",
+  COACH: "Allenatore",
+  ADMIN: "Admin",
+};
+
+export const ROLE_CHIP_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
+  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
+};
 
 export const GENDER_LABELS: Record<Gender, string> = { MALE: "Maschio", FEMALE: "Femmina" };
 export const GENDER_LABELS_SHORT: Record<Gender, string> = { MALE: "M", FEMALE: "F" };

@@ -75,8 +75,9 @@ type Team = {
   color: string | null;
   description: string | null;
   _count: { memberships: number; matches: number };
-  memberships: Membership[];
 };
+
+type TeamWithRoster = Team & { memberships: Membership[] };
 
 type Child = { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null };
 
@@ -101,17 +102,13 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   const [activeSeason, setActiveSeason] = useState<string>(
     initialSeasons.find((s) => s.isCurrent)?.label ?? existingSeasons[0] ?? ""
   );
-  // Dichiarato qui per evitare TDZ: usato nell'effect sottostante
-  const [rosaTeam, setRosaTeam] = useState<Team | null>(null);
+  const [rosaBase, setRosaBase] = useState<Team | null>(null);
+  const [rosaTeam, setRosaTeam] = useState<TeamWithRoster | null>(null);
+  const [rosaLoading, setRosaLoading] = useState(false);
 
-  // Sync teams + rosaTeam quando initialTeams cambia (dopo router.refresh())
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setTeams(initialTeams);
-    setRosaTeam((prev) => {
-      if (!prev) return prev;
-      return initialTeams.find((t) => t.id === prev.id) ?? prev;
-    });
   }, [initialTeams]);
 
   // Calcola stagione corrente lato client (evita hydration mismatch con new Date())
@@ -234,46 +231,62 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
 
   // ── Rosa ─────────────────────────────────────────────────────────────────────
 
-  // Aggiorna il rosaTeam dalla lista teams dopo un refresh
-  function syncRosaTeam(updatedTeams: Team[]) {
-    if (rosaTeam) {
-      const updated = updatedTeams.find((t) => t.id === rosaTeam.id);
-      if (updated) setRosaTeam(updated);
-    }
+  async function openRosa(team: Team) {
+    setRosaBase(team);
+    setRosaTeam(null);
+    setRosaLoading(true);
+    const res = await fetch(`/api/competitive-teams/${team.id}`);
+    if (res.ok) setRosaTeam(await res.json());
+    setRosaLoading(false);
+  }
+
+  async function reloadRosa(teamId: string) {
+    const res = await fetch(`/api/competitive-teams/${teamId}`);
+    if (res.ok) setRosaTeam(await res.json());
+  }
+
+  function closeRosa() {
+    setRosaBase(null);
+    setRosaTeam(null);
+    setRosaLoading(false);
+    setAddingMember(false);
+    setSelectedKey("");
   }
 
   async function handleAddMember() {
-    if (!rosaTeam || !selectedKey) return;
+    if (!rosaBase || !selectedKey) return;
     const [kind, id] = selectedKey.split(":");
     startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaTeam.id}/members`, {
+      await fetch(`/api/competitive-teams/${rosaBase.id}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(kind === "c" ? { childId: id } : { userId: id }),
       });
       setSelectedKey("");
       setAddingMember(false);
-      router.refresh();
+      setTeams((prev) => prev.map((t) => t.id === rosaBase.id ? { ...t, _count: { ...t._count, memberships: t._count.memberships + 1 } } : t));
+      await reloadRosa(rosaBase.id);
     });
   }
 
   async function handleRemoveMember(membershipId: string) {
-    if (!rosaTeam) return;
+    if (!rosaBase) return;
     startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaTeam.id}/members/${membershipId}`, { method: "DELETE" });
-      router.refresh();
+      await fetch(`/api/competitive-teams/${rosaBase.id}/members/${membershipId}`, { method: "DELETE" });
+      setTeams((prev) => prev.map((t) => t.id === rosaBase.id ? { ...t, _count: { ...t._count, memberships: t._count.memberships - 1 } } : t));
+      await reloadRosa(rosaBase.id);
     });
   }
 
   async function handleToggleCaptain(membershipId: string, current: boolean) {
-    if (!rosaTeam) return;
+    if (!rosaBase) return;
     startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaTeam.id}/members/${membershipId}`, {
+      await fetch(`/api/competitive-teams/${rosaBase.id}/members/${membershipId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isCaptain: !current }),
       });
-      router.refresh();
+      await reloadRosa(rosaBase.id);
     });
   }
 
@@ -291,6 +304,8 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
           .map((c) => ({ selectKey: `c:${c.id}`, id: c.id, kind: "child" as const, name: c.name, image: null, sportRole: c.sportRole, sportRoleVariant: c.sportRoleVariant })),
       ].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
     : [];
+
+  const rosaName = rosaBase?.name ?? rosaTeam?.name ?? "";
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
@@ -406,7 +421,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
                       colorName={colorName}
                       onEdit={() => openEdit(team)}
                       onDelete={() => handleDeleteTeam(team.id, team.name)}
-                      onRosa={() => { setRosaTeam(team); setAddingMember(false); setSelectedKey(""); }}
+                      onRosa={() => openRosa(team)}
                     />
                   </Grid>
                 );
@@ -537,27 +552,32 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
 
       {/* ── Dialog: gestione rosa ──────────────────────────────────────────────── */}
       <Dialog
-        open={!!rosaTeam}
-        onClose={() => setRosaTeam(null)}
+        open={!!rosaBase}
+        onClose={closeRosa}
         maxWidth="sm"
         fullWidth
         PaperProps={{ sx: { maxHeight: "85vh" } }}
       >
-        {rosaTeam && (
+        {rosaBase && (
           <>
             {/* Intestazione colorata */}
-            <Box sx={{ px: 3, pt: 2.5, pb: 2, backgroundColor: rosaTeam.color ?? "#E65100" }}>
+            <Box sx={{ px: 3, pt: 2.5, pb: 2, backgroundColor: rosaBase.color ?? "#E65100" }}>
               <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.7)", fontWeight: 700, letterSpacing: "0.1em" }}>
                 Gestione Rosa
               </Typography>
               <Typography variant="h6" fontWeight={800} sx={{ color: "#fff" }}>
-                {rosaTeam.name}
+                {rosaName}
               </Typography>
             </Box>
 
             <DialogContent sx={{ pt: 2 }}>
+              {rosaLoading && (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                  <CircularProgress size={32} />
+                </Box>
+              )}
               {/* Aggiungi atleta */}
-              {!addingMember ? (
+              {!rosaLoading && !addingMember && (
                 <Button
                   size="small"
                   variant="outlined"
@@ -568,7 +588,8 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
                 >
                   Aggiungi atleta
                 </Button>
-              ) : (
+              )}
+              {!rosaLoading && addingMember && (
                 <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2, borderStyle: "dashed" }}>
                   <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
                     Seleziona un atleta da aggiungere
@@ -610,21 +631,22 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
               )}
 
               {/* Lista atleti */}
-              {rosaTeam.memberships.length === 0 ? (
+              {!rosaLoading && rosaTeam?.memberships.length === 0 && (
                 <Box sx={{ textAlign: "center", py: 4 }}>
                   <PeopleIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
                   <Typography variant="body2" color="text.secondary">
                     La rosa è vuota. Aggiungi atleti tramite il pulsante sopra.
                   </Typography>
                 </Box>
-              ) : (
+              )}
+              {!rosaLoading && rosaTeam && rosaTeam.memberships.length > 0 && (
                 <Stack spacing={0.75}>
                   {rosaTeam.memberships.map((m) => {
                     const athlete = m.user ?? m.child;
                     if (!athlete) return null;
                     const name = athlete.name ?? "—";
                     const image = "image" in athlete ? (athlete.image ?? undefined) : undefined;
-                    const teamColor = rosaTeam.color ?? "#E65100";
+                    const teamColor = rosaBase?.color ?? rosaTeam.color ?? "#E65100";
                     return (
                       <Box
                         key={m.id}
@@ -678,9 +700,11 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
             <Divider />
             <DialogActions sx={{ px: 3, py: 1.5 }}>
               <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-                {rosaTeam.memberships.length} {rosaTeam.memberships.length === 1 ? "atleta" : "atleti"} in rosa
+                {rosaTeam
+                  ? `${rosaTeam.memberships.length} ${rosaTeam.memberships.length === 1 ? "atleta" : "atleti"} in rosa`
+                  : rosaLoading ? "Caricamento…" : "—"}
               </Typography>
-              <Button onClick={() => setRosaTeam(null)}>Chiudi</Button>
+              <Button onClick={closeRosa}>Chiudi</Button>
             </DialogActions>
           </>
         )}
@@ -796,51 +820,6 @@ function TeamCard({
             <Typography variant="body2" color="text.secondary">partite</Typography>
           </Box>
         </Box>
-
-        {/* Anteprima avatar rosa */}
-        {team.memberships.length > 0 && (
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Box sx={{ display: "flex" }}>
-              {team.memberships.slice(0, 6).map((m, i) => {
-                const athlete = m.user ?? m.child;
-                const name = athlete?.name ?? "?";
-                const image = m.user?.image ?? undefined;
-                return (
-                  <Avatar
-                    key={m.id}
-                    src={image}
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      fontSize: 11,
-                      bgcolor: color,
-                      border: "2px solid #fff",
-                      ml: i === 0 ? 0 : -0.75,
-                      zIndex: 10 - i,
-                    }}
-                  >
-                    {name[0].toUpperCase()}
-                  </Avatar>
-                );
-              })}
-              {team.memberships.length > 6 && (
-                <Avatar
-                  sx={{
-                    width: 28,
-                    height: 28,
-                    fontSize: 10,
-                    bgcolor: "grey.300",
-                    color: "text.secondary",
-                    border: "2px solid #fff",
-                    ml: -0.75,
-                  }}
-                >
-                  +{team.memberships.length - 6}
-                </Avatar>
-              )}
-            </Box>
-          </Box>
-        )}
 
         {/* Bottone gestione rosa */}
         <Box sx={{ mt: "auto" }}>

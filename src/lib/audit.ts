@@ -7,6 +7,13 @@ export type AuditAction =
   | "DELETE_CHILD"
   | "ADD_MEMBER"
   | "REMOVE_MEMBER"
+  | "CREATE_TEAM"
+  | "UPDATE_TEAM"
+  | "DELETE_TEAM"
+  | "CREATE_MATCH"
+  | "DELETE_MATCH"
+  | "CREATE_EVENT"
+  | "DELETE_EVENT"
   | "UPDATE_MATCH"
   | "LINK_ACCEPTED"
   | "LINK_REJECTED";

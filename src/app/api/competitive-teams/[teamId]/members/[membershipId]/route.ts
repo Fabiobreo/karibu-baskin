@@ -36,7 +36,7 @@ export async function DELETE(_req: Request, { params }: Params) {
   await prisma.teamMembership.delete({ where: { id: membershipId } });
 
   if (session?.user?.id && membership) {
-    logAudit({ actorId: session.user.id, action: "REMOVE_MEMBER", targetType: "TeamMembership", targetId: membershipId, before: { teamId: membership.teamId, userId: membership.userId, childId: membership.childId } }).catch(() => {});
+    logAudit({ actorId: session.user.id, action: "REMOVE_MEMBER", targetType: "TeamMembership", targetId: membershipId, before: { teamId: membership.teamId, userId: membership.userId, childId: membership.childId } }).catch((err) => console.error("[audit] remove member", err));
   }
   if (membership?.userId) {
     createAppNotification({
@@ -45,7 +45,7 @@ export async function DELETE(_req: Request, { params }: Params) {
       body: `Sei stato rimosso dalla squadra "${membership.team.name}".`,
       url: "/profilo",
       targetUserId: membership.userId,
-    }).catch(() => {});
+    }).catch((err) => console.error("[notification] remove member", err));
   }
 
   return new NextResponse(null, { status: 204 });

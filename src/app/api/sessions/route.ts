@@ -4,11 +4,15 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { SessionCreateSchema } from "@/lib/schemas/session";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-sessions", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
   const { searchParams } = req.nextUrl;
   const upcoming = searchParams.get("upcoming") === "true";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
@@ -22,7 +26,9 @@ export async function GET(req: NextRequest) {
     where: upcoming ? { date: { gte: now } } : undefined,
     orderBy: { date: upcoming ? "asc" : "desc" },
     ...(usePagination && { skip: (page - 1) * limit, take: limit }),
-    include: {
+    select: {
+      id: true, title: true, date: true, endTime: true, dateSlug: true,
+      teams: true, allowedRoles: true, openRoles: true, restrictTeamId: true,
       _count: { select: { registrations: true } },
       restrictTeam: { select: { id: true, name: true, color: true } },
     },
@@ -80,13 +86,13 @@ export async function POST(req: NextRequest) {
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
     type: "NEW_TRAINING",
-  }, false, "NEW_TRAINING").catch(() => {});
+  }, false, "NEW_TRAINING").catch((err) => console.error("[push] new training", err));
   createAppNotification({
     type: "NEW_TRAINING",
     title: "Nuovo allenamento",
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
-  }).catch(() => {});
+  }).catch((err) => console.error("[notification] new training", err));
 
   return NextResponse.json(session, { status: 201 });
 }

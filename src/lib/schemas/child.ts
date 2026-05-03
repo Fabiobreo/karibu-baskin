@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { Gender } from "@prisma/client";
 
-const GenderEnum = z.enum(["MALE", "FEMALE"]).nullable().optional();
+const GenderEnum = z.nativeEnum(Gender).nullable().optional();
 const SportRoleField = z.number().int().min(1).max(5).nullable().optional();
 
 export const ChildCreateSchema = z.object({

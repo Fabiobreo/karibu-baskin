@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { MatchCreateSchema, deriveResult } from "@/lib/schemas/match";
 import { generateMatchSlug } from "@/lib/slugUtils";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import type { MatchResult } from "@prisma/client";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
+export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-matches", 30, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
+  const { searchParams } = req.nextUrl;
   const teamId = searchParams.get("teamId");
 
   const matches = await prisma.match.findMany({
@@ -23,6 +29,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const session = await auth();
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -81,5 +88,9 @@ export async function POST(req: Request) {
       _count: { select: { playerStats: true } },
     },
   });
+  if (session?.user?.id) {
+    logAudit({ actorId: session.user.id, action: "CREATE_MATCH", targetType: "Match", targetId: match.id, after: { teamId: body.teamId, opponentId: body.opponentId, date: body.date } }).catch((err) => console.error("[audit] create match", err));
+  }
+
   return NextResponse.json(match, { status: 201 });
 }

@@ -8,17 +8,8 @@ export const ROLE_HIERARCHY: Record<AppRole, number> = {
   ADMIN: 4,
 };
 
-export const ROLE_LABELS_IT: Record<AppRole, string> = {
-  GUEST: "Ospite",
-  ATHLETE: "Atleta",
-  PARENT: "Genitore",
-  COACH: "Allenatore",
-  ADMIN: "Admin",
-};
-
-export const ROLE_CHIP_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
-  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
-};
+// Re-export for backwards compatibility — source of truth is now @/lib/constants
+export { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/constants";
 
 export function hasRole(userRole: AppRole, required: AppRole): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[required];

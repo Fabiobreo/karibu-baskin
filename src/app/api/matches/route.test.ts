@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
+import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -24,9 +25,23 @@ vi.mock("@/lib/slugUtils", () => ({
   generateMatchSlug: vi.fn().mockResolvedValue("karibu-vs-avversario-2026-01-15"),
 }));
 
+vi.mock("@/lib/rateLimit", () => ({
+  checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 29 }),
+  getClientIp: vi.fn().mockReturnValue("127.0.0.1"),
+}));
+
+vi.mock("@/lib/authjs", () => ({
+  auth: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock("@/lib/audit", () => ({
+  logAudit: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 type PrismaMock = {
   match: { findMany: Mock; create: Mock };
@@ -66,7 +81,7 @@ describe("GET /api/matches", () => {
   });
 
   it("restituisce l'elenco delle partite", async () => {
-    const req = new Request("http://localhost/api/matches");
+    const req = new NextRequest("http://localhost/api/matches");
     const res = await GET(req);
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -79,7 +94,7 @@ describe("GET /api/matches", () => {
 
   it("filtra per teamId se fornito", async () => {
     p.match.findMany.mockResolvedValue([]);
-    const req = new Request("http://localhost/api/matches?teamId=team-42");
+    const req = new NextRequest("http://localhost/api/matches?teamId=team-42");
     const res = await GET(req);
     expect(res.status).toBe(200);
     expect(p.match.findMany).toHaveBeenCalledWith(
@@ -88,11 +103,19 @@ describe("GET /api/matches", () => {
   });
 
   it("non filtra per teamId se non fornito", async () => {
-    const req = new Request("http://localhost/api/matches");
+    const req = new NextRequest("http://localhost/api/matches");
     await GET(req);
     expect(p.match.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: undefined })
     );
+  });
+
+  it("restituisce 429 quando il rate limit è superato", async () => {
+    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({ allowed: false, remaining: 0 });
+    const req = new NextRequest("http://localhost/api/matches");
+    const res = await GET(req);
+    expect(res.status).toBe(429);
+    expect(p.match.findMany).not.toHaveBeenCalled();
   });
 });
 

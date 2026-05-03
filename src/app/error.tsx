@@ -10,8 +10,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // In produzione potresti loggare su Sentry o simili
-    console.error(error);
+    console.error("[error boundary]", { name: error.name, message: error.message, digest: error.digest });
   }, [error]);
 
   return (
@@ -21,6 +20,7 @@ export default function Error({
       description="Si è verificato un errore imprevisto. Puoi riprovare oppure tornare alla pagina principale."
       showReset
       onReset={reset}
+      digest={error.digest}
     />
   );
 }

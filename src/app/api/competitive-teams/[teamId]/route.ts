@@ -3,6 +3,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { CompetitiveTeamUpdateSchema } from "@/lib/schemas/competitiveTeam";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -37,6 +39,7 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function PUT(req: Request, { params }: Params) {
+  const session = await auth();
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -63,6 +66,9 @@ export async function PUT(req: Request, { params }: Params) {
         ...(body.description !== undefined && { description: body.description?.trim() || null }),
       },
     });
+    if (session?.user?.id) {
+      logAudit({ actorId: session.user.id, action: "UPDATE_TEAM", targetType: "CompetitiveTeam", targetId: teamId, after: body as Record<string, unknown> }).catch((err) => console.error("[audit] update team", err));
+    }
     return NextResponse.json(team);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
@@ -73,6 +79,7 @@ export async function PUT(req: Request, { params }: Params) {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
+  const session = await auth();
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -85,6 +92,9 @@ export async function DELETE(_req: Request, { params }: Params) {
       return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
     }
     throw err;
+  }
+  if (session?.user?.id) {
+    logAudit({ actorId: session.user.id, action: "DELETE_TEAM", targetType: "CompetitiveTeam", targetId: teamId }).catch((err) => console.error("[audit] delete team", err));
   }
   return new NextResponse(null, { status: 204 });
 }

@@ -39,7 +39,7 @@ export async function POST(req: Request, { params }: Params) {
     },
   });
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "ADD_MEMBER", targetType: "TeamMembership", targetId: membership.id, after: { teamId, userId: body.userId, childId: body.childId } }).catch(() => {});
+    logAudit({ actorId: session.user.id, action: "ADD_MEMBER", targetType: "TeamMembership", targetId: membership.id, after: { teamId, userId: body.userId, childId: body.childId } }).catch((err) => console.error("[audit] add member", err));
   }
   if (body.userId) {
     createAppNotification({
@@ -48,7 +48,7 @@ export async function POST(req: Request, { params }: Params) {
       body: `Sei stato aggiunto alla squadra "${membership.team.name}".`,
       url: "/profilo",
       targetUserId: body.userId,
-    }).catch(() => {});
+    }).catch((err) => console.error("[notification] add member", err));
   }
 
   return NextResponse.json(membership, { status: 201 });

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { Container } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import AllenamentiClient from "@/components/AllenamentiClient";
+import { parseTeamsData } from "@/lib/schemas/session";
 import type { TeamsData } from "@/components/TeamDisplay";
 import type { Metadata } from "next";
 import { getSeasonStartDate } from "@/lib/seasonUtils";
@@ -26,7 +27,7 @@ export default async function AllenamentiPage() {
 
   const sessions = rawSessions.map((s) => ({
     ...s,
-    teams: s.teams as unknown as TeamsData | null,
+    teams: parseTeamsData(s.teams),
   }));
 
   const inCorso = sessions.filter((s) => {

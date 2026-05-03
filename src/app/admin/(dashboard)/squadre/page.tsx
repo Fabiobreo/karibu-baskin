@@ -11,13 +11,6 @@ export default async function AdminSquadrePage() {
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
         _count: { select: { memberships: true, matches: true } },
-        memberships: {
-          orderBy: [{ isCaptain: "desc" }, { createdAt: "asc" }],
-          include: {
-            user: { select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true } },
-            child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
-          },
-        },
       },
     }),
     prisma.user.findMany({

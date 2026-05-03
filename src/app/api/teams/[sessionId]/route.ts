@@ -71,13 +71,13 @@ export async function POST(
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
       type: "TEAMS_READY",
     };
-    sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch(() => {});
+    sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch((err) => console.error("[push] teams ready", err));
     createAppNotification({
       type: "TEAMS_READY",
       title: "Squadre pronte!",
       body: `Le squadre per "${trainingSession.title}" sono state generate.`,
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
-    }).catch(() => {});
+    }).catch((err) => console.error("[notification] teams ready", err));
   }
 
   return NextResponse.json({ ...teams, generated: true });

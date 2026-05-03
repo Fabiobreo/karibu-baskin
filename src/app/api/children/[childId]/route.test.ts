@@ -167,11 +167,14 @@ describe("PATCH /api/children/[childId]", () => {
 
   // ── Link flow ────────────────────────────────────────────────────────────────
 
-  it("restituisce 404 se l'utente target non esiste (linkEmail)", async () => {
+  it("restituisce 200 con pending:false se l'utente target non esiste (linkEmail)", async () => {
     p.user.findUnique.mockResolvedValue(null);
     const [req, ctx] = makePATCH("child-1", { linkEmail: "target@example.com" });
     const res = await PATCH(req, ctx);
-    expect(res.status).toBe(404);
+    // Risposta generica: non rivela se l'email è registrata (anti-enumeration)
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.pending).toBe(false);
     expect(p.linkRequest.create).not.toHaveBeenCalled();
   });
 

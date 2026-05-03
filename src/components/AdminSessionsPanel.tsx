@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Typography, Box, Paper, Divider } from "@mui/material";
 import AdminSessionForm from "@/components/AdminSessionForm";
 import AdminSessionList from "@/components/AdminSessionList";
+import type { TeamsData } from "@/components/TeamDisplay";
 
 interface SessionWithCount {
   id: string;
@@ -10,7 +11,7 @@ interface SessionWithCount {
   date: string;
   endTime: string | null;
   dateSlug: string | null;
-  teams: object | null;
+  teams: TeamsData | null;
   _count: { registrations: number };
 }
 

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { CompetitiveTeamCreateSchema } from "@/lib/schemas/competitiveTeam";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 export async function GET() {
   const teams = await prisma.competitiveTeam.findMany({
@@ -14,6 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const session = await auth();
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -43,5 +46,10 @@ export async function POST(req: Request) {
       description: body.description?.trim() || null,
     },
   });
+
+  if (session?.user?.id) {
+    logAudit({ actorId: session.user.id, action: "CREATE_TEAM", targetType: "CompetitiveTeam", targetId: team.id, after: { name: team.name, season: team.season } }).catch((err) => console.error("[audit] create team", err));
+  }
+
   return NextResponse.json(team, { status: 201 });
 }

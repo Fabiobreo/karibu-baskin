@@ -8,11 +8,7 @@ import { sendPushToUser } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
-
-const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
-const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
-const VALID_SPORT_ROLES = [1, 2, 3, 4, 5];
-const VALID_SPORT_ROLE_VARIANTS = ["S", "T", "P", "R"];
+import { VALID_APP_ROLES, VALID_GENDERS, VALID_SPORT_ROLES, VALID_SPORT_ROLE_VARIANTS } from "@/lib/validators";
 
 export async function PATCH(
   req: NextRequest,
@@ -35,7 +31,7 @@ export async function PATCH(
   const data: Record<string, unknown> = {};
 
   if (body.appRole !== undefined) {
-    if (!VALID_ROLES.includes(body.appRole)) {
+    if (!VALID_APP_ROLES.includes(body.appRole)) {
       return NextResponse.json({ error: "Ruolo app non valido" }, { status: 400 });
     }
     data.appRole = body.appRole;
@@ -106,7 +102,7 @@ export async function PATCH(
     if (body.appRole !== undefined) actions.push({ action: "UPDATE_ROLE", before: { appRole: data.appRole }, after: { appRole: user.appRole } });
     if (body.sportRole !== undefined) actions.push({ action: "UPDATE_SPORT_ROLE", before: { sportRole: prevSportRole }, after: { sportRole: user.sportRole } });
     for (const entry of actions) {
-      logAudit({ actorId, action: entry.action, targetType: "User", targetId: userId, before: entry.before, after: entry.after }).catch(() => {});
+      logAudit({ actorId, action: entry.action, targetType: "User", targetId: userId, before: entry.before, after: entry.after }).catch((err) => console.error("[audit] update user", err));
     }
   }
 
@@ -121,8 +117,8 @@ export async function PATCH(
         : `Il tuo ruolo Baskin è cambiato in: ${roleName}.`,
       url: "/profilo",
     };
-    sendPushToUser(userId, notifPayload).catch(() => {});
-    createAppNotification({ type: "SYSTEM", targetUserId: userId, ...notifPayload }).catch(() => {});
+    sendPushToUser(userId, notifPayload).catch((err) => console.error("[push] sport role update", err));
+    createAppNotification({ type: "SYSTEM", targetUserId: userId, ...notifPayload }).catch((err) => console.error("[notification] sport role update", err));
   }
 
   return NextResponse.json(user);
@@ -151,7 +147,7 @@ export async function DELETE(
   await prisma.user.delete({ where: { id: userId } });
 
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "DELETE_USER", targetType: "User", targetId: userId, before: deleted ?? undefined }).catch(() => {});
+    logAudit({ actorId: session.user.id, action: "DELETE_USER", targetType: "User", targetId: userId, before: deleted ?? undefined }).catch((err) => console.error("[audit] delete user", err));
   }
 
   return NextResponse.json({ ok: true });

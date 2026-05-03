@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import type { AppRole, Gender, Prisma } from "@prisma/client";
 import { isAdminUser } from "@/lib/apiAuth";
-
-const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
-const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
-const VALID_SPORT_ROLES = [1, 2, 3, 4, 5];
+import { VALID_APP_ROLES, VALID_GENDERS, VALID_SPORT_ROLES } from "@/lib/validators";
 
 // GET /api/users — lista tutti gli utenti (solo ADMIN)
 // Supporta: ?search=&appRole=&sportRole=&gender=&sortBy=createdAt&sortDir=desc&page=1&limit=25
@@ -31,7 +28,7 @@ export async function GET(req: NextRequest) {
       { email: { contains: search, mode: "insensitive" } },
     ];
   }
-  if (appRole && VALID_ROLES.includes(appRole)) where.appRole = appRole;
+  if (appRole && VALID_APP_ROLES.includes(appRole)) where.appRole = appRole;
   if (sportRole === "none") where.sportRole = null;
   else if (sportRole) { const n = parseInt(sportRole, 10); if (!isNaN(n)) where.sportRole = n; }
   if (gender === "none") where.gender = null;
@@ -86,7 +83,7 @@ export async function POST(req: NextRequest) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Email non valida" }, { status: 400 });
   }
-  if (body.appRole && !VALID_ROLES.includes(body.appRole)) {
+  if (body.appRole && !VALID_APP_ROLES.includes(body.appRole)) {
     return NextResponse.json({ error: "Ruolo non valido" }, { status: 400 });
   }
   if (body.gender && !VALID_GENDERS.includes(body.gender)) {

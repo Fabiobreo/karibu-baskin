@@ -59,7 +59,8 @@ export async function PATCH(
     }
 
     if (!targetUser) {
-      return NextResponse.json({ error: "Nessun utente trovato" }, { status: 404 });
+      // Risposta generica: non rivela se l'email è registrata o meno
+      return NextResponse.json({ pending: false });
     }
 
     // Verifica che quell'account non sia già collegato a un altro Child

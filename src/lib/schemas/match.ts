@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { MatchResult } from "@prisma/client";
+import { MatchType, MatchResult } from "@prisma/client";
 
 /** Derives WIN/LOSS/DRAW from raw scores. */
 export function deriveResult(ourScore: number, theirScore: number): MatchResult {
@@ -8,33 +8,29 @@ export function deriveResult(ourScore: number, theirScore: number): MatchResult 
   return "DRAW";
 }
 
-export const MatchCreateSchema = z.object({
-  teamId: z.string().min(1),
-  opponentId: z.string().min(1),
-  date: z.string().datetime({ offset: true }).or(z.string().min(1)),
+const MatchBaseSchema = z.object({
   isHome: z.boolean().optional(),
   venue: z.string().max(200).optional(),
-  matchType: z.enum(["LEAGUE", "TOURNAMENT", "FRIENDLY"]).optional(),
-  ourScore: z.number().int().min(0).optional(),
-  theirScore: z.number().int().min(0).optional(),
-  result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
+  matchType: z.nativeEnum(MatchType).optional(),
+  result: z.nativeEnum(MatchResult).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   matchday: z.number().int().min(1).nullable().optional(),
   groupId: z.string().nullable().optional(),
 });
 
-export const MatchUpdateSchema = z.object({
+export const MatchCreateSchema = MatchBaseSchema.extend({
+  teamId: z.string().min(1),
+  opponentId: z.string().min(1),
+  date: z.string().datetime({ offset: true }).or(z.string().min(1)),
+  ourScore: z.number().int().min(0).optional(),
+  theirScore: z.number().int().min(0).optional(),
+});
+
+export const MatchUpdateSchema = MatchBaseSchema.extend({
   date: z.string().min(1).optional(),
-  isHome: z.boolean().optional(),
-  venue: z.string().max(200).optional(),
-  matchType: z.enum(["LEAGUE", "TOURNAMENT", "FRIENDLY"]).optional(),
+  opponentId: z.string().min(1).optional(),
   ourScore: z.number().int().min(0).nullable().optional(),
   theirScore: z.number().int().min(0).nullable().optional(),
-  result: z.enum(["WIN", "LOSS", "DRAW"]).nullable().optional(),
-  notes: z.string().max(2000).nullable().optional(),
-  opponentId: z.string().min(1).optional(),
-  matchday: z.number().int().min(1).nullable().optional(),
-  groupId: z.string().nullable().optional(),
 });
 
 export const PlayerStatsEntrySchema = z.object({
