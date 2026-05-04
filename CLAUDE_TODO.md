@@ -30,38 +30,6 @@ Analisi codebase con priorità d'intervento. Aggiornato automaticamente.
 
 ## 📋 FEATURES PIANIFICATE
 
-### F1. **Stats giocatore aggregate per stagione**
-
-`PlayerMatchStats` esiste partita per partita ma non c'è aggregazione. La pagina `/giocatori/[slug]` non mostra stats.
-
-**Scope:**
-- Endpoint `GET /api/users/[userId]/season-stats?season=2025-26` (totale punti, partite giocate, media)
-- Stesso per Child
-- Widget sulla pagina profilo giocatore pubblico
-
----
-
-### F2. **Presenza effettiva agli allenamenti**
-
-`Registration` registra l'iscrizione ma non la presenza. Lo staff non sa distinguere "iscritto e venuto" da "iscritto e assente".
-
-**Scope:**
-- Campo `attended: Boolean?` su `Registration` (null = non marcato, true/false = presente/assente)
-- Toggle COACH/ADMIN nella lista iscritti dell'allenamento
-- Contatore presenze sul profilo giocatore
-
----
-
-### F3. **Notifiche push per singola squadra**
-
-Oggi `sendPushToAll` manda a tutti o solo agli admin. Non c'è modo di notificare solo i membri di una squadra (es. "allenamento annullato per i Gialli").
-
-**Scope:**
-- `sendPushToTeam(teamId, payload)` in `src/lib/webpush.ts`
-- Usarlo quando un allenamento con `restrictTeamId` viene creato/modificato
-
----
-
 ### F4. **Storico presenze giocatore**
 
 Non c'è pagina che mostra la frequenza agli allenamenti nel tempo. Utile per lo staff per monitorare la regolarità.
@@ -114,3 +82,6 @@ ELO nascosto su User/Child per bilanciare squadre in allenamento. Visibile solo 
 - **#8** Optimistic updates in `RegistrationForm`: UI si aggiorna immediatamente, rollback su errore API
 - **#9** Paginazione server-side: già implementata in API + `AdminUserList` (skip/take + serverTotal)
 - **#10** Error monitoring: logging strutturato `{ name, message, digest }` + digest mostrato all'utente in `error.tsx` / `global-error.tsx`
+- **F1** `GET /api/users/[userId]/season-stats` e `GET /api/children/[childId]/season-stats` con `?season=` filter; aggregano points/baskets/fouls/assists/rebounds/matchesPlayed/avgPoints; 11 test
+- **F3** `sendPushToFilter/Team/Role` in `webpush.ts`; targeting automatico in `POST /api/sessions` (team→`sendPushToTeam`, allowedRoles→`sendPushToFilter`, altrimenti→`sendPushToAll`); `POST /api/push/notify` per notifiche manuali con filtro team+ruolo+targetAll; `AdminNotificationSender` nella dashboard admin; 8 test nuovi
+- **F2** `attended Boolean?` su `Registration`; `PATCH /api/registrations/[regId]/attendance` (COACH/ADMIN); toggle in `RosterByRole` (isStaff+isEnded); contatore presenze su profilo giocatore; nuovo modello `TrainingMatchResult` (scoreA/B/C?); CRUD `/api/sessions/[sessionId]/match-results` + `[resultId]`; componente `TrainingMatchResults` nella pagina allenamento terminato; 21 test nuovi

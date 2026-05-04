@@ -87,6 +87,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         },
       },
       _count: { select: { registrations: true } },
+      registrations: { where: { attended: true }, select: { id: true } },
     },
   });
 
@@ -210,7 +211,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               </Grid>
             )}
             <Grid size={{ xs: 12, sm: 6 }}>
-              <InfoRow label="Allenamenti" value={`${user._count.registrations}`} />
+              <InfoRow
+                label="Allenamenti"
+                value={
+                  user.registrations.length > 0
+                    ? `${user._count.registrations} iscrizioni · ${user.registrations.length} presenze`
+                    : `${user._count.registrations}`
+                }
+              />
             </Grid>
           </Grid>
         </Paper>

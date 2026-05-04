@@ -37,19 +37,19 @@ export function checkRegistrationAllowed(
   isInRestrictedTeam: boolean,
   registeredAsCoach = false,
 ): RestrictionCheckResult {
-  // ADMIN sempre ammesso
+  // ADMIN: sempre ammesso
   if (appRole === "ADMIN") return { allowed: true };
 
-  // Coach che si iscrive come allenatore: sempre ammesso senza restrizioni
+  // Coach che si iscrive come allenatore (non atleta): sempre ammesso
   if (registeredAsCoach) return { allowed: true };
 
-  // Ospite sempre ammesso
+  // GUEST: bypass totale di tutte le restrizioni
   if (appRole === "GUEST") return { allowed: true };
 
   // Nessuna restrizione → tutti ammessi
   if (!hasRestrictions(restrictions)) return { allowed: true };
 
-  // Controllo ruoli ammessi
+  // Controllo ruoli ammessi — COACH come atleta, ATHLETE, PARENT, anonimo
   if (restrictions.allowedRoles.length > 0 && !restrictions.allowedRoles.includes(sportRole)) {
     return {
       allowed: false,
@@ -57,7 +57,7 @@ export function checkRegistrationAllowed(
     };
   }
 
-  // Controllo restrizione squadra
+  // Controllo restrizione squadra — si applica a tutti (incluso anonimo e COACH come atleta)
   if (restrictions.restrictTeamId !== null) {
     // Ruoli aperti bypassano la restrizione di squadra
     if (restrictions.openRoles.includes(sportRole)) return { allowed: true };

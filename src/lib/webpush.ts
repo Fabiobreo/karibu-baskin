@@ -113,6 +113,82 @@ export async function sendPushToUsers(
 }
 
 /**
+ * Invia push ai membri di una squadra agonistica e ai genitori dei figli in squadra.
+ * Combina userId diretti + parentId dei Child + userId collegati ai Child.
+ *
+ * Se sportRole è fornito, filtra solo i membri con quel ruolo.
+ * Se sportRoles (array) è fornito, filtra per uno qualsiasi dei ruoli nell'array.
+ */
+export async function sendPushToFilter(
+  filter: { teamId?: string | null; sportRole?: number | null; sportRoles?: number[] },
+  payload: PushPayload,
+  notifType?: ControllableNotifType,
+) {
+  const { teamId } = filter;
+  const roleFilter = filter.sportRoles?.length ? filter.sportRoles : filter.sportRole != null ? [filter.sportRole] : null;
+
+  if (!teamId && !roleFilter) {
+    return sendPushToAll(payload, false, notifType);
+  }
+
+  const userIds = new Set<string>();
+
+  if (teamId) {
+    const memberships = await prisma.teamMembership.findMany({
+      where: { teamId },
+      select: { userId: true, childId: true },
+    });
+
+    const directUserIds = memberships.filter((m) => m.userId).map((m) => m.userId!);
+    const childIds = memberships.filter((m) => m.childId).map((m) => m.childId!);
+
+    const userWhere = roleFilter
+      ? { id: { in: directUserIds }, sportRole: { in: roleFilter } }
+      : { id: { in: directUserIds } };
+    const users = directUserIds.length > 0
+      ? await prisma.user.findMany({ where: userWhere, select: { id: true } })
+      : [];
+    for (const u of users) userIds.add(u.id);
+
+    if (childIds.length > 0) {
+      const childWhere = roleFilter
+        ? { id: { in: childIds }, sportRole: { in: roleFilter } }
+        : { id: { in: childIds } };
+      const children = await prisma.child.findMany({ where: childWhere, select: { parentId: true, userId: true } });
+      for (const c of children) {
+        userIds.add(c.parentId);
+        if (c.userId) userIds.add(c.userId);
+      }
+    }
+  } else if (roleFilter) {
+    const users = await prisma.user.findMany({
+      where: { sportRole: { in: roleFilter } },
+      select: { id: true },
+    });
+    for (const u of users) userIds.add(u.id);
+
+    const children = await prisma.child.findMany({
+      where: { sportRole: { in: roleFilter } },
+      select: { parentId: true, userId: true },
+    });
+    for (const c of children) {
+      userIds.add(c.parentId);
+      if (c.userId) userIds.add(c.userId);
+    }
+  }
+
+  return sendPushToUsers([...userIds], payload, notifType);
+}
+
+export async function sendPushToTeam(teamId: string, payload: PushPayload, notifType?: ControllableNotifType) {
+  return sendPushToFilter({ teamId }, payload, notifType);
+}
+
+export async function sendPushToRole(sportRole: number, payload: PushPayload, notifType?: ControllableNotifType) {
+  return sendPushToFilter({ sportRole }, payload, notifType);
+}
+
+/**
  * Invia le notifiche push a un singolo utente tramite le sue subscription.
  * Se notifType è specificato, rispetta le preferenze push dell'utente per quel tipo.
  */

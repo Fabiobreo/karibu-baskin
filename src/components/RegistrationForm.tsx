@@ -152,6 +152,24 @@ export default function RegistrationForm({
   const [optimisticSubjects, setOptimisticSubjects] = useState<Set<string>>(new Set());
   const { showToast } = useToast();
 
+  // Quando i dati reali si aggiornano (es. dopo una disiscrizione), rimuovi dall'ottimistico
+  // i soggetti che il server non considera più iscritti — altrimenti il form rimane bloccato.
+  useEffect(() => {
+    setOptimisticSubjects((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set(prev);
+      if (next.has("self") && !selfRegistered) next.delete("self");
+      for (const childId of next) {
+        if (childId !== "self" && !effectiveRegisteredChildIds.includes(childId)) {
+          next.delete(childId);
+        }
+      }
+      return next.size === prev.size ? prev : next;
+    });
+  // registeredUserIds e registeredChildIds sono gli array "veri" che cambiano dopo SWR revalidation
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registeredUserIds, registeredChildIds]);
+
   const currentSubjectRegistered =
     (subject === "self" ? selfRegistered : effectiveRegisteredChildIds.includes(subject)) ||
     optimisticSubjects.has(subject);

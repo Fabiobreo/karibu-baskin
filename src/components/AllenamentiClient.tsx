@@ -368,6 +368,7 @@ function HeroCard({
 function SessionRow({
   session: s,
   isRegistered = false,
+  myRegistrationId = null,
   muted = false,
   isStaff = false,
   generating = false,
@@ -379,6 +380,7 @@ function SessionRow({
 }: {
   session: SessionWithCount;
   isRegistered?: boolean;
+  myRegistrationId?: string | null;
   muted?: boolean;
   isStaff?: boolean;
   generating?: boolean;
@@ -393,6 +395,7 @@ function SessionRow({
   const date = new Date(s.date);
   const endTime = s.endTime ? new Date(s.endTime) : null;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
+  const myTeam = findMyTeam(s.teams, myRegistrationId);
 
   return (
     <>
@@ -486,9 +489,15 @@ function SessionRow({
 
       {/* Icone di stato + controlli — sopra il link */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
-        {isRegistered && (
+        {isRegistered && myTeam ? (
+          <Chip
+            label={myTeam.name}
+            size="small"
+            sx={{ bgcolor: myTeam.color, color: "#fff", fontWeight: 700, fontSize: "0.68rem", height: 20 }}
+          />
+        ) : isRegistered ? (
           <CheckCircleIcon sx={{ color: "success.main", fontSize: 18 }} />
-        )}
+        ) : null}
 
         {/* Basketball icon: cliccabile se ci sono squadre, altrimenti icona generazione per staff */}
         {s.teams ? (
@@ -959,6 +968,7 @@ export default function AllenamentiClient({
                     <SessionRow
                       session={s}
                       isRegistered={registeredSet.has(s.id)}
+                      myRegistrationId={registrationIdBySession[s.id] ?? null}
                       isStaff={isStaff}
                       generating={generating === s.id}
                       removingTeams={removingTeams === s.id}

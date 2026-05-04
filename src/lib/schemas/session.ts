@@ -15,7 +15,7 @@ export const TeamsDataSchema = z.object({
   teamB: z.array(TeamAthleteSchema),
   teamC: z.array(TeamAthleteSchema).optional(),
   numTeams: z.union([z.literal(2), z.literal(3)]),
-  generated: z.boolean(),
+  generated: z.boolean().default(true),
 });
 
 export type TeamsData = z.infer<typeof TeamsDataSchema>;

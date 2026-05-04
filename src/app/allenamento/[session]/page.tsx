@@ -25,9 +25,10 @@ import { it } from "date-fns/locale";
 import RegistrationForm, { type CurrentUser, type ChildInfo } from "@/components/RegistrationForm";
 import RosterByRole from "@/components/RosterByRole";
 import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
+import TrainingMatchResults from "@/components/TrainingMatchResults";
 import ShareSection from "@/components/ShareSection";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
-import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
+import { ROLE_COLORS, ROLE_LABELS, ROLES, TEAM_META } from "@/lib/constants";
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
@@ -56,6 +57,7 @@ interface Registration {
   childId: string | null;
   registeredAsCoach: boolean;
   userSlug: string | null;
+  attended: boolean | null;
 }
 
 interface StatusBadge {
@@ -63,11 +65,6 @@ interface StatusBadge {
   bgcolor: string;
 }
 
-const TEAM_META = [
-  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri", color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi", color: "#757575" },
-];
 
 function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
   const now = new Date();
@@ -416,7 +413,9 @@ export default function SessionPage() {
     parentChildIds: parentChildren.map((c) => c.id),
     childUserIds: parentChildren.map((c) => c.userId).filter((id): id is string => !!id),
     isStaff,
+    isEnded,
     onUnregistered: refreshSecondary,
+    onAttendanceChanged: mutateRegistrations,
   };
 
   const teamDisplayProps = {
@@ -685,6 +684,9 @@ export default function SessionPage() {
               <>
                 <SummaryCard registrations={registrations} teams={teams} />
                 <RosterByRole {...rosterProps} />
+                {teams && (
+                  <TrainingMatchResults sessionId={realSessionId} isStaff={isStaff} teams={teams} />
+                )}
                 <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
                   <TeamsHeader teams={teams} isStaff={isStaff} isEnded removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
                   <TeamDisplay {...teamDisplayProps} isStaff={false} />

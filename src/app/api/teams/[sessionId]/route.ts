@@ -51,7 +51,7 @@ export async function POST(
 
   await prisma.trainingSession.update({
     where: { id: sessionId },
-    data: { teams: teams as object },
+    data: { teams: { ...teams, generated: true } as object },
   });
 
   // Notifica push solo agli iscritti all'allenamento (fire-and-forget)

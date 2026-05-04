@@ -12,11 +12,13 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import DownloadIcon from "@mui/icons-material/Download";
 import AdminAnonymousRegistrations from "@/components/AdminAnonymousRegistrations";
+import AdminNotificationSender from "@/components/AdminNotificationSender";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const revalidate = 30;
 
@@ -195,6 +197,8 @@ export default async function AdminPage() {
       </Paper>
 
       <AdminAnonymousRegistrations registrations={recentAnonymous} />
+
+      <AdminNotificationSender currentSeason={getCurrentSeason()} />
 
     </Box>
   );

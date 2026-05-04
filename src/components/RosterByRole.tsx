@@ -6,6 +6,9 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
@@ -21,6 +24,7 @@ interface Registration {
   childId?: string | null;
   registeredAsCoach?: boolean;
   userSlug?: string | null;
+  attended?: boolean | null;
 }
 
 interface Props {
@@ -30,7 +34,29 @@ interface Props {
   parentChildIds?: string[];
   childUserIds?: string[];
   isStaff?: boolean;
+  isEnded?: boolean;
   onUnregistered?: () => void;
+  onAttendanceChanged?: () => void;
+}
+
+// ── Icona stato presenza ──────────────────────────────────────────────────────
+
+function AttendanceIcon({ attended }: { attended: boolean | null | undefined }) {
+  if (attended === true)  return <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />;
+  if (attended === false) return <CancelIcon      sx={{ fontSize: 14, color: "error.main" }} />;
+  return <RadioButtonUncheckedIcon sx={{ fontSize: 14, color: "text.disabled" }} />;
+}
+
+function nextAttended(current: boolean | null | undefined): boolean | null {
+  if (current == null)   return true;
+  if (current === true)  return false;
+  return null;
+}
+
+function attendedLabel(attended: boolean | null | undefined): string {
+  if (attended === true)  return "Presente — clicca per segnare assente";
+  if (attended === false) return "Assente — clicca per resettare";
+  return "Non marcato — clicca per segnare presente";
 }
 
 // ── Pill atleta ───────────────────────────────────────────────────────────────
@@ -42,10 +68,16 @@ interface PillProps {
   canDelete: boolean;
   isDeleting: boolean;
   isStaff: boolean;
+  showAttendance: boolean;
+  isToggling: boolean;
   onDelete: () => void;
+  onToggleAttended: () => void;
 }
 
-function AthletePill({ reg, roleColor, highlighted, canDelete, isDeleting, isStaff, onDelete }: PillProps) {
+function AthletePill({
+  reg, roleColor, highlighted, canDelete, isDeleting, isStaff,
+  showAttendance, isToggling, onDelete, onToggleAttended,
+}: PillProps) {
   const initial = reg.name[0]?.toUpperCase() ?? "?";
   const hasNote = !!reg.note;
 
@@ -107,8 +139,26 @@ function AthletePill({ reg, roleColor, highlighted, canDelete, isDeleting, isSta
         )}
       </Box>
 
-      {/* Pulsante rimozione — separato dal link per evitare redirect */}
-      {canDelete && !isDeleting && (
+      {/* Toggle presenza — solo staff su sessione terminata */}
+      {showAttendance && (
+        <Tooltip title={attendedLabel(reg.attended)} arrow placement="top">
+          <span>
+            <IconButton
+              size="small"
+              onClick={onToggleAttended}
+              disabled={isToggling}
+              sx={{ p: "3px", color: "inherit", "&:hover": { bgcolor: "transparent" } }}
+            >
+              {isToggling
+                ? <CircularProgress size={12} />
+                : <AttendanceIcon attended={reg.attended} />}
+            </IconButton>
+          </span>
+        </Tooltip>
+      )}
+
+      {/* Pulsante rimozione */}
+      {canDelete && !isDeleting && !showAttendance && (
         <IconButton
           size="small"
           onClick={onDelete}
@@ -171,10 +221,17 @@ export default function RosterByRole({
   parentChildIds = [],
   childUserIds = [],
   isStaff,
+  isEnded,
   onUnregistered,
+  onAttendanceChanged,
 }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  // Optimistic attendance overrides while API call is in flight
+  const [attendedOverrides, setAttendedOverrides] = useState<Record<string, boolean | null>>({});
   const { showToast } = useToast();
+
+  const showAttendance = !!(isStaff && isEnded);
 
   async function handleUnregister(reg: Registration) {
     setDeletingId(reg.id);
@@ -203,9 +260,45 @@ export default function RosterByRole({
     }
   }
 
+  async function handleToggleAttended(reg: Registration) {
+    const currentAttended = reg.id in attendedOverrides ? attendedOverrides[reg.id] : reg.attended;
+    const next = nextAttended(currentAttended);
+
+    setTogglingId(reg.id);
+    setAttendedOverrides((prev) => ({ ...prev, [reg.id]: next }));
+
+    try {
+      const res = await fetch(`/api/registrations/${reg.id}/attendance`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attended: next }),
+      });
+      if (res.ok) {
+        onAttendanceChanged?.();
+      } else {
+        // Rollback
+        setAttendedOverrides((prev) => ({ ...prev, [reg.id]: currentAttended ?? null }));
+        showToast({ message: "Errore nell'aggiornamento della presenza", severity: "error" });
+      }
+    } catch {
+      setAttendedOverrides((prev) => ({ ...prev, [reg.id]: currentAttended ?? null }));
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
   const athleteRegs = registrations.filter((r) => !r.registeredAsCoach);
   const coachRegs = registrations.filter((r) => r.registeredAsCoach);
   const activeRoles = ROLES.filter((role) => athleteRegs.some((r) => r.role === role));
+
+  // Counts for the attendance summary header
+  const presentCount = showAttendance
+    ? athleteRegs.filter((r) => {
+        const val = r.id in attendedOverrides ? attendedOverrides[r.id] : r.attended;
+        return val === true;
+      }).length
+    : null;
 
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden" }}>
@@ -238,6 +331,16 @@ export default function RosterByRole({
             sx={{ fontWeight: 600 }}
           />
         )}
+        {showAttendance && presentCount !== null && (
+          <Chip
+            icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
+            label={`${presentCount} present${presentCount !== 1 ? "i" : "e"}`}
+            size="small"
+            color="success"
+            variant="outlined"
+            sx={{ fontWeight: 600, ml: "auto" }}
+          />
+        )}
       </Box>
 
       {/* Body */}
@@ -252,7 +355,6 @@ export default function RosterByRole({
             const group = athleteRegs.filter((r) => r.role === role);
             return (
               <Box key={role} sx={{ mb: 2 }}>
-                {/* Intestazione sezione ruolo */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 1 }}>
                   <Box
                     sx={{
@@ -276,7 +378,6 @@ export default function RosterByRole({
                   <Divider sx={{ flex: 1 }} />
                 </Box>
 
-                {/* Pill atleti */}
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
                   {group.map((reg) => {
                     const isOwn =
@@ -289,16 +390,23 @@ export default function RosterByRole({
                     const highlighted = isOwn || isOwnChild;
                     const canDelete = isOwn || isOwnChild || !!isStaff;
 
+                    const effectiveReg = reg.id in attendedOverrides
+                      ? { ...reg, attended: attendedOverrides[reg.id] }
+                      : reg;
+
                     return (
                       <AthletePill
                         key={reg.id}
-                        reg={reg}
+                        reg={effectiveReg}
                         roleColor={ROLE_COLORS[role]}
                         highlighted={highlighted}
                         canDelete={canDelete}
                         isDeleting={deletingId === reg.id}
                         isStaff={!!isStaff}
+                        showAttendance={showAttendance}
+                        isToggling={togglingId === reg.id}
                         onDelete={() => handleUnregister(reg)}
+                        onToggleAttended={() => handleToggleAttended(reg)}
                       />
                     );
                   })}

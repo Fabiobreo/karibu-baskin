@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToAll } from "@/lib/webpush";
+import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { SessionCreateSchema } from "@/lib/schemas/session";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -77,16 +77,28 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
-  // Notifica push (fire-and-forget)
+  // Notifica push (fire-and-forget) — targeting granulare in base alle restrizioni
   const timeRange = session.endTime
     ? `${format(session.date, "HH:mm")}–${format(session.endTime, "HH:mm")}`
     : `ore ${format(session.date, "HH:mm")}`;
-  sendPushToAll({
+  const pushPayload = {
     title: "🏀 Nuovo allenamento",
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
     type: "NEW_TRAINING",
-  }, false, "NEW_TRAINING").catch((err) => console.error("[push] new training", err));
+  };
+  if (session.restrictTeamId) {
+    // Allenamento riservato a una squadra specifica (± ruoli aperti)
+    sendPushToTeam(session.restrictTeamId, pushPayload, "NEW_TRAINING")
+      .catch((err) => console.error("[push] new training (team)", err));
+  } else if (session.allowedRoles.length > 0) {
+    // Allenamento riservato per ruolo (senza vincolo di squadra)
+    sendPushToFilter({ sportRoles: session.allowedRoles }, pushPayload, "NEW_TRAINING")
+      .catch((err) => console.error("[push] new training (roles)", err));
+  } else {
+    sendPushToAll(pushPayload, false, "NEW_TRAINING")
+      .catch((err) => console.error("[push] new training", err));
+  }
   createAppNotification({
     type: "NEW_TRAINING",
     title: "Nuovo allenamento",
