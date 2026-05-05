@@ -44,6 +44,7 @@ import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
+import SessionHeroCard from "@/components/SessionHeroCard";
 import TeamsModal from "@/components/TeamsModal";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import AdminSessionForm from "@/components/AdminSessionForm";
@@ -81,287 +82,6 @@ function groupByMonth(
   return Array.from(map.entries());
 }
 
-// ── Hero card (prossimo allenamento) ──────────────────────────────────────────
-
-function HeroCard({
-  session: s,
-  isRegistered,
-  myRegistrationId = null,
-  isStaff = false,
-  onEdit,
-  onDelete,
-  onGenerateTeams,
-  onRemoveTeams,
-  generating = false,
-  removingTeams = false,
-}: {
-  session: SessionWithCount;
-  isRegistered: boolean;
-  myRegistrationId?: string | null;
-  isStaff?: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onGenerateTeams?: () => void;
-  onRemoveTeams?: () => void;
-  generating?: boolean;
-  removingTeams?: boolean;
-}) {
-  const [teamsOpen, setTeamsOpen] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const date = new Date(s.date);
-  const endTime = s.endTime ? new Date(s.endTime) : null;
-  const href = `/allenamento/${s.dateSlug ?? s.id}`;
-  const hasTeams = !!s.teams;
-  const myTeam = findMyTeam(s.teams, myRegistrationId);
-
-  const now = new Date();
-  const diffDays = Math.round(
-    (new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() -
-      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) /
-    (1000 * 60 * 60 * 24),
-  );
-  const whenLabel =
-    diffDays === 0 ? "Oggi!" : diffDays === 1 ? "Domani" : `Tra ${diffDays} giorni`;
-  const whenColor = diffDays === 0 ? "#E65100" : "#1565C0";
-
-  return (
-    <>
-      <Paper elevation={4} sx={{ overflow: "hidden", mb: 3, position: "relative" }}>
-        {/* Stretched link */}
-        <Box
-          component={Link}
-          href={href}
-          aria-label={s.title}
-          sx={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 0,
-            "&:focus-visible": {
-              outline: "2px solid",
-              outlineColor: "primary.main",
-              outlineOffset: "-2px",
-            },
-          }}
-        />
-
-        {/* Header */}
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
-            px: { xs: 2.5, sm: 3 },
-            py: { xs: 2, sm: 2.5 },
-            position: "relative",
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              gap: 1,
-            }}
-          >
-            <Typography
-              variant="h4"
-              fontWeight={800}
-              sx={{
-                color: "#fff",
-                lineHeight: 1.2,
-                fontSize: { xs: "1.3rem", sm: "1.5rem" },
-              }}
-            >
-              {s.title}
-            </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, mt: 0.25 }}>
-              <Chip
-                label={whenLabel}
-                size="small"
-                sx={{
-                  bgcolor: whenColor,
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: "0.68rem",
-                }}
-              />
-              {isStaff && (
-                <IconButton
-                  size="small"
-                  aria-label="Azioni allenamento"
-                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
-                  sx={{ color: "rgba(255,255,255,0.7)", pointerEvents: "auto" }}
-                >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </Box>
-          {isStaff && (
-            <Menu
-              anchorEl={menuAnchor}
-              open={!!menuAnchor}
-              onClose={() => setMenuAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
-                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                <ListItemText>Modifica</ListItemText>
-              </MenuItem>
-              <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
-                <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                <ListItemText>Elimina</ListItemText>
-              </MenuItem>
-            </Menu>
-          )}
-        </Box>
-
-        {/* Meta */}
-        <Box
-          sx={{
-            px: { xs: 2.5, sm: 3 },
-            py: 1.75,
-            display: "flex",
-            flexWrap: "wrap",
-            gap: { xs: 1.5, sm: 2.5 },
-            alignItems: "center",
-            position: "relative",
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <CalendarTodayIcon sx={{ fontSize: 15, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              {format(date, "EEEE d MMMM", { locale: it })}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <AccessTimeIcon sx={{ fontSize: 15, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              {format(date, "HH:mm")}
-              {endTime && `–${format(endTime, "HH:mm")}`}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <GroupsIcon sx={{ fontSize: 15, color: "text.disabled" }} />
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
-              {s._count.registrations}{" "}
-              {s._count.registrations === 1 ? "iscritto" : "iscritti"}
-            </Typography>
-          </Box>
-          {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
-            <Chip
-              icon={<LockIcon sx={{ fontSize: "0.8rem !important" }} />}
-              label={s.restrictTeam
-                ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
-              size="small"
-              sx={{ fontSize: "0.68rem", height: 20, bgcolor: "warning.light", color: "warning.contrastText" }}
-            />
-          )}
-          {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
-            <Chip
-              icon={<LockOpenIcon sx={{ fontSize: "0.8rem !important" }} />}
-              label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")}`}
-              size="small"
-              sx={{ fontSize: "0.68rem", height: 20, bgcolor: "success.light", color: "success.contrastText" }}
-            />
-          )}
-        </Box>
-
-        {/* CTA */}
-        <Box
-          sx={{
-            px: { xs: 2.5, sm: 3 },
-            pb: 2.5,
-            display: "flex",
-            gap: 1,
-            flexWrap: "wrap",
-            position: "relative",
-            zIndex: 2,
-            pointerEvents: "none",
-          }}
-        >
-          {isRegistered ? (
-            myTeam ? (
-              <Chip
-                icon={<GroupsIcon sx={{ fontSize: "0.9rem !important" }} />}
-                label={`${myTeam.name}`}
-                size="small"
-                sx={{ bgcolor: myTeam.color, color: "#fff", fontWeight: 700, fontSize: "0.78rem", pointerEvents: "auto" }}
-              />
-            ) : (
-              <Chip
-                icon={<CheckCircleIcon />}
-                label="Sei iscritto"
-                color="success"
-                sx={{ fontWeight: 700, pointerEvents: "auto" }}
-              />
-            )
-          ) : (
-            <Button
-              component={Link}
-              href={href}
-              variant="contained"
-              size="small"
-              sx={{ fontWeight: 700, pointerEvents: "auto" }}
-            >
-              Iscriviti →
-            </Button>
-          )}
-          {hasTeams && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<SportsBasketballIcon sx={{ fontSize: "0.9rem !important" }} />}
-              onClick={() => setTeamsOpen(true)}
-              sx={{ fontWeight: 600, pointerEvents: "auto" }}
-            >
-              Vedi squadre
-            </Button>
-          )}
-          {isStaff && hasTeams && (
-            <Button
-              variant="outlined"
-              size="small"
-              color="error"
-              onClick={() => onRemoveTeams?.()}
-              disabled={removingTeams}
-              sx={{ fontWeight: 600, pointerEvents: "auto" }}
-            >
-              {removingTeams ? <CircularProgress size={14} color="inherit" /> : "Rimuovi squadre"}
-            </Button>
-          )}
-          {isStaff && !hasTeams && (
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={generating ? <CircularProgress size={14} color="inherit" /> : <SportsBasketballIcon sx={{ fontSize: "0.9rem !important" }} />}
-              onClick={() => onGenerateTeams?.()}
-              disabled={generating}
-              sx={{ fontWeight: 600, pointerEvents: "auto" }}
-            >
-              {generating ? "Generazione..." : "Genera squadre"}
-            </Button>
-          )}
-        </Box>
-      </Paper>
-
-      {hasTeams && (
-        <TeamsModal
-          open={teamsOpen}
-          onClose={() => setTeamsOpen(false)}
-          sessionTitle={s.title}
-          teamA={s.teams!.teamA}
-          teamB={s.teams!.teamB}
-          teamC={s.teams!.teamC}
-        />
-      )}
-    </>
-  );
-}
 
 // ── Session row (lista compatta) ──────────────────────────────────────────────
 
@@ -471,8 +191,8 @@ function SessionRow({
               <LockIcon sx={{ fontSize: 10, color: "text.disabled" }} />
               <Typography variant="caption" color="text.disabled">
                 {s.restrictTeam
-                  ? `Solo ${s.restrictTeam.name}`
-                  : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
+                  : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
               </Typography>
             </Box>
           )}
@@ -908,7 +628,7 @@ export default function AllenamentiClient({
             }}
           >
             {heroSessions.map((s) => (
-              <HeroCard
+              <SessionHeroCard
                 key={s.id}
                 session={s}
                 isRegistered={registeredSet.has(s.id)}

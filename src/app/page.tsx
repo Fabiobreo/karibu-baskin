@@ -3,7 +3,7 @@ import { auth } from "@/lib/authjs";
 import {
   Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack,
 } from "@mui/material";
-import SessionCard from "@/components/SessionCard";
+import HomeSessionsSection from "@/components/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
 import { parseTeamsData } from "@/lib/schemas/session";
@@ -46,11 +46,15 @@ export default async function HomePage() {
 
   const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
+  const isStaff = userSession?.user?.appRole === "COACH" || userSession?.user?.appRole === "ADMIN";
 
   const rawSessions = await prisma.trainingSession.findMany({
     where: { date: { gte: startOfToday } },
     orderBy: { date: "asc" },
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: { select: { registrations: true } },
+      restrictTeam: { select: { id: true, name: true, color: true } },
+    },
   });
 
   const sessions = rawSessions.map((s) => ({
@@ -93,58 +97,12 @@ export default async function HomePage() {
 
       <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
 
-        {/* ── In corso ── */}
-        {inCorso.length > 0 && (
-          <Box sx={{ mb: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-              <Box sx={{
-                width: 8, height: 8, borderRadius: "50%", bgcolor: "#2E7D32", flexShrink: 0,
-                "@keyframes pulse": {
-                  "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
-                  "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
-                  "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
-                },
-                animation: "pulse 1.4s ease-in-out infinite",
-              }} />
-              <Typography variant="overline" fontWeight={700} sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}>
-                In corso
-              </Typography>
-            </Box>
-            <Grid container spacing={2}>
-              {inCorso.map((s) => (
-                <Grid key={s.id} size={{ xs: 12, sm: inCorso.length > 1 ? 6 : 12 }}>
-                  <SessionCard
-                    session={s}
-                    live
-                    isRegistered={!!registrationIdBySession[s.id]}
-                    myRegistrationId={registrationIdBySession[s.id] ?? null}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
-
-        {/* ── Prossimi allenamenti ── */}
-        {upcoming.length > 0 && (
-          <>
-            <Typography variant="overline" color="text.secondary" fontWeight={700}
-              sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}>
-              Prossimi allenamenti
-            </Typography>
-            <Grid container spacing={2}>
-              {upcoming.map((s) => (
-                <Grid key={s.id} size={{ xs: 12, sm: upcoming.length > 1 ? 6 : 12 }}>
-                  <SessionCard
-                    session={s}
-                    isRegistered={!!registrationIdBySession[s.id]}
-                    myRegistrationId={registrationIdBySession[s.id] ?? null}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </>
-        )}
+        <HomeSessionsSection
+          inCorso={inCorso}
+          upcoming={upcoming}
+          registrationIdBySession={registrationIdBySession}
+          isStaff={isStaff}
+        />
 
       </Container>
 

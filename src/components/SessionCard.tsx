@@ -2,7 +2,7 @@
 import { useState } from "react";
 import {
   Box, Typography, Paper, Chip, Button,
-  IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress, Tooltip,
+  IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress,
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -36,9 +36,13 @@ export interface SessionWithCount {
   _count: { registrations: number };
 }
 
-type StatusInfo = { label: string; color: string };
+const TEAM_META = [
+  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
+  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
+  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
+];
 
-function getStatus(date: Date, endTime: Date | null): StatusInfo {
+function getStatusLabel(date: Date, endTime: Date | null): { label: string; color: string } {
   const now = new Date();
   const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
   if (now >= date && now <= end) return { label: "In corso", color: "#2E7D32" };
@@ -51,14 +55,9 @@ function getStatus(date: Date, endTime: Date | null): StatusInfo {
   return { label: `Tra ${diffDays} giorni`, color: "#1565C0" };
 }
 
-const TEAM_META = [
-  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
-];
-
 export default function SessionCard({
   session: s,
+  hero = false,
   muted = false,
   live = false,
   isRegistered = false,
@@ -72,6 +71,7 @@ export default function SessionCard({
   removingTeams = false,
 }: {
   session: SessionWithCount;
+  hero?: boolean;
   muted?: boolean;
   live?: boolean;
   isRegistered?: boolean;
@@ -89,17 +89,23 @@ export default function SessionCard({
 
   const date = new Date(s.date);
   const endTime = s.endTime ? new Date(s.endTime) : null;
-  const status = getStatus(date, endTime);
-  const hasTeams = !!s.teams;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
+  const hasTeams = !!s.teams;
   const myTeam = myRegistrationId && s.teams
     ? TEAM_META.find((t) => s.teams![t.key]?.some((a) => a.id === myRegistrationId)) ?? null
     : null;
+  const status = getStatusLabel(date, endTime);
+
+  const px = 2;
+  const iconSize = 13;
+  const textVariant = "caption" as const;
+  const dateFormat = "EEE d MMM";
+  const chipFontSize = "0.68rem";
 
   return (
     <>
       <Paper
-        elevation={muted ? 0 : live ? 4 : 2}
+        elevation={muted ? 0 : live ? 4 : hero ? 4 : 2}
         variant={muted ? "outlined" : "elevation"}
         sx={{
           overflow: "hidden",
@@ -108,10 +114,8 @@ export default function SessionCard({
           flexDirection: "column",
           opacity: muted ? 0.72 : 1,
           position: "relative",
-          // Cursore pointer sull'intera card
           cursor: "pointer",
-          // Hover leggero sull'intera card (non interferisce col bottone)
-          "&:hover": { boxShadow: muted ? undefined : live ? 6 : 4 },
+          "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
           ...(live && {
             outline: "2px solid #2E7D32",
             "@keyframes glow": {
@@ -123,7 +127,12 @@ export default function SessionCard({
           }),
         }}
       >
-        {/* Stretched link — copre tutta la card, bucato dal bottone tramite z-index */}
+        {/* Accent line team */}
+        {myTeam && (
+          <Box sx={{ height: 4, bgcolor: myTeam.color, flexShrink: 0, position: "relative", zIndex: 1 }} />
+        )}
+
+        {/* Stretched link */}
         <Box
           component={Link}
           href={href}
@@ -132,7 +141,6 @@ export default function SessionCard({
             position: "absolute",
             inset: 0,
             zIndex: 0,
-            // Nasconde l'outline default del link (la card stessa fa da focus ring)
             "&:focus-visible": {
               outline: "2px solid",
               outlineColor: "primary.main",
@@ -141,50 +149,59 @@ export default function SessionCard({
           }}
         />
 
-        {/* Intestazione */}
+        {/* Header */}
         <Box
           sx={{
-            px: 2,
-            py: 1.5,
+            px,
+            py: hero ? { xs: 2, sm: 2.5 } : 1.5,
             background: muted
               ? "rgba(0,0,0,0.04)"
               : live
                 ? "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)"
                 : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
             display: "flex",
-            alignItems: "center",
-            gap: 0.5,
+            alignItems: hero ? "flex-start" : "center",
+            justifyContent: "space-between",
+            gap: 1,
             position: "relative",
             zIndex: 1,
-            pointerEvents: "none", // il click passa al link sottostante
+            pointerEvents: "none",
           }}
         >
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ color: muted ? "text.primary" : "#fff" }}>
-              {s.title}
-            </Typography>
-          </Box>
-          <Chip
-            label={status.label}
-            size="small"
+          <Typography
+            variant={hero ? "h4" : "subtitle1"}
+            fontWeight={hero ? 800 : 700}
+            noWrap={!hero}
             sx={{
-              bgcolor: muted ? "action.selected" : status.color,
-              color: muted ? "text.secondary" : "#fff",
-              fontWeight: 700,
-              fontSize: "0.68rem",
-              flexShrink: 0,
+              color: muted ? "text.primary" : "#fff",
+              lineHeight: 1.2,
+              ...(hero && { fontSize: { xs: "1.3rem", sm: "1.5rem" } }),
             }}
-          />
-          {isStaff && (
-            <IconButton
+          >
+            {s.title}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, mt: hero ? 0.25 : 0 }}>
+            <Chip
+              label={status.label}
               size="small"
-              aria-label="Azioni allenamento"
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
-              sx={{ color: muted ? "text.disabled" : "rgba(255,255,255,0.7)", ml: 0.25, flexShrink: 0, pointerEvents: "auto" }}
-            >
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
-          )}
+              sx={{
+                bgcolor: muted ? "action.selected" : status.color,
+                color: muted ? "text.secondary" : "#fff",
+                fontWeight: 700,
+                fontSize: "0.68rem",
+              }}
+            />
+            {isStaff && (
+              <IconButton
+                size="small"
+                aria-label="Azioni allenamento"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
+                sx={{ color: muted ? "text.disabled" : "rgba(255,255,255,0.7)", pointerEvents: "auto" }}
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
           {isStaff && (
             <Menu
               anchorEl={menuAnchor}
@@ -205,148 +222,150 @@ export default function SessionCard({
           )}
         </Box>
 
-        {/* Corpo */}
-        <Box sx={{ flex: 1, display: "flex", position: "relative", zIndex: 1, pointerEvents: "none", overflow: "hidden" }}>
-          {/* Info colonna sinistra */}
-          <Box sx={{ p: 2, flex: 1, display: "flex", flexDirection: "column", gap: 0.75, minWidth: 0 }}>
+        {/* Meta — 3 righe, cresce per spingere CTA in fondo */}
+        <Box
+          sx={{
+            px,
+            py: 1.5,
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 0.75,
+            position: "relative",
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
+          {/* Riga 1: data + orario */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <CalendarTodayIcon sx={{ fontSize: 14, color: "text.disabled" }} />
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {format(date, "EEEE d MMMM yyyy", { locale: it })}
+              <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+              <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                {format(date, dateFormat, { locale: it })}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <AccessTimeIcon sx={{ fontSize: 14, color: "text.disabled" }} />
-              <Typography variant="body2" color="text.secondary">
-                {format(date, "HH:mm")}
-                {endTime && `–${format(endTime, "HH:mm")}`}
+              <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+              <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
               </Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <GroupsIcon sx={{ fontSize: 14, color: "text.disabled" }} />
-              <Typography variant="body2" color="text.secondary">
-                {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
-              </Typography>
-            </Box>
-            {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
-              <Chip
-                icon={<LockIcon sx={{ fontSize: "0.8rem !important" }} />}
-                label={s.restrictTeam
-                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                  : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
-                size="small"
-                sx={{ fontSize: "0.68rem", height: 20, bgcolor: "warning.light", color: "warning.contrastText", alignSelf: "flex-start" }}
-              />
-            )}
-            {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
-              <Chip
-                icon={<LockOpenIcon sx={{ fontSize: "0.8rem !important" }} />}
-                label={`${s.openRoles.map((r) => `Ruolo ${r}`).join(", ")}`}
-                size="small"
-                sx={{ fontSize: "0.68rem", height: 20, bgcolor: "success.light", color: "success.contrastText", alignSelf: "flex-start" }}
-              />
-            )}
-
-            <Box sx={{ mt: "auto", pt: 0.5, display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
-              {!myTeam && isRegistered && (
-                <Chip
-                  icon={<CheckCircleIcon />}
-                  label="Sei iscritto"
-                  size="small"
-                  color="success"
-                  sx={{ fontWeight: 600, fontSize: "0.72rem" }}
-                />
-              )}
-              {hasTeams && !myTeam && (
-                <Chip
-                  icon={<CheckCircleIcon />}
-                  label="Squadre pronte!"
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                  sx={{ fontWeight: 600, fontSize: "0.72rem" }}
-                />
-              )}
-              {hasTeams && isStaff && (
-                <Tooltip title="Rimuovi squadre">
-                  <span style={{ pointerEvents: "auto" }}>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
-                      disabled={removingTeams}
-                      sx={{ fontSize: "0.72rem", minWidth: 0, px: 1 }}
-                    >
-                      {removingTeams ? <CircularProgress size={12} color="error" /> : "Rimuovi"}
-                    </Button>
-                  </span>
-                </Tooltip>
-              )}
-              {!hasTeams && isStaff && (
-                <span style={{ pointerEvents: "auto" }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    fullWidth
-                    startIcon={generating ? <CircularProgress size={14} color="inherit" /> : <SportsBasketballIcon />}
-                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
-                    disabled={generating || s._count.registrations === 0}
-                    sx={{ fontSize: "0.78rem" }}
-                  >
-                    {generating ? "Generazione..." : "Genera squadre"}
-                  </Button>
-                </span>
-              )}
             </Box>
           </Box>
 
-          {/* Pannello squadra destra */}
-          {myTeam && (
-            <Box
-              sx={{
-                width: { xs: 64, sm: 76 },
-                borderLeft: `3px solid ${myTeam.color}`,
-                bgcolor: `${myTeam.color}18`,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0.5,
-                flexShrink: 0,
-                px: 0.5,
-              }}
-            >
-              <GroupsIcon sx={{ color: myTeam.color, fontSize: 22 }} />
-              <Typography
-                sx={{
-                  color: myTeam.color,
-                  fontWeight: 800,
-                  fontSize: "0.65rem",
-                  textAlign: "center",
-                  lineHeight: 1.2,
-                }}
-              >
-                {myTeam.name}
+          {/* Riga 2: iscritti + [iscritto chip per non-hero] + squadra */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <GroupsIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+              <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                {s._count.registrations}{" "}{s._count.registrations === 1 ? "iscritto" : "iscritti"}
               </Typography>
+            </Box>
+            {isRegistered && !myTeam && (
+              <Chip
+                icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
+                label="Iscritto"
+                size="small"
+                color="success"
+                sx={{ fontWeight: 600, fontSize: chipFontSize }}
+              />
+            )}
+            {myTeam && (
+              <Chip
+                icon={<GroupsIcon sx={{ fontSize: "0.9rem !important" }} />}
+                label={myTeam.name}
+                size="small"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: chipFontSize,
+                  bgcolor: myTeam.color,
+                  color: "#fff",
+                }}
+              />
+            )}
+          </Box>
+
+          {/* Riga 3: restrizioni (solo se presenti) */}
+          {(s.restrictTeamId || (s.allowedRoles && s.allowedRoles.length > 0)) && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+              <Chip
+                icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
+                label={s.restrictTeam
+                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
+                  : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
+                size="small"
+                sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "warning.light", color: "warning.contrastText" }}
+              />
+              {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+                <Chip
+                  icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
+                  label={`${s.openRoles.map((r) => `R${r}`).join(", ")} aperti`}
+                  size="small"
+                  sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "success.light", color: "success.contrastText" }}
+                />
+              )}
             </Box>
           )}
         </Box>
 
-        {/* Bottone vedi squadre — z-index sopra il link, intercetta il click */}
-        {hasTeams && (
-          <Box sx={{ px: 2, pb: 2, pt: 0, position: "relative", zIndex: 1 }}>
+        {/* CTA */}
+        <Box
+          sx={{
+            px,
+            pb: 2,
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          {!isRegistered && !muted && (
             <Button
+              component={Link}
+              href={href}
+              variant="contained"
               size="small"
-              variant={myTeam ? "outlined" : "contained"}
-              fullWidth
-              startIcon={<SportsBasketballIcon sx={{ fontSize: "0.9rem !important" }} />}
-              onClick={() => setTeamsOpen(true)}
-              sx={{ fontSize: "0.78rem" }}
+              sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
             >
-              {myTeam ? "Vedi tutte le squadre" : "Vedi squadre"}
+              Iscriviti →
             </Button>
-          </Box>
-        )}
+          )}
+          {hasTeams && (
+            <Button
+              variant={myTeam ? "outlined" : "contained"}
+              size="small"
+              startIcon={<SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
+              onClick={() => setTeamsOpen(true)}
+              sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
+            >
+              Vedi squadre
+            </Button>
+          )}
+          {isStaff && hasTeams && (
+            <Button
+              variant="outlined"
+              size="small"
+              color="error"
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+              disabled={removingTeams}
+              sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
+            >
+              {removingTeams ? <CircularProgress size={13} color="inherit" /> : "Rimuovi squadre"}
+            </Button>
+          )}
+          {isStaff && !hasTeams && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={generating ? <CircularProgress size={13} color="inherit" /> : <SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+              disabled={generating || s._count.registrations === 0}
+              sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
+            >
+              {generating ? "Generazione..." : "Genera squadre"}
+            </Button>
+          )}
+        </Box>
       </Paper>
 
       {hasTeams && (
