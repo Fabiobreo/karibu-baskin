@@ -521,7 +521,7 @@ export default function SessionPage() {
                 {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
                   <Chip
                     icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
-                    label={`${session.openRoles.map((r) => `Ruolo ${r}`).join(", ")} ${session.openRoles.length === 1 ? "aperto" : "aperti"} a tutti`}
+                    label={`Aperto a tutti i ${session.openRoles.map((r) => `${r}`).join(", ")}`}
                     size="small"
                     sx={{ bgcolor: "success.light", color: "success.contrastText", fontWeight: 600, fontSize: "0.7rem" }}
                   />

@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid2 as Grid,
   IconButton,
   Typography,
   Box,
@@ -13,7 +12,7 @@ import {
   useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { TeamColumn, AlignedTeamGrid } from "@/components/TeamDisplay";
+import { AlignedTeamGrid, MobileTeamTabs } from "@/components/TeamDisplay";
 
 interface Athlete {
   id: string;
@@ -32,7 +31,6 @@ interface Props {
 
 export default function TeamsModal({ open, onClose, sessionTitle, teamA, teamB, teamC }: Props) {
   const numTeams = teamC ? 3 : 2;
-  const colSize = numTeams === 3 ? { xs: 12, md: 4 } : { xs: 12, md: 6 };
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
@@ -60,19 +58,7 @@ export default function TeamsModal({ open, onClose, sessionTitle, teamA, teamB, 
         {isDesktop ? (
           <AlignedTeamGrid teams={teamsData} />
         ) : (
-          <Grid container spacing={2}>
-            <Grid size={colSize}>
-              <TeamColumn name="Arancioni" athletes={teamA} color="#E65100" />
-            </Grid>
-            <Grid size={colSize}>
-              <TeamColumn name="Neri" athletes={teamB} color="#1A1A1A" />
-            </Grid>
-            {teamC && (
-              <Grid size={colSize}>
-                <TeamColumn name="Bianchi" athletes={teamC} color="#757575" />
-              </Grid>
-            )}
-          </Grid>
+          <MobileTeamTabs teams={teamsData} />
         )}
       </DialogContent>
 

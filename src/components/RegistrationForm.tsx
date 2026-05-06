@@ -126,7 +126,7 @@ export default function RegistrationForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubject(firstAvailable.id);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentChildren]);
 
   // Ricalcola quando cambia il soggetto o arriva currentUser
@@ -142,7 +142,7 @@ export default function RegistrationForm({
       setPhase("questionnaire");
       setChosenRole(null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subject, currentUser]);
 
   const [anonymousName, setAnonymousName] = useState("");
@@ -166,8 +166,8 @@ export default function RegistrationForm({
       }
       return next.size === prev.size ? prev : next;
     });
-  // registeredUserIds e registeredChildIds sono gli array "veri" che cambiano dopo SWR revalidation
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // registeredUserIds e registeredChildIds sono gli array "veri" che cambiano dopo SWR revalidation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registeredUserIds, registeredChildIds]);
 
   const currentSubjectRegistered =
@@ -342,20 +342,18 @@ export default function RegistrationForm({
   const restrictionInfo = (() => {
     if (!restrictions || !hasRestrictions(restrictions)) return null;
     const parts: string[] = [];
+
     if (restrictions.allowedRoles.length > 0) {
-      parts.push(`Ruoli ammessi: ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`);
-    }
-    if (restrictions.restrictTeamId) {
-      const teamPart = restrictions.restrictTeamName
-        ? `Solo squadra "${restrictions.restrictTeamName}"`
-        : "Solo una squadra specifica";
-      if (restrictions.openRoles.length > 0) {
-        parts.push(`${teamPart} (+ ${restrictions.openRoles.map((r) => ROLE_LABELS[r]).join(", ")} aperti a tutti)`);
-      } else {
-        parts.push(teamPart);
+      let allowedRoles = `Ruoli ammessi: ${restrictions.allowedRoles.map((r) => `${r}`).join(", ")}`;
+      if (restrictions.restrictTeamId) {
+        allowedRoles += ` dei ${restrictions.restrictTeamName}`;
       }
+      parts.push(allowedRoles);
     }
-    return parts.join(" · ");
+    if (restrictions.openRoles.length > 0) {
+      parts.push(`Aperto ai ${restrictions.openRoles.map((r) => `${r}`).join(", ")} di entrambe le squadre`);
+    }
+    return parts.join("\n");
   })();
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -393,7 +391,7 @@ export default function RegistrationForm({
         <Alert
           severity={restrictionBlock ? "error" : "info"}
           icon={<LockIcon fontSize="small" />}
-          sx={{ mb: 2, fontSize: "0.8rem" }}
+          sx={{ mb: 2, fontSize: "0.8rem", "& .MuiAlert-message": { whiteSpace: "pre-line" } }}
         >
           {restrictionBlock ?? restrictionInfo}
         </Alert>
@@ -522,19 +520,19 @@ export default function RegistrationForm({
                 {selectedChild.teamMemberships
                   .filter((m) => m.teamSeason === getCurrentSeason())
                   .length > 0 && (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
-                    {selectedChild.teamMemberships
-                      .filter((m) => m.teamSeason === getCurrentSeason())
-                      .map((m) => (
-                        <Chip
-                          key={m.teamId}
-                          label={m.teamName}
-                          size="small"
-                          sx={{ height: 16, fontSize: "0.65rem", fontWeight: 700, bgcolor: m.teamColor ?? "primary.main", color: "#fff", "& .MuiChip-label": { px: 0.75 } }}
-                        />
-                      ))}
-                  </Box>
-                )}
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
+                      {selectedChild.teamMemberships
+                        .filter((m) => m.teamSeason === getCurrentSeason())
+                        .map((m) => (
+                          <Chip
+                            key={m.teamId}
+                            label={m.teamName}
+                            size="small"
+                            sx={{ height: 16, fontSize: "0.65rem", fontWeight: 700, bgcolor: m.teamColor ?? "primary.main", color: "#fff", "& .MuiChip-label": { px: 0.75 } }}
+                          />
+                        ))}
+                    </Box>
+                  )}
               </Box>
             </Box>
           )}

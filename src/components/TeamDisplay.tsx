@@ -15,6 +15,8 @@ import {
   ToggleButtonGroup,
   Alert,
   CircularProgress,
+  Tabs,
+  Tab,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -77,7 +79,80 @@ function RoleBadge({ role, count }: { role: number; count: number }) {
   );
 }
 
-// ── Layout mobile: colonne indipendenti impilate ──────────────────────────────
+// ── Layout mobile: tab per squadra ────────────────────────────────────────────
+
+export function MobileTeamTabs({ teams, slugMap = {} }: { teams: TeamsData; slugMap?: Record<string, string> }) {
+  const [tab, setTab] = useState(0);
+  const meta = TEAM_META.slice(0, teams.numTeams);
+  const allTeams = [teams.teamA, teams.teamB, ...(teams.teamC ? [teams.teamC] : [])];
+  const activeColor = meta[tab].color;
+
+  return (
+    <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+      <Tabs
+        value={tab}
+        onChange={(_e, v) => setTab(v)}
+        variant="fullWidth"
+        sx={{
+          "& .MuiTabs-indicator": { backgroundColor: activeColor, height: 3 },
+          "& .MuiTab-root": { fontWeight: 700, fontSize: "0.85rem", minHeight: 48 },
+          "& .MuiTab-root.Mui-selected": { color: activeColor },
+        }}
+      >
+        {meta.map((m, i) => (
+          <Tab
+            key={m.name}
+            label={
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: m.color, flexShrink: 0 }} />
+                <span>{m.name}</span>
+                <Chip
+                  label={allTeams[i].length}
+                  size="small"
+                  sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700,
+                    bgcolor: tab === i ? m.color : "action.selected",
+                    color: tab === i ? "#fff" : "text.secondary",
+                  }}
+                />
+              </Box>
+            }
+          />
+        ))}
+      </Tabs>
+      <Box>
+        {ROLES.map((role) => {
+          const group = allTeams[tab].filter((a) => a.role === role);
+          if (group.length === 0) return null;
+          return (
+            <Box key={role} sx={{ pb: 0.5 }}>
+              <Box sx={{ px: 2, pt: 1 }}>
+                <RoleBadge role={role} count={group.length} />
+              </Box>
+              <List dense disablePadding>
+                {group.map((a) => {
+                  const slug = slugMap[a.id];
+                  return (
+                    <ListItem key={a.id} sx={{ py: 0, px: 3 }}>
+                      <ListItemText
+                        primary={
+                          slug ? (
+                            <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
+                              {a.name}
+                            </Link>
+                          ) : a.name
+                        }
+                      />
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </Box>
+          );
+        })}
+      </Box>
+    </Paper>
+  );
+}
 
 export function TeamColumn({ name, athletes, color, slugMap = {} }: { name: string; athletes: TeamAthlete[]; color: string; slugMap?: Record<string, string> }) {
   return (
@@ -357,30 +432,18 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugM
               disabled={generating}
               startIcon={generating ? <CircularProgress size={14} color="inherit" /> : undefined}
             >
-              {generating ? "..." : "Rigenera"}
+              {generating ? "..." : "Ricrea"}
             </Button>
           }
         >
-          Ci sono stati cambiamenti nelle iscrizioni. È consigliabile rigenerare le squadre.
+          Ci sono stati cambiamenti nelle iscrizioni.
         </Alert>
       )}
 
       {isDesktop ? (
         <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
-        <Grid container spacing={2}>
-          <Grid size={colSize}>
-            <TeamColumn name="Arancioni" athletes={teams.teamA} color="#E65100" slugMap={slugMap} />
-          </Grid>
-          <Grid size={colSize}>
-            <TeamColumn name="Neri" athletes={teams.teamB} color="#1A1A1A" slugMap={slugMap} />
-          </Grid>
-          {teams.numTeams === 3 && teams.teamC && (
-            <Grid size={colSize}>
-              <TeamColumn name="Bianchi" athletes={teams.teamC} color="#757575" slugMap={slugMap} />
-            </Grid>
-          )}
-        </Grid>
+        <MobileTeamTabs teams={teams} slugMap={slugMap} />
       )}
     </Box>
   );

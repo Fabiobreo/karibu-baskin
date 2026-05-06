@@ -115,22 +115,18 @@ export default function SessionCard({
           opacity: muted ? 0.72 : 1,
           position: "relative",
           cursor: "pointer",
-          "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
+         "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
           ...(live && {
             outline: "2px solid #2E7D32",
-            "@keyframes glow": {
-              "0%": { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
-              "50%": { boxShadow: "0 0 18px 4px rgba(46,125,50,0.25)" },
-              "100%": { boxShadow: "0 0 6px 0 rgba(46,125,50,0.4)" },
+            "@keyframes pulse-border": {
+              "0%":   { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
+              "50%":  { boxShadow: "0 0 0 10px rgba(46,125,50,0), 0 2px 8px rgba(0,0,0,0.15)" },
+              "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
             },
-            animation: "glow 2.5s ease-in-out infinite",
+            animation: "pulse-border 2s ease-out infinite",
           }),
         }}
       >
-        {/* Accent line team */}
-        {myTeam && (
-          <Box sx={{ height: 4, bgcolor: myTeam.color, flexShrink: 0, position: "relative", zIndex: 1 }} />
-        )}
 
         {/* Stretched link */}
         <Box
@@ -156,8 +152,8 @@ export default function SessionCard({
             py: hero ? { xs: 2, sm: 2.5 } : 1.5,
             background: muted
               ? "rgba(0,0,0,0.04)"
-              : live
-                ? "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)"
+              : myTeam
+                ? `linear-gradient(135deg, ${myTeam.color} 0%, #686868 100%)`
                 : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
             display: "flex",
             alignItems: hero ? "flex-start" : "center",
@@ -168,18 +164,34 @@ export default function SessionCard({
             pointerEvents: "none",
           }}
         >
-          <Typography
-            variant={hero ? "h4" : "subtitle1"}
-            fontWeight={hero ? 800 : 700}
-            noWrap={!hero}
-            sx={{
-              color: muted ? "text.primary" : "#fff",
-              lineHeight: 1.2,
-              ...(hero && { fontSize: { xs: "1.3rem", sm: "1.5rem" } }),
-            }}
-          >
-            {s.title}
-          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
+            {myTeam && (
+              <Typography
+                sx={{
+                  fontSize: "0.6rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.65)",
+                  lineHeight: 1,
+                }}
+              >
+                Squadra {myTeam.name}
+              </Typography>
+            )}
+            <Typography
+              variant={hero ? "h4" : "subtitle1"}
+              fontWeight={hero ? 800 : 700}
+              noWrap={!hero}
+              sx={{
+                color: muted ? "text.primary" : "#fff",
+                lineHeight: 1.2,
+                ...(hero && { fontSize: { xs: "1.3rem", sm: "1.5rem" } }),
+              }}
+            >
+              {s.title}
+            </Typography>
+          </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, mt: hero ? 0.25 : 0 }}>
             <Chip
               label={status.label}
@@ -269,19 +281,6 @@ export default function SessionCard({
                 sx={{ fontWeight: 600, fontSize: chipFontSize }}
               />
             )}
-            {myTeam && (
-              <Chip
-                icon={<GroupsIcon sx={{ fontSize: "0.9rem !important" }} />}
-                label={myTeam.name}
-                size="small"
-                sx={{
-                  fontWeight: 700,
-                  fontSize: chipFontSize,
-                  bgcolor: myTeam.color,
-                  color: "#fff",
-                }}
-              />
-            )}
           </Box>
 
           {/* Riga 3: restrizioni (solo se presenti) */}
@@ -290,15 +289,15 @@ export default function SessionCard({
               <Chip
                 icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
                 label={s.restrictTeam
-                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
-                  : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
+                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                  : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
                 size="small"
                 sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "warning.light", color: "warning.contrastText" }}
               />
               {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
                 <Chip
                   icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
-                  label={`${s.openRoles.map((r) => `R${r}`).join(", ")} aperti`}
+                  label={`Aperto a tutti i ${s.openRoles.map((r) => `${r}`).join(", ")}`}
                   size="small"
                   sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "success.light", color: "success.contrastText" }}
                 />
