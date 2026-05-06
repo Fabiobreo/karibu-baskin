@@ -40,9 +40,22 @@ Non c'è pagina che mostra la frequenza agli allenamenti nel tempo. Utile per lo
 
 ---
 
-### F5. **Sistema ELO giocatori** *(futuro — già in memory)*
+### F5. **Sistema TrueSkill per-ruolo** *(futuro — già in memory)*
 
-ELO nascosto su User/Child per bilanciare squadre in allenamento. Visibile solo COACH/ADMIN. Da implementare dopo F2 (dati di presenza reale necessari per calibrare).
+Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile solo COACH/ADMIN.
+
+**Decisione di design (maggio 2026):** usare **TrueSkill** (non ELO) perché:
+- ELO converge troppo lentamente con pochi dati per giocatore
+- TrueSkill modella l'incertezza (μ + σ) e converge più velocemente
+- Progettato nativamente per sport di squadra
+
+**Rating per-ruolo:** un rating separato per ogni ruolo sportivo (1-5) — i ruoli Baskin non sono comparabili tra loro.
+
+**Bilanciamento in due livelli:**
+1. Strutturale: distribuzione equa dei ruoli tra le squadre
+2. Skill: a parità di ruoli, bilanciare per rating TrueSkill
+
+**Prerequisito:** aggiungere UI semplice per registrare vincitori/perdenti di ogni partitella a fine allenamento — senza questo dato TrueSkill non si aggiorna.
 
 ---
 

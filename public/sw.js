@@ -184,6 +184,22 @@ self.addEventListener("push", (e) => {
   );
 });
 
+// Rinnovo automatico subscription quando il browser la ruota
+self.addEventListener("pushsubscriptionchange", (e) => {
+  const options = e.oldSubscription?.options ?? { userVisibleOnly: true };
+  e.waitUntil(
+    self.registration.pushManager.subscribe(options)
+      .then((newSub) =>
+        fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newSub.toJSON()),
+        })
+      )
+      .catch(() => {})
+  );
+});
+
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
 

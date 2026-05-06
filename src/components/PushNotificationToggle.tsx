@@ -25,10 +25,17 @@ export default function PushNotificationToggle() {
     }
     setStatus(Notification.permission as "granted" | "denied" | "default");
 
-    // Controlla se è già iscritto
+    // Controlla se è già iscritto; se sì, ri-sincronizza il DB (subscription potrebbe essere cambiata)
     navigator.serviceWorker.ready.then(async (reg) => {
       const sub = await reg.pushManager.getSubscription();
       setSubscribed(!!sub);
+      if (sub) {
+        fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sub.toJSON()),
+        }).catch(() => {});
+      }
     });
   }, []);
 
