@@ -33,6 +33,18 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
       .finally(() => setLoading(false));
   }, []);
 
+  // Auto-mark as read dopo 2s — mostra brevemente le nuove evidenziate poi le segna silenziosamente
+  useEffect(() => {
+    if (loading) return;
+    if (!notifications.some((n) => !n.isRead)) return;
+    const timer = setTimeout(async () => {
+      await markAllRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    }, 2000);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
   async function handleMarkAllRead() {
     await markAllRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));

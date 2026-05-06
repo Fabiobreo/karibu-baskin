@@ -175,7 +175,7 @@ self.addEventListener("push", (e) => {
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: data.icon,
-      badge: "/logo.png",
+      badge: "/badge.png",
       tag: isLinkNotif ? "link-request" : undefined,
       data: { url: data.url, type: data.type },
       vibrate,

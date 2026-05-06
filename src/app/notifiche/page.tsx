@@ -55,6 +55,18 @@ export default function NotifichePage() {
     }
   }, [status, router, fetchPage]);
 
+  // Auto-mark as read dopo 1.5s dall'apertura della pagina
+  useEffect(() => {
+    if (loading) return;
+    if (!notifications.some((n) => !n.isRead)) return;
+    const timer = setTimeout(async () => {
+      await markAllRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    }, 1500);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
   async function loadMore() {
     setLoadingMore(true);
     const nextPage = page + 1;
