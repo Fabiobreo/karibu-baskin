@@ -313,7 +313,7 @@ export default function SessionPage() {
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
   const [removingTeams, setRemovingTeams] = useState(false);
-  // [CLAUDE - 01:30] fix: show success/error toast, handle network errors (same bug as A1 in AdminSessionList)
+  
   async function handleRemoveTeams() {
     if (!realSessionId) return;
     setRemovingTeams(true);
@@ -595,7 +595,6 @@ export default function SessionPage() {
               disabled={editLoading}
               autoFocus
             />
-            {/* [CLAUDE - 09:15] migrated from deprecated InputLabelProps to slotProps (MUI v6) */}
             <TextField
               label="Data"
               type="date"

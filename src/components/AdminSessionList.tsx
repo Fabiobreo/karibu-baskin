@@ -52,7 +52,6 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
   const [teamPickSession, setTeamPickSession] = useState<SessionWithCount | null>(null);
   const { showToast } = useToast();
 
-  // [CLAUDE - 07:05] fix: check res.ok before calling onDeleted — previously called even on failure
   async function confirmDelete() {
     if (!toDelete) return;
     setDeleting(true);
@@ -94,7 +93,6 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
         showToast({ message: "Errore nella generazione delle squadre", severity: "error" });
       }
     } catch {
-      // [CLAUDE - 02:10] fix: network error was silently swallowed — same pattern as A1 confirmDelete fix
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setGenerating(null);

@@ -18,7 +18,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import TeamsModal from "@/components/TeamsModal";
-import { TEAM_META } from "@/lib/constants"; // [CLAUDE - 07:30]
+import { TEAM_META } from "@/lib/constants";
 
 interface Athlete { id: string; name: string; role: number }
 interface TeamsData { teamA: Athlete[]; teamB: Athlete[]; teamC?: Athlete[] }
@@ -110,12 +110,12 @@ export default function SessionCard({
           opacity: muted ? 0.72 : 1,
           position: "relative",
           cursor: "pointer",
-         "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
+          "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
           ...(live && {
             outline: "2px solid #2E7D32",
             "@keyframes pulse-border": {
-              "0%":   { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
-              "50%":  { boxShadow: "0 0 0 10px rgba(46,125,50,0), 0 2px 8px rgba(0,0,0,0.15)" },
+              "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
+              "50%": { boxShadow: "0 0 0 10px rgba(46,125,50,0), 0 2px 8px rgba(0,0,0,0.15)" },
               "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
             },
             animation: "pulse-border 2s ease-out infinite",
@@ -145,11 +145,7 @@ export default function SessionCard({
           sx={{
             px,
             py: hero ? { xs: 2, sm: 2.5 } : 1.5,
-            background: muted
-              ? "rgba(0,0,0,0.04)"
-              : myTeam
-                ? `linear-gradient(135deg, ${myTeam.color} 0%, #686868 100%)`
-                : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+            background: muted ? "rgba(0,0,0,0.04)" : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
             display: "flex",
             alignItems: hero ? "flex-start" : "center",
             justifyContent: "space-between",
@@ -160,20 +156,6 @@ export default function SessionCard({
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
-            {myTeam && (
-              <Typography
-                sx={{
-                  fontSize: "0.6rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.65)",
-                  lineHeight: 1,
-                }}
-              >
-                Squadra {myTeam.name}
-              </Typography>
-            )}
             <Typography
               variant={hero ? "h4" : "subtitle1"}
               fontWeight={hero ? 800 : 700}
@@ -229,135 +211,159 @@ export default function SessionCard({
           )}
         </Box>
 
-        {/* Meta — 3 righe, cresce per spingere CTA in fondo */}
-        <Box
-          sx={{
-            px,
-            py: 1.5,
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 0.75,
-            position: "relative",
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        >
-          {/* Riga 1: data + orario */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
-              <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                {format(date, dateFormat, { locale: it })}
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
-              <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
-              </Typography>
-            </Box>
-          </Box>
+        {/* Body: colonna info+CTA | colonna stamp */}
+        <Box sx={{ flex: 1, display: "flex" }}>
 
-          {/* Riga 2: iscritti + [iscritto chip per non-hero] + squadra */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <GroupsIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
-              <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                {s._count.registrations}{" "}{s._count.registrations === 1 ? "iscritto" : "iscritti"}
-              </Typography>
+          {/* Colonna sinistra: info in cima, CTA in fondo */}
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              pl: px,
+              pr: px,
+              pt: 1.5,
+              pb: 2,
+              display: "flex",
+              flexDirection: "column",
+              gap: 0.75,
+              pointerEvents: "none",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+                <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                  {format(date, dateFormat, { locale: it })}
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+                <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                  {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
+                </Typography>
+              </Box>
             </Box>
-            {isRegistered && !myTeam && (
-              <Chip
-                icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
-                label="Iscritto"
-                size="small"
-                color="success"
-                sx={{ fontWeight: 600, fontSize: chipFontSize }}
-              />
-            )}
-          </Box>
 
-          {/* Riga 3: restrizioni (solo se presenti) */}
-          {(s.restrictTeamId || (s.allowedRoles && s.allowedRoles.length > 0)) && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-              <Chip
-                icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
-                label={s.restrictTeam
-                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                  : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
-                size="small"
-                sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "warning.light", color: "warning.contrastText" }}
-              />
-              {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <GroupsIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+                <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                  {s._count.registrations}{" "}{s._count.registrations === 1 ? "iscritto" : "iscritti"}
+                </Typography>
+              </Box>
+              {isRegistered && !myTeam && (
                 <Chip
-                  icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
-                  label={`Aperto a tutti i ${s.openRoles.map((r) => `${r}`).join(", ")}`}
+                  icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
+                  label="Iscritto"
                   size="small"
-                  sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "success.light", color: "success.contrastText" }}
+                  color="success"
+                  sx={{ fontWeight: 600, fontSize: chipFontSize }}
                 />
               )}
             </Box>
-          )}
-        </Box>
 
-        {/* CTA */}
-        <Box
-          sx={{
-            px,
-            pb: 2,
-            display: "flex",
-            gap: 1,
-            flexWrap: "wrap",
-            position: "relative",
-            zIndex: 2,
-          }}
-        >
-          {!isRegistered && !muted && (
-            <Button
-              component={Link}
-              href={href}
-              variant="contained"
-              size="small"
-              sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
+            {(s.restrictTeamId || (s.allowedRoles && s.allowedRoles.length > 0)) && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                <Chip
+                  icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
+                  label={s.restrictTeam
+                    ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                    : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+                  size="small"
+                  sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "warning.light", color: "warning.contrastText" }}
+                />
+                {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+                  <Chip
+                    icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
+                    label={`Aperto a tutti i ${s.openRoles.map((r) => `${r}`).join(", ")}`}
+                    size="small"
+                    sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "success.light", color: "success.contrastText" }}
+                  />
+                )}
+              </Box>
+            )}
+
+            {/* CTA in fondo alla colonna sinistra */}
+            <Box
+              sx={{
+                mt: "auto",
+                pt: 0.75,
+                display: "flex",
+                gap: 1,
+                flexWrap: "wrap",
+                pointerEvents: "auto",
+                zIndex: 2,
+              }}
             >
-              Iscriviti →
-            </Button>
-          )}
-          {hasTeams && (
-            <Button
-              variant={myTeam ? "outlined" : "contained"}
-              size="small"
-              startIcon={<SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
-              onClick={() => setTeamsOpen(true)}
-              sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
+              {!isRegistered && !muted && (
+                <Button
+                  component={Link}
+                  href={href}
+                  variant="contained"
+                  size="small"
+                  sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4 }}
+                >
+                  Iscriviti →
+                </Button>
+              )}
+              {hasTeams && (
+                <Button
+                  variant={myTeam ? "outlined" : "contained"}
+                  size="small"
+                  startIcon={<SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
+                  onClick={() => setTeamsOpen(true)}
+                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                >
+                  Vedi squadre
+                </Button>
+              )}
+              {isStaff && hasTeams && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+                  disabled={removingTeams}
+                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                >
+                  {removingTeams ? <CircularProgress size={13} color="inherit" /> : "Rimuovi squadre"}
+                </Button>
+              )}
+              {isStaff && !hasTeams && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={generating ? <CircularProgress size={13} color="inherit" /> : <SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
+                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+                  disabled={generating || s._count.registrations === 0}
+                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                >
+                  {generating ? "Generazione..." : "Genera squadre"}
+                </Button>
+              )}
+            </Box>
+          </Box>
+
+          {/* Colonna stamp */}
+          {myTeam && !muted && (
+            <Box
+              sx={{
+                alignSelf: "stretch",
+                maxHeight: 120,
+                maxWidth: 110,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                pr: 2,
+              }}
             >
-              Vedi squadre
-            </Button>
-          )}
-          {isStaff && hasTeams && (
-            <Button
-              variant="outlined"
-              size="small"
-              color="error"
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
-              disabled={removingTeams}
-              sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
-            >
-              {removingTeams ? <CircularProgress size={13} color="inherit" /> : "Rimuovi squadre"}
-            </Button>
-          )}
-          {isStaff && !hasTeams && (
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={generating ? <CircularProgress size={13} color="inherit" /> : <SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
-              disabled={generating || s._count.registrations === 0}
-              sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4, pointerEvents: "auto" }}
-            >
-              {generating ? "Generazione..." : "Genera squadre"}
-            </Button>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/stamps/${myTeam.name.toLowerCase()}.png`}
+                alt={`Squadra ${myTeam.name}`}
+                style={{ height: "100%", width: "auto", display: "block" }}
+              />
+            </Box>
           )}
         </Box>
       </Paper>

@@ -13,7 +13,6 @@ export async function createAppNotification(payload: AppNotificationPayload): Pr
   await prisma.appNotification.create({ data: payload });
 }
 
-// [CLAUDE - 09:10] crea notifiche in-app individuali (una per userId) invece di una broadcast
 export async function createTargetedAppNotifications(
   userIds: string[],
   payload: Omit<AppNotificationPayload, "targetUserId">,

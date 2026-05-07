@@ -49,7 +49,7 @@ import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "
 import AdminSessionForm from "@/components/AdminSessionForm";
 
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
-import { TEAM_META } from "@/lib/constants"; // [CLAUDE - 07:30]
+import { TEAM_META } from "@/lib/constants";
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
 function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | null) {
@@ -471,7 +471,6 @@ export default function AllenamentiClient({
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
       }
     } catch {
-      // [CLAUDE - 02:10] fix: network error was silently swallowed
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setRemovingTeams(null);
@@ -495,7 +494,6 @@ export default function AllenamentiClient({
         showToast({ message: "Errore nella generazione delle squadre", severity: "error" });
       }
     } catch {
-      // [CLAUDE - 02:10] fix: network error was silently swallowed
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setGenerating(null);

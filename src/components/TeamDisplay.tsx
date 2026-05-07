@@ -24,7 +24,7 @@ import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLE_LABELS, ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants"; // [CLAUDE - 08:15]
+import { ROLE_LABELS, ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 
 export interface TeamAthlete {

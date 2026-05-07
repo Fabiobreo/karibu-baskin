@@ -53,7 +53,6 @@ export default function HomeSessionsSection({
         showToast({ message: "Errore nella creazione delle squadre", severity: "error" });
       }
     } catch {
-      // [CLAUDE - 02:10] fix: network error was silently swallowed
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setGenerating(null);
@@ -72,7 +71,6 @@ export default function HomeSessionsSection({
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
       }
     } catch {
-      // [CLAUDE - 02:10] fix: network error was silently swallowed
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setRemovingTeams(null);
