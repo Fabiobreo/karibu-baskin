@@ -361,7 +361,7 @@ export default function SessionCard({
               <img
                 src={`/stamps/${myTeam.name.toLowerCase()}.png`}
                 alt={`Squadra ${myTeam.name}`}
-                style={{ height: "100%", width: "auto", display: "block" }}
+                style={{ height: "100%", width: "auto", display: "block", opacity: 0.5 }}
               />
             </Box>
           )}

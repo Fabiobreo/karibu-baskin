@@ -51,6 +51,12 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     gender: true, birthDate: true, createdAt: true,
     _count: { select: { registrations: true } },
     sportRoleHistory: { orderBy: { changedAt: "desc" as const }, select: { sportRole: true, changedAt: true } },
+    teamMemberships: {
+      select: {
+        id: true, teamId: true, isCaptain: true,
+        team: { select: { id: true, name: true, season: true, color: true } },
+      },
+    },
   };
 
   const [users, total, childEntries] = await Promise.all([
@@ -64,6 +70,12 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         gender: true, birthDate: true, createdAt: true,
         parent: { select: { name: true, email: true } },
         _count: { select: { registrations: true } },
+        teamMemberships: {
+          select: {
+            id: true, teamId: true, isCaptain: true,
+            team: { select: { id: true, name: true, season: true, color: true } },
+          },
+        },
       },
     }),
   ]);

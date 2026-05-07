@@ -29,6 +29,9 @@ type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRol
 
 interface RoleHistoryEntry { sportRole: number; changedAt: Date | string; }
 
+interface TeamInfo { id: string; name: string; season: string; color: string | null; }
+interface MembershipInfo { id: string; teamId: string; isCaptain: boolean; team: TeamInfo; }
+
 interface UserEntry {
   id: string;
   name: string | null;
@@ -44,6 +47,7 @@ interface UserEntry {
   createdAt: Date | string;
   _count: { registrations: number };
   sportRoleHistory: RoleHistoryEntry[];
+  teamMemberships: MembershipInfo[];
 }
 
 interface ChildEntry {
@@ -56,6 +60,7 @@ interface ChildEntry {
   createdAt: Date | string;
   parent: { name: string | null; email: string };
   _count: { registrations: number };
+  teamMemberships: MembershipInfo[];
 }
 
 type AdminRow =
@@ -166,11 +171,32 @@ export default function AdminUserList({
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
   const [editState, setEditState] = useState<EditState>({ appRole: "", sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
+  const [editTeamId, setEditTeamId] = useState("");
+  const [availableTeams, setAvailableTeams] = useState<TeamInfo[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const { showToast } = useToast();
+
+  function getCurrentSeason() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const startYear = month >= 8 ? year : year - 1;
+    return `${startYear}-${String(startYear + 1).slice(-2)}`;
+  }
+
+  useEffect(() => {
+    fetch("/api/competitive-teams")
+      .then((r) => r.json())
+      .then((data: Array<{ id: string; name: string; season: string; color: string | null }>) => {
+        const season = getCurrentSeason();
+        setAvailableTeams(data.filter((t) => t.season === season));
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const userCount = serverDriven ? (serverTotal ?? initialUsers.length) : initialUsers.length;
   const childCount = initialChildren.length;
@@ -311,6 +337,42 @@ export default function AdminUserList({
     }
   }
 
+  async function handleTeamChange(row: AdminRow, newTeamId: string) {
+    const season = getCurrentSeason();
+    const existing = row.teamMemberships.find((m) => m.team.season === season);
+    if ((existing?.teamId ?? "") === newTeamId) return;
+    try {
+      if (existing) {
+        await fetch(`/api/competitive-teams/${existing.teamId}/members/${existing.id}`, { method: "DELETE" });
+      }
+      let newMembership: MembershipInfo | null = null;
+      if (newTeamId) {
+        const body = row.kind === "user" ? { userId: row.id } : { childId: row.id };
+        const res = await fetch(`/api/competitive-teams/${newTeamId}/members`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const teamInfo = availableTeams.find((t) => t.id === newTeamId);
+          if (teamInfo) newMembership = { id: data.id, teamId: newTeamId, isCaptain: false, team: teamInfo };
+        } else {
+          showToast({ message: "Errore nell'assegnazione alla squadra", severity: "error" });
+          return;
+        }
+      }
+      setRows((prev) => prev.map((r) => {
+        if (r.id !== row.id || r.kind !== row.kind) return r;
+        const others = r.teamMemberships.filter((m) => m.team.season !== season);
+        return { ...r, teamMemberships: newMembership ? [...others, newMembership] : others };
+      }));
+      showToast({ message: newTeamId ? "Squadra aggiornata" : "Rimosso dalla squadra", severity: "success" });
+    } catch {
+      showToast({ message: "Errore nella gestione della squadra", severity: "error" });
+    }
+  }
+
   function openEdit(row: AdminRow) {
     setEditRow(row);
     setEditState({
@@ -320,6 +382,9 @@ export default function AdminUserList({
       gender: row.gender ?? "",
       birthDate: row.birthDate ? new Date(row.birthDate).toISOString().slice(0, 10) : "",
     });
+    const season = getCurrentSeason();
+    const membership = row.teamMemberships.find((m) => m.team.season === season);
+    setEditTeamId(membership?.teamId ?? "");
   }
 
   async function handleSaveAthleteData() {
@@ -342,12 +407,58 @@ export default function AdminUserList({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    setSaving(false);
-    if (res.ok) {
-      const updated = await res.json();
-      if (editRow.kind === "user") {
-        setRows((prev) => prev.map((r) => r.id === editRow.id && r.kind === "user" ? {
-          ...r,
+    if (!res.ok) {
+      setSaving(false);
+      showToast({ message: "Errore nel salvataggio", severity: "error" });
+      return;
+    }
+
+    const updated = await res.json();
+    const season = getCurrentSeason();
+    const existingMembership = editRow.teamMemberships.find((m) => m.team.season === season);
+    const previousTeamId = existingMembership?.teamId ?? "";
+
+    // Handle team assignment change
+    let newMembership: MembershipInfo | null = null;
+    if (editTeamId !== previousTeamId) {
+      try {
+        if (existingMembership) {
+          await fetch(`/api/competitive-teams/${existingMembership.teamId}/members/${existingMembership.id}`, { method: "DELETE" });
+        }
+        if (editTeamId) {
+          const memberBody = editRow.kind === "user" ? { userId: editRow.id } : { childId: editRow.id };
+          const memberRes = await fetch(`/api/competitive-teams/${editTeamId}/members`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(memberBody),
+          });
+          if (memberRes.ok) {
+            const memberData = await memberRes.json();
+            const teamInfo = availableTeams.find((t) => t.id === editTeamId);
+            if (teamInfo) newMembership = { id: memberData.id, teamId: editTeamId, isCaptain: false, team: teamInfo };
+          } else {
+            showToast({ message: "Errore nell'assegnazione alla squadra", severity: "warning" });
+          }
+        }
+      } catch {
+        showToast({ message: "Errore nella gestione della squadra", severity: "warning" });
+      }
+    } else {
+      newMembership = existingMembership ?? null;
+    }
+
+    const rowId = editRow.id;
+    const rowKind = editRow.kind;
+    setRows((prev) => prev.map((r) => {
+      if (r.id !== rowId || r.kind !== rowKind) return r;
+      const otherMemberships = r.teamMemberships.filter((m) => m.team.season !== season);
+      const baseUpdate = {
+        ...r,
+        teamMemberships: newMembership ? [...otherMemberships, newMembership] : otherMemberships,
+      };
+      if (r.kind === "user") {
+        return {
+          ...baseUpdate,
           appRole: updated.appRole ?? r.appRole,
           sportRole: updated.sportRole,
           sportRoleVariant: updated.sportRoleVariant,
@@ -355,23 +466,22 @@ export default function AdminUserList({
           birthDate: updated.birthDate,
           sportRoleHistory:
             updated.sportRole !== editRow.sportRole && updated.sportRole !== null
-              ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...editRow.sportRoleHistory]
-              : editRow.sportRoleHistory,
-        } : r));
-      } else {
-        setRows((prev) => prev.map((r) => r.id === editRow.id && r.kind === "child" ? {
-          ...r,
-          sportRole: updated.sportRole,
-          sportRoleVariant: updated.sportRoleVariant,
-          gender: updated.gender,
-          birthDate: updated.birthDate,
-        } : r));
+              ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...(editRow as UserEntry).sportRoleHistory]
+              : (editRow as UserEntry).sportRoleHistory,
+        };
       }
-      showToast({ message: "Dati atleta aggiornati", severity: "success" });
-      setEditRow(null);
-    } else {
-      showToast({ message: "Errore nel salvataggio", severity: "error" });
-    }
+      return {
+        ...baseUpdate,
+        sportRole: updated.sportRole,
+        sportRoleVariant: updated.sportRoleVariant,
+        gender: updated.gender,
+        birthDate: updated.birthDate,
+      };
+    }));
+
+    setSaving(false);
+    showToast({ message: "Dati atleta aggiornati", severity: "success" });
+    setEditRow(null);
   }
 
   async function handleDeleteConfirm() {
@@ -576,16 +686,8 @@ export default function AdminUserList({
                       Baskin
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
                   <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                    <TableSortLabel
-                      active={sortBy === "createdAt"}
-                      direction={sortBy === "createdAt" ? sortDir : "asc"}
-                      onClick={() => handleSort("createdAt")}
-                    >
-                      Iscritto il
-                    </TableSortLabel>
-                  </TableCell>
                   <TableCell align="center">Azioni</TableCell>
                 </TableRow>
               </TableHead>
@@ -653,18 +755,43 @@ export default function AdminUserList({
                         }
                       </TableCell>
 
+                      {/* Squadra */}
+                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                        <Select
+                          value={row.teamMemberships.find((m) => m.team.season === getCurrentSeason())?.teamId ?? ""}
+                          size="small"
+                          displayEmpty
+                          onChange={(e) => handleTeamChange(row, e.target.value)}
+                          sx={{ minWidth: 110, fontSize: "0.8rem" }}
+                          renderValue={(val) => {
+                            if (!val) return <Typography variant="body2" color="text.disabled" component="span">—</Typography>;
+                            const team = availableTeams.find((t) => t.id === val) ?? row.teamMemberships.find((m) => m.teamId === val)?.team;
+                            if (!team) return <Typography variant="body2" component="span">—</Typography>;
+                            return (
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                {team.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team.color, flexShrink: 0 }} />}
+                                <Typography variant="body2" noWrap component="span">{team.name}</Typography>
+                              </Box>
+                            );
+                          }}
+                        >
+                          <MenuItem value=""><em>Nessuna squadra</em></MenuItem>
+                          {availableTeams.map((t) => (
+                            <MenuItem key={t.id} value={t.id}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                {t.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />}
+                                {t.name}
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
+
                       {/* Genere */}
                       <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                         {row.gender
                           ? <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                           : <Typography variant="body2" color="text.disabled">—</Typography>}
-                      </TableCell>
-
-                      {/* Iscritto il */}
-                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          {format(new Date(row.createdAt), "d MMM yyyy", { locale: it })}
-                        </Typography>
                       </TableCell>
 
                       {/* Azioni */}
@@ -780,16 +907,8 @@ export default function AdminUserList({
                       Baskin
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
                   <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                    <TableSortLabel
-                      active={childSortBy === "createdAt"}
-                      direction={childSortBy === "createdAt" ? childSortDir : "asc"}
-                      onClick={() => handleChildSort("createdAt")}
-                    >
-                      Aggiunto il
-                    </TableSortLabel>
-                  </TableCell>
                   <TableCell align="center">Azioni</TableCell>
                 </TableRow>
               </TableHead>
@@ -829,18 +948,43 @@ export default function AdminUserList({
                         : <Typography variant="body2" color="text.disabled">—</Typography>}
                     </TableCell>
 
+                    {/* Squadra */}
+                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                      <Select
+                        value={row.teamMemberships.find((m) => m.team.season === getCurrentSeason())?.teamId ?? ""}
+                        size="small"
+                        displayEmpty
+                        onChange={(e) => handleTeamChange({ ...row, kind: "child" }, e.target.value)}
+                        sx={{ minWidth: 110, fontSize: "0.8rem" }}
+                        renderValue={(val) => {
+                          if (!val) return <Typography variant="body2" color="text.disabled" component="span">—</Typography>;
+                          const team = availableTeams.find((t) => t.id === val) ?? row.teamMemberships.find((m) => m.teamId === val)?.team;
+                          if (!team) return <Typography variant="body2" component="span">—</Typography>;
+                          return (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                              {team.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team.color, flexShrink: 0 }} />}
+                              <Typography variant="body2" noWrap component="span">{team.name}</Typography>
+                            </Box>
+                          );
+                        }}
+                      >
+                        <MenuItem value=""><em>Nessuna squadra</em></MenuItem>
+                        {availableTeams.map((t) => (
+                          <MenuItem key={t.id} value={t.id}>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              {t.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />}
+                              {t.name}
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </TableCell>
+
                     {/* Genere */}
                     <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                       {row.gender
                         ? <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                         : <Typography variant="body2" color="text.disabled">—</Typography>}
-                    </TableCell>
-
-                    {/* Aggiunto il */}
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {format(new Date(row.createdAt), "d MMM yyyy", { locale: it })}
-                      </Typography>
                     </TableCell>
 
                     {/* Azioni */}
@@ -1019,6 +1163,40 @@ export default function AdminUserList({
                 onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
                 slotProps={{ inputLabel: { shrink: true } }}
               />
+            </Box>
+
+            {/* Squadra stagione corrente */}
+            <Box>
+              <Divider sx={{ mb: 1.5 }} />
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Squadra ({getCurrentSeason()})
+              </Typography>
+              {availableTeams.length === 0 ? (
+                <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                  Nessuna squadra per la stagione corrente
+                </Typography>
+              ) : (
+                <Select
+                  fullWidth size="small" displayEmpty
+                  value={editTeamId}
+                  onChange={(e) => setEditTeamId(e.target.value)}
+                >
+                  <MenuItem value=""><em>Nessuna squadra</em></MenuItem>
+                  {availableTeams.map((t) => (
+                    <MenuItem key={t.id} value={t.id}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        {t.color && (
+                          <Box
+                            component="span"
+                            sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }}
+                          />
+                        )}
+                        {t.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
             </Box>
 
             {/* Storico ruolo (solo utenti con account) */}

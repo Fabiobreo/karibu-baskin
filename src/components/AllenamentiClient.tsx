@@ -111,190 +111,204 @@ function SessionRow({
 
   return (
     <>
-    <Box
-      sx={{
-        position: "relative",
-        display: "flex",
-        alignItems: "center",
-        gap: { xs: 1.5, sm: 2 },
-        px: { xs: 1.5, sm: 2 },
-        py: 1.25,
-        opacity: muted ? 0.62 : 1,
-        "&:hover": { bgcolor: "action.hover" },
-        transition: "background-color 0.15s",
-      }}
-    >
-      {/* Stretched link */}
       <Box
-        component={Link}
-        href={href}
-        aria-label={s.title}
         sx={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 0,
-          "&:focus-visible": {
-            outline: "2px solid",
-            outlineColor: "primary.main",
-            outlineOffset: "-2px",
-          },
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          gap: { xs: 1.5, sm: 2 },
+          px: { xs: 1.5, sm: 2 },
+          py: 1.25,
+          opacity: muted ? 0.62 : 1,
+          "&:hover": { bgcolor: "action.hover" },
+          transition: "background-color 0.15s",
         }}
-      />
-
-      {/* Giorno numero + abbreviazione */}
-      <Box sx={{ width: { xs: 36, sm: 44 }, textAlign: "center", flexShrink: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
-        <Typography
-          variant="caption"
+      >
+        {/* Stretched link */}
+        <Box
+          component={Link}
+          href={href}
+          aria-label={s.title}
           sx={{
-            display: "block",
-            color: "text.disabled",
-            fontWeight: 700,
-            lineHeight: 1,
-            textTransform: "uppercase",
-            fontSize: "0.62rem",
-            letterSpacing: "0.05em",
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            "&:focus-visible": {
+              outline: "2px solid",
+              outlineColor: "primary.main",
+              outlineOffset: "-2px",
+            },
           }}
-        >
-          {format(date, "EEE", { locale: it })}
-        </Typography>
-        <Typography fontWeight={800} sx={{ lineHeight: 1.3, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}>
-          {format(date, "d")}
-        </Typography>
-      </Box>
+        />
 
-      {/* Titolo + orario */}
-      <Box sx={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
-        <Typography variant="body2" fontWeight={600} noWrap>
-          {s.title}
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-          <Typography variant="caption" color="text.disabled">
-            {format(date, "HH:mm")}
-            {endTime && `–${format(endTime, "HH:mm")}`}
+        {/* Giorno numero + abbreviazione */}
+        <Box sx={{ width: { xs: 36, sm: 44 }, textAlign: "center", flexShrink: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              color: "text.disabled",
+              fontWeight: 700,
+              lineHeight: 1,
+              textTransform: "uppercase",
+              fontSize: "0.62rem",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {format(date, "EEE", { locale: it })}
           </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
-            <GroupsIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+          <Typography fontWeight={800} sx={{ lineHeight: 1.1, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}>
+            {format(date, "d")}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              color: "text.disabled",
+              fontWeight: 700,
+              lineHeight: 1,
+              textTransform: "uppercase",
+              fontSize: "0.62rem",
+              letterSpacing: "0.05em",
+            }}
+          >
+            {format(date, "MMM", { locale: it })}
+          </Typography>
+        </Box>
+
+        {/* Titolo + orario */}
+        <Box sx={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
+          <Typography variant="body2" fontWeight={600} noWrap>
+            {s.title}
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
             <Typography variant="caption" color="text.disabled">
-              {s._count.registrations}
+              {format(date, "HH:mm")}
+              {endTime && `–${format(endTime, "HH:mm")}`}
             </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
+              <GroupsIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+              <Typography variant="caption" color="text.disabled">
+                {s._count.registrations}
+              </Typography>
+            </Box>
+            {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                <LockIcon sx={{ fontSize: 10, color: "text.disabled" }} />
+                <Typography variant="caption" color="text.disabled">
+                  {s.restrictTeam
+                    ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
+                    : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
+                </Typography>
+              </Box>
+            )}
+            {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
+                <LockOpenIcon sx={{ fontSize: 10, color: "text.disabled" }} />
+                <Typography variant="caption" color="text.disabled">
+                  {s.openRoles.map((r) => `R${r}`).join(", ")} aperti
+                </Typography>
+              </Box>
+            )}
           </Box>
-          {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-              <LockIcon sx={{ fontSize: 10, color: "text.disabled" }} />
-              <Typography variant="caption" color="text.disabled">
-                {s.restrictTeam
-                  ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
-                  : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
-              </Typography>
-            </Box>
+        </Box>
+
+        {/* Icone di stato + controlli — sopra il link */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
+          {isRegistered && myTeam ? (
+            <Chip
+              label={myTeam.name}
+              size="small"
+              sx={{ bgcolor: myTeam.color, color: "#fff", fontWeight: 700, fontSize: "0.68rem", height: 20 }}
+            />
+          ) : isRegistered ? (
+            <CheckCircleIcon sx={{ color: "success.main", fontSize: 18 }} />
+          ) : null}
+
+          {/* Basketball icon: cliccabile se ci sono squadre, altrimenti icona generazione per staff */}
+          {s.teams ? (
+            <IconButton
+              size="small"
+              aria-label="Vedi squadre"
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setTeamsOpen(true); }}
+              sx={{ color: "primary.main", opacity: 0.7, p: 0.25, "&:hover": { opacity: 1 } }}
+            >
+              <SportsBasketballIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          ) : (isStaff && !muted && (
+            <IconButton
+              size="small"
+              aria-label="Genera squadre"
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+              disabled={generating}
+              sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
+            >
+              {generating
+                ? <CircularProgress size={13} color="inherit" />
+                : <SportsBasketballIcon sx={{ fontSize: 16 }} />}
+            </IconButton>
+          ))}
+
+          {/* Rimuovi squadre: solo staff, solo se non passato */}
+          {isStaff && s.teams && !muted && (
+            <IconButton
+              size="small"
+              color="error"
+              aria-label="Rimuovi squadre"
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+              disabled={removingTeams}
+              sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
+            >
+              {removingTeams
+                ? <CircularProgress size={13} color="error" />
+                : <DeleteOutlineIcon sx={{ fontSize: 16 }} />}
+            </IconButton>
           )}
-          {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-              <LockOpenIcon sx={{ fontSize: 10, color: "text.disabled" }} />
-              <Typography variant="caption" color="text.disabled">
-                {s.openRoles.map((r) => `R${r}`).join(", ")} aperti
-              </Typography>
-            </Box>
+
+          {isStaff ? (
+            <>
+              <IconButton
+                size="small"
+                aria-label="Azioni allenamento"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
+                sx={{ color: "text.disabled", mr: -0.5 }}
+              >
+                <MoreVertIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <Menu
+                anchorEl={menuAnchor}
+                open={!!menuAnchor}
+                onClose={() => setMenuAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+              >
+                <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
+                  <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                  <ListItemText>Modifica</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
+                  <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                  <ListItemText>Elimina</ListItemText>
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <ChevronRightIcon sx={{ color: "text.disabled", fontSize: 18 }} />
           )}
         </Box>
       </Box>
 
-      {/* Icone di stato + controlli — sopra il link */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
-        {isRegistered && myTeam ? (
-          <Chip
-            label={myTeam.name}
-            size="small"
-            sx={{ bgcolor: myTeam.color, color: "#fff", fontWeight: 700, fontSize: "0.68rem", height: 20 }}
-          />
-        ) : isRegistered ? (
-          <CheckCircleIcon sx={{ color: "success.main", fontSize: 18 }} />
-        ) : null}
-
-        {/* Basketball icon: cliccabile se ci sono squadre, altrimenti icona generazione per staff */}
-        {s.teams ? (
-          <IconButton
-            size="small"
-            aria-label="Vedi squadre"
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); setTeamsOpen(true); }}
-            sx={{ color: "primary.main", opacity: 0.7, p: 0.25, "&:hover": { opacity: 1 } }}
-          >
-            <SportsBasketballIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-        ) : (isStaff && !muted && (
-          <IconButton
-            size="small"
-            aria-label="Genera squadre"
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
-            disabled={generating}
-            sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
-          >
-            {generating
-              ? <CircularProgress size={13} color="inherit" />
-              : <SportsBasketballIcon sx={{ fontSize: 16 }} />}
-          </IconButton>
-        ))}
-
-        {/* Rimuovi squadre: solo staff, solo se non passato */}
-        {isStaff && s.teams && !muted && (
-          <IconButton
-            size="small"
-            color="error"
-            aria-label="Rimuovi squadre"
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
-            disabled={removingTeams}
-            sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
-          >
-            {removingTeams
-              ? <CircularProgress size={13} color="error" />
-              : <DeleteOutlineIcon sx={{ fontSize: 16 }} />}
-          </IconButton>
-        )}
-
-        {isStaff ? (
-          <>
-            <IconButton
-              size="small"
-              aria-label="Azioni allenamento"
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
-              sx={{ color: "text.disabled", mr: -0.5 }}
-            >
-              <MoreVertIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-            <Menu
-              anchorEl={menuAnchor}
-              open={!!menuAnchor}
-              onClose={() => setMenuAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
-                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-                <ListItemText>Modifica</ListItemText>
-              </MenuItem>
-              <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
-                <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-                <ListItemText>Elimina</ListItemText>
-              </MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <ChevronRightIcon sx={{ color: "text.disabled", fontSize: 18 }} />
-        )}
-      </Box>
-    </Box>
-
-    {s.teams && (
-      <TeamsModal
-        open={teamsOpen}
-        onClose={() => setTeamsOpen(false)}
-        sessionTitle={s.title}
-        teamA={s.teams.teamA}
-        teamB={s.teams.teamB}
-        teamC={s.teams.teamC}
-      />
-    )}
-  </>
+      {s.teams && (
+        <TeamsModal
+          open={teamsOpen}
+          onClose={() => setTeamsOpen(false)}
+          sessionTitle={s.title}
+          teamA={s.teams.teamA}
+          teamB={s.teams.teamB}
+          teamC={s.teams.teamC}
+        />
+      )}
+    </>
   );
 }
 
@@ -370,7 +384,7 @@ export default function AllenamentiClient({
     const s = sessions.find((s) => s.id === editId);
     if (s) openEdit(s);
     router.replace("/allenamenti", { scroll: false });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // New session state
