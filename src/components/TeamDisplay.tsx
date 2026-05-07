@@ -24,7 +24,7 @@ import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLE_LABELS, ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants"; // [CLAUDE - 08:15]
 import { useToast } from "@/context/ToastContext";
 
 export interface TeamAthlete {
@@ -51,12 +51,6 @@ interface Props {
   teamsLoading: boolean;
   onTeamsGenerated: (teams: TeamsData) => void;
 }
-
-const TEAM_META = [
-  { name: "Arancioni", color: "#E65100" },
-  { name: "Neri",      color: "#1A1A1A" },
-  { name: "Bianchi",   color: "#757575" },
-] as const;
 
 // ── Badge ruolo (riutilizzato in entrambi i layout) ───────────────────────────
 
@@ -150,52 +144,6 @@ export function MobileTeamTabs({ teams, slugMap = {} }: { teams: TeamsData; slug
           );
         })}
       </Box>
-    </Paper>
-  );
-}
-
-export function TeamColumn({ name, athletes, color, slugMap = {} }: { name: string; athletes: TeamAthlete[]; color: string; slugMap?: Record<string, string> }) {
-  return (
-    <Paper variant="outlined" sx={{ overflow: "hidden", height: "100%" }}>
-      <Box sx={{ px: 2, py: 1.5, backgroundColor: color, display: "flex", alignItems: "center", gap: 1 }}>
-        <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-          {name}
-        </Typography>
-        <Chip
-          label={`${athletes.length} atlet${athletes.length !== 1 ? "i" : "a"}`}
-          size="small"
-          sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "#fff" }}
-        />
-      </Box>
-      {ROLES.map((role) => {
-        const group = athletes.filter((a) => a.role === role);
-        if (group.length === 0) return null;
-        return (
-          <Box key={role} sx={{ pb: 0.5 }}>
-            <Box sx={{ px: 2, pt: 1 }}>
-              <RoleBadge role={role} count={group.length} />
-            </Box>
-            <List dense disablePadding>
-              {group.map((a) => {
-                const slug = slugMap[a.id];
-                return (
-                  <ListItem key={a.id} sx={{ py: 0, px: 3 }}>
-                    <ListItemText
-                      primary={
-                        slug ? (
-                          <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
-                            {a.name}
-                          </Link>
-                        ) : a.name
-                      }
-                    />
-                  </ListItem>
-                );
-              })}
-            </List>
-          </Box>
-        );
-      })}
     </Paper>
   );
 }

@@ -133,8 +133,7 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
         value={date}
         onChange={(e) => { setDate(e.target.value); setFieldErrors((p) => ({ ...p, date: undefined })); }}
         size="small"
-        InputLabelProps={{ shrink: true }}
-        inputProps={{ max: "2100-12-31", min: "2026-01-01" }}
+        slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: "2100-12-31", min: "2026-01-01" } }}
         disabled={loading}
         error={!!fieldErrors.date}
         helperText={fieldErrors.date ?? " "}
@@ -148,7 +147,7 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
           value={time}
           onChange={(e) => { setTime(e.target.value); setFieldErrors((p) => ({ ...p, time: undefined, endTime: undefined })); }}
           size="small"
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           disabled={loading}
           error={!!fieldErrors.time}
           helperText={fieldErrors.time ?? " "}
@@ -160,7 +159,7 @@ export default function AdminSessionForm({ onCreated, showTitle = true, formId, 
           value={endTime}
           onChange={(e) => { setEndTime(e.target.value); setFieldErrors((p) => ({ ...p, endTime: undefined })); }}
           size="small"
-          InputLabelProps={{ shrink: true }}
+          slotProps={{ inputLabel: { shrink: true } }}
           disabled={loading}
           error={!!fieldErrors.endTime}
           helperText={fieldErrors.endTime ?? " "}

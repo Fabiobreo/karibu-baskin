@@ -471,7 +471,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               </Typography>
               <TextField fullWidth size="small" type="date" value={editForm.birthDate}
                 onChange={(e) => setEditForm((s) => ({ ...s, birthDate: e.target.value }))}
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
             </Box>
           </Stack>
@@ -685,7 +685,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 </Typography>
                 <TextField fullWidth size="small" type="date" value={createForm.birthDate}
                   onChange={(e) => setCreateForm((s) => ({ ...s, birthDate: e.target.value }))}
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
               </Box>
               <Typography variant="caption" color="text.secondary">

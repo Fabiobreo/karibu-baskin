@@ -12,13 +12,11 @@ Analisi codebase con priorità d'intervento. Aggiornato automaticamente.
 
 ## 🟡 ALTA PRIORITÀ — Correttezza e struttura
 
-*(nessun item aperto)*
-
 ---
 
 ## 🟡 MEDIA PRIORITÀ — Performance e QoL tecnico
 
-### M3. **Componenti troppo grandi — refactor incrementale**
+### M1. **Componenti troppo grandi — refactor incrementale**
 
 - `AdminPartiteClient.tsx` — ~1130 righe
 - `CalendarClient.tsx` — ~1097 righe

@@ -18,6 +18,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import TeamsModal from "@/components/TeamsModal";
+import { TEAM_META } from "@/lib/constants"; // [CLAUDE - 07:30]
 
 interface Athlete { id: string; name: string; role: number }
 interface TeamsData { teamA: Athlete[]; teamB: Athlete[]; teamC?: Athlete[] }
@@ -35,12 +36,6 @@ export interface SessionWithCount {
   restrictTeam?: { id: string; name: string; color: string | null } | null;
   _count: { registrations: number };
 }
-
-const TEAM_META = [
-  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
-];
 
 function getStatusLabel(date: Date, endTime: Date | null): { label: string; color: string } {
   const now = new Date();

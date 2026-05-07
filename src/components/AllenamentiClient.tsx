@@ -26,8 +26,6 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -44,21 +42,15 @@ import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
+import PickTeamsDialog from "@/components/PickTeamsDialog";
 import SessionHeroCard from "@/components/SessionHeroCard";
 import TeamsModal from "@/components/TeamsModal";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import AdminSessionForm from "@/components/AdminSessionForm";
 
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
+import { TEAM_META } from "@/lib/constants"; // [CLAUDE - 07:30]
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
-
-// ── Costanti squadre ──────────────────────────────────────────────────────────
-
-const TEAM_META = [
-  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
-];
 
 function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | null) {
   if (!teams || !registrationId) return null;
@@ -478,6 +470,9 @@ export default function AllenamentiClient({
       } else {
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
       }
+    } catch {
+      // [CLAUDE - 02:10] fix: network error was silently swallowed
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setRemovingTeams(null);
     }
@@ -499,6 +494,9 @@ export default function AllenamentiClient({
       } else {
         showToast({ message: "Errore nella generazione delle squadre", severity: "error" });
       }
+    } catch {
+      // [CLAUDE - 02:10] fix: network error was silently swallowed
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setGenerating(null);
     }
@@ -533,9 +531,6 @@ export default function AllenamentiClient({
   const monthGroups = groupByMonth(restUpcoming);
   const pastVisible = past.slice(0, pastPage * PAST_PAGE_SIZE);
   const hasMorePast = pastVisible.length < past.length;
-
-  const attendancePct =
-    seasonTotal > 0 ? Math.round((seasonAttended / seasonTotal) * 100) : 0;
 
   return (
     <Box>
@@ -777,26 +772,12 @@ export default function AllenamentiClient({
         </DialogContent>
       </Dialog>
 
-      {/* ── Dialog: scelta numero squadre ── */}
-      <Dialog open={!!teamPickSession} onClose={() => setTeamPickSession(null)} maxWidth="xs" fullWidth>
-        <DialogTitle fontWeight={700}>Quante squadre?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Scegli il numero di squadre per <strong>{teamPickSession?.title}</strong>.
-          </DialogContentText>
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button variant="contained" fullWidth onClick={() => handleGenerateTeams(teamPickSession!, 2)} sx={{ py: 1.5, fontSize: "1rem" }}>
-              2 squadre
-            </Button>
-            <Button variant="outlined" fullWidth onClick={() => handleGenerateTeams(teamPickSession!, 3)} sx={{ py: 1.5, fontSize: "1rem" }}>
-              3 squadre
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTeamPickSession(null)}>Annulla</Button>
-        </DialogActions>
-      </Dialog>
+      <PickTeamsDialog
+        open={!!teamPickSession}
+        sessionTitle={teamPickSession?.title}
+        onClose={() => setTeamPickSession(null)}
+        onConfirm={(n) => handleGenerateTeams(teamPickSession!, n)}
+      />
 
       {/* ── Dialog: modifica allenamento ── */}
       <Dialog open={!!editSession} onClose={() => !editLoading && setEditSession(null)} maxWidth="sm" fullWidth>

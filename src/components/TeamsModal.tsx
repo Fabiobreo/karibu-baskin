@@ -46,8 +46,7 @@ export default function TeamsModal({ open, onClose, sessionTitle, teamA, teamB, 
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
         <Box>
-          <Typography variant="h6" fontWeight={700}>Squadre</Typography>
-          <Typography variant="caption" color="text.secondary">{sessionTitle}</Typography>
+          <Typography variant="h6">{sessionTitle}</Typography>
         </Box>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
@@ -61,10 +60,6 @@ export default function TeamsModal({ open, onClose, sessionTitle, teamA, teamB, 
           <MobileTeamTabs teams={teamsData} />
         )}
       </DialogContent>
-
-      <DialogActions>
-        <Button onClick={onClose}>Chiudi</Button>
-      </DialogActions>
     </Dialog>
   );
 }

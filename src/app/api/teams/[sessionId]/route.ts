@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { generateTeams } from "@/lib/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUsers } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { createTargetedAppNotifications } from "@/lib/appNotifications";
 
 // GET — ritorna le squadre salvate in DB
 export async function GET(
@@ -67,15 +67,15 @@ export async function POST(
 
     const pushPayload = {
       title: "📋 Squadre pronte!",
-      body: `Le squadre per "${trainingSession.title}" sono state generate.`,
+      body: `Le squadre per "${trainingSession.title}" sono state create.`,
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
       type: "TEAMS_READY",
     };
     sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch((err) => console.error("[push] teams ready", err));
-    createAppNotification({
+    createTargetedAppNotifications(registeredUserIds, {
       type: "TEAMS_READY",
       title: "Squadre pronte!",
-      body: `Le squadre per "${trainingSession.title}" sono state generate.`,
+      body: `Le squadre per "${trainingSession.title}" sono state create.`,
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
     }).catch((err) => console.error("[notification] teams ready", err));
   }

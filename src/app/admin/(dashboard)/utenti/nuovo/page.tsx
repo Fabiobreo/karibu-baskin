@@ -193,7 +193,7 @@ export default function NuovoUtentePage() {
                   onChange={(e) => set("birthDate", e.target.value)}
                   fullWidth
                   size="small"
-                  InputLabelProps={{ shrink: true }}
+                  slotProps={{ inputLabel: { shrink: true } }}
                 />
               </Stack>
             </Box>

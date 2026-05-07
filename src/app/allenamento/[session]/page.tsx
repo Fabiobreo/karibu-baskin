@@ -30,6 +30,7 @@ import ShareSection from "@/components/ShareSection";
 import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
 import { ROLE_COLORS, ROLE_LABELS, ROLES, TEAM_META } from "@/lib/constants";
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
+import { useToast } from "@/context/ToastContext";
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
 
@@ -122,7 +123,7 @@ function SummaryCard({
         {teams && (
           <Chip
             icon={<CheckCircleIcon />}
-            label="Squadre generate"
+            label="Squadre create"
             color="success"
             variant="outlined"
           />
@@ -179,7 +180,7 @@ function TeamsHeader({ teams, isStaff, isEnded = false, removingTeams, onRemoveT
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
       <Typography variant="h6" fontWeight={700}>Squadre</Typography>
       {isStaff && teams && !isEnded && (
-        <Tooltip title="Rimuovi squadre generate">
+        <Tooltip title="Rimuovi squadre create">
           <span>
             <IconButton
               size="small"
@@ -204,6 +205,7 @@ function TeamsHeader({ teams, isStaff, isEnded = false, removingTeams, onRemoveT
 export default function SessionPage() {
   const { session: sessionParam } = useParams<{ session: string }>();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
   const [parentChildren, setParentChildren] = useState<ChildInfo[]>([]);
@@ -311,12 +313,20 @@ export default function SessionPage() {
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
   const [removingTeams, setRemovingTeams] = useState(false);
+  // [CLAUDE - 01:30] fix: show success/error toast, handle network errors (same bug as A1 in AdminSessionList)
   async function handleRemoveTeams() {
     if (!realSessionId) return;
     setRemovingTeams(true);
     try {
       const res = await fetch(`/api/teams/${realSessionId}`, { method: "DELETE" });
-      if (res.ok) mutateTeams(undefined, false);
+      if (res.ok) {
+        mutateTeams(undefined, false);
+        showToast({ message: "Squadre rimosse", severity: "success" });
+      } else {
+        showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
+      }
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setRemovingTeams(false);
     }
@@ -585,6 +595,7 @@ export default function SessionPage() {
               disabled={editLoading}
               autoFocus
             />
+            {/* [CLAUDE - 09:15] migrated from deprecated InputLabelProps to slotProps (MUI v6) */}
             <TextField
               label="Data"
               type="date"
@@ -592,7 +603,7 @@ export default function SessionPage() {
               onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
               size="small"
               fullWidth
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               disabled={editLoading}
             />
             <Box sx={{ display: "flex", gap: 2 }}>
@@ -602,7 +613,7 @@ export default function SessionPage() {
                 value={editTime}
                 onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />
@@ -612,7 +623,7 @@ export default function SessionPage() {
                 value={editEndTime}
                 onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
                 sx={{ flex: 1 }}
               />

@@ -1,13 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Box, Grid2 as Grid, Typography,
-  Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
-} from "@mui/material";
+import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import SessionHeroCard from "@/components/SessionHeroCard";
 import { useToast } from "@/context/ToastContext";
+import PickTeamsDialog from "@/components/PickTeamsDialog";
 
 export default function HomeSessionsSection({
   inCorso: initInCorso,
@@ -49,11 +47,14 @@ export default function HomeSessionsSection({
       if (res.ok) {
         const newTeams = await res.json();
         updateSession(s.id, { teams: newTeams });
-        showToast({ message: `${numTeams} squadre generate`, severity: "success" });
+        showToast({ message: `${numTeams} squadre create`, severity: "success" });
         router.refresh();
       } else {
-        showToast({ message: "Errore nella generazione delle squadre", severity: "error" });
+        showToast({ message: "Errore nella creazione delle squadre", severity: "error" });
       }
+    } catch {
+      // [CLAUDE - 02:10] fix: network error was silently swallowed
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setGenerating(null);
     }
@@ -70,6 +71,9 @@ export default function HomeSessionsSection({
       } else {
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
       }
+    } catch {
+      // [CLAUDE - 02:10] fix: network error was silently swallowed
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setRemovingTeams(null);
     }
@@ -144,26 +148,12 @@ export default function HomeSessionsSection({
         </>
       )}
 
-      {/* Dialog: scelta numero squadre */}
-      <Dialog open={!!teamPickSession} onClose={() => setTeamPickSession(null)} maxWidth="xs" fullWidth>
-        <DialogTitle fontWeight={700}>Quante squadre?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Scegli il numero di squadre per <strong>{teamPickSession?.title}</strong>.
-          </DialogContentText>
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button variant="contained" fullWidth onClick={() => handleGenerateTeams(teamPickSession!, 2)} sx={{ py: 1.5, fontSize: "1rem" }}>
-              2 squadre
-            </Button>
-            <Button variant="outlined" fullWidth onClick={() => handleGenerateTeams(teamPickSession!, 3)} sx={{ py: 1.5, fontSize: "1rem" }}>
-              3 squadre
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTeamPickSession(null)}>Annulla</Button>
-        </DialogActions>
-      </Dialog>
+      <PickTeamsDialog
+        open={!!teamPickSession}
+        sessionTitle={teamPickSession?.title}
+        onClose={() => setTeamPickSession(null)}
+        onConfirm={(n) => handleGenerateTeams(teamPickSession!, n)}
+      />
     </>
   );
 }

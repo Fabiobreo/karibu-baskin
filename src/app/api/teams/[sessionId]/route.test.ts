@@ -24,12 +24,13 @@ vi.mock("@/lib/webpush", () => ({
 }));
 
 vi.mock("@/lib/appNotifications", () => ({
-  createAppNotification: vi.fn().mockResolvedValue(undefined),
+  createTargetedAppNotifications: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { GET, POST, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { createTargetedAppNotifications } from "@/lib/appNotifications";
 
 type PrismaMock = {
   registration: { findMany: Mock };
@@ -37,6 +38,7 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
+const mockCreateTargeted = createTargetedAppNotifications as Mock;
 
 function makePost(body?: unknown): NextRequest {
   return new NextRequest("http://localhost/api/teams/sess-1", {
@@ -116,6 +118,30 @@ describe("POST /api/teams/[sessionId]", () => {
     const allPlayers = [...json.teamA, ...json.teamB];
     expect(allPlayers.find((a: { id: string }) => a.id === "r7")).toBeUndefined();
     expect(allPlayers.length).toBe(athletes.length);
+  });
+
+  it("invia notifiche in-app mirate solo agli iscritti (non broadcast)", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.registration.findMany.mockResolvedValue(athletes);
+    await POST(makePost(), mockParams);
+    // Deve usare createTargetedAppNotifications, non createAppNotification
+    expect(mockCreateTargeted).toHaveBeenCalledOnce();
+    const [userIds] = mockCreateTargeted.mock.calls[0] as [string[], unknown];
+    // Solo gli userId degli atleti con userId non-null
+    expect(userIds).toEqual(["u1", "u2", "u3", "u4", "u5", "u6"]);
+  });
+
+  it("non include gli iscritti senza userId (childId only) nelle notifiche in-app", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    const withChild = [
+      ...athletes,
+      { id: "r8", name: "Bambino", role: 2, registeredAsCoach: false, userId: null, sessionId: "sess-1", createdAt: new Date(), childId: "child-1" },
+    ];
+    p.registration.findMany.mockResolvedValue(withChild);
+    await POST(makePost(), mockParams);
+    const [userIds] = mockCreateTargeted.mock.calls[0] as [string[], unknown];
+    expect(userIds).not.toContain(null);
+    expect(userIds).toHaveLength(6); // solo gli atleti con userId
   });
 });
 

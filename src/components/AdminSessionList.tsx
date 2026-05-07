@@ -27,6 +27,7 @@ import { it } from "date-fns/locale";
 import Link from "next/link";
 import { useToast } from "@/context/ToastContext";
 import type { TeamsData } from "@/components/TeamDisplay";
+import PickTeamsDialog from "@/components/PickTeamsDialog";
 
 interface SessionWithCount {
   id: string;
@@ -51,15 +52,23 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
   const [teamPickSession, setTeamPickSession] = useState<SessionWithCount | null>(null);
   const { showToast } = useToast();
 
+  // [CLAUDE - 07:05] fix: check res.ok before calling onDeleted — previously called even on failure
   async function confirmDelete() {
     if (!toDelete) return;
     setDeleting(true);
     try {
-      await fetch(`/api/sessions/${toDelete.id}`, { method: "DELETE" });
-      onDeleted();
+      const res = await fetch(`/api/sessions/${toDelete.id}`, { method: "DELETE" });
+      if (res.ok) {
+        onDeleted();
+        showToast({ message: `"${toDelete.title}" eliminato`, severity: "success" });
+        setToDelete(null);
+      } else {
+        showToast({ message: "Errore nell'eliminazione", severity: "error" });
+      }
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setDeleting(false);
-      setToDelete(null);
     }
   }
 
@@ -84,6 +93,9 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
       } else {
         showToast({ message: "Errore nella generazione delle squadre", severity: "error" });
       }
+    } catch {
+      // [CLAUDE - 02:10] fix: network error was silently swallowed — same pattern as A1 confirmDelete fix
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setGenerating(null);
     }
@@ -189,36 +201,12 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
         })}
       </Stack>
 
-      {/* Dialogo scelta numero squadre */}
-      <Dialog open={!!teamPickSession} onClose={() => setTeamPickSession(null)} maxWidth="xs" fullWidth>
-        <DialogTitle>Quante squadre?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Scegli il numero di squadre da generare per <strong>{teamPickSession?.title}</strong>.
-          </DialogContentText>
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={() => generateTeams(teamPickSession!, 2)}
-              sx={{ py: 1.5, fontSize: "1rem" }}
-            >
-              2 squadre
-            </Button>
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={() => generateTeams(teamPickSession!, 3)}
-              sx={{ py: 1.5, fontSize: "1rem" }}
-            >
-              3 squadre
-            </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setTeamPickSession(null)}>Annulla</Button>
-        </DialogActions>
-      </Dialog>
+      <PickTeamsDialog
+        open={!!teamPickSession}
+        sessionTitle={teamPickSession?.title}
+        onClose={() => setTeamPickSession(null)}
+        onConfirm={(n) => generateTeams(teamPickSession!, n)}
+      />
 
       <Dialog open={!!toDelete} onClose={() => setToDelete(null)}>
         <DialogTitle>Elimina allenamento</DialogTitle>
