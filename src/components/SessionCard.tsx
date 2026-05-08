@@ -373,6 +373,8 @@ export default function SessionCard({
           open={teamsOpen}
           onClose={() => setTeamsOpen(false)}
           sessionTitle={s.title}
+          sessionDate={s.date}
+          sessionEndTime={s.endTime}
           teamA={s.teams!.teamA}
           teamB={s.teams!.teamB}
           teamC={s.teams!.teamC}

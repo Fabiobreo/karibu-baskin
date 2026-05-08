@@ -9,6 +9,8 @@ export default function TeamsHeader({
   teams,
   coaches,
   sessionTitle,
+  sessionDate,
+  sessionEndTime,
   isStaff,
   isEnded = false,
   removingTeams,
@@ -18,6 +20,8 @@ export default function TeamsHeader({
   teams: TeamsData | null;
   coaches?: { id: string; name: string }[];
   sessionTitle?: string;
+  sessionDate?: string | Date;
+  sessionEndTime?: string | Date | null;
   isStaff: boolean;
   isEnded?: boolean;
   removingTeams: boolean;
@@ -30,7 +34,7 @@ export default function TeamsHeader({
       {teams && (
         <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
           {sessionTitle && (
-            <ShareTeamsButton teams={teams} coaches={coaches} sessionTitle={sessionTitle} />
+            <ShareTeamsButton teams={teams} coaches={coaches} sessionTitle={sessionTitle} sessionDate={sessionDate} sessionEndTime={sessionEndTime} />
           )}
           {isStaff && !isEnded && onEditTeams && (
             <Tooltip title="Modifica squadre">

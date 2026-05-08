@@ -562,7 +562,7 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
           onTeamsUpdated={(t) => onTeamsGenerated(t)}
           onDone={() => onExitEditMode?.()}
         />
-      ) : isDesktop ? (
+      ) : isDesktop && teams.numTeams === 2 ? (
         <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
         <MobileTeamTabs teams={teams} slugMap={slugMap} defaultTab={currentUserTeamIndex} />

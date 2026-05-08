@@ -293,6 +293,8 @@ export default function SessionPage() {
                   teams={teams}
                   sessionId={realSessionId}
                   sessionTitle={session?.title}
+                  sessionDate={session?.date}
+                  sessionEndTime={session?.endTime}
                   isStaff={isStaff}
                   rosterProps={rosterProps}
                   teamDisplayProps={teamDisplayProps}
@@ -305,7 +307,7 @@ export default function SessionPage() {
               <>
                 <SectionErrorBoundary label="Squadre">
                   <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                    <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
+                    <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} sessionDate={session?.date} sessionEndTime={session?.endTime} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
                     <TeamDisplay {...teamDisplayProps} />
                   </Paper>
                 </SectionErrorBoundary>
@@ -324,7 +326,7 @@ export default function SessionPage() {
                     </SectionErrorBoundary>
                     <SectionErrorBoundary label="Squadre">
                       <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                        <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
+                        <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} sessionDate={session?.date} sessionEndTime={session?.endTime} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
                         <TeamDisplay {...teamDisplayProps} />
                       </Paper>
                     </SectionErrorBoundary>

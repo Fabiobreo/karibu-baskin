@@ -24,13 +24,15 @@ interface Props {
   open: boolean;
   onClose: () => void;
   sessionTitle: string;
+  sessionDate?: string | Date;
+  sessionEndTime?: string | Date | null;
   teamA: Athlete[];
   teamB: Athlete[];
   teamC?: Athlete[];
   coaches?: { id: string; name: string }[];
 }
 
-export default function TeamsModal({ open, onClose, sessionTitle, teamA, teamB, teamC, coaches }: Props) {
+export default function TeamsModal({ open, onClose, sessionTitle, sessionDate, sessionEndTime, teamA, teamB, teamC, coaches }: Props) {
   const numTeams = teamC ? 3 : 2;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
@@ -48,7 +50,7 @@ export default function TeamsModal({ open, onClose, sessionTitle, teamA, teamB, 
       <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}>
         <Typography variant="h6">{sessionTitle}</Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <ShareTeamsButton teams={teamsData} coaches={coaches} sessionTitle={sessionTitle} />
+          <ShareTeamsButton teams={teamsData} coaches={coaches} sessionTitle={sessionTitle} sessionDate={sessionDate} sessionEndTime={sessionEndTime} />
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>

@@ -104,6 +104,8 @@ interface Props {
   teams: TeamsData | null;
   sessionId: string;
   sessionTitle?: string;
+  sessionDate?: string | Date;
+  sessionEndTime?: string | Date | null;
   isStaff: boolean;
   rosterProps: RosterProps;
   teamDisplayProps: TeamDisplayProps;
@@ -116,6 +118,8 @@ export default function AllenamientoEndedView({
   teams,
   sessionId,
   sessionTitle,
+  sessionDate,
+  sessionEndTime,
   isStaff,
   rosterProps,
   teamDisplayProps,
@@ -162,6 +166,8 @@ export default function AllenamientoEndedView({
             teams={teams}
             coaches={teamDisplayProps.coaches}
             sessionTitle={sessionTitle}
+            sessionDate={sessionDate}
+            sessionEndTime={sessionEndTime}
             isStaff={isStaff}
             isEnded
             removingTeams={removingTeams}

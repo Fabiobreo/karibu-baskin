@@ -2,6 +2,8 @@
 import { useRef, useState } from "react";
 import { IconButton, Tooltip, CircularProgress } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
+import { format } from "date-fns";
+import { it } from "date-fns/locale";
 import type { TeamsData } from "./TeamDisplay";
 import { ROLE_LABELS, ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
 
@@ -9,6 +11,19 @@ interface Props {
   teams: TeamsData;
   coaches?: { id: string; name: string }[];
   sessionTitle: string;
+  sessionDate?: string | Date;
+  sessionEndTime?: string | Date | null;
+}
+
+function formatDateLine(date: string | Date, endTime?: string | Date | null): string {
+  const d = new Date(date);
+  const datePart = format(d, "EEEE d MMMM yyyy", { locale: it });
+  const startTime = format(d, "HH:mm");
+  if (endTime) {
+    const endPart = format(new Date(endTime), "HH:mm");
+    return `${datePart} · ${startTime} – ${endPart}`;
+  }
+  return `${datePart} · ${startTime}`;
 }
 
 // Schiarisce un colore hex mescolandolo con bianco (amount 0–1 = % di bianco)
@@ -20,7 +35,7 @@ function tint(hex: string, amount: number): string {
   return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
 }
 
-export default function ShareTeamsButton({ teams, coaches, sessionTitle }: Props) {
+export default function ShareTeamsButton({ teams, coaches, sessionTitle, sessionDate, sessionEndTime }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
 
@@ -80,6 +95,11 @@ export default function ShareTeamsButton({ teams, coaches, sessionTitle }: Props
             <div style={{ fontSize: teams.numTeams === 3 ? 17 : 20, fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>
               {sessionTitle}
             </div>
+            {sessionDate && (
+              <div style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.75)", marginTop: 5, textTransform: "capitalize" }}>
+                {formatDateLine(sessionDate, sessionEndTime)}
+              </div>
+            )}
           </div>
 
           {/* ── Squadre affiancate ── */}
