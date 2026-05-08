@@ -152,10 +152,15 @@ export async function POST(req: NextRequest) {
     const effectiveRole = user.sportRole ?? role;
     let isInRestrictedTeam = false;
     if (restrictions.restrictTeamId) {
-      const membership = await prisma.teamMembership.findFirst({
-        where: { teamId: restrictions.restrictTeamId, userId },
-      });
-      isInRestrictedTeam = !!membership;
+      const hasAnyTeam = !!(await prisma.teamMembership.findFirst({ where: { userId } }));
+      if (hasAnyTeam) {
+        const membership = await prisma.teamMembership.findFirst({
+          where: { teamId: restrictions.restrictTeamId, userId },
+        });
+        isInRestrictedTeam = !!membership;
+      } else {
+        isInRestrictedTeam = true; // nessuna squadra → bypass
+      }
     }
     const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam, registeredAsCoach ?? false);
     if (!check.allowed) {

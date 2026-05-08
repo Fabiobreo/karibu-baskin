@@ -194,7 +194,10 @@ export default function SessionPage() {
         return list?.some((a) => a.id === myRegistration.id);
       }) ?? null
     : null;
-  const teamFirstLayout = !!myTeam;
+  const hasUnregisteredChildren = currentUser?.appRole === "PARENT" && parentChildren.some(
+    (c) => !registrations.some((r) => r.childId === c.id || (c.userId ? r.userId === c.userId : false))
+  );
+  const teamFirstLayout = !!myTeam && !hasUnregisteredChildren;
 
   const TEAM_KEYS = ["teamA", "teamB", "teamC"] as const;
   const myTeamIndex = myTeam ? Math.max(0, TEAM_KEYS.indexOf(myTeam.key as typeof TEAM_KEYS[number])) : 0;

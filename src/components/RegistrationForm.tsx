@@ -11,6 +11,7 @@ import { ROLE_COLORS, ROLE_LABELS, ROLES, sportRoleLabel } from "@/lib/constants
 import SportRoleQuestionnaire from "@/components/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import { signIn } from "next-auth/react";
 import { useRegistrationForm } from "@/hooks/useRegistrationForm";
 import RegistrationSubjectSelector from "@/components/RegistrationSubjectSelector";
 
@@ -80,41 +81,23 @@ export default function RegistrationForm({
     );
   }
 
-  // Se è un genitore e tutti i figli sono già iscritti, mostra il messaggio
+  // Se è un genitore e tutti (figli + sé stesso) sono già iscritti, mostra il messaggio
   const allChildrenRegistered = hasChildren && parentChildren.every((c) => effectiveRegisteredChildIds.includes(c.id));
-  if (isParent && hasChildren && allChildrenRegistered) {
+  if (isParent && hasChildren && allChildrenRegistered && selfRegistered) {
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
         <Typography variant="body1" fontWeight={600}>
           {parentChildren.length === 1
-            ? `${parentChildren[0].name} è già iscritto/a`
-            : "Tutti i tuoi figli sono già iscritti"}
+            ? `Tu e ${parentChildren[0].name} siete già iscritti`
+            : "Tutti siete già iscritti"}
         </Typography>
       </Box>
     );
   }
 
-  // Se è un genitore senza figli collegati, mostra un messaggio dedicato
-  if (isParent && !hasChildren) {
-    return (
-      <Box sx={{ py: 1 }}>
-        <Typography variant="h6" gutterBottom>
-          Iscriviti all&apos;allenamento
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Non hai ancora collegato nessun figlio. Vai nel{" "}
-          <Box component="a" href="/profilo" sx={{ color: "primary.main", fontWeight: 600 }}>
-            tuo profilo
-          </Box>{" "}
-          per aggiungere i tuoi figli e iscriverli agli allenamenti.
-        </Typography>
-      </Box>
-    );
-  }
-
-  // Se l'utente (non genitore) è già iscritto, mostra solo il messaggio
-  if (!hasChildren && selfRegistered) {
+  // Se l'utente non genitore è già iscritto, mostra solo il messaggio
+  if (!isParent && selfRegistered) {
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
@@ -129,17 +112,20 @@ export default function RegistrationForm({
   const restrictionBlock = (() => {
     if (!restrictions || !hasRestrictions(restrictions)) return null;
     const appRole = currentUser?.appRole ?? null;
-    if (appRole === "COACH" || appRole === "ADMIN" || appRole === "GUEST") return null;
+    if (appRole === "COACH" || appRole === "ADMIN") return null;
     const roleToCheck = confirmedRole ?? chosenRole?.role ?? null;
+    if (restrictions.restrictTeamId !== null && roleToCheck !== null && restrictions.openRoles.includes(roleToCheck)) {
+      return null;
+    }
     if (restrictions.allowedRoles.length > 0 && roleToCheck !== null && !restrictions.allowedRoles.includes(roleToCheck)) {
       return `Questo allenamento è riservato ai ruoli ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`;
     }
-    if (restrictions.restrictTeamId !== null) {
-      if (roleToCheck !== null && restrictions.openRoles.includes(roleToCheck)) return null;
+    if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
       if (roleToCheck !== null) {
         const subjectTeamMemberships = subject === "self"
           ? (currentUser?.teamMemberships ?? [])
           : (selectedChild?.teamMemberships ?? []);
+        if (subjectTeamMemberships.length === 0) return null; // nessuna squadra → bypass
         if (!subjectTeamMemberships.some((m) => m.teamId === restrictions.restrictTeamId)) {
           const teamName = restrictions.restrictTeamName
             ? `"${restrictions.restrictTeamName}"`
@@ -155,12 +141,15 @@ export default function RegistrationForm({
     if (!restrictions || !hasRestrictions(restrictions)) return null;
     const parts: string[] = [];
     if (restrictions.allowedRoles.length > 0) {
-      let allowedRoles = `Ruoli ammessi: ${restrictions.allowedRoles.map((r) => `${r}`).join(", ")}`;
-      if (restrictions.restrictTeamId) allowedRoles += ` dei ${restrictions.restrictTeamName}`;
-      parts.push(allowedRoles);
+      const roleNames = restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ");
+      parts.push(restrictions.restrictTeamId
+        ? `Riservato ai ${roleNames} dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`
+        : `Riservato ai ${roleNames}`);
+    } else if (restrictions.restrictTeamId) {
+      parts.push(`Riservato ai membri dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`);
     }
     if (restrictions.openRoles.length > 0) {
-      parts.push(`Aperto ai ${restrictions.openRoles.map((r) => `${r}`).join(", ")} di entrambe le squadre`);
+      parts.push(`Aperto ai ${restrictions.openRoles.map((r) => ROLE_LABELS[r]).join(", ")} di tutte le squadre`);
     }
     return parts.join("\n");
   })();
@@ -202,17 +191,19 @@ export default function RegistrationForm({
           icon={<LockIcon fontSize="small" />}
           sx={{ mb: 2, fontSize: "0.8rem", "& .MuiAlert-message": { whiteSpace: "pre-line" } }}
         >
-          {restrictionBlock ?? restrictionInfo}
+          {restrictionInfo}
         </Alert>
       )}
 
-      {/* ── Selettore soggetto (solo genitore con figli) ── */}
-      {hasChildren && (
+      {/* ── Selettore soggetto (solo genitori) ── */}
+      {isParent && (
         <RegistrationSubjectSelector
+          selfName={currentUser?.name ?? "Io stesso"}
+          selfRegistered={selfRegistered}
           parentChildren={parentChildren}
           subject={subject}
           effectiveRegisteredChildIds={effectiveRegisteredChildIds}
-          onSelectChild={setSubject}
+          onSelect={setSubject}
         />
       )}
 
@@ -340,9 +331,10 @@ export default function RegistrationForm({
                   <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
                     <span>Hai un account Google?</span>
                     <Box
-                      component="a"
-                      href="/api/auth/signin/google"
-                      sx={{ color: "primary.main", fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                      component="button"
+                      type="button"
+                      onClick={() => signIn("google", { callbackUrl: window.location.href })}
+                      sx={{ color: "primary.main", fontWeight: 600, textDecoration: "none", background: "none", border: "none", p: 0, cursor: "pointer", font: "inherit", fontSize: "inherit", "&:hover": { textDecoration: "underline" } }}
                     >
                       Accedi per registrarti più facilmente.
                     </Box>

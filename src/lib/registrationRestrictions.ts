@@ -43,13 +43,15 @@ export function checkRegistrationAllowed(
   // Coach che si iscrive come allenatore (non atleta): sempre ammesso
   if (registeredAsCoach) return { allowed: true };
 
-  // GUEST: bypass totale di tutte le restrizioni
-  if (appRole === "GUEST") return { allowed: true };
-
   // Nessuna restrizione → tutti ammessi
   if (!hasRestrictions(restrictions)) return { allowed: true };
 
-  // Controllo ruoli ammessi — COACH come atleta, ATHLETE, PARENT, anonimo
+  // openRoles bypassa tutto (allowedRoles + restrizione squadra)
+  if (restrictions.restrictTeamId !== null && restrictions.openRoles.includes(sportRole)) {
+    return { allowed: true };
+  }
+
+  // Controllo ruoli ammessi — si applica a tutti tranne COACH/ADMIN (inclusi GUEST e anonimi)
   if (restrictions.allowedRoles.length > 0 && !restrictions.allowedRoles.includes(sportRole)) {
     return {
       allowed: false,
@@ -57,10 +59,8 @@ export function checkRegistrationAllowed(
     };
   }
 
-  // Controllo restrizione squadra — si applica a tutti (incluso anonimo e COACH come atleta)
-  if (restrictions.restrictTeamId !== null) {
-    // Ruoli aperti bypassano la restrizione di squadra
-    if (restrictions.openRoles.includes(sportRole)) return { allowed: true };
+  // Controllo restrizione squadra — bypass per anonimi e GUEST (nuovi utenti senza squadra)
+  if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
     if (!isInRestrictedTeam) {
       return {
         allowed: false,
