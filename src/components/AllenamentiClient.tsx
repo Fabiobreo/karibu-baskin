@@ -8,6 +8,7 @@ import {
   Paper,
   Chip,
   Button,
+  Collapse,
   Divider,
   LinearProgress,
   IconButton,
@@ -20,6 +21,8 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
+  Tab,
+  Tabs,
   TextField,
   Alert,
   CircularProgress,
@@ -68,6 +71,18 @@ function groupByMonth(
   const map = new Map<string, SessionWithCount[]>();
   for (const s of sessions) {
     const key = format(new Date(s.date), "MMMM yyyy", { locale: it });
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(s);
+  }
+  return Array.from(map.entries());
+}
+
+function groupByYear(
+  sessions: SessionWithCount[],
+): [string, SessionWithCount[]][] {
+  const map = new Map<string, SessionWithCount[]>();
+  for (const s of sessions) {
+    const key = format(new Date(s.date), "yyyy");
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(s);
   }
@@ -317,8 +332,6 @@ function SessionRow({
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-const PAST_PAGE_SIZE = 6;
-
 function deriveSections(sessions: SessionWithCount[], now: Date) {
   const asc = (a: SessionWithCount, b: SessionWithCount) =>
     new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -369,8 +382,34 @@ export default function AllenamentiClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
-  const [showPast, setShowPast] = useState(false);
-  const [pastPage, setPastPage] = useState(1);
+
+  const [openYears, setOpenYears] = useState<Set<string>>(() =>
+    new Set([format(new Date(), "yyyy")])
+  );
+
+  function toggleYear(year: string) {
+    setOpenYears((prev) => {
+      const next = new Set(prev);
+      if (next.has(year)) next.delete(year);
+      else next.add(year);
+      return next;
+    });
+  }
+
+  const [openMonths, setOpenMonths] = useState<Set<string>>(() =>
+    new Set([format(new Date(), "MMMM yyyy", { locale: it })])
+  );
+
+  function toggleMonth(month: string) {
+    setOpenMonths((prev) => {
+      const next = new Set(prev);
+      if (next.has(month)) next.delete(month);
+      else next.add(month);
+      return next;
+    });
+  }
+
+  const [activeTab, setActiveTab] = useState(0);
 
   // Local sessions state so we can optimistically update after mutations
   const [sessions, setSessions] = useState<SessionWithCount[]>(() => [
@@ -543,9 +582,8 @@ export default function AllenamentiClient({
 
   const heroSessions = showSecondHero ? [firstSession, secondSession] : [firstSession];
   const restUpcoming = showSecondHero ? remainingUpcoming : (secondSession ? [secondSession, ...remainingUpcoming] : remainingUpcoming);
-  const monthGroups = groupByMonth(restUpcoming);
-  const pastVisible = past.slice(0, pastPage * PAST_PAGE_SIZE);
-  const hasMorePast = pastVisible.length < past.length;
+  const futureYearGroups = groupByYear(restUpcoming);
+  const pastYearGroups = groupByYear(past);
 
   return (
     <Box>
@@ -606,26 +644,11 @@ export default function AllenamentiClient({
         </Box>
       )}
 
-      {/* ── Prossimi ── */}
-      {upcoming.length === 0 ? (
-        <Paper
-          elevation={0}
-          variant="outlined"
-          sx={{ p: 4, textAlign: "center", mb: 3, borderStyle: "dashed" }}
-        >
-          <Typography color="text.secondary">
-            Nessun allenamento programmato.
-          </Typography>
-        </Paper>
-      ) : (
+      {/* ── Hero prossimi ── */}
+      {upcoming.length > 0 && (
         <>
-          {/* Sezione prossimi */}
           <Box sx={{ mb: 2 }}>
-            <Typography
-              variant="overline"
-              fontWeight={700}
-              sx={{ color: "text.disabled", letterSpacing: "0.1em" }}
-            >
+            <Typography variant="overline" fontWeight={700} sx={{ color: "text.disabled", letterSpacing: "0.1em" }}>
               Prossimi allenamenti
             </Typography>
           </Box>
@@ -653,121 +676,266 @@ export default function AllenamentiClient({
               />
             ))}
           </Box>
-
-          {/* Gruppi per mese */}
-          {monthGroups.map(([month, monthSessions]) => (
-            <Box key={month} sx={{ mb: 2.5 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  mb: 1,
-                }}
-              >
-                <Typography
-                  variant="overline"
-                  fontWeight={700}
-                  sx={{
-                    color: "text.disabled",
-                    letterSpacing: "0.1em",
-                    lineHeight: 1,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {month}
-                </Typography>
-                <Divider sx={{ flex: 1 }} />
-                <Typography
-                  variant="caption"
-                  color="text.disabled"
-                  sx={{ whiteSpace: "nowrap" }}
-                >
-                  {monthSessions.length}{" "}
-                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
-                </Typography>
-              </Box>
-              <Paper
-                elevation={0}
-                variant="outlined"
-                sx={{ borderRadius: 2, overflow: "hidden" }}
-              >
-                {monthSessions.map((s, i) => (
-                  <Box key={s.id}>
-                    {i > 0 && <Divider />}
-                    <SessionRow
-                      session={s}
-                      isRegistered={registeredSet.has(s.id)}
-                      myRegistrationId={registrationIdBySession[s.id] ?? null}
-                      isStaff={isStaff}
-                      generating={generating === s.id}
-                      removingTeams={removingTeams === s.id}
-                      onEdit={() => openEdit(s)}
-                      onDelete={() => setToDelete(s)}
-                      onGenerateTeams={() => setTeamPickSession(s)}
-                      onRemoveTeams={() => handleRemoveTeams(s)}
-                    />
-                  </Box>
-                ))}
-              </Paper>
-            </Box>
-          ))}
         </>
       )}
 
-      {/* ── Passati ── */}
-      {past.length > 0 && (
-        <Box sx={{ mt: 1 }}>
-          <Button
-            size="small"
-            endIcon={showPast ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            onClick={() => {
-              setShowPast((v) => !v);
-              setPastPage(1);
-            }}
-            sx={{ color: "text.secondary", fontWeight: 600, mb: showPast ? 1.5 : 0 }}
-          >
-            Allenamenti passati ({past.length})
-          </Button>
+      {/* ── Schede Futuri / Passati ── */}
+      <Box>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v: number) => setActiveTab(v)}
+          sx={{ borderBottom: 1, borderColor: "divider", mb: 2.5 }}
+        >
+          <Tab
+            label={restUpcoming.length > 0 ? `Futuri (${restUpcoming.length})` : "Futuri"}
+            sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.875rem" }}
+          />
+          <Tab
+            label={past.length > 0 ? `Passati (${past.length})` : "Passati"}
+            sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.875rem" }}
+          />
+        </Tabs>
 
-          {showPast && (
-            <>
-              <Paper
-                elevation={0}
-                variant="outlined"
-                sx={{ borderRadius: 2, overflow: "hidden" }}
-              >
-                {pastVisible.map((s, i) => (
-                  <Box key={s.id}>
-                    {i > 0 && <Divider />}
-                    <SessionRow
-                      session={s}
-                      muted
-                      isStaff={isStaff}
-                      onEdit={() => openEdit(s)}
-                      onDelete={() => setToDelete(s)}
-                    />
-                  </Box>
-                ))}
+        {/* Tab Futuri */}
+        {activeTab === 0 && (
+          <Box>
+            {upcoming.length === 0 ? (
+              <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}>
+                <Typography color="text.secondary">Nessun allenamento programmato.</Typography>
               </Paper>
+            ) : restUpcoming.length === 0 ? (
+              <Typography variant="body2" color="text.disabled" sx={{ py: 2 }}>
+                Nessun altro allenamento programmato.
+              </Typography>
+            ) : (
+              futureYearGroups.map(([year, yearSessions]) => {
+                const isYearOpen = openYears.has(year);
+                return (
+                  <Box key={year} sx={{ mb: 2 }}>
+                    <Box
+                      onClick={() => toggleYear(year)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        mb: isYearOpen ? 1.5 : 0,
+                        cursor: "pointer",
+                        py: 0.5,
+                        "&:hover .year-label": { color: "text.primary" },
+                      }}
+                    >
+                      <Typography
+                        className="year-label"
+                        fontWeight={800}
+                        sx={{
+                          fontSize: "1.1rem",
+                          lineHeight: 1,
+                          color: isYearOpen ? "text.primary" : "text.secondary",
+                          transition: "color 0.15s",
+                        }}
+                      >
+                        {year}
+                      </Typography>
+                      <Divider sx={{ flex: 1 }} />
+                      <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                        {yearSessions.length}{" "}
+                        {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
+                      </Typography>
+                      <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                        {isYearOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                      </IconButton>
+                    </Box>
 
-              {hasMorePast && (
-                <Box sx={{ textAlign: "center", mt: 1.5 }}>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setPastPage((p) => p + 1)}
-                    sx={{ color: "text.secondary" }}
-                  >
-                    Carica altri{" "}
-                    {Math.min(PAST_PAGE_SIZE, past.length - pastVisible.length)}
-                  </Button>
-                </Box>
-              )}
-            </>
-          )}
-        </Box>
-      )}
+                    <Collapse in={isYearOpen}>
+                      <Box sx={{ pl: { xs: 0, sm: 2 } }}>
+                        {groupByMonth(yearSessions).map(([month, monthSessions]) => {
+                          const isOpen = openMonths.has(month);
+                          return (
+                            <Box key={month} sx={{ mb: 1.5 }}>
+                              <Box
+                                onClick={() => toggleMonth(month)}
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1.5,
+                                  mb: isOpen ? 1 : 0,
+                                  cursor: "pointer",
+                                  py: 0.25,
+                                  "&:hover .month-label": { color: "text.primary" },
+                                }}
+                              >
+                                <Typography
+                                  className="month-label"
+                                  variant="overline"
+                                  fontWeight={700}
+                                  sx={{
+                                    color: isOpen ? "text.secondary" : "text.disabled",
+                                    letterSpacing: "0.1em",
+                                    lineHeight: 1,
+                                    whiteSpace: "nowrap",
+                                    transition: "color 0.15s",
+                                  }}
+                                >
+                                  {month}
+                                </Typography>
+                                <Divider sx={{ flex: 1 }} />
+                                <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                                  {monthSessions.length}{" "}
+                                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
+                                </Typography>
+                                <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                                  {isOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                                </IconButton>
+                              </Box>
+                              <Collapse in={isOpen}>
+                                <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+                                  {monthSessions.map((s, i) => (
+                                    <Box key={s.id}>
+                                      {i > 0 && <Divider />}
+                                      <SessionRow
+                                        session={s}
+                                        isRegistered={registeredSet.has(s.id)}
+                                        myRegistrationId={registrationIdBySession[s.id] ?? null}
+                                        isStaff={isStaff}
+                                        generating={generating === s.id}
+                                        removingTeams={removingTeams === s.id}
+                                        onEdit={() => openEdit(s)}
+                                        onDelete={() => setToDelete(s)}
+                                        onGenerateTeams={() => setTeamPickSession(s)}
+                                        onRemoveTeams={() => handleRemoveTeams(s)}
+                                      />
+                                    </Box>
+                                  ))}
+                                </Paper>
+                              </Collapse>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </Collapse>
+                  </Box>
+                );
+              })
+            )}
+          </Box>
+        )}
+
+        {/* Tab Passati */}
+        {activeTab === 1 && (
+          <Box>
+            {pastYearGroups.length === 0 ? (
+              <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}>
+                <Typography color="text.secondary">Nessun allenamento passato.</Typography>
+              </Paper>
+            ) : (
+              pastYearGroups.map(([year, yearSessions]) => {
+                const isYearOpen = openYears.has(year);
+                return (
+                  <Box key={year} sx={{ mb: 2 }}>
+                    {/* Anno — accordion */}
+                    <Box
+                      onClick={() => toggleYear(year)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        mb: isYearOpen ? 1.5 : 0,
+                        cursor: "pointer",
+                        py: 0.5,
+                        "&:hover .year-label": { color: "text.primary" },
+                      }}
+                    >
+                      <Typography
+                        className="year-label"
+                        fontWeight={800}
+                        sx={{
+                          fontSize: "1.1rem",
+                          lineHeight: 1,
+                          color: isYearOpen ? "text.primary" : "text.secondary",
+                          transition: "color 0.15s",
+                        }}
+                      >
+                        {year}
+                      </Typography>
+                      <Divider sx={{ flex: 1 }} />
+                      <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                        {yearSessions.length}{" "}
+                        {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
+                      </Typography>
+                      <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                        {isYearOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                      </IconButton>
+                    </Box>
+
+                    <Collapse in={isYearOpen}>
+                      <Box sx={{ pl: { xs: 0, sm: 2 } }}>
+                        {groupByMonth(yearSessions).map(([month, monthSessions]) => {
+                          const isOpen = openMonths.has(month);
+                          return (
+                            <Box key={month} sx={{ mb: 1.5 }}>
+                              <Box
+                                onClick={() => toggleMonth(month)}
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1.5,
+                                  mb: isOpen ? 1 : 0,
+                                  cursor: "pointer",
+                                  py: 0.25,
+                                  "&:hover .month-label": { color: "text.primary" },
+                                }}
+                              >
+                                <Typography
+                                  className="month-label"
+                                  variant="overline"
+                                  fontWeight={700}
+                                  sx={{
+                                    color: isOpen ? "text.secondary" : "text.disabled",
+                                    letterSpacing: "0.1em",
+                                    lineHeight: 1,
+                                    whiteSpace: "nowrap",
+                                    transition: "color 0.15s",
+                                  }}
+                                >
+                                  {month}
+                                </Typography>
+                                <Divider sx={{ flex: 1 }} />
+                                <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                                  {monthSessions.length}{" "}
+                                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
+                                </Typography>
+                                <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                                  {isOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                                </IconButton>
+                              </Box>
+                              <Collapse in={isOpen}>
+                                <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+                                  {monthSessions.map((s, i) => (
+                                    <Box key={s.id}>
+                                      {i > 0 && <Divider />}
+                                      <SessionRow
+                                        session={s}
+                                        muted
+                                        isStaff={isStaff}
+                                        onEdit={() => openEdit(s)}
+                                        onDelete={() => setToDelete(s)}
+                                      />
+                                    </Box>
+                                  ))}
+                                </Paper>
+                              </Collapse>
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </Collapse>
+                  </Box>
+                );
+              })
+            )}
+          </Box>
+        )}
+      </Box>
 
       {/* ── Dialog: nuovo allenamento ── */}
       <Dialog open={newOpen} onClose={() => !newLoading && setNewOpen(false)} maxWidth="sm" fullWidth>

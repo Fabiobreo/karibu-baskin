@@ -94,7 +94,7 @@ export function MobileTeamTabs({ teams, slugMap = {}, defaultTab = 0 }: { teams:
         variant="fullWidth"
         sx={{
           "& .MuiTabs-indicator": { backgroundColor: activeColor, height: 3 },
-          "& .MuiTab-root": { fontWeight: 700, fontSize: "0.85rem", minHeight: 48 },
+          "& .MuiTab-root": { fontWeight: 700, fontSize: "0.75rem", minHeight: 48 },
           "& .MuiTab-root.Mui-selected": { color: activeColor },
         }}
       >
