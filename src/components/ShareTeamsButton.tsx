@@ -11,6 +11,15 @@ interface Props {
   sessionTitle: string;
 }
 
+// Schiarisce un colore hex mescolandolo con bianco (amount 0–1 = % di bianco)
+function tint(hex: string, amount: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const mix = (c: number) => Math.round(c + (255 - c) * amount);
+  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+}
+
 export default function ShareTeamsButton({ teams, coaches, sessionTitle }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
@@ -54,94 +63,130 @@ export default function ShareTeamsButton({ teams, coaches, sessionTitle }: Props
     : ["teamA", "teamB"]) as ("teamA" | "teamB" | "teamC")[];
   const meta = TEAM_META.slice(0, teams.numTeams);
 
+  // Per 3 squadre la card è più stretta (portrait), per 2 affiancate (landscape)
+  const CARD_W = teams.numTeams === 3 ? 520 : 640;
+
   return (
     <>
-      {/* Card off-screen, catturata da html2canvas — solo inline styles */}
+      {/* Card off-screen — catturata da html2canvas con soli inline styles */}
       <div style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none", zIndex: -1 }}>
-        <div ref={cardRef} style={{
-          width: 560,
-          background: "#ffffff",
-          fontFamily: "'Helvetica Neue', Arial, sans-serif",
-          overflow: "hidden",
-        }}>
-          {/* Header app */}
-          <div style={{ background: "#E65100", padding: "14px 20px" }}>
-            <div style={{ color: "rgba(255,255,255,0.75)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
+        <div ref={cardRef} style={{ width: CARD_W, background: "#ffffff", fontFamily: "'Helvetica Neue', Arial, sans-serif", overflow: "hidden" }}>
+
+          {/* ── Header ── */}
+          <div style={{ background: "#E65100", padding: "18px 22px 16px" }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.65)", marginBottom: 6 }}>
               Karibu Baskin
             </div>
-            <div style={{ color: "#fff", fontSize: 18, fontWeight: 800, marginTop: 4 }}>
+            <div style={{ fontSize: teams.numTeams === 3 ? 17 : 20, fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>
               {sessionTitle}
             </div>
           </div>
 
-          {/* Squadre impilate */}
-          {teamKeys.map((key, i) => {
-            const teamList = (key === "teamC" ? teams.teamC : teams[key]) ?? [];
-            const m = meta[i];
-            const roleGroups = ROLES
-              .map((role) => ({ role, players: teamList.filter((a) => a.role === role) }))
-              .filter((g) => g.players.length > 0);
+          {/* ── Squadre affiancate ── */}
+          <div style={{ display: "flex", background: "#fff" }}>
+            {teamKeys.map((key, i) => {
+              const teamList = (key === "teamC" ? teams.teamC : teams[key]) ?? [];
+              const m = meta[i];
+              const roleGroups = ROLES
+                .map((role) => ({ role, players: teamList.filter((a) => a.role === role) }))
+                .filter((g) => g.players.length > 0);
+              const isLast = i === teamKeys.length - 1;
 
-            return (
-              <div key={key} style={{ borderBottom: i < teamKeys.length - 1 ? "1px solid #e0e0e0" : "none" }}>
-                <div style={{
-                  background: m.color,
-                  padding: "8px 20px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}>
-                  <span style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>{m.name}</span>
-                  <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 13 }}>
-                    {teamList.length} {teamList.length === 1 ? "atleta" : "atleti"}
-                  </span>
-                </div>
-                <div style={{ padding: "10px 20px 14px", background: "#fafafa" }}>
-                  {roleGroups.map(({ role, players }) => (
-                    <div key={role} style={{ marginBottom: 8 }}>
-                      <div style={{
-                        fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
-                        textTransform: "uppercase", marginBottom: 3,
-                        color: ROLE_COLORS[role],
-                      }}>
-                        {ROLE_LABELS[role]}
-                      </div>
-                      {players.map((p) => (
-                        <div key={p.id} style={{ fontSize: 14, color: "#1a1a1a", padding: "1px 0" }}>
-                          {p.name}
-                        </div>
-                      ))}
+              return (
+                <div
+                  key={key}
+                  style={{
+                    flex: 1,
+                    borderRight: isLast ? "none" : `2px solid #f0f0f0`,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Team header */}
+                  <div style={{ background: tint(m.color, 0.90), padding: "10px 14px 9px", borderBottom: `3px solid ${m.color}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: m.color, flexShrink: 0 }} />
+                      <span style={{ fontWeight: 800, fontSize: 13, color: "#111", letterSpacing: 0.3 }}>
+                        {m.name.toUpperCase()}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+                    <div style={{ fontSize: 11, color: "#666", marginTop: 2, paddingLeft: 17 }}>
+                      {teamList.length} {teamList.length === 1 ? "atleta" : "atleti"}
+                    </div>
+                  </div>
 
-          {/* Allenatori */}
+                  {/* Giocatori per ruolo */}
+                  <div style={{ padding: "10px 14px 14px", flex: 1 }}>
+                    {roleGroups.map(({ role, players }, gi) => (
+                      <div key={role} style={{ marginTop: gi > 0 ? 10 : 0 }}>
+                        {/* Role label */}
+                        <div style={{
+                          display: "inline-block",
+                          fontSize: 9, fontWeight: 800, letterSpacing: 1,
+                          textTransform: "uppercase",
+                          color: "#fff",
+                          background: ROLE_COLORS[role],
+                          borderRadius: 3,
+                          padding: "2px 5px",
+                          marginBottom: 5,
+                        }}>
+                          {ROLE_LABELS[role]}
+                        </div>
+                        {/* Nomi */}
+                        {players.map((p) => (
+                          <div key={p.id} style={{
+                            fontSize: teams.numTeams === 3 ? 12 : 13,
+                            color: "#1a1a1a",
+                            fontWeight: 500,
+                            lineHeight: 1.55,
+                            paddingLeft: 2,
+                          }}>
+                            {p.name}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                    {roleGroups.length === 0 && (
+                      <div style={{ fontSize: 11, color: "#bbb", fontStyle: "italic" }}>Nessun atleta</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Allenatori ── */}
           {coaches && coaches.length > 0 && (
             <div style={{
-              padding: "8px 20px",
-              background: "#f5f5f5",
-              borderTop: "1px solid #e0e0e0",
+              padding: "9px 14px",
+              background: "#f8f8f8",
+              borderTop: "2px solid #f0f0f0",
               display: "flex",
               flexWrap: "wrap",
-              gap: "0 10px",
               alignItems: "center",
+              gap: "0 10px",
             }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: 0.8 }}>
+              <span style={{ fontSize: 10, fontWeight: 800, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
                 Allenatori
               </span>
               {coaches.map((c) => (
-                <span key={c.id} style={{ fontSize: 13, color: "#333" }}>{c.name}</span>
+                <span key={c.id} style={{ fontSize: 12, fontWeight: 600, color: "#444" }}>{c.name}</span>
               ))}
             </div>
           )}
 
-          {/* Footer */}
-          <div style={{ background: "#1a1a1a", padding: "5px 20px" }}>
-            <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>karibubaskin.vercel.app</span>
+          {/* ── Footer branding ── */}
+          <div style={{ background: "#111", padding: "7px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 9, letterSpacing: 0.8, color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>
+              karibubaskin.vercel.app
+            </span>
+            <div style={{ display: "flex", gap: 3 }}>
+              {meta.map((m) => (
+                <div key={m.key} style={{ width: 8, height: 8, borderRadius: "50%", background: m.color, opacity: 0.7 }} />
+              ))}
+            </div>
           </div>
+
         </div>
       </div>
 
