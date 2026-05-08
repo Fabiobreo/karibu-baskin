@@ -103,6 +103,7 @@ interface Props {
   registrations: Registration[];
   teams: TeamsData | null;
   sessionId: string;
+  sessionTitle?: string;
   isStaff: boolean;
   rosterProps: RosterProps;
   teamDisplayProps: TeamDisplayProps;
@@ -114,6 +115,7 @@ export default function AllenamientoEndedView({
   registrations,
   teams,
   sessionId,
+  sessionTitle,
   isStaff,
   rosterProps,
   teamDisplayProps,
@@ -158,6 +160,8 @@ export default function AllenamientoEndedView({
         <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
           <TeamsHeader
             teams={teams}
+            coaches={teamDisplayProps.coaches}
+            sessionTitle={sessionTitle}
             isStaff={isStaff}
             isEnded
             removingTeams={removingTeams}

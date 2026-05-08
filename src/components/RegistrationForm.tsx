@@ -112,7 +112,8 @@ export default function RegistrationForm({
   const restrictionBlock = (() => {
     if (!restrictions || !hasRestrictions(restrictions)) return null;
     const appRole = currentUser?.appRole ?? null;
-    if (appRole === "COACH" || appRole === "ADMIN") return null;
+    if (appRole === "ADMIN") return null;
+    if (appRole === "COACH" && coachMode === "coach") return null;
     const roleToCheck = confirmedRole ?? chosenRole?.role ?? null;
     if (restrictions.restrictTeamId !== null && roleToCheck !== null && restrictions.openRoles.includes(roleToCheck)) {
       return null;

@@ -21,7 +21,7 @@ import TeamsModal from "@/components/TeamsModal";
 import { TEAM_META } from "@/lib/constants";
 
 interface Athlete { id: string; name: string; role: number }
-interface TeamsData { teamA: Athlete[]; teamB: Athlete[]; teamC?: Athlete[] }
+interface TeamsData { teamA: Athlete[]; teamB: Athlete[]; teamC?: Athlete[]; coaches?: { id: string; name: string }[] }
 
 export interface SessionWithCount {
   id: string;
@@ -376,6 +376,7 @@ export default function SessionCard({
           teamA={s.teams!.teamA}
           teamB={s.teams!.teamB}
           teamC={s.teams!.teamC}
+          coaches={s.teams!.coaches}
         />
       )}
     </>

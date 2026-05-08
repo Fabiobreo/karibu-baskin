@@ -306,6 +306,7 @@ function SessionRow({
           teamA={s.teams.teamA}
           teamB={s.teams.teamB}
           teamC={s.teams.teamC}
+          coaches={s.teams.coaches}
         />
       )}
     </>

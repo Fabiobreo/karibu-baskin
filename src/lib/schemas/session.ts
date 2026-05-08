@@ -10,10 +10,13 @@ const TeamAthleteSchema = z.object({
   role: z.number().int(),
 });
 
+const CoachSchema = z.object({ id: z.string(), name: z.string() });
+
 export const TeamsDataSchema = z.object({
   teamA: z.array(TeamAthleteSchema),
   teamB: z.array(TeamAthleteSchema),
   teamC: z.array(TeamAthleteSchema).optional(),
+  coaches: z.array(CoachSchema).optional(),
   numTeams: z.union([z.literal(2), z.literal(3)]),
   generated: z.boolean().default(true),
 });

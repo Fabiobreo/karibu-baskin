@@ -37,6 +37,7 @@ export interface TeamsData {
   teamA: TeamAthlete[];
   teamB: TeamAthlete[];
   teamC?: TeamAthlete[];
+  coaches?: { id: string; name: string }[];
   numTeams: 2 | 3;
   generated: boolean;
 }
@@ -45,8 +46,11 @@ interface Props {
   sessionId: string;
   isStaff?: boolean;
   registrationIds?: string[];
+  coaches?: { id: string; name: string }[];
   slugMap?: Record<string, string>; // reg.id → user.slug
   currentUserTeamIndex?: number;    // tab da selezionare di default su mobile
+  editMode?: boolean;               // controllato dal parent (via TeamsHeader)
+  onExitEditMode?: () => void;
   // Stato squadre gestito dal parent
   teams: TeamsData | null;
   teamsLoading: boolean;
@@ -234,9 +238,172 @@ export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slu
   );
 }
 
+// ── Team Editor (spostamento manuale, solo staff) ─────────────────────────────
+
+type TeamKey = "teamA" | "teamB" | "teamC";
+
+interface TeamEditorProps {
+  teams: TeamsData;
+  sessionId: string;
+  onTeamsUpdated: (teams: TeamsData) => void;
+  onDone: () => void;
+}
+
+function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: TeamEditorProps) {
+  const [localTeams, setLocalTeams] = useState<TeamsData>(initialTeams);
+  const [selected, setSelected] = useState<{ id: string; fromKey: TeamKey } | null>(null);
+  const [saving, setSaving] = useState(false);
+  const { showToast } = useToast();
+
+  const teamKeys: TeamKey[] = localTeams.numTeams === 3 ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
+  const meta = TEAM_META.slice(0, localTeams.numTeams);
+
+  async function moveTo(toKey: TeamKey) {
+    if (!selected || saving) return;
+    const { id, fromKey } = selected;
+    if (fromKey === toKey) return;
+
+    const fromList = localTeams[fromKey] ?? [];
+    const athlete = fromList.find((a) => a.id === id);
+    if (!athlete) return;
+
+    const prevTeams = localTeams;
+    const newTeams: TeamsData = {
+      ...localTeams,
+      [fromKey]: fromList.filter((a) => a.id !== id),
+      [toKey]: [...(localTeams[toKey] ?? []), athlete],
+    };
+
+    setLocalTeams(newTeams);
+    setSelected(null);
+    setSaving(true);
+
+    try {
+      const res = await fetch(`/api/teams/${sessionId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTeams),
+      });
+      if (res.ok) {
+        const saved: TeamsData = await res.json();
+        onTeamsUpdated(saved);
+        setLocalTeams(saved);
+      } else {
+        setLocalTeams(prevTeams);
+        showToast({ message: "Errore nel salvataggio", severity: "error" });
+      }
+    } catch {
+      setLocalTeams(prevTeams);
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Box>
+      <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: "block" }}>
+        {selected ? "Seleziona la squadra di destinazione" : "Tocca un giocatore per spostarlo"}
+      </Typography>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        {teamKeys.map((key, i) => {
+          const teamList = localTeams[key] ?? [];
+          const m = meta[i];
+          const isSource = selected?.fromKey === key;
+          const canMoveTo = !!selected && !isSource;
+
+          return (
+            <Paper key={key} variant="outlined" sx={{ overflow: "hidden" }}>
+              {/* Header */}
+              <Box sx={{
+                px: 2, py: 1,
+                backgroundColor: m.color,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography variant="subtitle2" sx={{ color: "#fff", fontWeight: 700 }}>
+                    {m.name}
+                  </Typography>
+                  <Chip
+                    label={teamList.length}
+                    size="small"
+                    sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700,
+                      bgcolor: "rgba(255,255,255,0.3)", color: "#fff" }}
+                  />
+                </Box>
+                {canMoveTo && (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    disabled={saving}
+                    onClick={() => moveTo(key)}
+                    sx={{
+                      bgcolor: "#fff",
+                      color: m.color,
+                      fontWeight: 700,
+                      fontSize: "0.75rem",
+                      py: 0.25,
+                      minWidth: 90,
+                      "&:hover": { bgcolor: "rgba(255,255,255,0.88)" },
+                    }}
+                  >
+                    {saving ? <CircularProgress size={14} color="inherit" /> : "Sposta qui"}
+                  </Button>
+                )}
+              </Box>
+
+              {/* Athletes */}
+              <Box sx={{ p: 1.5, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                {ROLES.flatMap((role) =>
+                  teamList
+                    .filter((a) => a.role === role)
+                    .map((a) => {
+                      const isSelected = selected?.id === a.id;
+                      return (
+                        <Chip
+                          key={a.id}
+                          label={a.name}
+                          size="small"
+                          disabled={saving}
+                          onClick={() => setSelected(isSelected ? null : { id: a.id, fromKey: key })}
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.78rem",
+                            bgcolor: isSelected ? m.color : `${ROLE_COLORS[role]}22`,
+                            color: isSelected ? "#fff" : "text.primary",
+                            border: `1px solid ${isSelected ? m.color : ROLE_COLORS[role]}`,
+                            boxShadow: isSelected ? `0 0 0 2px ${m.color}66` : "none",
+                            cursor: "pointer",
+                            "&:hover": { bgcolor: isSelected ? m.color : `${ROLE_COLORS[role]}44` },
+                          }}
+                        />
+                      );
+                    })
+                )}
+                {teamList.length === 0 && (
+                  <Typography variant="caption" color="text.disabled" sx={{ px: 0.5 }}>
+                    Nessun giocatore
+                  </Typography>
+                )}
+              </Box>
+            </Paper>
+          );
+        })}
+      </Box>
+
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+        <Button variant="outlined" size="small" onClick={onDone} disabled={saving}>
+          Fatto
+        </Button>
+      </Box>
+    </Box>
+  );
+}
+
 // ── TeamDisplay ───────────────────────────────────────────────────────────────
 
-export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugMap = {}, currentUserTeamIndex, teams, teamsLoading, onTeamsGenerated }: Props) {
+export default function TeamDisplay({ sessionId, isStaff, registrationIds, coaches, slugMap = {}, currentUserTeamIndex, editMode = false, onExitEditMode, teams, teamsLoading, onTeamsGenerated }: Props) {
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
@@ -255,6 +422,7 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugM
         const data: TeamsData = await res.json();
         onTeamsGenerated(data);
         setNumTeams(data.numTeams);
+        onExitEditMode?.();
         showToast({ message: "Squadre generate con successo!", severity: "success" });
       } else {
         const err = await res.json().catch(() => ({}));
@@ -362,12 +530,10 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugM
     );
   }
 
-  const colSize = teams.numTeams === 3 ? { xs: 12, md: 4 } : { xs: 12, md: 6 };
-
   return (
     <Box>
-      {/* Avviso iscritti cambiati (solo staff) */}
-      {isStaff && registrationsChanged && (
+      {/* Avviso iscritti cambiati (solo staff, non in modalità modifica) */}
+      {isStaff && registrationsChanged && !editMode && (
         <Alert
           severity="warning"
           icon={<WarningAmberIcon fontSize="inherit" />}
@@ -389,10 +555,43 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugM
         </Alert>
       )}
 
-      {isDesktop ? (
+      {editMode ? (
+        <TeamEditor
+          teams={teams}
+          sessionId={sessionId}
+          onTeamsUpdated={(t) => onTeamsGenerated(t)}
+          onDone={() => onExitEditMode?.()}
+        />
+      ) : isDesktop ? (
         <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
         <MobileTeamTabs teams={teams} slugMap={slugMap} defaultTab={currentUserTeamIndex} />
+      )}
+
+      {/* Allenatori presenti */}
+      {coaches && coaches.length > 0 && (
+        <Box sx={{ mt: 1.5, display: "flex", alignItems: "baseline", gap: 1, flexWrap: "wrap" }}>
+          <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ whiteSpace: "nowrap" }}>
+            Allenatori:
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {coaches.map((c) => {
+              const slug = slugMap[c.id];
+              return (
+                <Chip
+                  key={c.id}
+                  size="small"
+                  label={slug
+                    ? <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>{c.name}</Link>
+                    : c.name
+                  }
+                  variant="outlined"
+                  sx={{ fontSize: "0.75rem" }}
+                />
+              );
+            })}
+          </Box>
+        </Box>
       )}
     </Box>
   );

@@ -151,6 +151,7 @@ export default function SessionPage() {
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
   const [removingTeams, setRemovingTeams] = useState(false);
+  const [editingTeams, setEditingTeams] = useState(false);
 
   async function handleRemoveTeams() {
     if (!realSessionId) return;
@@ -159,6 +160,7 @@ export default function SessionPage() {
       const res = await fetch(`/api/teams/${realSessionId}`, { method: "DELETE" });
       if (res.ok) {
         mutateTeams(undefined, false);
+        setEditingTeams(false);
         showToast({ message: "Squadre rimosse", severity: "success" });
       } else {
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
@@ -218,8 +220,11 @@ export default function SessionPage() {
     sessionId,
     isStaff,
     registrationIds: registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id),
+    coaches: registrations.filter((r) => r.registeredAsCoach).map((r) => ({ id: r.id, name: r.name })),
     slugMap,
     currentUserTeamIndex: myTeamIndex,
+    editMode: editingTeams,
+    onExitEditMode: () => setEditingTeams(false),
     teams,
     teamsLoading,
     onTeamsGenerated: (newTeams: TeamsData) => mutateTeams(newTeams, false),
@@ -287,6 +292,7 @@ export default function SessionPage() {
                   registrations={registrations}
                   teams={teams}
                   sessionId={realSessionId}
+                  sessionTitle={session?.title}
                   isStaff={isStaff}
                   rosterProps={rosterProps}
                   teamDisplayProps={teamDisplayProps}
@@ -299,7 +305,7 @@ export default function SessionPage() {
               <>
                 <SectionErrorBoundary label="Squadre">
                   <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                    <TeamsHeader teams={teams} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
+                    <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
                     <TeamDisplay {...teamDisplayProps} />
                   </Paper>
                 </SectionErrorBoundary>
@@ -318,7 +324,7 @@ export default function SessionPage() {
                     </SectionErrorBoundary>
                     <SectionErrorBoundary label="Squadre">
                       <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                        <TeamsHeader teams={teams} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} />
+                        <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
                         <TeamDisplay {...teamDisplayProps} />
                       </Paper>
                     </SectionErrorBoundary>

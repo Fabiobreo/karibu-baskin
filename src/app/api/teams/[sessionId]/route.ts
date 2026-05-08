@@ -47,11 +47,14 @@ export async function POST(
   }
 
   const athletes = registrations.filter((r) => !r.registeredAsCoach);
+  const coaches = registrations
+    .filter((r) => r.registeredAsCoach)
+    .map((r) => ({ id: r.id, name: r.name }));
   const teams = generateTeams(athletes, sessionId, numTeams);
 
   await prisma.trainingSession.update({
     where: { id: sessionId },
-    data: { teams: { ...teams, generated: true } as object },
+    data: { teams: { ...teams, coaches, generated: true } as object },
   });
 
   // Notifica push solo agli iscritti all'allenamento (fire-and-forget)
@@ -80,7 +83,31 @@ export async function POST(
     }).catch((err) => console.error("[notification] teams ready", err));
   }
 
-  return NextResponse.json({ ...teams, generated: true });
+  return NextResponse.json({ ...teams, coaches, generated: true });
+}
+
+// PUT — aggiorna le squadre (spostamento manuale giocatori, solo staff)
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ sessionId: string }> }
+) {
+  const { sessionId } = await params;
+
+  if (!(await isCoachOrAdmin())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+
+  const body = await req.json().catch(() => null);
+  if (!body || !Array.isArray(body.teamA) || !Array.isArray(body.teamB)) {
+    return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
+  }
+
+  await prisma.trainingSession.update({
+    where: { id: sessionId },
+    data: { teams: { ...body, generated: true } as object },
+  });
+
+  return NextResponse.json({ ...body, generated: true });
 }
 
 // DELETE — rimuove le squadre salvate (solo admin)
