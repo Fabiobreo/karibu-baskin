@@ -686,7 +686,7 @@ export default function AdminUserList({
                       Baskin
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
+                  <TableCell align="center">Squadra</TableCell>
                   <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
                   <TableCell align="center">Azioni</TableCell>
                 </TableRow>
@@ -756,7 +756,7 @@ export default function AdminUserList({
                       </TableCell>
 
                       {/* Squadra */}
-                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                      <TableCell align="center">
                         <Select
                           value={row.teamMemberships.find((m) => m.team.season === getCurrentSeason())?.teamId ?? ""}
                           size="small"
@@ -907,7 +907,7 @@ export default function AdminUserList({
                       Baskin
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
+                  <TableCell align="center">Squadra</TableCell>
                   <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
                   <TableCell align="center">Azioni</TableCell>
                 </TableRow>
@@ -949,7 +949,7 @@ export default function AdminUserList({
                     </TableCell>
 
                     {/* Squadra */}
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    <TableCell align="center">
                       <Select
                         value={row.teamMemberships.find((m) => m.team.season === getCurrentSeason())?.teamId ?? ""}
                         size="small"

@@ -46,6 +46,7 @@ interface Props {
   isStaff?: boolean;
   registrationIds?: string[];
   slugMap?: Record<string, string>; // reg.id → user.slug
+  currentUserTeamIndex?: number;    // tab da selezionare di default su mobile
   // Stato squadre gestito dal parent
   teams: TeamsData | null;
   teamsLoading: boolean;
@@ -75,8 +76,8 @@ function RoleBadge({ role, count }: { role: number; count: number }) {
 
 // ── Layout mobile: tab per squadra ────────────────────────────────────────────
 
-export function MobileTeamTabs({ teams, slugMap = {} }: { teams: TeamsData; slugMap?: Record<string, string> }) {
-  const [tab, setTab] = useState(0);
+export function MobileTeamTabs({ teams, slugMap = {}, defaultTab = 0 }: { teams: TeamsData; slugMap?: Record<string, string>; defaultTab?: number }) {
+  const [tab, setTab] = useState(defaultTab);
   const meta = TEAM_META.slice(0, teams.numTeams);
   const allTeams = [teams.teamA, teams.teamB, ...(teams.teamC ? [teams.teamC] : [])];
   const activeColor = meta[tab].color;
@@ -235,7 +236,7 @@ export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slu
 
 // ── TeamDisplay ───────────────────────────────────────────────────────────────
 
-export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugMap = {}, teams, teamsLoading, onTeamsGenerated }: Props) {
+export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugMap = {}, currentUserTeamIndex, teams, teamsLoading, onTeamsGenerated }: Props) {
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
@@ -391,7 +392,7 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, slugM
       {isDesktop ? (
         <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
-        <MobileTeamTabs teams={teams} slugMap={slugMap} />
+        <MobileTeamTabs teams={teams} slugMap={slugMap} defaultTab={currentUserTeamIndex} />
       )}
     </Box>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import {
   Box, Typography, Paper, IconButton, Tooltip,
@@ -29,6 +29,7 @@ interface Props {
   sessionId: string;
   isStaff: boolean;
   teams: TeamsData | null;
+  onResultsCount?: (count: number) => void;
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject()));
@@ -249,12 +250,17 @@ function ResultRow({
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
-export default function TrainingMatchResults({ sessionId, isStaff, teams }: Props) {
+export default function TrainingMatchResults({ sessionId, isStaff, teams, onResultsCount }: Props) {
   const { data: results = [], mutate } = useSWR<MatchResult[]>(
     `/api/sessions/${sessionId}/match-results`,
     fetcher,
     { revalidateOnFocus: false },
   );
+
+  useEffect(() => {
+    onResultsCount?.(results.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results.length]);
 
   const [addOpen, setAddOpen] = useState(false);
   const [scoreA, setScoreA] = useState("");
@@ -309,7 +315,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams }: Prop
   }
 
   return (
-    <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+    <Paper id="partitelle" variant="outlined" sx={{ overflow: "hidden" }}>
       {/* Header */}
       <Box
         sx={{

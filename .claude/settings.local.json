@@ -9,7 +9,12 @@
       "WebFetch(domain:www.asd-romana-basket.it)",
       "WebFetch(domain:basketcalcinaia.com)",
       "WebFetch(domain:pallacanestrosaluzzo.it)",
-      "WebFetch(domain:home.playmetrics.com)"
+      "WebFetch(domain:home.playmetrics.com)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "mcp__Claude_in_Chrome__get_page_text"
     ]
   }
 }

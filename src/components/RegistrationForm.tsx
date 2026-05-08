@@ -1,5 +1,4 @@
 "use client";
-import { useState, useEffect } from "react";
 import {
   Box, TextField, Button, Typography, CircularProgress,
   Chip, Avatar, Divider, ToggleButtonGroup, ToggleButton, Alert,
@@ -9,40 +8,14 @@ import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_COLORS, ROLE_LABELS, ROLES, sportRoleLabel } from "@/lib/constants";
-import { useToast } from "@/context/ToastContext";
-import SportRoleQuestionnaire, { type SportRoleResult } from "@/components/SportRoleQuestionnaire";
+import SportRoleQuestionnaire from "@/components/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import { useRegistrationForm } from "@/hooks/useRegistrationForm";
+import RegistrationSubjectSelector from "@/components/RegistrationSubjectSelector";
 
-// ── Tipi ─────────────────────────────────────────────────────────────────────
-
-export interface TeamMembershipInfo {
-  teamId: string;
-  teamName: string;
-  teamColor: string | null;
-  teamSeason: string;
-}
-
-export interface CurrentUser {
-  id: string;
-  name: string | null;
-  appRole: string;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-  sportRoleSuggested: number | null;
-  sportRoleSuggestedVariant: string | null;
-  linkedChildId: string | null;
-  teamMemberships: TeamMembershipInfo[];
-}
-
-export interface ChildInfo {
-  id: string;
-  name: string;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-  userId: string | null;
-  teamMemberships: TeamMembershipInfo[];
-}
+// Re-export types for backwards compatibility with existing imports
+export type { TeamMembershipInfo, CurrentUser, ChildInfo } from "@/hooks/useRegistrationForm";
 
 interface Props {
   sessionId: string;
@@ -50,15 +23,10 @@ interface Props {
   registeredNames: string[];
   registeredUserIds: (string | null)[];
   registeredChildIds: (string | null)[];
-  currentUser?: CurrentUser | null;
-  parentChildren?: ChildInfo[];
+  currentUser?: import("@/hooks/useRegistrationForm").CurrentUser | null;
+  parentChildren?: import("@/hooks/useRegistrationForm").ChildInfo[];
   restrictions?: SessionRestrictions & { restrictTeamName?: string | null };
 }
-
-type Phase = "questionnaire" | "confirm";
-type Subject = "self" | string; // "self" oppure childId
-
-// ── Componente ────────────────────────────────────────────────────────────────
 
 export default function RegistrationForm({
   sessionId,
@@ -70,180 +38,37 @@ export default function RegistrationForm({
   parentChildren = [],
   restrictions,
 }: Props) {
-  const isParent = currentUser?.appRole === "PARENT";
-  const isCoach = currentUser?.appRole === "COACH";
-  const isStaff = isCoach || currentUser?.appRole === "ADMIN";
-  const hasChildren = isParent && parentChildren.length > 0;
-
-  // Modalità iscrizione: "athlete" (default) o "coach" (solo per COACH)
-  const [coachMode, setCoachMode] = useState<"athlete" | "coach">("athlete");
-
-  // Un figlio è "già iscritto" se ha childId in registeredChildIds
-  // OPPURE se si è iscritto col suo account (userId in registeredUserIds)
-  const registeredUserIdSet = new Set(registeredUserIds.filter(Boolean) as string[]);
-  const effectiveRegisteredChildIds = [
-    ...registeredChildIds,
-    ...parentChildren
-      .filter((c) => c.userId && registeredUserIdSet.has(c.userId))
-      .map((c) => c.id),
-  ];
-
-  // Soggetto selezionato (sé stesso o un figlio)
-  // I PARENT possono iscrivere solo i propri figli, mai sé stessi
-  // Un atleta con account collegato a un Child è "già iscritto" anche se la reg ha childId invece di userId
-  const selfRegistered = !!currentUser && (
-    registeredUserIds.includes(currentUser.id) ||
-    (!!currentUser.linkedChildId && registeredChildIds.includes(currentUser.linkedChildId))
-  );
-  const defaultSubject: Subject = isParent
-    ? (parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ?? parentChildren[0]?.id ?? "self")
-    : "self";
-  const [subject, setSubject] = useState<Subject>(defaultSubject);
-
-  const selectedChild = subject !== "self" ? parentChildren.find((c) => c.id === subject) ?? null : null;
-
-  // Ruolo confermato per il soggetto corrente
-  const confirmedRole = subject === "self"
-    ? (currentUser?.sportRole ?? null)
-    : (selectedChild?.sportRole ?? null);
-  const confirmedVariant = subject === "self"
-    ? (currentUser?.sportRoleVariant ?? null)
-    : (selectedChild?.sportRoleVariant ?? null);
-  const hasConfirmedRole = confirmedRole !== null;
-
-  // Fase e ruolo scelto
-  const [phase, setPhase] = useState<Phase>(hasConfirmedRole ? "confirm" : "questionnaire");
-  const [chosenRole, setChosenRole] = useState<SportRoleResult | null>(
-    confirmedRole ? { role: confirmedRole, variant: confirmedVariant ?? undefined } : null
-  );
-
-  // Quando arrivano i figli (fetch asincrona), seleziona automaticamente il primo disponibile
-  useEffect(() => {
-    if (!isParent || parentChildren.length === 0) return;
-    // Aggiorna solo se il soggetto è ancora "self" (valore iniziale prima che i figli fossero disponibili)
-    if (subject === "self") {
-      const firstAvailable = parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ?? parentChildren[0];
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSubject(firstAvailable.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentChildren]);
-
-  // Ricalcola quando cambia il soggetto o arriva currentUser
-  useEffect(() => {
-    if (currentUser === undefined) return;
-    const r = subject === "self" ? currentUser?.sportRole : selectedChild?.sportRole;
-    const v = subject === "self" ? currentUser?.sportRoleVariant : selectedChild?.sportRoleVariant;
-    if (r != null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPhase("confirm");
-      setChosenRole({ role: r, variant: v ?? undefined });
-    } else {
-      setPhase("questionnaire");
-      setChosenRole(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subject, currentUser]);
-
-  const [anonymousName, setAnonymousName] = useState("");
-  const [anonymousEmail, setAnonymousEmail] = useState("");
-  const [note, setNote] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [optimisticSubjects, setOptimisticSubjects] = useState<Set<string>>(new Set());
-  const { showToast } = useToast();
-
-  // Quando i dati reali si aggiornano (es. dopo una disiscrizione), rimuovi dall'ottimistico
-  // i soggetti che il server non considera più iscritti — altrimenti il form rimane bloccato.
-  useEffect(() => {
-    setOptimisticSubjects((prev) => {
-      if (prev.size === 0) return prev;
-      const next = new Set(prev);
-      if (next.has("self") && !selfRegistered) next.delete("self");
-      for (const childId of next) {
-        if (childId !== "self" && !effectiveRegisteredChildIds.includes(childId)) {
-          next.delete(childId);
-        }
-      }
-      return next.size === prev.size ? prev : next;
-    });
-    // registeredUserIds e registeredChildIds sono gli array "veri" che cambiano dopo SWR revalidation
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registeredUserIds, registeredChildIds]);
-
-  const currentSubjectRegistered =
-    (subject === "self" ? selfRegistered : effectiveRegisteredChildIds.includes(subject)) ||
-    optimisticSubjects.has(subject);
-
-  const isDuplicateName =
-    !currentUser &&
-    anonymousName.trim().length > 0 &&
-    registeredNames.some((n) => n.toLowerCase() === anonymousName.trim().toLowerCase());
-
-  function handleQuestionnaireResult(result: SportRoleResult) {
-    setChosenRole(result);
-    setPhase("confirm");
-  }
-
-  async function handleSubmit() {
-    const isCoachRegistration = isCoach && coachMode === "coach";
-    if (!isCoachRegistration && !chosenRole) return;
-
-    const isAnon = !currentUser;
-    const name = isAnon ? anonymousName.trim() : null;
-    if (isAnon && !name) {
-      showToast({ message: "Inserisci il tuo nome", severity: "warning" });
-      return;
-    }
-
-    const submittedSubject = subject;
-    setOptimisticSubjects((prev) => new Set(prev).add(submittedSubject));
-    setLoading(true);
-    try {
-      const roleToSend = isCoachRegistration
-        ? (currentUser?.sportRole ?? 1)
-        : chosenRole!.role;
-      const body: Record<string, unknown> = { sessionId, role: roleToSend };
-      if (isCoachRegistration) body.registeredAsCoach = true;
-      if (isAnon) body.name = name;
-      if (isAnon && anonymousEmail.trim()) body.anonymousEmail = anonymousEmail.trim();
-      if (!isCoachRegistration && chosenRole?.variant) body.roleVariant = chosenRole.variant;
-      if (subject !== "self") body.childId = subject;
-      if (note.trim()) body.note = note.trim();
-
-      const res = await fetch("/api/registrations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        setOptimisticSubjects((prev) => { const s = new Set(prev); s.delete(submittedSubject); return s; });
-        const data = await res.json();
-        showToast({ message: data.error ?? "Errore durante l'iscrizione", severity: "error" });
-        return;
-      }
-
-      const displayName = subject !== "self"
-        ? selectedChild?.name
-        : (currentUser?.name ?? name ?? "Atleta");
-      showToast({ message: `${displayName} iscritto/a con successo!`, severity: "success" });
-
-      setAnonymousName("");
-      setNote("");
-      if (hasConfirmedRole) {
-        setPhase("confirm");
-      } else {
-        setChosenRole(null);
-        setPhase("questionnaire");
-      }
-      onRegistered();
-    } catch {
-      setOptimisticSubjects((prev) => { const s = new Set(prev); s.delete(submittedSubject); return s; });
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
+  const {
+    coachMode, setCoachMode,
+    subject, setSubject,
+    phase, setPhase,
+    chosenRole, setChosenRole,
+    anonymousName, setAnonymousName,
+    anonymousEmail, setAnonymousEmail,
+    note, setNote,
+    loading,
+    selectedChild,
+    confirmedRole,
+    hasConfirmedRole,
+    effectiveRegisteredChildIds,
+    selfRegistered,
+    currentSubjectRegistered,
+    isDuplicateName,
+    isParent,
+    isCoach,
+    isStaff,
+    hasChildren,
+    handleQuestionnaireResult,
+    handleSubmit,
+  } = useRegistrationForm({
+    sessionId,
+    currentUser,
+    parentChildren,
+    registeredNames,
+    registeredUserIds,
+    registeredChildIds,
+    onRegistered,
+  });
 
   // ── Caricamento ──────────────────────────────────────────────────────────────
 
@@ -303,25 +128,14 @@ export default function RegistrationForm({
   // ── Restrizioni iscrizione ───────────────────────────────────────────────────
   const restrictionBlock = (() => {
     if (!restrictions || !hasRestrictions(restrictions)) return null;
-
-    const appRole = currentUser?.appRole ?? null; // null = anonimo
-
-    // COACH/ADMIN sempre ammessi
-    if (appRole === "COACH" || appRole === "ADMIN") return null;
-
-    // Ruolo del soggetto (confermato o scelto nel questionario)
+    const appRole = currentUser?.appRole ?? null;
+    if (appRole === "COACH" || appRole === "ADMIN" || appRole === "GUEST") return null;
     const roleToCheck = confirmedRole ?? chosenRole?.role ?? null;
-
-    // Controllo ruoli ammessi (si applica a tutti: atleti, ospiti, anonimi)
     if (restrictions.allowedRoles.length > 0 && roleToCheck !== null && !restrictions.allowedRoles.includes(roleToCheck)) {
       return `Questo allenamento è riservato ai ruoli ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`;
     }
-
-    // Controllo restrizione squadra (GUEST e anonimi esenti)
-    if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
-      // Se il ruolo è in openRoles, passa la restrizione squadra
+    if (restrictions.restrictTeamId !== null) {
       if (roleToCheck !== null && restrictions.openRoles.includes(roleToCheck)) return null;
-      // Controlla appartenenza squadra solo quando il ruolo è noto
       if (roleToCheck !== null) {
         const subjectTeamMemberships = subject === "self"
           ? (currentUser?.teamMemberships ?? [])
@@ -334,20 +148,15 @@ export default function RegistrationForm({
         }
       }
     }
-
     return null;
   })();
 
-  // Banner informativo sulle restrizioni (mostrato a tutti, anche se ammessi)
   const restrictionInfo = (() => {
     if (!restrictions || !hasRestrictions(restrictions)) return null;
     const parts: string[] = [];
-
     if (restrictions.allowedRoles.length > 0) {
       let allowedRoles = `Ruoli ammessi: ${restrictions.allowedRoles.map((r) => `${r}`).join(", ")}`;
-      if (restrictions.restrictTeamId) {
-        allowedRoles += ` dei ${restrictions.restrictTeamName}`;
-      }
+      if (restrictions.restrictTeamId) allowedRoles += ` dei ${restrictions.restrictTeamName}`;
       parts.push(allowedRoles);
     }
     if (restrictions.openRoles.length > 0) {
@@ -399,45 +208,12 @@ export default function RegistrationForm({
 
       {/* ── Selettore soggetto (solo genitore con figli) ── */}
       {hasChildren && (
-        <>
-          <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" sx={{ mb: 1 }}>
-            Per chi ti iscrivi?
-          </Typography>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 2 }}>
-            {/* Opzione: ogni figlio */}
-            {parentChildren.map((child) => {
-              const alreadyIn = effectiveRegisteredChildIds.includes(child.id);
-              const isSelected = subject === child.id;
-              return (
-                <Chip
-                  key={child.id}
-                  label={alreadyIn ? `${child.name} · già iscritto/a` : child.name}
-                  icon={
-                    alreadyIn
-                      ? <CheckCircleIcon sx={{ fontSize: "1rem !important" }} />
-                      : <ChildCareIcon sx={{ fontSize: "1rem !important" }} />
-                  }
-                  onClick={alreadyIn ? undefined : () => setSubject(child.id)}
-                  variant="outlined"
-                  sx={alreadyIn ? {
-                    color: "success.main",
-                    borderColor: "success.main",
-                    "& .MuiChip-icon": { color: "success.main" },
-                    cursor: "default",
-                    fontWeight: 500,
-                  } : {
-                    fontWeight: isSelected ? 700 : 400,
-                    borderColor: isSelected ? "primary.main" : undefined,
-                    bgcolor: isSelected ? "primary.main" : undefined,
-                    color: isSelected ? "#fff" : undefined,
-                    "& .MuiChip-icon": { color: isSelected ? "#fff" : undefined },
-                  }}
-                />
-              );
-            })}
-          </Box>
-          <Divider sx={{ mb: 2 }} />
-        </>
+        <RegistrationSubjectSelector
+          parentChildren={parentChildren}
+          subject={subject}
+          effectiveRegisteredChildIds={effectiveRegisteredChildIds}
+          onSelectChild={setSubject}
+        />
       )}
 
       {/* Form semplificato per iscrizione come allenatore */}
@@ -560,7 +336,18 @@ export default function RegistrationForm({
                 slotProps={{ htmlInput: { maxLength: 254 } }}
                 sx={{ mb: 2 }}
                 disabled={loading}
-                helperText="Serve per collegare questa iscrizione al tuo account futuro"
+                helperText={
+                  <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                    <span>Hai un account Google?</span>
+                    <Box
+                      component="a"
+                      href="/api/auth/signin/google"
+                      sx={{ color: "primary.main", fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                    >
+                      Accedi per registrarti più facilmente.
+                    </Box>
+                  </Box>
+                }
               />
             </>
           )}
@@ -569,8 +356,6 @@ export default function RegistrationForm({
           {phase === "questionnaire" && (
             <>
               {currentUser && !hasChildren && <Divider sx={{ mb: 2 }} />}
-
-              {/* Staff: selettore diretto; tutti gli altri (atleta, guest, genitore per figlio senza ruolo): questionario */}
               {isStaff ? (
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
@@ -601,7 +386,6 @@ export default function RegistrationForm({
                   </ToggleButtonGroup>
                 </Box>
               ) : (
-                /* Atleta/Guest o genitore per figlio senza ruolo: questionario guidato */
                 <>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                     {subject !== "self"
@@ -670,13 +454,10 @@ export default function RegistrationForm({
                 <>
                   <TextField
                     label="Comunicazioni (opzionale)"
-                    placeholder={`es. Devo andare via alle 11:30`}
+                    placeholder="es. Devo andare via alle 11:30"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    fullWidth
-                    size="small"
-                    multiline
-                    minRows={2}
+                    fullWidth size="small" multiline minRows={2}
                     slotProps={{ htmlInput: { maxLength: 300 } }}
                     disabled={loading}
                     helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}

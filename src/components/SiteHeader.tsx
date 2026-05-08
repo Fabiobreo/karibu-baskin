@@ -116,8 +116,10 @@ export default function SiteHeader() {
                         {PARTITE_LINKS.map((pl) => (
                           <MenuItem
                             key={pl.href}
+                            component={Link}
+                            href={pl.href}
                             selected={pathname === pl.href}
-                            onClick={() => { setPartiteAnchor(null); router.push(pl.href); }}
+                            onClick={() => setPartiteAnchor(null)}
                             sx={{ fontSize: "0.9rem", fontWeight: pathname === pl.href ? 700 : 400 }}
                           >
                             {pl.label}
@@ -127,7 +129,8 @@ export default function SiteHeader() {
                     </>
                   )}
                   <Button
-                    onClick={() => router.push(link.href)}
+                    component={Link}
+                    href={link.href}
                     size="small"
                     sx={{
                       color: active ? "#fff" : "rgba(255,255,255,0.6)",
@@ -151,7 +154,8 @@ export default function SiteHeader() {
           {/* Link Admin (solo COACH/ADMIN) */}
           {status !== "loading" && isStaff && (
             <Button
-              onClick={() => router.push("/admin")}
+              component={Link}
+              href="/admin"
               size="small"
               sx={{
                 display: { xs: "none", md: "inline-flex" },
