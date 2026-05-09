@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box, Typography, Paper, Chip, CircularProgress,
   Divider, IconButton, Tooltip,
@@ -42,19 +42,19 @@ interface Props {
 // ── Icona stato presenza ──────────────────────────────────────────────────────
 
 function AttendanceIcon({ attended }: { attended: boolean | null | undefined }) {
-  if (attended === true)  return <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />;
-  if (attended === false) return <CancelIcon      sx={{ fontSize: 14, color: "error.main" }} />;
+  if (attended === true) return <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />;
+  if (attended === false) return <CancelIcon sx={{ fontSize: 14, color: "error.main" }} />;
   return <RadioButtonUncheckedIcon sx={{ fontSize: 14, color: "text.disabled" }} />;
 }
 
 function nextAttended(current: boolean | null | undefined): boolean | null {
-  if (current == null)   return true;
-  if (current === true)  return false;
+  if (current == null) return true;
+  if (current === true) return false;
   return null;
 }
 
 function attendedLabel(attended: boolean | null | undefined): string {
-  if (attended === true)  return "Presente — clicca per segnare assente";
+  if (attended === true) return "Presente — clicca per segnare assente";
   if (attended === false) return "Assente — clicca per resettare";
   return "Non marcato — clicca per segnare presente";
 }
@@ -229,6 +229,7 @@ export default function RosterByRole({
   const [togglingId, setTogglingId] = useState<string | null>(null);
   // Optimistic attendance overrides while API call is in flight
   const [attendedOverrides, setAttendedOverrides] = useState<Record<string, boolean | null>>({});
+  const autoMarkedRef = useRef(false);
   const { showToast } = useToast();
 
   const showAttendance = !!(isStaff && isEnded);
@@ -290,14 +291,51 @@ export default function RosterByRole({
 
   const athleteRegs = registrations.filter((r) => !r.registeredAsCoach);
   const coachRegs = registrations.filter((r) => r.registeredAsCoach);
+
+  useEffect(() => {
+    if (!showAttendance || autoMarkedRef.current) return;
+    const unmarked = athleteRegs.filter((r) => r.attended == null);
+    if (unmarked.length === 0) return;
+
+    autoMarkedRef.current = true;
+    setAttendedOverrides((prev) => ({
+      ...prev,
+      ...Object.fromEntries(unmarked.map((r) => [r.id, true as boolean | null])),
+    }));
+
+    Promise.allSettled(
+      unmarked.map((r) =>
+        fetch(`/api/registrations/${r.id}/attendance`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attended: true }),
+        })
+      )
+    ).then((results) => {
+      const anyFailed = results.some(
+        (r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok)
+      );
+      if (anyFailed) {
+        setAttendedOverrides((prev) => {
+          const rollback = { ...prev };
+          unmarked.forEach((r) => { rollback[r.id] = null; });
+          return rollback;
+        });
+        showToast({ message: "Errore nell'aggiornamento automatico delle presenze", severity: "error" });
+      } else {
+        onAttendanceChanged?.();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAttendance]);
   const activeRoles = ROLES.filter((role) => athleteRegs.some((r) => r.role === role));
 
   // Counts for the attendance summary header
   const presentCount = showAttendance
     ? athleteRegs.filter((r) => {
-        const val = r.id in attendedOverrides ? attendedOverrides[r.id] : r.attended;
-        return val === true;
-      }).length
+      const val = r.id in attendedOverrides ? attendedOverrides[r.id] : r.attended;
+      return val === true;
+    }).length
     : null;
 
   return (
@@ -480,6 +518,28 @@ export default function RosterByRole({
                   );
                 })}
               </Box>
+              {coachRegs.some((r) => r.note) && (
+                <Box sx={{ display: "flex", flexDirection: "column" }}>
+                  {coachRegs.filter((r) => r.note).map((reg) => (
+                    <Typography
+                      key={reg.id}
+                      variant="caption"
+                      sx={{
+                        display: "block",
+                        px: 1,
+                        mt: 0.25,
+                        fontSize: "0.65rem",
+                        fontStyle: "italic",
+                        color: "text.secondary",
+                        wordBreak: "break-word",
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {reg.note}
+                    </Typography>
+                  ))}
+                </Box>
+              )}
             </Box>
           )}
         </Box>

@@ -289,7 +289,6 @@ export default function SessionPage() {
             {isEnded ? (
               <SectionErrorBoundary label="Vista allenamento">
                 <AllenamentoEndedView
-                  registrations={registrations}
                   teams={teams}
                   sessionId={realSessionId}
                   sessionTitle={session?.title}
@@ -303,7 +302,7 @@ export default function SessionPage() {
                 />
               </SectionErrorBoundary>
             ) : teamFirstLayout ? (
-              /* ── Stato: iscritto + squadre generate ── */
+              /* ── Stato: iscritto + squadre create ── */
               <>
                 <SectionErrorBoundary label="Squadre">
                   <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>

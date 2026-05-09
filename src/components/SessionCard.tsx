@@ -338,7 +338,7 @@ export default function SessionCard({
                   disabled={generating || s._count.registrations === 0}
                   sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
                 >
-                  {generating ? "Generazione..." : "Genera squadre"}
+                  {generating ? "Creazione..." : "Crea squadre"}
                 </Button>
               )}
             </Box>
@@ -355,6 +355,7 @@ export default function SessionCard({
                 alignItems: "center",
                 justifyContent: "center",
                 pr: 2,
+                pointerEvents: "none",
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

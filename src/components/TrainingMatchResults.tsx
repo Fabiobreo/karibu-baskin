@@ -2,27 +2,32 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import {
-  Box, Typography, Paper, IconButton, Tooltip,
-  TextField, Button, CircularProgress, Divider, Chip, Alert,
+  Box, Typography, Paper, TextField, Button, CircularProgress, Chip, IconButton, Tooltip,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import CheckIcon from "@mui/icons-material/Check";
 import { TEAM_META } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import type { TeamsData } from "@/components/TeamDisplay";
 
+type MatchupKey = "AB" | "AC" | "BC";
+
 interface MatchResult {
   id: string;
   sessionId: string;
+  matchup: string | null;
   scoreA: number;
   scoreB: number;
-  scoreC: number | null;
   notes: string | null;
   createdAt: string;
+}
+
+interface MatchupDef {
+  key: MatchupKey;
+  team1Idx: number;
+  team2Idx: number;
 }
 
 interface Props {
@@ -32,60 +37,65 @@ interface Props {
   onResultsCount?: (count: number) => void;
 }
 
+const ALL_MATCHUPS: MatchupDef[] = [
+  { key: "AB", team1Idx: 0, team2Idx: 1 },
+  { key: "AC", team1Idx: 0, team2Idx: 2 },
+  { key: "BC", team1Idx: 1, team2Idx: 2 },
+];
+
 const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject()));
 
-// ── Riga risultato ────────────────────────────────────────────────────────────
+// ── Slot singolo matchup ──────────────────────────────────────────────────────
 
-function ResultRow({
-  result,
-  index,
-  hasThreeTeams,
-  isStaff,
-  onDeleted,
-  onUpdated,
+function MatchupSlot({
+  def, result, sessionId, isStaff, onSaved, onDeleted,
 }: {
-  result: MatchResult;
-  index: number;
-  hasThreeTeams: boolean;
+  def: MatchupDef;
+  result: MatchResult | undefined;
+  sessionId: string;
   isStaff: boolean;
+  onSaved: () => void;
   onDeleted: () => void;
-  onUpdated: () => void;
 }) {
+  const team1 = TEAM_META[def.team1Idx];
+  const team2 = TEAM_META[def.team2Idx];
   const [editing, setEditing] = useState(false);
-  const [scoreA, setScoreA] = useState(String(result.scoreA));
-  const [scoreB, setScoreB] = useState(String(result.scoreB));
-  const [scoreC, setScoreC] = useState(result.scoreC != null ? String(result.scoreC) : "");
-  const [notes, setNotes] = useState(result.notes ?? "");
+  const [score1, setScore1] = useState("");
+  const [score2, setScore2] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const { showToast } = useToast();
 
   function startEdit() {
-    setScoreA(String(result.scoreA));
-    setScoreB(String(result.scoreB));
-    setScoreC(result.scoreC != null ? String(result.scoreC) : "");
-    setNotes(result.notes ?? "");
+    setScore1(result ? String(result.scoreA) : "");
+    setScore2(result ? String(result.scoreB) : "");
     setEditing(true);
   }
 
   async function handleSave() {
-    const a = parseInt(scoreA, 10);
-    const b = parseInt(scoreB, 10);
-    const c = hasThreeTeams && scoreC !== "" ? parseInt(scoreC, 10) : null;
-    if (isNaN(a) || isNaN(b) || a < 0 || b < 0 || (c != null && (isNaN(c) || c < 0))) {
-      showToast({ message: "Punteggi non validi", severity: "error" });
+    const s1 = parseInt(score1, 10);
+    const s2 = parseInt(score2, 10);
+    if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) {
+      showToast({ message: "Inserisci punteggi validi", severity: "error" });
       return;
     }
     setSaving(true);
     try {
-      const res = await fetch(`/api/sessions/${result.sessionId}/match-results/${result.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scoreA: a, scoreB: b, ...(hasThreeTeams ? { scoreC: c } : {}), notes: notes.trim() || null }),
-      });
+      const body = { matchup: def.key, scoreA: s1, scoreB: s2 };
+      const res = result
+        ? await fetch(`/api/sessions/${sessionId}/match-results/${result.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          })
+        : await fetch(`/api/sessions/${sessionId}/match-results`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
       if (res.ok) {
         setEditing(false);
-        onUpdated();
+        onSaved();
       } else {
         const data = await res.json().catch(() => ({}));
         showToast({ message: data.error ?? "Errore nel salvataggio", severity: "error" });
@@ -98,9 +108,10 @@ function ResultRow({
   }
 
   async function handleDelete() {
+    if (!result) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/sessions/${result.sessionId}/match-results/${result.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/sessions/${sessionId}/match-results/${result.id}`, { method: "DELETE" });
       if (res.ok) {
         onDeleted();
       } else {
@@ -113,124 +124,136 @@ function ResultRow({
     }
   }
 
-  const teams = hasThreeTeams ? TEAM_META : TEAM_META.slice(0, 2);
+  const label = (
+    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: "block", mb: 1.25 }}>
+      {team1.name} — {team2.name}
+    </Typography>
+  );
 
-  if (editing) {
+  // Form di inserimento / modifica (staff)
+  if (isStaff && (!result || editing)) {
     return (
       <Box
         sx={{
-          p: 1.5,
-          borderRadius: 1,
+          p: 2,
           border: "1px solid",
-          borderColor: "primary.light",
-          bgcolor: "primary.50",
+          borderColor: editing ? "primary.light" : "divider",
+          borderRadius: 2,
+          bgcolor: editing ? "primary.50" : "background.paper",
         }}
       >
-        <Typography variant="caption" fontWeight={700} color="primary.main" sx={{ mb: 1, display: "block" }}>
-          Partita {index + 1}
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
-          {teams.map((t, i) => {
-            const val  = i === 0 ? scoreA : i === 1 ? scoreB : scoreC;
-            const setVal = i === 0 ? setScoreA : i === 1 ? setScoreB : setScoreC;
-            return (
-              <Box key={t.key} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />
-                <Typography variant="caption" fontWeight={600} sx={{ minWidth: 52 }}>{t.name}</Typography>
-                <TextField
-                  size="small"
-                  type="number"
-                  value={val}
-                  onChange={(e) => setVal(e.target.value)}
-                  inputProps={{ min: 0, style: { width: 48, padding: "4px 6px" } }}
-                  disabled={saving}
-                />
-              </Box>
-            );
-          })}
+        {label}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team1.color, flexShrink: 0 }} />
+            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>{team1.name}</Typography>
+            <TextField
+              size="small"
+              type="number"
+              placeholder="0"
+              value={score1}
+              onChange={(e) => setScore1(e.target.value)}
+              inputProps={{ min: 0, style: { width: 52, padding: "4px 8px", textAlign: "center", fontSize: "1.1rem", fontWeight: 700 } }}
+              disabled={saving}
+            />
+          </Box>
+          <Typography color="text.disabled" fontWeight={700} sx={{ fontSize: "0.8rem" }}>vs</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team2.color, flexShrink: 0 }} />
+            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>{team2.name}</Typography>
+            <TextField
+              size="small"
+              type="number"
+              placeholder="0"
+              value={score2}
+              onChange={(e) => setScore2(e.target.value)}
+              inputProps={{ min: 0, style: { width: 52, padding: "4px 8px", textAlign: "center", fontSize: "1.1rem", fontWeight: 700 } }}
+              disabled={saving}
+            />
+          </Box>
         </Box>
-        <TextField
-          size="small"
-          label="Note (opzionale)"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          fullWidth
-          sx={{ mt: 1 }}
-          disabled={saving}
-        />
-        <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+        <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
           <Button
             size="small"
             variant="contained"
             onClick={handleSave}
             disabled={saving}
-            startIcon={saving ? <CircularProgress size={14} color="inherit" /> : <CheckIcon />}
+            startIcon={saving ? <CircularProgress size={13} color="inherit" /> : <CheckIcon />}
           >
             Salva
           </Button>
-          <Button size="small" onClick={() => setEditing(false)} disabled={saving} color="inherit">
-            Annulla
-          </Button>
+          {editing && (
+            <Button size="small" onClick={() => setEditing(false)} disabled={saving} color="inherit">
+              Annulla
+            </Button>
+          )}
         </Box>
       </Box>
     );
   }
 
+  // Visualizzazione risultato salvato
+  const s1 = result?.scoreA ?? 0;
+  const s2 = result?.scoreB ?? 0;
+  const winner = result ? (s1 > s2 ? 1 : s2 > s1 ? 2 : 0) : -1;
+
   return (
     <Box
       sx={{
+        p: 2,
+        border: "1px solid",
+        borderColor: result ? "divider" : "divider",
+        borderRadius: 2,
         display: "flex",
         alignItems: "center",
         gap: 1,
-        py: 0.75,
-        px: 1,
-        borderRadius: 1,
-        "&:hover": { bgcolor: "action.hover" },
       }}
     >
-      <Typography variant="caption" color="text.disabled" fontWeight={600} sx={{ minWidth: 54 }}>
-        Partita {index + 1}
-      </Typography>
-
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flex: 1, flexWrap: "wrap" }}>
-        {teams.map((t, i) => {
-          const score = i === 0 ? result.scoreA : i === 1 ? result.scoreB : result.scoreC;
-          const scores = hasThreeTeams
-            ? [result.scoreA, result.scoreB, result.scoreC ?? 0]
-            : [result.scoreA, result.scoreB];
-          const maxScore = Math.max(...scores);
-          const isWinner = score === maxScore && scores.filter((s) => s === maxScore).length === 1;
-          return (
+      <Box sx={{ flex: 1 }}>
+        {label}
+        {result ? (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
             <Chip
-              key={t.key}
-              label={`${t.name} ${score}`}
+              label={`${team1.name}  ${s1}`}
               size="small"
               sx={{
-                bgcolor: isWinner ? t.color : `${t.color}22`,
-                color: isWinner ? "#fff" : "text.primary",
-                fontWeight: isWinner ? 700 : 500,
-                fontSize: "0.75rem",
+                bgcolor: winner === 1 ? team1.color : `${team1.color}22`,
+                color: winner === 1 ? "#fff" : "text.primary",
+                fontWeight: winner === 1 ? 700 : 500,
                 border: "1px solid",
-                borderColor: t.color,
+                borderColor: team1.color,
+                fontSize: "0.8rem",
               }}
             />
-          );
-        })}
-        {result.notes && (
-          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
-            {result.notes}
-          </Typography>
+            <Typography variant="caption" color="text.disabled" fontWeight={700}>vs</Typography>
+            <Chip
+              label={`${team2.name}  ${s2}`}
+              size="small"
+              sx={{
+                bgcolor: winner === 2 ? team2.color : `${team2.color}22`,
+                color: winner === 2 ? "#fff" : "text.primary",
+                fontWeight: winner === 2 ? 700 : 500,
+                border: "1px solid",
+                borderColor: team2.color,
+                fontSize: "0.8rem",
+              }}
+            />
+            {winner === 0 && (
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>Pareggio</Typography>
+            )}
+          </Box>
+        ) : (
+          <Typography variant="caption" color="text.disabled">Non ancora registrato</Typography>
         )}
       </Box>
-
-      {isStaff && (
+      {isStaff && result && (
         <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
           <Tooltip title="Modifica">
             <IconButton size="small" onClick={startEdit} sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "primary.main" } }}>
               <EditIcon sx={{ fontSize: 14 }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Elimina">
+          <Tooltip title="Cancella risultato">
             <span>
               <IconButton
                 size="small"
@@ -257,65 +280,17 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
     { revalidateOnFocus: false },
   );
 
-  useEffect(() => {
-    onResultsCount?.(results.length);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [results.length]);
-
-  const [addOpen, setAddOpen] = useState(false);
-  const [scoreA, setScoreA] = useState("");
-  const [scoreB, setScoreB] = useState("");
-  const [scoreC, setScoreC] = useState("");
-  const [notes, setNotes] = useState("");
-  const [addError, setAddError] = useState("");
-  const [adding, setAdding] = useState(false);
-  const { showToast } = useToast();
-
   const hasThreeTeams = !!(teams?.teamC && teams.teamC.length > 0);
-  const addTeams = hasThreeTeams ? TEAM_META : TEAM_META.slice(0, 2);
+  const matchups = hasThreeTeams ? ALL_MATCHUPS : ALL_MATCHUPS.slice(0, 1);
+  const savedCount = matchups.filter((m) => results.some((r) => r.matchup === m.key)).length;
 
-  function resetForm() {
-    setScoreA(""); setScoreB(""); setScoreC(""); setNotes(""); setAddError("");
-  }
-
-  async function handleAdd() {
-    const a = parseInt(scoreA, 10);
-    const b = parseInt(scoreB, 10);
-    const c = hasThreeTeams && scoreC !== "" ? parseInt(scoreC, 10) : null;
-    if (isNaN(a) || isNaN(b) || a < 0 || b < 0) {
-      setAddError("Inserisci punteggi validi per tutte le squadre");
-      return;
-    }
-    if (hasThreeTeams && (c == null || isNaN(c) || c < 0)) {
-      setAddError("Inserisci il punteggio per i Bianchi");
-      return;
-    }
-    setAdding(true);
-    setAddError("");
-    try {
-      const res = await fetch(`/api/sessions/${sessionId}/match-results`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scoreA: a, scoreB: b, ...(hasThreeTeams ? { scoreC: c } : {}), notes: notes.trim() || null }),
-      });
-      if (res.ok) {
-        resetForm();
-        setAddOpen(false);
-        mutate();
-        showToast({ message: "Risultato aggiunto", severity: "success" });
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setAddError(data.error ?? "Errore nel salvataggio");
-      }
-    } catch {
-      setAddError("Errore di rete, riprova");
-    } finally {
-      setAdding(false);
-    }
-  }
+  useEffect(() => {
+    onResultsCount?.(savedCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedCount]);
 
   return (
-    <Paper id="partitelle" variant="outlined" sx={{ overflow: "hidden" }}>
+    <Paper id="partite" variant="outlined" sx={{ overflow: "hidden" }}>
       {/* Header */}
       <Box
         sx={{
@@ -331,99 +306,33 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
       >
         <SportsBasketballIcon sx={{ fontSize: 18, color: "primary.main" }} />
         <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
-          Partitelle
+          Risultati partite
         </Typography>
-        {results.length > 0 && (
-          <Chip label={`${results.length}`} size="small" sx={{ fontWeight: 600 }} />
-        )}
-        {isStaff && (
-          <Tooltip title="Aggiungi risultato">
-            <IconButton
-              size="small"
-              onClick={() => { resetForm(); setAddOpen(true); }}
-              sx={{ ml: "auto", color: "primary.main" }}
-            >
-              <AddIcon />
-            </IconButton>
-          </Tooltip>
+        {savedCount > 0 && (
+          <Chip
+            label={`${savedCount}/${matchups.length}`}
+            size="small"
+            color="success"
+            variant="outlined"
+            sx={{ fontWeight: 600 }}
+          />
         )}
       </Box>
 
-      {/* Form aggiunta */}
-      {addOpen && (
-        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-          {addError && <Alert severity="error" sx={{ mb: 1.5 }}>{addError}</Alert>}
-          <Typography variant="caption" fontWeight={700} sx={{ mb: 1, display: "block" }}>
-            Nuova partita
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
-            {addTeams.map((t, i) => {
-              const val  = i === 0 ? scoreA : i === 1 ? scoreB : scoreC;
-              const setVal = i === 0 ? setScoreA : i === 1 ? setScoreB : setScoreC;
-              return (
-                <Box key={t.key} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />
-                  <Typography variant="caption" fontWeight={600} sx={{ minWidth: 52 }}>{t.name}</Typography>
-                  <TextField
-                    size="small"
-                    type="number"
-                    placeholder="0"
-                    value={val}
-                    onChange={(e) => { setVal(e.target.value); setAddError(""); }}
-                    inputProps={{ min: 0, style: { width: 48, padding: "4px 6px" } }}
-                    disabled={adding}
-                  />
-                </Box>
-              );
-            })}
-          </Box>
-          <TextField
-            size="small"
-            label="Note (opzionale)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            fullWidth
-            sx={{ mt: 1 }}
-            disabled={adding}
+      {/* Slot matchup */}
+      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1.5 }}>
+        {matchups.map((def) => (
+          <MatchupSlot
+            key={def.key}
+            def={def}
+            result={results.find((r) => r.matchup === def.key)}
+            sessionId={sessionId}
+            isStaff={isStaff}
+            onSaved={() => mutate()}
+            onDeleted={() => mutate()}
           />
-          <Box sx={{ display: "flex", gap: 1, mt: 1.5, mb: 0.5 }}>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={handleAdd}
-              disabled={adding}
-              startIcon={adding ? <CircularProgress size={14} color="inherit" /> : <CheckIcon />}
-            >
-              Aggiungi
-            </Button>
-            <Button size="small" onClick={() => { resetForm(); setAddOpen(false); }} disabled={adding} color="inherit">
-              Annulla
-            </Button>
-          </Box>
-          <Divider sx={{ mt: 1.5 }} />
-        </Box>
-      )}
-
-      {/* Lista risultati */}
-      {results.length === 0 && !addOpen ? (
-        <Typography color="text.secondary" sx={{ px: 2, py: 2.5, fontSize: "0.875rem" }}>
-          {isStaff ? "Nessun risultato ancora. Usa + per aggiungere le partitelle." : "Nessun risultato registrato."}
-        </Typography>
-      ) : (
-        <Box sx={{ px: 1, py: 1 }}>
-          {results.map((r, i) => (
-            <ResultRow
-              key={r.id}
-              result={r}
-              index={i}
-              hasThreeTeams={hasThreeTeams}
-              isStaff={isStaff}
-              onDeleted={() => mutate()}
-              onUpdated={() => mutate()}
-            />
-          ))}
-        </Box>
-      )}
+        ))}
+      </Box>
     </Paper>
   );
 }

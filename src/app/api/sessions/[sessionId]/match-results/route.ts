@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 const MatchResultSchema = z.object({
+  matchup: z.enum(["AB", "AC", "BC"]).optional(),
   scoreA: z.number().int().min(0),
   scoreB: z.number().int().min(0),
   scoreC: z.number().int().min(0).nullable().optional(),
@@ -49,6 +50,7 @@ export async function POST(
   const result = await prisma.trainingMatchResult.create({
     data: {
       sessionId,
+      matchup: parsed.data.matchup ?? null,
       scoreA: parsed.data.scoreA,
       scoreB: parsed.data.scoreB,
       scoreC: parsed.data.scoreC ?? null,

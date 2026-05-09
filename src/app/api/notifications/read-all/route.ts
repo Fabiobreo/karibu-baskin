@@ -9,11 +9,13 @@ export async function PATCH() {
   }
 
   const userId = session.user.id;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } });
+  const joinedAt = user?.createdAt ?? new Date(0);
 
   const unread = await prisma.appNotification.findMany({
     where: {
       reads: { none: { userId } },
-      OR: [{ targetUserId: null }, { targetUserId: userId }],
+      OR: [{ targetUserId: null, createdAt: { gte: joinedAt } }, { targetUserId: userId }],
     },
     select: { id: true },
   });

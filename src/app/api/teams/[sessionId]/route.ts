@@ -23,7 +23,7 @@ export async function GET(
   return NextResponse.json({ ...(session.teams as object), generated: true });
 }
 
-// POST — genera squadre e le salva in DB (solo admin)
+// POST — crea squadre e le salva in DB (solo admin)
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
@@ -40,13 +40,24 @@ export async function POST(
   const registrations = await prisma.registration.findMany({
     where: { sessionId },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+    include: {
+      user: { select: { gender: true } },
+      child: { select: { gender: true } },
+    },
   });
 
   if (registrations.length === 0) {
     return NextResponse.json({ error: "Nessun atleta iscritto" }, { status: 400 });
   }
 
-  const athletes = registrations.filter((r) => !r.registeredAsCoach);
+  const athletes = registrations
+    .filter((r) => !r.registeredAsCoach)
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      role: r.role,
+      gender: r.user?.gender ?? r.child?.gender ?? null,
+    }));
   const coaches = registrations
     .filter((r) => r.registeredAsCoach)
     .map((r) => ({ id: r.id, name: r.name }));

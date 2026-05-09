@@ -14,6 +14,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import HistoryIcon from "@mui/icons-material/History";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import type { AppRole, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS, ROLE_HIERARCHY } from "@/lib/authRoles";
 import { ROLE_COLORS, SPORT_ROLE_VARIANT_LABELS, sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
@@ -68,6 +70,8 @@ type AdminRow =
   | (ChildEntry & { kind: "child" });
 
 interface EditState {
+  name: string;
+  email: string;
   appRole: string;
   sportRole: string;
   sportRoleVariant: string;
@@ -82,6 +86,7 @@ interface CurrentFilters {
   appRole?: string;
   sportRole?: string;
   gender?: string;
+  teamId?: string;
   sortBy?: string;
   sortDir?: string;
   limit?: number;
@@ -90,6 +95,8 @@ interface CurrentFilters {
 export default function AdminUserList({
   users: initialUsers,
   childEntries: initialChildren,
+  initialTeams = [],
+  isAdmin = false,
   serverTotal,
   serverPage = 1,
   serverLimit = 10,
@@ -97,6 +104,8 @@ export default function AdminUserList({
 }: {
   users: UserEntry[];
   childEntries: ChildEntry[];
+  initialTeams?: TeamInfo[];
+  isAdmin?: boolean;
   serverTotal?: number;
   serverPage?: number;
   serverLimit?: number;
@@ -115,6 +124,7 @@ export default function AdminUserList({
     currentFilters.sportRole ? [currentFilters.sportRole] : []
   );
   const [filterGender, setFilterGender] = useState(currentFilters.gender ?? "");
+  const [filterTeamId, setFilterTeamId] = useState(currentFilters.teamId ?? "");
 
   const [sortBy, setSortBy] = useState<SortColumn>((currentFilters.sortBy as SortColumn) ?? "createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">((currentFilters.sortDir as "asc" | "desc") ?? "desc");
@@ -128,19 +138,20 @@ export default function AdminUserList({
     const params = new URLSearchParams();
     const merged = {
       search, appRole: filterAppRoles[0] ?? "", sportRole: filterSportRoles[0] ?? "",
-      gender: filterGender, sortBy, sortDir, page: serverPage, limit: rowsPerPage,
+      gender: filterGender, teamId: filterTeamId, sortBy, sortDir, page: serverPage, limit: rowsPerPage,
       ...overrides,
     };
     if (merged.search) params.set("search", merged.search);
     if (merged.appRole) params.set("appRole", merged.appRole);
     if (merged.sportRole) params.set("sportRole", merged.sportRole);
     if (merged.gender) params.set("gender", merged.gender);
+    if (merged.teamId) params.set("teamId", merged.teamId);
     if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
     if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
     if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
     if ((merged.limit ?? 10) !== 10) params.set("limit", String(merged.limit));
     startTransition(() => router.push(`${pathname}?${params.toString()}`));
-  }, [search, filterAppRoles, filterSportRoles, filterGender, sortBy, sortDir, serverPage, rowsPerPage, pathname, router]);
+  }, [search, filterAppRoles, filterSportRoles, filterGender, filterTeamId, sortBy, sortDir, serverPage, rowsPerPage, pathname, router]);
 
   const [rows, setRows] = useState<AdminRow[]>(() => [
     ...initialUsers.map((u) => ({ ...u, kind: "user" as const })),
@@ -170,9 +181,9 @@ export default function AdminUserList({
 
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
-  const [editState, setEditState] = useState<EditState>({ appRole: "", sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
+  const [editState, setEditState] = useState<EditState>({ name: "", email: "", appRole: "", sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
   const [editTeamId, setEditTeamId] = useState("");
-  const [availableTeams, setAvailableTeams] = useState<TeamInfo[]>([]);
+  const [availableTeams, setAvailableTeams] = useState<TeamInfo[]>(initialTeams);
   const [saving, setSaving] = useState(false);
   const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -187,16 +198,6 @@ export default function AdminUserList({
     return `${startYear}-${String(startYear + 1).slice(-2)}`;
   }
 
-  useEffect(() => {
-    fetch("/api/competitive-teams")
-      .then((r) => r.json())
-      .then((data: Array<{ id: string; name: string; season: string; color: string | null }>) => {
-        const season = getCurrentSeason();
-        setAvailableTeams(data.filter((t) => t.season === season));
-      })
-      .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const userCount = serverDriven ? (serverTotal ?? initialUsers.length) : initialUsers.length;
   const childCount = initialChildren.length;
@@ -204,9 +205,10 @@ export default function AdminUserList({
   // ── Filtro + ordinamento (memo) ────────────────────────────────────────────
 
   const activeFilterCount =
-    filterAppRoles.length +
+    (filterAppRoles.length > 0 ? 1 : 0) +
     (filterSportRoles.length > 0 ? 1 : 0) +
     (filterGender ? 1 : 0) +
+    (filterTeamId ? 1 : 0) +
     (search ? 1 : 0);
 
   // Tab 0 — utenti: filtra/ordina solo le righe utente
@@ -231,6 +233,10 @@ export default function AdminUserList({
     }
     if (filterGender === "none") result = result.filter((r) => !r.gender);
     else if (filterGender) result = result.filter((r) => r.gender === filterGender);
+    if (filterTeamId) {
+      const season = getCurrentSeason();
+      result = result.filter((r) => r.teamMemberships.some((m) => m.teamId === filterTeamId && m.team.season === season));
+    }
 
     return [...result].sort((a, b) => {
       let cmp = 0;
@@ -247,7 +253,7 @@ export default function AdminUserList({
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [rows, serverDriven, search, filterAppRoles, filterSportRoles, filterGender, sortBy, sortDir]);
+  }, [rows, serverDriven, search, filterAppRoles, filterSportRoles, filterGender, filterTeamId, sortBy, sortDir]);
 
   const paginated = serverDriven
     ? processed
@@ -295,6 +301,7 @@ export default function AdminUserList({
     setFilterAppRoles([]);
     setFilterSportRoles([]);
     setFilterGender("");
+    setFilterTeamId("");
     setPage(0);
     if (serverDriven) startTransition(() => router.push(pathname));
   }
@@ -337,6 +344,45 @@ export default function AdminUserList({
     }
   }
 
+  async function handleConfirmSuggestedRole(row: UserEntry & { kind: "user" }) {
+    if (!row.sportRoleSuggested) return;
+    const res = await fetch(`/api/users/${row.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sportRole: row.sportRoleSuggested, sportRoleVariant: row.sportRoleSuggestedVariant ?? null }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setRows((prev) => prev.map((r) =>
+        r.id === row.id && r.kind === "user"
+          ? { ...r, sportRole: updated.sportRole, sportRoleVariant: updated.sportRoleVariant, sportRoleSuggested: null, sportRoleSuggestedVariant: null,
+              sportRoleHistory: updated.sportRole !== null ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...r.sportRoleHistory] : r.sportRoleHistory }
+          : r
+      ));
+      showToast({ message: "Ruolo confermato", severity: "success" });
+    } else {
+      showToast({ message: "Errore nella conferma", severity: "error" });
+    }
+  }
+
+  async function handleRejectSuggestedRole(row: UserEntry & { kind: "user" }) {
+    const res = await fetch(`/api/users/${row.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearRoleSuggestion: true }),
+    });
+    if (res.ok) {
+      setRows((prev) => prev.map((r) =>
+        r.id === row.id && r.kind === "user"
+          ? { ...r, sportRoleSuggested: null, sportRoleSuggestedVariant: null }
+          : r
+      ));
+      showToast({ message: "Suggerimento rimosso", severity: "info" });
+    } else {
+      showToast({ message: "Errore nel rifiuto", severity: "error" });
+    }
+  }
+
   async function handleTeamChange(row: AdminRow, newTeamId: string) {
     const season = getCurrentSeason();
     const existing = row.teamMemberships.find((m) => m.team.season === season);
@@ -376,6 +422,8 @@ export default function AdminUserList({
   function openEdit(row: AdminRow) {
     setEditRow(row);
     setEditState({
+      name: row.name ?? "",
+      email: row.kind === "user" ? (row.email ?? "") : "",
       appRole: row.kind === "user" ? row.appRole : "",
       sportRole: row.sportRole?.toString() ?? "",
       sportRoleVariant: row.sportRoleVariant ?? "",
@@ -396,8 +444,12 @@ export default function AdminUserList({
       gender: editState.gender || null,
       birthDate: editState.birthDate || null,
     };
+    if (editState.name.trim()) payload.name = editState.name.trim();
     if (editRow.kind === "user" && editState.appRole) {
       payload.appRole = editState.appRole;
+    }
+    if (editRow.kind === "user" && editState.email.trim() && editState.email.trim() !== editRow.email) {
+      payload.email = editState.email.trim();
     }
     const url = editRow.kind === "user"
       ? `/api/users/${editRow.id}`
@@ -459,6 +511,8 @@ export default function AdminUserList({
       if (r.kind === "user") {
         return {
           ...baseUpdate,
+          name: updated.name ?? r.name,
+          email: updated.email ?? r.email,
           appRole: updated.appRole ?? r.appRole,
           sportRole: updated.sportRole,
           sportRoleVariant: updated.sportRoleVariant,
@@ -472,6 +526,7 @@ export default function AdminUserList({
       }
       return {
         ...baseUpdate,
+        name: updated.name ?? r.name,
         sportRole: updated.sportRole,
         sportRoleVariant: updated.sportRoleVariant,
         gender: updated.gender,
@@ -651,6 +706,41 @@ export default function AdminUserList({
                 <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>N/D</ToggleButton>
               </ToggleButtonGroup>
             </Box>
+
+            {/* Squadra */}
+            {availableTeams.length > 0 && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+                  Squadra
+                </Typography>
+                <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+                  {availableTeams.map((t) => {
+                    const active = filterTeamId === t.id;
+                    return (
+                      <Chip
+                        key={t.id}
+                        label={t.name}
+                        size="small"
+                        variant={active ? "filled" : "outlined"}
+                        onClick={() => {
+                          const newVal = active ? "" : t.id;
+                          setFilterTeamId(newVal);
+                          setPage(0);
+                          if (serverDriven) pushFilters({ teamId: newVal, page: 1 });
+                        }}
+                        aria-pressed={active}
+                        sx={{
+                          cursor: "pointer",
+                          fontWeight: active ? 700 : 400,
+                          ...(active && t.color ? { bgcolor: t.color, color: "#fff", borderColor: t.color } : {}),
+                        }}
+                        avatar={t.color && !active ? <Box component="span" sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: t.color, ml: "6px !important", mr: "-4px !important" }} /> : undefined}
+                      />
+                    );
+                  })}
+                </Box>
+              </Box>
+            )}
           </Box>
 
           {/* ── Tabella utenti ── */}
@@ -744,13 +834,25 @@ export default function AdminUserList({
                               sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
                             />
                           : row.sportRoleSuggested
-                            ? <Chip
-                                label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                                size="small"
-                                variant="outlined"
-                                sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
-                                title="Autovalutazione — da confermare"
-                              />
+                            ? <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, justifyContent: "center" }}>
+                                <Chip
+                                  label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
+                                  title="Autovalutazione — da confermare"
+                                />
+                                <Tooltip title="Conferma ruolo">
+                                  <IconButton size="small" sx={{ p: "2px", color: "success.main" }} onClick={() => handleConfirmSuggestedRole(row)}>
+                                    <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Rifiuta suggerimento">
+                                  <IconButton size="small" sx={{ p: "2px", color: "error.main" }} onClick={() => handleRejectSuggestedRole(row)}>
+                                    <HighlightOffIcon sx={{ fontSize: 15 }} />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
                             : <Typography variant="body2" color="text.disabled">—</Typography>
                         }
                       </TableCell>
@@ -1062,6 +1164,68 @@ export default function AdminUserList({
         </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
+            {/* Nome */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Nome completo
+              </Typography>
+              <TextField
+                fullWidth size="small"
+                value={editState.name}
+                onChange={(e) => setEditState((s) => ({ ...s, name: e.target.value }))}
+                inputProps={{ maxLength: 100 }}
+                placeholder="Es. Mario Rossi"
+                disabled={!isAdmin}
+              />
+            </Box>
+
+            {/* Email (solo utenti) */}
+            {editRow?.kind === "user" && (
+              <Box>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                  Email
+                </Typography>
+                <TextField
+                  fullWidth size="small" type="email"
+                  value={editState.email}
+                  onChange={(e) => setEditState((s) => ({ ...s, email: e.target.value }))}
+                  inputProps={{ maxLength: 254 }}
+                  disabled={!isAdmin}
+                />
+              </Box>
+            )}
+
+            {/* Genere */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Genere
+              </Typography>
+              <Select
+                fullWidth size="small" displayEmpty
+                value={editState.gender}
+                onChange={(e) => setEditState((s) => ({ ...s, gender: e.target.value }))}
+              >
+                <MenuItem value=""><em>Non impostato</em></MenuItem>
+                <MenuItem value="MALE">Maschio</MenuItem>
+                <MenuItem value="FEMALE">Femmina</MenuItem>
+              </Select>
+            </Box>
+
+            {/* Data di nascita */}
+            <Box>
+              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                Data di nascita (opzionale)
+              </Typography>
+              <TextField
+                fullWidth size="small" type="date"
+                value={editState.birthDate}
+                onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+            </Box>
+
+            <Divider />
+
             {/* Ruolo utente (solo per User con account) */}
             {editRow?.kind === "user" && (
               <Box>
@@ -1136,38 +1300,10 @@ export default function AdminUserList({
               </Box>
             )}
 
-            {/* Genere */}
-            <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
-                Genere
-              </Typography>
-              <Select
-                fullWidth size="small" displayEmpty
-                value={editState.gender}
-                onChange={(e) => setEditState((s) => ({ ...s, gender: e.target.value }))}
-              >
-                <MenuItem value=""><em>Non impostato</em></MenuItem>
-                <MenuItem value="MALE">Maschio</MenuItem>
-                <MenuItem value="FEMALE">Femmina</MenuItem>
-              </Select>
-            </Box>
-
-            {/* Data di nascita */}
-            <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
-                Data di nascita (opzionale)
-              </Typography>
-              <TextField
-                fullWidth size="small" type="date"
-                value={editState.birthDate}
-                onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-            </Box>
+            <Divider />
 
             {/* Squadra stagione corrente */}
             <Box>
-              <Divider sx={{ mb: 1.5 }} />
               <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
                 Squadra ({getCurrentSeason()})
               </Typography>

@@ -5,6 +5,8 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
 import type { AppRole, Gender, Prisma } from "@prisma/client";
+import { getCurrentSeason } from "@/lib/seasonUtils";
+import { auth } from "@/lib/authjs";
 
 export const revalidate = 60;
 
@@ -19,6 +21,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const appRole = sp.appRole as AppRole | undefined;
   const sportRole = sp.sportRole as string | undefined;
   const gender = sp.gender as string | undefined;
+  const teamId = sp.teamId as string | undefined;
   const sortBy = (sp.sortBy as string | undefined) ?? "createdAt";
   const sortDir = ((sp.sortDir as string | undefined) ?? "desc") as "asc" | "desc";
   const page = Math.max(1, parseInt((sp.page as string | undefined) ?? "1", 10));
@@ -36,6 +39,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   else if (sportRole) { const n = parseInt(sportRole, 10); if (!isNaN(n)) where.sportRole = n; }
   if (gender === "none") where.gender = null;
   else if (gender && VALID_GENDERS.includes(gender as Gender)) where.gender = gender as Gender;
+  if (teamId) where.teamMemberships = { some: { teamId } };
 
   const orderBy: Prisma.UserOrderByWithRelationInput = sortBy === "name"
     ? { name: sortDir }
@@ -59,7 +63,11 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     },
   };
 
-  const [users, total, childEntries] = await Promise.all([
+  const session = await auth();
+  const isAdmin = session?.user?.appRole === "ADMIN";
+  const currentSeason = getCurrentSeason();
+
+  const [users, total, childEntries, teams] = await Promise.all([
     prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
     prisma.user.count({ where }),
     prisma.child.findMany({
@@ -77,6 +85,11 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           },
         },
       },
+    }),
+    prisma.competitiveTeam.findMany({
+      where: { season: currentSeason },
+      select: { id: true, name: true, season: true, color: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
@@ -103,10 +116,12 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         <AdminUserList
           users={users}
           childEntries={childEntries}
+          initialTeams={teams}
+          isAdmin={isAdmin}
           serverTotal={total}
           serverPage={page}
           serverLimit={limit}
-          currentFilters={{ search, appRole, sportRole, gender, sortBy, sortDir, limit }}
+          currentFilters={{ search, appRole, sportRole, gender, teamId, sortBy, sortDir, limit }}
         />
       </Paper>
     </Box>

@@ -423,10 +423,10 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
         onTeamsGenerated(data);
         setNumTeams(data.numTeams);
         onExitEditMode?.();
-        showToast({ message: "Squadre generate con successo!", severity: "success" });
+        showToast({ message: "Squadre create con successo!", severity: "success" });
       } else {
         const err = await res.json().catch(() => ({}));
-        showToast({ message: err.error ?? "Errore nella generazione", severity: "error" });
+        showToast({ message: err.error ?? "Errore nella creazione", severity: "error" });
       }
     } catch {
       showToast({ message: "Errore di rete, riprova", severity: "error" });
@@ -458,7 +458,7 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
     );
   }
 
-  // Staff senza squadre generate → pannello di generazione
+  // Staff senza squadre create → pannello di creazione
   if (!teams && isStaff) {
     return (
       <Box sx={{
@@ -471,7 +471,7 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
       }}>
         <GroupsIcon sx={{ fontSize: 36, color: "primary.main", mb: 1 }} />
         <Typography variant="body1" fontWeight={600} gutterBottom>
-          Genera le squadre
+          Crea le squadre
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
           {registrationIds?.length
@@ -496,12 +496,12 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
             disabled={generating || !registrationIds?.length}
             startIcon={generating ? <CircularProgress size={16} color="inherit" /> : <GroupsIcon />}
           >
-            {generating ? "Generazione..." : "Genera squadre"}
+            {generating ? "Creazione..." : "Crea squadre"}
           </Button>
 
           {!registrationIds?.length && (
             <Typography variant="caption" color="text.disabled">
-              Nessun atleta iscritto — impossibile generare le squadre.
+              Nessun atleta iscritto — impossibile creare le squadre.
             </Typography>
           )}
         </Box>

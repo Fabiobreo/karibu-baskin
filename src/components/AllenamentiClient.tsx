@@ -240,7 +240,7 @@ function SessionRow({
             <CheckCircleIcon sx={{ color: "success.main", fontSize: 18 }} />
           ) : null}
 
-          {/* Basketball icon: cliccabile se ci sono squadre, altrimenti icona generazione per staff */}
+          {/* Basketball icon: cliccabile se ci sono squadre, altrimenti icona creazione per staff */}
           {s.teams ? (
             <IconButton
               size="small"
@@ -253,7 +253,7 @@ function SessionRow({
           ) : (isStaff && !muted && (
             <IconButton
               size="small"
-              aria-label="Genera squadre"
+              aria-label="Crea squadre"
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
               disabled={generating}
               sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
@@ -545,9 +545,9 @@ export default function AllenamentiClient({
       if (res.ok) {
         const newTeams = await res.json();
         setSessions((prev) => prev.map((p) => p.id === s.id ? { ...p, teams: newTeams } : p));
-        showToast({ message: `${numTeams} squadre generate per "${s.title}"`, severity: "success" });
+        showToast({ message: `${numTeams} squadre create per "${s.title}"`, severity: "success" });
       } else {
-        showToast({ message: "Errore nella generazione delle squadre", severity: "error" });
+        showToast({ message: "Errore nella creazione delle squadre", severity: "error" });
       }
     } catch {
       showToast({ message: "Errore di rete, riprova", severity: "error" });

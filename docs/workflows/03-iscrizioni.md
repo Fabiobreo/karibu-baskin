@@ -100,4 +100,4 @@ La disiscrizione **azzera le squadre generate** (`teams = Prisma.DbNull`) per l'
 
 ## Rilevamento squadre obsolete
 
-Il client (`/allenamento/[session]`) confronta il Set degli ID delle registrazioni correnti con gli ID nei JSON delle squadre. Se differiscono (qualcuno uscito o entrato), mostra un banner "Rigenera squadre".
+Il client (`/allenamento/[session]`) confronta il Set degli ID delle registrazioni correnti con gli ID nei JSON delle squadre. Se differiscono (qualcuno uscito o entrato), mostra un banner "Ricrea squadre".

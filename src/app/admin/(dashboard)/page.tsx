@@ -1,23 +1,17 @@
 import { prisma } from "@/lib/db";
 import {
-  Box, Typography, Paper,
-  Table, TableBody, TableCell, TableHead, TableRow, Avatar, Chip,
+  Box, Typography, Paper, Chip,
 } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import DownloadIcon from "@mui/icons-material/Download";
-import AdminAnonymousRegistrations from "@/components/AdminAnonymousRegistrations";
+import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
 import Link from "next/link";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const revalidate = 30;
@@ -27,7 +21,7 @@ export default async function AdminPage() {
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [totalUsers, recentUsers, recentChildren, upcomingSessions, pendingRoleCount, recentAnonymous] = await Promise.all([
+  const [totalUsers, recentUsers, recentChildren, pendingRoleCount, recentAnonymous, sessionsIncomplete] = await Promise.all([
     prisma.user.count(),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
@@ -40,7 +34,6 @@ export default async function AdminPage() {
       take: 5,
       select: { id: true, name: true, sportRole: true, sportRoleVariant: true, createdAt: true, parent: { select: { name: true, email: true } } },
     }),
-    prisma.trainingSession.count({ where: { date: { gte: now } } }),
     // Utenti con ruolo suggerito ma non ancora confermato
     prisma.user.count({
       where: { sportRoleSuggested: { not: null }, sportRole: null },
@@ -52,6 +45,14 @@ export default async function AdminPage() {
       select: {
         id: true, name: true, anonymousEmail: true, role: true, createdAt: true,
         session: { select: { id: true, date: true, dateSlug: true } },
+      },
+    }),
+    // Allenamenti passati non ancora conclusi dallo staff
+    prisma.trainingSession.count({
+      where: {
+        date: { lt: now },
+        managedAt: null,
+        registrations: { some: {} },
       },
     }),
   ]);
@@ -80,10 +81,11 @@ export default async function AdminPage() {
           color="#E65100"
         />
         <NavCard
-          href="/allenamenti"
+          href="/admin/allenamenti"
           icon={<CalendarMonthIcon />}
           label="Gestione Allenamenti"
-          stat={upcomingSessions > 0 ? `${upcomingSessions} ${upcomingSessions === 1 ? "prossimo" : "prossimi"}` : "Nessuno in programma"}
+          badge={sessionsIncomplete}
+          badgeLabel={sessionsIncomplete === 1 ? "da completare" : "da completare"}
           color="#00897B"
         />
         <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Gestione Squadre" color="#1565C0" />
@@ -112,91 +114,7 @@ export default async function AdminPage() {
         </Paper>
       )}
 
-      {/* Ultimi iscritti */}
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <PersonAddIcon fontSize="small" color="action" />
-            <Typography variant="subtitle1" fontWeight={700}>
-              Ultimi iscritti
-            </Typography>
-          </Box>
-          <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
-            <Typography variant="caption" color="primary" sx={{ "&:hover": { textDecoration: "underline" } }}>
-              Vedi tutti →
-            </Typography>
-          </Link>
-        </Box>
-        <Box sx={{ overflowX: "auto" }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ pl: 0, width: 40 }} />
-              <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Ruolo utente</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 700 }}>Ruolo Baskin</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Iscritto il</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {recentAll.map((row) => (
-              <TableRow key={`${row.kind}-${row.id}`} hover>
-                <TableCell sx={{ width: 40, pl: 0 }}>
-                  <Avatar
-                    src={row.kind === "user" ? (row.image ?? undefined) : undefined}
-                    sx={{ width: 30, height: 30, fontSize: 13, bgcolor: row.kind === "child" ? "grey.400" : undefined }}
-                  >
-                    {(row.name ?? (row.kind === "user" ? row.email : "?"))[0].toUpperCase()}
-                  </Avatar>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={600}>{row.name ?? "—"}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {row.kind === "user" ? row.email : `Figlio di ${row.parent.name ?? row.parent.email}`}
-                  </Typography>
-                </TableCell>
-                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {row.kind === "user"
-                    ? <Chip label={ROLE_LABELS_IT[row.appRole]} size="small" color={ROLE_CHIP_COLORS[row.appRole]} sx={{ fontWeight: 600 }} />
-                    : <Chip label="Atleta" size="small" color="primary" sx={{ fontWeight: 600 }} />
-                  }
-                </TableCell>
-                <TableCell align="center">
-                  {row.sportRole
-                    ? <Chip
-                        label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                        size="small"
-                        sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
-                      />
-                    : row.kind === "user" && row.sportRoleSuggested
-                      ? <Chip
-                          label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                          size="small"
-                          variant="outlined"
-                          sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
-                        />
-                      : <Typography variant="body2" color="text.disabled">—</Typography>}
-                </TableCell>
-                <TableCell align="right" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  <Typography variant="caption" color="text.secondary">
-                    {format(new Date(row.createdAt), "d MMM yyyy", { locale: it })}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ))}
-            {recentAll.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 3, color: "text.secondary" }}>
-                  Nessun utente ancora iscritto
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        </Box>
-      </Paper>
-
-      <AdminAnonymousRegistrations registrations={recentAnonymous} />
+      <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
 
       <AdminNotificationSender currentSeason={getCurrentSeason()} />
 
@@ -204,14 +122,16 @@ export default async function AdminPage() {
   );
 }
 
-function NavCard({ href, icon, label, stat, badge, color }: {
+function NavCard({ href, icon, label, stat, badge, badgeLabel, color }: {
   href: string;
   icon: React.ReactNode;
   label: string;
   stat?: string;
   badge?: number;
+  badgeLabel?: string;
   color: string;
 }) {
+  const hasBadge = badge != null && badge > 0;
   return (
     <Link href={href} style={{ textDecoration: "none" }}>
       <Paper
@@ -230,7 +150,7 @@ function NavCard({ href, icon, label, stat, badge, color }: {
       >
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Box sx={{ color }}>{icon}</Box>
-          {badge != null && badge > 0 && (
+          {hasBadge && (
             <Chip label={badge} size="small" color="warning" sx={{ fontWeight: 700, height: 20, fontSize: "0.72rem" }} />
           )}
         </Box>
@@ -240,6 +160,11 @@ function NavCard({ href, icon, label, stat, badge, color }: {
         {stat && (
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
             {stat}
+          </Typography>
+        )}
+        {hasBadge && badgeLabel && (
+          <Typography variant="caption" sx={{ color: "warning.dark", fontWeight: 700, lineHeight: 1.4 }}>
+            {badge} {badgeLabel}
           </Typography>
         )}
         <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>

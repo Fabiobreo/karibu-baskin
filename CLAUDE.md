@@ -215,7 +215,7 @@ Layout: form iscrizione in cima, lista iscritti (`RosterByRole`) sotto — layou
 
 `TeamDisplay` è un componente controllato: riceve `teams: TeamsData | null`, `teamsLoading`, `onTeamsGenerated` dalla pagina. Non fa fetch internamente.
 
-Rilevamento cambio iscritti (per alert "rigenera squadre"): confronto Set degli ID iscrizioni vs ID nelle squadre salvate — resistente a sostituzioni (un utente esce, uno entra).
+Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID iscrizioni vs ID nelle squadre salvate — resistente a sostituzioni (un utente esce, uno entra).
 
 `RegistrationForm` — aspetti chiave:
 - `CurrentUser.teamMemberships: TeamMembershipInfo[]` (non più solo `teamMembershipIds`)

@@ -9,7 +9,7 @@ Push + in-app "Nuovo allenamento" → tutti
        ↓
 Utenti si iscrivono (→ vedi 03-iscrizioni.md)
        ↓
-Admin genera squadre
+Admin crea squadre
        ↓
 Push "Squadre pronte" → solo iscritti
        ↓
@@ -24,7 +24,7 @@ Allenamento termina (iscrizioni chiuse automaticamente)
 | `dateSlug` | `String?` unique | URL leggibile es. `"2025-03-15T18:00"` |
 | `date` | `DateTime` | Inizio allenamento |
 | `endTime` | `DateTime?` | Fine (se null, si assume +2h da `date`) |
-| `teams` | `Json?` | Squadre generate (`{ teamA, teamB, teamC?, generated }`) |
+| `teams` | `Json?` | Squadre create (`{ teamA, teamB, teamC?, generated }`) |
 | `allowedRoles` | `Int[]` | Ruoli sportivi ammessi (vuoto = tutti) |
 | `restrictTeamId` | `String?` | Restringe ai membri di questa squadra agonistica |
 | `openRoles` | `Int[]` | Ruoli esenti dalla restrizione di squadra |

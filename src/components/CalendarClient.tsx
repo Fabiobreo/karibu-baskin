@@ -276,22 +276,31 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                   )}
                 </Box>
 
-                {/* Mobile: colored dots — click apre day view */}
-                <Box sx={{ display: { xs: "flex", sm: "none" }, gap: "3px", flexWrap: "wrap", mt: "2px" }}>
-                  {visible.map((ev) => (
-                    <Box
-                      key={ev.id}
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        bgcolor: ev.color,
-                        flexShrink: 0,
-                      }}
-                    />
-                  ))}
+                {/* Mobile: barre colorate con icona — click apre day view */}
+                <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: "2px", mt: "2px" }}>
+                  {visible.map((ev) => {
+                    const Icon =
+                      ev.type === "training" ? SportsBasketballIcon
+                      : ev.type === "match" ? EmojiEventsIcon
+                      : EventNoteIcon;
+                    return (
+                      <Box
+                        key={ev.id}
+                        sx={{
+                          height: 14,
+                          borderRadius: "3px",
+                          bgcolor: ev.color,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Icon sx={{ fontSize: "0.58rem", color: "#fff" }} />
+                      </Box>
+                    );
+                  })}
                   {extra > 0 && (
-                    <Typography variant="caption" sx={{ fontSize: "0.55rem", color: "text.secondary", lineHeight: "8px" }}>
+                    <Typography variant="caption" sx={{ fontSize: "0.5rem", color: "text.secondary", textAlign: "center", lineHeight: "12px" }}>
                       +{extra}
                     </Typography>
                   )}
@@ -309,7 +318,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         return (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 3, alignItems: "center" }}>
             <LegendItem
-              color="#FF6D00"
+              color="#00897B"
               icon={<SportsBasketballIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
               label="Allenamento"
               active={!hiddenKeys.has("training")}

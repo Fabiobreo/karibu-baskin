@@ -19,13 +19,14 @@ export async function GET(req: NextRequest) {
   // Recupera le preferenze in-app dell'utente
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { notifPrefs: true },
+    select: { notifPrefs: true, createdAt: true },
   });
   const prefs = mergePrefs(user?.notifPrefs);
   const disabledTypes = CONTROLLABLE_TYPES.filter((t) => !prefs.inApp[t]) as AppNotificationType[];
+  const joinedAt = user?.createdAt ?? new Date(0);
 
   const visibleFilter = {
-    OR: [{ targetUserId: null }, { targetUserId: userId }],
+    OR: [{ targetUserId: null, createdAt: { gte: joinedAt } }, { targetUserId: userId }],
     ...(disabledTypes.length > 0 && { NOT: { type: { in: disabledTypes } } }),
   };
 

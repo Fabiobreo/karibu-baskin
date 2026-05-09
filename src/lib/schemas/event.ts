@@ -9,8 +9,8 @@ const EventBaseSchema = z.object({
 export const EventCreateSchema = EventBaseSchema.extend({
   title: z.string().min(1, "Titolo obbligatorio").max(200),
   date: z.string().min(1, "Data obbligatoria"),
-  location: z.string().max(200).optional(),
-  description: z.string().max(2000).optional(),
+  location: z.string().max(200).nullable().optional(),
+  description: z.string().max(2000).nullable().optional(),
 });
 
 export const EventUpdateSchema = EventBaseSchema.extend({

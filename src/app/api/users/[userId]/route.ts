@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import type { AppRole, Gender } from "@prisma/client";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isAdminUser, isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { sendPushToUser } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
@@ -15,7 +15,8 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const actorSession = await auth();
-  if (!(await isAdminUser())) {
+  const isAdmin = await isAdminUser();
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
@@ -26,6 +27,9 @@ export async function PATCH(
     sportRoleVariant?: string | null;
     gender?: Gender | null;
     birthDate?: string | null;
+    name?: string;
+    email?: string;
+    clearRoleSuggestion?: boolean;
   };
 
   const data: Record<string, unknown> = {};
@@ -46,6 +50,25 @@ export async function PATCH(
 
   if (body.birthDate !== undefined) {
     data.birthDate = body.birthDate ? new Date(body.birthDate) : null;
+  }
+
+  if (body.name !== undefined && isAdmin) {
+    const trimmed = body.name.trim().slice(0, 100);
+    if (trimmed) data.name = trimmed;
+  }
+
+  if (body.email !== undefined && isAdmin) {
+    const trimmed = body.email.trim().toLowerCase();
+    if (trimmed) {
+      const conflict = await prisma.user.findFirst({ where: { email: trimmed, NOT: { id: userId } } });
+      if (conflict) return NextResponse.json({ error: "Email già in uso" }, { status: 409 });
+      data.email = trimmed;
+    }
+  }
+
+  if (body.clearRoleSuggestion) {
+    data.sportRoleSuggested = null;
+    data.sportRoleSuggestedVariant = null;
   }
 
   if (body.sportRoleVariant !== undefined) {
@@ -85,7 +108,7 @@ export async function PATCH(
       data,
       select: {
         id: true, name: true, email: true, appRole: true,
-        sportRole: true, sportRoleVariant: true, gender: true, birthDate: true,
+        sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true, gender: true, birthDate: true,
       },
     });
   } catch (err: unknown) {

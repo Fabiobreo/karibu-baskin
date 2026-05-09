@@ -90,8 +90,8 @@ export function useRegistrationForm({
   onRegistered,
 }: Params): UseRegistrationFormReturn {
   const isParent = currentUser?.appRole === "PARENT";
-  const isCoach = currentUser?.appRole === "COACH";
-  const isStaff = isCoach || currentUser?.appRole === "ADMIN";
+  const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
+  const isCoach = isStaff;
   const hasChildren = isParent && parentChildren.length > 0;
 
   const [coachMode, setCoachMode] = useState<"athlete" | "coach">("athlete");

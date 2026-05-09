@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 const MatchResultUpdateSchema = z.object({
+  matchup: z.enum(["AB", "AC", "BC"]).optional(),
   scoreA: z.number().int().min(0).optional(),
   scoreB: z.number().int().min(0).optional(),
   scoreC: z.number().int().min(0).nullable().optional(),
@@ -32,6 +33,7 @@ export async function PUT(
   }
 
   const data: Record<string, unknown> = {};
+  if (parsed.data.matchup !== undefined) data.matchup = parsed.data.matchup;
   if (parsed.data.scoreA !== undefined) data.scoreA = parsed.data.scoreA;
   if (parsed.data.scoreB !== undefined) data.scoreB = parsed.data.scoreB;
   if ("scoreC" in parsed.data) data.scoreC = parsed.data.scoreC ?? null;

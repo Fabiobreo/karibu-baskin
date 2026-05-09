@@ -60,7 +60,7 @@ function groupByName(registrations: AnonReg[]): AnonGroup[] {
 
 interface EditState { name: string; anonymousEmail: string; role: string; roleVariant: string; }
 
-export default function AdminAnonymousRegistrations({ registrations }: { registrations: AnonReg[] }) {
+export default function AdminAnonymousRegistrations({ registrations, bare }: { registrations: AnonReg[]; bare?: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [groups, setGroups] = useState<AnonGroup[]>(() => groupByName(registrations));
@@ -146,10 +146,9 @@ export default function AdminAnonymousRegistrations({ registrations }: { registr
   const paginated = filtered.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const anyWithoutEmail = groups.some((g) => !g.hasEmail);
 
-  return (
+  const content = (
     <>
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
           <WarningIcon fontSize="small" color="action" />
           <Typography variant="subtitle1" fontWeight={700}>
             Iscrizioni anonime
@@ -246,8 +245,15 @@ export default function AdminAnonymousRegistrations({ registrations }: { registr
             </TableBody>
           </Table>
         </Box>
-      </Paper>
+    </>
+  );
 
+  return (
+    <>
+      {bare
+        ? <Box sx={{ p: 3 }}>{content}</Box>
+        : <Paper elevation={2} sx={{ p: 3 }}>{content}</Paper>
+      }
       <TablePagination
         component="div"
         count={filtered.length}

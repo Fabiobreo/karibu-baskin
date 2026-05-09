@@ -9,10 +9,13 @@ export async function GET() {
   }
 
   const userId = session.user.id;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } });
+  const joinedAt = user?.createdAt ?? new Date(0);
+
   const count = await prisma.appNotification.count({
     where: {
       reads: { none: { userId } },
-      OR: [{ targetUserId: null }, { targetUserId: userId }],
+      OR: [{ targetUserId: null, createdAt: { gte: joinedAt } }, { targetUserId: userId }],
     },
   });
 

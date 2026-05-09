@@ -170,12 +170,12 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
 
                 {/* Azioni — z-index sopra il link */}
                 <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
-                  <Tooltip title={hasTeams ? "Rigenera squadre" : "Genera squadre"}>
+                  <Tooltip title={hasTeams ? "Ricrea squadre" : "Crea squadre"}>
                     <span>
                       <IconButton
                         size="small"
                         color={hasTeams ? "success" : "primary"}
-                        aria-label={hasTeams ? "Rigenera squadre" : "Genera squadre"}
+                        aria-label={hasTeams ? "Ricrea squadre" : "Crea squadre"}
                         onClick={() => setTeamPickSession(s)}
                         disabled={isGenerating || s._count.registrations === 0}
                       >

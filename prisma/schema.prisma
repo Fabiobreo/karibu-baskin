@@ -208,6 +208,9 @@ model TrainingSession {
   openRoles      Int[]            @default([])  // ruoli esenti dalla restrizione di squadra
   restrictTeam   CompetitiveTeam? @relation("TrainingRestriction", fields: [restrictTeamId], references: [id], onDelete: SetNull)
 
+  // Gestione admin
+  managedAt      DateTime?                      // impostato quando lo staff conclude la gestione post-allenamento
+
   @@index([date])
   @@index([teamId])
   @@index([restrictTeamId])
@@ -248,9 +251,10 @@ model Registration {
 model TrainingMatchResult {
   id        String          @id @default(cuid())
   sessionId String
-  scoreA    Int             @default(0)  // punteggio squadra A (Arancioni)
-  scoreB    Int             @default(0)  // punteggio squadra B (Neri)
-  scoreC    Int?                         // punteggio squadra C (Bianchi) — solo per sessioni a 3 squadre
+  matchup   String?                      // "AB" | "AC" | "BC" — identifica le due squadre che si scontrano
+  scoreA    Int             @default(0)  // punteggio della prima squadra del matchup
+  scoreB    Int             @default(0)  // punteggio della seconda squadra del matchup
+  scoreC    Int?                         // non più usato (legacy)
   notes     String?         @db.Text
   createdAt DateTime        @default(now())
 
