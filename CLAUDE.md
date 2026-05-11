@@ -36,20 +36,25 @@ src/
 ├── app/
 │   ├── api/
 │   │   ├── auth/[...nextauth]/            # Auth.js handler
-│   │   ├── sessions/                      # CRUD allenamenti (TrainingSession)
-│   │   ├── registrations/                 # CRUD iscrizioni
+│   │   ├── admin/export/                  # Export dati allenamenti (admin-only)
+│   │   ├── sessions/                      # CRUD allenamenti + conclude/ + match-results/
+│   │   ├── registrations/                 # CRUD iscrizioni + claim/ + attendance/
 │   │   ├── teams/[sessionId]/             # Generazione squadre
-│   │   ├── users/                         # Gestione utenti + me/ + me/children + lookup
-│   │   ├── children/[childId]/            # Modifica/elimina figlio (PATCH/DELETE)
+│   │   ├── users/                         # Gestione utenti + me/ + me/children + lookup + notif-prefs/
+│   │   ├── children/[childId]/            # Modifica/elimina figlio + season-stats/
 │   │   ├── competitive-teams/             # CRUD squadre agonistiche + seasons/current
-│   │   ├── matches/                       # CRUD partite ufficiali + [matchId]/stats
+│   │   ├── matches/                       # CRUD partite ufficiali + [matchId]/stats + callups/
+│   │   ├── groups/[groupId]/              # Gironi + matches/
 │   │   ├── opposing-teams/                # CRUD squadre avversarie
 │   │   ├── events/                        # CRUD eventi generici
-│   │   ├── calendar/                      # GET calendario (allenamenti + partite + eventi)
-│   │   ├── link-requests/                 # Richieste collegamento genitore-figlio
+│   │   ├── calendar/                      # GET calendario + export.ics/
+│   │   ├── link-requests/                 # Richieste collegamento genitore-figlio + respond/
 │   │   ├── notifications/                 # Notifiche in-app (read, read-all, unread-count)
-│   │   ├── push/                          # Web Push (subscribe, vapid-public-key)
+│   │   ├── push/                          # Web Push (subscribe, notify, vapid-public-key)
+│   │   ├── cron/cleanup-notifications/    # Cron domenicale (CRON_SECRET)
 │   │   └── test-login/                    # Login fittizio per test (solo ENABLE_TEST_LOGIN=true)
+│   ├── actions/
+│   │   └── contact.ts                     # Server action form contatti (Resend)
 │   ├── admin/
 │   │   ├── login/                         # Login admin (solo Google)
 │   │   └── (dashboard)/                   # Route group protette (COACH o superiore)
@@ -58,11 +63,16 @@ src/
 │   │       ├── partite/                   # Gestione partite ufficiali
 │   │       ├── eventi/                    # Gestione eventi generici
 │   │       ├── squadre/                   # Gestione squadre agonistiche
-│   │       └── utenti/                    # Gestione utenti + /nuovo
+│   │       └── utenti/                    # Gestione utenti + /nuovo + /[userId]
 │   ├── allenamento/[session]/             # Pagina allenamento pubblico
 │   ├── allenamenti/                       # Lista allenamenti pubblica
 │   ├── calendario/                        # Calendario (allenamenti + partite + eventi)
+│   ├── classifica/                        # Classifica interna (per ruolo/squadra)
+│   ├── classifiche/                       # Classifiche ufficiali stagione
+│   ├── gironi/[groupId]/                  # Dettaglio girone + partite
 │   ├── giocatori/[slug]/                  # Profilo pubblico giocatore
+│   ├── partite/[slug]/                    # Dettaglio partita pubblica
+│   ├── risultati/                         # Risultati partite
 │   ├── squadre/                           # Lista squadre agonistiche
 │   ├── squadre/[season]/[slug]/           # Profilo squadra
 │   ├── notifiche/                         # Centro notifiche utente
@@ -77,18 +87,39 @@ src/
 │   └── not-found.tsx                      # Pagina 404
 ├── components/                            # Componenti riutilizzabili (tutti PascalCase)
 ├── context/
-│   └── ToastContext.tsx                   # Toast globali
+│   ├── ToastContext.tsx                   # Toast globali
+│   └── NotificationContext.tsx            # Notifiche in-app (unread count, mark read)
+├── emails/                                # Template React Email
+│   ├── ContactConfirmationEmail.tsx       # Conferma all'utente
+│   └── ContactNotificationEmail.tsx       # Notifica all'admin
+├── hooks/
+│   └── useRegistrationForm.ts             # Hook logica form iscrizione
 ├── lib/
 │   ├── apiAuth.ts                         # Helper auth per API route (isCoachOrAdmin, isAdminUser)
+│   ├── appNotifications.ts                # Creazione notifiche in-app
+│   ├── audit.ts                           # Audit logging (AuditEvent)
 │   ├── authjs.ts                          # Config Auth.js v5
 │   ├── authRoles.ts                       # Gerarchia ruoli + helper hasRole()
 │   ├── constants.ts                       # ROLE_LABELS, ROLE_COLORS, ROLES
+│   ├── dateUtils.ts                       # Helpers date (formattazione, confronto)
 │   ├── db.ts                              # Prisma singleton
+│   ├── loSapevi.ts                        # Fatti "Lo sapevi?" per la home
+│   ├── notifPrefs.ts                      # Preferenze notifiche per tipo evento
+│   ├── rateLimit.ts                       # Rate limiting per API route
 │   ├── registrationRestrictions.ts        # Logica restrizioni iscrizioni (shared server+client)
+│   ├── seasonUtils.ts                     # Calcolo stagione corrente (YYYY-YY)
+│   ├── slugUtils.ts                       # Generazione slug URL
+│   ├── standings.ts                       # Calcolo classifiche gironi
 │   ├── teamGenerator.ts                   # Mulberry32 PRNG seeded shuffle
-│   ├── theme.ts                           # MUI theme
-│   └── webpush.ts                         # Invio notifiche push (sendPushToAll)
-├── proxy.ts                               # Middleware (matcher vuoto — auth gestita nei layout/API)
+│   ├── useHasMounted.ts                   # Hook anti-SSR hydration mismatch
+│   ├── validators.ts                      # Validatori generici
+│   ├── webpush.ts                         # Invio notifiche push (sendPushToAll)
+│   └── schemas/                           # Schemi Zod per validazione input API
+│       ├── child.ts, competitiveTeam.ts, event.ts, group.ts
+│       ├── match.ts, opposingTeam.ts, registration.ts, session.ts
+│       └── entities.ts                    # Tipi condivisi tra schemi
+├── proxy.ts                               # Middleware pass-through (matcher vuoto — auth nei layout/API)
+├── theme.ts                               # MUI theme arancione/nero
 └── types/
     └── next-auth.d.ts                     # Augmentazione tipi sessione
 ```
@@ -128,6 +159,11 @@ src/
 | `Event` | `Event` | Eventi generici (tornei, trasferte…) |
 | `AppNotification` | `AppNotification` | Notifiche in-app |
 | `AppNotificationRead` | `AppNotificationRead` | Tracking lettura notifiche per utente |
+| `Group` | `Group` | Gironi di campionato |
+| `GroupMatch` | `GroupMatch` | Partite di girone |
+| `MatchCallup` | `MatchCallup` | Convocazioni giocatore per partita |
+| `TrainingMatchResult` | `TrainingMatchResult` | Risultati partitelle a fine allenamento |
+| `AuditEvent` | `AuditEvent` | Log azioni admin (audit trail) |
 
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
@@ -192,7 +228,11 @@ NEXTAUTH_URL=                     # URL pubblico (es. https://karibu-baskin.verc
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=     # Chiave pubblica VAPID per Web Push
 VAPID_PRIVATE_KEY=                # Chiave privata VAPID
 VAPID_EMAIL=                      # Email contatto per Web Push (es. admin@karibubaskin.it)
+RESEND_API_KEY=                   # API key Resend per email transazionali
+CONTACT_EMAIL=                    # Destinatario notifiche form contatti
+CRON_SECRET=                      # Secret per autorizzare il cron job Vercel
 ENABLE_TEST_LOGIN=                # "true" per abilitare login fittizio (solo dev)
+TEST_PASSWORD=                    # Password per il login di test (default: karibu-test)
 ```
 
 > `ADMIN_PASSWORD` e `COOKIE_SECRET` sono stati rimossi — non più necessari.

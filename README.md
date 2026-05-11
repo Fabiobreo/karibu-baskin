@@ -1,6 +1,6 @@
-# Karibu Baskin Montecchio Maggiore — App Iscrizioni
+# Karibu Baskin Montecchio Maggiore
 
-Web app per la gestione delle iscrizioni agli allenamenti della squadra Karibu Baskin.
+Web app per la squadra Karibu Baskin di Montecchio Maggiore (VI). Gestione allenamenti, iscrizioni, squadre agonistiche, calendario, partite e pannello admin.
 
 ## Setup locale
 
@@ -15,17 +15,14 @@ cp .env.example .env.local
 # Modifica .env.local con i tuoi valori
 ```
 
-### 3. Configura il database (Neon)
-1. Vai su [neon.tech](https://neon.tech) e crea un progetto gratuito
-2. Copia `DATABASE_URL` e `DIRECT_URL` dalla dashboard Neon
-3. Incollali in `.env.local`
+Vedi [`docs/SETUP.md`](docs/SETUP.md) per le istruzioni dettagliate su ogni servizio esterno (Google OAuth, Neon, Resend, Web Push).
 
-### 4. Esegui le migration
+### 3. Esegui le migration
 ```bash
 npm run db:migrate
 ```
 
-### 5. Avvia il server di sviluppo
+### 4. Avvia il server di sviluppo
 ```bash
 npm run dev
 ```
@@ -34,25 +31,30 @@ Apri [http://localhost:3000](http://localhost:3000).
 
 ## Deploy su Vercel
 
-1. Push del repo su GitHub
+1. Push del repo su GitHub (branch `develop` → preview, `main` → produzione)
 2. Importa il progetto su [vercel.com](https://vercel.com)
-3. Aggiungi le variabili d'ambiente nelle impostazioni Vercel:
-   - `DATABASE_URL`
-   - `DIRECT_URL`
-   - `ADMIN_PASSWORD`
-   - `COOKIE_SECRET`
-4. Il build command è già configurato in `package.json`: `prisma migrate deploy && next build`
+3. Configura le variabili d'ambiente (vedi `.env.example`)
+4. Il build command è configurato in `package.json`: `prisma db push && prisma generate && next build`
+
+> Il build include `prisma db push` che sincronizza automaticamente lo schema del DB di produzione ad ogni deploy Vercel.
 
 ## Funzionalità
 
-- **Home**: lista degli allenamenti programmati raggruppati per data
-- **Pagina allenamento**: iscrizione con nome e ruolo (1-5), lista iscritti per ruolo, generazione squadre bilanciate
-- **Admin** (`/admin`): creazione e gestione degli allenamenti, protetto da password
+- **Allenamenti**: calendario pubblico, iscrizioni per utenti / figli / anonimi, generazione squadre bilanciate, restrizioni per squadra/ruolo sportivo
+- **Squadre agonistiche**: gestione stagioni, roster, partite ufficiali, statistiche giocatore, gironi e classifiche
+- **Calendario**: visualizzazione mensile con allenamenti, partite ed eventi; export iCal
+- **Notifiche**: push (Web Push API/VAPID) + in-app con preferenze granulari per tipo evento
+- **Profilo utente**: dati atleta, gestione figli, collegamento account genitore-figlio
+- **PWA**: installabile su mobile, funzionamento offline
+- **Admin panel**: gestione utenti, allenamenti, partite, eventi, squadre; export dati
 
 ## Stack
 
-- Next.js 15 (App Router)
-- React 19
-- Material UI v6
-- Prisma + Neon (PostgreSQL)
-- Vercel
+- Next.js 16.2.1 (App Router, Turbopack)
+- React 19 + TypeScript 5 (strict)
+- Material UI v6 + Emotion
+- Prisma v6 + PostgreSQL (Neon)
+- Auth.js v5 (Google OAuth)
+- Vercel (deploy) + Vercel Analytics
+
+Per la documentazione tecnica completa vedi [`CLAUDE.md`](CLAUDE.md) e [`docs/`](docs/).
