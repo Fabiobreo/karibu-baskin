@@ -34,10 +34,13 @@ export async function PATCH(
 
   const data: Record<string, unknown> = {};
 
+  let prevAppRole: AppRole | null = null;
   if (body.appRole !== undefined) {
     if (!VALID_APP_ROLES.includes(body.appRole)) {
       return NextResponse.json({ error: "Ruolo app non valido" }, { status: 400 });
     }
+    const cur = await prisma.user.findUnique({ where: { id: userId }, select: { appRole: true } });
+    prevAppRole = cur?.appRole ?? null;
     data.appRole = body.appRole;
   }
 
@@ -122,7 +125,7 @@ export async function PATCH(
   const actorId = actorSession?.user?.id;
   if (actorId) {
     const actions: Array<{ action: Parameters<typeof logAudit>[0]["action"]; before?: Record<string, unknown>; after?: Record<string, unknown> }> = [];
-    if (body.appRole !== undefined) actions.push({ action: "UPDATE_ROLE", before: { appRole: data.appRole }, after: { appRole: user.appRole } });
+    if (body.appRole !== undefined) actions.push({ action: "UPDATE_ROLE", before: { appRole: prevAppRole }, after: { appRole: user.appRole } });
     if (body.sportRole !== undefined) actions.push({ action: "UPDATE_SPORT_ROLE", before: { sportRole: prevSportRole }, after: { sportRole: user.sportRole } });
     for (const entry of actions) {
       logAudit({ actorId, action: entry.action, targetType: "User", targetId: userId, before: entry.before, after: entry.after }).catch((err) => console.error("[audit] update user", err));

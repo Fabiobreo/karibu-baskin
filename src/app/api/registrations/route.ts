@@ -6,6 +6,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas/registration";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("sessionId");
@@ -19,8 +20,17 @@ export async function GET(req: NextRequest) {
     include: { user: { select: { slug: true } } },
   });
 
+  // note e anonymousEmail sono dati sensibili: visibili solo allo staff.
+  const authSession = await auth();
+  const appRole = authSession?.user?.appRole as import("@prisma/client").AppRole | undefined;
+  const isStaff = !!appRole && (appRole === "COACH" || appRole === "ADMIN");
+
   return NextResponse.json(
-    registrations.map(({ user, ...r }) => ({ ...r, userSlug: user?.slug ?? null }))
+    registrations.map(({ user, note, anonymousEmail, ...r }) => ({
+      ...r,
+      userSlug: user?.slug ?? null,
+      ...(isStaff && { note, anonymousEmail }),
+    }))
   );
 }
 
@@ -150,6 +160,9 @@ export async function POST(req: NextRequest) {
 
     // Controllo restrizioni (COACH/ADMIN/GUEST bypassati dentro checkRegistrationAllowed)
     const effectiveRole = user.sportRole ?? role;
+    // registeredAsCoach è accettato solo se l'utente è effettivamente COACH o ADMIN
+    const isStaffUser = user.appRole === "COACH" || user.appRole === "ADMIN";
+    const asCoach = isStaffUser ? (registeredAsCoach ?? false) : false;
     let isInRestrictedTeam = false;
     if (restrictions.restrictTeamId) {
       const hasAnyTeam = !!(await prisma.teamMembership.findFirst({ where: { userId } }));
@@ -162,7 +175,7 @@ export async function POST(req: NextRequest) {
         isInRestrictedTeam = true; // nessuna squadra → bypass
       }
     }
-    const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam, registeredAsCoach ?? false);
+    const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam, asCoach);
     if (!check.allowed) {
       return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
     }
@@ -195,7 +208,7 @@ export async function POST(req: NextRequest) {
           });
         }
         return tx.registration.create({
-          data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: registeredAsCoach ?? false },
+          data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: asCoach },
         });
       });
       return NextResponse.json(registration, { status: 201 });
@@ -208,6 +221,12 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Iscrizione anonima ──────────────────────────────────────────────────────
+  // Throttle più stretto per gli anonimi: 3 iscrizioni per IP per sessione specifica.
+  const anonRl = checkRateLimit(ip, `anon-reg:${sessionId}`, 3, 60_000);
+  if (!anonRl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche minuto." }, { status: 429 });
+  }
+
   // Utenti anonimi non possono iscriversi se ci sono restrizioni
   const anonCheck = checkRegistrationAllowed(restrictions, null, role, false);
   if (!anonCheck.allowed) {
@@ -267,6 +286,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -293,6 +313,16 @@ export async function DELETE(req: NextRequest) {
     where: { id: { in: sessionIds } },
     data: { teams: Prisma.DbNull },
   });
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "DELETE_ANONYMOUS_REGS",
+      targetType: "Registration",
+      targetId: name.trim(),
+      after: { deletedIds: regs.map((r) => r.id), sessionIds },
+    }).catch(() => {});
+  }
 
   return new NextResponse(null, { status: 204 });
 }

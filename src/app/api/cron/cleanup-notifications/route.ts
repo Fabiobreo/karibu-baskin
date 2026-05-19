@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 
 // Vercel Cron — eseguito ogni domenica alle 03:00 UTC
 // Elimina notifiche più vecchie di 90 giorni già lette da tutti
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers.get("authorization") ?? "";
+  const expected = `Bearer ${cronSecret ?? ""}`;
+  // Timing-safe comparison to prevent secret leakage via response time.
+  // Also reject when CRON_SECRET is not set.
+  const valid =
+    !!cronSecret &&
+    authHeader.length === expected.length &&
+    timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
+  // Only accept requests from Vercel's real cron scheduler.
+  const isVercelCron = req.headers.get("x-vercel-cron") === "1";
+  if (!valid || !isVercelCron) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 

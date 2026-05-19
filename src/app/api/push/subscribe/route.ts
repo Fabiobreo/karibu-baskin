@@ -19,13 +19,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Subscription non valida" }, { status: 400 });
   }
 
-  // Verifica ownership: se l'endpoint esiste già legato a un altro utente, rifiuta
+  // Verifica ownership dell'endpoint.
   const existing = await prisma.pushSubscription.findUnique({
     where: { endpoint: body.endpoint },
-    select: { userId: true },
+    select: { userId: true, p256dh: true, auth: true },
   });
-  if (existing && existing.userId && existing.userId !== userId) {
-    return NextResponse.json({ error: "Endpoint già registrato" }, { status: 409 });
+  if (existing) {
+    // Caso 1: endpoint legato a un altro utente autenticato → rifiuta.
+    if (existing.userId && existing.userId !== userId) {
+      return NextResponse.json({ error: "Endpoint già registrato" }, { status: 409 });
+    }
+    // Caso 2: endpoint anonimo, nuovo chiamante autenticato → consenti solo se le chiavi
+    // crittografiche corrispondono (stesso browser che ora si è loggato).
+    if (existing.userId === null && userId !== null) {
+      if (existing.p256dh !== body.keys.p256dh || existing.auth !== body.keys.auth) {
+        return NextResponse.json({ error: "Endpoint già registrato" }, { status: 409 });
+      }
+    }
   }
 
   await prisma.pushSubscription.upsert({
@@ -39,6 +49,12 @@ export async function POST(req: NextRequest) {
 
 // DELETE — rimuove subscription (solo del richiedente autenticato)
 export async function DELETE(req: NextRequest) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit(ip, "push-unsubscribe", 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche secondo." }, { status: 429 });
+  }
+
   const session = await auth();
   const userId = session?.user?.id ?? null;
 

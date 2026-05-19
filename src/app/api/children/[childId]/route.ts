@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUser } from "@/lib/webpush";
 import { ChildPatchSchema } from "@/lib/schemas/child";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(
@@ -40,6 +41,24 @@ export async function PATCH(
 
   // ── Invia richiesta di collegamento (via email o userId) ──────────────────
   if (linkEmail !== undefined || linkUserId !== undefined) {
+    // Rate limit: max 5 richieste di collegamento al minuto per IP
+    const ip = getClientIp(req);
+    const rl = checkRateLimit(ip, "link-request", 5, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche momento." }, { status: 429 });
+    }
+
+    // Cap: max 5 richieste pendenti totali per genitore
+    const pendingCount = await prisma.linkRequest.count({
+      where: { parentId: session.user.id, status: "PENDING" },
+    });
+    if (pendingCount >= 5) {
+      return NextResponse.json(
+        { error: "Hai troppe richieste in attesa. Attendi una risposta prima di inviarne di nuove." },
+        { status: 429 }
+      );
+    }
+
     let targetUser: { id: string; name: string | null; email: string } | null = null;
 
     if (linkUserId) {
@@ -87,30 +106,35 @@ export async function PATCH(
       select: { name: true },
     });
 
-    const linkRequest = await prisma.linkRequest.create({
-      data: {
-        childId,
-        parentId: session.user.id,
-        targetUserId: targetUser.id,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 giorni
-      },
+    // Crea link request + notifica in modo atomico per evitare richieste orfane.
+    // child.name NON viene incluso nelle notifiche push per evitare che un genitore
+    // malintenzionato usi il nome del figlio come vettore di phishing (es. link malevoli).
+    const parentDisplayName = parent?.name ?? "Un genitore";
+    const linkRequest = await prisma.$transaction(async (tx) => {
+      const lr = await tx.linkRequest.create({
+        data: {
+          childId,
+          parentId: session.user.id,
+          targetUserId: targetUser.id,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 giorni
+        },
+      });
+      await tx.appNotification.create({
+        data: {
+          type: "LINK_REQUEST",
+          title: `${parentDisplayName} vuole collegarsi a te`,
+          body: "Hai ricevuto una richiesta di collegamento genitore-figlio. Vai al tuo profilo per rispondere.",
+          url: "/profilo#richieste",
+          targetUserId: targetUser.id,
+        },
+      });
+      return lr;
     });
 
-    // Notifica in-app per il destinatario
-    await prisma.appNotification.create({
-      data: {
-        type: "LINK_REQUEST",
-        title: `${parent?.name ?? "Un genitore"} vuole collegarsi a te`,
-        body: `Hai ricevuto una richiesta di collegamento genitore-figlio per il profilo "${child.name}".`,
-        url: "/profilo#richieste",
-        targetUserId: targetUser.id,
-      },
-    });
-
-    // Push al destinatario
+    // Push al destinatario (fuori dalla transaction)
     await sendPushToUser(targetUser.id, {
-      title: `${parent?.name ?? "Un genitore"} vuole collegarsi a te`,
-      body: `Richiesta di collegamento per il profilo "${child.name}". Vai al tuo profilo per rispondere.`,
+      title: `${parentDisplayName} vuole collegarsi a te`,
+      body: "Hai ricevuto una richiesta di collegamento. Vai al tuo profilo per rispondere.",
       url: "/profilo#richieste",
       type: "LINK_REQUEST",
     });
@@ -120,10 +144,26 @@ export async function PATCH(
 
   // ── Scollega account ──────────────────────────────────────────────────────
   if (unlinkAccount) {
+    const childBefore = await prisma.child.findUnique({
+      where: { id: childId },
+      select: { userId: true, name: true },
+    });
     const updated = await prisma.child.update({
       where: { id: childId },
       data: { userId: null },
     });
+    // Notifica l'utente scollegato
+    if (childBefore?.userId) {
+      prisma.appNotification.create({
+        data: {
+          type: "SYSTEM",
+          title: "Collegamento rimosso",
+          body: `Il collegamento con il profilo "${childBefore.name}" è stato rimosso dal genitore.`,
+          url: "/profilo",
+          targetUserId: childBefore.userId,
+        },
+      }).catch(() => {});
+    }
     return NextResponse.json(updated);
   }
 
@@ -139,7 +179,7 @@ export async function PATCH(
       ...(trimmedName !== undefined && { name: trimmedName }),
       ...(sportRole !== undefined && { sportRole: sportRole ?? null }),
       ...(sportRoleVariant !== undefined && { sportRoleVariant: sportRoleVariant ?? null }),
-      ...(gender !== undefined && { gender: (gender as "MALE" | "FEMALE" | null) ?? null }),
+      ...(gender !== undefined && { gender: gender ?? null }),
       ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
     },
   });
@@ -169,18 +209,20 @@ export async function DELETE(
   }
 
   // Trova le sessioni con squadre generate che includono questo figlio,
-  // poi elimina le iscrizioni e azzera le squadre (evita riferimenti fantasma)
+  // poi elimina iscrizioni e azzera squadre in modo atomico (evita riferimenti fantasma)
   const childRegs = await prisma.registration.findMany({
     where: { childId },
     select: { sessionId: true },
   });
   if (childRegs.length > 0) {
     const sessionIds = [...new Set(childRegs.map((r) => r.sessionId))];
-    await prisma.registration.deleteMany({ where: { childId } });
-    await prisma.trainingSession.updateMany({
-      where: { id: { in: sessionIds } },
-      data: { teams: Prisma.DbNull },
-    });
+    await prisma.$transaction([
+      prisma.registration.deleteMany({ where: { childId } }),
+      prisma.trainingSession.updateMany({
+        where: { id: { in: sessionIds } },
+        data: { teams: Prisma.DbNull },
+      }),
+    ]);
   }
 
   await prisma.child.delete({ where: { id: childId } });

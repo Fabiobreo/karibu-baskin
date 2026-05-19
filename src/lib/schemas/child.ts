@@ -19,6 +19,6 @@ export const ChildPatchSchema = z.object({
   gender: GenderEnum,
   birthDate: z.string().nullable().optional(),
   linkEmail: z.string().email("Email non valida").optional(),
-  linkUserId: z.string().optional(),
+  linkUserId: z.string().min(1).optional(),
   unlinkAccount: z.boolean().optional(),
 });

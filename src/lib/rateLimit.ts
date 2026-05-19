@@ -46,5 +46,15 @@ export function checkRateLimit(
 }
 
 export function getClientIp(req: { headers: { get: (k: string) => string | null } }): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  // Prefer x-real-ip (set by Vercel proxy, not spoofable by clients).
+  // Fall back to the last segment of XFF — the rightmost entry is added by the closest
+  // trusted proxy, preventing client-side spoofing via a crafted X-Forwarded-For header.
+  const realIp = req.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) {
+    const parts = xff.split(",");
+    return parts[parts.length - 1]?.trim() ?? "unknown";
+  }
+  return "unknown";
 }

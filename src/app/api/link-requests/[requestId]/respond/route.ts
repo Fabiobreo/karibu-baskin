@@ -53,12 +53,15 @@ export async function POST(
     select: { name: true },
   });
 
-  await prisma.$transaction(async (tx) => {
-    // Aggiorna stato richiesta
-    await tx.linkRequest.update({
-      where: { id: requestId },
+  try { await prisma.$transaction(async (tx) => {
+    // Aggiorna stato richiesta solo se ancora PENDING — previene doppio accept concorrente
+    const { count } = await tx.linkRequest.updateMany({
+      where: { id: requestId, status: "PENDING" },
       data: { status: newStatus },
     });
+    if (count === 0) {
+      throw new Error("Richiesta già elaborata");
+    }
 
     if (accept) {
       // Verifica che il child non sia già collegato ad altro utente
@@ -67,16 +70,13 @@ export async function POST(
         throw new Error("Questo account è già collegato a un altro figlio");
       }
 
-      // Collega il child all'utente
-      const userUpdates: Record<string, unknown> = {};
+      // Collega il child all'utente.
+      // La promozione è solo a livello appRole (GUEST → ATHLETE).
+      // Il ruolo Baskin NON viene copiato automaticamente: richiede conferma esplicita
+      // dell'admin per evitare che un genitore malevolo assegni ruoli sportivi a terzi.
       const targetUser = await tx.user.findUnique({ where: { id: userId } });
-      if (targetUser?.appRole === "GUEST") userUpdates.appRole = "ATHLETE";
-      if (linkRequest.child.sportRole && !targetUser?.sportRole) {
-        userUpdates.sportRole = linkRequest.child.sportRole;
-        userUpdates.sportRoleVariant = linkRequest.child.sportRoleVariant ?? null;
-      }
-      if (Object.keys(userUpdates).length > 0) {
-        await tx.user.update({ where: { id: userId }, data: userUpdates });
+      if (targetUser?.appRole === "GUEST") {
+        await tx.user.update({ where: { id: userId }, data: { appRole: "ATHLETE" } });
       }
       await tx.child.update({
         where: { id: linkRequest.childId },
@@ -100,7 +100,16 @@ export async function POST(
         targetUserId: linkRequest.parentId,
       },
     });
-  });
+  }); } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "";
+    if (msg === "Richiesta già elaborata") {
+      return NextResponse.json({ error: "Richiesta già elaborata" }, { status: 409 });
+    }
+    if (msg === "Questo account è già collegato a un altro figlio") {
+      return NextResponse.json({ error: msg }, { status: 409 });
+    }
+    throw err;
+  }
 
   // Invia push al genitore (fuori dalla transaction)
   const parentName = respondingUser?.name ?? "Il tuo figlio/a";

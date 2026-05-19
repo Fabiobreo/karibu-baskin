@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { generateTeams } from "@/lib/teamGenerator";
@@ -61,7 +62,13 @@ export async function POST(
   const coaches = registrations
     .filter((r) => r.registeredAsCoach)
     .map((r) => ({ id: r.id, name: r.name }));
-  const teams = generateTeams(athletes, sessionId, numTeams);
+  // SHA-256(sessionId || secret) → hex string used as the PRNG seed.
+  // Hashing prevents reversing observed team outputs back to the raw secret,
+  // which matters because AUTH_SECRET is also the session-signing key.
+  const seedInput = createHash("sha256")
+    .update(sessionId + (process.env.AUTH_SECRET ?? ""))
+    .digest("hex");
+  const teams = generateTeams(athletes, seedInput, numTeams);
 
   await prisma.trainingSession.update({
     where: { id: sessionId },

@@ -4,10 +4,13 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll, sendPushToFilter } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 
+// Only relative same-origin paths are allowed — prevents open-redirect phishing via push.
+const relativeUrlRegex = /^\/[\w\-/?=&%.#]*$/;
+
 const NotifySchema = z.object({
   title: z.string().min(1).max(100),
   body:  z.string().min(1).max(300),
-  url:   z.string().max(200).optional(),
+  url:   z.string().max(200).regex(relativeUrlRegex, "L'URL deve essere un percorso relativo (es. /allenamenti)").optional(),
   // Targeting: almeno uno tra teamId, sportRole o targetAll deve essere fornito
   teamId:    z.string().optional(),
   sportRole: z.number().int().min(1).max(5).nullable().optional(),

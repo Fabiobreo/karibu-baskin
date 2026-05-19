@@ -16,7 +16,9 @@ export type AuditAction =
   | "DELETE_EVENT"
   | "UPDATE_MATCH"
   | "LINK_ACCEPTED"
-  | "LINK_REJECTED";
+  | "LINK_REJECTED"
+  | "EXPORT_PII"
+  | "DELETE_ANONYMOUS_REGS";
 
 interface LogAuditInput {
   actorId: string;

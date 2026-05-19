@@ -2,11 +2,23 @@ import webpush from "web-push";
 import { prisma } from "./db";
 import { mergePrefs, type ControllableNotifType } from "./notifPrefs";
 
-webpush.setVapidDetails(
-  `mailto:${process.env.VAPID_EMAIL ?? "admin@karibubaskin.it"}`,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Lazy-init: if VAPID keys are missing (e.g. during testing), push is disabled rather
+// than crashing every route that imports this module.
+export let pushEnabled = false;
+try {
+  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (pub && priv) {
+    webpush.setVapidDetails(
+      `mailto:${process.env.VAPID_EMAIL ?? "admin@karibubaskin.it"}`,
+      pub,
+      priv,
+    );
+    pushEnabled = true;
+  }
+} catch (err) {
+  console.error("[webpush] VAPID init failed — push disabled", err);
+}
 
 export interface PushPayload {
   title: string;
@@ -66,7 +78,8 @@ export async function sendPushToAll(
   payload: PushPayload,
   adminOnly = false,
   notifType?: ControllableNotifType,
-) {
+): Promise<{ sent: number; removed: number }> {
+  if (!pushEnabled) return { sent: 0, removed: 0 };
   const subs = await prisma.pushSubscription.findMany({
     include: { user: { select: { appRole: true, notifPrefs: true } } },
   });
@@ -94,8 +107,8 @@ export async function sendPushToUsers(
   userIds: string[],
   payload: PushPayload,
   notifType?: ControllableNotifType,
-) {
-  if (userIds.length === 0) return { sent: 0, removed: 0 };
+): Promise<{ sent: number; removed: number }> {
+  if (!pushEnabled || userIds.length === 0) return { sent: 0, removed: 0 };
 
   const subs = await prisma.pushSubscription.findMany({
     where: { userId: { in: userIds } },
@@ -196,7 +209,8 @@ export async function sendPushToUser(
   userId: string,
   payload: PushPayload,
   notifType?: ControllableNotifType,
-) {
+): Promise<{ sent: number; removed: number }> {
+  if (!pushEnabled) return { sent: 0, removed: 0 };
   const subs = await prisma.pushSubscription.findMany({
     where: { userId },
     include: notifType ? { user: { select: { notifPrefs: true } } } : undefined,
