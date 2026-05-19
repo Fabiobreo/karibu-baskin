@@ -455,7 +455,11 @@ export default function AuditLogClient() {
                     </TableCell>
                     <TableCell align="center">
                       <Tooltip title="Vedi dettagli">
-                        <IconButton size="small" onClick={() => setDetail(item)}>
+                        <IconButton
+                          size="small"
+                          onClick={() => setDetail(item)}
+                          aria-label="Vedi dettagli"
+                        >
                           <InfoOutlinedIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>

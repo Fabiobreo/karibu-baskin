@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { TeamMemberSchema } from "@/lib/schemas/registration";
+import { TeamMemberSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { createAppNotification } from "@/lib/appNotifications";

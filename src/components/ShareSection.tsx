@@ -74,6 +74,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
           <IconButton
             size="small"
             onClick={handleCopy}
+            aria-label="Copia link"
             sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
           >
             <ContentCopyIcon fontSize="small" />
@@ -84,6 +85,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
           <IconButton
             size="small"
             onClick={() => setQrOpen(true)}
+            aria-label="Mostra QR Code"
             sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
           >
             <QrCode2Icon fontSize="small" />
@@ -96,6 +98,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
           QR Code — {sessionTitle}
           <IconButton
             onClick={() => setQrOpen(false)}
+            aria-label="Chiudi"
             sx={{ position: "absolute", right: 8, top: 8 }}
           >
             <CloseIcon />

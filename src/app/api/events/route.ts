@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { EventCreateSchema } from "@/lib/schemas/event";
+import { EventCreateSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";

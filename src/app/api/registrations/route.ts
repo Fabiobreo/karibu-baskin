@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
-import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas/registration";
+import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { logAudit } from "@/lib/audit";
 

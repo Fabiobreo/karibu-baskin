@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { PlayerStatsBatchSchema } from "@/lib/schemas/match";
+import { PlayerStatsBatchSchema } from "@/lib/schemas";
 
 type Params = { params: Promise<{ matchId: string }> };
 

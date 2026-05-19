@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/context/ToastContext";
 import type { SportRoleResult } from "@/components/SportRoleQuestionnaire";
 
@@ -36,6 +37,15 @@ export interface ChildInfo {
 type Phase = "questionnaire" | "confirm";
 type Subject = "self" | string;
 
+export interface OptimisticReg {
+  name: string;
+  role: number;
+  sessionId: string;
+  userId: string | null;
+  childId: string | null;
+  registeredAsCoach: boolean;
+}
+
 export interface UseRegistrationFormReturn {
   coachMode: "athlete" | "coach";
   setCoachMode: (m: "athlete" | "coach") => void;
@@ -67,7 +77,7 @@ export interface UseRegistrationFormReturn {
   hasChildren: boolean;
   // Handlers
   handleQuestionnaireResult: (result: SportRoleResult) => void;
-  handleSubmit: () => Promise<void>;
+  handleSubmit: () => void;
 }
 
 interface Params {
@@ -78,6 +88,8 @@ interface Params {
   registeredUserIds: (string | null)[];
   registeredChildIds: (string | null)[];
   onRegistered: () => void;
+  onOptimisticAdd?: (reg: OptimisticReg) => void;
+  onSubmitError?: () => void;
 }
 
 export function useRegistrationForm({
@@ -88,6 +100,8 @@ export function useRegistrationForm({
   registeredUserIds,
   registeredChildIds,
   onRegistered,
+  onOptimisticAdd,
+  onSubmitError,
 }: Params): UseRegistrationFormReturn {
   const isParent = currentUser?.appRole === "PARENT";
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
@@ -162,7 +176,6 @@ export function useRegistrationForm({
   const [anonymousName, setAnonymousName] = useState("");
   const [anonymousEmail, setAnonymousEmail] = useState("");
   const [note, setNote] = useState("");
-  const [loading, setLoading] = useState(false);
   const [optimisticSubjects, setOptimisticSubjects] = useState<Set<string>>(new Set());
   const { showToast } = useToast();
 
@@ -179,7 +192,7 @@ export function useRegistrationForm({
       }
       return next.size === prev.size ? prev : next;
     });
-    // registeredUserIds e registeredChildIds sono gli array "veri" che cambiano dopo SWR revalidation
+    // registeredUserIds e registeredChildIds sono gli array "veri" che cambiano dopo TanStack revalidation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registeredUserIds, registeredChildIds]);
 
@@ -197,7 +210,56 @@ export function useRegistrationForm({
     setPhase("confirm");
   }
 
-  async function handleSubmit() {
+  type MutationVars = {
+    body: Record<string, unknown>;
+    submittedSubject: string;
+    displayName: string;
+    optimisticReg: OptimisticReg;
+  };
+
+  const registerMutation = useMutation<void, Error, MutationVars>({
+    mutationFn: async ({ body }) => {
+      const res = await fetch("/api/registrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Errore durante l'iscrizione");
+      }
+    },
+    onMutate: ({ submittedSubject, optimisticReg }) => {
+      setOptimisticSubjects((prev) => new Set(prev).add(submittedSubject));
+      onOptimisticAdd?.(optimisticReg);
+    },
+    onError: (err, { submittedSubject }) => {
+      setOptimisticSubjects((prev) => {
+        const s = new Set(prev);
+        s.delete(submittedSubject);
+        return s;
+      });
+      onSubmitError?.();
+      showToast({
+        message: err.message,
+        severity: "error",
+      });
+    },
+    onSuccess: (_, { displayName }) => {
+      showToast({ message: `${displayName} iscritto/a con successo!`, severity: "success" });
+      setAnonymousName("");
+      setNote("");
+      if (hasConfirmedRole) {
+        setPhase("confirm");
+      } else {
+        setChosenRole(null);
+        setPhase("questionnaire");
+      }
+      onRegistered();
+    },
+  });
+
+  function handleSubmit() {
     const isCoachRegistration = isCoach && coachMode === "coach";
     if (!isCoachRegistration && !chosenRole) return;
 
@@ -209,58 +271,33 @@ export function useRegistrationForm({
     }
 
     const submittedSubject = subject;
-    setOptimisticSubjects((prev) => new Set(prev).add(submittedSubject));
-    setLoading(true);
-    try {
-      const roleToSend = isCoachRegistration ? (currentUser?.sportRole ?? 1) : chosenRole!.role;
-      const body: Record<string, unknown> = { sessionId, role: roleToSend };
-      if (isCoachRegistration) body.registeredAsCoach = true;
-      if (isAnon) body.name = name;
-      if (isAnon && anonymousEmail.trim()) body.anonymousEmail = anonymousEmail.trim();
-      if (!isCoachRegistration && chosenRole?.variant) body.roleVariant = chosenRole.variant;
-      if (subject !== "self") body.childId = subject;
-      if (note.trim()) body.note = note.trim();
+    const roleToSend = isCoachRegistration ? (currentUser?.sportRole ?? 1) : chosenRole!.role;
+    const displayName =
+      subject !== "self" ? selectedChild?.name : (currentUser?.name ?? name ?? "Atleta");
 
-      const res = await fetch("/api/registrations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+    const body: Record<string, unknown> = { sessionId, role: roleToSend };
+    if (isCoachRegistration) body.registeredAsCoach = true;
+    if (isAnon) body.name = name;
+    if (isAnon && anonymousEmail.trim()) body.anonymousEmail = anonymousEmail.trim();
+    if (!isCoachRegistration && chosenRole?.variant) body.roleVariant = chosenRole.variant;
+    if (subject !== "self") body.childId = subject;
+    if (note.trim()) body.note = note.trim();
 
-      if (!res.ok) {
-        setOptimisticSubjects((prev) => {
-          const s = new Set(prev);
-          s.delete(submittedSubject);
-          return s;
-        });
-        const data = await res.json();
-        showToast({ message: data.error ?? "Errore durante l'iscrizione", severity: "error" });
-        return;
-      }
+    const optimisticReg: OptimisticReg = {
+      name: displayName ?? "Atleta",
+      role: roleToSend,
+      sessionId,
+      userId: !isAnon ? (currentUser?.id ?? null) : null,
+      childId: subject !== "self" ? subject : null,
+      registeredAsCoach: isCoachRegistration,
+    };
 
-      const displayName =
-        subject !== "self" ? selectedChild?.name : (currentUser?.name ?? name ?? "Atleta");
-      showToast({ message: `${displayName} iscritto/a con successo!`, severity: "success" });
-
-      setAnonymousName("");
-      setNote("");
-      if (hasConfirmedRole) {
-        setPhase("confirm");
-      } else {
-        setChosenRole(null);
-        setPhase("questionnaire");
-      }
-      onRegistered();
-    } catch {
-      setOptimisticSubjects((prev) => {
-        const s = new Set(prev);
-        s.delete(submittedSubject);
-        return s;
-      });
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
-    } finally {
-      setLoading(false);
-    }
+    registerMutation.mutate({
+      body,
+      submittedSubject,
+      displayName: displayName ?? "Atleta",
+      optimisticReg,
+    });
   }
 
   return {
@@ -278,7 +315,7 @@ export function useRegistrationForm({
     setAnonymousEmail,
     note,
     setNote,
-    loading,
+    loading: registerMutation.isPending,
     selectedChild,
     confirmedRole,
     confirmedVariant,

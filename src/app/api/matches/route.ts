@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { MatchCreateSchema, deriveResult } from "@/lib/schemas/match";
+import { MatchCreateSchema, deriveResult } from "@/lib/schemas";
 import { generateMatchSlug } from "@/lib/slugUtils";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import type { MatchResult } from "@prisma/client";

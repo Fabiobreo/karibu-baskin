@@ -49,6 +49,7 @@ export default function TeamsHeader({
               <IconButton
                 size="small"
                 onClick={onEditTeams}
+                aria-label="Modifica squadre"
                 sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
               >
                 <EditIcon fontSize="small" />
@@ -63,6 +64,7 @@ export default function TeamsHeader({
                   color="error"
                   onClick={onRemoveTeams}
                   disabled={removingTeams}
+                  aria-label="Rimuovi squadre create"
                   sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
                 >
                   {removingTeams ? (

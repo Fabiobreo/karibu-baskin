@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { computeStandings } from "@/lib/standings";
-import { GroupUpdateSchema } from "@/lib/schemas/group";
+import { GroupUpdateSchema } from "@/lib/schemas";
 
 type Params = { params: Promise<{ groupId: string }> };
 

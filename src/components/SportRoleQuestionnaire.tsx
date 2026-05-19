@@ -172,7 +172,15 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
           <Paper
             key={i}
             variant="outlined"
+            role="button"
+            tabIndex={0}
             onClick={() => handleOption(opt)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOption(opt);
+              }
+            }}
             sx={{
               p: 1.5,
               cursor: "pointer",
@@ -180,6 +188,11 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
               "&:hover": {
                 borderColor: "primary.main",
                 bgcolor: "primary.50",
+              },
+              "&:focus-visible": {
+                outline: "2px solid",
+                outlineColor: "primary.main",
+                outlineOffset: 2,
               },
             }}
           >

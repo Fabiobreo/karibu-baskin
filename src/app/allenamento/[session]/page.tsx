@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import useSWR from "swr";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, Box, Paper, Skeleton, Grid2 as Grid } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -75,12 +76,24 @@ export default function SessionPage() {
   // 30s when live today, 0 when ended (no changes expected), 2min for future sessions
   const refreshInterval = !session ? 60_000 : isEnded ? 0 : isToday ? 30_000 : 120_000;
 
-  const regKey = realSessionId ? `/api/registrations?sessionId=${realSessionId}` : null;
-  const { data: registrations = [], mutate: mutateRegistrations } = useSWR<Registration[]>(
-    regKey,
-    fetcher,
-    { revalidateOnFocus: true, refreshInterval }
-  );
+  const queryClient = useQueryClient();
+  const regQueryKey = ["registrations", realSessionId] as const;
+
+  const { data: registrations = [] } = useQuery<Registration[]>({
+    queryKey: regQueryKey,
+    queryFn: () =>
+      fetch(`/api/registrations?sessionId=${realSessionId}`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error("fetch failed"))
+      ),
+    enabled: !!realSessionId,
+    refetchOnWindowFocus: true,
+    refetchInterval: refreshInterval === 0 ? false : refreshInterval,
+    staleTime: isEnded ? Infinity : 0,
+  });
+
+  function invalidateRegistrations() {
+    void queryClient.invalidateQueries({ queryKey: regQueryKey });
+  }
 
   const teamsKey = realSessionId ? `/api/teams/${realSessionId}` : null;
   const {
@@ -91,8 +104,20 @@ export default function SessionPage() {
   const teams: TeamsData | null = teamsRaw?.generated ? teamsRaw : null;
 
   function refreshSecondary() {
-    mutateRegistrations();
+    invalidateRegistrations();
     mutateTeams();
+  }
+
+  function handleOptimisticAdd(reg: import("@/components/RegistrationForm").OptimisticReg) {
+    const tempReg: Registration = {
+      id: `temp-${Date.now()}`,
+      note: null,
+      createdAt: new Date().toISOString(),
+      userSlug: null,
+      attended: null,
+      ...reg,
+    };
+    queryClient.setQueryData<Registration[]>(regQueryKey, (prev) => [...(prev ?? []), tempReg]);
   }
 
   useEffect(() => {
@@ -237,7 +262,7 @@ export default function SessionPage() {
     isStaff,
     isEnded,
     onUnregistered: refreshSecondary,
-    onAttendanceChanged: mutateRegistrations,
+    onAttendanceChanged: invalidateRegistrations,
   };
 
   const teamDisplayProps = {
@@ -399,6 +424,8 @@ export default function SessionPage() {
                       <RegistrationForm
                         sessionId={sessionId}
                         onRegistered={refreshSecondary}
+                        onOptimisticAdd={handleOptimisticAdd}
+                        onSubmitError={invalidateRegistrations}
                         registeredNames={registrations.map((r) => r.name)}
                         registeredUserIds={registrations.map((r) => r.userId)}
                         registeredChildIds={registrations.map((r) => r.childId)}

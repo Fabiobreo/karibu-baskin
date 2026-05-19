@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import { ChildCreateSchema } from "@/lib/schemas/child";
+import { ChildCreateSchema } from "@/lib/schemas";
 
 // GET /api/users/me/children — figli del genitore loggato
 export async function GET() {

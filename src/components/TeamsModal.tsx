@@ -69,7 +69,7 @@ export default function TeamsModal({
             sessionDate={sessionDate}
             sessionEndTime={sessionEndTime}
           />
-          <IconButton onClick={onClose} size="small">
+          <IconButton onClick={onClose} size="small" aria-label="Chiudi">
             <CloseIcon />
           </IconButton>
         </Box>

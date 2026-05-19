@@ -316,6 +316,7 @@ export default function ShareTeamsButton({
             size="small"
             onClick={handleShare}
             disabled={loading}
+            aria-label="Condividi squadre"
             sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
           >
             {loading ? <CircularProgress size={16} /> : <ShareIcon fontSize="small" />}

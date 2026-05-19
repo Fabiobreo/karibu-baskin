@@ -241,6 +241,7 @@ export default function AllenamientoHero({
                 <IconButton
                   onClick={openEdit}
                   size="small"
+                  aria-label="Modifica allenamento"
                   sx={{
                     color: "rgba(255,255,255,0.55)",
                     mt: 0.5,

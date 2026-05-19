@@ -4,7 +4,7 @@ import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from
 import HomeSessionsSection from "@/components/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
-import { parseTeamsData } from "@/lib/schemas/session";
+import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/HeroSection";
 import LoSapeviCard from "@/components/LoSapeviCard";
 import FavoriteIcon from "@mui/icons-material/Favorite";

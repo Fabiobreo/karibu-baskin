@@ -25,11 +25,18 @@ import { useRegistrationForm } from "@/hooks/useRegistrationForm";
 import RegistrationSubjectSelector from "@/components/RegistrationSubjectSelector";
 
 // Re-export types for backwards compatibility with existing imports
-export type { TeamMembershipInfo, CurrentUser, ChildInfo } from "@/hooks/useRegistrationForm";
+export type {
+  TeamMembershipInfo,
+  CurrentUser,
+  ChildInfo,
+  OptimisticReg,
+} from "@/hooks/useRegistrationForm";
 
 interface Props {
   sessionId: string;
   onRegistered: () => void;
+  onOptimisticAdd?: (reg: import("@/hooks/useRegistrationForm").OptimisticReg) => void;
+  onSubmitError?: () => void;
   registeredNames: string[];
   registeredUserIds: (string | null)[];
   registeredChildIds: (string | null)[];
@@ -41,6 +48,8 @@ interface Props {
 export default function RegistrationForm({
   sessionId,
   onRegistered,
+  onOptimisticAdd,
+  onSubmitError,
   registeredNames,
   registeredUserIds,
   registeredChildIds,
@@ -85,6 +94,8 @@ export default function RegistrationForm({
     registeredUserIds,
     registeredChildIds,
     onRegistered,
+    onOptimisticAdd,
+    onSubmitError,
   });
 
   // ── Caricamento ──────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
-import { MatchUpdateSchema, deriveResult } from "@/lib/schemas/match";
+import { MatchUpdateSchema, deriveResult } from "@/lib/schemas";
 import { generateMatchSlug } from "@/lib/slugUtils";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";

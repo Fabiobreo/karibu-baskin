@@ -323,6 +323,7 @@ function MatchupSlot({
             <IconButton
               size="small"
               onClick={startEdit}
+              aria-label="Modifica"
               sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "primary.main" } }}
             >
               <EditIcon sx={{ fontSize: 14 }} />
@@ -334,6 +335,7 @@ function MatchupSlot({
                 size="small"
                 onClick={handleDelete}
                 disabled={deleting}
+                aria-label="Cancella risultato"
                 sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "error.main" } }}
               >
                 {deleting ? (

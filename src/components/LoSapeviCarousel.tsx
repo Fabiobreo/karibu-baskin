@@ -183,6 +183,7 @@ export default function LoSapeviCarousel() {
           <IconButton
             size="small"
             onClick={goPrev}
+            aria-label="Fatto precedente"
             sx={{
               color: "rgba(255,255,255,0.4)",
               "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
@@ -193,6 +194,7 @@ export default function LoSapeviCarousel() {
           <IconButton
             size="small"
             onClick={goNext}
+            aria-label="Fatto successivo"
             sx={{
               color: "rgba(255,255,255,0.4)",
               "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },

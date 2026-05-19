@@ -6,6 +6,8 @@ interface ToastOptions {
   message: string;
   severity?: AlertColor;
   duration?: number;
+  /** Optional action button rendered inside the toast (e.g. "Annulla"). */
+  action?: ReactNode;
 }
 
 interface ToastContextValue {
@@ -35,6 +37,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         <Alert
           severity={toast.severity ?? "success"}
           onClose={() => setOpen(false)}
+          action={toast.action}
           variant="filled"
           sx={{ width: "100%", borderRadius: 2 }}
         >

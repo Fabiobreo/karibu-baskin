@@ -498,6 +498,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       size="small"
                       onClick={() => handleUnlink(child)}
                       title="Scollega account"
+                      aria-label="Scollega account"
                     >
                       <LinkOffIcon fontSize="small" />
                     </IconButton>
@@ -511,11 +512,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                         setLinkEmailError(null);
                       }}
                       title="Collega account"
+                      aria-label="Collega account"
                     >
                       <LinkIcon fontSize="small" />
                     </IconButton>
                   )}
-                  <IconButton size="small" onClick={() => openEdit(child)}>
+                  <IconButton size="small" onClick={() => openEdit(child)} aria-label="Modifica">
                     <EditIcon fontSize="small" />
                   </IconButton>
                   <IconButton
@@ -523,6 +525,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     color="error"
                     onClick={() => handleDelete(child)}
                     disabled={deletingId === child.id}
+                    aria-label="Elimina figlio"
                   >
                     {deletingId === child.id ? (
                       <CircularProgress size={16} />

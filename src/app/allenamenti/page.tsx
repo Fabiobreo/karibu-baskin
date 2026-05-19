@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { Container } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import AllenamentiClient from "@/components/AllenamentiClient";
-import { parseTeamsData } from "@/lib/schemas/session";
+import { parseTeamsData } from "@/lib/schemas";
 import type { TeamsData } from "@/components/TeamDisplay";
 import type { Metadata } from "next";
 import { getSeasonStartDate } from "@/lib/seasonUtils";

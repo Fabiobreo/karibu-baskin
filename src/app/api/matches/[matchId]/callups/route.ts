@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { CallupsSchema } from "@/lib/schemas/match";
+import { CallupsSchema } from "@/lib/schemas";
 
 type Params = { params: Promise<{ matchId: string }> };
 

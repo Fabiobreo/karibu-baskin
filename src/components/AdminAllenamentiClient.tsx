@@ -21,7 +21,7 @@ import { it } from "date-fns/locale";
 import TrainingMatchResults from "@/components/TrainingMatchResults";
 import { ROLE_COLORS, ROLE_LABELS } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
-import type { TeamsData } from "@/lib/schemas/session";
+import type { TeamsData } from "@/lib/schemas";
 
 interface Athlete {
   id: string;

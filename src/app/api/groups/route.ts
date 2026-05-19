@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { GroupCreateSchema } from "@/lib/schemas/group";
+import { GroupCreateSchema } from "@/lib/schemas";
 
 export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");

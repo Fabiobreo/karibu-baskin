@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 import {
   Box,
   Typography,
@@ -9,6 +10,7 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Button,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -73,6 +75,7 @@ interface PillProps {
   highlighted: boolean;
   canDelete: boolean;
   isDeleting: boolean;
+  isPendingDelete: boolean;
   isStaff: boolean;
   showAttendance: boolean;
   isToggling: boolean;
@@ -86,6 +89,7 @@ function AthletePill({
   highlighted,
   canDelete,
   isDeleting,
+  isPendingDelete,
   isStaff,
   showAttendance,
   isToggling,
@@ -105,7 +109,7 @@ function AthletePill({
         borderRadius: "20px",
         overflow: "hidden",
         bgcolor: highlighted ? `${roleColor}1A` : "background.paper",
-        opacity: isDeleting ? 0.5 : 1,
+        opacity: isDeleting || isPendingDelete ? 0.45 : 1,
         transition: "border-color 0.15s, opacity 0.15s",
       }}
     >
@@ -165,6 +169,7 @@ function AthletePill({
               size="small"
               onClick={onToggleAttended}
               disabled={isToggling}
+              aria-label={attendedLabel(reg.attended)}
               sx={{ p: "3px", color: "inherit", "&:hover": { bgcolor: "transparent" } }}
             >
               {isToggling ? (
@@ -178,10 +183,11 @@ function AthletePill({
       )}
 
       {/* Pulsante rimozione */}
-      {canDelete && !isDeleting && !showAttendance && (
+      {canDelete && !isDeleting && !isPendingDelete && !showAttendance && (
         <IconButton
           size="small"
           onClick={onDelete}
+          aria-label="Rimuovi iscrizione"
           sx={{
             p: "3px",
             mr: 0.5,
@@ -246,40 +252,100 @@ export default function RosterByRole({
   onAttendanceChanged,
 }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   // Optimistic attendance overrides while API call is in flight
   const [attendedOverrides, setAttendedOverrides] = useState<Record<string, boolean | null>>({});
   const autoMarkedRef = useRef(false);
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingDeleteRegRef = useRef<Registration | null>(null);
   const { showToast } = useToast();
 
   const showAttendance = !!(isStaff && isEnded);
 
-  async function handleUnregister(reg: Registration) {
+  // Cancel timer on unmount to avoid acting on an unmounted component
+  useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+    };
+  }, []);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (reg: Registration) => {
+      const res = await fetch(`/api/registrations/${reg.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Errore durante la disiscrizione");
+      }
+    },
+    onSuccess: () => onUnregistered?.(),
+    onError: (err) =>
+      showToast({
+        message: err instanceof Error ? err.message : "Errore di rete, riprova",
+        severity: "error",
+      }),
+  });
+
+  async function executeDeletion(reg: Registration) {
     setDeletingId(reg.id);
     try {
-      const res = await fetch(`/api/registrations/${reg.id}`, { method: "DELETE" });
-      if (res.ok) {
-        const isOwnChild =
-          (!!reg.childId &&
-            (parentChildIds.includes(reg.childId) || reg.childId === linkedChildId)) ||
-          (!!reg.userId && childUserIds.includes(reg.userId));
-        const msg =
-          isStaff && reg.userId !== currentUserId && !isOwnChild
-            ? `${reg.name} rimosso dall'allenamento`
-            : isOwnChild && reg.childId !== linkedChildId
-              ? `${reg.name} disiscritto/a`
-              : "Disiscrizione effettuata";
-        showToast({ message: msg, severity: "success" });
-        onUnregistered?.();
-      } else {
-        const data = await res.json().catch(() => ({}));
-        showToast({ message: data.error ?? "Errore durante la disiscrizione", severity: "error" });
-      }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+      await deleteMutation.mutateAsync(reg);
     } finally {
       setDeletingId(null);
     }
+  }
+
+  function handleUnregister(reg: Registration) {
+    // Commit any in-flight pending deletion before starting a new one
+    if (pendingDeleteRegRef.current && deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current);
+      deleteTimerRef.current = null;
+      void executeDeletion(pendingDeleteRegRef.current);
+    }
+
+    const isOwnChild =
+      (!!reg.childId && (parentChildIds.includes(reg.childId) || reg.childId === linkedChildId)) ||
+      (!!reg.userId && childUserIds.includes(reg.userId));
+    const msg =
+      isStaff && reg.userId !== currentUserId && !isOwnChild
+        ? `${reg.name} rimosso dall'allenamento`
+        : isOwnChild && reg.childId !== linkedChildId
+          ? `${reg.name} disiscritto/a`
+          : "Disiscrizione effettuata";
+
+    pendingDeleteRegRef.current = reg;
+    setPendingDeleteId(reg.id);
+
+    function cancelPending() {
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current);
+        deleteTimerRef.current = null;
+      }
+      pendingDeleteRegRef.current = null;
+      setPendingDeleteId(null);
+    }
+
+    deleteTimerRef.current = setTimeout(() => {
+      deleteTimerRef.current = null;
+      pendingDeleteRegRef.current = null;
+      setPendingDeleteId(null);
+      void executeDeletion(reg);
+    }, 8000);
+
+    showToast({
+      message: msg,
+      severity: "success",
+      duration: 8000,
+      action: (
+        <Button
+          size="small"
+          onClick={cancelPending}
+          sx={{ color: "#fff", fontWeight: 700, ml: 0.5, minWidth: 0, p: "2px 8px" }}
+        >
+          Annulla
+        </Button>
+      ),
+    });
   }
 
   async function handleToggleAttended(reg: Registration) {
@@ -467,6 +533,7 @@ export default function RosterByRole({
                         highlighted={highlighted}
                         canDelete={canDelete}
                         isDeleting={deletingId === reg.id}
+                        isPendingDelete={pendingDeleteId === reg.id}
                         isStaff={!!isStaff}
                         showAttendance={showAttendance}
                         isToggling={togglingId === reg.id}
@@ -497,6 +564,7 @@ export default function RosterByRole({
                   const isOwn = !!currentUserId && reg.userId === currentUserId;
                   const canDelete = isOwn || !!isStaff;
                   const isDeleting = deletingId === reg.id;
+                  const isPending = pendingDeleteId === reg.id;
                   return (
                     <Box
                       key={reg.id}
@@ -508,7 +576,8 @@ export default function RosterByRole({
                         borderRadius: "20px",
                         overflow: "hidden",
                         bgcolor: isOwn ? "grey.800" : "background.paper",
-                        opacity: isDeleting ? 0.5 : 1,
+                        opacity: isDeleting || isPending ? 0.45 : 1,
+                        transition: "opacity 0.15s",
                       }}
                     >
                       <Box
@@ -537,10 +606,11 @@ export default function RosterByRole({
                       >
                         {reg.name}
                       </Typography>
-                      {canDelete && !isDeleting && (
+                      {canDelete && !isDeleting && !isPending && (
                         <IconButton
                           size="small"
                           onClick={() => handleUnregister(reg)}
+                          aria-label="Rimuovi iscrizione"
                           sx={{
                             p: "3px",
                             mr: 0.5,

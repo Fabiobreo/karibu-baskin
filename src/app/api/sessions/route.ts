@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
-import { SessionCreateSchema } from "@/lib/schemas/session";
+import { SessionCreateSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";

@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
-  Alert,
   Table,
   TableHead,
   TableBody,
@@ -31,6 +30,9 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 type Event = {
   id: string;
@@ -41,13 +43,15 @@ type Event = {
   description?: string | null;
 };
 
-const emptyForm = {
-  title: "",
-  date: "",
-  endDate: "",
-  location: "",
-  description: "",
-};
+const EventFormSchema = z.object({
+  title: z.string().min(1, "Titolo obbligatorio").max(200),
+  date: z.string().min(1, "Data obbligatoria"),
+  endDate: z.string().optional(),
+  location: z.string().max(200).optional(),
+  description: z.string().max(2000).optional(),
+});
+
+type EventFormValues = z.infer<typeof EventFormSchema>;
 
 export default function AdminEventiClient({ events: initialEvents }: { events: Event[] }) {
   const router = useRouter();
@@ -55,30 +59,37 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [events, setEvents] = useState(initialEvents);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<EventFormValues>({
+    resolver: zodResolver(EventFormSchema),
+    defaultValues: { title: "", date: "", endDate: "", location: "", description: "" },
+  });
+
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm);
-    setError("");
+    reset({ title: "", date: "", endDate: "", location: "", description: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (ev: Event) => {
     setEditingId(ev.id);
-    setForm({
+    reset({
       title: ev.title,
       date: format(new Date(ev.date), "yyyy-MM-dd'T'HH:mm"),
       endDate: ev.endDate ? format(new Date(ev.endDate), "yyyy-MM-dd'T'HH:mm") : "",
       location: ev.location ?? "",
       description: ev.description ?? "",
     });
-    setError("");
     setDialogOpen(true);
   };
 
@@ -86,25 +97,18 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     const editId = searchParams.get("edit");
     if (!editId) return;
     const ev = initialEvents.find((e) => e.id === editId);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ev) openEdit(ev);
     router.replace("/admin/eventi", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSave = async () => {
-    if (!form.title.trim() || !form.date) {
-      setError("Titolo e data obbligatori");
-      return;
-    }
-    setError("");
-
+  const onSubmit = async (values: EventFormValues) => {
     const body = {
-      title: form.title.trim(),
-      date: form.date,
-      endDate: form.endDate || null,
-      location: form.location.trim() || null,
-      description: form.description.trim() || null,
+      title: values.title.trim(),
+      date: values.date,
+      endDate: values.endDate || null,
+      location: values.location?.trim() || null,
+      description: values.description?.trim() || null,
     };
 
     const res = editingId
@@ -121,7 +125,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Errore durante il salvataggio");
+      setError("root", { message: data.error ?? "Errore durante il salvataggio" });
       return;
     }
 
@@ -178,53 +182,26 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
           <TableBody>
             {events.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map((ev) => (
               <TableRow key={ev.id} hover>
+                <TableCell sx={{ fontWeight: 600 }}>{ev.title}</TableCell>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
-                    {ev.title}
-                  </Typography>
-                  {ev.description && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      noWrap
-                      sx={{ display: "block", maxWidth: 220 }}
-                    >
-                      {ev.description}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {format(new Date(ev.date), "d MMM yyyy", { locale: it })}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {format(new Date(ev.date), "HH:mm")}
-                  </Typography>
+                  {format(new Date(ev.date), "d MMM yyyy, HH:mm", { locale: it })}
                 </TableCell>
                 <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {ev.endDate ? (
-                    <Typography variant="body2">
-                      {format(new Date(ev.endDate), "d MMM yyyy", { locale: it })}
-                    </Typography>
-                  ) : (
-                    <Typography variant="caption" color="text.disabled">
-                      —
-                    </Typography>
-                  )}
+                  {ev.endDate
+                    ? format(new Date(ev.endDate), "d MMM yyyy, HH:mm", { locale: it })
+                    : "—"}
                 </TableCell>
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                   {ev.location ? (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <PlaceIcon sx={{ fontSize: "0.85rem", color: "text.secondary" }} />
-                      <Typography variant="body2">{ev.location}</Typography>
+                      <PlaceIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                      {ev.location}
                     </Box>
                   ) : (
-                    <Typography variant="caption" color="text.disabled">
-                      —
-                    </Typography>
+                    "—"
                   )}
                 </TableCell>
-                <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
+                <TableCell align="right">
                   <Tooltip title="Modifica">
                     <IconButton
                       size="small"
@@ -276,55 +253,64 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       {/* Dialog crea/modifica */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle fontWeight={700}>{editingId ? "Modifica evento" : "Nuovo evento"}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              label="Titolo *"
-              value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              fullWidth
-            />
-            <TextField
-              label="Data e ora inizio *"
-              type="datetime-local"
-              value={form.date}
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              fullWidth
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              label="Data e ora fine (opzionale)"
-              type="datetime-local"
-              value={form.endDate}
-              onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
-              fullWidth
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              label="Luogo"
-              value={form.location}
-              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-              fullWidth
-              placeholder="es. Palazzetto di Montecchio Maggiore"
-            />
-            <TextField
-              label="Descrizione"
-              value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              fullWidth
-              multiline
-              rows={3}
-              placeholder="es. Torneo regionale under 18, tornata di padel a Vicenza..."
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogOpen(false)}>Annulla</Button>
-          <Button variant="contained" onClick={handleSave} disabled={isPending}>
-            {isPending ? <CircularProgress size={18} /> : editingId ? "Salva" : "Crea"}
-          </Button>
-        </DialogActions>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+          <DialogContent>
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              {errors.root && (
+                <Typography color="error" variant="body2">
+                  {errors.root.message}
+                </Typography>
+              )}
+              <TextField
+                label="Titolo *"
+                {...register("title")}
+                error={!!errors.title}
+                helperText={errors.title?.message}
+                fullWidth
+              />
+              <TextField
+                label="Data e ora inizio *"
+                type="datetime-local"
+                {...register("date")}
+                error={!!errors.date}
+                helperText={errors.date?.message}
+                fullWidth
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                label="Data e ora fine (opzionale)"
+                type="datetime-local"
+                {...register("endDate")}
+                fullWidth
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <TextField
+                label="Luogo"
+                {...register("location")}
+                error={!!errors.location}
+                helperText={errors.location?.message}
+                fullWidth
+                placeholder="es. Palazzetto di Montecchio Maggiore"
+              />
+              <TextField
+                label="Descrizione"
+                {...register("description")}
+                error={!!errors.description}
+                helperText={errors.description?.message}
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="es. Torneo regionale under 18, tornata di padel a Vicenza..."
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={() => setDialogOpen(false)}>Annulla</Button>
+            <Button variant="contained" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <CircularProgress size={18} /> : editingId ? "Salva" : "Crea"}
+            </Button>
+          </DialogActions>
+        </Box>
       </Dialog>
 
       {/* Dialog conferma eliminazione */}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { GroupMatchUpdateSchema } from "@/lib/schemas/group";
+import { GroupMatchUpdateSchema } from "@/lib/schemas";
 
 type Params = { params: Promise<{ groupId: string; matchId: string }> };
 

@@ -1040,6 +1040,7 @@ function TeamCard({
             <Tooltip title="Vedi pagina pubblica">
               <IconButton
                 size="small"
+                aria-label="Vedi pagina pubblica"
                 sx={{
                   color: "rgba(255,255,255,0.7)",
                   "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
@@ -1053,6 +1054,7 @@ function TeamCard({
             <IconButton
               size="small"
               onClick={onEdit}
+              aria-label="Modifica squadra"
               sx={{
                 color: "rgba(255,255,255,0.7)",
                 "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
@@ -1065,6 +1067,7 @@ function TeamCard({
             <IconButton
               size="small"
               onClick={onDelete}
+              aria-label="Elimina squadra"
               sx={{
                 color: "rgba(255,255,255,0.7)",
                 "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },

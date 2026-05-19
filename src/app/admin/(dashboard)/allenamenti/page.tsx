@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Box, Typography } from "@mui/material";
-import { parseTeamsData } from "@/lib/schemas/session";
+import { parseTeamsData } from "@/lib/schemas";
 import AdminAllenamentiClient from "@/components/AdminAllenamentiClient";
 import type { Metadata } from "next";
 

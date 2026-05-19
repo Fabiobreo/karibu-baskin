@@ -4,7 +4,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUser } from "@/lib/webpush";
-import { ChildPatchSchema } from "@/lib/schemas/child";
+import { ChildPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio

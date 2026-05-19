@@ -10,10 +10,6 @@ Analisi codebase con priorità d'intervento. Aggiornato automaticamente.
 
 ---
 
-## 🟡 ALTA PRIORITÀ — Correttezza e struttura
-
----
-
 ## 🟡 MEDIA PRIORITÀ — Performance e QoL tecnico
 
 ### M1. **Componenti troppo grandi — refactor incrementale**
@@ -81,7 +77,7 @@ Usare un widget embed di terze parti (es. Elfsight, Behold.so) — zero codice m
 
 ---
 
-### F5. **Sistema TrueSkill per-ruolo** *(futuro — già in memory)*
+### F4. **Sistema TrueSkill per-ruolo** *(futuro — già in memory)*
 
 Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile solo COACH/ADMIN.
 
@@ -100,22 +96,7 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 
 ---
 
-## 🛠 DEVELOPER EXPERIENCE — Backlog
-
-### DX1. ✅ **Husky + lint-staged — pre-commit hook** *(fatto: 2026-05-19)*
-
-Esegue `prettier`, `eslint --fix` e `tsc --noEmit` automaticamente al commit.
-Evita push con type-error o stile inconsistente.
-
-### DX2. ✅ **GitHub Actions CI** *(fatto: 2026-05-19)*
-
-Workflow `ci.yml` su push/PR: lint + type-check + test + format-check.
-Blocca merge se rosso.
-
-### DX3. **Path aliases granulari + barrel per `lib/schemas`**
-
-Aggiungere `@/schemas/*` in `tsconfig.json` e creare `src/lib/schemas/index.ts`.
-**Effort:** 1h
+## 🛠 DEVELOPER EXPERIENCE
 
 ### DX4. **Sentry / error reporting in produzione**
 
@@ -129,22 +110,7 @@ Priority: `RegistrationForm` (7+ stati), `TeamDisplay`, `CalendarClient`.
 
 ---
 
-## ✨ UX QUICK WINS — Backlog
-
-### UX1. ✅ **Skeleton loading per sub-route admin** *(fatto: 2026-05-19)*
-
-`loading.tsx` per allenamenti, utenti, partite, squadre, eventi.
-
-### UX2. **Optimistic updates su iscrizione/disiscrizione**
-
-SWR `mutate(key, optimisticData, { rollbackOnError: true })` in `useRegistrationForm`.
-**Effort:** 2h
-
-### UX3. **Accessibility: aria-label su IconButton**
-
-Abilitare `jsx-a11y/control-has-associated-label: "error"` in eslint.config.
-Poi aggiungere `aria-label` su tutti gli `IconButton` senza testo.
-**Effort:** 3h
+## ✨ UX QUICK WINS
 
 ### UX4. **Keyboard navigation in CalendarClient**
 
@@ -156,36 +122,39 @@ Poi aggiungere `aria-label` su tutti gli `IconButton` senza testo.
 MUI `CssVarsProvider` + `useMediaQuery` + override in localStorage.
 **Effort:** 4-5h (richiede revisione `sx` con colori custom)
 
-### UX6. **Toast "Annulla" sulle disiscrizioni**
-
-Pattern Gmail: 8s per annullare. Ricrea iscrizione al click.
-**Effort:** 1.5h
-
 ---
 
-## 🏗 INFRASTRUTTURA — Backlog
+## 🏗 INFRASTRUTTURA
 
-### INF1. **TanStack Query al posto di SWR (graduale)**
+### INF1. ✅ **TanStack Query — dominio `registrations`** *(fatto: 2026-05-19)*
 
-`useMutation` con rollback, devtools, query invalidation a cascata.
-Iniziare da dominio `registrations`.
-**Effort:** 1h setup + 2h/dominio
+`QueryClientProvider` in `Providers.tsx` + devtools.
+`useSWR` → `useQuery` per fetch registrazioni in `allenamento/[session]/page.tsx`.
+`handleSubmit` in `useRegistrationForm` → `useMutation` (`onMutate` ottimistico, `onError` rollback, `onSuccess` reset form).
+`executeDeletion` in `RosterByRole` → `useMutation`.
+**Prossimo dominio:** sessions o teams.
 
-### INF2. **Testing Library + Playwright E2E**
+### INF2. ✅ **Playwright E2E** *(fatto: 2026-05-19, bug fix: 2026-05-19)*
 
-3 journey critiche: iscrizione anonima, login+iscrizione, admin genera squadre.
-**Effort:** 2h setup + 2h/journey
+3 journey: iscrizione anonima, login+iscrizione, admin genera squadre.
+`playwright.config.ts` + `e2e/helpers.ts` + 3 spec file.
+Richiede server locale con `ENABLE_TEST_LOGIN=true` e variabili `E2E_*` configurate.
+Job CI opzionale in `ci.yml` (skip se `E2E_ADMIN_EMAIL` non impostato).
 
-### INF3. ✅ **React Hook Form + Zod resolver su form admin** *(fatto: 2026-05-19)*
+**Fix applicati dopo prima esecuzione:**
+- Rate limit anonimo (3/min per IP): `addAnonReg` ora passa `X-Forwarded-For` con IP sintetico per-indice → ogni iscrizione ha IP distinto. In prod Vercel sovrascrive con `x-real-ip`.
+- Locator strict mode: `getByText("Arancioni")` → `getByRole("heading", { name: "Arancioni" })`.
+- `SportRoleQuestionnaire`: opzioni erano `<Paper onClick>` senza `role` → aggiunto `role="button"` + `tabIndex={0}` + `onKeyDown` (Enter/Space). Risolve sia il test (`getByRole("button", ...)`) sia l'accessibilità keyboard.
 
-Applicato a `AdminSessionForm`. Riusa schemi Zod server-side, elimina `validate()` manuale.
-Prossimi candidati: form partite, form eventi, form squadre.
+### INF3-b. **React Hook Form su `AdminPartiteClient`**
+
+Candidato successivo per RHF — complesso per il flusso "crea avversaria al volo".
+Richiede test browser prima di procedere.
 
 ### INF4. **Prisma Edge adapter (Neon)**
 
 `@prisma/adapter-neon` per abilitare auth nel middleware vero.
 **Effort:** 3h + test approfonditi
-
 ---
 
 ## Note operative
@@ -193,7 +162,6 @@ Prossimi candidati: form partite, form eventi, form squadre.
 | Categoria | Quando fare |
 |---|---|
 | 🔴 Critico | Prima del prossimo push in produzione |
-| 🟡 Alta (A1–A5) | Prossimo sprint — nessun prerequisito bloccante |
-| 🟡 Media (M1–M5) | Boy-scout rule: quando si tocca il file per altro |
-| 📋 Feature (F1–F5) | In ordine: F1 → F2 → F3 → F4 → F5 |
+| 🟡 Media (M1) | Boy-scout rule: quando si tocca il file per altro |
+| 📋 Feature (F1–F4) | In ordine: F1 → F2 → F3 → F4 |
 | 🛠 DX / ✨ UX / 🏗 INF | Raccogliere in sprint dedicati |

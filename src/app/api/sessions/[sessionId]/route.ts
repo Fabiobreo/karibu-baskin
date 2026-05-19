@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { SessionUpdateSchema } from "@/lib/schemas/session";
+import { SessionUpdateSchema } from "@/lib/schemas";
 
 export async function GET(
   _req: NextRequest,

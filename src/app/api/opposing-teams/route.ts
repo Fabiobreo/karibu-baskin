@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { OpposingTeamCreateSchema } from "@/lib/schemas/opposingTeam";
+import { OpposingTeamCreateSchema } from "@/lib/schemas";
 
 export async function GET() {
   const teams = await prisma.opposingTeam.findMany({

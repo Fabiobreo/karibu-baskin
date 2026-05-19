@@ -837,7 +837,11 @@ export default function AllenamentiClient({
                         {yearSessions.length}{" "}
                         {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
                       </Typography>
-                      <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                      <IconButton
+                        size="small"
+                        aria-label={isYearOpen ? "Comprimi anno" : "Espandi anno"}
+                        sx={{ color: "text.disabled", p: 0.25 }}
+                      >
                         {isYearOpen ? (
                           <ExpandLessIcon fontSize="small" />
                         ) : (
@@ -887,7 +891,11 @@ export default function AllenamentiClient({
                                   {monthSessions.length}{" "}
                                   {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
                                 </Typography>
-                                <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                                <IconButton
+                                  size="small"
+                                  aria-label={isOpen ? "Comprimi mese" : "Espandi mese"}
+                                  sx={{ color: "text.disabled", p: 0.25 }}
+                                >
                                   {isOpen ? (
                                     <ExpandLessIcon fontSize="small" />
                                   ) : (
@@ -982,7 +990,11 @@ export default function AllenamentiClient({
                         {yearSessions.length}{" "}
                         {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
                       </Typography>
-                      <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                      <IconButton
+                        size="small"
+                        aria-label={isYearOpen ? "Comprimi anno" : "Espandi anno"}
+                        sx={{ color: "text.disabled", p: 0.25 }}
+                      >
                         {isYearOpen ? (
                           <ExpandLessIcon fontSize="small" />
                         ) : (
@@ -1032,7 +1044,11 @@ export default function AllenamentiClient({
                                   {monthSessions.length}{" "}
                                   {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
                                 </Typography>
-                                <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
+                                <IconButton
+                                  size="small"
+                                  aria-label={isOpen ? "Comprimi mese" : "Espandi mese"}
+                                  sx={{ color: "text.disabled", p: 0.25 }}
+                                >
                                   {isOpen ? (
                                     <ExpandLessIcon fontSize="small" />
                                   ) : (

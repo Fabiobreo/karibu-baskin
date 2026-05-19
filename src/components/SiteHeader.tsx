@@ -259,7 +259,11 @@ export default function SiteHeader() {
               />
             ) : user ? (
               <>
-                <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} sx={{ p: 0.5 }}>
+                <IconButton
+                  onClick={(e) => setMenuAnchor(e.currentTarget)}
+                  aria-label="Menu utente"
+                  sx={{ p: 0.5 }}
+                >
                   <Avatar
                     src={user.image ?? undefined}
                     alt={user.name ?? "Utente"}
@@ -337,6 +341,7 @@ export default function SiteHeader() {
           <IconButton
             color="inherit"
             onClick={() => setDrawerOpen(true)}
+            aria-label="Apri menu di navigazione"
             sx={{ display: { md: "none" } }}
           >
             <MenuIcon />
@@ -382,7 +387,12 @@ export default function SiteHeader() {
           >
             Esplora
           </Typography>
-          <IconButton color="inherit" onClick={() => setDrawerOpen(false)} size="small">
+          <IconButton
+            color="inherit"
+            onClick={() => setDrawerOpen(false)}
+            size="small"
+            aria-label="Chiudi menu"
+          >
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
