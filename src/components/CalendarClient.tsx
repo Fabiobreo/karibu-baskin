@@ -128,7 +128,6 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     }
   }, [monthKey]);
 
-   
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);

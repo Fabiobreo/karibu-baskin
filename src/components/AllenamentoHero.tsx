@@ -91,7 +91,7 @@ export default function AllenamientoHero({
   const status = getSessionStatus(sessionDate, sessionEnd);
 
   const [sessionUrl, setSessionUrl] = useState("");
-   
+
   useEffect(() => {
     setSessionUrl(window.location.href);
   }, []);

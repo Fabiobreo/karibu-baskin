@@ -117,7 +117,7 @@ export default function SessionPage() {
   useEffect(() => {
     const dateStr = session?.date ?? null;
     const endStr = session?.endTime ?? null;
-     
+
     if (!dateStr) {
       setCountdown(null);
       return;
