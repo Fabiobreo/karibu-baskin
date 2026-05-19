@@ -13,6 +13,13 @@ App web per la squadra di Baskin di Montecchio Maggiore (VI). Gestione allenamen
 - **PWA:** manifest.json + service worker (`public/sw.js`) con offline support
 - **Push notifications:** Web Push API + `web-push` npm package (VAPID)
 - **Analytics:** Vercel Analytics
+- **Validazione input:** Zod v4 (schemi in `src/lib/schemas/`)
+- **Data fetching client:** SWR per fetch lato client; `fetch` diretto nei Server Component
+- **Email transazionali:** Resend + React Email (template in `src/emails/`)
+- **Linter / Formatter:** ESLint (eslint-config-next) + Prettier (`.prettierrc`: semi, double quotes, 2 spazi, printWidth 100, trailingComma es5, LF)
+- **Testing:** Vitest (file `*.test.ts` accanto al sorgente — es. `src/lib/schemas/session.test.ts`, `src/app/api/sessions/route.test.ts`)
+- **Date:** `date-fns` v4 con locale `it`
+- **State management:** nessuna libreria globale — solo `useState`/`useReducer` locali + Context (`ToastContext`, `NotificationContext`) + SWR cache
 
 ## Comandi principali
 
@@ -24,6 +31,12 @@ npm run db:migrate   # prisma migrate dev (sviluppo)
 npm run db:deploy    # prisma migrate deploy (produzione)
 npm run db:generate  # prisma generate
 npm run db:studio    # Prisma Studio
+npm run lint         # ESLint su src/
+npm run format       # Prettier --write su src/
+npm run format:check # Prettier --check (CI)
+npm test             # Vitest run (one-shot)
+npm run test:watch   # Vitest watch
+npm run email:dev    # Preview React Email (porta 3333)
 npx tsc --noEmit     # type check — SEMPRE prima di fare push
 ```
 
@@ -304,3 +317,155 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 - **`NextResponse.cookies.set()` bug Turbopack:** non usarlo per impostare cookie di sessione — usare `res.headers.set("Set-Cookie", ...)` con stringa manuale
 - **`Prisma.DbNull`:** usare `Prisma.DbNull` (importato da `@prisma/client`) per settare a null campi JSON nullable — `null` TypeScript non funziona con Prisma per i Json field
 - **`router.refresh()` e stato locale:** `router.refresh()` riesegue i Server Component ma non reinizializza lo stato React locale derivato dalle props; aggiornare direttamente lo stato locale dopo le mutazioni API quando serve reattività immediata
+
+## Pattern per nuove feature
+
+### Aggiungere una nuova entità (modello + CRUD + admin UI)
+
+1. **Schema DB** — aggiungere il modello in `prisma/schema.prisma`. Niente `migrate` in dev se non necessario; il build di prod fa `prisma db push`. Per lo sviluppo locale, `npm run db:migrate` solo se serve storia.
+2. **Schema Zod** — creare `src/lib/schemas/<entity>.ts` con `XxxCreateSchema` e `XxxUpdateSchema`. Esportare anche tipi inferiti se condivisi.
+3. **Test schema** — `src/lib/schemas/<entity>.test.ts` (Vitest) — coprire i casi limite di validazione.
+4. **API routes** — `src/app/api/<entity>/route.ts` (GET list / POST create) e `src/app/api/<entity>/[id]/route.ts` (GET / PUT / DELETE). Vedi template sotto.
+5. **Componente client admin** — `src/components/Admin<Entity>Client.tsx` (`"use client"`), riceve dati iniziali dal Server Component padre.
+6. **Pagina admin** — `src/app/admin/(dashboard)/<entity>/page.tsx` (Server Component, fa fetch iniziale via Prisma e passa al client).
+7. **Notifica push / app** (se rilevante) — chiamare `sendPushToAll`/`sendPushToFilter` e `createAppNotification` fire-and-forget dentro la POST.
+8. **Type check + test** — `npx tsc --noEmit && npm test` prima di committare.
+
+### Template — API route list/create (`src/app/api/<entity>/route.ts`)
+
+```ts
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { XxxCreateSchema } from "@/lib/schemas/xxx";
+import { Prisma } from "@prisma/client";
+
+export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-xxx", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+  const items = await prisma.xxx.findMany({ orderBy: { createdAt: "desc" } });
+  return NextResponse.json(items);
+}
+
+export async function POST(req: NextRequest) {
+  if (!(await isCoachOrAdmin())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+  const raw = await req.json().catch(() => null);
+  const parsed = XxxCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
+  }
+  try {
+    const created = await prisma.xxx.create({ data: parsed.data });
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Duplicato" }, { status: 409 });
+    }
+    throw err;
+  }
+}
+```
+
+### Template — componente client interattivo (`src/components/Xxx.tsx`)
+
+```tsx
+"use client";
+import { useState } from "react";
+import { Box, Typography, Button } from "@mui/material";
+import { useToast } from "@/context/ToastContext";
+
+interface XxxProps {
+  initialItems: Array<{ id: string; name: string }>;
+}
+
+export default function Xxx({ initialItems }: XxxProps) {
+  const [items, setItems] = useState(initialItems);
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+
+  async function handleCreate() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/xxx", { method: "POST", body: JSON.stringify({ /* ... */ }) });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      const created = await res.json();
+      setItems((prev) => [created, ...prev]);
+      showToast("Creato", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Errore", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h6" sx={{ color: "text.primary" }}>Titolo</Typography>
+      <Button onClick={handleCreate} disabled={loading} variant="contained">Crea</Button>
+    </Box>
+  );
+}
+```
+
+### Template — pagina Server Component (`src/app/.../page.tsx`)
+
+```tsx
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/authjs";
+import { hasRole } from "@/lib/authRoles";
+import { prisma } from "@/lib/db";
+import Xxx from "@/components/Xxx";
+
+export default async function Page() {
+  const session = await auth();
+  if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
+    redirect("/admin/login");
+  }
+  const items = await prisma.xxx.findMany({ orderBy: { createdAt: "desc" } });
+  return <Xxx initialItems={items} />;
+}
+```
+
+### Aggiungere un campo "atleta" su User
+
+- Aggiungere il campo a `User` in `prisma/schema.prisma` (nullable se opzionale).
+- Aggiornare `src/lib/schemas/` se il campo è in input da form.
+- Aggiornare `src/types/next-auth.d.ts` se va esposto nella sessione.
+- Esporre il campo in `src/app/api/users/me/route.ts` e/o `route.ts` se serve client-side.
+
+### Aggiungere una notifica push
+
+- Per audience generica: `sendPushToAll(payload, adminOnly?, type?)`.
+- Per squadra: `sendPushToTeam(teamId, payload, type)`.
+- Per filtro (ruoli/genere): `sendPushToFilter({ sportRoles, gender }, payload, type)`.
+- Sempre fire-and-forget con `.catch(console.error)` — mai bloccare la risposta API.
+- Affiancare quasi sempre `createAppNotification(...)` per la versione in-app.
+
+## Regole ferree (NEVER do)
+
+- **Mai `as any`** senza commento `// eslint-disable-next-line` + spiegazione del perché.
+- **Mai colori hardcoded** (`#fff`, `#000`, `rgb(...)`). Usare token del tema MUI: `primary.main`, `text.secondary`, ecc.
+- **Mai CSS in file `.css` o `.module.css`** — tutto via `sx` prop o `styled()` di Emotion.
+- **Mai `<Button component={Link}>`** in Server Component → causa runtime error. Usare `<Link href=".."><Button>...</Button></Link>`.
+- **Mai `NextResponse.cookies.set()`** per cookie di sessione → bug Turbopack. Usare `res.headers.set("Set-Cookie", ...)`.
+- **Mai `null` su campo `Json` Prisma** → usare `Prisma.DbNull`. Per "field non passato" usare `Prisma.JsonNull` solo dentro update.
+- **Mai chiamare Prisma dentro `proxy.ts`** (middleware) → Edge Runtime non lo supporta. L'auth va nei layout/API routes.
+- **Mai testo UI in inglese** — tutto in italiano (label, toast, messaggi d'errore visibili).
+- **Mai default export per componenti riutilizzabili?** → No, in questo progetto i componenti usano **default export** (es. `export default function SessionCard()`). Mantenere coerenza. Utility e hook invece sono **named export**.
+- **Mai `prisma db push --accept-data-loss`** manualmente in dev se non sei consapevole della perdita dati. Il build di prod lo fa, ma fallisce su data-loss changes (comportamento voluto — non aggirare).
+- **Mai skippare `tsc --noEmit`** prima di un push: i deploy Vercel rompono silenziosamente se il type-check non è verde.
+- **Mai chiamare `auth()` in un Client Component** — passare la session/dati utente come prop dal Server Component padre, oppure fetchare via `/api/users/me`.
+- **Mai esporre dati sensibili in client props** (email altrui, ruoli admin di altri utenti che non dovrebbero vederli) — fare `select` esplicito in Prisma.
+- **Mai dimenticare il rate-limit** sulle API pubbliche (GET senza auth): `checkRateLimit(getClientIp(req), "key", limit, windowMs)`.
+- **Mai usare `prisma.session` quando intendi `prisma.trainingSession`** — `session` = sessione Auth.js.
+- **Mai aggiungere libreria di state management** (Redux, Zustand, Jotai...) senza discuterne — il pattern attuale è useState + Context + SWR.
+- **Mai introdurre nuovi alias di import** oltre `@/` → `src/`.
+- **Mai committare file generati** (`.next/`, `node_modules/`, `prisma/migrations/` su branch develop senza review).
+- **Mai bypassare `isCoachOrAdmin()` / `isAdminUser()`** in API route admin con controlli ad-hoc.
+- **Mai usare `fetch` in Server Component per dati interni** — andare direttamente a Prisma. `fetch` interno è uno spreco e perde caching.

@@ -100,11 +100,100 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 
 ---
 
+## 🛠 DEVELOPER EXPERIENCE — Backlog
+
+### DX1. ✅ **Husky + lint-staged — pre-commit hook** *(fatto: 2026-05-19)*
+
+Esegue `prettier`, `eslint --fix` e `tsc --noEmit` automaticamente al commit.
+Evita push con type-error o stile inconsistente.
+
+### DX2. ✅ **GitHub Actions CI** *(fatto: 2026-05-19)*
+
+Workflow `ci.yml` su push/PR: lint + type-check + test + format-check.
+Blocca merge se rosso.
+
+### DX3. **Path aliases granulari + barrel per `lib/schemas`**
+
+Aggiungere `@/schemas/*` in `tsconfig.json` e creare `src/lib/schemas/index.ts`.
+**Effort:** 1h
+
+### DX4. **Sentry / error reporting in produzione**
+
+Aggiungere `instrumentation.ts` con Sentry SDK. Catturare eccezioni da `global-error.tsx`.
+**Effort:** 2h
+
+### DX5. **Storybook per componenti complessi**
+
+Priority: `RegistrationForm` (7+ stati), `TeamDisplay`, `CalendarClient`.
+**Effort:** 3-4h setup + 30min/componente
+
+---
+
+## ✨ UX QUICK WINS — Backlog
+
+### UX1. ✅ **Skeleton loading per sub-route admin** *(fatto: 2026-05-19)*
+
+`loading.tsx` per allenamenti, utenti, partite, squadre, eventi.
+
+### UX2. **Optimistic updates su iscrizione/disiscrizione**
+
+SWR `mutate(key, optimisticData, { rollbackOnError: true })` in `useRegistrationForm`.
+**Effort:** 2h
+
+### UX3. **Accessibility: aria-label su IconButton**
+
+Abilitare `jsx-a11y/control-has-associated-label: "error"` in eslint.config.
+Poi aggiungere `aria-label` su tutti gli `IconButton` senza testo.
+**Effort:** 3h
+
+### UX4. **Keyboard navigation in CalendarClient**
+
+`tabIndex={0}` + `onKeyDown` (←→ giorno, ↑↓ settimana) sui giorni del calendario.
+**Effort:** 2h
+
+### UX5. **Dark mode (prefers-color-scheme)**
+
+MUI `CssVarsProvider` + `useMediaQuery` + override in localStorage.
+**Effort:** 4-5h (richiede revisione `sx` con colori custom)
+
+### UX6. **Toast "Annulla" sulle disiscrizioni**
+
+Pattern Gmail: 8s per annullare. Ricrea iscrizione al click.
+**Effort:** 1.5h
+
+---
+
+## 🏗 INFRASTRUTTURA — Backlog
+
+### INF1. **TanStack Query al posto di SWR (graduale)**
+
+`useMutation` con rollback, devtools, query invalidation a cascata.
+Iniziare da dominio `registrations`.
+**Effort:** 1h setup + 2h/dominio
+
+### INF2. **Testing Library + Playwright E2E**
+
+3 journey critiche: iscrizione anonima, login+iscrizione, admin genera squadre.
+**Effort:** 2h setup + 2h/journey
+
+### INF3. ✅ **React Hook Form + Zod resolver su form admin** *(fatto: 2026-05-19)*
+
+Applicato a `AdminSessionForm`. Riusa schemi Zod server-side, elimina `validate()` manuale.
+Prossimi candidati: form partite, form eventi, form squadre.
+
+### INF4. **Prisma Edge adapter (Neon)**
+
+`@prisma/adapter-neon` per abilitare auth nel middleware vero.
+**Effort:** 3h + test approfonditi
+
+---
+
 ## Note operative
 
 | Categoria | Quando fare |
 |---|---|
-| 🔴 Critico (S1–S3) | Prima del prossimo push in produzione |
+| 🔴 Critico | Prima del prossimo push in produzione |
 | 🟡 Alta (A1–A5) | Prossimo sprint — nessun prerequisito bloccante |
 | 🟡 Media (M1–M5) | Boy-scout rule: quando si tocca il file per altro |
 | 📋 Feature (F1–F5) | In ordine: F1 → F2 → F3 → F4 → F5 |
+| 🛠 DX / ✨ UX / 🏗 INF | Raccogliere in sprint dedicati |
