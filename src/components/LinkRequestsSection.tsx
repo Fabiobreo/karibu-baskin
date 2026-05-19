@@ -1,7 +1,14 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import {
-  Box, Typography, Paper, Avatar, Button, Stack, Chip, CircularProgress,
+  Box,
+  Typography,
+  Paper,
+  Avatar,
+  Button,
+  Stack,
+  Chip,
+  CircularProgress,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -33,7 +40,11 @@ interface LinkRequest {
 
 function formatBirthDate(d: string | null): string {
   if (!d) return "";
-  try { return format(new Date(d), "d MMMM yyyy", { locale: it }); } catch { return ""; }
+  try {
+    return format(new Date(d), "d MMMM yyyy", { locale: it });
+  } catch {
+    return "";
+  }
 }
 
 export default function LinkRequestsSection() {
@@ -51,7 +62,9 @@ export default function LinkRequestsSection() {
     }
   }, []);
 
-  useEffect(() => { fetchRequests(); }, [fetchRequests]);
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
 
   async function respond(requestId: string, accept: boolean) {
     setResponding(requestId);
@@ -82,7 +95,12 @@ export default function LinkRequestsSection() {
   if (requests.length === 0) return null;
 
   return (
-    <Paper id="richieste" elevation={0} variant="outlined" sx={{ p: 3, mb: 3, borderColor: "warning.main" }}>
+    <Paper
+      id="richieste"
+      elevation={0}
+      variant="outlined"
+      sx={{ p: 3, mb: 3, borderColor: "warning.main" }}
+    >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         <FamilyRestroomIcon color="warning" fontSize="small" />
         <Typography variant="subtitle1" fontWeight={700}>
@@ -110,11 +128,20 @@ export default function LinkRequestsSection() {
                 <Typography variant="caption" color="text.secondary" display="block">
                   {req.parent.email}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  sx={{ mt: 0.5 }}
+                >
                   Vuole collegarsi al profilo: <strong>{req.child.name}</strong>
-                  {req.child.sportRole ? ` · ${sportRoleLabel(req.child.sportRole, req.child.sportRoleVariant)}` : ""}
+                  {req.child.sportRole
+                    ? ` · ${sportRoleLabel(req.child.sportRole, req.child.sportRoleVariant)}`
+                    : ""}
                   {req.child.gender ? ` · ${GENDER_LABELS[req.child.gender]}` : ""}
-                  {req.child.birthDate ? ` · nato/a il ${formatBirthDate(req.child.birthDate)}` : ""}
+                  {req.child.birthDate
+                    ? ` · nato/a il ${formatBirthDate(req.child.birthDate)}`
+                    : ""}
                 </Typography>
                 {req.child.sportRole && (
                   <Chip
@@ -133,16 +160,32 @@ export default function LinkRequestsSection() {
             </Box>
             <Box sx={{ display: "flex", gap: 1, mt: 1.5, justifyContent: "flex-end" }}>
               <Button
-                size="small" color="error" variant="outlined"
-                startIcon={responding === req.id ? <CircularProgress size={14} color="inherit" /> : <CloseIcon />}
+                size="small"
+                color="error"
+                variant="outlined"
+                startIcon={
+                  responding === req.id ? (
+                    <CircularProgress size={14} color="inherit" />
+                  ) : (
+                    <CloseIcon />
+                  )
+                }
                 disabled={responding === req.id}
                 onClick={() => respond(req.id, false)}
               >
                 Rifiuta
               </Button>
               <Button
-                size="small" color="success" variant="contained"
-                startIcon={responding === req.id ? <CircularProgress size={14} color="inherit" /> : <CheckIcon />}
+                size="small"
+                color="success"
+                variant="contained"
+                startIcon={
+                  responding === req.id ? (
+                    <CircularProgress size={14} color="inherit" />
+                  ) : (
+                    <CheckIcon />
+                  )
+                }
                 disabled={responding === req.id}
                 onClick={() => respond(req.id, true)}
               >

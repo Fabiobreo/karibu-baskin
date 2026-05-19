@@ -92,7 +92,9 @@ export async function POST(
       url: `/allenamento/${trainingSession.dateSlug ?? sessionId}`,
       type: "TEAMS_READY",
     };
-    sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch((err) => console.error("[push] teams ready", err));
+    sendPushToUsers(registeredUserIds, pushPayload, "TEAMS_READY").catch((err) =>
+      console.error("[push] teams ready", err)
+    );
     createTargetedAppNotifications(registeredUserIds, {
       type: "TEAMS_READY",
       title: "Squadre pronte!",

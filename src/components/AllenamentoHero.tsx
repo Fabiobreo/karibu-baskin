@@ -1,9 +1,20 @@
 "use client";
 import { useState, useEffect } from "react";
 import {
-  Box, Typography, Chip, Button, IconButton, Tooltip,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Alert, Divider, CircularProgress,
+  Box,
+  Typography,
+  Chip,
+  Button,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Alert,
+  Divider,
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -21,7 +32,11 @@ import SessionRestrictionEditor, {
 } from "@/components/SessionRestrictionEditor";
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 
-const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
+const DEFAULT_RESTRICTIONS: RestrictionValue = {
+  allowedRoles: [],
+  restrictTeamId: null,
+  openRoles: [],
+};
 
 interface Session {
   id: string;
@@ -76,8 +91,10 @@ export default function AllenamientoHero({
   const status = getSessionStatus(sessionDate, sessionEnd);
 
   const [sessionUrl, setSessionUrl] = useState("");
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setSessionUrl(window.location.href); }, []);
+   
+  useEffect(() => {
+    setSessionUrl(window.location.href);
+  }, []);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -105,9 +122,18 @@ export default function AllenamientoHero({
   }
 
   async function handleSaveEdit() {
-    if (!editTitle.trim()) { setEditError("Il titolo è obbligatorio"); return; }
-    if (!editDate) { setEditError("La data è obbligatoria"); return; }
-    if (editEndTime && editEndTime <= editTime) { setEditError("L'orario di fine deve essere dopo l'inizio"); return; }
+    if (!editTitle.trim()) {
+      setEditError("Il titolo è obbligatorio");
+      return;
+    }
+    if (!editDate) {
+      setEditError("La data è obbligatoria");
+      return;
+    }
+    if (editEndTime && editEndTime <= editTime) {
+      setEditError("L'orario di fine deve essere dopo l'inizio");
+      return;
+    }
     setEditLoading(true);
     setEditError("");
     try {
@@ -153,8 +179,30 @@ export default function AllenamientoHero({
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.1)",
+            pointerEvents: "none",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.06)",
+            pointerEvents: "none",
+          }}
+        />
 
         <Box sx={{ maxWidth: "md", mx: "auto", position: "relative" }}>
           <Box sx={{ mb: 2 }}>
@@ -206,20 +254,42 @@ export default function AllenamientoHero({
             )}
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: countdown ? 0.75 : 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexWrap: "wrap",
+              mb: countdown ? 0.75 : 2,
+            }}
+          >
             <Chip
               label={status.label}
               size="small"
-              sx={{ bgcolor: status.bgcolor, color: "#fff", fontWeight: 700, fontSize: "0.72rem", letterSpacing: 0.5 }}
+              sx={{
+                bgcolor: status.bgcolor,
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: "0.72rem",
+                letterSpacing: 0.5,
+              }}
             />
-            {(session.allowedRoles && session.allowedRoles.length > 0 || session.restrictTeamId) && (
+            {((session.allowedRoles && session.allowedRoles.length > 0) ||
+              session.restrictTeamId) && (
               <Chip
                 icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
-                label={session.restrictTeam
-                  ? `Solo ${session.restrictTeam.name}${session.allowedRoles?.length ? ` · ${session.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                  : session.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+                label={
+                  session.restrictTeam
+                    ? `Solo ${session.restrictTeam.name}${session.allowedRoles?.length ? ` · ${session.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                    : session.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")
+                }
                 size="small"
-                sx={{ bgcolor: "warning.light", color: "warning.contrastText", fontWeight: 600, fontSize: "0.7rem" }}
+                sx={{
+                  bgcolor: "warning.light",
+                  color: "warning.contrastText",
+                  fontWeight: 600,
+                  fontSize: "0.7rem",
+                }}
               />
             )}
             {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
@@ -227,7 +297,12 @@ export default function AllenamientoHero({
                 icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
                 label={`Aperto a tutti i ${session.openRoles.map((r) => `${r}`).join(", ")}`}
                 size="small"
-                sx={{ bgcolor: "success.light", color: "success.contrastText", fontWeight: 600, fontSize: "0.7rem" }}
+                sx={{
+                  bgcolor: "success.light",
+                  color: "success.contrastText",
+                  fontWeight: 600,
+                  fontSize: "0.7rem",
+                }}
               />
             )}
           </Box>
@@ -241,7 +316,15 @@ export default function AllenamientoHero({
             </Box>
           )}
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: { xs: 1, sm: 2.5 }, mb: 2.5, opacity: 0.82 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: { xs: 1, sm: 2.5 },
+              mb: 2.5,
+              opacity: 0.82,
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <CalendarTodayIcon sx={{ fontSize: 16 }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -262,7 +345,12 @@ export default function AllenamientoHero({
       </Box>
 
       {/* Dialog: modifica allenamento */}
-      <Dialog open={editOpen} onClose={() => !editLoading && setEditOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={editOpen}
+        onClose={() => !editLoading && setEditOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle fontWeight={700}>Modifica allenamento</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -270,8 +358,12 @@ export default function AllenamientoHero({
             <TextField
               label="Titolo"
               value={editTitle}
-              onChange={(e) => { setEditTitle(e.target.value); setEditError(""); }}
-              fullWidth size="small"
+              onChange={(e) => {
+                setEditTitle(e.target.value);
+                setEditError("");
+              }}
+              fullWidth
+              size="small"
               disabled={editLoading}
               autoFocus
             />
@@ -279,7 +371,10 @@ export default function AllenamientoHero({
               label="Data"
               type="date"
               value={editDate}
-              onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
+              onChange={(e) => {
+                setEditDate(e.target.value);
+                setEditError("");
+              }}
               size="small"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
@@ -290,7 +385,10 @@ export default function AllenamientoHero({
                 label="Inizio"
                 type="time"
                 value={editTime}
-                onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
+                onChange={(e) => {
+                  setEditTime(e.target.value);
+                  setEditError("");
+                }}
                 size="small"
                 slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
@@ -300,7 +398,10 @@ export default function AllenamientoHero({
                 label="Fine"
                 type="time"
                 value={editEndTime}
-                onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
+                onChange={(e) => {
+                  setEditEndTime(e.target.value);
+                  setEditError("");
+                }}
                 size="small"
                 slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
@@ -324,7 +425,9 @@ export default function AllenamientoHero({
             variant="contained"
             onClick={handleSaveEdit}
             disabled={editLoading}
-            startIcon={editLoading ? <CircularProgress size={16} color="inherit" /> : <EventAvailableIcon />}
+            startIcon={
+              editLoading ? <CircularProgress size={16} color="inherit" /> : <EventAvailableIcon />
+            }
             sx={{ px: 3 }}
           >
             {editLoading ? "Salvataggio..." : "Salva modifiche"}

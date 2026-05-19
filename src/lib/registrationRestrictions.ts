@@ -35,7 +35,7 @@ export function checkRegistrationAllowed(
   appRole: string | null,
   sportRole: number,
   isInRestrictedTeam: boolean,
-  registeredAsCoach = false,
+  registeredAsCoach = false
 ): RestrictionCheckResult {
   // ADMIN: sempre ammesso
   if (appRole === "ADMIN") return { allowed: true };

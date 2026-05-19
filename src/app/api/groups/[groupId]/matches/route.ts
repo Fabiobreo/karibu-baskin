@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     },
     include: {
       homeTeam: { select: { id: true, name: true, slug: true } },
-      awayTeam:  { select: { id: true, name: true, slug: true } },
+      awayTeam: { select: { id: true, name: true, slug: true } },
     },
   });
 

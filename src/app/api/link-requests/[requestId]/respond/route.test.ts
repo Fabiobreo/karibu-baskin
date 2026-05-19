@@ -69,12 +69,23 @@ describe("POST /api/link-requests/[requestId]/respond", () => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "target-1" } });
     p.linkRequest.findUnique.mockResolvedValue({ ...baseLinkRequest });
-    p.user.findUnique.mockResolvedValue({ id: "target-1", name: "Giovane", appRole: "ATHLETE", sportRole: null });
+    p.user.findUnique.mockResolvedValue({
+      id: "target-1",
+      name: "Giovane",
+      appRole: "ATHLETE",
+      sportRole: null,
+    });
     p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>
       fn({
         linkRequest: { update: vi.fn().mockResolvedValue(undefined) },
-        child: { findUnique: vi.fn().mockResolvedValue(null), update: vi.fn().mockResolvedValue(undefined) },
-        user: { findUnique: vi.fn().mockResolvedValue({ appRole: "ATHLETE", sportRole: null }), update: vi.fn().mockResolvedValue(undefined) },
+        child: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          update: vi.fn().mockResolvedValue(undefined),
+        },
+        user: {
+          findUnique: vi.fn().mockResolvedValue({ appRole: "ATHLETE", sportRole: null }),
+          update: vi.fn().mockResolvedValue(undefined),
+        },
         appNotification: { create: vi.fn().mockResolvedValue(undefined) },
       })
     );

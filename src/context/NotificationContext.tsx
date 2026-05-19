@@ -23,7 +23,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     try {
       const res = await fetch("/api/notifications/unread-count");
       if (res.ok) {
-        const data = await res.json() as { count?: number };
+        const data = (await res.json()) as { count?: number };
         setUnreadCount(data.count ?? 0);
       }
     } catch {
@@ -56,7 +56,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const effectiveUnreadCount = status === "authenticated" ? unreadCount : 0;
 
   return (
-    <NotificationContext.Provider value={{ unreadCount: effectiveUnreadCount, refreshCount: fetchCount, markAllRead }}>
+    <NotificationContext.Provider
+      value={{ unreadCount: effectiveUnreadCount, refreshCount: fetchCount, markAllRead }}
+    >
       {children}
     </NotificationContext.Provider>
   );

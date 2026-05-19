@@ -24,7 +24,9 @@ type PrismaMock = {
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
 
-function makePATCH(notificationId: string): [NextRequest, { params: Promise<{ notificationId: string }> }] {
+function makePATCH(
+  notificationId: string
+): [NextRequest, { params: Promise<{ notificationId: string }> }] {
   return [
     new NextRequest(`http://localhost/api/notifications/${notificationId}`, { method: "PATCH" }),
     { params: Promise.resolve({ notificationId }) },

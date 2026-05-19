@@ -5,10 +5,7 @@ import { prisma } from "@/lib/db";
 type Params = { params: Promise<{ requestId: string }> };
 
 // DELETE — il richiedente (parentId) può cancellare una richiesta PENDING
-export async function DELETE(
-  _req: NextRequest,
-  { params }: Params
-) {
+export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
@@ -30,7 +27,10 @@ export async function DELETE(
   }
 
   if (linkRequest.status !== "PENDING") {
-    return NextResponse.json({ error: "Richiesta già elaborata, non cancellabile" }, { status: 409 });
+    return NextResponse.json(
+      { error: "Richiesta già elaborata, non cancellabile" },
+      { status: 409 }
+    );
   }
 
   await prisma.linkRequest.delete({ where: { id: requestId } });

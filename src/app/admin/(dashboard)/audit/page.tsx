@@ -21,7 +21,9 @@ export default function AdminAuditPage() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <HistoryIcon sx={{ color: "#37474F" }} />
         <Box>
-          <Typography variant="h5" fontWeight={700}>Registro Attività</Typography>
+          <Typography variant="h5" fontWeight={700}>
+            Registro Attività
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             Tutte le azioni effettuate da coach e admin sul pannello.
           </Typography>

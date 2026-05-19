@@ -2,9 +2,19 @@
 
 import { useState, useEffect } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, CircularProgress, Typography, Box, Checkbox,
-  FormControlLabel, Chip, Divider, Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  CircularProgress,
+  Typography,
+  Box,
+  Checkbox,
+  FormControlLabel,
+  Chip,
+  Divider,
+  Alert,
 } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { ROLE_COLORS, ROLE_LABELS, sportRoleLabel } from "@/lib/constants";
@@ -14,8 +24,18 @@ interface Member {
   userId: string | null;
   childId: string | null;
   isCaptain: boolean;
-  user: { id: string; name: string | null; sportRole: number | null; sportRoleVariant: string | null } | null;
-  child: { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null } | null;
+  user: {
+    id: string;
+    name: string | null;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+  } | null;
+  child: {
+    id: string;
+    name: string;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+  } | null;
 }
 
 interface Callup {
@@ -124,17 +144,30 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
       </DialogTitle>
 
       <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
           </Box>
         ) : members.length === 0 ? (
-          <Typography color="text.secondary">Nessun membro nella rosa di questa squadra.</Typography>
+          <Typography color="text.secondary">
+            Nessun membro nella rosa di questa squadra.
+          </Typography>
         ) : (
           <>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 1.5,
+              }}
+            >
               <Chip
                 label={`${totalSelected} convocati`}
                 color="primary"
@@ -142,8 +175,12 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
                 sx={{ fontWeight: 700 }}
               />
               <Box sx={{ display: "flex", gap: 1 }}>
-                <Button size="small" onClick={selectAll}>Tutti</Button>
-                <Button size="small" color="inherit" onClick={clearAll}>Nessuno</Button>
+                <Button size="small" onClick={selectAll}>
+                  Tutti
+                </Button>
+                <Button size="small" color="inherit" onClick={clearAll}>
+                  Nessuno
+                </Button>
               </Box>
             </Box>
             <Divider sx={{ mb: 1.5 }} />
@@ -158,7 +195,10 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
                   : selectedChildIds.has(m.childId!);
                 const role = person.sportRole;
                 const roleLabel = role
-                  ? sportRoleLabel(role, (person as { sportRoleVariant?: string | null }).sportRoleVariant ?? null)
+                  ? sportRoleLabel(
+                      role,
+                      (person as { sportRoleVariant?: string | null }).sportRoleVariant ?? null
+                    )
                   : null;
 
                 return (
@@ -167,7 +207,7 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
                     control={
                       <Checkbox
                         checked={isSelected}
-                        onChange={() => isUser ? toggleUser(m.userId!) : toggleChild(m.childId!)}
+                        onChange={() => (isUser ? toggleUser(m.userId!) : toggleChild(m.childId!))}
                         size="small"
                       />
                     }
@@ -181,7 +221,13 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
                           <Chip
                             label={roleLabel}
                             size="small"
-                            sx={{ bgcolor: ROLE_COLORS[role], color: "#fff", fontWeight: 600, fontSize: "0.65rem", height: 18 }}
+                            sx={{
+                              bgcolor: ROLE_COLORS[role],
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: "0.65rem",
+                              height: 18,
+                            }}
                           />
                         )}
                       </Box>
@@ -196,7 +242,9 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={saving}>Annulla</Button>
+        <Button onClick={onClose} disabled={saving}>
+          Annulla
+        </Button>
         <Button
           variant="contained"
           onClick={handleSave}

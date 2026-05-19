@@ -1,9 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import {
-  Box, Typography, Paper, TextField, Button,
-  Select, MenuItem, FormControl, InputLabel, Chip,
-  Alert, CircularProgress, Divider,
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  Alert,
+  CircularProgress,
+  Divider,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
@@ -23,7 +33,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
   const [teamId, setTeamId] = useState<string>("");
-  const [sportRole, setSportRole] = useState<string>("");  // "" = nessun filtro
+  const [sportRole, setSportRole] = useState<string>(""); // "" = nessun filtro
   const [targetAll, setTargetAll] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -53,9 +63,18 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
   }
 
   async function handleSend() {
-    if (!title.trim()) { setError("Il titolo è obbligatorio"); return; }
-    if (!body.trim())  { setError("Il messaggio è obbligatorio"); return; }
-    if (!hasTarget)    { setError("Seleziona almeno un destinatario"); return; }
+    if (!title.trim()) {
+      setError("Il titolo è obbligatorio");
+      return;
+    }
+    if (!body.trim()) {
+      setError("Il messaggio è obbligatorio");
+      return;
+    }
+    if (!hasTarget) {
+      setError("Seleziona almeno un destinatario");
+      return;
+    }
 
     setSending(true);
     setError("");
@@ -74,11 +93,19 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        const data = await res.json() as { sent: number };
-        showToast({ message: `Notifica inviata a ${data.sent} dispositiv${data.sent !== 1 ? "i" : "o"}`, severity: "success" });
-        setTitle(""); setBody(""); setUrl(""); setTeamId(""); setSportRole(""); setTargetAll(false);
+        const data = (await res.json()) as { sent: number };
+        showToast({
+          message: `Notifica inviata a ${data.sent} dispositiv${data.sent !== 1 ? "i" : "o"}`,
+          severity: "success",
+        });
+        setTitle("");
+        setBody("");
+        setUrl("");
+        setTeamId("");
+        setSportRole("");
+        setTargetAll(false);
       } else {
-        const data = await res.json().catch(() => ({})) as { error?: string };
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
         setError(data.error ?? "Errore durante l'invio");
       }
     } catch {
@@ -97,13 +124,20 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         </Typography>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
           label="Titolo"
           value={title}
-          onChange={(e) => { setTitle(e.target.value); setError(""); }}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            setError("");
+          }}
           size="small"
           fullWidth
           inputProps={{ maxLength: 100 }}
@@ -112,7 +146,10 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         <TextField
           label="Messaggio"
           value={body}
-          onChange={(e) => { setBody(e.target.value); setError(""); }}
+          onChange={(e) => {
+            setBody(e.target.value);
+            setError("");
+          }}
           size="small"
           fullWidth
           multiline
@@ -132,7 +169,12 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
 
         <Divider />
 
-        <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
+        <Typography
+          variant="caption"
+          fontWeight={700}
+          color="text.secondary"
+          sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
+        >
           Destinatari
         </Typography>
 
@@ -140,7 +182,12 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
           {/* Tutti */}
           <Chip
             label="Tutti"
-            onClick={() => { setTargetAll(!targetAll); setTeamId(""); setSportRole(""); setError(""); }}
+            onClick={() => {
+              setTargetAll(!targetAll);
+              setTeamId("");
+              setSportRole("");
+              setError("");
+            }}
             color={targetAll ? "primary" : "default"}
             variant={targetAll ? "filled" : "outlined"}
             sx={{ fontWeight: 600 }}
@@ -154,14 +201,28 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
               label="Squadra"
               notched
               displayEmpty
-              onChange={(e) => { setTeamId(e.target.value); setTargetAll(false); setError(""); }}
+              onChange={(e) => {
+                setTeamId(e.target.value);
+                setTargetAll(false);
+                setError("");
+              }}
             >
-              <MenuItem value=""><em>Tutte le squadre</em></MenuItem>
+              <MenuItem value="">
+                <em>Tutte le squadre</em>
+              </MenuItem>
               {teams.map((t) => (
                 <MenuItem key={t.id} value={t.id}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {t.color && (
-                      <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          bgcolor: t.color,
+                          flexShrink: 0,
+                        }}
+                      />
                     )}
                     {t.name}
                   </Box>
@@ -178,13 +239,27 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
               label="Ruolo Baskin"
               notched
               displayEmpty
-              onChange={(e) => { setSportRole(e.target.value); setTargetAll(false); setError(""); }}
+              onChange={(e) => {
+                setSportRole(e.target.value);
+                setTargetAll(false);
+                setError("");
+              }}
             >
-              <MenuItem value=""><em>Tutti i ruoli</em></MenuItem>
+              <MenuItem value="">
+                <em>Tutti i ruoli</em>
+              </MenuItem>
               {ROLES.map((r) => (
                 <MenuItem key={r} value={String(r)}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: ROLE_COLORS[r], flexShrink: 0 }} />
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: "50%",
+                        bgcolor: ROLE_COLORS[r],
+                        flexShrink: 0,
+                      }}
+                    />
                     {ROLE_LABELS[r]}
                   </Box>
                 </MenuItem>
@@ -194,7 +269,11 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         </Box>
 
         {/* Preview destinatari */}
-        <Typography variant="caption" color={hasTarget ? "primary.main" : "text.disabled"} fontWeight={600}>
+        <Typography
+          variant="caption"
+          color={hasTarget ? "primary.main" : "text.disabled"}
+          fontWeight={600}
+        >
           → {audienceDescription()}
         </Typography>
 

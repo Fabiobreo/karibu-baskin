@@ -7,10 +7,7 @@ const AttendanceSchema = z.object({
   attended: z.boolean().nullable(),
 });
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ regId: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ regId: string }> }) {
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }

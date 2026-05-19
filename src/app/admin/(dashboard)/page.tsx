@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/db";
-import {
-  Box, Typography, Paper, Chip,
-} from "@mui/material";
+import { Box, Typography, Paper, Chip } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -22,18 +20,43 @@ export default async function AdminPage() {
   const thirtyDaysAgo = new Date(now);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const [totalUsers, recentUsers, recentChildren, pendingRoleCount, recentAnonymous, sessionsIncomplete] = await Promise.all([
+  const [
+    totalUsers,
+    recentUsers,
+    recentChildren,
+    pendingRoleCount,
+    recentAnonymous,
+    sessionsIncomplete,
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
-      select: { id: true, name: true, email: true, image: true, appRole: true, createdAt: true, sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        appRole: true,
+        createdAt: true,
+        sportRole: true,
+        sportRoleVariant: true,
+        sportRoleSuggested: true,
+        sportRoleSuggestedVariant: true,
+      },
     }),
     prisma.child.findMany({
       where: { userId: null },
       orderBy: { createdAt: "desc" },
       take: 5,
-      select: { id: true, name: true, sportRole: true, sportRoleVariant: true, createdAt: true, parent: { select: { name: true, email: true } } },
+      select: {
+        id: true,
+        name: true,
+        sportRole: true,
+        sportRoleVariant: true,
+        createdAt: true,
+        parent: { select: { name: true, email: true } },
+      },
     }),
     // Utenti con ruolo suggerito ma non ancora confermato
     prisma.user.count({
@@ -44,7 +67,11 @@ export default async function AdminPage() {
       where: { userId: null, childId: null },
       orderBy: { createdAt: "desc" },
       select: {
-        id: true, name: true, anonymousEmail: true, role: true, createdAt: true,
+        id: true,
+        name: true,
+        anonymousEmail: true,
+        role: true,
+        createdAt: true,
         session: { select: { id: true, date: true, dateSlug: true } },
       },
     }),
@@ -62,7 +89,9 @@ export default async function AdminPage() {
   const recentAll = [
     ...recentUsers.map((u) => ({ ...u, kind: "user" as const })),
     ...recentChildren.map((c) => ({ ...c, kind: "child" as const })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+  ]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
   const recentCount = await prisma.user.count({
     where: { createdAt: { gte: thirtyDaysAgo } },
@@ -70,9 +99,14 @@ export default async function AdminPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-
       {/* Navigazione */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" }, gap: 2 }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+          gap: 2,
+        }}
+      >
         <NavCard
           href="/admin/utenti"
           icon={<PersonIcon />}
@@ -89,11 +123,36 @@ export default async function AdminPage() {
           badgeLabel={sessionsIncomplete === 1 ? "da completare" : "da completare"}
           color="#00897B"
         />
-        <NavCard href="/admin/squadre" icon={<GroupsIcon />} label="Gestione Squadre" color="#1565C0" />
-        <NavCard href="/admin/partite" icon={<EmojiEventsIcon />} label="Gestione Partite" color="#2E7D32" />
-        <NavCard href="/admin/eventi" icon={<CalendarMonthIcon />} label="Gestione Eventi" color="#6A1B9A" />
-        <NavCard href="/admin/esporta" icon={<DownloadIcon />} label="Esporta CSV" color="#37474F" />
-        <NavCard href="/admin/audit" icon={<HistoryIcon />} label="Registro Attività" color="#4527A0" />
+        <NavCard
+          href="/admin/squadre"
+          icon={<GroupsIcon />}
+          label="Gestione Squadre"
+          color="#1565C0"
+        />
+        <NavCard
+          href="/admin/partite"
+          icon={<EmojiEventsIcon />}
+          label="Gestione Partite"
+          color="#2E7D32"
+        />
+        <NavCard
+          href="/admin/eventi"
+          icon={<CalendarMonthIcon />}
+          label="Gestione Eventi"
+          color="#6A1B9A"
+        />
+        <NavCard
+          href="/admin/esporta"
+          icon={<DownloadIcon />}
+          label="Esporta CSV"
+          color="#37474F"
+        />
+        <NavCard
+          href="/admin/audit"
+          icon={<HistoryIcon />}
+          label="Registro Attività"
+          color="#4527A0"
+        />
       </Box>
 
       {/* Badge suggerimenti ruolo */}
@@ -102,14 +161,19 @@ export default async function AdminPage() {
           <NewReleasesIcon color="warning" />
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" fontWeight={700}>
-              {pendingRoleCount} {pendingRoleCount === 1 ? "utente ha" : "utenti hanno"} suggerito il proprio ruolo Baskin
+              {pendingRoleCount} {pendingRoleCount === 1 ? "utente ha" : "utenti hanno"} suggerito
+              il proprio ruolo Baskin
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Vai su Gestione Utenti per confermare o modificare il ruolo.
             </Typography>
           </Box>
           <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
-            <Typography variant="caption" color="primary" sx={{ "&:hover": { textDecoration: "underline" } }}>
+            <Typography
+              variant="caption"
+              color="primary"
+              sx={{ "&:hover": { textDecoration: "underline" } }}
+            >
               Gestisci →
             </Typography>
           </Link>
@@ -119,12 +183,19 @@ export default async function AdminPage() {
       <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
 
       <AdminNotificationSender currentSeason={getCurrentSeason()} />
-
     </Box>
   );
 }
 
-function NavCard({ href, icon, label, stat, badge, badgeLabel, color }: {
+function NavCard({
+  href,
+  icon,
+  label,
+  stat,
+  badge,
+  badgeLabel,
+  color,
+}: {
   href: string;
   icon: React.ReactNode;
   label: string;
@@ -153,7 +224,12 @@ function NavCard({ href, icon, label, stat, badge, badgeLabel, color }: {
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Box sx={{ color }}>{icon}</Box>
           {hasBadge && (
-            <Chip label={badge} size="small" color="warning" sx={{ fontWeight: 700, height: 20, fontSize: "0.72rem" }} />
+            <Chip
+              label={badge}
+              size="small"
+              color="warning"
+              sx={{ fontWeight: 700, height: 20, fontSize: "0.72rem" }}
+            />
           )}
         </Box>
         <Typography variant="subtitle2" fontWeight={700} sx={{ color }}>
@@ -165,7 +241,10 @@ function NavCard({ href, icon, label, stat, badge, badgeLabel, color }: {
           </Typography>
         )}
         {hasBadge && badgeLabel && (
-          <Typography variant="caption" sx={{ color: "warning.dark", fontWeight: 700, lineHeight: 1.4 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "warning.dark", fontWeight: 700, lineHeight: 1.4 }}
+          >
             {badge} {badgeLabel}
           </Typography>
         )}

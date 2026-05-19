@@ -16,7 +16,11 @@ export async function GET(req: NextRequest) {
   const appRole = searchParams.get("appRole") as AppRole | null;
   const sportRole = searchParams.get("sportRole"); // "none" | "1"–"5"
   const gender = searchParams.get("gender") as Gender | "none" | null;
-  const sortBy = (searchParams.get("sortBy") ?? "createdAt") as "name" | "createdAt" | "appRole" | "sportRole";
+  const sortBy = (searchParams.get("sortBy") ?? "createdAt") as
+    | "name"
+    | "createdAt"
+    | "appRole"
+    | "sportRole";
   const sortDir = (searchParams.get("sortDir") ?? "desc") as "asc" | "desc";
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "0", 10)));
@@ -30,24 +34,40 @@ export async function GET(req: NextRequest) {
   }
   if (appRole && VALID_APP_ROLES.includes(appRole)) where.appRole = appRole;
   if (sportRole === "none") where.sportRole = null;
-  else if (sportRole) { const n = parseInt(sportRole, 10); if (!isNaN(n)) where.sportRole = n; }
+  else if (sportRole) {
+    const n = parseInt(sportRole, 10);
+    if (!isNaN(n)) where.sportRole = n;
+  }
   if (gender === "none") where.gender = null;
   else if (gender && VALID_GENDERS.includes(gender)) where.gender = gender;
 
-  const orderBy: Prisma.UserOrderByWithRelationInput = sortBy === "name"
-    ? { name: sortDir }
-    : sortBy === "sportRole"
-    ? { sportRole: sortDir }
-    : sortBy === "appRole"
-    ? { appRole: sortDir }
-    : { createdAt: sortDir };
+  const orderBy: Prisma.UserOrderByWithRelationInput =
+    sortBy === "name"
+      ? { name: sortDir }
+      : sortBy === "sportRole"
+        ? { sportRole: sortDir }
+        : sortBy === "appRole"
+          ? { appRole: sortDir }
+          : { createdAt: sortDir };
 
   const select = {
-    id: true, name: true, email: true, image: true, appRole: true,
-    sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true,
-    gender: true, birthDate: true, createdAt: true,
+    id: true,
+    name: true,
+    email: true,
+    image: true,
+    appRole: true,
+    sportRole: true,
+    sportRoleVariant: true,
+    sportRoleSuggested: true,
+    sportRoleSuggestedVariant: true,
+    gender: true,
+    birthDate: true,
+    createdAt: true,
     _count: { select: { registrations: true } },
-    sportRoleHistory: { orderBy: { changedAt: "desc" as const }, select: { sportRole: true, changedAt: true } },
+    sportRoleHistory: {
+      orderBy: { changedAt: "desc" as const },
+      select: { sportRole: true, changedAt: true },
+    },
   };
 
   if (limit > 0) {
@@ -67,7 +87,7 @@ export async function POST(req: NextRequest) {
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
-  const body = await req.json().catch(() => ({})) as {
+  const body = (await req.json().catch(() => ({}))) as {
     email?: string;
     name?: string;
     appRole?: AppRole;

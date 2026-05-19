@@ -18,11 +18,12 @@ export const RegistrationPatchSchema = z.object({
   role: z.number().int().min(1).max(5).optional(),
 });
 
-export const TeamMemberSchema = z.object({
-  userId: z.string().optional(),
-  childId: z.string().optional(),
-  isCaptain: z.boolean().optional(),
-}).refine(
-  (b) => !!(b.userId) !== !!(b.childId),
-  { message: "Esattamente uno tra userId e childId è richiesto" }
-);
+export const TeamMemberSchema = z
+  .object({
+    userId: z.string().optional(),
+    childId: z.string().optional(),
+    isCaptain: z.boolean().optional(),
+  })
+  .refine((b) => !!b.userId !== !!b.childId, {
+    message: "Esattamente uno tra userId e childId è richiesto",
+  });

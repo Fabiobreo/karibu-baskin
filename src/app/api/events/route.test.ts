@@ -73,7 +73,10 @@ describe("GET /api/events", () => {
   });
 
   it("restituisce 429 quando il rate limit è superato", async () => {
-    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({ allowed: false, remaining: 0 });
+    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      allowed: false,
+      remaining: 0,
+    });
     const res = await GET(makeGet());
     expect(res.status).toBe(429);
     expect(p.event.findMany).not.toHaveBeenCalled();

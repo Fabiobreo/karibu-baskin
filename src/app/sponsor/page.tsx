@@ -1,5 +1,12 @@
 import {
-  Box, Container, Typography, Grid2 as Grid, Paper, Chip, Divider, Button,
+  Box,
+  Container,
+  Typography,
+  Grid2 as Grid,
+  Paper,
+  Chip,
+  Divider,
+  Button,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import HandshakeIcon from "@mui/icons-material/Handshake";
@@ -12,7 +19,8 @@ const SPONSORS = [
   {
     name: "Denis M. Photographer",
     category: "Fotografia",
-    description: "Fotografo ufficiale della squadra. Immortala i momenti più belli in campo e fuori.",
+    description:
+      "Fotografo ufficiale della squadra. Immortala i momenti più belli in campo e fuori.",
     url: "https://www.facebook.com/Denis.M.photographer",
     logo: "/sponsors/denis.jpg",
   },
@@ -40,7 +48,8 @@ const SPONSORS = [
   {
     name: "Saby Sport",
     category: "Abbigliamento sportivo",
-    description: "Fornitore ufficiale di abbigliamento e attrezzatura sportiva per le nostre squadre.",
+    description:
+      "Fornitore ufficiale di abbigliamento e attrezzatura sportiva per le nostre squadre.",
     url: "https://www.sabysport.com/",
     logo: "/sponsors/sabysport.png",
   },
@@ -57,7 +66,10 @@ const PERKS = [
   { title: "Logo sul sito", desc: "Il tuo brand visibile su tutte le pagine del sito ufficiale" },
   { title: "Visibilità sui social", desc: "Menzioni su Instagram, Facebook e YouTube" },
   { title: "Logo sulla maglia", desc: "Il tuo logo sulle divise di gara delle nostre squadre" },
-  { title: "Presenza agli eventi", desc: "Visibilità durante tornei, allenamenti aperti e iniziative" },
+  {
+    title: "Presenza agli eventi",
+    desc: "Visibilità durante tornei, allenamenti aperti e iniziative",
+  },
 ];
 
 export default function SponsorPage() {
@@ -77,31 +89,80 @@ export default function SponsorPage() {
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.1)",
+            pointerEvents: "none",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.06)",
+            pointerEvents: "none",
+          }}
+        />
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip label="I nostri partner" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography variant="h3" fontWeight={800} sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}>
+          <Chip
+            label="I nostri partner"
+            color="primary"
+            size="small"
+            sx={{ mb: 2, fontWeight: 700 }}
+          />
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}
+          >
             Sponsor
           </Typography>
-          <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, maxWidth: 520, mx: "auto", fontSize: { xs: "1rem", md: "1.1rem" } }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "rgba(255,255,255,0.65)",
+              fontWeight: 400,
+              maxWidth: 520,
+              mx: "auto",
+              fontSize: { xs: "1rem", md: "1.1rem" },
+            }}
+          >
             Un ringraziamento speciale a chi ci supporta ogni giorno, in campo e fuori.
           </Typography>
         </Container>
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-
         {/* Sponsor attuali */}
         <Box sx={{ mb: 7 }}>
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Grazie a
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             I nostri sponsor
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3}}>
-            Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti la nostra missione di inclusione.
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti
+            la nostra missione di inclusione.
           </Typography>
           <Grid container spacing={2}>
             {SPONSORS.map((s) => (
@@ -157,12 +218,18 @@ export default function SponsorPage() {
 
                   {/* Testo */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Chip label={s.category} size="small" sx={{ mb: 1, fontWeight: 600, fontSize: "0.68rem" }} />
+                    <Chip
+                      label={s.category}
+                      size="small"
+                      sx={{ mb: 1, fontWeight: 600, fontSize: "0.68rem" }}
+                    />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
                       <Typography variant="subtitle1" fontWeight={700} noWrap>
                         {s.name}
                       </Typography>
-                      <OpenInNewIcon sx={{ fontSize: "0.9rem", color: "text.disabled", flexShrink: 0 }} />
+                      <OpenInNewIcon
+                        sx={{ fontSize: "0.9rem", color: "text.disabled", flexShrink: 0 }}
+                      />
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
                       {s.description}
@@ -178,26 +245,48 @@ export default function SponsorPage() {
 
         {/* Diventa sponsor */}
         <Box>
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Unisciti a noi
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             Diventa sponsor
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità vera e
-            in un progetto che dal 2015 porta valore al territorio vicentino. In cambio offriamo visibilità
-            e un legame autentico con i nostri 80 atleti e le loro famiglie.
+            Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità
+            vera e in un progetto che dal 2015 porta valore al territorio vicentino. In cambio
+            offriamo visibilità e un legame autentico con i nostri 80 atleti e le loro famiglie.
           </Typography>
 
           <Grid container spacing={2} sx={{ mb: 4 }}>
             {PERKS.map((p) => (
               <Grid key={p.title} size={{ xs: 12, sm: 6 }}>
-                <Paper elevation={0} sx={{ p: 2, border: "1px solid rgba(0,0,0,0.07)", display: "flex", gap: 2, alignItems: "flex-start" }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    border: "1px solid rgba(0,0,0,0.07)",
+                    display: "flex",
+                    gap: 2,
+                    alignItems: "flex-start",
+                  }}
+                >
                   <HandshakeIcon sx={{ color: "primary.main", flexShrink: 0, mt: 0.3 }} />
                   <Box>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.25 }}>{p.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">{p.desc}</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.25 }}>
+                      {p.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {p.desc}
+                    </Typography>
                   </Box>
                 </Paper>
               </Grid>
@@ -239,7 +328,6 @@ export default function SponsorPage() {
             </Link>
           </Box>
         </Box>
-
       </Container>
     </>
   );

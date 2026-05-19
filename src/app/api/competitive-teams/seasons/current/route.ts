@@ -7,7 +7,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  const { label } = await req.json() as { label: string };
+  const { label } = (await req.json()) as { label: string };
   if (!label?.trim()) {
     return NextResponse.json({ error: "label richiesto" }, { status: 400 });
   }

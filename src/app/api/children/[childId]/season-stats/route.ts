@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ childId: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ childId: string }> }) {
   const { childId } = await params;
   const season = req.nextUrl.searchParams.get("season") ?? null;
 

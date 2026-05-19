@@ -155,7 +155,12 @@ describe("POST /api/groups", () => {
   it("salva championship dopo trim se fornito", async () => {
     mockIsCoach.mockResolvedValue(true);
     await POST(
-      makePost({ name: "Girone A", season: "2025-26", teamId: "team-1", championship: "  Reg. Veneto  " }),
+      makePost({
+        name: "Girone A",
+        season: "2025-26",
+        teamId: "team-1",
+        championship: "  Reg. Veneto  ",
+      })
     );
     const data = p.group.create.mock.calls[0][0].data;
     expect(data.championship).toBe("Reg. Veneto");

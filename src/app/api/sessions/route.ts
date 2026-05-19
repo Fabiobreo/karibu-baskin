@@ -27,8 +27,15 @@ export async function GET(req: NextRequest) {
     orderBy: { date: upcoming ? "asc" : "desc" },
     ...(usePagination && { skip: (page - 1) * limit, take: limit }),
     select: {
-      id: true, title: true, date: true, endTime: true, dateSlug: true,
-      teams: true, allowedRoles: true, openRoles: true, restrictTeamId: true,
+      id: true,
+      title: true,
+      date: true,
+      endTime: true,
+      dateSlug: true,
+      teams: true,
+      allowedRoles: true,
+      openRoles: true,
+      restrictTeamId: true,
       _count: { select: { registrations: true } },
       restrictTeam: { select: { id: true, name: true, color: true } },
     },
@@ -52,7 +59,10 @@ export async function POST(req: NextRequest) {
   const raw = await req.json().catch(() => null);
   const parsed = SessionCreateSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
   const { title, date, endTime, dateSlug, allowedRoles, restrictTeamId, openRoles } = parsed.data;
 
@@ -72,7 +82,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return NextResponse.json({ error: "Esiste già un allenamento in questa data e orario" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Esiste già un allenamento in questa data e orario" },
+        { status: 409 }
+      );
     }
     throw err;
   }
@@ -89,15 +102,18 @@ export async function POST(req: NextRequest) {
   };
   if (session.restrictTeamId) {
     // Allenamento riservato a una squadra specifica (± ruoli aperti)
-    sendPushToTeam(session.restrictTeamId, pushPayload, "NEW_TRAINING")
-      .catch((err) => console.error("[push] new training (team)", err));
+    sendPushToTeam(session.restrictTeamId, pushPayload, "NEW_TRAINING").catch((err) =>
+      console.error("[push] new training (team)", err)
+    );
   } else if (session.allowedRoles.length > 0) {
     // Allenamento riservato per ruolo (senza vincolo di squadra)
-    sendPushToFilter({ sportRoles: session.allowedRoles }, pushPayload, "NEW_TRAINING")
-      .catch((err) => console.error("[push] new training (roles)", err));
+    sendPushToFilter({ sportRoles: session.allowedRoles }, pushPayload, "NEW_TRAINING").catch(
+      (err) => console.error("[push] new training (roles)", err)
+    );
   } else {
-    sendPushToAll(pushPayload, false, "NEW_TRAINING")
-      .catch((err) => console.error("[push] new training", err));
+    sendPushToAll(pushPayload, false, "NEW_TRAINING").catch((err) =>
+      console.error("[push] new training", err)
+    );
   }
   createAppNotification({
     type: "NEW_TRAINING",

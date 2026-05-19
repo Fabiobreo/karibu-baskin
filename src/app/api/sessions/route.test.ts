@@ -143,7 +143,10 @@ describe("GET /api/sessions", () => {
   });
 
   it("restituisce 429 quando il rate limit è superato", async () => {
-    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({ allowed: false, remaining: 0 });
+    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      allowed: false,
+      remaining: 0,
+    });
     const res = await GET(makeGet());
     expect(res.status).toBe(429);
     expect(p.trainingSession.findMany).not.toHaveBeenCalled();
@@ -161,9 +164,7 @@ describe("POST /api/sessions", () => {
   });
 
   it("restituisce 401 se l'utente non è coach/admin", async () => {
-    const res = await POST(
-      makePost({ title: "Allenamento", date: "2025-06-01T18:00:00Z" }),
-    );
+    const res = await POST(makePost({ title: "Allenamento", date: "2025-06-01T18:00:00Z" }));
     expect(res.status).toBe(401);
     expect(p.trainingSession.create).not.toHaveBeenCalled();
   });
@@ -196,7 +197,7 @@ describe("POST /api/sessions", () => {
   it("crea l'allenamento e restituisce 201", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
     const res = await POST(
-      makePost({ title: "Allenamento Giovedì", date: "2025-06-05T18:00:00Z" }),
+      makePost({ title: "Allenamento Giovedì", date: "2025-06-05T18:00:00Z" })
     );
     expect(res.status).toBe(201);
     const json = await res.json();
@@ -206,9 +207,7 @@ describe("POST /api/sessions", () => {
 
   it("passa il titolo trimmed al DB", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
-    await POST(
-      makePost({ title: "  Allenamento  ", date: "2025-06-05T18:00:00Z" }),
-    );
+    await POST(makePost({ title: "  Allenamento  ", date: "2025-06-05T18:00:00Z" }));
     const data = p.trainingSession.create.mock.calls[0][0].data;
     expect(data.title).toBe("Allenamento");
   });
@@ -222,7 +221,7 @@ describe("POST /api/sessions", () => {
         allowedRoles: [1, 2],
         restrictTeamId: "team-abc",
         openRoles: [1],
-      }),
+      })
     );
     const data = p.trainingSession.create.mock.calls[0][0].data;
     expect(data.allowedRoles).toEqual([1, 2]);
@@ -233,9 +232,7 @@ describe("POST /api/sessions", () => {
   it("le notifiche push sono fire-and-forget (non bloccano la risposta)", async () => {
     const { sendPushToAll } = await import("@/lib/webpush");
     mockIsCoachOrAdmin.mockResolvedValue(true);
-    const res = await POST(
-      makePost({ title: "Allenamento", date: "2025-06-05T18:00:00Z" }),
-    );
+    const res = await POST(makePost({ title: "Allenamento", date: "2025-06-05T18:00:00Z" }));
     expect(res.status).toBe(201);
     expect(sendPushToAll).toHaveBeenCalledOnce();
     expect(createAppNotification).toHaveBeenCalledOnce();
@@ -247,10 +244,10 @@ describe("POST /api/sessions", () => {
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
         code: "P2002",
         clientVersion: "5.0.0",
-      }),
+      })
     );
     const res = await POST(
-      makePost({ title: "Allenamento Duplicato", date: "2025-06-01T18:00:00Z" }),
+      makePost({ title: "Allenamento Duplicato", date: "2025-06-01T18:00:00Z" })
     );
     expect(res.status).toBe(409);
     const json = await res.json();

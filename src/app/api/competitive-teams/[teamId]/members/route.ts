@@ -33,13 +33,21 @@ export async function POST(req: Request, { params }: Params) {
       isCaptain: body.isCaptain ?? false,
     },
     include: {
-      user: { select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true } },
+      user: {
+        select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true },
+      },
       child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
       team: { select: { name: true } },
     },
   });
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "ADD_MEMBER", targetType: "TeamMembership", targetId: membership.id, after: { teamId, userId: body.userId, childId: body.childId } }).catch((err) => console.error("[audit] add member", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "ADD_MEMBER",
+      targetType: "TeamMembership",
+      targetId: membership.id,
+      after: { teamId, userId: body.userId, childId: body.childId },
+    }).catch((err) => console.error("[audit] add member", err));
   }
   if (body.userId) {
     createAppNotification({

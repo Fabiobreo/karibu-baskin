@@ -28,7 +28,16 @@ export default async function CalendarioPage() {
     <>
       <SiteHeader />
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 3, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1.5,
+            mb: 3,
+            flexWrap: "wrap",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <CalendarMonthIcon color="primary" />
             <Typography variant="h5" fontWeight={800}>

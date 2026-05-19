@@ -30,42 +30,60 @@ type GroupMatchInput = {
 export function computeStandings(
   ourTeam: { id: string; name: string },
   ourMatches: OurMatchInput[],
-  groupMatches: GroupMatchInput[],
+  groupMatches: GroupMatchInput[]
 ): StandingEntry[] {
   const map = new Map<string, StandingEntry>();
 
   function getOrCreate(id: string, name: string, isOurs: boolean): StandingEntry {
     if (!map.has(id)) {
-      map.set(id, { id, name, isOurs, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0 });
+      map.set(id, {
+        id,
+        name,
+        isOurs,
+        played: 0,
+        won: 0,
+        drawn: 0,
+        lost: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        points: 0,
+      });
     }
     return map.get(id)!;
   }
 
   function addResult(entry: StandingEntry, gf: number, ga: number) {
     entry.played++;
-    entry.goalsFor     += gf;
+    entry.goalsFor += gf;
     entry.goalsAgainst += ga;
-    if (gf > ga)      { entry.won++;   entry.points += 2; }
-    else if (gf === ga) { entry.drawn++; entry.points += 1; }
-    else                { entry.lost++; }
+    if (gf > ga) {
+      entry.won++;
+      entry.points += 2;
+    } else if (gf === ga) {
+      entry.drawn++;
+      entry.points += 1;
+    } else {
+      entry.lost++;
+    }
   }
 
   // ourScore/theirScore sono già relativi a noi — nessun swap necessario
   for (const m of ourMatches) {
     if (m.ourScore == null || m.theirScore == null) continue;
-    addResult(getOrCreate(ourTeam.id,       ourTeam.name,       true),  m.ourScore,   m.theirScore);
-    addResult(getOrCreate(m.opponent.id,    m.opponent.name,    false), m.theirScore, m.ourScore);
+    addResult(getOrCreate(ourTeam.id, ourTeam.name, true), m.ourScore, m.theirScore);
+    addResult(getOrCreate(m.opponent.id, m.opponent.name, false), m.theirScore, m.ourScore);
   }
 
   for (const gm of groupMatches) {
     if (gm.homeScore == null || gm.awayScore == null) continue;
-    addResult(getOrCreate(gm.homeTeam.id,   gm.homeTeam.name,   false), gm.homeScore, gm.awayScore);
-    addResult(getOrCreate(gm.awayTeam.id,   gm.awayTeam.name,   false), gm.awayScore, gm.homeScore);
+    addResult(getOrCreate(gm.homeTeam.id, gm.homeTeam.name, false), gm.homeScore, gm.awayScore);
+    addResult(getOrCreate(gm.awayTeam.id, gm.awayTeam.name, false), gm.awayScore, gm.homeScore);
   }
 
-  return Array.from(map.values()).sort((a, b) =>
-    b.points - a.points ||
-    (b.goalsFor - b.goalsAgainst) - (a.goalsFor - a.goalsAgainst) ||
-    b.goalsFor - a.goalsFor
+  return Array.from(map.values()).sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.goalsFor - b.goalsAgainst - (a.goalsFor - a.goalsAgainst) ||
+      b.goalsFor - a.goalsFor
   );
 }

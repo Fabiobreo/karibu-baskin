@@ -15,7 +15,7 @@ export async function createAppNotification(payload: AppNotificationPayload): Pr
 
 export async function createTargetedAppNotifications(
   userIds: string[],
-  payload: Omit<AppNotificationPayload, "targetUserId">,
+  payload: Omit<AppNotificationPayload, "targetUserId">
 ): Promise<void> {
   if (userIds.length === 0) return;
   await prisma.appNotification.createMany({

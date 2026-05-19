@@ -8,7 +8,10 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rl = checkRateLimit(ip, "push-subscribe", 10, 60_000);
   if (!rl.allowed) {
-    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche secondo." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Troppe richieste. Riprova tra qualche secondo." },
+      { status: 429 }
+    );
   }
 
   const session = await auth();
@@ -52,7 +55,10 @@ export async function DELETE(req: NextRequest) {
   const ip = getClientIp(req);
   const rl = checkRateLimit(ip, "push-unsubscribe", 10, 60_000);
   if (!rl.allowed) {
-    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche secondo." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Troppe richieste. Riprova tra qualche secondo." },
+      { status: 429 }
+    );
   }
 
   const session = await auth();

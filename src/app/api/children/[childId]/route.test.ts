@@ -44,7 +44,10 @@ const mockAuth = auth as Mock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
 const mockSendPush = sendPushToUser as Mock;
 
-function makePATCH(childId: string, body: object): [NextRequest, { params: Promise<{ childId: string }> }] {
+function makePATCH(
+  childId: string,
+  body: object
+): [NextRequest, { params: Promise<{ childId: string }> }] {
   return [
     new NextRequest(`http://localhost/api/children/${childId}`, {
       method: "PATCH",
@@ -179,7 +182,11 @@ describe("PATCH /api/children/[childId]", () => {
   });
 
   it("restituisce 409 se l'account target è già collegato a un altro figlio", async () => {
-    p.user.findUnique.mockResolvedValue({ id: "target-1", name: "Target", email: "target@example.com" });
+    p.user.findUnique.mockResolvedValue({
+      id: "target-1",
+      name: "Target",
+      email: "target@example.com",
+    });
     p.child.findUnique
       .mockResolvedValueOnce(baseChild) // prima chiamata: lookup del figlio stesso
       .mockResolvedValueOnce({ id: "child-OTHER" }); // seconda chiamata: alreadyLinked
@@ -190,7 +197,11 @@ describe("PATCH /api/children/[childId]", () => {
   });
 
   it("restituisce il child se l'account è già collegato allo stesso figlio (idempotente)", async () => {
-    p.user.findUnique.mockResolvedValue({ id: "target-1", name: "Target", email: "target@example.com" });
+    p.user.findUnique.mockResolvedValue({
+      id: "target-1",
+      name: "Target",
+      email: "target@example.com",
+    });
     p.child.findUnique
       .mockResolvedValueOnce(baseChild) // figlio corrente
       .mockResolvedValueOnce({ id: "child-1" }); // alreadyLinked === questo figlio
@@ -201,10 +212,12 @@ describe("PATCH /api/children/[childId]", () => {
   });
 
   it("restituisce pending se esiste già una richiesta pendente", async () => {
-    p.user.findUnique.mockResolvedValue({ id: "target-1", name: "Target", email: "target@example.com" });
-    p.child.findUnique
-      .mockResolvedValueOnce(baseChild)
-      .mockResolvedValueOnce(null); // alreadyLinked: null
+    p.user.findUnique.mockResolvedValue({
+      id: "target-1",
+      name: "Target",
+      email: "target@example.com",
+    });
+    p.child.findUnique.mockResolvedValueOnce(baseChild).mockResolvedValueOnce(null); // alreadyLinked: null
     p.linkRequest.findFirst.mockResolvedValue({ id: "req-existing" });
     const [req, ctx] = makePATCH("child-1", { linkUserId: "target-1" });
     const res = await PATCH(req, ctx);
@@ -218,9 +231,7 @@ describe("PATCH /api/children/[childId]", () => {
     p.user.findUnique
       .mockResolvedValueOnce({ id: "target-1", name: "Target", email: "target@example.com" }) // targetUser
       .mockResolvedValueOnce({ name: "Genitore" }); // parent
-    p.child.findUnique
-      .mockResolvedValueOnce(baseChild)
-      .mockResolvedValueOnce(null); // alreadyLinked: null
+    p.child.findUnique.mockResolvedValueOnce(baseChild).mockResolvedValueOnce(null); // alreadyLinked: null
     p.linkRequest.findFirst.mockResolvedValue(null);
     p.linkRequest.create.mockResolvedValue({ id: "req-new" });
     p.appNotification.create.mockResolvedValue(undefined);
@@ -230,10 +241,15 @@ describe("PATCH /api/children/[childId]", () => {
     expect(json.pending).toBe(true);
     expect(json.requestId).toBe("req-new");
     expect(p.linkRequest.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ childId: "child-1", targetUserId: "target-1" }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ childId: "child-1", targetUserId: "target-1" }),
+      })
     );
     expect(p.appNotification.create).toHaveBeenCalled();
-    expect(mockSendPush).toHaveBeenCalledWith("target-1", expect.objectContaining({ type: "LINK_REQUEST" }));
+    expect(mockSendPush).toHaveBeenCalledWith(
+      "target-1",
+      expect.objectContaining({ type: "LINK_REQUEST" })
+    );
   });
 
   // ── Unlink ───────────────────────────────────────────────────────────────────

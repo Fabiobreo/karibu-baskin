@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         include: {
           homeTeam: { select: { id: true, name: true, slug: true } },
-          awayTeam:  { select: { id: true, name: true, slug: true } },
+          awayTeam: { select: { id: true, name: true, slug: true } },
         },
       },
     },

@@ -204,7 +204,12 @@ describe("GET /api/admin/export", () => {
           title: "Allenamento lunedì",
           date: new Date("2025-11-10"),
           registrations: [
-            { name: "Mario", role: 3, registeredAsCoach: false, user: { email: "mario@example.com" } },
+            {
+              name: "Mario",
+              role: 3,
+              registeredAsCoach: false,
+              user: { email: "mario@example.com" },
+            },
             { name: "Coach", role: 1, registeredAsCoach: true, user: null },
           ],
         },

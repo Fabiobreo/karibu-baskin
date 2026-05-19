@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-  Box, Button, Divider, List, Skeleton, Typography,
-} from "@mui/material";
+import { Box, Button, Divider, List, Skeleton, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/NotificationContext";
 import NotificationItem from "./NotificationItem";
@@ -42,7 +40,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     }, 2000);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   async function handleMarkAllRead() {
@@ -51,9 +49,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
   }
 
   function handleRead(id: string) {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
     refreshCount();
   }
 

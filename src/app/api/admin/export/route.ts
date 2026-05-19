@@ -94,7 +94,16 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const header = csvRow(["Nome", "Email", "Ruolo App", "Ruolo Baskin", "Genere", "Data nascita", "Squadra", "Allenamenti totali"]);
+    const header = csvRow([
+      "Nome",
+      "Email",
+      "Ruolo App",
+      "Ruolo Baskin",
+      "Genere",
+      "Data nascita",
+      "Squadra",
+      "Allenamenti totali",
+    ]);
     const rows = users.map((u) =>
       csvRow([
         u.name,
@@ -103,7 +112,9 @@ export async function GET(req: NextRequest) {
         u.sportRole ? sportRoleLabel(u.sportRole, u.sportRoleVariant ?? null) : "",
         u.gender ? GENDER_IT[u.gender] : "",
         u.birthDate ? u.birthDate.toISOString().slice(0, 10) : "",
-        u.teamMemberships.map((m) => `${m.team.name} (${m.team.season})${m.isCaptain ? " ★" : ""}`).join(", "),
+        u.teamMemberships
+          .map((m) => `${m.team.name} (${m.team.season})${m.isCaptain ? " ★" : ""}`)
+          .join(", "),
         u._count.registrations,
       ])
     );
@@ -149,7 +160,9 @@ export async function GET(req: NextRequest) {
             s.title,
             r.name,
             r.user?.email ?? "",
-            r.registeredAsCoach ? "Allenatore" : (ROLE_LABELS[r.role as keyof typeof ROLE_LABELS] ?? String(r.role)),
+            r.registeredAsCoach
+              ? "Allenatore"
+              : (ROLE_LABELS[r.role as keyof typeof ROLE_LABELS] ?? String(r.role)),
             r.registeredAsCoach ? "Coach" : "Atleta",
           ])
         );
@@ -184,7 +197,20 @@ export async function GET(req: NextRequest) {
       take: 50000,
     });
 
-    const header = csvRow(["Data", "Squadra", "Avversario", "Risultato", "Giocatore", "Email", "Ruolo", "Punti", "Canestri", "Assist", "Rimbalzi", "Falli"]);
+    const header = csvRow([
+      "Data",
+      "Squadra",
+      "Avversario",
+      "Risultato",
+      "Giocatore",
+      "Email",
+      "Ruolo",
+      "Punti",
+      "Canestri",
+      "Assist",
+      "Rimbalzi",
+      "Falli",
+    ]);
     const rows = stats.map((s) =>
       csvRow([
         s.match.date.toISOString().slice(0, 10),
@@ -205,5 +231,8 @@ export async function GET(req: NextRequest) {
     return csvResponse([header, ...rows], `statistiche${season ? `-${season}` : ""}.csv`);
   }
 
-  return NextResponse.json({ error: "Tipo di export non valido. Usa: rosa, presenze, stats" }, { status: 400 });
+  return NextResponse.json(
+    { error: "Tipo di export non valido. Usa: rosa, presenze, stats" },
+    { status: 400 }
+  );
 }

@@ -37,13 +37,13 @@ describe("OpposingTeamCreateSchema", () => {
 
   it("rifiuta city oltre 200 caratteri", () => {
     expect(
-      OpposingTeamCreateSchema.safeParse({ name: "Eagles", city: "x".repeat(201) }).success,
+      OpposingTeamCreateSchema.safeParse({ name: "Eagles", city: "x".repeat(201) }).success
     ).toBe(false);
   });
 
   it("rifiuta notes oltre 2000 caratteri", () => {
     expect(
-      OpposingTeamCreateSchema.safeParse({ name: "Eagles", notes: "x".repeat(2001) }).success,
+      OpposingTeamCreateSchema.safeParse({ name: "Eagles", notes: "x".repeat(2001) }).success
     ).toBe(false);
   });
 });

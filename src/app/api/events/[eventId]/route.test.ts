@@ -48,7 +48,10 @@ function makeP2025() {
   return err;
 }
 
-function makePUT(eventId: string, body: object): [Request, { params: Promise<{ eventId: string }> }] {
+function makePUT(
+  eventId: string,
+  body: object
+): [Request, { params: Promise<{ eventId: string }> }] {
   return [
     new Request(`http://localhost/api/events/${eventId}`, {
       method: "PUT",

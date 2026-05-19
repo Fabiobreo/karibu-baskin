@@ -1,7 +1,15 @@
 "use client";
 
 import {
-  Paper, Box, Typography, Button, Chip, Stack, CircularProgress, Checkbox, FormControlLabel,
+  Paper,
+  Box,
+  Typography,
+  Button,
+  Chip,
+  Stack,
+  CircularProgress,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -23,12 +31,17 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
 
   if (answered === "yes") {
     return (
-      <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 3, borderColor: "success.main", bgcolor: "success.50" }}>
+      <Paper
+        elevation={0}
+        variant="outlined"
+        sx={{ p: 2.5, mb: 3, borderColor: "success.main", bgcolor: "success.50" }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <CheckCircleIcon color="success" />
           <Box>
             <Typography variant="body2" fontWeight={700} color="success.dark">
-              Collegato! {claimed} {claimed === 1 ? "allenamento aggiunto" : "allenamenti aggiunti"} al tuo profilo.
+              Collegato! {claimed} {claimed === 1 ? "allenamento aggiunto" : "allenamenti aggiunti"}{" "}
+              al tuo profilo.
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Li trovi nel conteggio degli allenamenti.
@@ -57,7 +70,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
         body: JSON.stringify({ ids: [...selected] }),
       });
       if (res.ok) {
-        const data = await res.json() as { claimed: number };
+        const data = (await res.json()) as { claimed: number };
         setClaimed(data.claimed);
         setAnswered("yes");
         router.refresh();
@@ -78,7 +91,10 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
             Ti riconosco! Sei già stato/a agli allenamenti?
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            Abbiamo trovato {registrations.length === 1 ? "un allenamento" : `${registrations.length} allenamenti`} a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero tu:
+            Abbiamo trovato{" "}
+            {registrations.length === 1 ? "un allenamento" : `${registrations.length} allenamenti`}{" "}
+            a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero
+            tu:
           </Typography>
           <Stack spacing={0.25} sx={{ mb: 2 }}>
             {registrations.map((r) => (

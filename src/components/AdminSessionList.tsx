@@ -121,7 +121,12 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
             <Paper
               key={s.id}
               variant="outlined"
-              sx={{ position: "relative", cursor: "pointer", "&:hover": { boxShadow: 2 }, overflow: "hidden" }}
+              sx={{
+                position: "relative",
+                cursor: "pointer",
+                "&:hover": { boxShadow: 2 },
+                overflow: "hidden",
+              }}
             >
               {/* Stretched link */}
               <Box
@@ -132,18 +137,38 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                   position: "absolute",
                   inset: 0,
                   zIndex: 0,
-                  "&:focus-visible": { outline: "2px solid", outlineColor: "primary.main", outlineOffset: "-2px" },
+                  "&:focus-visible": {
+                    outline: "2px solid",
+                    outlineColor: "primary.main",
+                    outlineOffset: "-2px",
+                  },
                 }}
               />
 
               <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
                 {/* Info principale — pointerEvents none per passare click al link */}
-                <Box sx={{ flex: 1, minWidth: 0, pointerEvents: "none", position: "relative", zIndex: 1 }}>
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    pointerEvents: "none",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                    <Typography variant="subtitle2" fontWeight={700} noWrap>{s.title}</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} noWrap>
+                      {s.title}
+                    </Typography>
                     {hasTeams && (
-                      <Chip icon={<CheckCircleIcon />} label="Squadre pronte" size="small" color="success" variant="outlined"
-                        sx={{ fontSize: "0.65rem", height: 20 }} />
+                      <Chip
+                        icon={<CheckCircleIcon />}
+                        label="Squadre pronte"
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        sx={{ fontSize: "0.65rem", height: 20 }}
+                      />
                     )}
                   </Box>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
@@ -156,7 +181,8 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <AccessTimeIcon sx={{ fontSize: 12, color: "text.disabled" }} />
                       <Typography variant="caption" color="text.secondary">
-                        {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
+                        {format(date, "HH:mm")}
+                        {endTime && `–${format(endTime, "HH:mm")}`}
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -169,7 +195,9 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                 </Box>
 
                 {/* Azioni — z-index sopra il link */}
-                <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
+                <Box
+                  sx={{ display: "flex", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}
+                >
                   <Tooltip title={hasTeams ? "Ricrea squadre" : "Crea squadre"}>
                     <span>
                       <IconButton
@@ -179,16 +207,23 @@ export default function AdminSessionList({ sessions, onDeleted, onTeamsGenerated
                         onClick={() => setTeamPickSession(s)}
                         disabled={isGenerating || s._count.registrations === 0}
                       >
-                        {isGenerating
-                          ? <CircularProgress size={18} />
-                          : hasTeams
-                          ? <CheckCircleIcon fontSize="small" />
-                          : <SportsBasketballIcon fontSize="small" />}
+                        {isGenerating ? (
+                          <CircularProgress size={18} />
+                        ) : hasTeams ? (
+                          <CheckCircleIcon fontSize="small" />
+                        ) : (
+                          <SportsBasketballIcon fontSize="small" />
+                        )}
                       </IconButton>
                     </span>
                   </Tooltip>
                   <Tooltip title="Elimina">
-                    <IconButton size="small" color="error" aria-label="Elimina allenamento" onClick={() => setToDelete(s)}>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      aria-label="Elimina allenamento"
+                      onClick={() => setToDelete(s)}
+                    >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>

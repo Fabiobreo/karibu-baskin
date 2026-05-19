@@ -7,13 +7,13 @@ import { prisma } from "@/lib/db";
 export function slugify(text: string): string {
   return text
     .toLowerCase()
-    .normalize("NFD")                       // decompone i caratteri accentati
-    .replace(/[\u0300-\u036f]/g, "")        // rimuove i diacritici
-    .replace(/[^a-z0-9\s_-]/g, "")         // rimuove tutto tranne lettere, cifre, spazi, underscore, trattini
+    .normalize("NFD") // decompone i caratteri accentati
+    .replace(/[\u0300-\u036f]/g, "") // rimuove i diacritici
+    .replace(/[^a-z0-9\s_-]/g, "") // rimuove tutto tranne lettere, cifre, spazi, underscore, trattini
     .trim()
-    .replace(/[\s_]+/g, "-")               // sostituisce spazi e underscore con trattini
-    .replace(/-+/g, "-")                   // collassa trattini multipli
-    .replace(/^-+|-+$/g, "");             // rimuove trattini iniziali/finali
+    .replace(/[\s_]+/g, "-") // sostituisce spazi e underscore con trattini
+    .replace(/-+/g, "-") // collassa trattini multipli
+    .replace(/^-+|-+$/g, ""); // rimuove trattini iniziali/finali
 }
 
 /**
@@ -56,7 +56,7 @@ export function sessionDateSlug(date: string, time: string): string {
 export async function generateMatchSlug(
   teamName: string,
   opponentName: string,
-  date: Date,
+  date: Date
 ): Promise<string> {
   const dateStr = date.toISOString().slice(0, 10); // YYYY-MM-DD
   const base = `${slugify(teamName)}-vs-${slugify(opponentName)}-${dateStr}`;

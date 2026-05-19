@@ -1,6 +1,12 @@
 "use client";
 import {
-  Button, Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+  Button,
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 
 interface Props {
@@ -21,10 +27,20 @@ export default function PickTeamsDialog({ open, sessionTitle, onClose, onConfirm
           </DialogContentText>
         )}
         <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-          <Button variant="contained" fullWidth onClick={() => onConfirm(2)} sx={{ py: 1.5, fontSize: "1rem" }}>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={() => onConfirm(2)}
+            sx={{ py: 1.5, fontSize: "1rem" }}
+          >
             2 squadre
           </Button>
-          <Button variant="outlined" fullWidth onClick={() => onConfirm(3)} sx={{ py: 1.5, fontSize: "1rem" }}>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={() => onConfirm(3)}
+            sx={{ py: 1.5, fontSize: "1rem" }}
+          >
             3 squadre
           </Button>
         </Box>

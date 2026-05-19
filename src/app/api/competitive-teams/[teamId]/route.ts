@@ -18,7 +18,14 @@ export async function GET(_req: Request, { params }: Params) {
         orderBy: [{ isCaptain: "desc" }, { createdAt: "asc" }],
         include: {
           user: {
-            select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true, gender: true },
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              gender: true,
+            },
           },
           child: {
             select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true },
@@ -67,7 +74,13 @@ export async function PUT(req: Request, { params }: Params) {
       },
     });
     if (session?.user?.id) {
-      logAudit({ actorId: session.user.id, action: "UPDATE_TEAM", targetType: "CompetitiveTeam", targetId: teamId, after: body as Record<string, unknown> }).catch((err) => console.error("[audit] update team", err));
+      logAudit({
+        actorId: session.user.id,
+        action: "UPDATE_TEAM",
+        targetType: "CompetitiveTeam",
+        targetId: teamId,
+        after: body as Record<string, unknown>,
+      }).catch((err) => console.error("[audit] update team", err));
     }
     return NextResponse.json(team);
   } catch (err) {
@@ -94,7 +107,12 @@ export async function DELETE(_req: Request, { params }: Params) {
     throw err;
   }
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "DELETE_TEAM", targetType: "CompetitiveTeam", targetId: teamId }).catch((err) => console.error("[audit] delete team", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "DELETE_TEAM",
+      targetType: "CompetitiveTeam",
+      targetId: teamId,
+    }).catch((err) => console.error("[audit] delete team", err));
   }
   return new NextResponse(null, { status: 204 });
 }

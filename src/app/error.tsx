@@ -10,7 +10,11 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[error boundary]", { name: error.name, message: error.message, digest: error.digest });
+    console.error("[error boundary]", {
+      name: error.name,
+      message: error.message,
+      digest: error.digest,
+    });
   }, [error]);
 
   return (

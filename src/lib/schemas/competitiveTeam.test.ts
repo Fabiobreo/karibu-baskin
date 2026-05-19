@@ -32,14 +32,14 @@ describe("CompetitiveTeamCreateSchema", () => {
   });
 
   it("rifiuta nome oltre 200 caratteri", () => {
-    expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...valid, name: "x".repeat(201) }).success,
-    ).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, name: "x".repeat(201) }).success).toBe(
+      false
+    );
   });
 
   it("accetta stagione in formato corretto YYYY-YY", () => {
     expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, season: "2024-25" }).success).toBe(
-      true,
+      true
     );
   });
 
@@ -53,26 +53,26 @@ describe("CompetitiveTeamCreateSchema", () => {
 
   it("rifiuta stagione in formato errato (testo libero)", () => {
     expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, season: "primavera" }).success).toBe(
-      false,
+      false
     );
   });
 
   it("accetta colore hex valido (#RRGGBB)", () => {
-    expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#1A2B3C" }).success,
-    ).toBe(true);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#1A2B3C" }).success).toBe(
+      true
+    );
   });
 
   it("accetta colore hex con lettere maiuscole e minuscole miste", () => {
-    expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#aAbBcC" }).success,
-    ).toBe(true);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#aAbBcC" }).success).toBe(
+      true
+    );
   });
 
   it("rifiuta colore hex senza cancelletto", () => {
-    expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "FF6600" }).success,
-    ).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "FF6600" }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta colore hex con 3 cifre (shorthand non supportato)", () => {
@@ -80,14 +80,14 @@ describe("CompetitiveTeamCreateSchema", () => {
   });
 
   it("rifiuta colore hex con caratteri non validi", () => {
-    expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#GGGGGG" }).success,
-    ).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#GGGGGG" }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta description oltre 2000 caratteri", () => {
     expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...valid, description: "x".repeat(2001) }).success,
+      CompetitiveTeamCreateSchema.safeParse({ ...valid, description: "x".repeat(2001) }).success
     ).toBe(false);
   });
 });
@@ -132,9 +132,9 @@ describe("CompetitiveTeamUpdateSchema", () => {
   });
 
   it("rifiuta championship oltre 200 caratteri", () => {
-    expect(
-      CompetitiveTeamUpdateSchema.safeParse({ championship: "x".repeat(201) }).success,
-    ).toBe(false);
+    expect(CompetitiveTeamUpdateSchema.safeParse({ championship: "x".repeat(201) }).success).toBe(
+      false
+    );
   });
 
   it("accetta description null (reset)", () => {

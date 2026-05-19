@@ -26,7 +26,7 @@ export interface ContactFormState {
 
 export async function submitContactForm(
   prevState: ContactFormState,
-  formData: FormData,
+  formData: FormData
 ): Promise<ContactFormState> {
   const { headers } = await import("next/headers");
   const headersList = await headers();
@@ -72,12 +72,14 @@ export async function submitContactForm(
   }
 
   // 2. Conferma automatica al mittente (fire-and-forget)
-  resend.emails.send({
-    from: fromAddress,
-    to: [email],
-    subject: "Abbiamo ricevuto il tuo messaggio — Karibu Baskin",
-    react: ContactConfirmationEmail({ senderName: name, message }),
-  }).catch(() => {});
+  resend.emails
+    .send({
+      from: fromAddress,
+      to: [email],
+      subject: "Abbiamo ricevuto il tuo messaggio — Karibu Baskin",
+      react: ContactConfirmationEmail({ senderName: name, message }),
+    })
+    .catch(() => {});
 
   return { success: true };
 }

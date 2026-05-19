@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import {
-  Box, Typography, Paper, Tabs, Tab,
-  Table, TableBody, TableCell, TableHead, TableRow, Avatar, Chip,
+  Box,
+  Typography,
+  Paper,
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Avatar,
+  Chip,
 } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -108,12 +118,18 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
       {/* Tab 0: Ultimi iscritti */}
       {tab === 0 && (
         <Box sx={{ p: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}
+          >
             <Typography variant="subtitle1" fontWeight={700}>
               Ultimi iscritti
             </Typography>
             <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
-              <Typography variant="caption" color="primary" sx={{ "&:hover": { textDecoration: "underline" } }}>
+              <Typography
+                variant="caption"
+                color="primary"
+                sx={{ "&:hover": { textDecoration: "underline" } }}
+              >
                 Vedi tutti →
               </Typography>
             </Link>
@@ -124,9 +140,18 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                 <TableRow>
                   <TableCell sx={{ pl: 0, width: 40 }} />
                   <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
-                  <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Ruolo utente</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>Ruolo Baskin</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Iscritto il</TableCell>
+                  <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                    Ruolo utente
+                  </TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>
+                    Ruolo Baskin
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
+                  >
+                    Iscritto il
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -135,13 +160,21 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                     <TableCell sx={{ width: 40, pl: 0 }}>
                       <Avatar
                         src={row.kind === "user" ? (row.image ?? undefined) : undefined}
-                        sx={{ width: 30, height: 30, fontSize: 13, bgcolor: row.kind === "child" ? "grey.400" : undefined }}
+                        sx={{
+                          width: 30,
+                          height: 30,
+                          fontSize: 13,
+                          bgcolor: row.kind === "child" ? "grey.400" : undefined,
+                        }}
                       >
-                        {(row.name ?? (row.kind === "user" ? row.email : "?"))?.[0]?.toUpperCase() ?? "?"}
+                        {(row.name ??
+                          (row.kind === "user" ? row.email : "?"))?.[0]?.toUpperCase() ?? "?"}
                       </Avatar>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600}>{row.name ?? "—"}</Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {row.name ?? "—"}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {row.kind === "user"
                           ? row.email
@@ -149,26 +182,51 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                       </Typography>
                     </TableCell>
                     <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      {row.kind === "user"
-                        ? <Chip label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]} size="small" color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]} sx={{ fontWeight: 600 }} />
-                        : <Chip label="Atleta" size="small" color="primary" sx={{ fontWeight: 600 }} />
-                      }
+                      {row.kind === "user" ? (
+                        <Chip
+                          label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
+                          size="small"
+                          color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      ) : (
+                        <Chip
+                          label="Atleta"
+                          size="small"
+                          color="primary"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
                     </TableCell>
                     <TableCell align="center">
-                      {row.sportRole
-                        ? <Chip
-                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? undefined)}
-                            size="small"
-                            sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
-                          />
-                        : row.kind === "user" && row.sportRoleSuggested
-                          ? <Chip
-                              label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant ?? undefined)} ?`}
-                              size="small"
-                              variant="outlined"
-                              sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
-                            />
-                          : <Typography variant="body2" color="text.disabled">—</Typography>}
+                      {row.sportRole ? (
+                        <Chip
+                          label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? undefined)}
+                          size="small"
+                          sx={{
+                            bgcolor: ROLE_COLORS[row.sportRole],
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: "0.72rem",
+                          }}
+                        />
+                      ) : row.kind === "user" && row.sportRoleSuggested ? (
+                        <Chip
+                          label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant ?? undefined)} ?`}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            borderColor: ROLE_COLORS[row.sportRoleSuggested],
+                            color: ROLE_COLORS[row.sportRoleSuggested],
+                            fontWeight: 700,
+                            fontSize: "0.72rem",
+                          }}
+                        />
+                      ) : (
+                        <Typography variant="body2" color="text.disabled">
+                          —
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell align="right" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                       <Typography variant="caption" color="text.secondary">
@@ -191,9 +249,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
       )}
 
       {/* Tab 1: Iscrizioni anonime */}
-      {tab === 1 && (
-        <AdminAnonymousRegistrations registrations={registrations} bare />
-      )}
+      {tab === 1 && <AdminAnonymousRegistrations registrations={registrations} bare />}
     </Paper>
   );
 }

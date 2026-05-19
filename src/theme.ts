@@ -2,7 +2,7 @@
 import { createTheme } from "@mui/material/styles";
 
 const ORANGE = "#E65100";
-const DARK   = "#1A1A1A";
+const DARK = "#1A1A1A";
 
 const theme = createTheme({
   palette: {

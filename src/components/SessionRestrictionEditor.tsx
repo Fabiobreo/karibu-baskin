@@ -1,8 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import {
-  Box, Typography, Select, MenuItem,
-  FormControl, InputLabel, CircularProgress, Divider, Chip,
+  Box,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Divider,
+  Chip,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
@@ -32,7 +39,12 @@ interface Props {
 /** Calcola la stagione sportiva (es. "2025-26") per una data ISO o oggetto Date. */
 export const seasonForDate = getCurrentSeason;
 
-export default function SessionRestrictionEditor({ value, onChange, disabled, seasonFilter }: Props) {
+export default function SessionRestrictionEditor({
+  value,
+  onChange,
+  disabled,
+  seasonFilter,
+}: Props) {
   const [allTeams, setAllTeams] = useState<CompetitiveTeam[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
 
@@ -53,7 +65,7 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
     if (team && team.season !== seasonFilter) {
       onChange({ ...value, restrictTeamId: null, openRoles: [] });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seasonFilter, allTeams]);
 
   const teams = seasonFilter ? allTeams.filter((t) => t.season === seasonFilter) : allTeams;
@@ -86,7 +98,12 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
           Restrizioni iscrizione
         </Typography>
         {hasAnyRestriction && (
-          <Chip label="attive" size="small" color="warning" sx={{ fontSize: "0.65rem", height: 18 }} />
+          <Chip
+            label="attive"
+            size="small"
+            color="warning"
+            sx={{ fontSize: "0.65rem", height: 18 }}
+          />
         )}
       </Box>
 
@@ -105,7 +122,8 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
               disabled={disabled}
               onClick={() => toggleAllowedRole(r)}
               sx={{
-                px: 1.5, py: 0.5,
+                px: 1.5,
+                py: 0.5,
                 borderRadius: "6px",
                 border: "1px solid",
                 borderColor: selected ? ROLE_COLORS[r] : "divider",
@@ -115,7 +133,10 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
                 fontSize: "0.75rem",
                 cursor: disabled ? "default" : "pointer",
                 transition: "all 0.15s",
-                "&:hover:not(:disabled)": { borderColor: ROLE_COLORS[r], color: selected ? "#fff" : ROLE_COLORS[r] },
+                "&:hover:not(:disabled)": {
+                  borderColor: ROLE_COLORS[r],
+                  color: selected ? "#fff" : ROLE_COLORS[r],
+                },
               }}
             >
               {ROLE_LABELS[r]}
@@ -130,13 +151,20 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
       <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.75 }}>
         Limita alla squadra (opzionale)
         {seasonFilter && teams.length === 0 && !loadingTeams && (
-          <Box component="span" sx={{ ml: 1, color: "warning.main" }}>— nessuna squadra per {seasonFilter}</Box>
+          <Box component="span" sx={{ ml: 1, color: "warning.main" }}>
+            — nessuna squadra per {seasonFilter}
+          </Box>
         )}
       </Typography>
       {loadingTeams ? (
         <CircularProgress size={18} sx={{ mb: 2 }} />
       ) : (
-        <FormControl fullWidth size="small" sx={{ mb: value.restrictTeamId ? 2 : 0 }} disabled={disabled || teams.length === 0}>
+        <FormControl
+          fullWidth
+          size="small"
+          sx={{ mb: value.restrictTeamId ? 2 : 0 }}
+          disabled={disabled || teams.length === 0}
+        >
           <InputLabel shrink>Squadra</InputLabel>
           <Select
             value={value.restrictTeamId ?? ""}
@@ -145,16 +173,31 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
             notched
             displayEmpty
           >
-            <MenuItem value=""><em>Nessuna restrizione</em></MenuItem>
+            <MenuItem value="">
+              <em>Nessuna restrizione</em>
+            </MenuItem>
             {teams.map((t) => (
               <MenuItem key={t.id} value={t.id}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {t.color && (
-                    <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: "50%",
+                        bgcolor: t.color,
+                        flexShrink: 0,
+                      }}
+                    />
                   )}
                   {t.name}
                   {!seasonFilter && (
-                    <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ ml: 0.5 }}
+                    >
                       ({t.season})
                     </Typography>
                   )}
@@ -182,7 +225,8 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
                   disabled={disabled}
                   onClick={() => toggleOpenRole(r)}
                   sx={{
-                    px: 1.5, py: 0.5,
+                    px: 1.5,
+                    py: 0.5,
                     borderRadius: "6px",
                     border: "1px solid",
                     borderColor: selected ? ROLE_COLORS[r] : "divider",
@@ -192,7 +236,10 @@ export default function SessionRestrictionEditor({ value, onChange, disabled, se
                     fontSize: "0.75rem",
                     cursor: disabled ? "default" : "pointer",
                     transition: "all 0.15s",
-                    "&:hover:not(:disabled)": { borderColor: ROLE_COLORS[r], color: selected ? "#fff" : ROLE_COLORS[r] },
+                    "&:hover:not(:disabled)": {
+                      borderColor: ROLE_COLORS[r],
+                      color: selected ? "#fff" : ROLE_COLORS[r],
+                    },
                   }}
                 >
                   {ROLE_LABELS[r]}

@@ -6,7 +6,16 @@ export default function NotificheLoading() {
       <Skeleton variant="text" width={160} height={40} sx={{ mb: 3 }} />
       <Stack spacing={1.5}>
         {Array.from({ length: 5 }).map((_, i) => (
-          <Box key={i} sx={{ display: "flex", gap: 2, p: 2, border: "1px solid rgba(0,0,0,0.07)", borderRadius: 2 }}>
+          <Box
+            key={i}
+            sx={{
+              display: "flex",
+              gap: 2,
+              p: 2,
+              border: "1px solid rgba(0,0,0,0.07)",
+              borderRadius: 2,
+            }}
+          >
             <Skeleton variant="circular" width={40} height={40} sx={{ flexShrink: 0 }} />
             <Box sx={{ flex: 1 }}>
               <Skeleton variant="text" width="80%" height={22} />

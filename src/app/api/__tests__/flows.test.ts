@@ -30,7 +30,9 @@ vi.mock("@/lib/webpush", () => ({
   sendPushToUser: vi.fn().mockResolvedValue(undefined),
   sendPushToUsers: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("@/lib/appNotifications", () => ({ createAppNotification: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/lib/appNotifications", () => ({
+  createAppNotification: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/rateLimit", () => ({
   checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 19 }),
   getClientIp: vi.fn().mockReturnValue("127.0.0.1"),
@@ -78,7 +80,12 @@ describe("Flow: iscrizione anonima → claim", () => {
     p.trainingSession.findUnique.mockResolvedValue(baseSession);
     p.registration.findFirst.mockResolvedValue(null);
     p.registration.create.mockResolvedValue({
-      id: "reg-anon-1", sessionId, name: anonName, role: 1, userId: null, childId: null,
+      id: "reg-anon-1",
+      sessionId,
+      name: anonName,
+      role: 1,
+      userId: null,
+      childId: null,
     });
   });
 
@@ -92,7 +99,9 @@ describe("Flow: iscrizione anonima → claim", () => {
     const regRes = await postRegistration(regReq);
     expect(regRes.status).toBe(201);
     expect(p.registration.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ name: anonName, role: 1, sessionId }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ name: anonName, role: 1, sessionId }),
+      })
     );
     // L'iscrizione è anonima: nessun userId nel data
     const createData = p.registration.create.mock.calls[0][0].data;
@@ -131,10 +140,42 @@ describe("Flow: iscrizioni → generazione squadre", () => {
 
   it("le squadre generate riflettono gli atleti iscritti correnti", async () => {
     const registrations = [
-      { id: "r1", name: "A", role: 1, userId: "u1", childId: null, registeredAsCoach: false, createdAt: new Date() },
-      { id: "r2", name: "B", role: 2, userId: "u2", childId: null, registeredAsCoach: false, createdAt: new Date() },
-      { id: "r3", name: "C", role: 3, userId: "u3", childId: null, registeredAsCoach: false, createdAt: new Date() },
-      { id: "r4", name: "D", role: 4, userId: "u4", childId: null, registeredAsCoach: false, createdAt: new Date() },
+      {
+        id: "r1",
+        name: "A",
+        role: 1,
+        userId: "u1",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
+      {
+        id: "r2",
+        name: "B",
+        role: 2,
+        userId: "u2",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
+      {
+        id: "r3",
+        name: "C",
+        role: 3,
+        userId: "u3",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
+      {
+        id: "r4",
+        name: "D",
+        role: 4,
+        userId: "u4",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
     ];
     p.registration.findMany.mockResolvedValue(registrations);
     p.trainingSession.findUnique.mockResolvedValue({ title: "Allenamento", dateSlug: null });
@@ -151,7 +192,10 @@ describe("Flow: iscrizioni → generazione squadre", () => {
     // Verifica che le squadre salvate contengano tutti e 4 gli atleti
     const updateCall = p.trainingSession.update.mock.calls[0][0];
     const saved = updateCall.data.teams as { teamA: { id: string }[]; teamB: { id: string }[] };
-    const allIds = [...saved.teamA.map((a: { id: string }) => a.id), ...saved.teamB.map((a: { id: string }) => a.id)];
+    const allIds = [
+      ...saved.teamA.map((a: { id: string }) => a.id),
+      ...saved.teamB.map((a: { id: string }) => a.id),
+    ];
     expect(allIds).toHaveLength(4);
     expect(allIds).toContain("r1");
     expect(allIds).toContain("r4");
@@ -159,10 +203,42 @@ describe("Flow: iscrizioni → generazione squadre", () => {
 
   it("rigenerare dopo la rimozione di un atleta esclude l'atleta rimosso", async () => {
     const fourAthletes = [
-      { id: "r1", name: "A", role: 1, userId: "u1", childId: null, registeredAsCoach: false, createdAt: new Date() },
-      { id: "r2", name: "B", role: 2, userId: "u2", childId: null, registeredAsCoach: false, createdAt: new Date() },
-      { id: "r3", name: "C", role: 3, userId: "u3", childId: null, registeredAsCoach: false, createdAt: new Date() },
-      { id: "r4", name: "D", role: 4, userId: "u4", childId: null, registeredAsCoach: false, createdAt: new Date() },
+      {
+        id: "r1",
+        name: "A",
+        role: 1,
+        userId: "u1",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
+      {
+        id: "r2",
+        name: "B",
+        role: 2,
+        userId: "u2",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
+      {
+        id: "r3",
+        name: "C",
+        role: 3,
+        userId: "u3",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
+      {
+        id: "r4",
+        name: "D",
+        role: 4,
+        userId: "u4",
+        childId: null,
+        registeredAsCoach: false,
+        createdAt: new Date(),
+      },
     ];
 
     // Prima generazione: 4 atleti
@@ -171,12 +247,20 @@ describe("Flow: iscrizioni → generazione squadre", () => {
     p.trainingSession.update.mockResolvedValue({});
 
     const req1 = new NextRequest("http://localhost/api/teams/sess-flow-2", {
-      method: "POST", body: JSON.stringify({ numTeams: 2 }), headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify({ numTeams: 2 }),
+      headers: { "Content-Type": "application/json" },
     });
     await postTeams(req1, { params: Promise.resolve({ sessionId }) });
     const ids1 = (() => {
-      const saved = p.trainingSession.update.mock.calls[0][0].data.teams as { teamA: { id: string }[]; teamB: { id: string }[] };
-      return [...saved.teamA.map((a: { id: string }) => a.id), ...saved.teamB.map((a: { id: string }) => a.id)];
+      const saved = p.trainingSession.update.mock.calls[0][0].data.teams as {
+        teamA: { id: string }[];
+        teamB: { id: string }[];
+      };
+      return [
+        ...saved.teamA.map((a: { id: string }) => a.id),
+        ...saved.teamB.map((a: { id: string }) => a.id),
+      ];
     })();
     expect(ids1).toHaveLength(4);
 
@@ -185,11 +269,19 @@ describe("Flow: iscrizioni → generazione squadre", () => {
     p.trainingSession.update.mockClear();
 
     const req2 = new NextRequest("http://localhost/api/teams/sess-flow-2", {
-      method: "POST", body: JSON.stringify({ numTeams: 2 }), headers: { "Content-Type": "application/json" },
+      method: "POST",
+      body: JSON.stringify({ numTeams: 2 }),
+      headers: { "Content-Type": "application/json" },
     });
     await postTeams(req2, { params: Promise.resolve({ sessionId }) });
-    const saved2 = p.trainingSession.update.mock.calls[0][0].data.teams as { teamA: { id: string }[]; teamB: { id: string }[] };
-    const ids2 = [...saved2.teamA.map((a: { id: string }) => a.id), ...saved2.teamB.map((a: { id: string }) => a.id)];
+    const saved2 = p.trainingSession.update.mock.calls[0][0].data.teams as {
+      teamA: { id: string }[];
+      teamB: { id: string }[];
+    };
+    const ids2 = [
+      ...saved2.teamA.map((a: { id: string }) => a.id),
+      ...saved2.teamB.map((a: { id: string }) => a.id),
+    ];
     expect(ids2).toHaveLength(3);
     expect(ids2).not.toContain("r4");
   });
@@ -222,7 +314,12 @@ describe("Flow: link-request accept → appRole + sportRole utente aggiornati", 
     // Prima findUnique: utente respondente (per il nome nel log)
     // Seconda findUnique (dentro tx): utente target per aggiornare ruolo
     p.user.findUnique
-      .mockResolvedValueOnce({ id: "target-user", name: "Target", appRole: "GUEST", sportRole: null })
+      .mockResolvedValueOnce({
+        id: "target-user",
+        name: "Target",
+        appRole: "GUEST",
+        sportRole: null,
+      })
       .mockResolvedValueOnce({ id: "target-user", appRole: "GUEST", sportRole: null });
     p.child.findUnique.mockResolvedValue(null); // nessun figlio già collegato
 
@@ -258,7 +355,12 @@ describe("Flow: link-request accept → appRole + sportRole utente aggiornati", 
       child: { id: "child-1", name: "Luca", sportRole: 2, sportRoleVariant: null },
       parent: { id: "parent-1", name: "Genitore" },
     });
-    p.user.findUnique.mockResolvedValue({ id: "target-user", name: "Target", appRole: "GUEST", sportRole: null });
+    p.user.findUnique.mockResolvedValue({
+      id: "target-user",
+      name: "Target",
+      appRole: "GUEST",
+      sportRole: null,
+    });
 
     const req = new NextRequest("http://localhost/api/link-requests/req-2/respond", {
       method: "POST",

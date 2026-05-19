@@ -35,7 +35,8 @@ export default function HeroSection() {
         sx={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.72) 100%)",
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.72) 100%)",
         }}
       />
 
@@ -52,7 +53,6 @@ export default function HeroSection() {
           alignItems: "center",
         }}
       >
-
         {/* Titolo */}
         <Typography
           component="h1"
@@ -83,15 +83,17 @@ export default function HeroSection() {
         </Typography>
 
         {/* Sottotitolo */}
-        <Typography sx={{
-          color: "rgba(255,255,255,0.78)",
-          fontWeight: 400,
-          fontSize: { xs: "1rem", md: "1.15rem" },
-          lineHeight: 1.65,
-          mb: 5,
-          maxWidth: 480,
-          textShadow: "0 1px 8px rgba(0,0,0,0.4)",
-        }}>
+        <Typography
+          sx={{
+            color: "rgba(255,255,255,0.78)",
+            fontWeight: 400,
+            fontSize: { xs: "1rem", md: "1.15rem" },
+            lineHeight: 1.65,
+            mb: 5,
+            maxWidth: 480,
+            textShadow: "0 1px 8px rgba(0,0,0,0.4)",
+          }}
+        >
           Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.
         </Typography>
 
@@ -102,8 +104,11 @@ export default function HeroSection() {
             variant="contained"
             size="large"
             sx={{
-              fontWeight: 700, px: 3.5, py: 1.4,
-              fontSize: "0.95rem", borderRadius: 2,
+              fontWeight: 700,
+              px: 3.5,
+              py: 1.4,
+              fontSize: "0.95rem",
+              borderRadius: 2,
               boxShadow: "0 4px 22px rgba(230,81,0,0.55)",
               "&:hover": { boxShadow: "0 6px 28px rgba(230,81,0,0.7)" },
             }}
@@ -115,8 +120,11 @@ export default function HeroSection() {
               variant="outlined"
               size="large"
               sx={{
-                fontWeight: 600, px: 3, py: 1.4,
-                fontSize: "0.95rem", borderRadius: 2,
+                fontWeight: 600,
+                px: 3,
+                py: 1.4,
+                fontSize: "0.95rem",
+                borderRadius: 2,
                 color: "#fff",
                 borderColor: "rgba(255,255,255,0.35)",
                 backdropFilter: "blur(4px)",
@@ -137,11 +145,18 @@ export default function HeroSection() {
       <Box
         component="button"
         onClick={scrollToAllenamenti}
-        sx={{ background: "none", border: "none", cursor: "pointer",
-          position: "absolute", bottom: 24, left: "50%",
+        sx={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          position: "absolute",
+          bottom: 24,
+          left: "50%",
           transform: "translateX(-50%)",
           display: "flex",
-          flexDirection: "column", alignItems: "center", gap: 0.5,
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 0.5,
           color: "rgba(255,255,255,0.3)",
           textDecoration: "none",
           transition: "color 0.2s",
@@ -149,7 +164,9 @@ export default function HeroSection() {
           zIndex: 1,
         }}
       >
-        <Typography sx={{ letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.58rem" }}>
+        <Typography
+          sx={{ letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.58rem" }}
+        >
           Scorri
         </Typography>
         <KeyboardArrowDownIcon fontSize="small" />

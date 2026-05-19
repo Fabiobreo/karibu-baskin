@@ -32,14 +32,21 @@ const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
 
 const makeParams = (matchId: string) =>
-  ({ params: Promise.resolve({ matchId }) } as { params: Promise<{ matchId: string }> });
+  ({ params: Promise.resolve({ matchId }) }) as { params: Promise<{ matchId: string }> };
 
 const callup1 = {
   id: "cu-1",
   matchId: "match-1",
   userId: "user-1",
   childId: null,
-  user: { id: "user-1", name: "Mario Rossi", image: null, sportRole: 3, sportRoleVariant: null, slug: "mario-rossi" },
+  user: {
+    id: "user-1",
+    name: "Mario Rossi",
+    image: null,
+    sportRole: 3,
+    sportRoleVariant: null,
+    slug: "mario-rossi",
+  },
   child: null,
 };
 

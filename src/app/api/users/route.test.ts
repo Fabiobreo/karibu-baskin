@@ -279,14 +279,16 @@ describe("POST /api/users", () => {
   });
 
   it("crea utente con tutti i campi opzionali", async () => {
-    await POST(makePost({
-      email: "completo@example.com",
-      name: "Completo",
-      appRole: "ATHLETE",
-      sportRole: 3,
-      gender: "MALE",
-      birthDate: "2005-06-15",
-    }));
+    await POST(
+      makePost({
+        email: "completo@example.com",
+        name: "Completo",
+        appRole: "ATHLETE",
+        sportRole: 3,
+        gender: "MALE",
+        birthDate: "2005-06-15",
+      })
+    );
     const data = p.user.create.mock.calls[0][0].data;
     expect(data.appRole).toBe("ATHLETE");
     expect(data.sportRole).toBe(3);

@@ -48,26 +48,33 @@ import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import PickTeamsDialog from "@/components/PickTeamsDialog";
 import SessionHeroCard from "@/components/SessionHeroCard";
 import TeamsModal from "@/components/TeamsModal";
-import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
+import SessionRestrictionEditor, {
+  seasonForDate,
+  type RestrictionValue,
+} from "@/components/SessionRestrictionEditor";
 import AdminSessionForm from "@/components/AdminSessionForm";
 
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 import { TEAM_META } from "@/lib/constants";
-const DEFAULT_RESTRICTIONS: RestrictionValue = { allowedRoles: [], restrictTeamId: null, openRoles: [] };
+const DEFAULT_RESTRICTIONS: RestrictionValue = {
+  allowedRoles: [],
+  restrictTeamId: null,
+  openRoles: [],
+};
 
 function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | null) {
   if (!teams || !registrationId) return null;
-  return TEAM_META.find((t) => {
-    const list = teams[t.key];
-    return list?.some((a) => a.id === registrationId);
-  }) ?? null;
+  return (
+    TEAM_META.find((t) => {
+      const list = teams[t.key];
+      return list?.some((a) => a.id === registrationId);
+    }) ?? null
+  );
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function groupByMonth(
-  sessions: SessionWithCount[],
-): [string, SessionWithCount[]][] {
+function groupByMonth(sessions: SessionWithCount[]): [string, SessionWithCount[]][] {
   const map = new Map<string, SessionWithCount[]>();
   for (const s of sessions) {
     const key = format(new Date(s.date), "MMMM yyyy", { locale: it });
@@ -77,9 +84,7 @@ function groupByMonth(
   return Array.from(map.entries());
 }
 
-function groupByYear(
-  sessions: SessionWithCount[],
-): [string, SessionWithCount[]][] {
+function groupByYear(sessions: SessionWithCount[]): [string, SessionWithCount[]][] {
   const map = new Map<string, SessionWithCount[]>();
   for (const s of sessions) {
     const key = format(new Date(s.date), "yyyy");
@@ -88,7 +93,6 @@ function groupByYear(
   }
   return Array.from(map.entries());
 }
-
 
 // ── Session row (lista compatta) ──────────────────────────────────────────────
 
@@ -157,7 +161,16 @@ function SessionRow({
         />
 
         {/* Giorno numero + abbreviazione */}
-        <Box sx={{ width: { xs: 36, sm: 44 }, textAlign: "center", flexShrink: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
+        <Box
+          sx={{
+            width: { xs: 36, sm: 44 },
+            textAlign: "center",
+            flexShrink: 0,
+            position: "relative",
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
           <Typography
             variant="caption"
             sx={{
@@ -172,7 +185,10 @@ function SessionRow({
           >
             {format(date, "EEE", { locale: it })}
           </Typography>
-          <Typography fontWeight={800} sx={{ lineHeight: 1.1, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}>
+          <Typography
+            fontWeight={800}
+            sx={{ lineHeight: 1.1, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}
+          >
             {format(date, "d")}
           </Typography>
           <Typography
@@ -207,7 +223,7 @@ function SessionRow({
                 {s._count.registrations}
               </Typography>
             </Box>
-            {(s.allowedRoles && s.allowedRoles.length > 0 || s.restrictTeamId) && (
+            {((s.allowedRoles && s.allowedRoles.length > 0) || s.restrictTeamId) && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
                 <LockIcon sx={{ fontSize: 10, color: "text.disabled" }} />
                 <Typography variant="caption" color="text.disabled">
@@ -229,12 +245,27 @@ function SessionRow({
         </Box>
 
         {/* Icone di stato + controlli — sopra il link */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, position: "relative", zIndex: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            flexShrink: 0,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
           {isRegistered && myTeam ? (
             <Chip
               label={myTeam.name}
               size="small"
-              sx={{ bgcolor: myTeam.color, color: "#fff", fontWeight: 700, fontSize: "0.68rem", height: 20 }}
+              sx={{
+                bgcolor: myTeam.color,
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: "0.68rem",
+                height: 20,
+              }}
             />
           ) : isRegistered ? (
             <CheckCircleIcon sx={{ color: "success.main", fontSize: 18 }} />
@@ -245,24 +276,37 @@ function SessionRow({
             <IconButton
               size="small"
               aria-label="Vedi squadre"
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); setTeamsOpen(true); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setTeamsOpen(true);
+              }}
               sx={{ color: "primary.main", opacity: 0.7, p: 0.25, "&:hover": { opacity: 1 } }}
             >
               <SportsBasketballIcon sx={{ fontSize: 16 }} />
             </IconButton>
-          ) : (isStaff && !muted && (
-            <IconButton
-              size="small"
-              aria-label="Crea squadre"
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
-              disabled={generating}
-              sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
-            >
-              {generating
-                ? <CircularProgress size={13} color="inherit" />
-                : <SportsBasketballIcon sx={{ fontSize: 16 }} />}
-            </IconButton>
-          ))}
+          ) : (
+            isStaff &&
+            !muted && (
+              <IconButton
+                size="small"
+                aria-label="Crea squadre"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onGenerateTeams?.();
+                }}
+                disabled={generating}
+                sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
+              >
+                {generating ? (
+                  <CircularProgress size={13} color="inherit" />
+                ) : (
+                  <SportsBasketballIcon sx={{ fontSize: 16 }} />
+                )}
+              </IconButton>
+            )
+          )}
 
           {/* Rimuovi squadre: solo staff, solo se non passato */}
           {isStaff && s.teams && !muted && (
@@ -270,13 +314,19 @@ function SessionRow({
               size="small"
               color="error"
               aria-label="Rimuovi squadre"
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onRemoveTeams?.();
+              }}
               disabled={removingTeams}
               sx={{ opacity: 0.6, "&:hover": { opacity: 1 } }}
             >
-              {removingTeams
-                ? <CircularProgress size={13} color="error" />
-                : <DeleteOutlineIcon sx={{ fontSize: 16 }} />}
+              {removingTeams ? (
+                <CircularProgress size={13} color="error" />
+              ) : (
+                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+              )}
             </IconButton>
           )}
 
@@ -285,7 +335,11 @@ function SessionRow({
               <IconButton
                 size="small"
                 aria-label="Azioni allenamento"
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setMenuAnchor(e.currentTarget);
+                }}
                 sx={{ color: "text.disabled", mr: -0.5 }}
               >
                 <MoreVertIcon sx={{ fontSize: 18 }} />
@@ -297,12 +351,27 @@ function SessionRow({
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 transformOrigin={{ vertical: "top", horizontal: "right" }}
               >
-                <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
-                  <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                <MenuItem
+                  onClick={() => {
+                    setMenuAnchor(null);
+                    onEdit?.();
+                  }}
+                >
+                  <ListItemIcon>
+                    <EditIcon fontSize="small" />
+                  </ListItemIcon>
                   <ListItemText>Modifica</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
-                  <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                <MenuItem
+                  onClick={() => {
+                    setMenuAnchor(null);
+                    onDelete?.();
+                  }}
+                  sx={{ color: "error.main" }}
+                >
+                  <ListItemIcon>
+                    <DeleteIcon fontSize="small" color="error" />
+                  </ListItemIcon>
                   <ListItemText>Elimina</ListItemText>
                 </MenuItem>
               </Menu>
@@ -338,15 +407,15 @@ function deriveSections(sessions: SessionWithCount[], now: Date) {
   const desc = (a: SessionWithCount, b: SessionWithCount) =>
     new Date(b.date).getTime() - new Date(a.date).getTime();
 
-  const inCorso = sessions.filter((s) => {
-    const start = new Date(s.date);
-    const end = sessionEndDate(start, s.endTime ? new Date(s.endTime) : null);
-    return now >= start && now <= end;
-  }).sort(asc);
-
-  const upcoming = sessions
-    .filter((s) => new Date(s.date) > now)
+  const inCorso = sessions
+    .filter((s) => {
+      const start = new Date(s.date);
+      const end = sessionEndDate(start, s.endTime ? new Date(s.endTime) : null);
+      return now >= start && now <= end;
+    })
     .sort(asc);
+
+  const upcoming = sessions.filter((s) => new Date(s.date) > now).sort(asc);
 
   const past = sessions
     .filter((s) => {
@@ -383,8 +452,8 @@ export default function AllenamentiClient({
   const searchParams = useSearchParams();
   const { showToast } = useToast();
 
-  const [openYears, setOpenYears] = useState<Set<string>>(() =>
-    new Set([format(new Date(), "yyyy")])
+  const [openYears, setOpenYears] = useState<Set<string>>(
+    () => new Set([format(new Date(), "yyyy")])
   );
 
   function toggleYear(year: string) {
@@ -396,8 +465,8 @@ export default function AllenamentiClient({
     });
   }
 
-  const [openMonths, setOpenMonths] = useState<Set<string>>(() =>
-    new Set([format(new Date(), "MMMM yyyy", { locale: it })])
+  const [openMonths, setOpenMonths] = useState<Set<string>>(
+    () => new Set([format(new Date(), "MMMM yyyy", { locale: it })])
   );
 
   function toggleMonth(month: string) {
@@ -413,7 +482,9 @@ export default function AllenamentiClient({
 
   // Local sessions state so we can optimistically update after mutations
   const [sessions, setSessions] = useState<SessionWithCount[]>(() => [
-    ...initInCorso, ...initUpcoming, ...initPast,
+    ...initInCorso,
+    ...initUpcoming,
+    ...initPast,
   ]);
 
   const now = new Date();
@@ -477,9 +548,18 @@ export default function AllenamentiClient({
 
   async function handleSaveEdit() {
     if (!editSession) return;
-    if (!editTitle.trim()) { setEditError("Il titolo è obbligatorio"); return; }
-    if (!editDate) { setEditError("La data è obbligatoria"); return; }
-    if (editEndTime && editEndTime <= editTime) { setEditError("L'orario di fine deve essere dopo l'inizio"); return; }
+    if (!editTitle.trim()) {
+      setEditError("Il titolo è obbligatorio");
+      return;
+    }
+    if (!editDate) {
+      setEditError("La data è obbligatoria");
+      return;
+    }
+    if (editEndTime && editEndTime <= editTime) {
+      setEditError("L'orario di fine deve essere dopo l'inizio");
+      return;
+    }
     setEditLoading(true);
     setEditError("");
     try {
@@ -505,7 +585,7 @@ export default function AllenamentiClient({
         return;
       }
       const updated: SessionWithCount = await res.json();
-      setSessions((prev) => prev.map((s) => s.id === updated.id ? { ...s, ...updated } : s));
+      setSessions((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
       showToast({ message: "Allenamento aggiornato", severity: "success" });
       setEditSession(null);
       router.refresh();
@@ -521,7 +601,7 @@ export default function AllenamentiClient({
     try {
       const res = await fetch(`/api/teams/${s.id}`, { method: "DELETE" });
       if (res.ok) {
-        setSessions((prev) => prev.map((p) => p.id === s.id ? { ...p, teams: null } : p));
+        setSessions((prev) => prev.map((p) => (p.id === s.id ? { ...p, teams: null } : p)));
         showToast({ message: `Squadre rimosse per "${s.title}"`, severity: "success" });
       } else {
         showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
@@ -544,7 +624,7 @@ export default function AllenamentiClient({
       });
       if (res.ok) {
         const newTeams = await res.json();
-        setSessions((prev) => prev.map((p) => p.id === s.id ? { ...p, teams: newTeams } : p));
+        setSessions((prev) => prev.map((p) => (p.id === s.id ? { ...p, teams: newTeams } : p)));
         showToast({ message: `${numTeams} squadre create per "${s.title}"`, severity: "success" });
       } else {
         showToast({ message: "Errore nella creazione delle squadre", severity: "error" });
@@ -577,11 +657,15 @@ export default function AllenamentiClient({
   const registeredSet = new Set(registeredSessionIds);
   const [firstSession, secondSession, ...remainingUpcoming] = upcoming;
 
-  const showSecondHero = !!secondSession &&
-    isSameDay(new Date(firstSession.date), new Date(secondSession.date));
+  const showSecondHero =
+    !!secondSession && isSameDay(new Date(firstSession.date), new Date(secondSession.date));
 
   const heroSessions = showSecondHero ? [firstSession, secondSession] : [firstSession];
-  const restUpcoming = showSecondHero ? remainingUpcoming : (secondSession ? [secondSession, ...remainingUpcoming] : remainingUpcoming);
+  const restUpcoming = showSecondHero
+    ? remainingUpcoming
+    : secondSession
+      ? [secondSession, ...remainingUpcoming]
+      : remainingUpcoming;
   const futureYearGroups = groupByYear(restUpcoming);
   const pastYearGroups = groupByYear(past);
 
@@ -648,7 +732,11 @@ export default function AllenamentiClient({
       {upcoming.length > 0 && (
         <>
           <Box sx={{ mb: 2 }}>
-            <Typography variant="overline" fontWeight={700} sx={{ color: "text.disabled", letterSpacing: "0.1em" }}>
+            <Typography
+              variant="overline"
+              fontWeight={700}
+              sx={{ color: "text.disabled", letterSpacing: "0.1em" }}
+            >
               Prossimi allenamenti
             </Typography>
           </Box>
@@ -700,7 +788,11 @@ export default function AllenamentiClient({
         {activeTab === 0 && (
           <Box>
             {upcoming.length === 0 ? (
-              <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}>
+              <Paper
+                elevation={0}
+                variant="outlined"
+                sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}
+              >
                 <Typography color="text.secondary">Nessun allenamento programmato.</Typography>
               </Paper>
             ) : restUpcoming.length === 0 ? (
@@ -737,12 +829,20 @@ export default function AllenamentiClient({
                         {year}
                       </Typography>
                       <Divider sx={{ flex: 1 }} />
-                      <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        sx={{ whiteSpace: "nowrap" }}
+                      >
                         {yearSessions.length}{" "}
                         {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
                       </Typography>
                       <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
-                        {isYearOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                        {isYearOpen ? (
+                          <ExpandLessIcon fontSize="small" />
+                        ) : (
+                          <ExpandMoreIcon fontSize="small" />
+                        )}
                       </IconButton>
                     </Box>
 
@@ -779,16 +879,28 @@ export default function AllenamentiClient({
                                   {month}
                                 </Typography>
                                 <Divider sx={{ flex: 1 }} />
-                                <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.disabled"
+                                  sx={{ whiteSpace: "nowrap" }}
+                                >
                                   {monthSessions.length}{" "}
                                   {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
                                 </Typography>
                                 <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
-                                  {isOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                                  {isOpen ? (
+                                    <ExpandLessIcon fontSize="small" />
+                                  ) : (
+                                    <ExpandMoreIcon fontSize="small" />
+                                  )}
                                 </IconButton>
                               </Box>
                               <Collapse in={isOpen}>
-                                <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+                                <Paper
+                                  elevation={0}
+                                  variant="outlined"
+                                  sx={{ borderRadius: 2, overflow: "hidden" }}
+                                >
                                   {monthSessions.map((s, i) => (
                                     <Box key={s.id}>
                                       {i > 0 && <Divider />}
@@ -824,7 +936,11 @@ export default function AllenamentiClient({
         {activeTab === 1 && (
           <Box>
             {pastYearGroups.length === 0 ? (
-              <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}>
+              <Paper
+                elevation={0}
+                variant="outlined"
+                sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}
+              >
                 <Typography color="text.secondary">Nessun allenamento passato.</Typography>
               </Paper>
             ) : (
@@ -858,12 +974,20 @@ export default function AllenamentiClient({
                         {year}
                       </Typography>
                       <Divider sx={{ flex: 1 }} />
-                      <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        sx={{ whiteSpace: "nowrap" }}
+                      >
                         {yearSessions.length}{" "}
                         {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
                       </Typography>
                       <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
-                        {isYearOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                        {isYearOpen ? (
+                          <ExpandLessIcon fontSize="small" />
+                        ) : (
+                          <ExpandMoreIcon fontSize="small" />
+                        )}
                       </IconButton>
                     </Box>
 
@@ -900,16 +1024,28 @@ export default function AllenamentiClient({
                                   {month}
                                 </Typography>
                                 <Divider sx={{ flex: 1 }} />
-                                <Typography variant="caption" color="text.disabled" sx={{ whiteSpace: "nowrap" }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.disabled"
+                                  sx={{ whiteSpace: "nowrap" }}
+                                >
                                   {monthSessions.length}{" "}
                                   {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
                                 </Typography>
                                 <IconButton size="small" sx={{ color: "text.disabled", p: 0.25 }}>
-                                  {isOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+                                  {isOpen ? (
+                                    <ExpandLessIcon fontSize="small" />
+                                  ) : (
+                                    <ExpandMoreIcon fontSize="small" />
+                                  )}
                                 </IconButton>
                               </Box>
                               <Collapse in={isOpen}>
-                                <Paper elevation={0} variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+                                <Paper
+                                  elevation={0}
+                                  variant="outlined"
+                                  sx={{ borderRadius: 2, overflow: "hidden" }}
+                                >
                                   {monthSessions.map((s, i) => (
                                     <Box key={s.id}>
                                       {i > 0 && <Divider />}
@@ -938,7 +1074,12 @@ export default function AllenamentiClient({
       </Box>
 
       {/* ── Dialog: nuovo allenamento ── */}
-      <Dialog open={newOpen} onClose={() => !newLoading && setNewOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={newOpen}
+        onClose={() => !newLoading && setNewOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle fontWeight={700}>Nuovo allenamento</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
@@ -963,7 +1104,12 @@ export default function AllenamentiClient({
       />
 
       {/* ── Dialog: modifica allenamento ── */}
-      <Dialog open={!!editSession} onClose={() => !editLoading && setEditSession(null)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={!!editSession}
+        onClose={() => !editLoading && setEditSession(null)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle fontWeight={700}>Modifica allenamento</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -971,8 +1117,12 @@ export default function AllenamentiClient({
             <TextField
               label="Titolo"
               value={editTitle}
-              onChange={(e) => { setEditTitle(e.target.value); setEditError(""); }}
-              fullWidth size="small"
+              onChange={(e) => {
+                setEditTitle(e.target.value);
+                setEditError("");
+              }}
+              fullWidth
+              size="small"
               disabled={editLoading}
               autoFocus
             />
@@ -980,7 +1130,10 @@ export default function AllenamentiClient({
               label="Data"
               type="date"
               value={editDate}
-              onChange={(e) => { setEditDate(e.target.value); setEditError(""); }}
+              onChange={(e) => {
+                setEditDate(e.target.value);
+                setEditError("");
+              }}
               size="small"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
@@ -991,7 +1144,10 @@ export default function AllenamentiClient({
                 label="Inizio"
                 type="time"
                 value={editTime}
-                onChange={(e) => { setEditTime(e.target.value); setEditError(""); }}
+                onChange={(e) => {
+                  setEditTime(e.target.value);
+                  setEditError("");
+                }}
                 size="small"
                 slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
@@ -1001,7 +1157,10 @@ export default function AllenamentiClient({
                 label="Fine"
                 type="time"
                 value={editEndTime}
-                onChange={(e) => { setEditEndTime(e.target.value); setEditError(""); }}
+                onChange={(e) => {
+                  setEditEndTime(e.target.value);
+                  setEditError("");
+                }}
                 size="small"
                 slotProps={{ inputLabel: { shrink: true } }}
                 disabled={editLoading}
@@ -1025,7 +1184,9 @@ export default function AllenamentiClient({
             variant="contained"
             onClick={handleSaveEdit}
             disabled={editLoading}
-            startIcon={editLoading ? <CircularProgress size={16} color="inherit" /> : <EventAvailableIcon />}
+            startIcon={
+              editLoading ? <CircularProgress size={16} color="inherit" /> : <EventAvailableIcon />
+            }
             sx={{ px: 3 }}
           >
             {editLoading ? "Salvataggio..." : "Salva modifiche"}
@@ -1038,12 +1199,14 @@ export default function AllenamentiClient({
         <DialogTitle fontWeight={700}>Elimina allenamento</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Elimina &quot;{toDelete?.title}&quot;? Verranno eliminate anche tutte le iscrizioni associate.
-            Questa azione è irreversibile.
+            Elimina &quot;{toDelete?.title}&quot;? Verranno eliminate anche tutte le iscrizioni
+            associate. Questa azione è irreversibile.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setToDelete(null)} disabled={deleting}>Annulla</Button>
+          <Button onClick={() => setToDelete(null)} disabled={deleting}>
+            Annulla
+          </Button>
           <Button onClick={confirmDelete} color="error" variant="contained" disabled={deleting}>
             {deleting ? "Eliminazione..." : "Elimina"}
           </Button>

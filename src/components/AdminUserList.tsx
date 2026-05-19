@@ -2,12 +2,37 @@
 import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Box, Table, TableBody, TableCell, TableContainer, TableHead,
-  TableRow, Avatar, Typography, Select, MenuItem, Chip,
-  TextField, InputAdornment, IconButton, Dialog, DialogTitle,
-  DialogContent, DialogActions, Button, Divider, Stack,
-  DialogContentText, Tooltip, ToggleButton, ToggleButtonGroup,
-  TableSortLabel, TablePagination, Badge, Tabs, Tab,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+  Typography,
+  Select,
+  MenuItem,
+  Chip,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Divider,
+  Stack,
+  DialogContentText,
+  Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
+  TableSortLabel,
+  TablePagination,
+  Badge,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
@@ -18,7 +43,12 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import type { AppRole, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS, ROLE_HIERARCHY } from "@/lib/authRoles";
-import { ROLE_COLORS, SPORT_ROLE_VARIANT_LABELS, sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
+import {
+  ROLE_COLORS,
+  SPORT_ROLE_VARIANT_LABELS,
+  sportRoleLabel,
+  GENDER_LABELS_SHORT,
+} from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -29,10 +59,23 @@ const ALL_APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"
 
 type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRole";
 
-interface RoleHistoryEntry { sportRole: number; changedAt: Date | string; }
+interface RoleHistoryEntry {
+  sportRole: number;
+  changedAt: Date | string;
+}
 
-interface TeamInfo { id: string; name: string; season: string; color: string | null; }
-interface MembershipInfo { id: string; teamId: string; isCaptain: boolean; team: TeamInfo; }
+interface TeamInfo {
+  id: string;
+  name: string;
+  season: string;
+  color: string | null;
+}
+interface MembershipInfo {
+  id: string;
+  teamId: string;
+  isCaptain: boolean;
+  team: TeamInfo;
+}
 
 interface UserEntry {
   id: string;
@@ -65,9 +108,7 @@ interface ChildEntry {
   teamMemberships: MembershipInfo[];
 }
 
-type AdminRow =
-  | (UserEntry & { kind: "user" })
-  | (ChildEntry & { kind: "child" });
+type AdminRow = (UserEntry & { kind: "user" }) | (ChildEntry & { kind: "child" });
 
 interface EditState {
   name: string;
@@ -126,32 +167,58 @@ export default function AdminUserList({
   const [filterGender, setFilterGender] = useState(currentFilters.gender ?? "");
   const [filterTeamId, setFilterTeamId] = useState(currentFilters.teamId ?? "");
 
-  const [sortBy, setSortBy] = useState<SortColumn>((currentFilters.sortBy as SortColumn) ?? "createdAt");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">((currentFilters.sortDir as "asc" | "desc") ?? "desc");
+  const [sortBy, setSortBy] = useState<SortColumn>(
+    (currentFilters.sortBy as SortColumn) ?? "createdAt"
+  );
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(
+    (currentFilters.sortDir as "asc" | "desc") ?? "desc"
+  );
 
   // Server-side pagination (page is 1-based from server, MUI TablePagination is 0-based)
   const serverDriven = serverTotal !== undefined;
   const [page, setPage] = useState(serverDriven ? serverPage - 1 : 0);
   const [rowsPerPage, setRowsPerPage] = useState(currentFilters.limit ?? serverLimit);
 
-  const pushFilters = useCallback((overrides: Partial<CurrentFilters & { page?: number }>) => {
-    const params = new URLSearchParams();
-    const merged = {
-      search, appRole: filterAppRoles[0] ?? "", sportRole: filterSportRoles[0] ?? "",
-      gender: filterGender, teamId: filterTeamId, sortBy, sortDir, page: serverPage, limit: rowsPerPage,
-      ...overrides,
-    };
-    if (merged.search) params.set("search", merged.search);
-    if (merged.appRole) params.set("appRole", merged.appRole);
-    if (merged.sportRole) params.set("sportRole", merged.sportRole);
-    if (merged.gender) params.set("gender", merged.gender);
-    if (merged.teamId) params.set("teamId", merged.teamId);
-    if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
-    if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
-    if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
-    if ((merged.limit ?? 10) !== 10) params.set("limit", String(merged.limit));
-    startTransition(() => router.push(`${pathname}?${params.toString()}`));
-  }, [search, filterAppRoles, filterSportRoles, filterGender, filterTeamId, sortBy, sortDir, serverPage, rowsPerPage, pathname, router]);
+  const pushFilters = useCallback(
+    (overrides: Partial<CurrentFilters & { page?: number }>) => {
+      const params = new URLSearchParams();
+      const merged = {
+        search,
+        appRole: filterAppRoles[0] ?? "",
+        sportRole: filterSportRoles[0] ?? "",
+        gender: filterGender,
+        teamId: filterTeamId,
+        sortBy,
+        sortDir,
+        page: serverPage,
+        limit: rowsPerPage,
+        ...overrides,
+      };
+      if (merged.search) params.set("search", merged.search);
+      if (merged.appRole) params.set("appRole", merged.appRole);
+      if (merged.sportRole) params.set("sportRole", merged.sportRole);
+      if (merged.gender) params.set("gender", merged.gender);
+      if (merged.teamId) params.set("teamId", merged.teamId);
+      if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
+      if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
+      if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
+      if ((merged.limit ?? 10) !== 10) params.set("limit", String(merged.limit));
+      startTransition(() => router.push(`${pathname}?${params.toString()}`));
+    },
+    [
+      search,
+      filterAppRoles,
+      filterSportRoles,
+      filterGender,
+      filterTeamId,
+      sortBy,
+      sortDir,
+      serverPage,
+      rowsPerPage,
+      pathname,
+      router,
+    ]
+  );
 
   const [rows, setRows] = useState<AdminRow[]>(() => [
     ...initialUsers.map((u) => ({ ...u, kind: "user" as const })),
@@ -162,7 +229,10 @@ export default function AdminUserList({
   // Usiamo un ref per non triggherare al primo render (initialUsers non cambia lì).
   const isFirstRender = useRef(true);
   useEffect(() => {
-    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setRows([
       ...initialUsers.map((u) => ({ ...u, kind: "user" as const })),
       ...initialChildren.map((c) => ({ ...c, kind: "child" as const })),
@@ -173,15 +243,23 @@ export default function AdminUserList({
   const [activeTab, setActiveTab] = useState(0);
 
   // Stato locale per il tab figli (sempre client-side, sono pochi)
-  const [childSearch, setChildSearch]     = useState("");
-  const [childSortBy, setChildSortBy]     = useState<"name" | "createdAt" | "sportRole">("name");
-  const [childSortDir, setChildSortDir]   = useState<"asc" | "desc">("asc");
-  const [childPage, setChildPage]         = useState(0);
+  const [childSearch, setChildSearch] = useState("");
+  const [childSortBy, setChildSortBy] = useState<"name" | "createdAt" | "sportRole">("name");
+  const [childSortDir, setChildSortDir] = useState<"asc" | "desc">("asc");
+  const [childPage, setChildPage] = useState(0);
   const [childRowsPerPage, setChildRowsPerPage] = useState(25);
 
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
-  const [editState, setEditState] = useState<EditState>({ name: "", email: "", appRole: "", sportRole: "", sportRoleVariant: "", gender: "", birthDate: "" });
+  const [editState, setEditState] = useState<EditState>({
+    name: "",
+    email: "",
+    appRole: "",
+    sportRole: "",
+    sportRoleVariant: "",
+    gender: "",
+    birthDate: "",
+  });
   const [editTeamId, setEditTeamId] = useState("");
   const [availableTeams, setAvailableTeams] = useState<TeamInfo[]>(initialTeams);
   const [saving, setSaving] = useState(false);
@@ -197,7 +275,6 @@ export default function AdminUserList({
     const startYear = month >= 8 ? year : year - 1;
     return `${startYear}-${String(startYear + 1).slice(-2)}`;
   }
-
 
   const userCount = serverDriven ? (serverTotal ?? initialUsers.length) : initialUsers.length;
   const childCount = initialChildren.length;
@@ -219,7 +296,11 @@ export default function AdminUserList({
     let result = userRows;
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter((r) => r.kind === "user" && (r.name?.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)));
+      result = result.filter(
+        (r) =>
+          r.kind === "user" &&
+          (r.name?.toLowerCase().includes(q) || r.email.toLowerCase().includes(q))
+      );
     }
     if (filterAppRoles.length > 0) {
       result = result.filter((r) => r.kind === "user" && filterAppRoles.includes(r.appRole));
@@ -235,25 +316,46 @@ export default function AdminUserList({
     else if (filterGender) result = result.filter((r) => r.gender === filterGender);
     if (filterTeamId) {
       const season = getCurrentSeason();
-      result = result.filter((r) => r.teamMemberships.some((m) => m.teamId === filterTeamId && m.team.season === season));
+      result = result.filter((r) =>
+        r.teamMemberships.some((m) => m.teamId === filterTeamId && m.team.season === season)
+      );
     }
 
     return [...result].sort((a, b) => {
       let cmp = 0;
       switch (sortBy) {
-        case "name": cmp = (a.name ?? "").localeCompare(b.name ?? "", "it"); break;
-        case "createdAt": cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); break;
-        case "sportRole": cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99); break;
-        case "registrations": cmp = a._count.registrations - b._count.registrations; break;
+        case "name":
+          cmp = (a.name ?? "").localeCompare(b.name ?? "", "it");
+          break;
+        case "createdAt":
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case "sportRole":
+          cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
+          break;
+        case "registrations":
+          cmp = a._count.registrations - b._count.registrations;
+          break;
         case "appRole": {
           const aRole = a.kind === "user" ? ROLE_HIERARCHY[a.appRole] : -1;
           const bRole = b.kind === "user" ? ROLE_HIERARCHY[b.appRole] : -1;
-          cmp = aRole - bRole; break;
+          cmp = aRole - bRole;
+          break;
         }
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [rows, serverDriven, search, filterAppRoles, filterSportRoles, filterGender, filterTeamId, sortBy, sortDir]);
+  }, [
+    rows,
+    serverDriven,
+    search,
+    filterAppRoles,
+    filterSportRoles,
+    filterGender,
+    filterTeamId,
+    sortBy,
+    sortDir,
+  ]);
 
   const paginated = serverDriven
     ? processed
@@ -265,18 +367,25 @@ export default function AdminUserList({
     let result = childRows;
     if (childSearch) {
       const q = childSearch.toLowerCase();
-      result = result.filter((c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.parent.name?.toLowerCase().includes(q) ||
-        c.parent.email.toLowerCase().includes(q)
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          c.parent.name?.toLowerCase().includes(q) ||
+          c.parent.email.toLowerCase().includes(q)
       );
     }
     return [...result].sort((a, b) => {
       let cmp = 0;
       switch (childSortBy) {
-        case "name": cmp = a.name.localeCompare(b.name, "it"); break;
-        case "createdAt": cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); break;
-        case "sportRole": cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99); break;
+        case "name":
+          cmp = a.name.localeCompare(b.name, "it");
+          break;
+        case "createdAt":
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case "sportRole":
+          cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
+          break;
       }
       return childSortDir === "asc" ? cmp : -cmp;
     });
@@ -309,8 +418,12 @@ export default function AdminUserList({
   function toggleAppRole(role: AppRole) {
     // Single-select when server-driven (server only supports one appRole filter)
     const newRoles = serverDriven
-      ? (filterAppRoles.includes(role) ? [] : [role])
-      : (filterAppRoles.includes(role) ? filterAppRoles.filter((r) => r !== role) : [...filterAppRoles, role]);
+      ? filterAppRoles.includes(role)
+        ? []
+        : [role]
+      : filterAppRoles.includes(role)
+        ? filterAppRoles.filter((r) => r !== role)
+        : [...filterAppRoles, role];
     setFilterAppRoles(newRoles);
     setPage(0);
     if (serverDriven) pushFilters({ appRole: newRoles[0] ?? "", page: 1 });
@@ -319,8 +432,12 @@ export default function AdminUserList({
   function toggleSportRole(val: string) {
     // Single-select when server-driven (server only supports one sportRole filter)
     const newVals = serverDriven
-      ? (filterSportRoles.includes(val) ? [] : [val])
-      : (filterSportRoles.includes(val) ? filterSportRoles.filter((r) => r !== val) : [...filterSportRoles, val]);
+      ? filterSportRoles.includes(val)
+        ? []
+        : [val]
+      : filterSportRoles.includes(val)
+        ? filterSportRoles.filter((r) => r !== val)
+        : [...filterSportRoles, val];
     setFilterSportRoles(newVals);
     setPage(0);
     if (serverDriven) pushFilters({ sportRole: newVals[0] ?? "", page: 1 });
@@ -336,7 +453,7 @@ export default function AdminUserList({
     });
     if (res.ok) {
       setRows((prev) =>
-        prev.map((r) => r.kind === "user" && r.id === userId ? { ...r, appRole: newRole } : r)
+        prev.map((r) => (r.kind === "user" && r.id === userId ? { ...r, appRole: newRole } : r))
       );
       showToast({ message: `Ruolo aggiornato a ${ROLE_LABELS_IT[newRole]}`, severity: "success" });
     } else {
@@ -349,16 +466,33 @@ export default function AdminUserList({
     const res = await fetch(`/api/users/${row.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sportRole: row.sportRoleSuggested, sportRoleVariant: row.sportRoleSuggestedVariant ?? null }),
+      body: JSON.stringify({
+        sportRole: row.sportRoleSuggested,
+        sportRoleVariant: row.sportRoleSuggestedVariant ?? null,
+      }),
     });
     if (res.ok) {
       const updated = await res.json();
-      setRows((prev) => prev.map((r) =>
-        r.id === row.id && r.kind === "user"
-          ? { ...r, sportRole: updated.sportRole, sportRoleVariant: updated.sportRoleVariant, sportRoleSuggested: null, sportRoleSuggestedVariant: null,
-              sportRoleHistory: updated.sportRole !== null ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...r.sportRoleHistory] : r.sportRoleHistory }
-          : r
-      ));
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === row.id && r.kind === "user"
+            ? {
+                ...r,
+                sportRole: updated.sportRole,
+                sportRoleVariant: updated.sportRoleVariant,
+                sportRoleSuggested: null,
+                sportRoleSuggestedVariant: null,
+                sportRoleHistory:
+                  updated.sportRole !== null
+                    ? [
+                        { sportRole: updated.sportRole, changedAt: new Date().toISOString() },
+                        ...r.sportRoleHistory,
+                      ]
+                    : r.sportRoleHistory,
+              }
+            : r
+        )
+      );
       showToast({ message: "Ruolo confermato", severity: "success" });
     } else {
       showToast({ message: "Errore nella conferma", severity: "error" });
@@ -372,11 +506,13 @@ export default function AdminUserList({
       body: JSON.stringify({ clearRoleSuggestion: true }),
     });
     if (res.ok) {
-      setRows((prev) => prev.map((r) =>
-        r.id === row.id && r.kind === "user"
-          ? { ...r, sportRoleSuggested: null, sportRoleSuggestedVariant: null }
-          : r
-      ));
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === row.id && r.kind === "user"
+            ? { ...r, sportRoleSuggested: null, sportRoleSuggestedVariant: null }
+            : r
+        )
+      );
       showToast({ message: "Suggerimento rimosso", severity: "info" });
     } else {
       showToast({ message: "Errore nel rifiuto", severity: "error" });
@@ -389,7 +525,9 @@ export default function AdminUserList({
     if ((existing?.teamId ?? "") === newTeamId) return;
     try {
       if (existing) {
-        await fetch(`/api/competitive-teams/${existing.teamId}/members/${existing.id}`, { method: "DELETE" });
+        await fetch(`/api/competitive-teams/${existing.teamId}/members/${existing.id}`, {
+          method: "DELETE",
+        });
       }
       let newMembership: MembershipInfo | null = null;
       if (newTeamId) {
@@ -402,18 +540,24 @@ export default function AdminUserList({
         if (res.ok) {
           const data = await res.json();
           const teamInfo = availableTeams.find((t) => t.id === newTeamId);
-          if (teamInfo) newMembership = { id: data.id, teamId: newTeamId, isCaptain: false, team: teamInfo };
+          if (teamInfo)
+            newMembership = { id: data.id, teamId: newTeamId, isCaptain: false, team: teamInfo };
         } else {
           showToast({ message: "Errore nell'assegnazione alla squadra", severity: "error" });
           return;
         }
       }
-      setRows((prev) => prev.map((r) => {
-        if (r.id !== row.id || r.kind !== row.kind) return r;
-        const others = r.teamMemberships.filter((m) => m.team.season !== season);
-        return { ...r, teamMemberships: newMembership ? [...others, newMembership] : others };
-      }));
-      showToast({ message: newTeamId ? "Squadra aggiornata" : "Rimosso dalla squadra", severity: "success" });
+      setRows((prev) =>
+        prev.map((r) => {
+          if (r.id !== row.id || r.kind !== row.kind) return r;
+          const others = r.teamMemberships.filter((m) => m.team.season !== season);
+          return { ...r, teamMemberships: newMembership ? [...others, newMembership] : others };
+        })
+      );
+      showToast({
+        message: newTeamId ? "Squadra aggiornata" : "Rimosso dalla squadra",
+        severity: "success",
+      });
     } catch {
       showToast({ message: "Errore nella gestione della squadra", severity: "error" });
     }
@@ -448,12 +592,15 @@ export default function AdminUserList({
     if (editRow.kind === "user" && editState.appRole) {
       payload.appRole = editState.appRole;
     }
-    if (editRow.kind === "user" && editState.email.trim() && editState.email.trim() !== editRow.email) {
+    if (
+      editRow.kind === "user" &&
+      editState.email.trim() &&
+      editState.email.trim() !== editRow.email
+    ) {
       payload.email = editState.email.trim();
     }
-    const url = editRow.kind === "user"
-      ? `/api/users/${editRow.id}`
-      : `/api/children/${editRow.id}`;
+    const url =
+      editRow.kind === "user" ? `/api/users/${editRow.id}` : `/api/children/${editRow.id}`;
     const res = await fetch(url, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -475,10 +622,14 @@ export default function AdminUserList({
     if (editTeamId !== previousTeamId) {
       try {
         if (existingMembership) {
-          await fetch(`/api/competitive-teams/${existingMembership.teamId}/members/${existingMembership.id}`, { method: "DELETE" });
+          await fetch(
+            `/api/competitive-teams/${existingMembership.teamId}/members/${existingMembership.id}`,
+            { method: "DELETE" }
+          );
         }
         if (editTeamId) {
-          const memberBody = editRow.kind === "user" ? { userId: editRow.id } : { childId: editRow.id };
+          const memberBody =
+            editRow.kind === "user" ? { userId: editRow.id } : { childId: editRow.id };
           const memberRes = await fetch(`/api/competitive-teams/${editTeamId}/members`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -487,7 +638,13 @@ export default function AdminUserList({
           if (memberRes.ok) {
             const memberData = await memberRes.json();
             const teamInfo = availableTeams.find((t) => t.id === editTeamId);
-            if (teamInfo) newMembership = { id: memberData.id, teamId: editTeamId, isCaptain: false, team: teamInfo };
+            if (teamInfo)
+              newMembership = {
+                id: memberData.id,
+                teamId: editTeamId,
+                isCaptain: false,
+                team: teamInfo,
+              };
           } else {
             showToast({ message: "Errore nell'assegnazione alla squadra", severity: "warning" });
           }
@@ -501,38 +658,43 @@ export default function AdminUserList({
 
     const rowId = editRow.id;
     const rowKind = editRow.kind;
-    setRows((prev) => prev.map((r) => {
-      if (r.id !== rowId || r.kind !== rowKind) return r;
-      const otherMemberships = r.teamMemberships.filter((m) => m.team.season !== season);
-      const baseUpdate = {
-        ...r,
-        teamMemberships: newMembership ? [...otherMemberships, newMembership] : otherMemberships,
-      };
-      if (r.kind === "user") {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== rowId || r.kind !== rowKind) return r;
+        const otherMemberships = r.teamMemberships.filter((m) => m.team.season !== season);
+        const baseUpdate = {
+          ...r,
+          teamMemberships: newMembership ? [...otherMemberships, newMembership] : otherMemberships,
+        };
+        if (r.kind === "user") {
+          return {
+            ...baseUpdate,
+            name: updated.name ?? r.name,
+            email: updated.email ?? r.email,
+            appRole: updated.appRole ?? r.appRole,
+            sportRole: updated.sportRole,
+            sportRoleVariant: updated.sportRoleVariant,
+            gender: updated.gender,
+            birthDate: updated.birthDate,
+            sportRoleHistory:
+              updated.sportRole !== editRow.sportRole && updated.sportRole !== null
+                ? [
+                    { sportRole: updated.sportRole, changedAt: new Date().toISOString() },
+                    ...(editRow as UserEntry).sportRoleHistory,
+                  ]
+                : (editRow as UserEntry).sportRoleHistory,
+          };
+        }
         return {
           ...baseUpdate,
           name: updated.name ?? r.name,
-          email: updated.email ?? r.email,
-          appRole: updated.appRole ?? r.appRole,
           sportRole: updated.sportRole,
           sportRoleVariant: updated.sportRoleVariant,
           gender: updated.gender,
           birthDate: updated.birthDate,
-          sportRoleHistory:
-            updated.sportRole !== editRow.sportRole && updated.sportRole !== null
-              ? [{ sportRole: updated.sportRole, changedAt: new Date().toISOString() }, ...(editRow as UserEntry).sportRoleHistory]
-              : (editRow as UserEntry).sportRoleHistory,
         };
-      }
-      return {
-        ...baseUpdate,
-        name: updated.name ?? r.name,
-        sportRole: updated.sportRole,
-        sportRoleVariant: updated.sportRoleVariant,
-        gender: updated.gender,
-        birthDate: updated.birthDate,
-      };
-    }));
+      })
+    );
 
     setSaving(false);
     showToast({ message: "Dati atleta aggiornati", severity: "success" });
@@ -542,16 +704,16 @@ export default function AdminUserList({
   async function handleDeleteConfirm() {
     if (!deleteRow) return;
     setDeleting(true);
-    const url = deleteRow.kind === "user"
-      ? `/api/users/${deleteRow.id}`
-      : `/api/children/${deleteRow.id}`;
+    const url =
+      deleteRow.kind === "user" ? `/api/users/${deleteRow.id}` : `/api/children/${deleteRow.id}`;
     try {
       const res = await fetch(url, { method: "DELETE" });
       if (res.ok) {
         setRows((prev) => prev.filter((r) => r.id !== deleteRow.id));
-        const label = deleteRow.kind === "user"
-          ? `Utente "${deleteRow.name ?? deleteRow.email}" eliminato`
-          : `Figlio "${deleteRow.name}" eliminato`;
+        const label =
+          deleteRow.kind === "user"
+            ? `Utente "${deleteRow.name ?? deleteRow.email}" eliminato`
+            : `Figlio "${deleteRow.name}" eliminato`;
         showToast({ message: label, severity: "success" });
         setDeleteRow(null);
       } else {
@@ -614,11 +776,15 @@ export default function AdminUserList({
                   : `${userCount} utenti`}
             </Typography>
             {activeFilterCount > 0 && (
-              <Button size="small" onClick={resetFilters} startIcon={
-                <Badge badgeContent={activeFilterCount} color="primary">
-                  <FilterListIcon fontSize="small" />
-                </Badge>
-              }>
+              <Button
+                size="small"
+                onClick={resetFilters}
+                startIcon={
+                  <Badge badgeContent={activeFilterCount} color="primary">
+                    <FilterListIcon fontSize="small" />
+                  </Badge>
+                }
+              >
                 Rimuovi filtri
               </Button>
             )}
@@ -628,7 +794,12 @@ export default function AdminUserList({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 2.5 }}>
             {/* Ruolo utente */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                sx={{ minWidth: 90 }}
+              >
                 Ruolo utente
               </Typography>
               <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -641,7 +812,10 @@ export default function AdminUserList({
                     variant={filterAppRoles.includes(role) ? "filled" : "outlined"}
                     onClick={() => toggleAppRole(role)}
                     aria-pressed={filterAppRoles.includes(role)}
-                    sx={{ cursor: "pointer", fontWeight: filterAppRoles.includes(role) ? 700 : 400 }}
+                    sx={{
+                      cursor: "pointer",
+                      fontWeight: filterAppRoles.includes(role) ? 700 : 400,
+                    }}
                   />
                 ))}
               </Box>
@@ -649,7 +823,12 @@ export default function AdminUserList({
 
             {/* Ruolo Baskin */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                sx={{ minWidth: 90 }}
+              >
                 Ruolo Baskin
               </Typography>
               <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -659,7 +838,10 @@ export default function AdminUserList({
                   variant={filterSportRoles.includes("none") ? "filled" : "outlined"}
                   onClick={() => toggleSportRole("none")}
                   aria-pressed={filterSportRoles.includes("none")}
-                  sx={{ cursor: "pointer", fontWeight: filterSportRoles.includes("none") ? 700 : 400 }}
+                  sx={{
+                    cursor: "pointer",
+                    fontWeight: filterSportRoles.includes("none") ? 700 : 400,
+                  }}
                 />
                 {[1, 2, 3, 4, 5].map((r) => {
                   const active = filterSportRoles.includes(r.toString());
@@ -686,7 +868,12 @@ export default function AdminUserList({
 
             {/* Genere */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                sx={{ minWidth: 90 }}
+              >
                 Genere
               </Typography>
               <ToggleButtonGroup
@@ -700,17 +887,30 @@ export default function AdminUserList({
                   if (serverDriven) pushFilters({ gender: v, page: 1 });
                 }}
               >
-                <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>Tutti</ToggleButton>
-                <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>M</ToggleButton>
-                <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>F</ToggleButton>
-                <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>N/D</ToggleButton>
+                <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  Tutti
+                </ToggleButton>
+                <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  M
+                </ToggleButton>
+                <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  F
+                </ToggleButton>
+                <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  N/D
+                </ToggleButton>
               </ToggleButtonGroup>
             </Box>
 
             {/* Squadra */}
             {availableTeams.length > 0 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ minWidth: 90 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                  sx={{ minWidth: 90 }}
+                >
                   Squadra
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -732,9 +932,25 @@ export default function AdminUserList({
                         sx={{
                           cursor: "pointer",
                           fontWeight: active ? 700 : 400,
-                          ...(active && t.color ? { bgcolor: t.color, color: "#fff", borderColor: t.color } : {}),
+                          ...(active && t.color
+                            ? { bgcolor: t.color, color: "#fff", borderColor: t.color }
+                            : {}),
                         }}
-                        avatar={t.color && !active ? <Box component="span" sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: t.color, ml: "6px !important", mr: "-4px !important" }} /> : undefined}
+                        avatar={
+                          t.color && !active ? (
+                            <Box
+                              component="span"
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: "50%",
+                                bgcolor: t.color,
+                                ml: "6px !important",
+                                mr: "-4px !important",
+                              }}
+                            />
+                          ) : undefined
+                        }
                       />
                     );
                   })}
@@ -744,7 +960,10 @@ export default function AdminUserList({
           </Box>
 
           {/* ── Tabella utenti ── */}
-          <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}>
+          <TableContainer
+            component={Box}
+            sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}
+          >
             <Table size="small" aria-label="Lista utenti">
               <TableHead>
                 <TableRow>
@@ -777,7 +996,9 @@ export default function AdminUserList({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell align="center">Squadra</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    Genere
+                  </TableCell>
                   <TableCell align="center">Azioni</TableCell>
                 </TableRow>
               </TableHead>
@@ -803,7 +1024,9 @@ export default function AdminUserList({
 
                       {/* Email */}
                       <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                        <Typography variant="body2" color="text.secondary">{row.email}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {row.email}
+                        </Typography>
                       </TableCell>
 
                       {/* Ruolo utente */}
@@ -814,12 +1037,22 @@ export default function AdminUserList({
                           onChange={(e) => handleRoleChange(row.id, e.target.value as AppRole)}
                           sx={{ minWidth: 110, fontSize: "0.8rem" }}
                           renderValue={(val) => (
-                            <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                            <Chip
+                              label={ROLE_LABELS_IT[val as AppRole]}
+                              size="small"
+                              color={ROLE_CHIP_COLORS[val as AppRole]}
+                              sx={{ fontWeight: 600 }}
+                            />
                           )}
                         >
                           {ALL_APP_ROLES.map((r) => (
                             <MenuItem key={r} value={r}>
-                              <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
+                              <Chip
+                                label={ROLE_LABELS_IT[r]}
+                                size="small"
+                                color={ROLE_CHIP_COLORS[r]}
+                                sx={{ fontWeight: 600 }}
+                              />
                             </MenuItem>
                           ))}
                         </Select>
@@ -827,61 +1060,130 @@ export default function AdminUserList({
 
                       {/* Ruolo Baskin */}
                       <TableCell align="center">
-                        {row.sportRole
-                          ? <Chip
-                              label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
+                        {row.sportRole ? (
+                          <Chip
+                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
+                            size="small"
+                            sx={{
+                              bgcolor: ROLE_COLORS[row.sportRole],
+                              color: "#fff",
+                              fontWeight: 700,
+                              fontSize: "0.72rem",
+                            }}
+                          />
+                        ) : row.sportRoleSuggested ? (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.25,
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Chip
+                              label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
                               size="small"
-                              sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                              variant="outlined"
+                              sx={{
+                                borderColor: ROLE_COLORS[row.sportRoleSuggested],
+                                color: ROLE_COLORS[row.sportRoleSuggested],
+                                fontWeight: 700,
+                                fontSize: "0.72rem",
+                              }}
+                              title="Autovalutazione — da confermare"
                             />
-                          : row.sportRoleSuggested
-                            ? <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, justifyContent: "center" }}>
-                                <Chip
-                                  label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{ borderColor: ROLE_COLORS[row.sportRoleSuggested], color: ROLE_COLORS[row.sportRoleSuggested], fontWeight: 700, fontSize: "0.72rem" }}
-                                  title="Autovalutazione — da confermare"
-                                />
-                                <Tooltip title="Conferma ruolo">
-                                  <IconButton size="small" sx={{ p: "2px", color: "success.main" }} onClick={() => handleConfirmSuggestedRole(row)}>
-                                    <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Rifiuta suggerimento">
-                                  <IconButton size="small" sx={{ p: "2px", color: "error.main" }} onClick={() => handleRejectSuggestedRole(row)}>
-                                    <HighlightOffIcon sx={{ fontSize: 15 }} />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            : <Typography variant="body2" color="text.disabled">—</Typography>
-                        }
+                            <Tooltip title="Conferma ruolo">
+                              <IconButton
+                                size="small"
+                                sx={{ p: "2px", color: "success.main" }}
+                                onClick={() => handleConfirmSuggestedRole(row)}
+                              >
+                                <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Rifiuta suggerimento">
+                              <IconButton
+                                size="small"
+                                sx={{ p: "2px", color: "error.main" }}
+                                onClick={() => handleRejectSuggestedRole(row)}
+                              >
+                                <HighlightOffIcon sx={{ fontSize: 15 }} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" color="text.disabled">
+                            —
+                          </Typography>
+                        )}
                       </TableCell>
 
                       {/* Squadra */}
                       <TableCell align="center">
                         <Select
-                          value={row.teamMemberships.find((m) => m.team.season === getCurrentSeason())?.teamId ?? ""}
+                          value={
+                            row.teamMemberships.find((m) => m.team.season === getCurrentSeason())
+                              ?.teamId ?? ""
+                          }
                           size="small"
                           displayEmpty
                           onChange={(e) => handleTeamChange(row, e.target.value)}
                           sx={{ minWidth: 110, fontSize: "0.8rem" }}
                           renderValue={(val) => {
-                            if (!val) return <Typography variant="body2" color="text.disabled" component="span">—</Typography>;
-                            const team = availableTeams.find((t) => t.id === val) ?? row.teamMemberships.find((m) => m.teamId === val)?.team;
-                            if (!team) return <Typography variant="body2" component="span">—</Typography>;
+                            if (!val)
+                              return (
+                                <Typography variant="body2" color="text.disabled" component="span">
+                                  —
+                                </Typography>
+                              );
+                            const team =
+                              availableTeams.find((t) => t.id === val) ??
+                              row.teamMemberships.find((m) => m.teamId === val)?.team;
+                            if (!team)
+                              return (
+                                <Typography variant="body2" component="span">
+                                  —
+                                </Typography>
+                              );
                             return (
                               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                                {team.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team.color, flexShrink: 0 }} />}
-                                <Typography variant="body2" noWrap component="span">{team.name}</Typography>
+                                {team.color && (
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      bgcolor: team.color,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                )}
+                                <Typography variant="body2" noWrap component="span">
+                                  {team.name}
+                                </Typography>
                               </Box>
                             );
                           }}
                         >
-                          <MenuItem value=""><em>Nessuna squadra</em></MenuItem>
+                          <MenuItem value="">
+                            <em>Nessuna squadra</em>
+                          </MenuItem>
                           {availableTeams.map((t) => (
                             <MenuItem key={t.id} value={t.id}>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                {t.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />}
+                                {t.color && (
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      bgcolor: t.color,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                )}
                                 {t.name}
                               </Box>
                             </MenuItem>
@@ -891,21 +1193,34 @@ export default function AdminUserList({
 
                       {/* Genere */}
                       <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        {row.gender
-                          ? <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
-                          : <Typography variant="body2" color="text.disabled">—</Typography>}
+                        {row.gender ? (
+                          <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
+                        ) : (
+                          <Typography variant="body2" color="text.disabled">
+                            —
+                          </Typography>
+                        )}
                       </TableCell>
 
                       {/* Azioni */}
                       <TableCell align="center">
                         <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                           <Tooltip title="Modifica utente">
-                            <IconButton size="small" aria-label="Modifica utente" onClick={() => openEdit(row)}>
+                            <IconButton
+                              size="small"
+                              aria-label="Modifica utente"
+                              onClick={() => openEdit(row)}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Elimina utente">
-                            <IconButton size="small" aria-label="Elimina utente" color="error" onClick={() => setDeleteRow(row)}>
+                            <IconButton
+                              size="small"
+                              aria-label="Elimina utente"
+                              color="error"
+                              onClick={() => setDeleteRow(row)}
+                            >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
@@ -965,7 +1280,10 @@ export default function AdminUserList({
             <TextField
               placeholder="Cerca per nome o genitore..."
               value={childSearch}
-              onChange={(e) => { setChildSearch(e.target.value); setChildPage(0); }}
+              onChange={(e) => {
+                setChildSearch(e.target.value);
+                setChildPage(0);
+              }}
               size="small"
               sx={{ width: { xs: "100%", sm: 280 } }}
               slotProps={{
@@ -986,7 +1304,10 @@ export default function AdminUserList({
           </Box>
 
           {/* ── Tabella figli ── */}
-          <TableContainer component={Box} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}>
+          <TableContainer
+            component={Box}
+            sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}
+          >
             <Table size="small" aria-label="Lista figli">
               <TableHead>
                 <TableRow>
@@ -1010,102 +1331,175 @@ export default function AdminUserList({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell align="center">Squadra</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>Genere</TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    Genere
+                  </TableCell>
                   <TableCell align="center">Azioni</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredChildren.slice(childPage * childRowsPerPage, (childPage + 1) * childRowsPerPage).map((row) => (
-                  <TableRow key={`child-${row.id}`} hover>
-                    {/* Nome */}
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: "grey.400" }}>
-                          {row.name[0].toUpperCase()}
-                        </Avatar>
-                        <Typography variant="body2" fontWeight={600} noWrap>
-                          {row.name}
+                {filteredChildren
+                  .slice(childPage * childRowsPerPage, (childPage + 1) * childRowsPerPage)
+                  .map((row) => (
+                    <TableRow key={`child-${row.id}`} hover>
+                      {/* Nome */}
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                          <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: "grey.400" }}>
+                            {row.name[0].toUpperCase()}
+                          </Avatar>
+                          <Typography variant="body2" fontWeight={600} noWrap>
+                            {row.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+
+                      {/* Genitore */}
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontStyle: "italic" }}
+                        >
+                          {row.parent.name ?? row.parent.email}
                         </Typography>
-                      </Box>
-                    </TableCell>
+                        <Typography variant="caption" color="text.disabled">
+                          {row.parent.email}
+                        </Typography>
+                      </TableCell>
 
-                    {/* Genitore */}
-                    <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
-                        {row.parent.name ?? row.parent.email}
-                      </Typography>
-                      <Typography variant="caption" color="text.disabled">
-                        {row.parent.email}
-                      </Typography>
-                    </TableCell>
-
-                    {/* Ruolo Baskin */}
-                    <TableCell align="center">
-                      {row.sportRole
-                        ? <Chip
+                      {/* Ruolo Baskin */}
+                      <TableCell align="center">
+                        {row.sportRole ? (
+                          <Chip
                             label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
                             size="small"
-                            sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }}
+                            sx={{
+                              bgcolor: ROLE_COLORS[row.sportRole],
+                              color: "#fff",
+                              fontWeight: 700,
+                              fontSize: "0.72rem",
+                            }}
                           />
-                        : <Typography variant="body2" color="text.disabled">—</Typography>}
-                    </TableCell>
+                        ) : (
+                          <Typography variant="body2" color="text.disabled">
+                            —
+                          </Typography>
+                        )}
+                      </TableCell>
 
-                    {/* Squadra */}
-                    <TableCell align="center">
-                      <Select
-                        value={row.teamMemberships.find((m) => m.team.season === getCurrentSeason())?.teamId ?? ""}
-                        size="small"
-                        displayEmpty
-                        onChange={(e) => handleTeamChange({ ...row, kind: "child" }, e.target.value)}
-                        sx={{ minWidth: 110, fontSize: "0.8rem" }}
-                        renderValue={(val) => {
-                          if (!val) return <Typography variant="body2" color="text.disabled" component="span">—</Typography>;
-                          const team = availableTeams.find((t) => t.id === val) ?? row.teamMemberships.find((m) => m.teamId === val)?.team;
-                          if (!team) return <Typography variant="body2" component="span">—</Typography>;
-                          return (
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                              {team.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team.color, flexShrink: 0 }} />}
-                              <Typography variant="body2" noWrap component="span">{team.name}</Typography>
-                            </Box>
-                          );
-                        }}
-                      >
-                        <MenuItem value=""><em>Nessuna squadra</em></MenuItem>
-                        {availableTeams.map((t) => (
-                          <MenuItem key={t.id} value={t.id}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              {t.color && <Box component="span" sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }} />}
-                              {t.name}
-                            </Box>
+                      {/* Squadra */}
+                      <TableCell align="center">
+                        <Select
+                          value={
+                            row.teamMemberships.find((m) => m.team.season === getCurrentSeason())
+                              ?.teamId ?? ""
+                          }
+                          size="small"
+                          displayEmpty
+                          onChange={(e) =>
+                            handleTeamChange({ ...row, kind: "child" }, e.target.value)
+                          }
+                          sx={{ minWidth: 110, fontSize: "0.8rem" }}
+                          renderValue={(val) => {
+                            if (!val)
+                              return (
+                                <Typography variant="body2" color="text.disabled" component="span">
+                                  —
+                                </Typography>
+                              );
+                            const team =
+                              availableTeams.find((t) => t.id === val) ??
+                              row.teamMemberships.find((m) => m.teamId === val)?.team;
+                            if (!team)
+                              return (
+                                <Typography variant="body2" component="span">
+                                  —
+                                </Typography>
+                              );
+                            return (
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                                {team.color && (
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      bgcolor: team.color,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                )}
+                                <Typography variant="body2" noWrap component="span">
+                                  {team.name}
+                                </Typography>
+                              </Box>
+                            );
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>Nessuna squadra</em>
                           </MenuItem>
-                        ))}
-                      </Select>
-                    </TableCell>
+                          {availableTeams.map((t) => (
+                            <MenuItem key={t.id} value={t.id}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                {t.color && (
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      bgcolor: t.color,
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                )}
+                                {t.name}
+                              </Box>
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
 
-                    {/* Genere */}
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      {row.gender
-                        ? <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
-                        : <Typography variant="body2" color="text.disabled">—</Typography>}
-                    </TableCell>
+                      {/* Genere */}
+                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                        {row.gender ? (
+                          <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
+                        ) : (
+                          <Typography variant="body2" color="text.disabled">
+                            —
+                          </Typography>
+                        )}
+                      </TableCell>
 
-                    {/* Azioni */}
-                    <TableCell align="center">
-                      <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                        <Tooltip title="Modifica figlio">
-                          <IconButton size="small" aria-label="Modifica figlio" onClick={() => openEdit({ ...row, kind: "child" })}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Elimina figlio">
-                          <IconButton size="small" aria-label="Elimina figlio" color="error" onClick={() => setDeleteRow({ ...row, kind: "child" })}>
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      {/* Azioni */}
+                      <TableCell align="center">
+                        <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
+                          <Tooltip title="Modifica figlio">
+                            <IconButton
+                              size="small"
+                              aria-label="Modifica figlio"
+                              onClick={() => openEdit({ ...row, kind: "child" })}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Elimina figlio">
+                            <IconButton
+                              size="small"
+                              aria-label="Elimina figlio"
+                              color="error"
+                              onClick={() => setDeleteRow({ ...row, kind: "child" })}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
 
                 {filteredChildren.length === 0 && (
                   <TableRow>
@@ -1125,7 +1519,10 @@ export default function AdminUserList({
             page={childPage}
             onPageChange={(_, p) => setChildPage(p)}
             rowsPerPage={childRowsPerPage}
-            onRowsPerPageChange={(e) => { setChildRowsPerPage(parseInt(e.target.value)); setChildPage(0); }}
+            onRowsPerPageChange={(e) => {
+              setChildRowsPerPage(parseInt(e.target.value));
+              setChildPage(0);
+            }}
             rowsPerPageOptions={[10, 25, 50]}
             labelRowsPerPage="Righe:"
             labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
@@ -1142,16 +1539,21 @@ export default function AdminUserList({
           <DialogContentText>
             Sei sicuro di voler eliminare{" "}
             <strong>
-              {deleteRow?.kind === "user"
-                ? (deleteRow.name ?? deleteRow.email)
-                : deleteRow?.name}
-            </strong>?
-            {" "}Verranno eliminate anche tutte le iscrizioni associate. Questa azione è irreversibile.
+              {deleteRow?.kind === "user" ? (deleteRow.name ?? deleteRow.email) : deleteRow?.name}
+            </strong>
+            ? Verranno eliminate anche tutte le iscrizioni associate. Questa azione è irreversibile.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteRow(null)} disabled={deleting}>Annulla</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained" disabled={deleting}>
+          <Button onClick={() => setDeleteRow(null)} disabled={deleting}>
+            Annulla
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
             {deleting ? "Eliminazione..." : "Elimina"}
           </Button>
         </DialogActions>
@@ -1166,11 +1568,18 @@ export default function AdminUserList({
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             {/* Nome */}
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Nome completo
               </Typography>
               <TextField
-                fullWidth size="small"
+                fullWidth
+                size="small"
                 value={editState.name}
                 onChange={(e) => setEditState((s) => ({ ...s, name: e.target.value }))}
                 inputProps={{ maxLength: 100 }}
@@ -1182,11 +1591,19 @@ export default function AdminUserList({
             {/* Email (solo utenti) */}
             {editRow?.kind === "user" && (
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                  display="block"
+                  gutterBottom
+                >
                   Email
                 </Typography>
                 <TextField
-                  fullWidth size="small" type="email"
+                  fullWidth
+                  size="small"
+                  type="email"
                   value={editState.email}
                   onChange={(e) => setEditState((s) => ({ ...s, email: e.target.value }))}
                   inputProps={{ maxLength: 254 }}
@@ -1197,15 +1614,25 @@ export default function AdminUserList({
 
             {/* Genere */}
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Genere
               </Typography>
               <Select
-                fullWidth size="small" displayEmpty
+                fullWidth
+                size="small"
+                displayEmpty
                 value={editState.gender}
                 onChange={(e) => setEditState((s) => ({ ...s, gender: e.target.value }))}
               >
-                <MenuItem value=""><em>Non impostato</em></MenuItem>
+                <MenuItem value="">
+                  <em>Non impostato</em>
+                </MenuItem>
                 <MenuItem value="MALE">Maschio</MenuItem>
                 <MenuItem value="FEMALE">Femmina</MenuItem>
               </Select>
@@ -1213,11 +1640,19 @@ export default function AdminUserList({
 
             {/* Data di nascita */}
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Data di nascita (opzionale)
               </Typography>
               <TextField
-                fullWidth size="small" type="date"
+                fullWidth
+                size="small"
+                type="date"
                 value={editState.birthDate}
                 onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
                 slotProps={{ inputLabel: { shrink: true } }}
@@ -1229,20 +1664,37 @@ export default function AdminUserList({
             {/* Ruolo utente (solo per User con account) */}
             {editRow?.kind === "user" && (
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                  display="block"
+                  gutterBottom
+                >
                   Ruolo utente
                 </Typography>
                 <Select
-                  fullWidth size="small"
+                  fullWidth
+                  size="small"
                   value={editState.appRole}
                   onChange={(e) => setEditState((s) => ({ ...s, appRole: e.target.value }))}
                   renderValue={(val) => (
-                    <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                    <Chip
+                      label={ROLE_LABELS_IT[val as AppRole]}
+                      size="small"
+                      color={ROLE_CHIP_COLORS[val as AppRole]}
+                      sx={{ fontWeight: 600 }}
+                    />
                   )}
                 >
                   {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                     <MenuItem key={r} value={r}>
-                      <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
+                      <Chip
+                        label={ROLE_LABELS_IT[r]}
+                        size="small"
+                        color={ROLE_CHIP_COLORS[r]}
+                        sx={{ fontWeight: 600 }}
+                      />
                     </MenuItem>
                   ))}
                 </Select>
@@ -1251,26 +1703,48 @@ export default function AdminUserList({
 
             {/* Ruolo Baskin */}
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Ruolo Baskin (1–5)
               </Typography>
               {editRow?.kind === "user" && editRow.sportRoleSuggested && !editRow.sportRole && (
                 <Typography variant="caption" color="warning.main" display="block" sx={{ mb: 0.5 }}>
-                  Autovalutazione: {sportRoleLabel(editRow.sportRoleSuggested, editRow.sportRoleSuggestedVariant)}
+                  Autovalutazione:{" "}
+                  {sportRoleLabel(editRow.sportRoleSuggested, editRow.sportRoleSuggestedVariant)}
                   {editRow.sportRoleSuggestedVariant
                     ? ` — ${SPORT_ROLE_VARIANT_LABELS[editRow.sportRoleSuggestedVariant] ?? ""}`
                     : ""}
                 </Typography>
               )}
               <Select
-                fullWidth size="small" displayEmpty
+                fullWidth
+                size="small"
+                displayEmpty
                 value={editState.sportRole}
-                onChange={(e) => setEditState((s) => ({ ...s, sportRole: e.target.value, sportRoleVariant: "" }))}
+                onChange={(e) =>
+                  setEditState((s) => ({ ...s, sportRole: e.target.value, sportRoleVariant: "" }))
+                }
               >
-                <MenuItem value=""><em>Non impostato</em></MenuItem>
+                <MenuItem value="">
+                  <em>Non impostato</em>
+                </MenuItem>
                 {[1, 2, 3, 4, 5].map((r) => (
                   <MenuItem key={r} value={r.toString()}>
-                    <Chip label={sportRoleLabel(r)} size="small" sx={{ bgcolor: ROLE_COLORS[r], color: "#fff", fontWeight: 700, fontSize: "0.72rem" }} />
+                    <Chip
+                      label={sportRoleLabel(r)}
+                      size="small"
+                      sx={{
+                        bgcolor: ROLE_COLORS[r],
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: "0.72rem",
+                      }}
+                    />
                   </MenuItem>
                 ))}
               </Select>
@@ -1279,22 +1753,40 @@ export default function AdminUserList({
             {/* Variante ruolo (solo 1 o 2) */}
             {["1", "2"].includes(editState.sportRole) && (
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                  display="block"
+                  gutterBottom
+                >
                   Variante ruolo
                 </Typography>
                 <Select
-                  fullWidth size="small" displayEmpty
+                  fullWidth
+                  size="small"
+                  displayEmpty
                   value={editState.sportRoleVariant}
-                  onChange={(e) => setEditState((s) => ({ ...s, sportRoleVariant: e.target.value }))}
+                  onChange={(e) =>
+                    setEditState((s) => ({ ...s, sportRoleVariant: e.target.value }))
+                  }
                 >
-                  <MenuItem value=""><em>Nessuna variante (standard)</em></MenuItem>
+                  <MenuItem value="">
+                    <em>Nessuna variante (standard)</em>
+                  </MenuItem>
                   {editState.sportRole === "1" && (
                     <MenuItem value="S">S — {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
                   )}
                   {editState.sportRole === "2" && [
-                    <MenuItem key="T" value="T">T — {SPORT_ROLE_VARIANT_LABELS["T"]}</MenuItem>,
-                    <MenuItem key="P" value="P">P — {SPORT_ROLE_VARIANT_LABELS["P"]}</MenuItem>,
-                    <MenuItem key="R" value="R">R — {SPORT_ROLE_VARIANT_LABELS["R"]}</MenuItem>,
+                    <MenuItem key="T" value="T">
+                      T — {SPORT_ROLE_VARIANT_LABELS["T"]}
+                    </MenuItem>,
+                    <MenuItem key="P" value="P">
+                      P — {SPORT_ROLE_VARIANT_LABELS["P"]}
+                    </MenuItem>,
+                    <MenuItem key="R" value="R">
+                      R — {SPORT_ROLE_VARIANT_LABELS["R"]}
+                    </MenuItem>,
                   ]}
                 </Select>
               </Box>
@@ -1304,7 +1796,13 @@ export default function AdminUserList({
 
             {/* Squadra stagione corrente */}
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Squadra ({getCurrentSeason()})
               </Typography>
               {availableTeams.length === 0 ? (
@@ -1313,18 +1811,28 @@ export default function AdminUserList({
                 </Typography>
               ) : (
                 <Select
-                  fullWidth size="small" displayEmpty
+                  fullWidth
+                  size="small"
+                  displayEmpty
                   value={editTeamId}
                   onChange={(e) => setEditTeamId(e.target.value)}
                 >
-                  <MenuItem value=""><em>Nessuna squadra</em></MenuItem>
+                  <MenuItem value="">
+                    <em>Nessuna squadra</em>
+                  </MenuItem>
                   {availableTeams.map((t) => (
                     <MenuItem key={t.id} value={t.id}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         {t.color && (
                           <Box
                             component="span"
-                            sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: t.color, flexShrink: 0 }}
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: "50%",
+                              bgcolor: t.color,
+                              flexShrink: 0,
+                            }}
                           />
                         )}
                         {t.name}

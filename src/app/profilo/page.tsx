@@ -2,8 +2,15 @@ import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
-  Container, Typography, Box, Paper, Avatar, Chip,
-  Divider, Stack, Button,
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Avatar,
+  Chip,
+  Divider,
+  Stack,
+  Button,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Link from "next/link";
@@ -22,7 +29,10 @@ import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const revalidate = 0;
 
-const APP_ROLE_CHIP_COLOR: Record<AppRole, "default" | "primary" | "success" | "warning" | "error"> = {
+const APP_ROLE_CHIP_COLOR: Record<
+  AppRole,
+  "default" | "primary" | "success" | "warning" | "error"
+> = {
   GUEST: "default",
   ATHLETE: "primary",
   PARENT: "success",
@@ -39,7 +49,19 @@ export default async function ProfiloPage() {
     include: {
       children: {
         orderBy: { createdAt: "asc" as const },
-        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true, userId: true, user: { select: { email: true, image: true } }, teamMemberships: { include: { team: { select: { name: true, color: true, season: true } } } } },
+        select: {
+          id: true,
+          name: true,
+          sportRole: true,
+          sportRoleVariant: true,
+          gender: true,
+          birthDate: true,
+          userId: true,
+          user: { select: { email: true, image: true } },
+          teamMemberships: {
+            include: { team: { select: { name: true, color: true, season: true } } },
+          },
+        },
       },
       childAccount: {
         select: { _count: { select: { registrations: true } } },
@@ -63,7 +85,8 @@ export default async function ProfiloPage() {
 
   const effectiveRole = session.user.appRole as AppRole;
   const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
-  const isAthlete = effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
+  const isAthlete =
+    effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
   const hasAthleteData = user.sportRole || user.gender || user.birthDate;
 
   const currentSeason = getCurrentSeason();
@@ -75,12 +98,18 @@ export default async function ProfiloPage() {
     acc[season] = (acc[season] ?? 0) + 1;
     return acc;
   }, {});
-  const attendanceSeasons = Object.entries(attendanceBySeason).sort(([a], [b]) => b.localeCompare(a));
+  const attendanceSeasons = Object.entries(attendanceBySeason).sort(([a], [b]) =>
+    b.localeCompare(a)
+  );
 
   // Iscrizioni anonime con stesso nome (per proposta di collegamento)
   const anonymousMatches = user.name
     ? await prisma.registration.findMany({
-        where: { userId: null, childId: null, name: { equals: user.name.trim(), mode: "insensitive" } },
+        where: {
+          userId: null,
+          childId: null,
+          name: { equals: user.name.trim(), mode: "insensitive" },
+        },
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
@@ -114,8 +143,12 @@ export default async function ProfiloPage() {
               {user.name?.[0] ?? user.email[0].toUpperCase()}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="h6" fontWeight={700} noWrap>{user.name ?? "—"}</Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>{user.email}</Typography>
+              <Typography variant="h6" fontWeight={700} noWrap>
+                {user.name ?? "—"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {user.email}
+              </Typography>
             </Box>
           </Box>
 
@@ -202,13 +235,22 @@ export default async function ProfiloPage() {
                   <>
                     <Divider />
                     <Box>
-                      <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight={600}
+                        display="block"
+                        gutterBottom
+                      >
                         Storico ruolo sportivo
                       </Typography>
                       <Stack spacing={0.5}>
                         {user.sportRoleHistory.map((h, i) => (
                           <Typography key={i} variant="caption" color="text.secondary">
-                            <Box component="span" sx={{ color: ROLE_COLORS[h.sportRole], fontWeight: 700 }}>
+                            <Box
+                              component="span"
+                              sx={{ color: ROLE_COLORS[h.sportRole], fontWeight: 700 }}
+                            >
                               {ROLE_LABELS[h.sportRole as keyof typeof ROLE_LABELS]}
                             </Box>
                             {" · "}
@@ -222,7 +264,8 @@ export default async function ProfiloPage() {
               </Stack>
             ) : (
               <Typography variant="body2" color="text.disabled">
-                Nessun dato atleta disponibile. L&apos;admin può impostare ruolo, genere e data di nascita.
+                Nessun dato atleta disponibile. L&apos;admin può impostare ruolo, genere e data di
+                nascita.
               </Typography>
             )}
           </Paper>
@@ -270,9 +313,7 @@ export default async function ProfiloPage() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Collega il profilo di tuo figlio/a per iscriverlo agli allenamenti.
             </Typography>
-            <ParentChildLinker
-              initialChildren={user.children as ChildData[]}
-            />
+            <ParentChildLinker initialChildren={user.children as ChildData[]} />
           </Paper>
         )}
       </Container>

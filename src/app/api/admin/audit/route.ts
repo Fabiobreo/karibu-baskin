@@ -14,7 +14,9 @@ function groupByTargetType(items: { targetType: string; targetId: string }[]) {
   return map;
 }
 
-async function resolveTargetLabels(grouped: Record<string, string[]>): Promise<Record<string, string>> {
+async function resolveTargetLabels(
+  grouped: Record<string, string[]>
+): Promise<Record<string, string>> {
   const result: Record<string, string> = {}; // key: "Type:id"
 
   await Promise.all(
@@ -25,7 +27,9 @@ async function resolveTargetLabels(grouped: Record<string, string[]>): Promise<R
             where: { id: { in: ids } },
             select: { id: true, name: true, email: true },
           });
-          rows.forEach((r) => { result[`User:${r.id}`] = r.name ?? r.email ?? r.id; });
+          rows.forEach((r) => {
+            result[`User:${r.id}`] = r.name ?? r.email ?? r.id;
+          });
           break;
         }
         case "Child": {
@@ -33,7 +37,9 @@ async function resolveTargetLabels(grouped: Record<string, string[]>): Promise<R
             where: { id: { in: ids } },
             select: { id: true, name: true },
           });
-          rows.forEach((r) => { result[`Child:${r.id}`] = r.name; });
+          rows.forEach((r) => {
+            result[`Child:${r.id}`] = r.name;
+          });
           break;
         }
         case "CompetitiveTeam": {
@@ -41,7 +47,9 @@ async function resolveTargetLabels(grouped: Record<string, string[]>): Promise<R
             where: { id: { in: ids } },
             select: { id: true, name: true, season: true },
           });
-          rows.forEach((r) => { result[`CompetitiveTeam:${r.id}`] = `${r.name} (${r.season})`; });
+          rows.forEach((r) => {
+            result[`CompetitiveTeam:${r.id}`] = `${r.name} (${r.season})`;
+          });
           break;
         }
         case "TeamMembership": {
@@ -76,7 +84,9 @@ async function resolveTargetLabels(grouped: Record<string, string[]>): Promise<R
             where: { id: { in: ids } },
             select: { id: true, title: true },
           });
-          rows.forEach((r) => { result[`Event:${r.id}`] = r.title; });
+          rows.forEach((r) => {
+            result[`Event:${r.id}`] = r.title;
+          });
           break;
         }
         case "Registration": {
@@ -121,12 +131,14 @@ export async function GET(req: NextRequest) {
     ...(action ? { action } : {}),
     ...(targetType ? { targetType } : {}),
     ...(actorId ? { actorId } : {}),
-    ...((from || to) ? {
-      createdAt: {
-        ...(from ? { gte: new Date(from) } : {}),
-        ...(to ? { lte: new Date(to + "T23:59:59.999Z") } : {}),
-      },
-    } : {}),
+    ...(from || to
+      ? {
+          createdAt: {
+            ...(from ? { gte: new Date(from) } : {}),
+            ...(to ? { lte: new Date(to + "T23:59:59.999Z") } : {}),
+          },
+        }
+      : {}),
   };
 
   const [total, items] = await Promise.all([

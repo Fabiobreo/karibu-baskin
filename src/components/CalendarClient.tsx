@@ -2,10 +2,28 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Box, Typography, IconButton, CircularProgress, Paper, Skeleton,
-  Dialog, DialogContent, DialogActions, Button, Chip, Divider,
-  Tabs, Tab, TextField, ToggleButton, ToggleButtonGroup, MenuItem,
-  Select, FormControl, InputLabel, FormHelperText,
+  Box,
+  Typography,
+  IconButton,
+  CircularProgress,
+  Paper,
+  Skeleton,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  Button,
+  Chip,
+  Divider,
+  Tabs,
+  Tab,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText,
 } from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -35,7 +53,10 @@ import {
 import { it } from "date-fns/locale";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { useToast } from "@/context/ToastContext";
-import SessionRestrictionEditor, { seasonForDate, type RestrictionValue } from "@/components/SessionRestrictionEditor";
+import SessionRestrictionEditor, {
+  seasonForDate,
+  type RestrictionValue,
+} from "@/components/SessionRestrictionEditor";
 
 const DAY_LABELS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
 
@@ -70,8 +91,8 @@ interface Props {
 
 function isVisible(ev: CalendarEvent, hidden: Set<string>): boolean {
   if (ev.type === "training") return !hidden.has("training");
-  if (ev.type === "event")    return !hidden.has("event");
-  if (ev.type === "match")    return !hidden.has(`match:${ev.color}`) && !hidden.has("match:*");
+  if (ev.type === "event") return !hidden.has("event");
+  if (ev.type === "match") return !hidden.has(`match:${ev.color}`) && !hidden.has("match:*");
   return true;
 }
 
@@ -89,7 +110,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
   function toggleKey(key: string) {
     setHiddenKeys((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -106,18 +128,27 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     }
   }, [monthKey]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { fetchEvents(); }, [fetchEvents]);
+   
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const prevMonth = () => {
-    if (month === 0) { setMonth(11); setYear((y) => y - 1); }
-    else setMonth((m) => m - 1);
+    if (month === 0) {
+      setMonth(11);
+      setYear((y) => y - 1);
+    } else setMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (month === 11) { setMonth(0); setYear((y) => y + 1); }
-    else setMonth((m) => m + 1);
+    if (month === 11) {
+      setMonth(0);
+      setYear((y) => y + 1);
+    } else setMonth((m) => m + 1);
   };
-  const goToday = () => { setYear(today.getFullYear()); setMonth(today.getMonth()); };
+  const goToday = () => {
+    setYear(today.getFullYear());
+    setMonth(today.getMonth());
+  };
 
   const firstDay = startOfMonth(new Date(year, month));
   const gridStart = startOfWeek(firstDay, { weekStartsOn: 1 });
@@ -141,7 +172,9 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     <Box>
       {/* Intestazione mese */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <IconButton onClick={prevMonth} size="small" aria-label="Mese precedente"><ChevronLeftIcon /></IconButton>
+        <IconButton onClick={prevMonth} size="small" aria-label="Mese precedente">
+          <ChevronLeftIcon />
+        </IconButton>
         <Typography
           variant="h5"
           fontWeight={700}
@@ -154,11 +187,20 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         >
           {format(new Date(year, month), "MMMM yyyy", { locale: it })}
         </Typography>
-        <IconButton onClick={nextMonth} size="small" aria-label="Mese successivo"><ChevronRightIcon /></IconButton>
+        <IconButton onClick={nextMonth} size="small" aria-label="Mese successivo">
+          <ChevronRightIcon />
+        </IconButton>
         <Typography
           variant="body2"
           onClick={goToday}
-          sx={{ ml: 0.5, cursor: "pointer", color: "primary.main", fontWeight: 600, "&:hover": { textDecoration: "underline" }, fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+          sx={{
+            ml: 0.5,
+            cursor: "pointer",
+            color: "primary.main",
+            fontWeight: 600,
+            "&:hover": { textDecoration: "underline" },
+            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          }}
         >
           Oggi
         </Typography>
@@ -171,7 +213,12 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             key={d}
             variant="body2"
             align="center"
-            sx={{ color: "text.secondary", fontWeight: 700, py: 1, fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+            sx={{
+              color: "text.secondary",
+              fontWeight: 700,
+              py: 1,
+              fontSize: { xs: "0.7rem", sm: "0.8rem" },
+            }}
           >
             {d}
           </Typography>
@@ -202,7 +249,9 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
               }}
             >
               <Skeleton variant="circular" width={26} height={26} sx={{ mb: "3px" }} />
-              <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}>
+              <Box
+                sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}
+              >
                 {i % 4 === 0 && <Skeleton variant="rounded" height={20} />}
                 {i % 7 === 1 && <Skeleton variant="rounded" height={20} />}
               </Box>
@@ -239,8 +288,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                   bgcolor: "background.paper",
                   p: { xs: "4px", sm: "6px" },
                   opacity: inMonth ? 1 : 0.38,
-                  cursor: (isStaff || dayEvents.length > 0) ? "pointer" : "default",
-                  "&:hover": (isStaff || dayEvents.length > 0) ? { bgcolor: "action.hover" } : {},
+                  cursor: isStaff || dayEvents.length > 0 ? "pointer" : "default",
+                  "&:hover": isStaff || dayEvents.length > 0 ? { bgcolor: "action.hover" } : {},
                   transition: "background-color 0.12s",
                 }}
               >
@@ -265,24 +314,45 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                 </Typography>
 
                 {/* Desktop: chips */}
-                <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}>
+                <Box
+                  sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}
+                >
                   {visible.map((ev) => (
-                    <EventChip key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); setSelected(ev); }} />
+                    <EventChip
+                      key={ev.id}
+                      event={ev}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelected(ev);
+                      }}
+                    />
                   ))}
                   {extra > 0 && (
-                    <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.65rem", pl: "3px" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary", fontSize: "0.65rem", pl: "3px" }}
+                    >
                       +{extra} altri
                     </Typography>
                   )}
                 </Box>
 
                 {/* Mobile: barre colorate con icona — click apre day view */}
-                <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: "2px", mt: "2px" }}>
+                <Box
+                  sx={{
+                    display: { xs: "flex", sm: "none" },
+                    flexDirection: "column",
+                    gap: "2px",
+                    mt: "2px",
+                  }}
+                >
                   {visible.map((ev) => {
                     const Icon =
-                      ev.type === "training" ? SportsBasketballIcon
-                      : ev.type === "match" ? EmojiEventsIcon
-                      : EventNoteIcon;
+                      ev.type === "training"
+                        ? SportsBasketballIcon
+                        : ev.type === "match"
+                          ? EmojiEventsIcon
+                          : EventNoteIcon;
                     return (
                       <Box
                         key={ev.id}
@@ -300,7 +370,15 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                     );
                   })}
                   {extra > 0 && (
-                    <Typography variant="caption" sx={{ fontSize: "0.5rem", color: "text.secondary", textAlign: "center", lineHeight: "12px" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: "0.5rem",
+                        color: "text.secondary",
+                        textAlign: "center",
+                        lineHeight: "12px",
+                      }}
+                    >
                       +{extra}
                     </Typography>
                   )}
@@ -367,8 +445,14 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         events={dayView ? eventsForDay(dayView) : []}
         isStaff={isStaff}
         onClose={() => setDayView(null)}
-        onSelectEvent={(ev) => { setDayView(null); setSelected(ev); }}
-        onAddEvent={() => { setCreateDay(dayView); setDayView(null); }}
+        onSelectEvent={(ev) => {
+          setDayView(null);
+          setSelected(ev);
+        }}
+        onAddEvent={() => {
+          setCreateDay(dayView);
+          setDayView(null);
+        }}
       />
 
       {/* Modale crea evento (solo staff) */}
@@ -377,7 +461,10 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
           day={createDay}
           isAdmin={isAdmin}
           onClose={() => setCreateDay(null)}
-          onCreated={() => { setCreateDay(null); fetchEvents(); }}
+          onCreated={() => {
+            setCreateDay(null);
+            fetchEvents();
+          }}
         />
       )}
     </Box>
@@ -386,11 +473,19 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
 
 // ── Chip evento nella griglia ─────────────────────────────────────────────────
 
-function EventChip({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
+function EventChip({
+  event,
+  onClick,
+}: {
+  event: CalendarEvent;
+  onClick: (e: React.MouseEvent) => void;
+}) {
   const Icon =
-    event.type === "training" ? SportsBasketballIcon
-    : event.type === "match" ? EmojiEventsIcon
-    : EventNoteIcon;
+    event.type === "training"
+      ? SportsBasketballIcon
+      : event.type === "match"
+        ? EmojiEventsIcon
+        : EventNoteIcon;
 
   return (
     <Box
@@ -424,7 +519,9 @@ function EventChip({ event, onClick }: { event: CalendarEvent; onClick: (e: Reac
 // ── Modale dettaglio ──────────────────────────────────────────────────────────
 
 function EventDetailDialog({
-  event, onClose, isStaff,
+  event,
+  onClose,
+  isStaff,
 }: {
   event: CalendarEvent | null;
   onClose: () => void;
@@ -433,14 +530,18 @@ function EventDetailDialog({
   if (!event) return null;
 
   const Icon =
-    event.type === "training" ? SportsBasketballIcon
-    : event.type === "match" ? EmojiEventsIcon
-    : EventNoteIcon;
+    event.type === "training"
+      ? SportsBasketballIcon
+      : event.type === "match"
+        ? EmojiEventsIcon
+        : EventNoteIcon;
 
   const editHref =
-    event.type === "training" ? `/allenamenti?edit=${event.id}`
-    : event.type === "match" ? `/admin/partite?edit=${event.id}`
-    : `/admin/eventi?edit=${event.id}`;
+    event.type === "training"
+      ? `/allenamenti?edit=${event.id}`
+      : event.type === "match"
+        ? `/admin/partite?edit=${event.id}`
+        : `/admin/eventi?edit=${event.id}`;
 
   const dateStart = new Date(event.date);
   const dateEnd = event.endDate ? new Date(event.endDate) : null;
@@ -485,7 +586,13 @@ function EventDetailDialog({
           <Chip
             label={TYPE_LABELS[event.type]}
             size="small"
-            sx={{ bgcolor: "rgba(255,255,255,0.25)", color: "#fff", fontWeight: 700, fontSize: "0.68rem", mb: 0.5 }}
+            sx={{
+              bgcolor: "rgba(255,255,255,0.25)",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "0.68rem",
+              mb: 0.5,
+            }}
           />
           <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }}>
             {event.title}
@@ -497,7 +604,11 @@ function EventDetailDialog({
             href={editHref}
             onClick={onClose}
             size="small"
-            sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" }, flexShrink: 0 }}
+            sx={{
+              color: "rgba(255,255,255,0.85)",
+              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+              flexShrink: 0,
+            }}
             title="Modifica"
             aria-label="Modifica evento"
           >
@@ -508,20 +619,19 @@ function EventDetailDialog({
 
       <DialogContent sx={{ pt: 2.5, pb: 1 }}>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.75 }}>
-
           {/* Data/ora */}
           <InfoRow icon={<AccessTimeIcon />} text={dateLabel} />
 
           {/* Squadra */}
-          {event.teamName && (
-            <InfoRow icon={<GroupsIcon />} text={event.teamName} />
-          )}
+          {event.teamName && <InfoRow icon={<GroupsIcon />} text={event.teamName} />}
 
           {/* Avversario (partite) */}
           {event.type === "match" && event.opponent && (
             <InfoRow
               icon={<EmojiEventsIcon />}
-              text={event.isHome ? `In casa vs ${event.opponent}` : `In trasferta @ ${event.opponent}`}
+              text={
+                event.isHome ? `In casa vs ${event.opponent}` : `In trasferta @ ${event.opponent}`
+              }
             />
           )}
 
@@ -542,16 +652,16 @@ function EventDetailDialog({
           )}
 
           {/* Luogo */}
-          {event.location && (
-            <InfoRow icon={<PlaceIcon />} text={event.location} />
-          )}
+          {event.location && <InfoRow icon={<PlaceIcon />} text={event.location} />}
         </Box>
       </DialogContent>
 
       <Divider />
 
       <DialogActions sx={{ px: 2.5, py: 1.5, gap: 1 }}>
-        <Button onClick={onClose} color="inherit" size="small">Chiudi</Button>
+        <Button onClick={onClose} color="inherit" size="small">
+          Chiudi
+        </Button>
         {event.href && (
           <Button
             component={Link}
@@ -572,7 +682,12 @@ function EventDetailDialog({
 // ── Day view dialog (mobile) ──────────────────────────────────────────────────
 
 function DayEventsDialog({
-  day, events, isStaff, onClose, onSelectEvent, onAddEvent,
+  day,
+  events,
+  isStaff,
+  onClose,
+  onSelectEvent,
+  onAddEvent,
 }: {
   day: Date | null;
   events: CalendarEvent[];
@@ -583,12 +698,23 @@ function DayEventsDialog({
 }) {
   if (!day) return null;
 
-  const sorted = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const sorted = [...events].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
   const dayLabel = format(day, "EEEE d MMMM", { locale: it });
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <Box sx={{ px: 2.5, pt: 2.5, pb: 1, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          px: 2.5,
+          pt: 2.5,
+          pb: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Typography variant="h6" fontWeight={700} sx={{ textTransform: "capitalize" }}>
           {dayLabel}
         </Typography>
@@ -607,29 +733,47 @@ function DayEventsDialog({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {sorted.map((ev) => {
               const Icon =
-                ev.type === "training" ? SportsBasketballIcon
-                : ev.type === "match" ? EmojiEventsIcon
-                : EventNoteIcon;
+                ev.type === "training"
+                  ? SportsBasketballIcon
+                  : ev.type === "match"
+                    ? EmojiEventsIcon
+                    : EventNoteIcon;
 
               const rowSx = {
-                display: "flex", alignItems: "center", gap: 1.5,
-                p: 1.25, borderRadius: 1, cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                p: 1.25,
+                borderRadius: 1,
+                cursor: "pointer",
                 bgcolor: `${ev.color}18`,
-                border: "1px solid", borderColor: `${ev.color}44`,
+                border: "1px solid",
+                borderColor: `${ev.color}44`,
                 "&:hover": { bgcolor: `${ev.color}28` },
-                textDecoration: "none", color: "inherit",
+                textDecoration: "none",
+                color: "inherit",
               };
 
               const inner = (
                 <>
-                  <Box sx={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    bgcolor: ev.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  }}>
+                  <Box
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      bgcolor: ev.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
                     <Icon sx={{ color: "#fff", fontSize: "1rem" }} />
                   </Box>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography variant="body2" fontWeight={600} noWrap>{ev.title}</Typography>
+                    <Typography variant="body2" fontWeight={600} noWrap>
+                      {ev.title}
+                    </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {format(new Date(ev.date), "HH:mm")}
                       {ev.endDate && ` – ${format(new Date(ev.endDate), "HH:mm")}`}
@@ -653,7 +797,9 @@ function DayEventsDialog({
         )}
       </DialogContent>
       <DialogActions sx={{ px: 2.5, py: 1.5 }}>
-        <Button onClick={onClose} color="inherit" size="small">Chiudi</Button>
+        <Button onClick={onClose} color="inherit" size="small">
+          Chiudi
+        </Button>
       </DialogActions>
     </Dialog>
   );
@@ -663,9 +809,17 @@ function DayEventsDialog({
 
 type CreateType = "training" | "event" | "match";
 
-interface CompetitiveTeam { id: string; name: string; season: string; color?: string | null; }
-interface OpposingTeam { id: string; name: string; city?: string | null; }
-
+interface CompetitiveTeam {
+  id: string;
+  name: string;
+  season: string;
+  color?: string | null;
+}
+interface OpposingTeam {
+  id: string;
+  name: string;
+  city?: string | null;
+}
 
 function CreateEventDialog({
   day,
@@ -686,7 +840,11 @@ function CreateEventDialog({
   const [trainTitle, setTrainTitle] = useState("Allenamento settimanale");
   const [trainStart, setTrainStart] = useState("18:00");
   const [trainEnd, setTrainEnd] = useState("20:00");
-  const [trainRestrictions, setTrainRestrictions] = useState<RestrictionValue>({ allowedRoles: [], restrictTeamId: null, openRoles: [] });
+  const [trainRestrictions, setTrainRestrictions] = useState<RestrictionValue>({
+    allowedRoles: [],
+    restrictTeamId: null,
+    openRoles: [],
+  });
 
   // Event fields
   const [eventTitle, setEventTitle] = useState("");
@@ -729,7 +887,7 @@ function CreateEventDialog({
         .catch(() => showToast({ message: "Errore nel caricamento squadre", severity: "error" }))
         .finally(() => setTeamsLoading(false));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   function resetForm() {
@@ -838,12 +996,36 @@ function CreateEventDialog({
   return (
     <Dialog open onClose={handleClose} maxWidth="xs" fullWidth>
       {/* Banner */}
-      <Box sx={{ bgcolor: "primary.main", px: 3, pt: 2.5, pb: 2, display: "flex", alignItems: "center", gap: 1.5 }}>
-        <Box sx={{ width: 36, height: 36, borderRadius: "50%", bgcolor: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Box
+        sx={{
+          bgcolor: "primary.main",
+          px: 3,
+          pt: 2.5,
+          pb: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+        }}
+      >
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            bgcolor: "rgba(255,255,255,0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
           <AddIcon sx={{ color: "#fff", fontSize: "1.2rem" }} />
         </Box>
         <Box>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600, textTransform: "capitalize" }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600, textTransform: "capitalize" }}
+          >
             {dateLabelFull}
           </Typography>
           <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }}>
@@ -856,15 +1038,36 @@ function CreateEventDialog({
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
           value={tab}
-          onChange={(_, v) => { setTab(v as CreateType); setErrors({}); }}
+          onChange={(_, v) => {
+            setTab(v as CreateType);
+            setErrors({});
+          }}
           variant="fullWidth"
           textColor="primary"
           indicatorColor="primary"
         >
-          <Tab value="training" label="Allenamento" icon={<SportsBasketballIcon sx={{ fontSize: "1rem" }} />} iconPosition="start" sx={{ fontSize: "0.78rem", minHeight: 48 }} />
-          <Tab value="event" label="Evento" icon={<EventNoteIcon sx={{ fontSize: "1rem" }} />} iconPosition="start" sx={{ fontSize: "0.78rem", minHeight: 48 }} />
+          <Tab
+            value="training"
+            label="Allenamento"
+            icon={<SportsBasketballIcon sx={{ fontSize: "1rem" }} />}
+            iconPosition="start"
+            sx={{ fontSize: "0.78rem", minHeight: 48 }}
+          />
+          <Tab
+            value="event"
+            label="Evento"
+            icon={<EventNoteIcon sx={{ fontSize: "1rem" }} />}
+            iconPosition="start"
+            sx={{ fontSize: "0.78rem", minHeight: 48 }}
+          />
           {isAdmin && (
-            <Tab value="match" label="Partita" icon={<EmojiEventsIcon sx={{ fontSize: "1rem" }} />} iconPosition="start" sx={{ fontSize: "0.78rem", minHeight: 48 }} />
+            <Tab
+              value="match"
+              label="Partita"
+              icon={<EmojiEventsIcon sx={{ fontSize: "1rem" }} />}
+              iconPosition="start"
+              sx={{ fontSize: "0.78rem", minHeight: 48 }}
+            />
           )}
         </Tabs>
       </Box>
@@ -876,7 +1079,10 @@ function CreateEventDialog({
             <TextField
               label="Titolo"
               value={trainTitle}
-              onChange={(e) => { setTrainTitle(e.target.value); setErrors((p) => ({ ...p, trainTitle: "" })); }}
+              onChange={(e) => {
+                setTrainTitle(e.target.value);
+                setErrors((p) => ({ ...p, trainTitle: "" }));
+              }}
               fullWidth
               size="small"
               error={!!errors.trainTitle}
@@ -888,7 +1094,10 @@ function CreateEventDialog({
                 label="Inizio"
                 type="time"
                 value={trainStart}
-                onChange={(e) => { setTrainStart(e.target.value); setErrors((p) => ({ ...p, trainStart: "", trainEnd: "" })); }}
+                onChange={(e) => {
+                  setTrainStart(e.target.value);
+                  setErrors((p) => ({ ...p, trainStart: "", trainEnd: "" }));
+                }}
                 size="small"
                 slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ flex: 1 }}
@@ -900,7 +1109,10 @@ function CreateEventDialog({
                 label="Fine"
                 type="time"
                 value={trainEnd}
-                onChange={(e) => { setTrainEnd(e.target.value); setErrors((p) => ({ ...p, trainEnd: "" })); }}
+                onChange={(e) => {
+                  setTrainEnd(e.target.value);
+                  setErrors((p) => ({ ...p, trainEnd: "" }));
+                }}
                 size="small"
                 slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ flex: 1 }}
@@ -925,7 +1137,10 @@ function CreateEventDialog({
             <TextField
               label="Titolo"
               value={eventTitle}
-              onChange={(e) => { setEventTitle(e.target.value); setErrors((p) => ({ ...p, eventTitle: "" })); }}
+              onChange={(e) => {
+                setEventTitle(e.target.value);
+                setErrors((p) => ({ ...p, eventTitle: "" }));
+              }}
               fullWidth
               size="small"
               error={!!errors.eventTitle}
@@ -964,92 +1179,115 @@ function CreateEventDialog({
               </Box>
             ) : teams.length === 0 ? (
               <Typography color="text.secondary" variant="body2">
-                Nessuna squadra disponibile. Creane una nel pannello admin prima di aggiungere partite.
+                Nessuna squadra disponibile. Creane una nel pannello admin prima di aggiungere
+                partite.
               </Typography>
-            ) : (() => {
+            ) : (
+              (() => {
                 const matchSeason = seasonForDate(dateStr);
                 const filteredTeams = teams.filter((t) => t.season === matchSeason);
                 const displayTeams = filteredTeams.length > 0 ? filteredTeams : teams;
                 return (
-              <>
-                <FormControl size="small" error={!!errors.matchTeamId} fullWidth>
-                  <InputLabel shrink>Squadra</InputLabel>
-                  <Select
-                    value={matchTeamId}
-                    onChange={(e) => { setMatchTeamId(e.target.value); setErrors((p) => ({ ...p, matchTeamId: "" })); }}
-                    label="Squadra"
-                    notched
-                    disabled={loading}
-                  >
-                    {displayTeams.map((t) => (
-                      <MenuItem key={t.id} value={t.id}>{t.name}{filteredTeams.length === 0 ? ` (${t.season})` : ""}</MenuItem>
-                    ))}
-                  </Select>
-                  {errors.matchTeamId && <FormHelperText>{errors.matchTeamId}</FormHelperText>}
-                </FormControl>
+                  <>
+                    <FormControl size="small" error={!!errors.matchTeamId} fullWidth>
+                      <InputLabel shrink>Squadra</InputLabel>
+                      <Select
+                        value={matchTeamId}
+                        onChange={(e) => {
+                          setMatchTeamId(e.target.value);
+                          setErrors((p) => ({ ...p, matchTeamId: "" }));
+                        }}
+                        label="Squadra"
+                        notched
+                        disabled={loading}
+                      >
+                        {displayTeams.map((t) => (
+                          <MenuItem key={t.id} value={t.id}>
+                            {t.name}
+                            {filteredTeams.length === 0 ? ` (${t.season})` : ""}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.matchTeamId && <FormHelperText>{errors.matchTeamId}</FormHelperText>}
+                    </FormControl>
 
-                <FormControl size="small" error={!!errors.matchOpponentId} fullWidth>
-                  <InputLabel shrink>Avversario</InputLabel>
-                  <Select
-                    value={matchOpponentId}
-                    onChange={(e) => { setMatchOpponentId(e.target.value); setErrors((p) => ({ ...p, matchOpponentId: "" })); }}
-                    label="Avversario"
-                    notched
-                    disabled={loading}
-                    displayEmpty
-                  >
-                    <MenuItem value="" disabled><em>Seleziona avversario</em></MenuItem>
-                    {opponents.map((o) => (
-                      <MenuItem key={o.id} value={o.id}>{o.name}{o.city ? ` (${o.city})` : ""}</MenuItem>
-                    ))}
-                  </Select>
-                  {errors.matchOpponentId && <FormHelperText>{errors.matchOpponentId}</FormHelperText>}
-                </FormControl>
+                    <FormControl size="small" error={!!errors.matchOpponentId} fullWidth>
+                      <InputLabel shrink>Avversario</InputLabel>
+                      <Select
+                        value={matchOpponentId}
+                        onChange={(e) => {
+                          setMatchOpponentId(e.target.value);
+                          setErrors((p) => ({ ...p, matchOpponentId: "" }));
+                        }}
+                        label="Avversario"
+                        notched
+                        disabled={loading}
+                        displayEmpty
+                      >
+                        <MenuItem value="" disabled>
+                          <em>Seleziona avversario</em>
+                        </MenuItem>
+                        {opponents.map((o) => (
+                          <MenuItem key={o.id} value={o.id}>
+                            {o.name}
+                            {o.city ? ` (${o.city})` : ""}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.matchOpponentId && (
+                        <FormHelperText>{errors.matchOpponentId}</FormHelperText>
+                      )}
+                    </FormControl>
 
-                <TextField
-                  label="Orario"
-                  type="time"
-                  value={matchTime}
-                  onChange={(e) => { setMatchTime(e.target.value); setErrors((p) => ({ ...p, matchTime: "" })); }}
-                  size="small"
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  error={!!errors.matchTime}
-                  helperText={errors.matchTime}
-                  disabled={loading}
-                />
+                    <TextField
+                      label="Orario"
+                      type="time"
+                      value={matchTime}
+                      onChange={(e) => {
+                        setMatchTime(e.target.value);
+                        setErrors((p) => ({ ...p, matchTime: "" }));
+                      }}
+                      size="small"
+                      slotProps={{ inputLabel: { shrink: true } }}
+                      error={!!errors.matchTime}
+                      helperText={errors.matchTime}
+                      disabled={loading}
+                    />
 
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Campo
-                  </Typography>
-                  <ToggleButtonGroup
-                    value={matchIsHome}
-                    exclusive
-                    onChange={(_, v) => { if (v) setMatchIsHome(v); }}
-                    size="small"
-                    disabled={loading}
-                  >
-                    <ToggleButton value="home" sx={{ gap: 0.5 }}>
-                      <HomeIcon sx={{ fontSize: "1rem" }} /> Casa
-                    </ToggleButton>
-                    <ToggleButton value="away" sx={{ gap: 0.5 }}>
-                      <FlightIcon sx={{ fontSize: "1rem" }} /> Trasferta
-                    </ToggleButton>
-                  </ToggleButtonGroup>
-                </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        Campo
+                      </Typography>
+                      <ToggleButtonGroup
+                        value={matchIsHome}
+                        exclusive
+                        onChange={(_, v) => {
+                          if (v) setMatchIsHome(v);
+                        }}
+                        size="small"
+                        disabled={loading}
+                      >
+                        <ToggleButton value="home" sx={{ gap: 0.5 }}>
+                          <HomeIcon sx={{ fontSize: "1rem" }} /> Casa
+                        </ToggleButton>
+                        <ToggleButton value="away" sx={{ gap: 0.5 }}>
+                          <FlightIcon sx={{ fontSize: "1rem" }} /> Trasferta
+                        </ToggleButton>
+                      </ToggleButtonGroup>
+                    </Box>
 
-                <TextField
-                  label="Luogo (opzionale)"
-                  value={matchVenue}
-                  onChange={(e) => setMatchVenue(e.target.value)}
-                  fullWidth
-                  size="small"
-                  disabled={loading}
-                />
-              </>
+                    <TextField
+                      label="Luogo (opzionale)"
+                      value={matchVenue}
+                      onChange={(e) => setMatchVenue(e.target.value)}
+                      fullWidth
+                      size="small"
+                      disabled={loading}
+                    />
+                  </>
                 );
               })()
-            }
+            )}
           </Box>
         )}
       </DialogContent>
@@ -1057,7 +1295,9 @@ function CreateEventDialog({
       <Divider />
 
       <DialogActions sx={{ px: 2.5, py: 1.5, gap: 1 }}>
-        <Button onClick={handleClose} color="inherit" size="small" disabled={loading}>Annulla</Button>
+        <Button onClick={handleClose} color="inherit" size="small" disabled={loading}>
+          Annulla
+        </Button>
         <Button
           variant="contained"
           size="small"
@@ -1078,12 +1318,20 @@ function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.25 }}>
       <Box sx={{ color: "text.secondary", mt: "1px", "& svg": { fontSize: "1.1rem" } }}>{icon}</Box>
-      <Typography variant="body2" sx={{ lineHeight: 1.5 }}>{text}</Typography>
+      <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+        {text}
+      </Typography>
     </Box>
   );
 }
 
-function LegendItem({ color, icon, label, active = true, onClick }: {
+function LegendItem({
+  color,
+  icon,
+  label,
+  active = true,
+  onClick,
+}: {
   color: string;
   icon: React.ReactNode;
   label: string;

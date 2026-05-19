@@ -102,20 +102,26 @@ describe("DELETE /api/competitive-teams/[teamId]/members/[membershipId]", () => 
 
   it("returns 403 when not admin", async () => {
     mockIsAdmin.mockResolvedValue(false);
-    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", { method: "DELETE" });
+    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", {
+      method: "DELETE",
+    });
     const res = await DELETE(req, { params: membershipParams });
     expect(res.status).toBe(403);
   });
 
   it("deletes the membership and returns 204", async () => {
-    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", { method: "DELETE" });
+    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", {
+      method: "DELETE",
+    });
     const res = await DELETE(req, { params: membershipParams });
     expect(res.status).toBe(204);
     expect(p.teamMembership.delete).toHaveBeenCalledWith({ where: { id: "m-1" } });
   });
 
   it("sends removal notification to the removed user", async () => {
-    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", { method: "DELETE" });
+    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", {
+      method: "DELETE",
+    });
     await DELETE(req, { params: membershipParams });
     expect(mockNotify).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -131,7 +137,9 @@ describe("DELETE /api/competitive-teams/[teamId]/members/[membershipId]", () => 
       userId: null,
       childId: "c-1",
     });
-    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", { method: "DELETE" });
+    const req = new Request("http://localhost/api/competitive-teams/t-1/members/m-1", {
+      method: "DELETE",
+    });
     await DELETE(req, { params: membershipParams });
     expect(mockNotify).not.toHaveBeenCalled();
   });

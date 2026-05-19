@@ -26,7 +26,8 @@ function NotifIcon({ type }: { type: string }) {
   if (type === "NEW_TRAINING") return <SportsBasketballIcon fontSize="small" color="primary" />;
   if (type === "TEAMS_READY") return <GroupsIcon fontSize="small" color="success" />;
   if (type === "MATCH_RESULT") return <EmojiEventsIcon fontSize="small" color="warning" />;
-  if (type === "LINK_REQUEST" || type === "LINK_RESPONSE") return <FamilyRestroomIcon fontSize="small" color="secondary" />;
+  if (type === "LINK_REQUEST" || type === "LINK_RESPONSE")
+    return <FamilyRestroomIcon fontSize="small" color="secondary" />;
   return <NotificationsIcon fontSize="small" color="action" />;
 }
 

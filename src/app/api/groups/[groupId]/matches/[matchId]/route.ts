@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
-      { status: 400 },
+      { status: 400 }
     );
   }
   const body = parsed.data;
@@ -33,12 +33,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const updated = await prisma.groupMatch.update({
     where: { id: matchId },
     data: {
-      ...("matchday"   in body ? { matchday:  body.matchday  ?? null } : {}),
-      ...("date"       in body ? { date:      body.date ? new Date(body.date) : null } : {}),
+      ...("matchday" in body ? { matchday: body.matchday ?? null } : {}),
+      ...("date" in body ? { date: body.date ? new Date(body.date) : null } : {}),
       ...("homeTeamId" in body ? { homeTeamId: body.homeTeamId } : {}),
       ...("awayTeamId" in body ? { awayTeamId: body.awayTeamId } : {}),
-      ...("homeScore"  in body ? { homeScore: body.homeScore ?? null } : {}),
-      ...("awayScore"  in body ? { awayScore: body.awayScore ?? null } : {}),
+      ...("homeScore" in body ? { homeScore: body.homeScore ?? null } : {}),
+      ...("awayScore" in body ? { awayScore: body.awayScore ?? null } : {}),
     },
     include: {
       homeTeam: { select: { id: true, name: true, slug: true } },

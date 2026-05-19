@@ -2,10 +2,31 @@
 
 import { useState, useCallback, useEffect } from "react";
 import {
-  Box, Typography, Table, TableHead, TableRow, TableCell, TableBody,
-  TablePagination, Chip, IconButton, Dialog, DialogTitle, DialogContent,
-  DialogActions, Button, TextField, MenuItem, Select, FormControl,
-  InputLabel, Stack, Paper, CircularProgress, Tooltip, Alert,
+  Box,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TablePagination,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Stack,
+  Paper,
+  CircularProgress,
+  Tooltip,
+  Alert,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -103,46 +124,110 @@ const ALL_TARGET_TYPES = Object.keys(TARGET_TYPE_LABELS);
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("it-IT", {
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-function JsonDiff({ before, after }: { before: Record<string, unknown> | null; after: Record<string, unknown> | null }) {
-  if (!before && !after) return <Typography variant="body2" color="text.secondary">Nessun dettaglio disponibile.</Typography>;
+function JsonDiff({
+  before,
+  after,
+}: {
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+}) {
+  if (!before && !after)
+    return (
+      <Typography variant="body2" color="text.secondary">
+        Nessun dettaglio disponibile.
+      </Typography>
+    );
 
   const allKeys = [...new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])];
 
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mb: 0.5, display: "block" }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          fontWeight={700}
+          sx={{ mb: 0.5, display: "block" }}
+        >
           Prima
         </Typography>
-        <Paper variant="outlined" sx={{ p: 1.5, fontFamily: "monospace", fontSize: "0.78rem", wordBreak: "break-all", minHeight: 60 }}>
-          {before
-            ? allKeys.map((k) => (
-                <Box key={k} sx={{ color: after && JSON.stringify(before[k]) !== JSON.stringify(after?.[k]) ? "warning.dark" : "text.primary" }}>
-                  <strong>{k}:</strong> {JSON.stringify(before[k])}
-                </Box>
-              ))
-            : <Typography variant="caption" color="text.secondary">—</Typography>
-          }
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 1.5,
+            fontFamily: "monospace",
+            fontSize: "0.78rem",
+            wordBreak: "break-all",
+            minHeight: 60,
+          }}
+        >
+          {before ? (
+            allKeys.map((k) => (
+              <Box
+                key={k}
+                sx={{
+                  color:
+                    after && JSON.stringify(before[k]) !== JSON.stringify(after?.[k])
+                      ? "warning.dark"
+                      : "text.primary",
+                }}
+              >
+                <strong>{k}:</strong> {JSON.stringify(before[k])}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="caption" color="text.secondary">
+              —
+            </Typography>
+          )}
         </Paper>
       </Box>
       <Box>
-        <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mb: 0.5, display: "block" }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          fontWeight={700}
+          sx={{ mb: 0.5, display: "block" }}
+        >
           Dopo
         </Typography>
-        <Paper variant="outlined" sx={{ p: 1.5, fontFamily: "monospace", fontSize: "0.78rem", wordBreak: "break-all", minHeight: 60 }}>
-          {after
-            ? allKeys.map((k) => (
-                <Box key={k} sx={{ color: before && JSON.stringify(before?.[k]) !== JSON.stringify(after[k]) ? "success.dark" : "text.primary" }}>
-                  <strong>{k}:</strong> {JSON.stringify(after[k])}
-                </Box>
-              ))
-            : <Typography variant="caption" color="text.secondary">—</Typography>
-          }
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 1.5,
+            fontFamily: "monospace",
+            fontSize: "0.78rem",
+            wordBreak: "break-all",
+            minHeight: 60,
+          }}
+        >
+          {after ? (
+            allKeys.map((k) => (
+              <Box
+                key={k}
+                sx={{
+                  color:
+                    before && JSON.stringify(before?.[k]) !== JSON.stringify(after[k])
+                      ? "success.dark"
+                      : "text.primary",
+                }}
+              >
+                <strong>{k}:</strong> {JSON.stringify(after[k])}
+              </Box>
+            ))
+          ) : (
+            <Typography variant="caption" color="text.secondary">
+              —
+            </Typography>
+          )}
         </Paper>
       </Box>
     </Box>
@@ -189,7 +274,9 @@ export default function AuditLogClient() {
     }
   }, [page, pageSize, action, targetType, from, to]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   function resetFilters() {
     setAction("");
@@ -203,45 +290,91 @@ export default function AuditLogClient() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
       {/* Filtri */}
       <Paper elevation={1} sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
           <FilterListIcon fontSize="small" color="action" />
-          <Typography variant="subtitle2" fontWeight={700}>Filtri</Typography>
+          <Typography variant="subtitle2" fontWeight={700}>
+            Filtri
+          </Typography>
           {hasFilters && (
-            <Button size="small" startIcon={<ClearIcon />} onClick={resetFilters} sx={{ ml: "auto" }}>
+            <Button
+              size="small"
+              startIcon={<ClearIcon />}
+              onClick={resetFilters}
+              sx={{ ml: "auto" }}
+            >
               Azzera
             </Button>
           )}
         </Stack>
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" }, gap: 2 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+            gap: 2,
+          }}
+        >
           <FormControl size="small" fullWidth>
             <InputLabel>Azione</InputLabel>
-            <Select value={action} label="Azione" onChange={(e) => { setAction(e.target.value); setPage(0); }}>
-              <MenuItem value=""><em>Tutte</em></MenuItem>
+            <Select
+              value={action}
+              label="Azione"
+              onChange={(e) => {
+                setAction(e.target.value);
+                setPage(0);
+              }}
+            >
+              <MenuItem value="">
+                <em>Tutte</em>
+              </MenuItem>
               {ALL_ACTIONS.map((a) => (
-                <MenuItem key={a} value={a}>{ACTION_LABELS[a] ?? a}</MenuItem>
+                <MenuItem key={a} value={a}>
+                  {ACTION_LABELS[a] ?? a}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
           <FormControl size="small" fullWidth>
             <InputLabel>Tipo target</InputLabel>
-            <Select value={targetType} label="Tipo target" onChange={(e) => { setTargetType(e.target.value); setPage(0); }}>
-              <MenuItem value=""><em>Tutti</em></MenuItem>
+            <Select
+              value={targetType}
+              label="Tipo target"
+              onChange={(e) => {
+                setTargetType(e.target.value);
+                setPage(0);
+              }}
+            >
+              <MenuItem value="">
+                <em>Tutti</em>
+              </MenuItem>
               {ALL_TARGET_TYPES.map((t) => (
-                <MenuItem key={t} value={t}>{TARGET_TYPE_LABELS[t] ?? t}</MenuItem>
+                <MenuItem key={t} value={t}>
+                  {TARGET_TYPE_LABELS[t] ?? t}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
           <TextField
-            size="small" label="Da" type="date" value={from}
-            onChange={(e) => { setFrom(e.target.value); setPage(0); }}
+            size="small"
+            label="Da"
+            type="date"
+            value={from}
+            onChange={(e) => {
+              setFrom(e.target.value);
+              setPage(0);
+            }}
             InputLabelProps={{ shrink: true }}
           />
           <TextField
-            size="small" label="A" type="date" value={to}
-            onChange={(e) => { setTo(e.target.value); setPage(0); }}
+            size="small"
+            label="A"
+            type="date"
+            value={to}
+            onChange={(e) => {
+              setTo(e.target.value);
+              setPage(0);
+            }}
             InputLabelProps={{ shrink: true }}
           />
         </Box>
@@ -249,7 +382,11 @@ export default function AuditLogClient() {
 
       {/* Tabella */}
       <Paper elevation={2}>
-        {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ m: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {loading && (
           <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
@@ -308,7 +445,9 @@ export default function AuditLogClient() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight={item.targetLabel ? 600 : 400}>
-                        {item.targetLabel ?? <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>}
+                        {item.targetLabel ?? (
+                          <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>
+                        )}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {TARGET_TYPE_LABELS[item.targetType] ?? item.targetType}
@@ -333,7 +472,10 @@ export default function AuditLogClient() {
               rowsPerPage={pageSize}
               rowsPerPageOptions={[10, 25, 50, 100]}
               onPageChange={(_, p) => setPage(p)}
-              onRowsPerPageChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(0); }}
+              onRowsPerPageChange={(e) => {
+                setPageSize(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
               labelRowsPerPage="Righe:"
               labelDisplayedRows={({ from: f, to: t, count }) => `${f}–${t} di ${count}`}
             />
@@ -361,27 +503,39 @@ export default function AuditLogClient() {
               <Stack gap={2}>
                 <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
                   <Box>
-                    <Typography variant="caption" color="text.secondary">Attore</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Attore
+                    </Typography>
                     <Typography variant="body2" fontWeight={600}>
                       {detail.actor?.name ?? "—"}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">{detail.actor?.email ?? detail.actorId}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {detail.actor?.email ?? detail.actorId}
+                    </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" color="text.secondary">Target</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Target
+                    </Typography>
                     <Typography variant="body2" fontWeight={600}>
                       {detail.targetLabel ?? <em>eliminato</em>}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {TARGET_TYPE_LABELS[detail.targetType] ?? detail.targetType}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: "monospace", display: "block" }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontFamily: "monospace", display: "block" }}
+                    >
                       {detail.targetId}
                     </Typography>
                   </Box>
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" fontWeight={700} mb={1}>Modifiche</Typography>
+                  <Typography variant="subtitle2" fontWeight={700} mb={1}>
+                    Modifiche
+                  </Typography>
                   <JsonDiff before={detail.before} after={detail.after} />
                 </Box>
               </Stack>

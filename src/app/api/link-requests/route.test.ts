@@ -26,7 +26,14 @@ const baseLinkRequest = {
   status: "PENDING",
   expiresAt: null,
   createdAt: new Date("2025-03-01"),
-  child: { id: "child-1", name: "Luca", sportRole: 2, sportRoleVariant: null, gender: "MALE", birthDate: null },
+  child: {
+    id: "child-1",
+    name: "Luca",
+    sportRole: 2,
+    sportRoleVariant: null,
+    gender: "MALE",
+    birthDate: null,
+  },
   parent: { id: "user-parent", name: "Anna Rossi", image: null, email: "anna@example.com" },
 };
 

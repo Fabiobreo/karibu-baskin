@@ -48,7 +48,13 @@ export async function POST(req: Request) {
   });
 
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "CREATE_TEAM", targetType: "CompetitiveTeam", targetId: team.id, after: { name: team.name, season: team.season } }).catch((err) => console.error("[audit] create team", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "CREATE_TEAM",
+      targetType: "CompetitiveTeam",
+      targetId: team.id,
+      after: { name: team.name, season: team.season },
+    }).catch((err) => console.error("[audit] create team", err));
   }
 
   return NextResponse.json(team, { status: 201 });

@@ -54,7 +54,13 @@ describe("PUT /api/sessions/[sessionId]/match-results/[resultId]", () => {
 
   it("aggiorna scoreA e scoreB", async () => {
     p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1" });
-    p.trainingMatchResult.update.mockResolvedValue({ id: "mr1", scoreA: 20, scoreB: 15, scoreC: null, notes: null });
+    p.trainingMatchResult.update.mockResolvedValue({
+      id: "mr1",
+      scoreA: 20,
+      scoreB: 15,
+      scoreC: null,
+      notes: null,
+    });
     const req = new NextRequest("http://localhost/...", {
       method: "PUT",
       body: JSON.stringify({ scoreA: 20, scoreB: 15 }),
@@ -69,7 +75,13 @@ describe("PUT /api/sessions/[sessionId]/match-results/[resultId]", () => {
 
   it("aggiorna solo i campi forniti", async () => {
     p.trainingMatchResult.findUnique.mockResolvedValue({ id: "mr1" });
-    p.trainingMatchResult.update.mockResolvedValue({ id: "mr1", scoreA: 25, scoreB: 15, scoreC: null, notes: null });
+    p.trainingMatchResult.update.mockResolvedValue({
+      id: "mr1",
+      scoreA: 25,
+      scoreB: 15,
+      scoreC: null,
+      notes: null,
+    });
     const req = new NextRequest("http://localhost/...", {
       method: "PUT",
       body: JSON.stringify({ scoreA: 25 }),

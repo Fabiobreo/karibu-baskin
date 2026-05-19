@@ -25,7 +25,7 @@ const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
 
 const makeParams = (groupId: string) =>
-  ({ params: Promise.resolve({ groupId }) } as { params: Promise<{ groupId: string }> });
+  ({ params: Promise.resolve({ groupId }) }) as { params: Promise<{ groupId: string }> };
 
 const baseMatch = {
   id: "gm-1",
@@ -59,7 +59,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
   it("restituisce 403 per utente non staff", async () => {
     const res = await POST(
       makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2" }),
-      makeParams("g-1"),
+      makeParams("g-1")
     );
     expect(res.status).toBe(403);
   });
@@ -85,7 +85,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
     mockIsCoach.mockResolvedValue(true);
     const res = await POST(
       makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-1" }),
-      makeParams("g-1"),
+      makeParams("g-1")
     );
     expect(res.status).toBe(400);
     const json = await res.json();
@@ -97,7 +97,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
     p.group.findUnique.mockResolvedValue(null);
     const res = await POST(
       makePost("nonexistent", { homeTeamId: "opp-1", awayTeamId: "opp-2" }),
-      makeParams("nonexistent"),
+      makeParams("nonexistent")
     );
     expect(res.status).toBe(404);
   });
@@ -106,7 +106,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
     mockIsCoach.mockResolvedValue(true);
     const res = await POST(
       makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2", matchday: 1 }),
-      makeParams("g-1"),
+      makeParams("g-1")
     );
     expect(res.status).toBe(201);
     const json = await res.json();
@@ -115,10 +115,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
 
   it("passa il groupId corretto al DB", async () => {
     mockIsCoach.mockResolvedValue(true);
-    await POST(
-      makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2" }),
-      makeParams("g-1"),
-    );
+    await POST(makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2" }), makeParams("g-1"));
     const data = p.groupMatch.create.mock.calls[0][0].data;
     expect(data.groupId).toBe("g-1");
   });
@@ -127,7 +124,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
     mockIsCoach.mockResolvedValue(true);
     await POST(
       makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2", date: "2025-11-10T18:00" }),
-      makeParams("g-1"),
+      makeParams("g-1")
     );
     const data = p.groupMatch.create.mock.calls[0][0].data;
     expect(data.date).toBeInstanceOf(Date);
@@ -135,10 +132,7 @@ describe("POST /api/groups/[groupId]/matches", () => {
 
   it("imposta null per homeScore e awayScore se non forniti", async () => {
     mockIsCoach.mockResolvedValue(true);
-    await POST(
-      makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2" }),
-      makeParams("g-1"),
-    );
+    await POST(makePost("g-1", { homeTeamId: "opp-1", awayTeamId: "opp-2" }), makeParams("g-1"));
     const data = p.groupMatch.create.mock.calls[0][0].data;
     expect(data.homeScore).toBeNull();
     expect(data.awayScore).toBeNull();

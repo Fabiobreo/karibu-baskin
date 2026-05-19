@@ -33,5 +33,12 @@ export default async function AdminPartitePage() {
     }),
   ]);
 
-  return <AdminPartiteClient teams={teams} opposingTeams={opposingTeams} matches={matches} groups={groups} />;
+  return (
+    <AdminPartiteClient
+      teams={teams}
+      opposingTeams={opposingTeams}
+      matches={matches}
+      groups={groups}
+    />
+  );
 }

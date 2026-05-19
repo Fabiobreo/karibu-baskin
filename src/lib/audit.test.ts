@@ -88,7 +88,7 @@ describe("logAudit()", () => {
   it("propaga il rigetto della promise in caso di errore DB", async () => {
     mockCreate.mockRejectedValueOnce(new Error("DB write failed"));
     await expect(
-      logAudit({ actorId: "a", action: "DELETE_USER", targetType: "User", targetId: "u1" }),
+      logAudit({ actorId: "a", action: "DELETE_USER", targetType: "User", targetId: "u1" })
     ).rejects.toThrow("DB write failed");
   });
 });

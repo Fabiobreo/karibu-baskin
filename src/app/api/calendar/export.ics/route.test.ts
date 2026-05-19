@@ -54,12 +54,14 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("include VEVENT per allenamento con endTime", async () => {
-    p.trainingSession.findMany.mockResolvedValue([{
-      id: "s-1",
-      title: "Allenamento Martedì",
-      date: baseDate,
-      endTime: new Date("2025-09-10T10:30:00Z"),
-    }]);
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        id: "s-1",
+        title: "Allenamento Martedì",
+        date: baseDate,
+        endTime: new Date("2025-09-10T10:30:00Z"),
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("BEGIN:VEVENT");
@@ -69,12 +71,14 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("usa endTime default (+90min) per allenamento senza endTime", async () => {
-    p.trainingSession.findMany.mockResolvedValue([{
-      id: "s-2",
-      title: "Allenamento",
-      date: new Date("2025-09-10T09:00:00Z"),
-      endTime: null,
-    }]);
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        id: "s-2",
+        title: "Allenamento",
+        date: new Date("2025-09-10T09:00:00Z"),
+        endTime: null,
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     // 09:00 + 90min = 10:30 → DTEND:20250910T103000Z
@@ -82,26 +86,30 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("include location di default per allenamento", async () => {
-    p.trainingSession.findMany.mockResolvedValue([{
-      id: "s-1",
-      title: "Allenamento",
-      date: baseDate,
-      endTime: null,
-    }]);
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        id: "s-1",
+        title: "Allenamento",
+        date: baseDate,
+        endTime: null,
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("LOCATION:Polisportivo Gino Cosaro");
   });
 
   it("include VEVENT per partita in casa (vs)", async () => {
-    p.match.findMany.mockResolvedValue([{
-      id: "m-1",
-      date: baseDate,
-      isHome: true,
-      venue: null,
-      team: { name: "Karibu Baskin" },
-      opponent: { name: "Team B" },
-    }]);
+    p.match.findMany.mockResolvedValue([
+      {
+        id: "m-1",
+        date: baseDate,
+        isHome: true,
+        venue: null,
+        team: { name: "Karibu Baskin" },
+        opponent: { name: "Team B" },
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("UID:match-m-1@karibubaskin.it");
@@ -109,14 +117,16 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("include VEVENT per partita in trasferta (@)", async () => {
-    p.match.findMany.mockResolvedValue([{
-      id: "m-2",
-      date: baseDate,
-      isHome: false,
-      venue: "Palazzetto Avversario",
-      team: { name: "Karibu Baskin" },
-      opponent: { name: "Team C" },
-    }]);
+    p.match.findMany.mockResolvedValue([
+      {
+        id: "m-2",
+        date: baseDate,
+        isHome: false,
+        venue: "Palazzetto Avversario",
+        team: { name: "Karibu Baskin" },
+        opponent: { name: "Team C" },
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("SUMMARY:Karibu Baskin @ Team C");
@@ -124,28 +134,32 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("usa location di default per partita in casa", async () => {
-    p.match.findMany.mockResolvedValue([{
-      id: "m-3",
-      date: baseDate,
-      isHome: true,
-      venue: null,
-      team: { name: "Karibu Baskin" },
-      opponent: { name: "Team D" },
-    }]);
+    p.match.findMany.mockResolvedValue([
+      {
+        id: "m-3",
+        date: baseDate,
+        isHome: true,
+        venue: null,
+        team: { name: "Karibu Baskin" },
+        opponent: { name: "Team D" },
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("LOCATION:Polisportivo Gino Cosaro");
   });
 
   it("include VEVENT per evento generico con description e location", async () => {
-    p.event.findMany.mockResolvedValue([{
-      id: "e-1",
-      title: "Torneo Estivo",
-      date: baseDate,
-      endDate: new Date("2025-09-10T18:00:00Z"),
-      description: "Tornei con amici",
-      location: "Palazzetto Nord",
-    }]);
+    p.event.findMany.mockResolvedValue([
+      {
+        id: "e-1",
+        title: "Torneo Estivo",
+        date: baseDate,
+        endDate: new Date("2025-09-10T18:00:00Z"),
+        description: "Tornei con amici",
+        location: "Palazzetto Nord",
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("UID:event-e-1@karibubaskin.it");
@@ -155,14 +169,16 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("usa endDate default (+1h) per evento senza endDate", async () => {
-    p.event.findMany.mockResolvedValue([{
-      id: "e-2",
-      title: "Evento",
-      date: new Date("2025-09-10T09:00:00Z"),
-      endDate: null,
-      description: null,
-      location: null,
-    }]);
+    p.event.findMany.mockResolvedValue([
+      {
+        id: "e-2",
+        title: "Evento",
+        date: new Date("2025-09-10T09:00:00Z"),
+        endDate: null,
+        description: null,
+        location: null,
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     // 09:00 + 60min = 10:00 → DTEND:20250910T100000Z
@@ -170,31 +186,50 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("esegue escape corretto di virgole e punto-e-virgola nel SUMMARY", async () => {
-    p.event.findMany.mockResolvedValue([{
-      id: "e-3",
-      title: "Evento, speciale; test",
-      date: baseDate,
-      endDate: null,
-      description: null,
-      location: null,
-    }]);
+    p.event.findMany.mockResolvedValue([
+      {
+        id: "e-3",
+        title: "Evento, speciale; test",
+        date: baseDate,
+        endDate: null,
+        description: null,
+        location: null,
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     expect(ics).toContain("SUMMARY:Evento\\, speciale\\; test");
   });
 
   it("contiene tutti e tre i tipi di VEVENT (allenamento, partita, evento)", async () => {
-    p.trainingSession.findMany.mockResolvedValue([{
-      id: "s-1", title: "Allenamento", date: baseDate, endTime: null,
-    }]);
-    p.match.findMany.mockResolvedValue([{
-      id: "m-1", date: baseDate, isHome: true, venue: null,
-      team: { name: "Karibu" }, opponent: { name: "Team B" },
-    }]);
-    p.event.findMany.mockResolvedValue([{
-      id: "e-1", title: "Torneo", date: baseDate, endDate: null,
-      description: null, location: null,
-    }]);
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        id: "s-1",
+        title: "Allenamento",
+        date: baseDate,
+        endTime: null,
+      },
+    ]);
+    p.match.findMany.mockResolvedValue([
+      {
+        id: "m-1",
+        date: baseDate,
+        isHome: true,
+        venue: null,
+        team: { name: "Karibu" },
+        opponent: { name: "Team B" },
+      },
+    ]);
+    p.event.findMany.mockResolvedValue([
+      {
+        id: "e-1",
+        title: "Torneo",
+        date: baseDate,
+        endDate: null,
+        description: null,
+        location: null,
+      },
+    ]);
     const res = await GET();
     const ics = await res.text();
     const count = (ics.match(/BEGIN:VEVENT/g) ?? []).length;

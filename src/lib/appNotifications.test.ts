@@ -14,7 +14,8 @@ import { createAppNotification, createTargetedAppNotifications } from "./appNoti
 import { prisma } from "@/lib/db";
 
 const mockCreate = (prisma.appNotification as unknown as { create: Mock; createMany: Mock }).create;
-const mockCreateMany = (prisma.appNotification as unknown as { create: Mock; createMany: Mock }).createMany;
+const mockCreateMany = (prisma.appNotification as unknown as { create: Mock; createMany: Mock })
+  .createMany;
 
 describe("createAppNotification()", () => {
   beforeEach(() => {
@@ -48,7 +49,7 @@ describe("createAppNotification()", () => {
   it("propaga il rigetto della promise in caso di errore DB", async () => {
     mockCreate.mockRejectedValueOnce(new Error("DB error"));
     await expect(
-      createAppNotification({ type: "MATCH_RESULT" as const, title: "t", body: "b" }),
+      createAppNotification({ type: "MATCH_RESULT" as const, title: "t", body: "b" })
     ).rejects.toThrow("DB error");
   });
 
@@ -106,7 +107,11 @@ describe("createTargetedAppNotifications()", () => {
   it("propaga il rigetto della promise in caso di errore DB", async () => {
     mockCreateMany.mockRejectedValueOnce(new Error("DB error"));
     await expect(
-      createTargetedAppNotifications(["u1"], { type: "TEAMS_READY" as const, title: "t", body: "b" }),
+      createTargetedAppNotifications(["u1"], {
+        type: "TEAMS_READY" as const,
+        title: "t",
+        body: "b",
+      })
     ).rejects.toThrow("DB error");
   });
 });

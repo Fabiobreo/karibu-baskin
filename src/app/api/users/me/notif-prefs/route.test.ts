@@ -131,13 +131,20 @@ describe("PATCH /api/users/me/notif-prefs", () => {
     await PATCH(makeReq({ push: { NEW_TRAINING: false } }));
     expect(p.user.update).toHaveBeenCalledWith({
       where: { id: "u-1" },
-      data: { notifPrefs: expect.objectContaining({ push: expect.objectContaining({ NEW_TRAINING: false }) }) },
+      data: {
+        notifPrefs: expect.objectContaining({
+          push: expect.objectContaining({ NEW_TRAINING: false }),
+        }),
+      },
     });
   });
 
   it("merges patch over current stored prefs", async () => {
     p.user.findUnique.mockResolvedValue({
-      notifPrefs: { push: { NEW_TRAINING: false, TEAMS_READY: false, MATCH_RESULT: false }, inApp: {} },
+      notifPrefs: {
+        push: { NEW_TRAINING: false, TEAMS_READY: false, MATCH_RESULT: false },
+        inApp: {},
+      },
     });
     const res = await PATCH(makeReq({ push: { NEW_TRAINING: true } }));
     const data = await res.json();

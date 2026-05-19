@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { TableRow } from "@mui/material";
 import type { ReactNode } from "react";
 
-export default function GironeOurMatchRow({ href, children }: { href: string; children: ReactNode }) {
+export default function GironeOurMatchRow({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
   const router = useRouter();
   return (
     <TableRow hover onClick={() => router.push(href)} sx={{ cursor: "pointer" }}>

@@ -5,15 +5,9 @@ import type { AppRole } from "@prisma/client";
 import SiteHeader from "@/components/SiteHeader";
 import { Container } from "@mui/material";
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  const allowed =
-    session?.user?.appRole &&
-    hasRole(session.user.appRole as AppRole, "COACH");
+  const allowed = session?.user?.appRole && hasRole(session.user.appRole as AppRole, "COACH");
 
   if (!allowed) {
     redirect("/login");

@@ -60,7 +60,13 @@ const matchStub = {
   ourScore: null,
   theirScore: null,
   result: null,
-  team: { id: "team-1", name: "Karibu", season: "2025-26", color: "#ff6600", championship: "Serie A" },
+  team: {
+    id: "team-1",
+    name: "Karibu",
+    season: "2025-26",
+    color: "#ff6600",
+    championship: "Serie A",
+  },
   opponent: { id: "opp-1", name: "Avversario", city: "Milano" },
   group: null,
   _count: { playerStats: 0 },
@@ -105,13 +111,14 @@ describe("GET /api/matches", () => {
   it("non filtra per teamId se non fornito", async () => {
     const req = new NextRequest("http://localhost/api/matches");
     await GET(req);
-    expect(p.match.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: undefined })
-    );
+    expect(p.match.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: undefined }));
   });
 
   it("restituisce 429 quando il rate limit è superato", async () => {
-    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({ allowed: false, remaining: 0 });
+    (checkRateLimit as ReturnType<typeof vi.fn>).mockReturnValueOnce({
+      allowed: false,
+      remaining: 0,
+    });
     const req = new NextRequest("http://localhost/api/matches");
     const res = await GET(req);
     expect(res.status).toBe(429);
@@ -198,7 +205,9 @@ describe("POST /api/matches", () => {
 
   it("restituisce 400 se il risultato esplicito non corrisponde ai punteggi", async () => {
     mockIsAdminUser.mockResolvedValue(true);
-    const res = await POST(makePost({ ...validBody, ourScore: 60, theirScore: 45, result: "LOSS" }));
+    const res = await POST(
+      makePost({ ...validBody, ourScore: 60, theirScore: 45, result: "LOSS" })
+    );
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toContain("non corrisponde al punteggio");

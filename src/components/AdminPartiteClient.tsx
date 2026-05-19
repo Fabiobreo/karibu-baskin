@@ -1,11 +1,38 @@
 "use client";
 
 import {
-  Box, Typography, Paper, Button, TextField, Stack, Chip, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Select, MenuItem,
-  FormControl, InputLabel, CircularProgress, Alert, Table, TableHead,
-  TableBody, TableRow, TableCell, Tooltip, FormControlLabel, Switch,
-  Divider, Tabs, Tab, TablePagination, Skeleton,
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  Stack,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  CircularProgress,
+  Alert,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Tooltip,
+  FormControlLabel,
+  Switch,
+  Divider,
+  Tabs,
+  Tab,
+  TablePagination,
+  Skeleton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -27,7 +54,15 @@ import { seasonForDate } from "@/components/SessionRestrictionEditor";
 
 type Team = { id: string; name: string; season: string; color: string | null };
 type OpposingTeam = { id: string; name: string; city: string | null };
-type Group = { id: string; name: string; season: string; championship: string | null; teamId: string; team: { id: string; name: string; color: string | null }; _count: { matches: number } };
+type Group = {
+  id: string;
+  name: string;
+  season: string;
+  championship: string | null;
+  teamId: string;
+  team: { id: string; name: string; color: string | null };
+  _count: { matches: number };
+};
 type Match = {
   id: string;
   teamId: string;
@@ -100,7 +135,14 @@ const emptyMatchForm = {
   groupId: "" as string,
 };
 
-const EMPTY_GM_FORM = { matchday: "", date: "", homeTeamId: "", awayTeamId: "", homeScore: "", awayScore: "" };
+const EMPTY_GM_FORM = {
+  matchday: "",
+  date: "",
+  homeTeamId: "",
+  awayTeamId: "",
+  homeScore: "",
+  awayScore: "",
+};
 
 function deriveResultFromScores(ourScore: string, theirScore: string): MatchResult | "" {
   const our = parseInt(ourScore, 10);
@@ -111,14 +153,24 @@ function deriveResultFromScores(ourScore: string, theirScore: string): MatchResu
   return "DRAW";
 }
 
-export default function AdminPartiteClient({ teams, opposingTeams: initialOpponents, matches: initialMatches, groups: initialGroups }: Props) {
+export default function AdminPartiteClient({
+  teams,
+  opposingTeams: initialOpponents,
+  matches: initialMatches,
+  groups: initialGroups,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [matches, setMatches] = useState(initialMatches);
   const [opponents, setOpponents] = useState(initialOpponents);
   const [groups, setGroups] = useState(initialGroups);
   const [tab, setTab] = useState(0); // 0=Partite, 1=Squadre avversarie, 2=Gironi
-  const [groupForm, setGroupForm] = useState({ name: "", season: "", championship: "", teamId: "" });
+  const [groupForm, setGroupForm] = useState({
+    name: "",
+    season: "",
+    championship: "",
+    teamId: "",
+  });
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [form, setForm] = useState(emptyMatchForm);
@@ -129,19 +181,27 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [callupMatch, setCallupMatch] = useState<Match | null>(null);
-  const [statsMatch,  setStatsMatch]  = useState<Match | null>(null);
+  const [statsMatch, setStatsMatch] = useState<Match | null>(null);
 
   // Dialog gestione risultati esterni girone
-  const [gmGroup,   setGmGroup]   = useState<Group | null>(null);
+  const [gmGroup, setGmGroup] = useState<Group | null>(null);
   const [gmMatches, setGmMatches] = useState<GroupMatchItem[]>([]);
   const [gmLoading, setGmLoading] = useState(false);
-  const [gmForm,    setGmForm]    = useState(EMPTY_GM_FORM);
-  const [gmError,   setGmError]   = useState("");
-  const [editGm,    setEditGm]    = useState<GroupMatchItem | null>(null);
+  const [gmForm, setGmForm] = useState(EMPTY_GM_FORM);
+  const [gmError, setGmError] = useState("");
+  const [editGm, setEditGm] = useState<GroupMatchItem | null>(null);
 
   // Dialog di conferma generica
-  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
-    open: false, title: "", message: "", onConfirm: () => {},
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
   });
   function openConfirm(title: string, message: string, onConfirm: () => void) {
     setConfirmDialog({ open: true, title, message, onConfirm });
@@ -151,12 +211,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
   }
 
   // Paginazione per ciascun tab
-  const [matchPage,    setMatchPage]    = useState(0);
-  const [matchRpp,     setMatchRpp]     = useState(25);
-  const [oppPage,      setOppPage]      = useState(0);
-  const [oppRpp,       setOppRpp]       = useState(25);
-  const [groupPage,    setGroupPage]    = useState(0);
-  const [groupRpp,     setGroupRpp]     = useState(25);
+  const [matchPage, setMatchPage] = useState(0);
+  const [matchRpp, setMatchRpp] = useState(25);
+  const [oppPage, setOppPage] = useState(0);
+  const [oppRpp, setOppRpp] = useState(25);
+  const [groupPage, setGroupPage] = useState(0);
+  const [groupRpp, setGroupRpp] = useState(25);
 
   // Auto-apri dialog di modifica se ?edit=[id] è presente nell'URL
   useEffect(() => {
@@ -166,7 +226,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     if (match) openEdit(match);
     // Rimuove il param dall'URL senza ricaricare la pagina
     router.replace("/admin/partite", { scroll: false });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function openCreate() {
@@ -201,27 +261,45 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
   async function handleSaveMatch() {
     setError("");
-    if (!form.teamId) { setError("Seleziona una squadra"); return; }
-    if (!form.date) { setError("Data obbligatoria"); return; }
+    if (!form.teamId) {
+      setError("Seleziona una squadra");
+      return;
+    }
+    if (!form.date) {
+      setError("Data obbligatoria");
+      return;
+    }
 
     startTransition(async () => {
       let opponentId = form.opponentId;
 
       // Crea avversaria al volo se necessario
       if (useNewOpponent) {
-        if (!form.newOpponentName.trim()) { setError("Nome avversaria obbligatorio"); return; }
+        if (!form.newOpponentName.trim()) {
+          setError("Nome avversaria obbligatorio");
+          return;
+        }
         const res = await fetch("/api/opposing-teams", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: form.newOpponentName.trim(), city: form.newOpponentCity.trim() || null }),
+          body: JSON.stringify({
+            name: form.newOpponentName.trim(),
+            city: form.newOpponentCity.trim() || null,
+          }),
         });
-        if (!res.ok) { setError("Errore creazione avversaria"); return; }
-        const created = await res.json() as { id: string; name: string; city: string | null };
+        if (!res.ok) {
+          setError("Errore creazione avversaria");
+          return;
+        }
+        const created = (await res.json()) as { id: string; name: string; city: string | null };
         setOpponents((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
         opponentId = created.id;
       }
 
-      if (!opponentId) { setError("Seleziona o crea la squadra avversaria"); return; }
+      if (!opponentId) {
+        setError("Seleziona o crea la squadra avversaria");
+        return;
+      }
 
       const payload = {
         teamId: form.teamId,
@@ -246,13 +324,15 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({})) as { error?: string };
+        const errData = (await res.json().catch(() => ({}))) as { error?: string };
         setError(errData.error ?? "Errore nel salvataggio");
         return;
       }
-      const saved = await res.json() as Match;
+      const saved = (await res.json()) as Match;
       if (editMatch) {
-        setMatches((prev) => prev.map((m) => m.id === saved.id ? { ...saved, _count: m._count } : m));
+        setMatches((prev) =>
+          prev.map((m) => (m.id === saved.id ? { ...saved, _count: m._count } : m))
+        );
       } else {
         setMatches((prev) => [saved, ...prev]);
       }
@@ -265,11 +345,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     openConfirm(
       "Elimina partita",
       "Eliminare questa partita? Verranno eliminate anche le statistiche dei giocatori.",
-      () => startTransition(async () => {
-        const res = await fetch(`/api/matches/${id}`, { method: "DELETE" });
-        if (res.ok) setMatches((prev) => prev.filter((m) => m.id !== id));
-        else setError("Errore nell'eliminazione della partita");
-      }),
+      () =>
+        startTransition(async () => {
+          const res = await fetch(`/api/matches/${id}`, { method: "DELETE" });
+          if (res.ok) setMatches((prev) => prev.filter((m) => m.id !== id));
+          else setError("Errore nell'eliminazione della partita");
+        })
     );
   }
 
@@ -282,21 +363,19 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         body: JSON.stringify(opponentForm),
       });
       if (!res.ok) return;
-      const created = await res.json() as OpposingTeam;
+      const created = (await res.json()) as OpposingTeam;
       setOpponents((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
       setOpponentForm({ name: "", city: "" });
     });
   }
 
   function handleDeleteOpponent(id: string, name: string) {
-    openConfirm(
-      "Elimina squadra avversaria",
-      `Eliminare la squadra avversaria "${name}"?`,
-      () => startTransition(async () => {
+    openConfirm("Elimina squadra avversaria", `Eliminare la squadra avversaria "${name}"?`, () =>
+      startTransition(async () => {
         const res = await fetch(`/api/opposing-teams/${id}`, { method: "DELETE" });
         if (res.ok) setOpponents((prev) => prev.filter((o) => o.id !== id));
         else setError("Errore nell'eliminazione della squadra avversaria");
-      }),
+      })
     );
   }
 
@@ -309,7 +388,7 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
     setGmLoading(true);
     const res = await fetch(`/api/groups/${group.id}`);
     if (res.ok) {
-      const data = await res.json() as { groupMatches: GroupMatchItem[] };
+      const data = (await res.json()) as { groupMatches: GroupMatchItem[] };
       setGmMatches(data.groupMatches ?? []);
     } else {
       setGmError("Errore nel caricamento dei risultati del girone");
@@ -319,16 +398,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
   async function handleSaveGm() {
     if (!gmGroup || !gmForm.homeTeamId || !gmForm.awayTeamId) {
-      setGmError("Seleziona entrambe le squadre"); return;
+      setGmError("Seleziona entrambe le squadre");
+      return;
     }
     setGmError("");
     const payload = {
-      matchday:   gmForm.matchday   !== "" ? Number(gmForm.matchday)   : null,
-      date:       gmForm.date       !== "" ? gmForm.date               : null,
+      matchday: gmForm.matchday !== "" ? Number(gmForm.matchday) : null,
+      date: gmForm.date !== "" ? gmForm.date : null,
       homeTeamId: gmForm.homeTeamId,
       awayTeamId: gmForm.awayTeamId,
-      homeScore:  gmForm.homeScore  !== "" ? Number(gmForm.homeScore)  : null,
-      awayScore:  gmForm.awayScore  !== "" ? Number(gmForm.awayScore)  : null,
+      homeScore: gmForm.homeScore !== "" ? Number(gmForm.homeScore) : null,
+      awayScore: gmForm.awayScore !== "" ? Number(gmForm.awayScore) : null,
     };
 
     if (editGm) {
@@ -337,11 +417,15 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) { setGmError("Errore nel salvataggio"); return; }
-      const updated = await res.json() as GroupMatchItem;
+      if (!res.ok) {
+        setGmError("Errore nel salvataggio");
+        return;
+      }
+      const updated = (await res.json()) as GroupMatchItem;
       setGmMatches((prev) =>
-        prev.map((m) => m.id === updated.id ? updated : m)
-            .sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999))
+        prev
+          .map((m) => (m.id === updated.id ? updated : m))
+          .sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999))
       );
       setEditGm(null);
     } else {
@@ -350,9 +434,14 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) { setGmError("Errore nel salvataggio"); return; }
-      const created = await res.json() as GroupMatchItem;
-      setGmMatches((prev) => [...prev, created].sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)));
+      if (!res.ok) {
+        setGmError("Errore nel salvataggio");
+        return;
+      }
+      const created = (await res.json()) as GroupMatchItem;
+      setGmMatches((prev) =>
+        [...prev, created].sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999))
+      );
     }
     setGmForm(EMPTY_GM_FORM);
   }
@@ -366,21 +455,41 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 3,
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
         <Box>
-          <Typography variant="h4" fontWeight={800}>Gestione Partite</Typography>
+          <Typography variant="h4" fontWeight={800}>
+            Gestione Partite
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             Inserisci partite ufficiali e gestisci le squadre avversarie.
           </Typography>
         </Box>
         {tab === 0 && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} disabled={teams.length === 0}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+            disabled={teams.length === 0}
+          >
             Nuova partita
           </Button>
         )}
       </Box>
 
-      <Tabs value={tab} onChange={(_, v: number) => setTab(v)} sx={{ mb: 3, borderBottom: "1px solid rgba(0,0,0,0.1)" }}>
+      <Tabs
+        value={tab}
+        onChange={(_, v: number) => setTab(v)}
+        sx={{ mb: 3, borderBottom: "1px solid rgba(0,0,0,0.1)" }}
+      >
         <Tab label="Partite" />
         <Tab label="Squadre avversarie" />
         <Tab label="Gironi" />
@@ -392,11 +501,23 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
           {matches.length === 0 ? (
             <Paper elevation={0} variant="outlined" sx={{ p: 6, textAlign: "center" }}>
               <EmojiEventsIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1 }} />
-              <Typography variant="h6" color="text.secondary">Nessuna partita registrata</Typography>
-              {teams.length === 0
-                ? <Typography variant="body2" color="text.disabled">Crea prima una squadra nella sezione Squadre.</Typography>
-                : <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ mt: 2 }}>Aggiungi partita</Button>
-              }
+              <Typography variant="h6" color="text.secondary">
+                Nessuna partita registrata
+              </Typography>
+              {teams.length === 0 ? (
+                <Typography variant="body2" color="text.disabled">
+                  Crea prima una squadra nella sezione Squadre.
+                </Typography>
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={openCreate}
+                  sx={{ mt: 2 }}
+                >
+                  Aggiungi partita
+                </Button>
+              )}
             </Paper>
           ) : (
             <Paper elevation={0} variant="outlined" sx={{ overflowX: "auto" }}>
@@ -404,12 +525,25 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Squadra</TableCell>
+                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                      Squadra
+                    </TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>Tipo / Girone</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">Risultato</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">Punteggio</TableCell>
-                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }} align="center">Stats</TableCell>
+                    <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+                      Tipo / Girone
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Risultato
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Punteggio
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
+                      align="center"
+                    >
+                      Stats
+                    </TableCell>
                     <TableCell />
                   </TableRow>
                 </TableHead>
@@ -422,10 +556,11 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                             {format(new Date(m.date), "d MMM yyyy", { locale: it })}
                           </Typography>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                            {m.isHome
-                              ? <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-                              : <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-                            }
+                            {m.isHome ? (
+                              <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                            ) : (
+                              <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                            )}
                             <Typography variant="caption" color="text.disabled">
                               {m.isHome ? "Casa" : "Trasferta"}
                             </Typography>
@@ -436,22 +571,44 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                         <Chip
                           label={m.team.name}
                           size="small"
-                          sx={{ backgroundColor: m.team.color ?? "primary.main", color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}
+                          sx={{
+                            backgroundColor: m.team.color ?? "primary.main",
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: "0.7rem",
+                          }}
                         />
-                        <Typography variant="caption" color="text.disabled" sx={{ display: "block" }}>
+                        <Typography
+                          variant="caption"
+                          color="text.disabled"
+                          sx={{ display: "block" }}
+                        >
                           {m.team.season}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight={600}>{m.opponent.name}</Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {m.opponent.name}
+                        </Typography>
                         {m.opponent.city && (
-                          <Typography variant="caption" color="text.secondary">{m.opponent.city}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {m.opponent.city}
+                          </Typography>
                         )}
                       </TableCell>
                       <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                        <Chip label={MATCH_TYPE_LABELS[m.matchType]} size="small" variant="outlined" sx={{ fontSize: "0.68rem" }} />
+                        <Chip
+                          label={MATCH_TYPE_LABELS[m.matchType]}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontSize: "0.68rem" }}
+                        />
                         {m.group?.name && (
-                          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25, fontSize: "0.68rem" }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block", mt: 0.25, fontSize: "0.68rem" }}
+                          >
                             {m.group.name}
                           </Typography>
                         )}
@@ -461,37 +618,71 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                           <Chip
                             label={RESULT_LABELS[m.result]}
                             size="small"
-                            sx={{ backgroundColor: RESULT_COLORS[m.result], color: "#fff", fontWeight: 700, fontSize: "0.68rem" }}
+                            sx={{
+                              backgroundColor: RESULT_COLORS[m.result],
+                              color: "#fff",
+                              fontWeight: 700,
+                              fontSize: "0.68rem",
+                            }}
                           />
                         )}
                       </TableCell>
                       <TableCell align="center">
-                        {m.ourScore !== null && m.theirScore !== null
-                          ? <Typography variant="body2" fontWeight={700}>{m.ourScore} – {m.theirScore}</Typography>
-                          : <Typography variant="body2" color="text.disabled">—</Typography>
-                        }
+                        {m.ourScore !== null && m.theirScore !== null ? (
+                          <Typography variant="body2" fontWeight={700}>
+                            {m.ourScore} – {m.theirScore}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" color="text.disabled">
+                            —
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        <Typography variant="caption" color={m._count.playerStats > 0 ? "primary" : "text.disabled"}>
+                        <Typography
+                          variant="caption"
+                          color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+                        >
                           {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip title="Convocati">
-                          <IconButton size="small" color="primary" aria-label="Convocati partita" onClick={() => setCallupMatch(m)}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            aria-label="Convocati partita"
+                            onClick={() => setCallupMatch(m)}
+                          >
                             <GroupsIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Statistiche giocatori">
-                          <IconButton size="small" color="primary" aria-label="Statistiche giocatori" onClick={() => setStatsMatch(m)}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            aria-label="Statistiche giocatori"
+                            onClick={() => setStatsMatch(m)}
+                          >
                             <LeaderboardIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Modifica">
-                          <IconButton size="small" aria-label="Modifica partita" onClick={() => openEdit(m)}><EditIcon fontSize="small" /></IconButton>
+                          <IconButton
+                            size="small"
+                            aria-label="Modifica partita"
+                            onClick={() => openEdit(m)}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
                         </Tooltip>
                         <Tooltip title="Elimina">
-                          <IconButton size="small" color="error" aria-label="Elimina partita" onClick={() => handleDeleteMatch(m.id)}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            aria-label="Elimina partita"
+                            onClick={() => handleDeleteMatch(m.id)}
+                          >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -506,7 +697,10 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 page={matchPage}
                 onPageChange={(_, p) => setMatchPage(p)}
                 rowsPerPage={matchRpp}
-                onRowsPerPageChange={(e) => { setMatchRpp(parseInt(e.target.value)); setMatchPage(0); }}
+                onRowsPerPageChange={(e) => {
+                  setMatchRpp(parseInt(e.target.value));
+                  setMatchPage(0);
+                }}
                 rowsPerPageOptions={[10, 25, 50]}
                 labelRowsPerPage="Righe:"
                 labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
@@ -541,14 +735,21 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 sx={{ flex: 1, minWidth: 120 }}
                 placeholder="es. Vicenza"
               />
-              <Button variant="contained" startIcon={<AddIcon />} onClick={handleSaveOpponent} disabled={!opponentForm.name.trim() || isPending}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleSaveOpponent}
+                disabled={!opponentForm.name.trim() || isPending}
+              >
                 Aggiungi
               </Button>
             </Box>
           </Paper>
 
           {opponents.length === 0 ? (
-            <Typography variant="body2" color="text.disabled">Nessuna squadra avversaria registrata.</Typography>
+            <Typography variant="body2" color="text.disabled">
+              Nessuna squadra avversaria registrata.
+            </Typography>
           ) : (
             <Paper elevation={0} variant="outlined">
               <Table size="small" aria-label="Lista squadre avversarie">
@@ -562,11 +763,24 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 <TableBody>
                   {opponents.slice(oppPage * oppRpp, (oppPage + 1) * oppRpp).map((o) => (
                     <TableRow key={o.id} hover>
-                      <TableCell><Typography variant="body2" fontWeight={600}>{o.name}</Typography></TableCell>
-                      <TableCell><Typography variant="body2" color="text.secondary">{o.city ?? "—"}</Typography></TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600}>
+                          {o.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {o.city ?? "—"}
+                        </Typography>
+                      </TableCell>
                       <TableCell align="right">
                         <Tooltip title="Elimina">
-                          <IconButton size="small" color="error" aria-label="Elimina squadra avversaria" onClick={() => handleDeleteOpponent(o.id, o.name)}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            aria-label="Elimina squadra avversaria"
+                            onClick={() => handleDeleteOpponent(o.id, o.name)}
+                          >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -581,7 +795,10 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 page={oppPage}
                 onPageChange={(_, p) => setOppPage(p)}
                 rowsPerPage={oppRpp}
-                onRowsPerPageChange={(e) => { setOppRpp(parseInt(e.target.value)); setOppPage(0); }}
+                onRowsPerPageChange={(e) => {
+                  setOppRpp(parseInt(e.target.value));
+                  setOppPage(0);
+                }}
                 rowsPerPageOptions={[10, 25, 50]}
                 labelRowsPerPage="Righe:"
                 labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
@@ -629,7 +846,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 <Select
                   value={groupForm.teamId}
                   label="Squadra"
-                  onChange={(e) => setGroupForm((f) => ({ ...f, teamId: e.target.value as string }))}
+                  onChange={(e) =>
+                    setGroupForm((f) => ({ ...f, teamId: e.target.value as string }))
+                  }
                 >
                   {teams.map((t) => (
                     <MenuItem key={t.id} value={t.id}>
@@ -641,7 +860,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                disabled={!groupForm.name.trim() || !groupForm.season.trim() || !groupForm.teamId || isPending}
+                disabled={
+                  !groupForm.name.trim() ||
+                  !groupForm.season.trim() ||
+                  !groupForm.teamId ||
+                  isPending
+                }
                 onClick={() => {
                   startTransition(async () => {
                     const res = await fetch("/api/groups", {
@@ -650,8 +874,12 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       body: JSON.stringify(groupForm),
                     });
                     if (!res.ok) return;
-                    const created = await res.json() as Group;
-                    setGroups((prev) => [...prev, created].sort((a, b) => b.season.localeCompare(a.season) || a.name.localeCompare(b.name)));
+                    const created = (await res.json()) as Group;
+                    setGroups((prev) =>
+                      [...prev, created].sort(
+                        (a, b) => b.season.localeCompare(a.season) || a.name.localeCompare(b.name)
+                      )
+                    );
                     setGroupForm({ name: "", season: "", championship: "", teamId: "" });
                   });
                 }}
@@ -662,7 +890,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
           </Paper>
 
           {groups.length === 0 ? (
-            <Typography variant="body2" color="text.disabled">Nessun girone creato.</Typography>
+            <Typography variant="body2" color="text.disabled">
+              Nessun girone creato.
+            </Typography>
           ) : (
             <Paper elevation={0} variant="outlined">
               <Table size="small" aria-label="Lista gironi">
@@ -672,27 +902,56 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                     <TableCell sx={{ fontWeight: 700 }}>Stagione</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Campionato</TableCell>
                     <TableCell sx={{ fontWeight: 700 }}>Squadra</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }} align="center">Partite</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }} align="center">
+                      Partite
+                    </TableCell>
                     <TableCell />
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {groups.slice(groupPage * groupRpp, (groupPage + 1) * groupRpp).map((g) => (
                     <TableRow key={g.id} hover>
-                      <TableCell><Typography variant="body2" fontWeight={700}>{g.name}</Typography></TableCell>
-                      <TableCell><Typography variant="body2">{g.season}</Typography></TableCell>
-                      <TableCell><Typography variant="body2" color="text.secondary">{g.championship ?? "—"}</Typography></TableCell>
                       <TableCell>
-                        <Chip label={g.team.name} size="small" sx={{ bgcolor: g.team.color ?? "primary.main", color: "#fff", fontWeight: 700, fontSize: "0.68rem" }} />
+                        <Typography variant="body2" fontWeight={700}>
+                          {g.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{g.season}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {g.championship ?? "—"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={g.team.name}
+                          size="small"
+                          sx={{
+                            bgcolor: g.team.color ?? "primary.main",
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: "0.68rem",
+                          }}
+                        />
                       </TableCell>
                       <TableCell align="center">
-                        <Typography variant="caption" color={g._count.matches > 0 ? "primary" : "text.disabled"}>
+                        <Typography
+                          variant="caption"
+                          color={g._count.matches > 0 ? "primary" : "text.disabled"}
+                        >
                           {g._count.matches}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip title="Risultati esterni">
-                          <IconButton size="small" color="primary" aria-label="Risultati esterni girone" onClick={() => openGmDialog(g)}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            aria-label="Risultati esterni girone"
+                            onClick={() => openGmDialog(g)}
+                          >
                             <TableRowsIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -701,15 +960,24 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                             size="small"
                             color="error"
                             aria-label="Elimina girone"
-                            onClick={() => openConfirm(
-                              "Elimina girone",
-                              `Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`,
-                              () => startTransition(async () => {
-                                await fetch(`/api/groups/${g.id}`, { method: "DELETE" });
-                                setGroups((prev) => prev.filter((x) => x.id !== g.id));
-                                setMatches((prev) => prev.map((m) => m.groupId === g.id ? { ...m, groupId: null, group: null } : m));
-                              }),
-                            )}
+                            onClick={() =>
+                              openConfirm(
+                                "Elimina girone",
+                                `Eliminare il girone "${g.name}"? Le partite associate verranno scollegate.`,
+                                () =>
+                                  startTransition(async () => {
+                                    await fetch(`/api/groups/${g.id}`, { method: "DELETE" });
+                                    setGroups((prev) => prev.filter((x) => x.id !== g.id));
+                                    setMatches((prev) =>
+                                      prev.map((m) =>
+                                        m.groupId === g.id
+                                          ? { ...m, groupId: null, group: null }
+                                          : m
+                                      )
+                                    );
+                                  })
+                              )
+                            }
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
@@ -725,7 +993,10 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 page={groupPage}
                 onPageChange={(_, p) => setGroupPage(p)}
                 rowsPerPage={groupRpp}
-                onRowsPerPageChange={(e) => { setGroupRpp(parseInt(e.target.value)); setGroupPage(0); }}
+                onRowsPerPageChange={(e) => {
+                  setGroupRpp(parseInt(e.target.value));
+                  setGroupPage(0);
+                }}
                 rowsPerPageOptions={[10, 25, 50]}
                 labelRowsPerPage="Righe:"
                 labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
@@ -754,27 +1025,52 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
           matchId={statsMatch.id}
           matchLabel={`${statsMatch.team.name} vs ${statsMatch.opponent.name} (${format(new Date(statsMatch.date), "d MMM yyyy", { locale: it })})`}
           onStatsSaved={(count) => {
-            setMatches((prev) => prev.map((m) =>
-              m.id === statsMatch.id ? { ...m, _count: { playerStats: count } } : m
-            ));
+            setMatches((prev) =>
+              prev.map((m) =>
+                m.id === statsMatch.id ? { ...m, _count: { playerStats: count } } : m
+              )
+            );
           }}
         />
       )}
 
       {/* Dialog risultati esterni girone */}
-      <Dialog open={!!gmGroup} onClose={() => setGmGroup(null)} maxWidth="md" fullWidth PaperProps={{ sx: { maxHeight: "85vh" } }}>
+      <Dialog
+        open={!!gmGroup}
+        onClose={() => setGmGroup(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { maxHeight: "85vh" } }}
+      >
         {gmGroup && (
           <>
             <DialogTitle fontWeight={700}>
               Risultati esterni — {gmGroup.name}
-              {gmGroup.championship && <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>({gmGroup.championship})</Typography>}
+              {gmGroup.championship && (
+                <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                  ({gmGroup.championship})
+                </Typography>
+              )}
             </DialogTitle>
             <DialogContent>
-              {gmError && <Alert severity="error" sx={{ mb: 2 }}>{gmError}</Alert>}
+              {gmError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {gmError}
+                </Alert>
+              )}
 
               {/* Form aggiunta / modifica */}
-              <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2.5, borderColor: editGm ? "primary.main" : "divider" }}>
-                <Typography variant="caption" fontWeight={700} color={editGm ? "primary" : "text.secondary"} sx={{ display: "block", mb: 1.5 }}>
+              <Paper
+                elevation={0}
+                variant="outlined"
+                sx={{ p: 2, mb: 2.5, borderColor: editGm ? "primary.main" : "divider" }}
+              >
+                <Typography
+                  variant="caption"
+                  fontWeight={700}
+                  color={editGm ? "primary" : "text.secondary"}
+                  sx={{ display: "block", mb: 1.5 }}
+                >
                   {editGm ? "Modifica risultato" : "Aggiungi risultato"}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
@@ -798,8 +1094,18 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   />
                   <FormControl size="small" sx={{ flex: 2, minWidth: 150 }}>
                     <InputLabel>Casa</InputLabel>
-                    <Select value={gmForm.homeTeamId} label="Casa" onChange={(e) => setGmForm((f) => ({ ...f, homeTeamId: e.target.value as string }))}>
-                      {opponents.map((o) => <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>)}
+                    <Select
+                      value={gmForm.homeTeamId}
+                      label="Casa"
+                      onChange={(e) =>
+                        setGmForm((f) => ({ ...f, homeTeamId: e.target.value as string }))
+                      }
+                    >
+                      {opponents.map((o) => (
+                        <MenuItem key={o.id} value={o.id}>
+                          {o.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                   <TextField
@@ -822,15 +1128,37 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   />
                   <FormControl size="small" sx={{ flex: 2, minWidth: 150 }}>
                     <InputLabel>Ospiti</InputLabel>
-                    <Select value={gmForm.awayTeamId} label="Ospiti" onChange={(e) => setGmForm((f) => ({ ...f, awayTeamId: e.target.value as string }))}>
-                      {opponents.map((o) => <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>)}
+                    <Select
+                      value={gmForm.awayTeamId}
+                      label="Ospiti"
+                      onChange={(e) =>
+                        setGmForm((f) => ({ ...f, awayTeamId: e.target.value as string }))
+                      }
+                    >
+                      {opponents.map((o) => (
+                        <MenuItem key={o.id} value={o.id}>
+                          {o.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
-                  <Button variant="contained" startIcon={editGm ? <EditIcon /> : <AddIcon />} onClick={handleSaveGm} disabled={!gmForm.homeTeamId || !gmForm.awayTeamId}>
+                  <Button
+                    variant="contained"
+                    startIcon={editGm ? <EditIcon /> : <AddIcon />}
+                    onClick={handleSaveGm}
+                    disabled={!gmForm.homeTeamId || !gmForm.awayTeamId}
+                  >
                     {editGm ? "Salva" : "Aggiungi"}
                   </Button>
                   {editGm && (
-                    <Button variant="outlined" onClick={() => { setEditGm(null); setGmForm(EMPTY_GM_FORM); setGmError(""); }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        setEditGm(null);
+                        setGmForm(EMPTY_GM_FORM);
+                        setGmError("");
+                      }}
+                    >
                       Annulla
                     </Button>
                   )}
@@ -845,7 +1173,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700 }}>Ris.</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>
+                        Ris.
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
                       <TableCell />
                     </TableRow>
@@ -853,18 +1183,34 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   <TableBody>
                     {[0, 1, 2].map((i) => (
                       <TableRow key={i}>
-                        <TableCell><Skeleton width={20} /></TableCell>
-                        <TableCell><Skeleton width={60} /></TableCell>
-                        <TableCell><Skeleton width={90} /></TableCell>
-                        <TableCell align="center"><Skeleton width={40} sx={{ mx: "auto" }} /></TableCell>
-                        <TableCell><Skeleton width={90} /></TableCell>
-                        <TableCell><Skeleton width={50} /></TableCell>
+                        <TableCell>
+                          <Skeleton width={20} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton width={60} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton width={90} />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Skeleton width={40} sx={{ mx: "auto" }} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton width={90} />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton width={50} />
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               ) : gmMatches.length === 0 ? (
-                <Typography variant="body2" color="text.disabled" sx={{ textAlign: "center", py: 3 }}>
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  sx={{ textAlign: "center", py: 3 }}
+                >
                   Nessun risultato esterno inserito.
                 </Typography>
               ) : (
@@ -874,7 +1220,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                       <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700 }}>Ris.</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700 }}>
+                        Ris.
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
                       <TableCell />
                     </TableRow>
@@ -882,35 +1230,62 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   <TableBody>
                     {gmMatches.map((m) => (
                       <TableRow key={m.id} hover>
-                        <TableCell><Typography variant="body2" color="text.secondary">{m.matchday ?? "—"}</Typography></TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {m.matchday ?? "—"}
+                          </Typography>
+                        </TableCell>
                         <TableCell>
                           <Typography variant="body2">
                             {m.date ? format(new Date(m.date), "d MMM yy", { locale: it }) : "—"}
                           </Typography>
                         </TableCell>
-                        <TableCell><Typography variant="body2" fontWeight={600}>{m.homeTeam.name}</Typography></TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2" fontWeight={700}>
-                            {m.homeScore !== null && m.awayScore !== null ? `${m.homeScore} – ${m.awayScore}` : "— – —"}
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>
+                            {m.homeTeam.name}
                           </Typography>
                         </TableCell>
-                        <TableCell><Typography variant="body2" fontWeight={600}>{m.awayTeam.name}</Typography></TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2" fontWeight={700}>
+                            {m.homeScore !== null && m.awayScore !== null
+                              ? `${m.homeScore} – ${m.awayScore}`
+                              : "— – —"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>
+                            {m.awayTeam.name}
+                          </Typography>
+                        </TableCell>
                         <TableCell align="right">
-                          <IconButton size="small" aria-label="Modifica partita girone" onClick={() => {
-                            setGmForm({
-                              matchday:   m.matchday !== null ? String(m.matchday) : "",
-                              date:       m.date ? (typeof m.date === "string" ? m.date.slice(0, 10) : m.date) : "",
-                              homeTeamId: m.homeTeamId,
-                              awayTeamId: m.awayTeamId,
-                              homeScore:  m.homeScore !== null ? String(m.homeScore) : "",
-                              awayScore:  m.awayScore !== null ? String(m.awayScore) : "",
-                            });
-                            setEditGm(m);
-                            setGmError("");
-                          }}>
+                          <IconButton
+                            size="small"
+                            aria-label="Modifica partita girone"
+                            onClick={() => {
+                              setGmForm({
+                                matchday: m.matchday !== null ? String(m.matchday) : "",
+                                date: m.date
+                                  ? typeof m.date === "string"
+                                    ? m.date.slice(0, 10)
+                                    : m.date
+                                  : "",
+                                homeTeamId: m.homeTeamId,
+                                awayTeamId: m.awayTeamId,
+                                homeScore: m.homeScore !== null ? String(m.homeScore) : "",
+                                awayScore: m.awayScore !== null ? String(m.awayScore) : "",
+                              });
+                              setEditGm(m);
+                              setGmError("");
+                            }}
+                          >
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" color="error" aria-label="Elimina partita girone" onClick={() => handleDeleteGm(m.id)}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            aria-label="Elimina partita girone"
+                            onClick={() => handleDeleteGm(m.id)}
+                          >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </TableCell>
@@ -929,19 +1304,33 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
       {/* Dialog partita */}
       <Dialog open={matchDialog} onClose={() => setMatchDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={700}>{editMatch ? "Modifica partita" : "Nuova partita"}</DialogTitle>
+        <DialogTitle fontWeight={700}>
+          {editMatch ? "Modifica partita" : "Nuova partita"}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
 
             <FormControl fullWidth required>
               <InputLabel>Nostra squadra</InputLabel>
-              <Select value={form.teamId} label="Nostra squadra" onChange={(e) => setForm((f) => ({ ...f, teamId: e.target.value as string }))}>
+              <Select
+                value={form.teamId}
+                label="Nostra squadra"
+                onChange={(e) => setForm((f) => ({ ...f, teamId: e.target.value as string }))}
+              >
                 {displayTeams.map((t) => (
                   <MenuItem key={t.id} value={t.id}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: t.color ?? "#E65100" }} />
-                      {t.name}{teamsForForm.length === 0 && ` — ${t.season}`}
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          backgroundColor: t.color ?? "#E65100",
+                        }}
+                      />
+                      {t.name}
+                      {teamsForForm.length === 0 && ` — ${t.season}`}
                     </Box>
                   </MenuItem>
                 ))}
@@ -950,7 +1339,13 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
             <Box>
               <FormControlLabel
-                control={<Switch checked={useNewOpponent} onChange={(e) => setUseNewOpponent(e.target.checked)} size="small" />}
+                control={
+                  <Switch
+                    checked={useNewOpponent}
+                    onChange={(e) => setUseNewOpponent(e.target.checked)}
+                    size="small"
+                  />
+                }
                 label={<Typography variant="body2">Crea nuova avversaria</Typography>}
               />
               {useNewOpponent ? (
@@ -973,10 +1368,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
               ) : (
                 <FormControl fullWidth sx={{ mt: 1 }}>
                   <InputLabel>Squadra avversaria</InputLabel>
-                  <Select value={form.opponentId} label="Squadra avversaria" onChange={(e) => setForm((f) => ({ ...f, opponentId: e.target.value as string }))}>
+                  <Select
+                    value={form.opponentId}
+                    label="Squadra avversaria"
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, opponentId: e.target.value as string }))
+                    }
+                  >
                     {opponents.map((o) => (
                       <MenuItem key={o.id} value={o.id}>
-                        {o.name}{o.city ? ` (${o.city})` : ""}
+                        {o.name}
+                        {o.city ? ` (${o.city})` : ""}
                       </MenuItem>
                     ))}
                   </Select>
@@ -995,7 +1397,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                 setForm((f) => ({
                   ...f,
                   date: newDate,
-                  teamId: validTeams.some((t) => t.id === f.teamId) ? f.teamId : (validTeams[0]?.id ?? f.teamId),
+                  teamId: validTeams.some((t) => t.id === f.teamId)
+                    ? f.teamId
+                    : (validTeams[0]?.id ?? f.teamId),
                 }));
               }}
               fullWidth
@@ -1005,9 +1409,17 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
             <Box sx={{ display: "flex", gap: 2 }}>
               <FormControl sx={{ flex: 1 }}>
                 <InputLabel>Tipo</InputLabel>
-                <Select value={form.matchType} label="Tipo" onChange={(e) => setForm((f) => ({ ...f, matchType: e.target.value as MatchType }))}>
+                <Select
+                  value={form.matchType}
+                  label="Tipo"
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, matchType: e.target.value as MatchType }))
+                  }
+                >
                   {(Object.keys(MATCH_TYPE_LABELS) as MatchType[]).map((k) => (
-                    <MenuItem key={k} value={k}>{MATCH_TYPE_LABELS[k]}</MenuItem>
+                    <MenuItem key={k} value={k}>
+                      {MATCH_TYPE_LABELS[k]}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -1037,7 +1449,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
             <Divider />
 
-            <Typography variant="subtitle2" fontWeight={700}>Risultato (opzionale)</Typography>
+            <Typography variant="subtitle2" fontWeight={700}>
+              Risultato (opzionale)
+            </Typography>
 
             <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
@@ -1049,9 +1463,10 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   setForm((f) => ({
                     ...f,
                     ourScore,
-                    ...(ourScore !== "" && f.theirScore !== "" && {
-                      result: deriveResultFromScores(ourScore, f.theirScore),
-                    }),
+                    ...(ourScore !== "" &&
+                      f.theirScore !== "" && {
+                        result: deriveResultFromScores(ourScore, f.theirScore),
+                      }),
                   }));
                 }}
                 sx={{ flex: 1 }}
@@ -1066,9 +1481,10 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                   setForm((f) => ({
                     ...f,
                     theirScore,
-                    ...(f.ourScore !== "" && theirScore !== "" && {
-                      result: deriveResultFromScores(f.ourScore, theirScore),
-                    }),
+                    ...(f.ourScore !== "" &&
+                      theirScore !== "" && {
+                        result: deriveResultFromScores(f.ourScore, theirScore),
+                      }),
                   }));
                 }}
                 sx={{ flex: 1 }}
@@ -1078,10 +1494,20 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
 
             <FormControl fullWidth>
               <InputLabel>Esito</InputLabel>
-              <Select value={form.result} label="Esito" onChange={(e) => setForm((f) => ({ ...f, result: e.target.value as MatchResult | "" }))}>
-                <MenuItem value=""><em>Non ancora giocata</em></MenuItem>
+              <Select
+                value={form.result}
+                label="Esito"
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, result: e.target.value as MatchResult | "" }))
+                }
+              >
+                <MenuItem value="">
+                  <em>Non ancora giocata</em>
+                </MenuItem>
                 {(Object.keys(RESULT_LABELS) as MatchResult[]).map((k) => (
-                  <MenuItem key={k} value={k}>{RESULT_LABELS[k]}</MenuItem>
+                  <MenuItem key={k} value={k}>
+                    {RESULT_LABELS[k]}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -1097,7 +1523,9 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
                     displayEmpty
                     onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value as string }))}
                   >
-                    <MenuItem value=""><em>Nessun girone</em></MenuItem>
+                    <MenuItem value="">
+                      <em>Nessun girone</em>
+                    </MenuItem>
                     {groups
                       .filter((g) => !form.teamId || g.teamId === form.teamId)
                       .map((g) => (
@@ -1151,14 +1579,19 @@ export default function AdminPartiteClient({ teams, opposingTeams: initialOppone
       >
         <DialogTitle id="confirm-dialog-title">{confirmDialog.title}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="confirm-dialog-description">{confirmDialog.message}</DialogContentText>
+          <DialogContentText id="confirm-dialog-description">
+            {confirmDialog.message}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeConfirm}>Annulla</Button>
           <Button
             color="error"
             variant="contained"
-            onClick={() => { closeConfirm(); confirmDialog.onConfirm(); }}
+            onClick={() => {
+              closeConfirm();
+              confirmDialog.onConfirm();
+            }}
           >
             Elimina
           </Button>

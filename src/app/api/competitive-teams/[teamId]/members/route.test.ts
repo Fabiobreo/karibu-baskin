@@ -98,7 +98,12 @@ describe("POST /api/competitive-teams/[teamId]/members", () => {
     expect(res.status).toBe(201);
     expect(p.teamMembership.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ teamId: "t-1", userId: "u-1", childId: null, isCaptain: false }),
+        data: expect.objectContaining({
+          teamId: "t-1",
+          userId: "u-1",
+          childId: null,
+          isCaptain: false,
+        }),
       })
     );
   });
@@ -117,9 +122,7 @@ describe("POST /api/competitive-teams/[teamId]/members", () => {
 
   it("sends app notification to the added user", async () => {
     await POST(makeReq({ userId: "u-1" }), { params });
-    expect(mockNotify).toHaveBeenCalledWith(
-      expect.objectContaining({ targetUserId: "u-1" })
-    );
+    expect(mockNotify).toHaveBeenCalledWith(expect.objectContaining({ targetUserId: "u-1" }));
   });
 
   it("does not send notification when childId (no user account)", async () => {

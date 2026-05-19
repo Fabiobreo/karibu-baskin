@@ -11,7 +11,9 @@ export async function GET(_req: Request, { params }: Params) {
   const stats = await prisma.playerMatchStats.findMany({
     where: { matchId },
     include: {
-      user: { select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true } },
+      user: {
+        select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true },
+      },
       child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
     },
   });

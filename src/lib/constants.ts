@@ -8,8 +8,15 @@ export const ROLE_LABELS_IT: Record<AppRole, string> = {
   ADMIN: "Admin",
 };
 
-export const ROLE_CHIP_COLORS: Record<AppRole, "default" | "warning" | "info" | "success" | "error"> = {
-  GUEST: "default", ATHLETE: "info", PARENT: "success", COACH: "warning", ADMIN: "error",
+export const ROLE_CHIP_COLORS: Record<
+  AppRole,
+  "default" | "warning" | "info" | "success" | "error"
+> = {
+  GUEST: "default",
+  ATHLETE: "info",
+  PARENT: "success",
+  COACH: "warning",
+  ADMIN: "error",
 };
 
 export const GENDER_LABELS: Record<Gender, string> = { MALE: "Maschio", FEMALE: "Femmina" };
@@ -36,8 +43,8 @@ export type Role = (typeof ROLES)[number];
 
 export const TEAM_META = [
   { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri",      color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi",   color: "#757575" },
+  { key: "teamB" as const, name: "Neri", color: "#1A1A1A" },
+  { key: "teamC" as const, name: "Bianchi", color: "#757575" },
 ] as const;
 
 // Varianti del ruolo sportivo (es. 1S, 2T, 2P, 2R)

@@ -48,13 +48,9 @@ export default function OfflineBanner() {
           transition: "background-color 0.3s",
         }}
       >
-        {offline
-          ? <WifiOffIcon sx={{ fontSize: 16 }} />
-          : <WifiIcon sx={{ fontSize: 16 }} />}
+        {offline ? <WifiOffIcon sx={{ fontSize: 16 }} /> : <WifiIcon sx={{ fontSize: 16 }} />}
         <Typography variant="caption" fontWeight={600}>
-          {offline
-            ? "Sei offline — stai visualizzando dati in cache"
-            : "Connessione ripristinata"}
+          {offline ? "Sei offline — stai visualizzando dati in cache" : "Connessione ripristinata"}
         </Typography>
       </Box>
     </Collapse>

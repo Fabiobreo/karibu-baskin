@@ -32,9 +32,7 @@ export default async function AllenamentiPage() {
 
   const inCorso = sessions.filter((s) => {
     const start = new Date(s.date);
-    const end = s.endTime
-      ? new Date(s.endTime)
-      : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const end = s.endTime ? new Date(s.endTime) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
     return now >= start && now <= end;
   });
 

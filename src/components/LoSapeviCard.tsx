@@ -72,7 +72,10 @@ export default function LoSapeviCard() {
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 0.5, lineHeight: 1.3 }}>
               {item.titolo}
             </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.7, maxWidth: 680 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.7, maxWidth: 680 }}
+            >
               {item.testo}
             </Typography>
           </Box>

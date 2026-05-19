@@ -30,7 +30,7 @@ const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
 
 const makeParams = (groupId: string) =>
-  ({ params: Promise.resolve({ groupId }) } as { params: Promise<{ groupId: string }> });
+  ({ params: Promise.resolve({ groupId }) }) as { params: Promise<{ groupId: string }> };
 
 const baseGroup = {
   id: "g-1",
@@ -165,7 +165,10 @@ describe("PUT /api/groups/[groupId]", () => {
 
   it("restituisce 404 se il girone non esiste (P2025)", async () => {
     mockIsCoach.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.group.update.mockRejectedValue(p2025);
     const req = new NextRequest("http://localhost/api/groups/missing", {
       method: "PUT",
@@ -213,7 +216,10 @@ describe("DELETE /api/groups/[groupId]", () => {
 
   it("restituisce 404 se il girone non esiste (P2025)", async () => {
     mockIsCoach.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.group.delete.mockRejectedValue(p2025);
     const req = new NextRequest("http://localhost/api/groups/missing", { method: "DELETE" });
     const res = await DELETE(req, makeParams("missing"));

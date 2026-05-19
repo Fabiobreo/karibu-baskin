@@ -13,7 +13,7 @@ export async function PATCH(req: Request, { params }: Params) {
   }
 
   const { membershipId } = await params;
-  const body = await req.json() as { isCaptain?: boolean };
+  const body = (await req.json()) as { isCaptain?: boolean };
 
   const membership = await prisma.teamMembership.update({
     where: { id: membershipId },
@@ -36,7 +36,13 @@ export async function DELETE(_req: Request, { params }: Params) {
   await prisma.teamMembership.delete({ where: { id: membershipId } });
 
   if (session?.user?.id && membership) {
-    logAudit({ actorId: session.user.id, action: "REMOVE_MEMBER", targetType: "TeamMembership", targetId: membershipId, before: { teamId: membership.teamId, userId: membership.userId, childId: membership.childId } }).catch((err) => console.error("[audit] remove member", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "REMOVE_MEMBER",
+      targetType: "TeamMembership",
+      targetId: membershipId,
+      before: { teamId: membership.teamId, userId: membership.userId, childId: membership.childId },
+    }).catch((err) => console.error("[audit] remove member", err));
   }
   if (membership?.userId) {
     createAppNotification({

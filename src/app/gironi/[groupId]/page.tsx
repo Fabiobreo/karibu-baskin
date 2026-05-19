@@ -1,8 +1,17 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import {
-  Container, Box, Typography, Paper, Chip, Divider,
-  Table, TableHead, TableBody, TableRow, TableCell,
+  Container,
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Divider,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import GironeOurMatchRow from "@/components/GironeOurMatchRow";
@@ -45,13 +54,11 @@ type GroupMatchRow = {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 // Un "evento" di calendario per la vista per giornata
-type MatchEvent =
-  | { kind: "ours"; data: OurMatch }
-  | { kind: "external"; data: GroupMatchRow };
+type MatchEvent = { kind: "ours"; data: OurMatch } | { kind: "external"; data: GroupMatchRow };
 
 function groupByMatchday(
   ourMatches: OurMatch[],
-  groupMatches: GroupMatchRow[],
+  groupMatches: GroupMatchRow[]
 ): Map<number | null, MatchEvent[]> {
   const map = new Map<number | null, MatchEvent[]>();
 
@@ -60,8 +67,8 @@ function groupByMatchday(
     map.get(day)!.push(ev);
   }
 
-  for (const m of ourMatches)     push(m.matchday,  { kind: "ours",     data: m });
-  for (const gm of groupMatches)  push(gm.matchday, { kind: "external", data: gm });
+  for (const m of ourMatches) push(m.matchday, { kind: "ours", data: m });
+  for (const gm of groupMatches) push(gm.matchday, { kind: "external", data: gm });
 
   return map;
 }
@@ -70,7 +77,10 @@ function groupByMatchday(
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { groupId } = await params;
-  const g = await prisma.group.findUnique({ where: { id: groupId }, select: { name: true, season: true } });
+  const g = await prisma.group.findUnique({
+    where: { id: groupId },
+    select: { name: true, season: true },
+  });
   if (!g) return {};
   return { title: `${g.name} ${g.season} | Karibu Baskin` };
 }
@@ -87,17 +97,27 @@ export default async function GironePage({ params }: Params) {
       matches: {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         select: {
-          id: true, slug: true, date: true, matchday: true, isHome: true,
-          ourScore: true, theirScore: true, result: true,
+          id: true,
+          slug: true,
+          date: true,
+          matchday: true,
+          isHome: true,
+          ourScore: true,
+          theirScore: true,
+          result: true,
           opponent: { select: { id: true, name: true, slug: true } },
         },
       },
       groupMatches: {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         select: {
-          id: true, date: true, matchday: true, homeScore: true, awayScore: true,
+          id: true,
+          date: true,
+          matchday: true,
+          homeScore: true,
+          awayScore: true,
           homeTeam: { select: { id: true, name: true } },
-          awayTeam:  { select: { id: true, name: true } },
+          awayTeam: { select: { id: true, name: true } },
         },
       },
     },
@@ -109,29 +129,51 @@ export default async function GironePage({ params }: Params) {
   const byMatchday = groupByMatchday(group.matches, group.groupMatches);
   const matchdays = Array.from(byMatchday.keys()).sort((a, b) => (a ?? 999) - (b ?? 999));
 
-  const RESULT_COLORS: Record<string, string> = { WIN: "#2E7D32", LOSS: "#C62828", DRAW: "#E65100" };
+  const RESULT_COLORS: Record<string, string> = {
+    WIN: "#2E7D32",
+    LOSS: "#C62828",
+    DRAW: "#E65100",
+  };
   const RESULT_LABELS: Record<string, string> = { WIN: "V", LOSS: "S", DRAW: "P" };
 
   return (
     <>
       <SiteHeader />
       <Container maxWidth="md" sx={{ py: 4 }}>
-
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1, flexWrap: "wrap" }}>
-            <Chip label={group.team.name} size="small" sx={{ bgcolor: group.team.color ?? "primary.main", color: "#fff", fontWeight: 700 }} />
+            <Chip
+              label={group.team.name}
+              size="small"
+              sx={{ bgcolor: group.team.color ?? "primary.main", color: "#fff", fontWeight: 700 }}
+            />
             <Chip label={group.season} size="small" variant="outlined" />
-            {group.championship && <Chip label={group.championship} size="small" variant="outlined" />}
+            {group.championship && (
+              <Chip label={group.championship} size="small" variant="outlined" />
+            )}
           </Box>
-          <Typography variant="h4" fontWeight={800}>{group.name}</Typography>
+          <Typography variant="h4" fontWeight={800}>
+            {group.name}
+          </Typography>
         </Box>
 
         {/* Classifica */}
         <Paper elevation={0} variant="outlined" sx={{ mb: 4, overflow: "hidden", borderRadius: 2 }}>
-          <Box sx={{ px: 2.5, py: 1.5, display: "flex", alignItems: "center", gap: 1, bgcolor: "rgba(0,0,0,0.02)" }}>
+          <Box
+            sx={{
+              px: 2.5,
+              py: 1.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              bgcolor: "rgba(0,0,0,0.02)",
+            }}
+          >
             <EmojiEventsIcon sx={{ fontSize: 18, color: "primary.main" }} />
-            <Typography variant="subtitle2" fontWeight={700}>Classifica</Typography>
+            <Typography variant="subtitle2" fontWeight={700}>
+              Classifica
+            </Typography>
           </Box>
           <Divider />
           {standings.length === 0 ? (
@@ -141,37 +183,80 @@ export default async function GironePage({ params }: Params) {
           ) : (
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ "& th": { fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "text.secondary" } }}>
+                <TableRow
+                  sx={{
+                    "& th": {
+                      fontWeight: 700,
+                      fontSize: "0.72rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "text.secondary",
+                    },
+                  }}
+                >
                   <TableCell sx={{ pl: 2, width: 32 }}>#</TableCell>
                   <TableCell>Squadra</TableCell>
                   <TableCell align="center">G</TableCell>
                   <TableCell align="center">V</TableCell>
                   <TableCell align="center">P</TableCell>
                   <TableCell align="center">S</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>GF</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>GS</TableCell>
-                  <TableCell align="center" sx={{ color: "primary.main !important" }}>Pt</TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    GF
+                  </TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    GS
+                  </TableCell>
+                  <TableCell align="center" sx={{ color: "primary.main !important" }}>
+                    Pt
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {standings.map((s, i) => (
                   <TableRow
                     key={s.id}
-                    sx={{ bgcolor: s.isOurs ? "primary.main" : undefined, "& td": s.isOurs ? { color: "#fff", fontWeight: 700 } : {} }}
+                    sx={{
+                      bgcolor: s.isOurs ? "primary.main" : undefined,
+                      "& td": s.isOurs ? { color: "#fff", fontWeight: 700 } : {},
+                    }}
                   >
                     <TableCell sx={{ pl: 2 }}>
-                      <Typography variant="body2" color={s.isOurs ? "inherit" : "text.disabled"} fontWeight={600}>{i + 1}</Typography>
+                      <Typography
+                        variant="body2"
+                        color={s.isOurs ? "inherit" : "text.disabled"}
+                        fontWeight={600}
+                      >
+                        {i + 1}
+                      </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={s.isOurs ? 800 : 600}>{s.name}</Typography>
+                      <Typography variant="body2" fontWeight={s.isOurs ? 800 : 600}>
+                        {s.name}
+                      </Typography>
                     </TableCell>
-                    <TableCell align="center"><Typography variant="body2">{s.played}</Typography></TableCell>
-                    <TableCell align="center"><Typography variant="body2">{s.won}</Typography></TableCell>
-                    <TableCell align="center"><Typography variant="body2">{s.drawn}</Typography></TableCell>
-                    <TableCell align="center"><Typography variant="body2">{s.lost}</Typography></TableCell>
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}><Typography variant="body2">{s.goalsFor}</Typography></TableCell>
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}><Typography variant="body2">{s.goalsAgainst}</Typography></TableCell>
-                    <TableCell align="center"><Typography variant="body2" fontWeight={800}>{s.points}</Typography></TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">{s.played}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">{s.won}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">{s.drawn}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2">{s.lost}</Typography>
+                    </TableCell>
+                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                      <Typography variant="body2">{s.goalsFor}</Typography>
+                    </TableCell>
+                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                      <Typography variant="body2">{s.goalsAgainst}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2" fontWeight={800}>
+                        {s.points}
+                      </Typography>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -181,9 +266,20 @@ export default async function GironePage({ params }: Params) {
 
         {/* Calendario per giornata */}
         <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", borderRadius: 2 }}>
-          <Box sx={{ px: 2.5, py: 1.5, display: "flex", alignItems: "center", gap: 1, bgcolor: "rgba(0,0,0,0.02)" }}>
+          <Box
+            sx={{
+              px: 2.5,
+              py: 1.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              bgcolor: "rgba(0,0,0,0.02)",
+            }}
+          >
             <SportsSoccerIcon sx={{ fontSize: 18, color: "primary.main" }} />
-            <Typography variant="subtitle2" fontWeight={700}>Calendario</Typography>
+            <Typography variant="subtitle2" fontWeight={700}>
+              Calendario
+            </Typography>
           </Box>
           <Divider />
 
@@ -198,7 +294,12 @@ export default async function GironePage({ params }: Params) {
                 <Box key={day ?? "noday"}>
                   {idx > 0 && <Divider />}
                   <Box sx={{ px: 2.5, py: 1.25, bgcolor: "rgba(0,0,0,0.015)" }}>
-                    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.secondary"
+                      sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
+                    >
                       {day != null ? `Giornata ${day}` : "Senza giornata"}
                     </Typography>
                   </Box>
@@ -214,18 +315,37 @@ export default async function GironePage({ params }: Params) {
                           const href = `/partite/${m.slug ?? m.id}`;
                           return (
                             <GironeOurMatchRow key={m.id} href={href}>
-                              <TableCell sx={{ width: 90, color: "text.secondary", fontSize: "0.75rem" }}>
+                              <TableCell
+                                sx={{ width: 90, color: "text.secondary", fontSize: "0.75rem" }}
+                              >
                                 {format(new Date(m.date), "d MMM", { locale: it })}
                               </TableCell>
                               <TableCell sx={{ fontWeight: 700 }}>{home}</TableCell>
-                              <TableCell align="center" sx={{ width: 70, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
-                                {homeScore !== null && awayScore !== null ? `${homeScore} – ${awayScore}` : "– – –"}
+                              <TableCell
+                                align="center"
+                                sx={{
+                                  width: 70,
+                                  fontWeight: 800,
+                                  fontVariantNumeric: "tabular-nums",
+                                }}
+                              >
+                                {homeScore !== null && awayScore !== null
+                                  ? `${homeScore} – ${awayScore}`
+                                  : "– – –"}
                               </TableCell>
                               <TableCell sx={{ fontWeight: 700 }}>{away}</TableCell>
                               <TableCell sx={{ width: 40 }}>
                                 {m.result && (
-                                  <Chip label={RESULT_LABELS[m.result]} size="small"
-                                    sx={{ bgcolor: RESULT_COLORS[m.result], color: "#fff", fontWeight: 700, height: 20, fontSize: "0.68rem" }}
+                                  <Chip
+                                    label={RESULT_LABELS[m.result]}
+                                    size="small"
+                                    sx={{
+                                      bgcolor: RESULT_COLORS[m.result],
+                                      color: "#fff",
+                                      fontWeight: 700,
+                                      height: 20,
+                                      fontSize: "0.68rem",
+                                    }}
                                   />
                                 )}
                               </TableCell>
@@ -235,12 +355,23 @@ export default async function GironePage({ params }: Params) {
                           const gm = ev.data;
                           return (
                             <TableRow key={gm.id}>
-                              <TableCell sx={{ width: 90, color: "text.secondary", fontSize: "0.75rem" }}>
+                              <TableCell
+                                sx={{ width: 90, color: "text.secondary", fontSize: "0.75rem" }}
+                              >
                                 {gm.date ? format(new Date(gm.date), "d MMM", { locale: it }) : "—"}
                               </TableCell>
                               <TableCell>{gm.homeTeam.name}</TableCell>
-                              <TableCell align="center" sx={{ width: 70, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
-                                {gm.homeScore !== null && gm.awayScore !== null ? `${gm.homeScore} – ${gm.awayScore}` : "– – –"}
+                              <TableCell
+                                align="center"
+                                sx={{
+                                  width: 70,
+                                  fontWeight: 700,
+                                  fontVariantNumeric: "tabular-nums",
+                                }}
+                              >
+                                {gm.homeScore !== null && gm.awayScore !== null
+                                  ? `${gm.homeScore} – ${gm.awayScore}`
+                                  : "– – –"}
                               </TableCell>
                               <TableCell>{gm.awayTeam.name}</TableCell>
                               <TableCell sx={{ width: 40 }} />

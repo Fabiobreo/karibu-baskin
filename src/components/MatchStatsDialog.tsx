@@ -1,12 +1,25 @@
 "use client";
 
-
 import { useState, useEffect } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, CircularProgress, Typography, Box, TextField,
-  Alert, Table, TableHead, TableRow, TableCell, TableBody,
-  Avatar, Chip, Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  CircularProgress,
+  Typography,
+  Box,
+  TextField,
+  Alert,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Avatar,
+  Chip,
+  Paper,
 } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
@@ -15,8 +28,19 @@ interface CalledPlayer {
   id: string;
   userId: string | null;
   childId: string | null;
-  user: { id: string; name: string | null; image: string | null; sportRole: number | null; sportRoleVariant: string | null } | null;
-  child: { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null } | null;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+  } | null;
+  child: {
+    id: string;
+    name: string;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+  } | null;
 }
 
 interface ExistingStat {
@@ -51,11 +75,11 @@ interface StatRow {
 type StatField = "points" | "baskets" | "assists" | "rebounds" | "fouls";
 
 const STAT_COLS: { key: StatField; label: string; title: string }[] = [
-  { key: "points",   label: "Pt",  title: "Punti" },
-  { key: "baskets",  label: "Can", title: "Canestri" },
-  { key: "assists",  label: "Ast", title: "Assist" },
+  { key: "points", label: "Pt", title: "Punti" },
+  { key: "baskets", label: "Can", title: "Canestri" },
+  { key: "assists", label: "Ast", title: "Assist" },
   { key: "rebounds", label: "Rim", title: "Rimbalzi" },
-  { key: "fouls",    label: "Fal", title: "Falli" },
+  { key: "fouls", label: "Fal", title: "Falli" },
 ];
 
 interface Props {
@@ -66,11 +90,17 @@ interface Props {
   onStatsSaved?: (count: number) => void;
 }
 
-export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, onStatsSaved }: Props) {
-  const [rows, setRows]       = useState<StatRow[]>([]);
+export default function MatchStatsDialog({
+  open,
+  onClose,
+  matchId,
+  matchLabel,
+  onStatsSaved,
+}: Props) {
+  const [rows, setRows] = useState<StatRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving]   = useState(false);
-  const [error, setError]     = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -94,18 +124,19 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
           const ex = statsMap.get(key);
           return {
             key,
-            userId:          c.userId,
-            childId:         c.childId,
-            name:            person.name ?? "—",
-            image:           c.user?.image ?? null,
-            sportRole:       person.sportRole,
-            sportRoleVariant: (person as { sportRoleVariant?: string | null }).sportRoleVariant ?? null,
-            points:   String(ex?.points   ?? 0),
-            baskets:  String(ex?.baskets  ?? 0),
-            assists:  String(ex?.assists  ?? 0),
+            userId: c.userId,
+            childId: c.childId,
+            name: person.name ?? "—",
+            image: c.user?.image ?? null,
+            sportRole: person.sportRole,
+            sportRoleVariant:
+              (person as { sportRoleVariant?: string | null }).sportRoleVariant ?? null,
+            points: String(ex?.points ?? 0),
+            baskets: String(ex?.baskets ?? 0),
+            assists: String(ex?.assists ?? 0),
             rebounds: String(ex?.rebounds ?? 0),
-            fouls:    String(ex?.fouls    ?? 0),
-            notes:    ex?.notes ?? "",
+            fouls: String(ex?.fouls ?? 0),
+            notes: ex?.notes ?? "",
             hasExistingStats: ex !== undefined,
           };
         });
@@ -117,11 +148,11 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
   }, [open, matchId]);
 
   function update(key: string, field: StatField, value: string) {
-    setRows((prev) => prev.map((r) => r.key === key ? { ...r, [field]: value } : r));
+    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
   }
 
   function updateNote(key: string, value: string) {
-    setRows((prev) => prev.map((r) => r.key === key ? { ...r, notes: value } : r));
+    setRows((prev) => prev.map((r) => (r.key === key ? { ...r, notes: value } : r)));
   }
 
   async function handleSave() {
@@ -134,22 +165,22 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
         .filter((r) => {
           if (r.hasExistingStats) return true;
           return (
-            parseInt(r.points   || "0", 10) > 0 ||
-            parseInt(r.baskets  || "0", 10) > 0 ||
-            parseInt(r.assists  || "0", 10) > 0 ||
+            parseInt(r.points || "0", 10) > 0 ||
+            parseInt(r.baskets || "0", 10) > 0 ||
+            parseInt(r.assists || "0", 10) > 0 ||
             parseInt(r.rebounds || "0", 10) > 0 ||
-            parseInt(r.fouls    || "0", 10) > 0 ||
+            parseInt(r.fouls || "0", 10) > 0 ||
             r.notes.trim().length > 0
           );
         })
         .map((r) => ({
-          ...(r.userId   ? { userId:   r.userId   } : {}),
-          ...(r.childId  ? { childId:  r.childId  } : {}),
-          points:   parseInt(r.points   || "0", 10),
-          baskets:  parseInt(r.baskets  || "0", 10),
-          assists:  parseInt(r.assists  || "0", 10),
+          ...(r.userId ? { userId: r.userId } : {}),
+          ...(r.childId ? { childId: r.childId } : {}),
+          points: parseInt(r.points || "0", 10),
+          baskets: parseInt(r.baskets || "0", 10),
+          assists: parseInt(r.assists || "0", 10),
           rebounds: parseInt(r.rebounds || "0", 10),
-          fouls:    parseInt(r.fouls    || "0", 10),
+          fouls: parseInt(r.fouls || "0", 10),
           ...(r.notes.trim() ? { notes: r.notes.trim() } : {}),
         }));
       const res = await fetch(`/api/matches/${matchId}/stats`, {
@@ -181,7 +212,11 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
       </DialogTitle>
 
       <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -190,7 +225,8 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
         ) : rows.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 4 }}>
             <Typography color="text.secondary">
-              Nessun convocato per questa partita. Imposta prima i convocati dalla colonna &quot;Convocati&quot;.
+              Nessun convocato per questa partita. Imposta prima i convocati dalla colonna
+              &quot;Convocati&quot;.
             </Typography>
           </Box>
         ) : (
@@ -210,7 +246,10 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                         {col.label}
                       </TableCell>
                     ))}
-                    <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }} title="Note (opzionale)">
+                    <TableCell
+                      sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }}
+                      title="Note (opzionale)"
+                    >
                       Note
                     </TableCell>
                   </TableRow>
@@ -220,18 +259,32 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                     <TableRow key={row.key}>
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Avatar src={row.image ?? undefined} sx={{ width: 24, height: 24, fontSize: 10 }}>
+                          <Avatar
+                            src={row.image ?? undefined}
+                            sx={{ width: 24, height: 24, fontSize: 10 }}
+                          >
                             {row.name[0]}
                           </Avatar>
                           <Box>
-                            <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.82rem" }}>
+                            <Typography
+                              variant="body2"
+                              fontWeight={600}
+                              sx={{ fontSize: "0.82rem" }}
+                            >
                               {row.name}
                             </Typography>
                             {row.sportRole && (
                               <Chip
                                 label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
                                 size="small"
-                                sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 600, fontSize: "0.55rem", height: 14, mt: 0.2 }}
+                                sx={{
+                                  bgcolor: ROLE_COLORS[row.sportRole],
+                                  color: "#fff",
+                                  fontWeight: 600,
+                                  fontSize: "0.55rem",
+                                  height: 14,
+                                  mt: 0.2,
+                                }}
                               />
                             )}
                           </Box>
@@ -245,7 +298,10 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                             onChange={(e) => update(row.key, col.key, e.target.value)}
                             size="small"
                             slotProps={{
-                              htmlInput: { min: 0, style: { textAlign: "center", padding: "4px 6px", width: 44 } },
+                              htmlInput: {
+                                min: 0,
+                                style: { textAlign: "center", padding: "4px 6px", width: 44 },
+                              },
                             }}
                             sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
                           />
@@ -258,7 +314,10 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
                           size="small"
                           placeholder="Opzionale"
                           slotProps={{
-                            htmlInput: { maxLength: 500, style: { padding: "4px 8px", fontSize: "0.78rem" } },
+                            htmlInput: {
+                              maxLength: 500,
+                              style: { padding: "4px 8px", fontSize: "0.78rem" },
+                            },
                           }}
                           sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
                         />
@@ -273,7 +332,9 @@ export default function MatchStatsDialog({ open, onClose, matchId, matchLabel, o
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={saving}>Annulla</Button>
+        <Button onClick={onClose} disabled={saving}>
+          Annulla
+        </Button>
         <Button
           variant="contained"
           onClick={handleSave}

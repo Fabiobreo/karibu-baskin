@@ -74,7 +74,7 @@ describe("ChildCreateSchema", () => {
 
   it("rifiuta sportRoleVariant oltre 50 caratteri", () => {
     expect(
-      ChildCreateSchema.safeParse({ name: "Marco", sportRoleVariant: "x".repeat(51) }).success,
+      ChildCreateSchema.safeParse({ name: "Marco", sportRoleVariant: "x".repeat(51) }).success
     ).toBe(false);
   });
 });

@@ -1,8 +1,6 @@
 "use client";
 import { useState } from "react";
-import {
-  Box, Typography, Paper, Button, LinearProgress, Stack,
-} from "@mui/material";
+import { Box, Typography, Paper, Button, LinearProgress, Stack } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export interface SportRoleResult {
@@ -52,7 +50,11 @@ const QUESTIONS: Record<StepId, Question> = {
     question: "Riesci a lanciare una palla da basket?",
     options: [
       { label: "Sì", next: null, result: { role: 2 } },
-      { label: "No, ho difficoltà con braccia o mani", next: null, result: { role: 2, variant: "P" } },
+      {
+        label: "No, ho difficoltà con braccia o mani",
+        next: null,
+        result: { role: 2, variant: "P" },
+      },
     ],
   },
   walk_speed: {

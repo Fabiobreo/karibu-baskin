@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/db";
-import {
-  Box, Container, Typography, Chip,
-} from "@mui/material";
+import { Box, Container, Typography, Chip } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
@@ -26,7 +24,8 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
   });
   const seasons = allSeasons.map((s) => s.season);
   const currentSeason = getCurrentSeason();
-  const selectedSeason = sp.season ?? seasons.find((s) => s === currentSeason) ?? seasons[0] ?? currentSeason;
+  const selectedSeason =
+    sp.season ?? seasons.find((s) => s === currentSeason) ?? seasons[0] ?? currentSeason;
 
   // Query aggregata: somma punti/canestri/partite per giocatore nella stagione
   const stats = await prisma.playerMatchStats.groupBy({
@@ -44,7 +43,14 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
     userIds.length > 0
       ? prisma.user.findMany({
           where: { id: { in: userIds } },
-          select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true, slug: true },
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            slug: true,
+          },
         })
       : [],
     childIds.length > 0
@@ -67,10 +73,38 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
     const avgPoints = matches > 0 ? points / matches : 0;
     if (s.userId) {
       const u = userMap.get(s.userId);
-      if (u) rows.push({ id: u.id, name: u.name ?? "—", image: u.image ?? null, sportRole: u.sportRole, sportRoleVariant: u.sportRoleVariant, slug: u.slug, kind: "user", matches, points, baskets, fouls, avgPoints });
+      if (u)
+        rows.push({
+          id: u.id,
+          name: u.name ?? "—",
+          image: u.image ?? null,
+          sportRole: u.sportRole,
+          sportRoleVariant: u.sportRoleVariant,
+          slug: u.slug,
+          kind: "user",
+          matches,
+          points,
+          baskets,
+          fouls,
+          avgPoints,
+        });
     } else if (s.childId) {
       const c = childMap.get(s.childId);
-      if (c) rows.push({ id: c.id, name: c.name, image: null, sportRole: c.sportRole, sportRoleVariant: c.sportRoleVariant, slug: null, kind: "child", matches, points, baskets, fouls, avgPoints });
+      if (c)
+        rows.push({
+          id: c.id,
+          name: c.name,
+          image: null,
+          sportRole: c.sportRole,
+          sportRoleVariant: c.sportRoleVariant,
+          slug: null,
+          kind: "child",
+          matches,
+          points,
+          baskets,
+          fouls,
+          avgPoints,
+        });
     }
   }
   rows.sort((a, b) => b.points - a.points || b.matches - a.matches);
@@ -90,13 +124,31 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.1)",
+            pointerEvents: "none",
+          }}
+        />
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Chip label="Agonismo" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography variant="h3" fontWeight={800} sx={{ mb: 1.5, fontSize: { xs: "2rem", md: "2.8rem" } }}>
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            sx={{ mb: 1.5, fontSize: { xs: "2rem", md: "2.8rem" } }}
+          >
             Classifica
           </Typography>
-          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 460, mx: "auto" }}>
+          <Typography
+            variant="body1"
+            sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 460, mx: "auto" }}
+          >
             Statistiche aggregate per stagione.
           </Typography>
         </Container>
@@ -105,10 +157,16 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* Selector stagione */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
-          <Typography variant="body2" color="text.secondary" fontWeight={600}>Stagione:</Typography>
+          <Typography variant="body2" color="text.secondary" fontWeight={600}>
+            Stagione:
+          </Typography>
           <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
             {seasons.map((s) => (
-              <Link key={s} href={`/classifica?season=${encodeURIComponent(s)}`} style={{ textDecoration: "none" }}>
+              <Link
+                key={s}
+                href={`/classifica?season=${encodeURIComponent(s)}`}
+                style={{ textDecoration: "none" }}
+              >
                 <Chip
                   label={s}
                   size="small"

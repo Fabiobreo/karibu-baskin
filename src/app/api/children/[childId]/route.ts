@@ -37,7 +37,16 @@ export async function PATCH(
       { status: 400 }
     );
   }
-  const { name, sportRole, sportRoleVariant, gender, birthDate, linkEmail, linkUserId, unlinkAccount } = parsed.data;
+  const {
+    name,
+    sportRole,
+    sportRoleVariant,
+    gender,
+    birthDate,
+    linkEmail,
+    linkUserId,
+    unlinkAccount,
+  } = parsed.data;
 
   // ── Invia richiesta di collegamento (via email o userId) ──────────────────
   if (linkEmail !== undefined || linkUserId !== undefined) {
@@ -45,7 +54,10 @@ export async function PATCH(
     const ip = getClientIp(req);
     const rl = checkRateLimit(ip, "link-request", 5, 60_000);
     if (!rl.allowed) {
-      return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche momento." }, { status: 429 });
+      return NextResponse.json(
+        { error: "Troppe richieste. Riprova tra qualche momento." },
+        { status: 429 }
+      );
     }
 
     // Cap: max 5 richieste pendenti totali per genitore
@@ -54,7 +66,9 @@ export async function PATCH(
     });
     if (pendingCount >= 5) {
       return NextResponse.json(
-        { error: "Hai troppe richieste in attesa. Attendi una risposta prima di inviarne di nuove." },
+        {
+          error: "Hai troppe richieste in attesa. Attendi una risposta prima di inviarne di nuove.",
+        },
         { status: 429 }
       );
     }
@@ -85,7 +99,10 @@ export async function PATCH(
     // Verifica che quell'account non sia già collegato a un altro Child
     const alreadyLinked = await prisma.child.findUnique({ where: { userId: targetUser.id } });
     if (alreadyLinked && alreadyLinked.id !== childId) {
-      return NextResponse.json({ error: "Questo account è già collegato a un altro figlio" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Questo account è già collegato a un altro figlio" },
+        { status: 409 }
+      );
     }
 
     // Se già collegato a questo stesso child, restituisci il child aggiornato
@@ -154,15 +171,17 @@ export async function PATCH(
     });
     // Notifica l'utente scollegato
     if (childBefore?.userId) {
-      prisma.appNotification.create({
-        data: {
-          type: "SYSTEM",
-          title: "Collegamento rimosso",
-          body: `Il collegamento con il profilo "${childBefore.name}" è stato rimosso dal genitore.`,
-          url: "/profilo",
-          targetUserId: childBefore.userId,
-        },
-      }).catch(() => {});
+      prisma.appNotification
+        .create({
+          data: {
+            type: "SYSTEM",
+            title: "Collegamento rimosso",
+            body: `Il collegamento con il profilo "${childBefore.name}" è stato rimosso dal genitore.`,
+            url: "/profilo",
+            targetUserId: childBefore.userId,
+          },
+        })
+        .catch(() => {});
     }
     return NextResponse.json(updated);
   }

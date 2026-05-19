@@ -31,7 +31,15 @@ describe("GET /api/sessions/[sessionId]/match-results", () => {
 
   it("restituisce la lista dei risultati", async () => {
     const results = [
-      { id: "mr1", sessionId: "s1", scoreA: 10, scoreB: 8, scoreC: null, notes: null, createdAt: new Date() },
+      {
+        id: "mr1",
+        sessionId: "s1",
+        scoreA: 10,
+        scoreB: 8,
+        scoreC: null,
+        notes: null,
+        createdAt: new Date(),
+      },
     ];
     p.trainingMatchResult.findMany.mockResolvedValue(results);
     const req = new NextRequest("http://localhost/api/sessions/s1/match-results");
@@ -93,7 +101,15 @@ describe("POST /api/sessions/[sessionId]/match-results", () => {
 
   it("crea un risultato 2 squadre", async () => {
     p.trainingSession.findUnique.mockResolvedValue({ id: "s1" });
-    const created = { id: "mr1", sessionId: "s1", scoreA: 15, scoreB: 12, scoreC: null, notes: null, createdAt: new Date() };
+    const created = {
+      id: "mr1",
+      sessionId: "s1",
+      scoreA: 15,
+      scoreB: 12,
+      scoreC: null,
+      notes: null,
+      createdAt: new Date(),
+    };
     p.trainingMatchResult.create.mockResolvedValue(created);
     const req = new NextRequest("http://localhost/api/sessions/s1/match-results", {
       method: "POST",
@@ -110,7 +126,15 @@ describe("POST /api/sessions/[sessionId]/match-results", () => {
 
   it("crea un risultato a 3 squadre con scoreC", async () => {
     p.trainingSession.findUnique.mockResolvedValue({ id: "s1" });
-    const created = { id: "mr2", sessionId: "s1", scoreA: 10, scoreB: 8, scoreC: 6, notes: null, createdAt: new Date() };
+    const created = {
+      id: "mr2",
+      sessionId: "s1",
+      scoreA: 10,
+      scoreB: 8,
+      scoreC: 6,
+      notes: null,
+      createdAt: new Date(),
+    };
     p.trainingMatchResult.create.mockResolvedValue(created);
     const req = new NextRequest("http://localhost/api/sessions/s1/match-results", {
       method: "POST",

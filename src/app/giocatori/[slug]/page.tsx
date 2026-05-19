@@ -1,7 +1,15 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
-  Box, Container, Typography, Grid2 as Grid, Paper, Chip, Avatar, Stack, Divider,
+  Box,
+  Container,
+  Typography,
+  Grid2 as Grid,
+  Paper,
+  Chip,
+  Avatar,
+  Stack,
+  Divider,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -17,7 +25,10 @@ import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | undefined>> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -97,10 +108,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
-  const seasons = Array.from(new Set([
-    ...user.matchStats.map((ms) => ms.match.team.season),
-    ...user.teamMemberships.map((m) => m.team.season),
-  ])).sort().reverse();
+  const seasons = Array.from(
+    new Set([
+      ...user.matchStats.map((ms) => ms.match.team.season),
+      ...user.teamMemberships.map((m) => m.team.season),
+    ])
+  )
+    .sort()
+    .reverse();
 
   // Filtro stagione per le statistiche
   const filteredStats = seasonFilter
@@ -132,7 +147,18 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.1)",
+            pointerEvents: "none",
+          }}
+        />
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
             <Avatar
@@ -142,8 +168,17 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {(user.name ?? "?")[0].toUpperCase()}
             </Avatar>
             <Box>
-              <Chip label="Giocatore" color="primary" size="small" sx={{ mb: 1, fontWeight: 700 }} />
-              <Typography variant="h3" fontWeight={800} sx={{ mb: 0.5, fontSize: { xs: "1.8rem", md: "2.5rem" } }}>
+              <Chip
+                label="Giocatore"
+                color="primary"
+                size="small"
+                sx={{ mb: 1, fontWeight: 700 }}
+              />
+              <Typography
+                variant="h3"
+                fontWeight={800}
+                sx={{ mb: 0.5, fontSize: { xs: "1.8rem", md: "2.5rem" } }}
+              >
                 {user.name ?? "—"}
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 0.5 }}>
@@ -157,7 +192,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 {currentTeams.map((m) => (
                   <Chip
                     key={m.id}
-                    icon={m.isCaptain ? <EmojiEventsIcon sx={{ fontSize: "0.9rem !important", color: "#F9A825 !important" }} /> : undefined}
+                    icon={
+                      m.isCaptain ? (
+                        <EmojiEventsIcon
+                          sx={{ fontSize: "0.9rem !important", color: "#F9A825 !important" }}
+                        />
+                      ) : undefined
+                    }
                     label={m.team.name}
                     size="small"
                     sx={{
@@ -176,7 +217,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-
         {/* Info atleta */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
           <Typography variant="subtitle1" fontWeight={700} gutterBottom>
@@ -226,9 +266,24 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {/* Statistiche agonistiche */}
         {hasStats && (
           <>
-            <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mt: 0.5, mb: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 1,
+                mt: 0.5,
+                mb: 3,
+              }}
+            >
               <Box>
-                <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+                <Typography
+                  variant="overline"
+                  color="primary"
+                  fontWeight={700}
+                  sx={{ letterSpacing: "0.1em" }}
+                >
                   Statistiche
                 </Typography>
                 <Typography variant="h5" fontWeight={800}>
@@ -238,11 +293,27 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {seasons.length > 1 && (
                 <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                   <Link href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
-                    <Chip label="Tutto" size="small" variant={!seasonFilter ? "filled" : "outlined"} color={!seasonFilter ? "primary" : "default"} sx={{ cursor: "pointer", fontWeight: 600 }} />
+                    <Chip
+                      label="Tutto"
+                      size="small"
+                      variant={!seasonFilter ? "filled" : "outlined"}
+                      color={!seasonFilter ? "primary" : "default"}
+                      sx={{ cursor: "pointer", fontWeight: 600 }}
+                    />
                   </Link>
                   {seasons.map((s) => (
-                    <Link key={s} href={`/giocatori/${slug}?season=${encodeURIComponent(s)}`} style={{ textDecoration: "none" }}>
-                      <Chip label={`Stagione ${s}`} size="small" variant={seasonFilter === s ? "filled" : "outlined"} color={seasonFilter === s ? "primary" : "default"} sx={{ cursor: "pointer", fontWeight: 600 }} />
+                    <Link
+                      key={s}
+                      href={`/giocatori/${slug}?season=${encodeURIComponent(s)}`}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <Chip
+                        label={`Stagione ${s}`}
+                        size="small"
+                        variant={seasonFilter === s ? "filled" : "outlined"}
+                        color={seasonFilter === s ? "primary" : "default"}
+                        sx={{ cursor: "pointer", fontWeight: 600 }}
+                      />
                     </Link>
                   ))}
                 </Box>
@@ -256,15 +327,34 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 { label: "Assist", value: totalAssists, color: "#7B1FA2" },
                 { label: "Rimbalzi", value: totalRebounds, color: "#00838F" },
                 { label: "Falli", value: totalFouls, color: "#C62828" },
-                { label: "Media punti", value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—", color: "#1A1A1A" },
-                { label: "Media canestri", value: matchesPlayed > 0 ? (totalBaskets / matchesPlayed).toFixed(1) : "—", color: "#555" },
+                {
+                  label: "Media punti",
+                  value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—",
+                  color: "#1A1A1A",
+                },
+                {
+                  label: "Media canestri",
+                  value: matchesPlayed > 0 ? (totalBaskets / matchesPlayed).toFixed(1) : "—",
+                  color: "#555",
+                },
               ].map((s) => (
                 <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
-                  <Paper elevation={0} sx={{ p: 2, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}>
-                    <Typography variant="h4" fontWeight={800} sx={{ color: s.color, fontSize: { xs: "1.6rem", md: "1.8rem" } }}>
+                  <Paper
+                    elevation={0}
+                    sx={{ p: 2, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}
+                  >
+                    <Typography
+                      variant="h4"
+                      fontWeight={800}
+                      sx={{ color: s.color, fontSize: { xs: "1.6rem", md: "1.8rem" } }}
+                    >
                       {s.value}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}
+                    >
                       {s.label}
                     </Typography>
                   </Paper>
@@ -281,7 +371,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Box sx={{ mb: 5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <GroupsIcon color="primary" />
-                <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+                <Typography
+                  variant="overline"
+                  color="primary"
+                  fontWeight={700}
+                  sx={{ letterSpacing: "0.1em" }}
+                >
                   Squadre
                 </Typography>
               </Box>
@@ -290,7 +385,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               </Typography>
               <Stack spacing={1.5}>
                 {user.teamMemberships.map((m) => (
-                  <Link key={m.id} href={`/squadre/${m.team.season}/${slugify(m.team.name)}`} style={{ textDecoration: "none" }}>
+                  <Link
+                    key={m.id}
+                    href={`/squadre/${m.team.season}/${slugify(m.team.name)}`}
+                    style={{ textDecoration: "none" }}
+                  >
                     <Paper
                       elevation={0}
                       sx={{
@@ -303,17 +402,32 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         "&:hover": { transform: "translateX(4px)", boxShadow: 2 },
                       }}
                     >
-                      <Box sx={{ width: 6, flexShrink: 0, backgroundColor: m.team.color ?? "#E65100" }} />
-                      <Box sx={{ flex: 1, p: 2, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}>
+                      <Box
+                        sx={{ width: 6, flexShrink: 0, backgroundColor: m.team.color ?? "#E65100" }}
+                      />
+                      <Box
+                        sx={{
+                          flex: 1,
+                          p: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 2,
+                        }}
+                      >
                         <Box>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography variant="body2" fontWeight={700}>{m.team.name}</Typography>
+                            <Typography variant="body2" fontWeight={700}>
+                              {m.team.name}
+                            </Typography>
                             {m.isCaptain && (
                               <EmojiEventsIcon sx={{ fontSize: 14, color: "#F9A825" }} />
                             )}
                           </Box>
                           {m.team.championship && (
-                            <Typography variant="caption" color="text.secondary">{m.team.championship}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {m.team.championship}
+                            </Typography>
                           )}
                         </Box>
                         <Chip
@@ -338,7 +452,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <SportsSoccerIcon color="primary" />
-                <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+                <Typography
+                  variant="overline"
+                  color="primary"
+                  fontWeight={700}
+                  sx={{ letterSpacing: "0.1em" }}
+                >
                   Partite
                 </Typography>
               </Box>
@@ -347,7 +466,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               </Typography>
               <Stack spacing={1.5}>
                 {filteredStats.map((ms) => (
-                  <Link key={ms.id} href={`/partite/${ms.match.slug ?? ms.match.id}`} style={{ textDecoration: "none" }}>
+                  <Link
+                    key={ms.id}
+                    href={`/partite/${ms.match.slug ?? ms.match.id}`}
+                    style={{ textDecoration: "none" }}
+                  >
                     <Paper
                       elevation={0}
                       sx={{
@@ -363,11 +486,22 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           sx={{
                             width: 6,
                             flexShrink: 0,
-                            backgroundColor: ms.match.result ? RESULT_COLOR[ms.match.result] : "rgba(0,0,0,0.08)",
+                            backgroundColor: ms.match.result
+                              ? RESULT_COLOR[ms.match.result]
+                              : "rgba(0,0,0,0.08)",
                           }}
                         />
                         <Box sx={{ flex: 1, p: 2 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, mb: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              mb: 1,
+                            }}
+                          >
                             <Box>
                               <Typography variant="body2" fontWeight={700}>
                                 {ms.match.team.name} vs {ms.match.opponent.name}
@@ -384,7 +518,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                 <Chip
                                   label={RESULT_LABEL[ms.match.result]}
                                   size="small"
-                                  sx={{ backgroundColor: RESULT_COLOR[ms.match.result], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }}
+                                  sx={{
+                                    backgroundColor: RESULT_COLOR[ms.match.result],
+                                    color: "#fff",
+                                    fontWeight: 700,
+                                    fontSize: "0.7rem",
+                                  }}
                                 />
                               )}
                               <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled" }} />
@@ -398,7 +537,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             <StatItem label="Falli" value={ms.fouls} />
                           </Box>
                           {ms.notes && (
-                            <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.disabled"
+                              sx={{ display: "block", mt: 1 }}
+                            >
                               {ms.notes}
                             </Typography>
                           )}
@@ -431,10 +574,16 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}>
-      <Typography variant="body2" color="text.secondary">{label}</Typography>
-      {typeof value === "string"
-        ? <Typography variant="body2" fontWeight={600}>{value}</Typography>
-        : value}
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      {typeof value === "string" ? (
+        <Typography variant="body2" fontWeight={600}>
+          {value}
+        </Typography>
+      ) : (
+        value
+      )}
     </Box>
   );
 }
@@ -442,8 +591,14 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 function StatItem({ label, value }: { label: string; value: number }) {
   return (
     <Box sx={{ textAlign: "center" }}>
-      <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>{value}</Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+      <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>
+        {value}
+      </Typography>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.05em" }}
+      >
         {label}
       </Typography>
     </Box>

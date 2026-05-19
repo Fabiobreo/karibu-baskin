@@ -181,7 +181,15 @@ describe("PUT /api/matches/[matchId]", () => {
 
   it("deriva LOSS quando theirScore > ourScore", async () => {
     mockIsAdmin.mockResolvedValue(true);
-    p.match.update.mockResolvedValue({ ...baseMatch, ourScore: 20, theirScore: 50, result: "LOSS", team: baseMatch.team, opponent: baseMatch.opponent, group: null });
+    p.match.update.mockResolvedValue({
+      ...baseMatch,
+      ourScore: 20,
+      theirScore: 50,
+      result: "LOSS",
+      team: baseMatch.team,
+      opponent: baseMatch.opponent,
+      group: null,
+    });
     const req = new Request("http://localhost", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -257,7 +265,15 @@ describe("PUT /api/matches/[matchId]", () => {
       opponentId: "opp-1",
       date: baseMatch.date,
     });
-    p.match.update.mockResolvedValue({ ...baseMatch, ourScore: 41, theirScore: 30, result: "WIN", team: baseMatch.team, opponent: baseMatch.opponent, group: null });
+    p.match.update.mockResolvedValue({
+      ...baseMatch,
+      ourScore: 41,
+      theirScore: 30,
+      result: "WIN",
+      team: baseMatch.team,
+      opponent: baseMatch.opponent,
+      group: null,
+    });
     const req = new Request("http://localhost", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -290,7 +306,10 @@ describe("DELETE /api/matches/[matchId]", () => {
 
   it("restituisce 404 se la partita non esiste (P2025)", async () => {
     mockIsAdmin.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.match.delete.mockRejectedValue(p2025);
     const res = await DELETE(new Request("http://localhost"), makeParams("missing"));
     expect(res.status).toBe(404);

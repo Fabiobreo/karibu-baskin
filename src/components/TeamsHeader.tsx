@@ -30,11 +30,19 @@ export default function TeamsHeader({
 }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-      <Typography variant="h6" fontWeight={700}>Squadre</Typography>
+      <Typography variant="h6" fontWeight={700}>
+        Squadre
+      </Typography>
       {teams && (
         <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>
           {sessionTitle && (
-            <ShareTeamsButton teams={teams} coaches={coaches} sessionTitle={sessionTitle} sessionDate={sessionDate} sessionEndTime={sessionEndTime} />
+            <ShareTeamsButton
+              teams={teams}
+              coaches={coaches}
+              sessionTitle={sessionTitle}
+              sessionDate={sessionDate}
+              sessionEndTime={sessionEndTime}
+            />
           )}
           {isStaff && !isEnded && onEditTeams && (
             <Tooltip title="Modifica squadre">
@@ -57,9 +65,11 @@ export default function TeamsHeader({
                   disabled={removingTeams}
                   sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
                 >
-                  {removingTeams
-                    ? <CircularProgress size={16} color="error" />
-                    : <DeleteOutlineIcon fontSize="small" />}
+                  {removingTeams ? (
+                    <CircularProgress size={16} color="error" />
+                  ) : (
+                    <DeleteOutlineIcon fontSize="small" />
+                  )}
                 </IconButton>
               </span>
             </Tooltip>

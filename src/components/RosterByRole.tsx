@@ -1,8 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Box, Typography, Paper, Chip, CircularProgress,
-  Divider, IconButton, Tooltip,
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  CircularProgress,
+  Divider,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -75,8 +81,16 @@ interface PillProps {
 }
 
 function AthletePill({
-  reg, roleColor, highlighted, canDelete, isDeleting, isStaff,
-  showAttendance, isToggling, onDelete, onToggleAttended,
+  reg,
+  roleColor,
+  highlighted,
+  canDelete,
+  isDeleting,
+  isStaff,
+  showAttendance,
+  isToggling,
+  onDelete,
+  onToggleAttended,
 }: PillProps) {
   const initial = reg.name[0]?.toUpperCase() ?? "?";
   const hasNote = !!reg.note;
@@ -130,12 +144,16 @@ function AthletePill({
             {reg.name}
           </Box>
         ) : (
-          <Typography sx={{ fontWeight: highlighted ? 700 : 500, fontSize: "0.82rem", whiteSpace: "nowrap" }}>
+          <Typography
+            sx={{ fontWeight: highlighted ? 700 : 500, fontSize: "0.82rem", whiteSpace: "nowrap" }}
+          >
             {reg.name}
           </Typography>
         )}
         {hasNote && (
-          <ChatBubbleOutlineIcon sx={{ fontSize: "0.68rem", color: "text.disabled", flexShrink: 0 }} />
+          <ChatBubbleOutlineIcon
+            sx={{ fontSize: "0.68rem", color: "text.disabled", flexShrink: 0 }}
+          />
         )}
       </Box>
 
@@ -149,9 +167,11 @@ function AthletePill({
               disabled={isToggling}
               sx={{ p: "3px", color: "inherit", "&:hover": { bgcolor: "transparent" } }}
             >
-              {isToggling
-                ? <CircularProgress size={12} />
-                : <AttendanceIcon attended={reg.attended} />}
+              {isToggling ? (
+                <CircularProgress size={12} />
+              ) : (
+                <AttendanceIcon attended={reg.attended} />
+              )}
             </IconButton>
           </span>
         </Tooltip>
@@ -240,7 +260,8 @@ export default function RosterByRole({
       const res = await fetch(`/api/registrations/${reg.id}`, { method: "DELETE" });
       if (res.ok) {
         const isOwnChild =
-          (!!reg.childId && (parentChildIds.includes(reg.childId) || reg.childId === linkedChildId)) ||
+          (!!reg.childId &&
+            (parentChildIds.includes(reg.childId) || reg.childId === linkedChildId)) ||
           (!!reg.userId && childUserIds.includes(reg.userId));
         const msg =
           isStaff && reg.userId !== currentUserId && !isOwnChild
@@ -318,10 +339,15 @@ export default function RosterByRole({
       if (anyFailed) {
         setAttendedOverrides((prev) => {
           const rollback = { ...prev };
-          unmarked.forEach((r) => { rollback[r.id] = null; });
+          unmarked.forEach((r) => {
+            rollback[r.id] = null;
+          });
           return rollback;
         });
-        showToast({ message: "Errore nell'aggiornamento automatico delle presenze", severity: "error" });
+        showToast({
+          message: "Errore nell'aggiornamento automatico delle presenze",
+          severity: "error",
+        });
       } else {
         onAttendanceChanged?.();
       }
@@ -333,9 +359,9 @@ export default function RosterByRole({
   // Counts for the attendance summary header
   const presentCount = showAttendance
     ? athleteRegs.filter((r) => {
-      const val = r.id in attendedOverrides ? attendedOverrides[r.id] : r.attended;
-      return val === true;
-    }).length
+        const val = r.id in attendedOverrides ? attendedOverrides[r.id] : r.attended;
+        return val === true;
+      }).length
     : null;
 
   return (
@@ -428,9 +454,10 @@ export default function RosterByRole({
                     const highlighted = isOwn || isOwnChild;
                     const canDelete = isOwn || isOwnChild || !!isStaff;
 
-                    const effectiveReg = reg.id in attendedOverrides
-                      ? { ...reg, attended: attendedOverrides[reg.id] }
-                      : reg;
+                    const effectiveReg =
+                      reg.id in attendedOverrides
+                        ? { ...reg, attended: attendedOverrides[reg.id] }
+                        : reg;
 
                     return (
                       <AthletePill
@@ -484,7 +511,17 @@ export default function RosterByRole({
                         opacity: isDeleting ? 0.5 : 1,
                       }}
                     >
-                      <Box sx={{ width: 28, height: 28, bgcolor: "grey.600", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Box
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          bgcolor: "grey.600",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
                         <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "0.68rem" }}>
                           {reg.name[0]?.toUpperCase() ?? "?"}
                         </Typography>
@@ -504,7 +541,15 @@ export default function RosterByRole({
                         <IconButton
                           size="small"
                           onClick={() => handleUnregister(reg)}
-                          sx={{ p: "3px", mr: 0.5, color: isOwn ? "rgba(255,255,255,0.6)" : "text.disabled", "&:hover": { color: isOwn ? "#fff" : "error.main", bgcolor: "transparent" } }}
+                          sx={{
+                            p: "3px",
+                            mr: 0.5,
+                            color: isOwn ? "rgba(255,255,255,0.6)" : "text.disabled",
+                            "&:hover": {
+                              color: isOwn ? "#fff" : "error.main",
+                              bgcolor: "transparent",
+                            },
+                          }}
                         >
                           <CloseIcon sx={{ fontSize: 13 }} />
                         </IconButton>
@@ -520,24 +565,26 @@ export default function RosterByRole({
               </Box>
               {coachRegs.some((r) => r.note) && (
                 <Box sx={{ display: "flex", flexDirection: "column" }}>
-                  {coachRegs.filter((r) => r.note).map((reg) => (
-                    <Typography
-                      key={reg.id}
-                      variant="caption"
-                      sx={{
-                        display: "block",
-                        px: 1,
-                        mt: 0.25,
-                        fontSize: "0.65rem",
-                        fontStyle: "italic",
-                        color: "text.secondary",
-                        wordBreak: "break-word",
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {reg.note}
-                    </Typography>
-                  ))}
+                  {coachRegs
+                    .filter((r) => r.note)
+                    .map((reg) => (
+                      <Typography
+                        key={reg.id}
+                        variant="caption"
+                        sx={{
+                          display: "block",
+                          px: 1,
+                          mt: 0.25,
+                          fontSize: "0.65rem",
+                          fontStyle: "italic",
+                          color: "text.secondary",
+                          wordBreak: "break-word",
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {reg.note}
+                      </Typography>
+                    ))}
                 </Box>
               )}
             </Box>

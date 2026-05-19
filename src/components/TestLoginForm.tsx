@@ -1,7 +1,13 @@
 "use client";
 import { useState } from "react";
 import {
-  Box, TextField, Button, Typography, CircularProgress, Divider, Alert,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  CircularProgress,
+  Divider,
+  Alert,
 } from "@mui/material";
 import BugReportIcon from "@mui/icons-material/BugReport";
 
@@ -54,7 +60,11 @@ export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: str
         Modalità test — non disponibile in produzione
       </Alert>
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+      >
         <TextField
           label="Email utente"
           type="email"

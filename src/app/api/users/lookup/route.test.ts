@@ -63,7 +63,13 @@ describe("GET /api/users/lookup", () => {
     });
 
     it("normalises email to lowercase before query", async () => {
-      p.user.findUnique.mockResolvedValue({ id: "u-2", name: "X", gender: null, birthDate: null, image: null });
+      p.user.findUnique.mockResolvedValue({
+        id: "u-2",
+        name: "X",
+        gender: null,
+        birthDate: null,
+        image: null,
+      });
       await GET(makeReq("?email=MARIO%40Example.COM"));
       expect(p.user.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({ where: { email: "mario@example.com" } })
@@ -104,9 +110,7 @@ describe("GET /api/users/lookup", () => {
     it("limits results to 5", async () => {
       p.user.findMany.mockResolvedValue([]);
       await GET(makeReq("?name=Mario"));
-      expect(p.user.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ take: 5 })
-      );
+      expect(p.user.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 5 }));
     });
 
     it("uses case-insensitive contains query", async () => {

@@ -12,7 +12,8 @@ export default function SwUpdateToast() {
 
     const handleControllerChange = () => setShow(true);
     navigator.serviceWorker.addEventListener("controllerchange", handleControllerChange);
-    return () => navigator.serviceWorker.removeEventListener("controllerchange", handleControllerChange);
+    return () =>
+      navigator.serviceWorker.removeEventListener("controllerchange", handleControllerChange);
   }, []);
 
   function handleReload() {

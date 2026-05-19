@@ -1,5 +1,12 @@
 import {
-  Box, Container, Typography, Grid2 as Grid, Paper, Chip, Divider, Stack,
+  Box,
+  Container,
+  Typography,
+  Grid2 as Grid,
+  Paper,
+  Chip,
+  Divider,
+  Stack,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -114,36 +121,85 @@ export default function IlBaskinPage() {
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.1)",
+            pointerEvents: "none",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.06)",
+            pointerEvents: "none",
+          }}
+        />
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Chip label="Lo sport" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography variant="h3" fontWeight={800} sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}>
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}
+          >
             Il Baskin
           </Typography>
-          <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, maxWidth: 580, mx: "auto", fontSize: { xs: "1rem", md: "1.1rem" } }}>
-            Il basket inclusivo nato per permettere a persone con e senza disabilità di giocare insieme, nella stessa squadra, con pari dignità e un ruolo reale nel gioco.
+          <Typography
+            variant="h6"
+            sx={{
+              color: "rgba(255,255,255,0.65)",
+              fontWeight: 400,
+              maxWidth: 580,
+              mx: "auto",
+              fontSize: { xs: "1rem", md: "1.1rem" },
+            }}
+          >
+            Il basket inclusivo nato per permettere a persone con e senza disabilità di giocare
+            insieme, nella stessa squadra, con pari dignità e un ruolo reale nel gioco.
           </Typography>
         </Container>
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-
         {/* Storia */}
         <Box sx={{ mb: 5 }}>
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Le origini
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 2, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 2, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             Nato nel 2001 a Cremona
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8, maxWidth: 680 }}>
-            Il Baskin (Basket Inclusivo) è stato ideato da Antonio Bodini e Fausto Capellini in un contesto scolastico,
-            con l&apos;obiettivo di creare uno sport in cui ogni persona — indipendentemente dall&apos;abilità fisica o cognitiva —
-            potesse partecipare attivamente con un ruolo reale e significativo.
-            Il regolamento è gestito dall&apos;Ente Italiano Sport Inclusivi (EISI) di Cremona ed è oggi praticato
-            in tutta Italia da migliaia di atleti. Ogni giocatore riceve un numero di ruolo (1–5) che compare
-            sulla maglia come prima cifra, seguito da un numero identificativo personale.
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ lineHeight: 1.8, maxWidth: 680 }}
+          >
+            Il Baskin (Basket Inclusivo) è stato ideato da Antonio Bodini e Fausto Capellini in un
+            contesto scolastico, con l&apos;obiettivo di creare uno sport in cui ogni persona —
+            indipendentemente dall&apos;abilità fisica o cognitiva — potesse partecipare attivamente
+            con un ruolo reale e significativo. Il regolamento è gestito dall&apos;Ente Italiano
+            Sport Inclusivi (EISI) di Cremona ed è oggi praticato in tutta Italia da migliaia di
+            atleti. Ogni giocatore riceve un numero di ruolo (1–5) che compare sulla maglia come
+            prima cifra, seguito da un numero identificativo personale.
           </Typography>
         </Box>
 
@@ -154,10 +210,19 @@ export default function IlBaskinPage() {
 
         {/* Regole */}
         <Box sx={{ mb: 7 }}>
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Come funziona
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             Le regole principali
           </Typography>
           <Grid container spacing={2}>
@@ -176,8 +241,12 @@ export default function IlBaskinPage() {
                 >
                   <Box sx={{ color: "primary.main", mt: 0.3, flexShrink: 0 }}>{rule.icon}</Box>
                   <Box>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>{rule.title}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>{rule.text}</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
+                      {rule.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                      {rule.text}
+                    </Typography>
                   </Box>
                 </Paper>
               </Grid>
@@ -189,15 +258,25 @@ export default function IlBaskinPage() {
 
         {/* I ruoli */}
         <Box>
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             I giocatori
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             I 5 ruoli del Baskin
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 640 }}>
-            I ruoli vengono assegnati in base alle capacità motorie del giocatore: uso delle mani, cammino, corsa ed equilibrio.
-            La somma dei ruoli dei giocatori in campo non può superare <strong>23</strong>.
+            I ruoli vengono assegnati in base alle capacità motorie del giocatore: uso delle mani,
+            cammino, corsa ed equilibrio. La somma dei ruoli dei giocatori in campo non può superare{" "}
+            <strong>23</strong>.
           </Typography>
           <Stack spacing={2}>
             {ROLES_INFO.map((r) => (
@@ -209,7 +288,8 @@ export default function IlBaskinPage() {
                 {/* Header colorato */}
                 <Box
                   sx={{
-                    px: 2.5, py: 1.5,
+                    px: 2.5,
+                    py: 1.5,
                     backgroundColor: ROLE_COLORS[r.role],
                     display: "flex",
                     alignItems: "center",
@@ -224,13 +304,22 @@ export default function IlBaskinPage() {
                   <Chip
                     label={r.tag}
                     size="small"
-                    sx={{ backgroundColor: "rgba(255,255,255,0.2)", color: "#fff", fontWeight: 600, fontSize: "0.7rem" }}
+                    sx={{
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      color: "#fff",
+                      fontWeight: 600,
+                      fontSize: "0.7rem",
+                    }}
                   />
                 </Box>
 
                 {/* Body */}
                 <Box sx={{ p: 2.5 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75, mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ lineHeight: 1.75, mb: 2 }}
+                  >
                     {r.description}
                   </Typography>
                   {/* Badge info */}
@@ -243,16 +332,31 @@ export default function IlBaskinPage() {
                       <Grid key={info.label} size={{ xs: 12, sm: 4 }}>
                         <Box
                           sx={{
-                            px: 1.5, py: 1,
+                            px: 1.5,
+                            py: 1,
                             backgroundColor: "rgba(0,0,0,0.03)",
                             borderRadius: 1,
                             border: "1px solid rgba(0,0,0,0.06)",
                           }}
                         >
-                          <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ display: "block", textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.65rem" }}>
+                          <Typography
+                            variant="caption"
+                            color="text.disabled"
+                            fontWeight={700}
+                            sx={{
+                              display: "block",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              fontSize: "0.65rem",
+                            }}
+                          >
                             {info.label}
                           </Typography>
-                          <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.8rem", mt: 0.25 }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{ fontSize: "0.8rem", mt: 0.25 }}
+                          >
                             {info.value}
                           </Typography>
                         </Box>
@@ -264,7 +368,6 @@ export default function IlBaskinPage() {
             ))}
           </Stack>
         </Box>
-
       </Container>
     </>
   );

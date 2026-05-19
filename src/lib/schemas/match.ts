@@ -33,19 +33,20 @@ export const MatchUpdateSchema = MatchBaseSchema.extend({
   theirScore: z.number().int().min(0).nullable().optional(),
 });
 
-export const PlayerStatsEntrySchema = z.object({
-  userId: z.string().optional(),
-  childId: z.string().optional(),
-  points: z.number().int().min(0).max(999).optional(),
-  baskets: z.number().int().min(0).max(999).optional(),
-  fouls: z.number().int().min(0).max(5).optional(),
-  assists: z.number().int().min(0).max(999).optional(),
-  rebounds: z.number().int().min(0).max(999).optional(),
-  notes: z.string().max(500).optional(),
-}).refine(
-  (s) => !!(s.userId) !== !!(s.childId),
-  { message: "Esattamente uno tra userId e childId è richiesto" }
-);
+export const PlayerStatsEntrySchema = z
+  .object({
+    userId: z.string().optional(),
+    childId: z.string().optional(),
+    points: z.number().int().min(0).max(999).optional(),
+    baskets: z.number().int().min(0).max(999).optional(),
+    fouls: z.number().int().min(0).max(5).optional(),
+    assists: z.number().int().min(0).max(999).optional(),
+    rebounds: z.number().int().min(0).max(999).optional(),
+    notes: z.string().max(500).optional(),
+  })
+  .refine((s) => !!s.userId !== !!s.childId, {
+    message: "Esattamente uno tra userId e childId è richiesto",
+  });
 
 export const PlayerStatsBatchSchema = z.array(PlayerStatsEntrySchema).max(50);
 

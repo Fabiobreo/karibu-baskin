@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id;
   const userName = session.user.name.trim();
 
-  const body = await req.json().catch(() => ({})) as { ids?: string[] };
+  const body = (await req.json().catch(() => ({}))) as { ids?: string[] };
 
   // If specific IDs provided, claim only those (verify they're anonymous + name-matching)
   if (Array.isArray(body.ids) && body.ids.length > 0) {

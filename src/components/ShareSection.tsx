@@ -49,27 +49,43 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
-          sx={dark ? {
-            borderColor: "rgba(255,255,255,0.5)",
-            color: "#fff",
-            "&:hover": { borderColor: "#fff", backgroundColor: "rgba(255,255,255,0.08)" },
-          } : {
-            borderColor: "#25D366",
-            color: "#25D366",
-            "&:hover": { borderColor: "#128C7E", color: "#128C7E", backgroundColor: "rgba(37,211,102,0.06)" },
-          }}
+          sx={
+            dark
+              ? {
+                  borderColor: "rgba(255,255,255,0.5)",
+                  color: "#fff",
+                  "&:hover": { borderColor: "#fff", backgroundColor: "rgba(255,255,255,0.08)" },
+                }
+              : {
+                  borderColor: "#25D366",
+                  color: "#25D366",
+                  "&:hover": {
+                    borderColor: "#128C7E",
+                    color: "#128C7E",
+                    backgroundColor: "rgba(37,211,102,0.06)",
+                  },
+                }
+          }
         >
           WhatsApp
         </Button>
 
         <Tooltip title="Copia link">
-          <IconButton size="small" onClick={handleCopy} sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}>
+          <IconButton
+            size="small"
+            onClick={handleCopy}
+            sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
+          >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
         </Tooltip>
 
         <Tooltip title="Mostra QR Code">
-          <IconButton size="small" onClick={() => setQrOpen(true)} sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}>
+          <IconButton
+            size="small"
+            onClick={() => setQrOpen(true)}
+            sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
+          >
             <QrCode2Icon fontSize="small" />
           </IconButton>
         </Tooltip>

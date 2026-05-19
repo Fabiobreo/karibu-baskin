@@ -22,7 +22,10 @@ type PrismaMock = {
 const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
 
-function makePATCH(regId: string, body: object): [NextRequest, { params: Promise<{ regId: string }> }] {
+function makePATCH(
+  regId: string,
+  body: object
+): [NextRequest, { params: Promise<{ regId: string }> }] {
   return [
     new NextRequest(`http://localhost/api/registrations/${regId}/attendance`, {
       method: "PATCH",

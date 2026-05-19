@@ -98,7 +98,9 @@ describe("GET /api/test-login", () => {
 
   it("include la sessione auth() corrente nel risultato", async () => {
     process.env.ENABLE_TEST_LOGIN = "true";
-    mockAuth.mockResolvedValue({ user: { id: "user-1", email: "mario@example.com", appRole: "ATHLETE" } });
+    mockAuth.mockResolvedValue({
+      user: { id: "user-1", email: "mario@example.com", appRole: "ATHLETE" },
+    });
     const res = await GET(makeGet());
     const json = await res.json();
     expect(json.currentAuthSession).toMatchObject({ userId: "user-1", email: "mario@example.com" });

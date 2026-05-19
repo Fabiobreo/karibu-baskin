@@ -25,5 +25,7 @@ export default async function AdminSquadrePage() {
     prisma.season.findMany(),
   ]);
 
-  return <AdminSquadreClient teams={teams} users={users} childPlayers={children} seasons={seasons} />;
+  return (
+    <AdminSquadreClient teams={teams} users={users} childPlayers={children} seasons={seasons} />
+  );
 }

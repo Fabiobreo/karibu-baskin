@@ -9,10 +9,14 @@ const relativeUrlRegex = /^\/[\w\-/?=&%.#]*$/;
 
 const NotifySchema = z.object({
   title: z.string().min(1).max(100),
-  body:  z.string().min(1).max(300),
-  url:   z.string().max(200).regex(relativeUrlRegex, "L'URL deve essere un percorso relativo (es. /allenamenti)").optional(),
+  body: z.string().min(1).max(300),
+  url: z
+    .string()
+    .max(200)
+    .regex(relativeUrlRegex, "L'URL deve essere un percorso relativo (es. /allenamenti)")
+    .optional(),
   // Targeting: almeno uno tra teamId, sportRole o targetAll deve essere fornito
-  teamId:    z.string().optional(),
+  teamId: z.string().optional(),
   sportRole: z.number().int().min(1).max(5).nullable().optional(),
   targetAll: z.boolean().optional(),
 });
@@ -25,7 +29,10 @@ export async function POST(req: NextRequest) {
   const raw = await req.json().catch(() => null);
   const parsed = NotifySchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
 
   const { title, body, url, teamId, sportRole, targetAll } = parsed.data;
@@ -48,8 +55,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Notifica in-app broadcast (visibile a tutti nel centro notifiche)
-  createAppNotification({ type: "SYSTEM", title, body, url: url ?? "/" })
-    .catch((err) => console.error("[notify] app notification", err));
+  createAppNotification({ type: "SYSTEM", title, body, url: url ?? "/" }).catch((err) =>
+    console.error("[notify] app notification", err)
+  );
 
   return NextResponse.json({ sent: result.sent, removed: result.removed });
 }

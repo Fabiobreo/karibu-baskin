@@ -2,8 +2,18 @@
 
 import { useState } from "react";
 import {
-  Paper, Box, Typography, Table, TableHead, TableRow, TableCell, TableBody,
-  TableSortLabel, Avatar, Chip, TablePagination,
+  Paper,
+  Box,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableSortLabel,
+  Avatar,
+  Chip,
+  TablePagination,
 } from "@mui/material";
 import Link from "next/link";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
@@ -26,22 +36,22 @@ export interface PlayerStatRow {
 type SortKey = "matches" | "points" | "baskets" | "assists" | "rebounds" | "fouls" | "avgPoints";
 
 const COLS: { key: SortKey; label: string; title?: string }[] = [
-  { key: "matches",   label: "G",      title: "Partite giocate" },
-  { key: "points",    label: "Pt",     title: "Punti totali" },
-  { key: "baskets",   label: "Can",    title: "Canestri" },
-  { key: "assists",   label: "Ast",    title: "Assist" },
-  { key: "rebounds",  label: "Rim",    title: "Rimbalzi" },
-  { key: "fouls",     label: "Fal",    title: "Falli" },
+  { key: "matches", label: "G", title: "Partite giocate" },
+  { key: "points", label: "Pt", title: "Punti totali" },
+  { key: "baskets", label: "Can", title: "Canestri" },
+  { key: "assists", label: "Ast", title: "Assist" },
+  { key: "rebounds", label: "Rim", title: "Rimbalzi" },
+  { key: "fouls", label: "Fal", title: "Falli" },
   { key: "avgPoints", label: "Med.Pt", title: "Media punti a partita" },
 ];
 
 const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
 
 export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[] }) {
-  const [sortBy, setSortBy]           = useState<SortKey>("points");
-  const [sortDir, setSortDir]         = useState<"asc" | "desc">("desc");
-  const [roleFilter, setRoleFilter]   = useState<number | null>(null);
-  const [page, setPage]               = useState(0);
+  const [sortBy, setSortBy] = useState<SortKey>("points");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [roleFilter, setRoleFilter] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   function handleSort(col: SortKey) {
@@ -70,9 +80,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     return sortDir === "asc" ? aVal - bVal : bVal - aVal;
   });
 
-  const filtered = roleFilter !== null
-    ? sorted.filter((r) => r.sportRole === roleFilter)
-    : sorted;
+  const filtered = roleFilter !== null ? sorted.filter((r) => r.sportRole === roleFilter) : sorted;
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -86,12 +94,21 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
       {/* Role filter chips */}
       <Box
         sx={{
-          px: 2, py: 1.5,
+          px: 2,
+          py: 1.5,
           borderBottom: "1px solid rgba(0,0,0,0.07)",
-          display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center",
+          display: "flex",
+          gap: 0.75,
+          flexWrap: "wrap",
+          alignItems: "center",
         }}
       >
-        <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        <Typography
+          variant="caption"
+          color="text.disabled"
+          fontWeight={700}
+          sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
+        >
           Ruolo:
         </Typography>
         <Chip
@@ -133,10 +150,18 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         <Table size="small" sx={{ minWidth: 560 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
-              <TableCell sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.disabled" }}>#</TableCell>
+              <TableCell
+                sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.disabled" }}
+              >
+                #
+              </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
               {COLS.map((col) => (
-                <TableCell key={col.key} align="center" sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                <TableCell
+                  key={col.key}
+                  align="center"
+                  sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}
+                >
                   <TableSortLabel
                     active={sortBy === col.key}
                     direction={sortBy === col.key ? sortDir : "desc"}
@@ -153,7 +178,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           <TableBody>
             {paginated.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={COLS.length + 2} align="center" sx={{ py: 4, color: "text.disabled" }}>
+                <TableCell
+                  colSpan={COLS.length + 2}
+                  align="center"
+                  sx={{ py: 4, color: "text.disabled" }}
+                >
                   Nessun giocatore con questo ruolo.
                 </TableCell>
               </TableRow>
@@ -165,24 +194,46 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Avatar src={row.image ?? undefined} sx={{ width: 26, height: 26, fontSize: 11 }}>
+                      <Avatar
+                        src={row.image ?? undefined}
+                        sx={{ width: 26, height: 26, fontSize: 11 }}
+                      >
                         {(row.name ?? "?")[0]}
                       </Avatar>
                       <Box>
                         {row.slug ? (
-                          <Link href={`/giocatori/${row.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
-                            <Typography variant="body2" fontWeight={700} sx={{ "&:hover": { textDecoration: "underline" }, fontSize: "0.82rem" }}>
+                          <Link
+                            href={`/giocatori/${row.slug}`}
+                            style={{ textDecoration: "none", color: "inherit" }}
+                          >
+                            <Typography
+                              variant="body2"
+                              fontWeight={700}
+                              sx={{
+                                "&:hover": { textDecoration: "underline" },
+                                fontSize: "0.82rem",
+                              }}
+                            >
                               {row.name}
                             </Typography>
                           </Link>
                         ) : (
-                          <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.82rem" }}>{row.name}</Typography>
+                          <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.82rem" }}>
+                            {row.name}
+                          </Typography>
                         )}
                         {row.sportRole && (
                           <Chip
                             label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
                             size="small"
-                            sx={{ bgcolor: ROLE_COLORS[row.sportRole], color: "#fff", fontWeight: 600, fontSize: "0.58rem", height: 14, mt: 0.25 }}
+                            sx={{
+                              bgcolor: ROLE_COLORS[row.sportRole],
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: "0.58rem",
+                              height: 14,
+                              mt: 0.25,
+                            }}
                           />
                         )}
                       </Box>

@@ -2,8 +2,15 @@
 
 import { useState, useEffect } from "react";
 import {
-  Box, Container, Typography, Grid2 as Grid, Paper, Chip, Button,
-  Collapse, Divider,
+  Box,
+  Container,
+  Typography,
+  Grid2 as Grid,
+  Paper,
+  Chip,
+  Button,
+  Collapse,
+  Divider,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import ContactForm from "@/components/ContactForm";
@@ -25,20 +32,55 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 const CONTACTS = [
   { icon: <PhoneIcon />, label: "Elisa", value: "(+39) 349 297 2703", href: "tel:+393492972703" },
   { icon: <PhoneIcon />, label: "Andrea", value: "(+39) 335 531 0195", href: "tel:+393355310195" },
-  { icon: <EmailIcon />, label: "Email", value: "asdkaribubaskin@gmail.com", href: "mailto:asdkaribubaskin@gmail.com" },
+  {
+    icon: <EmailIcon />,
+    label: "Email",
+    value: "asdkaribubaskin@gmail.com",
+    href: "mailto:asdkaribubaskin@gmail.com",
+  },
 ];
 
 const SOCIAL = [
-  { icon: <InstagramIcon sx={{ fontSize: 26 }} />, label: "Instagram", handle: "@karibubaskin", href: "https://www.instagram.com/karibubaskin/", color: "#E1306C" },
-  { icon: <FacebookIcon sx={{ fontSize: 26 }} />, label: "Facebook", handle: "karibubaskin", href: "https://www.facebook.com/karibubaskin", color: "#1877F2" },
-  { icon: <YouTubeIcon sx={{ fontSize: 26 }} />, label: "YouTube", handle: "@karibubaskin", href: "https://youtube.com/@karibubaskin", color: "#FF0000" },
+  {
+    icon: <InstagramIcon sx={{ fontSize: 26 }} />,
+    label: "Instagram",
+    handle: "@karibubaskin",
+    href: "https://www.instagram.com/karibubaskin/",
+    color: "#E1306C",
+  },
+  {
+    icon: <FacebookIcon sx={{ fontSize: 26 }} />,
+    label: "Facebook",
+    handle: "karibubaskin",
+    href: "https://www.facebook.com/karibubaskin",
+    color: "#1877F2",
+  },
+  {
+    icon: <YouTubeIcon sx={{ fontSize: 26 }} />,
+    label: "YouTube",
+    handle: "@karibubaskin",
+    href: "https://youtube.com/@karibubaskin",
+    color: "#FF0000",
+  },
 ];
 
 const SPONSORS = [
-  { name: "Denis M. Photographer", url: "https://www.facebook.com/Denis.M.photographer", logo: "/sponsors/denis.jpg" },
-  { name: "Villani and Partners", url: "https://villaniandpartners.eu/", logo: "/sponsors/villani.png" },
+  {
+    name: "Denis M. Photographer",
+    url: "https://www.facebook.com/Denis.M.photographer",
+    logo: "/sponsors/denis.jpg",
+  },
+  {
+    name: "Villani and Partners",
+    url: "https://villaniandpartners.eu/",
+    logo: "/sponsors/villani.png",
+  },
   { name: "LLP", url: "https://www.llp.it/", logo: "/sponsors/LLP.png" },
-  { name: "Tetti Tecchio", url: "https://www.tettitecchio.it/", logo: "/sponsors/tettitecchio.png" },
+  {
+    name: "Tetti Tecchio",
+    url: "https://www.tettitecchio.it/",
+    logo: "/sponsors/tettitecchio.png",
+  },
   { name: "Saby Sport", url: "https://www.sabysport.com/", logo: "/sponsors/sabysport.png" },
   { name: "CGRD", url: "https://www.cgrd.it/it/", logo: "/sponsors/cgrd.png" },
 ];
@@ -47,7 +89,10 @@ const PERKS = [
   { title: "Logo sul sito", desc: "Il tuo brand visibile su tutte le pagine del sito ufficiale" },
   { title: "Visibilità sui social", desc: "Menzioni su Instagram, Facebook e YouTube" },
   { title: "Logo sulla maglia", desc: "Il tuo logo sulle divise di gara delle nostre squadre" },
-  { title: "Presenza agli eventi", desc: "Visibilità durante tornei, allenamenti aperti e iniziative" },
+  {
+    title: "Presenza agli eventi",
+    desc: "Visibilità durante tornei, allenamenti aperti e iniziative",
+  },
 ];
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -95,14 +140,48 @@ export default function ContattiPage() {
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.1)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -80, left: -80, width: 320, height: 320, borderRadius: "50%", backgroundColor: "rgba(230,81,0,0.06)", pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.1)",
+            pointerEvents: "none",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            backgroundColor: "rgba(230,81,0,0.06)",
+            pointerEvents: "none",
+          }}
+        />
         <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
           <Chip label="Siamo qui" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography variant="h3" fontWeight={800} sx={{ mb: 1.5, fontSize: { xs: "2rem", md: "2.8rem" } }}>
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            sx={{ mb: 1.5, fontSize: { xs: "2rem", md: "2.8rem" } }}
+          >
             Come possiamo aiutarti?
           </Typography>
-          <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.6)", fontWeight: 400, fontSize: { xs: "1rem", md: "1.1rem" }, mb: 4 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: "rgba(255,255,255,0.6)",
+              fontWeight: 400,
+              fontSize: { xs: "1rem", md: "1.1rem" },
+              mb: 4,
+            }}
+          >
             Hai una domanda, vuoi venire ad allenarci, o sei interessato a supportarci?
           </Typography>
           <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
@@ -111,7 +190,13 @@ export default function ContattiPage() {
               size="large"
               startIcon={<MessageIcon />}
               onClick={() => scrollToSection("contatti")}
-              sx={{ fontWeight: 700, px: 3.5, py: 1.4, borderRadius: 2, boxShadow: "0 4px 20px rgba(230,81,0,0.4)" }}
+              sx={{
+                fontWeight: 700,
+                px: 3.5,
+                py: 1.4,
+                borderRadius: 2,
+                boxShadow: "0 4px 20px rgba(230,81,0,0.4)",
+              }}
             >
               Ho una domanda
             </Button>
@@ -121,10 +206,18 @@ export default function ContattiPage() {
               startIcon={<HandshakeIcon />}
               onClick={() => scrollToSection("partner")}
               sx={{
-                fontWeight: 700, px: 3.5, py: 1.4, borderRadius: 2,
-                color: "#fff", borderColor: "rgba(255,255,255,0.35)",
-                backdropFilter: "blur(4px)", bgcolor: "rgba(255,255,255,0.06)",
-                "&:hover": { borderColor: "rgba(255,255,255,0.65)", bgcolor: "rgba(255,255,255,0.12)" },
+                fontWeight: 700,
+                px: 3.5,
+                py: 1.4,
+                borderRadius: 2,
+                color: "#fff",
+                borderColor: "rgba(255,255,255,0.35)",
+                backdropFilter: "blur(4px)",
+                bgcolor: "rgba(255,255,255,0.06)",
+                "&:hover": {
+                  borderColor: "rgba(255,255,255,0.65)",
+                  bgcolor: "rgba(255,255,255,0.12)",
+                },
               }}
             >
               Voglio sponsorizzare
@@ -177,14 +270,25 @@ export default function ContattiPage() {
       </Box>
 
       {/* ── Sezione Contatti ─────────────────────────────────────────────────── */}
-      <Box id="contatti" sx={{ pt: { xs: 4, md: 5 }, pb: { xs: 6, md: 9 }, scrollMarginTop: { xs: 96, sm: 104 } }}>
+      <Box
+        id="contatti"
+        sx={{ pt: { xs: 4, md: 5 }, pb: { xs: 6, md: 9 }, scrollMarginTop: { xs: 96, sm: 104 } }}
+      >
         <Container maxWidth="md">
-
           {/* Titolo sezione */}
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Parliamoci
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 4, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 4, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             Contattaci
           </Typography>
 
@@ -216,7 +320,16 @@ export default function ContattiPage() {
                   }}
                 >
                   <Box sx={{ color: "primary.main", display: "flex" }}>{c.icon}</Box>
-                  <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.62rem" }}>
+                  <Typography
+                    variant="caption"
+                    color="text.disabled"
+                    fontWeight={700}
+                    sx={{
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      fontSize: "0.62rem",
+                    }}
+                  >
                     {c.label}
                   </Typography>
                   <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.3 }}>
@@ -238,7 +351,10 @@ export default function ContattiPage() {
               {formOpen ? "Chiudi il form" : "Scrivi un messaggio"}
             </Button>
             <Collapse in={formOpen} timeout="auto">
-              <Paper elevation={0} sx={{ mt: 2, p: 3, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 2 }}>
+              <Paper
+                elevation={0}
+                sx={{ mt: 2, p: 3, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 2 }}
+              >
                 <ContactForm />
               </Paper>
             </Collapse>
@@ -250,7 +366,12 @@ export default function ContattiPage() {
           <Grid container spacing={4}>
             {/* Sinistra: mappa + sede */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+              <Typography
+                variant="overline"
+                color="primary"
+                fontWeight={700}
+                sx={{ letterSpacing: "0.1em" }}
+              >
                 Vieni a trovarci
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
@@ -279,7 +400,9 @@ export default function ContattiPage() {
               <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
                 <LocationOnIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
                 <Box>
-                  <Typography variant="body2" fontWeight={700}>Polisportivo Gino Cosaro</Typography>
+                  <Typography variant="body2" fontWeight={700}>
+                    Polisportivo Gino Cosaro
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Via del Vigo, 11 — 36075 Montecchio Maggiore (VI)
                   </Typography>
@@ -289,7 +412,12 @@ export default function ContattiPage() {
 
             {/* Destra: social + dati legali */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+              <Typography
+                variant="overline"
+                color="primary"
+                fontWeight={700}
+                sx={{ letterSpacing: "0.1em" }}
+              >
                 Seguici
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
@@ -318,10 +446,22 @@ export default function ContattiPage() {
                   >
                     <Box sx={{ color: s.color }}>{s.icon}</Box>
                     <Box>
-                      <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.06em", display: "block", fontSize: "0.62rem" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        fontWeight={700}
+                        sx={{
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                          display: "block",
+                          fontSize: "0.62rem",
+                        }}
+                      >
                         {s.label}
                       </Typography>
-                      <Typography variant="body2" fontWeight={600}>{s.handle}</Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {s.handle}
+                      </Typography>
                     </Box>
                   </Paper>
                 ))}
@@ -329,17 +469,28 @@ export default function ContattiPage() {
 
               <Divider sx={{ mb: 3 }} />
 
-              <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: "0.07em", display: "block", mb: 1 }}>
+              <Typography
+                variant="caption"
+                color="text.disabled"
+                fontWeight={700}
+                sx={{
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
+                  display: "block",
+                  mb: 1,
+                }}
+              >
                 Dati associazione
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.9 }}>
-                ASD Karibu Baskin Montecchio Maggiore<br />
-                C.F. 04301440246<br />
+                ASD Karibu Baskin Montecchio Maggiore
+                <br />
+                C.F. 04301440246
+                <br />
                 Affiliata ENSI ETS, nr. VEN10
               </Typography>
             </Grid>
           </Grid>
-
         </Container>
       </Box>
 
@@ -355,16 +506,25 @@ export default function ContattiPage() {
         }}
       >
         <Container maxWidth="md">
-
           {/* Sponsor attuali — logo strip */}
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Grazie a
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             I nostri partner
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti la nostra missione di inclusione.
+            Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti
+            la nostra missione di inclusione.
           </Typography>
 
           <Box
@@ -415,27 +575,50 @@ export default function ContattiPage() {
           <Divider sx={{ mb: 7 }} />
 
           {/* Diventa sponsor */}
-          <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
             Unisciti a noi
           </Typography>
-          <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
             Diventa sponsor
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 620 }}>
-            Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità vera e
-            in un progetto che dal 2015 porta valore al territorio vicentino.
+            Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità
+            vera e in un progetto che dal 2015 porta valore al territorio vicentino.
           </Typography>
 
           <Grid container spacing={2} sx={{ mb: 4 }}>
             {PERKS.map((p) => (
               <Grid key={p.title} size={{ xs: 12, sm: 6 }}>
-                <Paper elevation={0} sx={{ p: 2.5, border: "1px solid rgba(0,0,0,0.07)", display: "flex", gap: 2, alignItems: "flex-start", height: "100%" }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2.5,
+                    border: "1px solid rgba(0,0,0,0.07)",
+                    display: "flex",
+                    gap: 2,
+                    alignItems: "flex-start",
+                    height: "100%",
+                  }}
+                >
                   <Box sx={{ color: "primary.main", flexShrink: 0, mt: 0.25 }}>
                     <HandshakeIcon />
                   </Box>
                   <Box>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.25 }}>{p.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">{p.desc}</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.25 }}>
+                      {p.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {p.desc}
+                    </Typography>
                   </Box>
                 </Paper>
               </Grid>
@@ -474,7 +657,6 @@ export default function ContattiPage() {
               Scrivici
             </Button>
           </Box>
-
         </Container>
       </Box>
     </>

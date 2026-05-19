@@ -1,8 +1,17 @@
 "use client";
 import { useState } from "react";
 import {
-  Box, Typography, Paper, Chip, Button,
-  IconButton, Menu, MenuItem, ListItemIcon, ListItemText, CircularProgress,
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  CircularProgress,
 } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -20,8 +29,17 @@ import { it } from "date-fns/locale";
 import TeamsModal from "@/components/TeamsModal";
 import { TEAM_META } from "@/lib/constants";
 
-interface Athlete { id: string; name: string; role: number }
-interface TeamsData { teamA: Athlete[]; teamB: Athlete[]; teamC?: Athlete[]; coaches?: { id: string; name: string }[] }
+interface Athlete {
+  id: string;
+  name: string;
+  role: number;
+}
+interface TeamsData {
+  teamA: Athlete[];
+  teamB: Athlete[];
+  teamC?: Athlete[];
+  coaches?: { id: string; name: string }[];
+}
 
 export interface SessionWithCount {
   id: string;
@@ -86,9 +104,10 @@ export default function SessionCard({
   const endTime = s.endTime ? new Date(s.endTime) : null;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
   const hasTeams = !!s.teams;
-  const myTeam = myRegistrationId && s.teams
-    ? TEAM_META.find((t) => s.teams![t.key]?.some((a) => a.id === myRegistrationId)) ?? null
-    : null;
+  const myTeam =
+    myRegistrationId && s.teams
+      ? (TEAM_META.find((t) => s.teams![t.key]?.some((a) => a.id === myRegistrationId)) ?? null)
+      : null;
   const status = getStatusLabel(date, endTime);
 
   const px = 2;
@@ -122,7 +141,6 @@ export default function SessionCard({
           }),
         }}
       >
-
         {/* Stretched link */}
         <Box
           component={Link}
@@ -145,7 +163,9 @@ export default function SessionCard({
           sx={{
             px,
             py: hero ? { xs: 2, sm: 2.5 } : 1.5,
-            background: muted ? "rgba(0,0,0,0.04)" : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+            background: muted
+              ? "rgba(0,0,0,0.04)"
+              : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
             display: "flex",
             alignItems: hero ? "flex-start" : "center",
             justifyContent: "space-between",
@@ -169,7 +189,15 @@ export default function SessionCard({
               {s.title}
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexShrink: 0, mt: hero ? 0.25 : 0 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+              flexShrink: 0,
+              mt: hero ? 0.25 : 0,
+            }}
+          >
             <Chip
               label={status.label}
               size="small"
@@ -184,8 +212,15 @@ export default function SessionCard({
               <IconButton
                 size="small"
                 aria-label="Azioni allenamento"
-                onClick={(e) => { e.stopPropagation(); e.preventDefault(); setMenuAnchor(e.currentTarget); }}
-                sx={{ color: muted ? "text.disabled" : "rgba(255,255,255,0.7)", pointerEvents: "auto" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setMenuAnchor(e.currentTarget);
+                }}
+                sx={{
+                  color: muted ? "text.disabled" : "rgba(255,255,255,0.7)",
+                  pointerEvents: "auto",
+                }}
               >
                 <MoreVertIcon fontSize="small" />
               </IconButton>
@@ -199,12 +234,27 @@ export default function SessionCard({
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
-              <MenuItem onClick={() => { setMenuAnchor(null); onEdit?.(); }}>
-                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchor(null);
+                  onEdit?.();
+                }}
+              >
+                <ListItemIcon>
+                  <EditIcon fontSize="small" />
+                </ListItemIcon>
                 <ListItemText>Modifica</ListItemText>
               </MenuItem>
-              <MenuItem onClick={() => { setMenuAnchor(null); onDelete?.(); }} sx={{ color: "error.main" }}>
-                <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchor(null);
+                  onDelete?.();
+                }}
+                sx={{ color: "error.main" }}
+              >
+                <ListItemIcon>
+                  <DeleteIcon fontSize="small" color="error" />
+                </ListItemIcon>
                 <ListItemText>Elimina</ListItemText>
               </MenuItem>
             </Menu>
@@ -213,7 +263,6 @@ export default function SessionCard({
 
         {/* Body: colonna info+CTA | colonna stamp */}
         <Box sx={{ flex: 1, display: "flex" }}>
-
           {/* Colonna sinistra: info in cima, CTA in fondo */}
           <Box
             sx={{
@@ -229,7 +278,9 @@ export default function SessionCard({
               pointerEvents: "none",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}>
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}
+            >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
@@ -239,7 +290,8 @@ export default function SessionCard({
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                  {format(date, "HH:mm")}{endTime && `–${format(endTime, "HH:mm")}`}
+                  {format(date, "HH:mm")}
+                  {endTime && `–${format(endTime, "HH:mm")}`}
                 </Typography>
               </Box>
             </Box>
@@ -248,7 +300,7 @@ export default function SessionCard({
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <GroupsIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                  {s._count.registrations}{" "}{s._count.registrations === 1 ? "iscritto" : "iscritti"}
+                  {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
                 </Typography>
               </Box>
               {isRegistered && !myTeam && (
@@ -266,18 +318,30 @@ export default function SessionCard({
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                 <Chip
                   icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
-                  label={s.restrictTeam
-                    ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                    : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")}
+                  label={
+                    s.restrictTeam
+                      ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
+                      : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")
+                  }
                   size="small"
-                  sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "warning.light", color: "warning.contrastText" }}
+                  sx={{
+                    fontSize: chipFontSize,
+                    fontWeight: 700,
+                    bgcolor: "warning.light",
+                    color: "warning.contrastText",
+                  }}
                 />
                 {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
                   <Chip
                     icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
                     label={`Aperto a tutti i ${s.openRoles.map((r) => `${r}`).join(", ")}`}
                     size="small"
-                    sx={{ fontSize: chipFontSize, fontWeight: 700, bgcolor: "success.light", color: "success.contrastText" }}
+                    sx={{
+                      fontSize: chipFontSize,
+                      fontWeight: 700,
+                      bgcolor: "success.light",
+                      color: "success.contrastText",
+                    }}
                   />
                 )}
               </Box>
@@ -322,19 +386,37 @@ export default function SessionCard({
                   variant="outlined"
                   size="small"
                   color="error"
-                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemoveTeams?.(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onRemoveTeams?.();
+                  }}
                   disabled={removingTeams}
                   sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
                 >
-                  {removingTeams ? <CircularProgress size={13} color="inherit" /> : "Rimuovi squadre"}
+                  {removingTeams ? (
+                    <CircularProgress size={13} color="inherit" />
+                  ) : (
+                    "Rimuovi squadre"
+                  )}
                 </Button>
               )}
               {isStaff && !hasTeams && (
                 <Button
                   variant="contained"
                   size="small"
-                  startIcon={generating ? <CircularProgress size={13} color="inherit" /> : <SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
-                  onClick={(e) => { e.stopPropagation(); e.preventDefault(); onGenerateTeams?.(); }}
+                  startIcon={
+                    generating ? (
+                      <CircularProgress size={13} color="inherit" />
+                    ) : (
+                      <SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />
+                    )
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onGenerateTeams?.();
+                  }}
                   disabled={generating || s._count.registrations === 0}
                   sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
                 >

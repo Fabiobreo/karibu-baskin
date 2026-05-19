@@ -27,7 +27,12 @@ export default async function AdminAllenamentiPage() {
     const athleteRegs = s.registrations.filter((r) => !r.registeredAsCoach);
     const athleteCount = athleteRegs.length;
     const presentCount = athleteRegs.filter((r) => r.attended === true).length;
-    const athletes = athleteRegs.map((r) => ({ id: r.id, name: r.name, role: r.role, attended: r.attended }));
+    const athletes = athleteRegs.map((r) => ({
+      id: r.id,
+      name: r.name,
+      role: r.role,
+      attended: r.attended,
+    }));
 
     const hasThreeTeams = !!(teams?.teamC && teams.teamC.length > 0);
     const expectedResults = teams ? (hasThreeTeams ? 3 : 1) : 0;

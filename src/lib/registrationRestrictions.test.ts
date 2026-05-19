@@ -100,7 +100,9 @@ describe("checkRegistrationAllowed — GUEST", () => {
 
 describe("checkRegistrationAllowed — coach che si iscrive come allenatore", () => {
   it("registeredAsCoach=true bypassa tutte le restrizioni", () => {
-    expect(checkRegistrationAllowed(fullRestriction, "COACH", 2, false, true)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(fullRestriction, "COACH", 2, false, true)).toEqual({
+      allowed: true,
+    });
   });
 });
 
@@ -128,7 +130,9 @@ describe("checkRegistrationAllowed — COACH come atleta (registeredAsCoach=fals
 
 describe("checkRegistrationAllowed — nessuna restrizione", () => {
   it("ATHLETE ammesso senza restrizioni", () => {
-    expect(checkRegistrationAllowed(noRestrictions, "ATHLETE", 3, false)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(noRestrictions, "ATHLETE", 3, false)).toEqual({
+      allowed: true,
+    });
   });
 
   it("PARENT ammesso senza restrizioni", () => {
@@ -142,7 +146,9 @@ describe("checkRegistrationAllowed — nessuna restrizione", () => {
 
 describe("checkRegistrationAllowed — restrizione per ruolo sportivo", () => {
   it("ruolo ammesso nella lista → allowed", () => {
-    expect(checkRegistrationAllowed(roleRestriction, "ATHLETE", 3, false)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(roleRestriction, "ATHLETE", 3, false)).toEqual({
+      allowed: true,
+    });
   });
 
   it("ruolo non ammesso → blocked con reason", () => {
@@ -159,7 +165,9 @@ describe("checkRegistrationAllowed — restrizione per ruolo sportivo", () => {
 
 describe("checkRegistrationAllowed — restrizione per squadra", () => {
   it("membro della squadra ristretta → allowed", () => {
-    expect(checkRegistrationAllowed(teamRestriction, "ATHLETE", 3, true)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(teamRestriction, "ATHLETE", 3, true)).toEqual({
+      allowed: true,
+    });
   });
 
   it("non membro della squadra ristretta → blocked con reason", () => {
@@ -169,7 +177,9 @@ describe("checkRegistrationAllowed — restrizione per squadra", () => {
   });
 
   it("ruolo aperto bypassa la restrizione di squadra (non membro)", () => {
-    expect(checkRegistrationAllowed(teamRestrictionWithOpenRoles, "ATHLETE", 1, false)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(teamRestrictionWithOpenRoles, "ATHLETE", 1, false)).toEqual({
+      allowed: true,
+    });
   });
 
   it("ruolo non aperto non bypassa la restrizione di squadra", () => {
@@ -180,7 +190,9 @@ describe("checkRegistrationAllowed — restrizione per squadra", () => {
 
 describe("checkRegistrationAllowed — restrizioni combinate (ruolo + squadra)", () => {
   it("ruolo ammesso + membro squadra → allowed", () => {
-    expect(checkRegistrationAllowed(fullRestriction, "ATHLETE", 3, true)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(fullRestriction, "ATHLETE", 3, true)).toEqual({
+      allowed: true,
+    });
   });
 
   it("ruolo ammesso + non membro squadra + ruolo non aperto → blocked per squadra", () => {
@@ -222,7 +234,9 @@ describe("checkRegistrationAllowed — anonimo (null) con restrizioni", () => {
   });
 
   it("anonimo con ruolo aperto bypassa la restrizione di squadra", () => {
-    expect(checkRegistrationAllowed(teamRestrictionWithOpenRoles, null, 1, false)).toEqual({ allowed: true });
+    expect(checkRegistrationAllowed(teamRestrictionWithOpenRoles, null, 1, false)).toEqual({
+      allowed: true,
+    });
   });
 
   it("anonimo bloccato da restrizione combinata: ruolo non ammesso", () => {

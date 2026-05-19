@@ -152,7 +152,9 @@ describe("PlayerStatsEntrySchema — refinement userId XOR childId", () => {
   });
 
   it("rifiuta notes oltre 500 caratteri", () => {
-    expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", notes: "x".repeat(501) }).success).toBe(false);
+    expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", notes: "x".repeat(501) }).success).toBe(
+      false
+    );
   });
 });
 

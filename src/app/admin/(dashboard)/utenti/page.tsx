@@ -36,28 +36,46 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   }
   if (appRole && VALID_ROLES.includes(appRole)) where.appRole = appRole;
   if (sportRole === "none") where.sportRole = null;
-  else if (sportRole) { const n = parseInt(sportRole, 10); if (!isNaN(n)) where.sportRole = n; }
+  else if (sportRole) {
+    const n = parseInt(sportRole, 10);
+    if (!isNaN(n)) where.sportRole = n;
+  }
   if (gender === "none") where.gender = null;
   else if (gender && VALID_GENDERS.includes(gender as Gender)) where.gender = gender as Gender;
   if (teamId) where.teamMemberships = { some: { teamId } };
 
-  const orderBy: Prisma.UserOrderByWithRelationInput = sortBy === "name"
-    ? { name: sortDir }
-    : sortBy === "sportRole"
-    ? { sportRole: sortDir }
-    : sortBy === "appRole"
-    ? { appRole: sortDir }
-    : { createdAt: sortDir };
+  const orderBy: Prisma.UserOrderByWithRelationInput =
+    sortBy === "name"
+      ? { name: sortDir }
+      : sortBy === "sportRole"
+        ? { sportRole: sortDir }
+        : sortBy === "appRole"
+          ? { appRole: sortDir }
+          : { createdAt: sortDir };
 
   const select = {
-    id: true, name: true, email: true, image: true, appRole: true,
-    sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true,
-    gender: true, birthDate: true, createdAt: true,
+    id: true,
+    name: true,
+    email: true,
+    image: true,
+    appRole: true,
+    sportRole: true,
+    sportRoleVariant: true,
+    sportRoleSuggested: true,
+    sportRoleSuggestedVariant: true,
+    gender: true,
+    birthDate: true,
+    createdAt: true,
     _count: { select: { registrations: true } },
-    sportRoleHistory: { orderBy: { changedAt: "desc" as const }, select: { sportRole: true, changedAt: true } },
+    sportRoleHistory: {
+      orderBy: { changedAt: "desc" as const },
+      select: { sportRole: true, changedAt: true },
+    },
     teamMemberships: {
       select: {
-        id: true, teamId: true, isCaptain: true,
+        id: true,
+        teamId: true,
+        isCaptain: true,
         team: { select: { id: true, name: true, season: true, color: true } },
       },
     },
@@ -74,13 +92,20 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       where: { userId: null },
       orderBy: { createdAt: "asc" },
       select: {
-        id: true, name: true, sportRole: true, sportRoleVariant: true,
-        gender: true, birthDate: true, createdAt: true,
+        id: true,
+        name: true,
+        sportRole: true,
+        sportRoleVariant: true,
+        gender: true,
+        birthDate: true,
+        createdAt: true,
         parent: { select: { name: true, email: true } },
         _count: { select: { registrations: true } },
         teamMemberships: {
           select: {
-            id: true, teamId: true, isCaptain: true,
+            id: true,
+            teamId: true,
+            isCaptain: true,
             team: { select: { id: true, name: true, season: true, color: true } },
           },
         },
@@ -95,7 +120,16 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, flexWrap: "wrap", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+          flexWrap: "wrap",
+          gap: 1,
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Link href="/admin" style={{ textDecoration: "none" }}>
             <Button startIcon={<ArrowBackIcon />} size="small" sx={{ fontWeight: 500 }}>

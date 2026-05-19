@@ -95,16 +95,12 @@ describe("GET /api/notifications", () => {
 
   it("clamp limit a 50 anche se richiesto di più", async () => {
     await GET(makeGET({ limit: "200" }));
-    expect(p.appNotification.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 50 })
-    );
+    expect(p.appNotification.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 50 }));
   });
 
   it("clamp page a 1 se <= 0", async () => {
     await GET(makeGET({ page: "0" }));
-    expect(p.appNotification.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ skip: 0 })
-    );
+    expect(p.appNotification.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0 }));
   });
 
   it("hasMore è true quando ci sono più risultati oltre la pagina corrente", async () => {

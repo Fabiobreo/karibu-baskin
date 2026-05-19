@@ -51,12 +51,66 @@ function makePost(body?: unknown): NextRequest {
 const mockParams = { params: Promise.resolve({ sessionId: "sess-1" }) };
 
 const athletes = [
-  { id: "r1", name: "Alice", role: 1, registeredAsCoach: false, userId: "u1", sessionId: "sess-1", createdAt: new Date(), childId: null },
-  { id: "r2", name: "Bob", role: 2, registeredAsCoach: false, userId: "u2", sessionId: "sess-1", createdAt: new Date(), childId: null },
-  { id: "r3", name: "Carlo", role: 3, registeredAsCoach: false, userId: "u3", sessionId: "sess-1", createdAt: new Date(), childId: null },
-  { id: "r4", name: "Diana", role: 4, registeredAsCoach: false, userId: "u4", sessionId: "sess-1", createdAt: new Date(), childId: null },
-  { id: "r5", name: "Eva", role: 5, registeredAsCoach: false, userId: "u5", sessionId: "sess-1", createdAt: new Date(), childId: null },
-  { id: "r6", name: "Franco", role: 1, registeredAsCoach: false, userId: "u6", sessionId: "sess-1", createdAt: new Date(), childId: null },
+  {
+    id: "r1",
+    name: "Alice",
+    role: 1,
+    registeredAsCoach: false,
+    userId: "u1",
+    sessionId: "sess-1",
+    createdAt: new Date(),
+    childId: null,
+  },
+  {
+    id: "r2",
+    name: "Bob",
+    role: 2,
+    registeredAsCoach: false,
+    userId: "u2",
+    sessionId: "sess-1",
+    createdAt: new Date(),
+    childId: null,
+  },
+  {
+    id: "r3",
+    name: "Carlo",
+    role: 3,
+    registeredAsCoach: false,
+    userId: "u3",
+    sessionId: "sess-1",
+    createdAt: new Date(),
+    childId: null,
+  },
+  {
+    id: "r4",
+    name: "Diana",
+    role: 4,
+    registeredAsCoach: false,
+    userId: "u4",
+    sessionId: "sess-1",
+    createdAt: new Date(),
+    childId: null,
+  },
+  {
+    id: "r5",
+    name: "Eva",
+    role: 5,
+    registeredAsCoach: false,
+    userId: "u5",
+    sessionId: "sess-1",
+    createdAt: new Date(),
+    childId: null,
+  },
+  {
+    id: "r6",
+    name: "Franco",
+    role: 1,
+    registeredAsCoach: false,
+    userId: "u6",
+    sessionId: "sess-1",
+    createdAt: new Date(),
+    childId: null,
+  },
 ];
 
 describe("POST /api/teams/[sessionId]", () => {
@@ -65,7 +119,10 @@ describe("POST /api/teams/[sessionId]", () => {
     mockIsCoachOrAdmin.mockResolvedValue(false);
     p.registration.findMany.mockResolvedValue([]);
     p.trainingSession.update.mockResolvedValue({});
-    p.trainingSession.findUnique.mockResolvedValue({ title: "Allenamento Test", dateSlug: "2025-01-15" });
+    p.trainingSession.findUnique.mockResolvedValue({
+      title: "Allenamento Test",
+      dateSlug: "2025-01-15",
+    });
   });
 
   it("restituisce 401 se l'utente non è coach/admin", async () => {
@@ -108,7 +165,16 @@ describe("POST /api/teams/[sessionId]", () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
     const withCoach = [
       ...athletes,
-      { id: "r7", name: "Coach", role: 3, registeredAsCoach: true, userId: "u7", sessionId: "sess-1", createdAt: new Date(), childId: null },
+      {
+        id: "r7",
+        name: "Coach",
+        role: 3,
+        registeredAsCoach: true,
+        userId: "u7",
+        sessionId: "sess-1",
+        createdAt: new Date(),
+        childId: null,
+      },
     ];
     p.registration.findMany.mockResolvedValue(withCoach);
     const res = await POST(makePost(), mockParams);
@@ -135,7 +201,16 @@ describe("POST /api/teams/[sessionId]", () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
     const withChild = [
       ...athletes,
-      { id: "r8", name: "Bambino", role: 2, registeredAsCoach: false, userId: null, sessionId: "sess-1", createdAt: new Date(), childId: "child-1" },
+      {
+        id: "r8",
+        name: "Bambino",
+        role: 2,
+        registeredAsCoach: false,
+        userId: null,
+        sessionId: "sess-1",
+        createdAt: new Date(),
+        childId: "child-1",
+      },
     ];
     p.registration.findMany.mockResolvedValue(withChild);
     await POST(makePost(), mockParams);
@@ -215,7 +290,10 @@ describe("DELETE /api/teams/[sessionId]", () => {
 
   it("restituisce 404 se la sessione non esiste (P2025)", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.trainingSession.update.mockRejectedValue(p2025);
     const res = await DELETE(makeDEL(), mockParams);
     expect(res.status).toBe(404);

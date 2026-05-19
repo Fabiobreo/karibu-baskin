@@ -129,7 +129,10 @@ describe("PUT /api/competitive-teams/[teamId]", () => {
 
   it("restituisce 404 se la squadra non esiste (P2025)", async () => {
     mockIsAdmin.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.competitiveTeam.update.mockRejectedValue(p2025);
     const req = new Request("http://localhost", {
       method: "PUT",
@@ -164,7 +167,10 @@ describe("DELETE /api/competitive-teams/[teamId]", () => {
 
   it("restituisce 404 se la squadra non esiste (P2025)", async () => {
     mockIsAdmin.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.competitiveTeam.delete.mockRejectedValue(p2025);
     const res = await DELETE(new Request("http://localhost"), makeParams("missing"));
     expect(res.status).toBe(404);

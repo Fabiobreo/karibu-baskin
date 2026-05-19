@@ -1,7 +1,16 @@
 "use client";
 import {
-  Box, TextField, Button, Typography, CircularProgress,
-  Chip, Avatar, Divider, ToggleButtonGroup, ToggleButton, Alert,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  CircularProgress,
+  Chip,
+  Avatar,
+  Divider,
+  ToggleButtonGroup,
+  ToggleButton,
+  Alert,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -40,13 +49,20 @@ export default function RegistrationForm({
   restrictions,
 }: Props) {
   const {
-    coachMode, setCoachMode,
-    subject, setSubject,
-    phase, setPhase,
-    chosenRole, setChosenRole,
-    anonymousName, setAnonymousName,
-    anonymousEmail, setAnonymousEmail,
-    note, setNote,
+    coachMode,
+    setCoachMode,
+    subject,
+    setSubject,
+    phase,
+    setPhase,
+    chosenRole,
+    setChosenRole,
+    anonymousName,
+    setAnonymousName,
+    anonymousEmail,
+    setAnonymousEmail,
+    note,
+    setNote,
     loading,
     selectedChild,
     confirmedRole,
@@ -82,7 +98,8 @@ export default function RegistrationForm({
   }
 
   // Se è un genitore e tutti (figli + sé stesso) sono già iscritti, mostra il messaggio
-  const allChildrenRegistered = hasChildren && parentChildren.every((c) => effectiveRegisteredChildIds.includes(c.id));
+  const allChildrenRegistered =
+    hasChildren && parentChildren.every((c) => effectiveRegisteredChildIds.includes(c.id));
   if (isParent && hasChildren && allChildrenRegistered && selfRegistered) {
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
@@ -115,17 +132,26 @@ export default function RegistrationForm({
     if (appRole === "ADMIN") return null;
     if (appRole === "COACH" && coachMode === "coach") return null;
     const roleToCheck = confirmedRole ?? chosenRole?.role ?? null;
-    if (restrictions.restrictTeamId !== null && roleToCheck !== null && restrictions.openRoles.includes(roleToCheck)) {
+    if (
+      restrictions.restrictTeamId !== null &&
+      roleToCheck !== null &&
+      restrictions.openRoles.includes(roleToCheck)
+    ) {
       return null;
     }
-    if (restrictions.allowedRoles.length > 0 && roleToCheck !== null && !restrictions.allowedRoles.includes(roleToCheck)) {
+    if (
+      restrictions.allowedRoles.length > 0 &&
+      roleToCheck !== null &&
+      !restrictions.allowedRoles.includes(roleToCheck)
+    ) {
       return `Questo allenamento è riservato ai ruoli ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`;
     }
     if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
       if (roleToCheck !== null) {
-        const subjectTeamMemberships = subject === "self"
-          ? (currentUser?.teamMemberships ?? [])
-          : (selectedChild?.teamMemberships ?? []);
+        const subjectTeamMemberships =
+          subject === "self"
+            ? (currentUser?.teamMemberships ?? [])
+            : (selectedChild?.teamMemberships ?? []);
         if (subjectTeamMemberships.length === 0) return null; // nessuna squadra → bypass
         if (!subjectTeamMemberships.some((m) => m.teamId === restrictions.restrictTeamId)) {
           const teamName = restrictions.restrictTeamName
@@ -143,14 +169,20 @@ export default function RegistrationForm({
     const parts: string[] = [];
     if (restrictions.allowedRoles.length > 0) {
       const roleNames = restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ");
-      parts.push(restrictions.restrictTeamId
-        ? `Riservato ai ${roleNames} dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`
-        : `Riservato ai ${roleNames}`);
+      parts.push(
+        restrictions.restrictTeamId
+          ? `Riservato ai ${roleNames} dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`
+          : `Riservato ai ${roleNames}`
+      );
     } else if (restrictions.restrictTeamId) {
-      parts.push(`Riservato ai membri dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`);
+      parts.push(
+        `Riservato ai membri dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`
+      );
     }
     if (restrictions.openRoles.length > 0) {
-      parts.push(`Aperto ai ${restrictions.openRoles.map((r) => ROLE_LABELS[r]).join(", ")} di tutte le squadre`);
+      parts.push(
+        `Aperto ai ${restrictions.openRoles.map((r) => ROLE_LABELS[r]).join(", ")} di tutte le squadre`
+      );
     }
     return parts.join("\n");
   })();
@@ -166,13 +198,21 @@ export default function RegistrationForm({
       {/* Toggle Atleta / Allenatore (solo per COACH) */}
       {isCoach && subject === "self" && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" sx={{ mb: 0.75 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            fontWeight={600}
+            display="block"
+            sx={{ mb: 0.75 }}
+          >
             Come ti iscrivi?
           </Typography>
           <ToggleButtonGroup
             exclusive
             value={coachMode}
-            onChange={(_, val) => { if (val) setCoachMode(val as "athlete" | "coach"); }}
+            onChange={(_, val) => {
+              if (val) setCoachMode(val as "athlete" | "coach");
+            }}
             size="small"
           >
             <ToggleButton value="athlete" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
@@ -217,14 +257,21 @@ export default function RegistrationForm({
             placeholder="es. Devo andare via alle 11:30"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            fullWidth size="small" multiline minRows={2}
+            fullWidth
+            size="small"
+            multiline
+            minRows={2}
             slotProps={{ htmlInput: { maxLength: 300 } }}
             disabled={loading}
-            helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
+            helperText={
+              note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"
+            }
             sx={{ mb: 1.5 }}
           />
           <Button
-            variant="contained" fullWidth onClick={handleSubmit}
+            variant="contained"
+            fullWidth
+            onClick={handleSubmit}
             disabled={loading}
             startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
           >
@@ -234,60 +281,71 @@ export default function RegistrationForm({
       )}
 
       {/* Form atleta (nascosto in modalità allenatore) */}
-      {(!isCoach || coachMode === "athlete") && (currentSubjectRegistered ? (
-        <Box sx={{ textAlign: "center", py: 1.5 }}>
-          <CheckCircleIcon color="success" sx={{ fontSize: 32, mb: 0.5 }} />
-          <Typography variant="body2" fontWeight={600}>
-            {subject === "self"
-              ? "Sei già iscritto a questo allenamento"
-              : `${selectedChild?.name} è già iscritto/a`}
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          {/* Intestazione soggetto */}
-          {currentUser && !hasChildren && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-              <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
-                {(currentUser.name ?? "?")[0].toUpperCase()}
-              </Avatar>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={600}>{currentUser.name ?? "Utente"}</Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    {currentUser.appRole === "GUEST"
-                      ? "Ospite"
-                      : currentUser.appRole === "PARENT"
-                        ? "Genitore"
-                        : currentUser.appRole === "COACH"
-                          ? "Allenatore"
-                          : "Atleta"}
+      {(!isCoach || coachMode === "athlete") &&
+        (currentSubjectRegistered ? (
+          <Box sx={{ textAlign: "center", py: 1.5 }}>
+            <CheckCircleIcon color="success" sx={{ fontSize: 32, mb: 0.5 }} />
+            <Typography variant="body2" fontWeight={600}>
+              {subject === "self"
+                ? "Sei già iscritto a questo allenamento"
+                : `${selectedChild?.name} è già iscritto/a`}
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            {/* Intestazione soggetto */}
+            {currentUser && !hasChildren && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+                <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
+                  {(currentUser.name ?? "?")[0].toUpperCase()}
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={600}>
+                    {currentUser.name ?? "Utente"}
                   </Typography>
-                  {currentUser.teamMemberships
-                    .filter((m) => m.teamSeason === getCurrentSeason())
-                    .map((m) => (
-                      <Chip
-                        key={m.teamId}
-                        label={m.teamName}
-                        size="small"
-                        sx={{ height: 16, fontSize: "0.65rem", fontWeight: 700, bgcolor: m.teamColor ?? "primary.main", color: "#fff", "& .MuiChip-label": { px: 0.75 } }}
-                      />
-                    ))}
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      {currentUser.appRole === "GUEST"
+                        ? "Ospite"
+                        : currentUser.appRole === "PARENT"
+                          ? "Genitore"
+                          : currentUser.appRole === "COACH"
+                            ? "Allenatore"
+                            : "Atleta"}
+                    </Typography>
+                    {currentUser.teamMemberships
+                      .filter((m) => m.teamSeason === getCurrentSeason())
+                      .map((m) => (
+                        <Chip
+                          key={m.teamId}
+                          label={m.teamName}
+                          size="small"
+                          sx={{
+                            height: 16,
+                            fontSize: "0.65rem",
+                            fontWeight: 700,
+                            bgcolor: m.teamColor ?? "primary.main",
+                            color: "#fff",
+                            "& .MuiChip-label": { px: 0.75 },
+                          }}
+                        />
+                      ))}
+                  </Box>
                 </Box>
               </Box>
-            </Box>
-          )}
-          {/* Intestazione figlio selezionato (genitore) */}
-          {selectedChild && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-              <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
-                <ChildCareIcon sx={{ fontSize: 18 }} />
-              </Avatar>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={600}>{selectedChild.name}</Typography>
-                {selectedChild.teamMemberships
-                  .filter((m) => m.teamSeason === getCurrentSeason())
-                  .length > 0 && (
+            )}
+            {/* Intestazione figlio selezionato (genitore) */}
+            {selectedChild && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+                <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
+                  <ChildCareIcon sx={{ fontSize: 18 }} />
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={600}>
+                    {selectedChild.name}
+                  </Typography>
+                  {selectedChild.teamMemberships.filter((m) => m.teamSeason === getCurrentSeason())
+                    .length > 0 && (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
                       {selectedChild.teamMemberships
                         .filter((m) => m.teamSeason === getCurrentSeason())
@@ -296,183 +354,256 @@ export default function RegistrationForm({
                             key={m.teamId}
                             label={m.teamName}
                             size="small"
-                            sx={{ height: 16, fontSize: "0.65rem", fontWeight: 700, bgcolor: m.teamColor ?? "primary.main", color: "#fff", "& .MuiChip-label": { px: 0.75 } }}
+                            sx={{
+                              height: 16,
+                              fontSize: "0.65rem",
+                              fontWeight: 700,
+                              bgcolor: m.teamColor ?? "primary.main",
+                              color: "#fff",
+                              "& .MuiChip-label": { px: 0.75 },
+                            }}
                           />
                         ))}
                     </Box>
                   )}
-              </Box>
-            </Box>
-          )}
-
-          {/* Campo nome e email per anonimi */}
-          {!currentUser && (
-            <>
-              <TextField
-                label="Nome e cognome"
-                value={anonymousName}
-                onChange={(e) => setAnonymousName(e.target.value)}
-                fullWidth size="small"
-                slotProps={{ htmlInput: { maxLength: 60 } }}
-                sx={{ mb: 1.5 }}
-                disabled={loading}
-                error={isDuplicateName}
-                helperText={isDuplicateName ? "Questo nome è già iscritto" : ""}
-              />
-              <TextField
-                label="Email (opzionale)"
-                type="email"
-                value={anonymousEmail}
-                onChange={(e) => setAnonymousEmail(e.target.value)}
-                fullWidth size="small"
-                slotProps={{ htmlInput: { maxLength: 254 } }}
-                sx={{ mb: 2 }}
-                disabled={loading}
-                helperText={
-                  <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
-                    <span>Hai un account Google?</span>
-                    <Box
-                      component="button"
-                      type="button"
-                      onClick={() => signIn("google", { callbackUrl: window.location.href })}
-                      sx={{ color: "primary.main", fontWeight: 600, textDecoration: "none", background: "none", border: "none", p: 0, cursor: "pointer", font: "inherit", fontSize: "inherit", "&:hover": { textDecoration: "underline" } }}
-                    >
-                      Accedi per registrarti più facilmente.
-                    </Box>
-                  </Box>
-                }
-              />
-            </>
-          )}
-
-          {/* Selezione ruolo */}
-          {phase === "questionnaire" && (
-            <>
-              {currentUser && !hasChildren && <Divider sx={{ mb: 2 }} />}
-              {isStaff ? (
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                    {subject !== "self" ? `Ruolo di ${selectedChild?.name}:` : "Seleziona il tuo ruolo:"}
-                  </Typography>
-                  <ToggleButtonGroup
-                    exclusive
-                    value={chosenRole?.role ?? null}
-                    onChange={(_, val) => {
-                      if (val !== null) { setChosenRole({ role: val as number }); setPhase("confirm"); }
-                    }}
-                    sx={{ flexWrap: "wrap", gap: 0.5 }}
-                  >
-                    {ROLES.map((r) => (
-                      <ToggleButton key={r} value={r} size="small" sx={{
-                        fontWeight: 600, fontSize: "0.75rem", py: 0.5, px: 1.5,
-                        borderRadius: "6px !important",
-                        border: "1px solid rgba(0,0,0,0.23) !important",
-                        "&.Mui-selected": {
-                          backgroundColor: ROLE_COLORS[r], color: "#fff",
-                          borderColor: `${ROLE_COLORS[r]} !important`,
-                          "&:hover": { backgroundColor: ROLE_COLORS[r], opacity: 0.9 },
-                        },
-                      }}>
-                        {ROLE_LABELS[r]}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
                 </Box>
-              ) : (
-                <>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                    {subject !== "self"
-                      ? `Rispondi a qualche domanda per determinare il ruolo di ${selectedChild?.name}:`
-                      : "Rispondi a qualche domanda per determinare il tuo ruolo nel Baskin:"}
-                  </Typography>
-                  <SportRoleQuestionnaire
-                    onResult={handleQuestionnaireResult}
-                    initialSuggested={
-                      subject === "self" && currentUser?.sportRoleSuggested
-                        ? { role: currentUser.sportRoleSuggested, variant: currentUser.sportRoleSuggestedVariant ?? undefined }
-                        : undefined
-                    }
-                  />
-                </>
-              )}
-            </>
-          )}
+              </Box>
+            )}
 
-          {/* Riepilogo e conferma */}
-          {phase === "confirm" && chosenRole && (
-            <>
-              <Divider sx={{ mb: 2 }} />
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-                <SportsSoccerIcon color="action" fontSize="small" />
-                <Typography variant="body2" color="text.secondary">
-                  {hasConfirmedRole ? "Ruolo:" : "Ruolo suggerito:"}
-                </Typography>
-                <Chip
-                  label={sportRoleLabel(chosenRole.role, chosenRole.variant)}
+            {/* Campo nome e email per anonimi */}
+            {!currentUser && (
+              <>
+                <TextField
+                  label="Nome e cognome"
+                  value={anonymousName}
+                  onChange={(e) => setAnonymousName(e.target.value)}
+                  fullWidth
                   size="small"
-                  sx={{ bgcolor: ROLE_COLORS[chosenRole.role], color: "#fff", fontWeight: 700, fontSize: "0.78rem" }}
+                  slotProps={{ htmlInput: { maxLength: 60 } }}
+                  sx={{ mb: 1.5 }}
+                  disabled={loading}
+                  error={isDuplicateName}
+                  helperText={isDuplicateName ? "Questo nome è già iscritto" : ""}
                 />
-              </Box>
+                <TextField
+                  label="Email (opzionale)"
+                  type="email"
+                  value={anonymousEmail}
+                  onChange={(e) => setAnonymousEmail(e.target.value)}
+                  fullWidth
+                  size="small"
+                  slotProps={{ htmlInput: { maxLength: 254 } }}
+                  sx={{ mb: 2 }}
+                  disabled={loading}
+                  helperText={
+                    <Box
+                      component="span"
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}
+                    >
+                      <span>Hai un account Google?</span>
+                      <Box
+                        component="button"
+                        type="button"
+                        onClick={() => signIn("google", { callbackUrl: window.location.href })}
+                        sx={{
+                          color: "primary.main",
+                          fontWeight: 600,
+                          textDecoration: "none",
+                          background: "none",
+                          border: "none",
+                          p: 0,
+                          cursor: "pointer",
+                          font: "inherit",
+                          fontSize: "inherit",
+                          "&:hover": { textDecoration: "underline" },
+                        }}
+                      >
+                        Accedi per registrarti più facilmente.
+                      </Box>
+                    </Box>
+                  }
+                />
+              </>
+            )}
 
-              {!hasConfirmedRole && subject === "self" && (
-                <Box sx={{ mb: 2 }}>
-                  <Button size="small" variant="text"
-                    onClick={() => { setChosenRole(null); setPhase("questionnaire"); }}
-                    sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}>
-                    ↩ Rifai il questionario
-                  </Button>
-                  <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                    Il ruolo sarà confermato dall&apos;allenatore dopo il primo allenamento.
-                  </Typography>
-                </Box>
-              )}
-              {!hasConfirmedRole && subject !== "self" && (
-                <Box sx={{ mb: 2 }}>
-                  <Button size="small" variant="text"
-                    onClick={() => { setChosenRole(null); setPhase("questionnaire"); }}
-                    sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}>
-                    ↩ Cambia ruolo
-                  </Button>
-                </Box>
-              )}
+            {/* Selezione ruolo */}
+            {phase === "questionnaire" && (
+              <>
+                {currentUser && !hasChildren && <Divider sx={{ mb: 2 }} />}
+                {isStaff ? (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                      {subject !== "self"
+                        ? `Ruolo di ${selectedChild?.name}:`
+                        : "Seleziona il tuo ruolo:"}
+                    </Typography>
+                    <ToggleButtonGroup
+                      exclusive
+                      value={chosenRole?.role ?? null}
+                      onChange={(_, val) => {
+                        if (val !== null) {
+                          setChosenRole({ role: val as number });
+                          setPhase("confirm");
+                        }
+                      }}
+                      sx={{ flexWrap: "wrap", gap: 0.5 }}
+                    >
+                      {ROLES.map((r) => (
+                        <ToggleButton
+                          key={r}
+                          value={r}
+                          size="small"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            py: 0.5,
+                            px: 1.5,
+                            borderRadius: "6px !important",
+                            border: "1px solid rgba(0,0,0,0.23) !important",
+                            "&.Mui-selected": {
+                              backgroundColor: ROLE_COLORS[r],
+                              color: "#fff",
+                              borderColor: `${ROLE_COLORS[r]} !important`,
+                              "&:hover": { backgroundColor: ROLE_COLORS[r], opacity: 0.9 },
+                            },
+                          }}
+                        >
+                          {ROLE_LABELS[r]}
+                        </ToggleButton>
+                      ))}
+                    </ToggleButtonGroup>
+                  </Box>
+                ) : (
+                  <>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                      {subject !== "self"
+                        ? `Rispondi a qualche domanda per determinare il ruolo di ${selectedChild?.name}:`
+                        : "Rispondi a qualche domanda per determinare il tuo ruolo nel Baskin:"}
+                    </Typography>
+                    <SportRoleQuestionnaire
+                      onResult={handleQuestionnaireResult}
+                      initialSuggested={
+                        subject === "self" && currentUser?.sportRoleSuggested
+                          ? {
+                              role: currentUser.sportRoleSuggested,
+                              variant: currentUser.sportRoleSuggestedVariant ?? undefined,
+                            }
+                          : undefined
+                      }
+                    />
+                  </>
+                )}
+              </>
+            )}
 
-              {restrictionBlock ? (
-                <Box sx={{ textAlign: "center", py: 1 }}>
-                  <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
-                  <Typography variant="body2" color="error.main" fontWeight={600}>
-                    Non puoi iscriverti a questo allenamento
+            {/* Riepilogo e conferma */}
+            {phase === "confirm" && chosenRole && (
+              <>
+                <Divider sx={{ mb: 2 }} />
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+                  <SportsSoccerIcon color="action" fontSize="small" />
+                  <Typography variant="body2" color="text.secondary">
+                    {hasConfirmedRole ? "Ruolo:" : "Ruolo suggerito:"}
                   </Typography>
-                </Box>
-              ) : (
-                <>
-                  <TextField
-                    label="Comunicazioni (opzionale)"
-                    placeholder="es. Devo andare via alle 11:30"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    fullWidth size="small" multiline minRows={2}
-                    slotProps={{ htmlInput: { maxLength: 300 } }}
-                    disabled={loading}
-                    helperText={note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"}
-                    sx={{ mb: 1.5 }}
+                  <Chip
+                    label={sportRoleLabel(chosenRole.role, chosenRole.variant)}
+                    size="small"
+                    sx={{
+                      bgcolor: ROLE_COLORS[chosenRole.role],
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "0.78rem",
+                    }}
                   />
-                  <Button
-                    variant="contained" fullWidth onClick={handleSubmit}
-                    disabled={loading || isDuplicateName || (!currentUser && !anonymousName.trim())}
-                    startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
-                  >
-                    {loading
-                      ? "Iscrizione in corso..."
-                      : subject !== "self"
-                        ? `Iscrivi ${selectedChild?.name}`
-                        : "Iscriviti"}
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-        </>
-      ))}
+                </Box>
+
+                {!hasConfirmedRole && subject === "self" && (
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => {
+                        setChosenRole(null);
+                        setPhase("questionnaire");
+                      }}
+                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}
+                    >
+                      ↩ Rifai il questionario
+                    </Button>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                      sx={{ mt: 0.5 }}
+                    >
+                      Il ruolo sarà confermato dall&apos;allenatore dopo il primo allenamento.
+                    </Typography>
+                  </Box>
+                )}
+                {!hasConfirmedRole && subject !== "self" && (
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => {
+                        setChosenRole(null);
+                        setPhase("questionnaire");
+                      }}
+                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}
+                    >
+                      ↩ Cambia ruolo
+                    </Button>
+                  </Box>
+                )}
+
+                {restrictionBlock ? (
+                  <Box sx={{ textAlign: "center", py: 1 }}>
+                    <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
+                    <Typography variant="body2" color="error.main" fontWeight={600}>
+                      Non puoi iscriverti a questo allenamento
+                    </Typography>
+                  </Box>
+                ) : (
+                  <>
+                    <TextField
+                      label="Comunicazioni (opzionale)"
+                      placeholder="es. Devo andare via alle 11:30"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      fullWidth
+                      size="small"
+                      multiline
+                      minRows={2}
+                      slotProps={{ htmlInput: { maxLength: 300 } }}
+                      disabled={loading}
+                      helperText={
+                        note.length > 0
+                          ? `${note.length}/300`
+                          : "Lascia vuoto se non hai comunicazioni"
+                      }
+                      sx={{ mb: 1.5 }}
+                    />
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={handleSubmit}
+                      disabled={
+                        loading || isDuplicateName || (!currentUser && !anonymousName.trim())
+                      }
+                      startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
+                    >
+                      {loading
+                        ? "Iscrizione in corso..."
+                        : subject !== "self"
+                          ? `Iscrivi ${selectedChild?.name}`
+                          : "Iscriviti"}
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </>
+        ))}
     </Box>
   );
 }

@@ -30,7 +30,7 @@ export default function HomeSessionsSection({
 
   function updateSession(id: string, patch: Partial<SessionWithCount>) {
     const apply = (list: SessionWithCount[]) =>
-      list.map((s) => s.id === id ? { ...s, ...patch } : s);
+      list.map((s) => (s.id === id ? { ...s, ...patch } : s));
     setInCorso(apply);
     setUpcoming(apply);
   }
@@ -84,16 +84,26 @@ export default function HomeSessionsSection({
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Box sx={{
-              width: 8, height: 8, borderRadius: "50%", bgcolor: "#2E7D32", flexShrink: 0,
-              "@keyframes pulse": {
-                "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
-                "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
-                "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
-              },
-              animation: "pulse 1.4s ease-in-out infinite",
-            }} />
-            <Typography variant="overline" fontWeight={700} sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}>
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                bgcolor: "#2E7D32",
+                flexShrink: 0,
+                "@keyframes pulse": {
+                  "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
+                  "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
+                  "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
+                },
+                animation: "pulse 1.4s ease-in-out infinite",
+              }}
+            />
+            <Typography
+              variant="overline"
+              fontWeight={700}
+              sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}
+            >
               In corso
             </Typography>
           </Box>
@@ -121,8 +131,12 @@ export default function HomeSessionsSection({
 
       {upcoming.length > 0 && (
         <>
-          <Typography variant="overline" color="text.secondary" fontWeight={700}
-            sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}>
+          <Typography
+            variant="overline"
+            color="text.secondary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}
+          >
             Prossimi allenamenti
           </Typography>
           <Grid container spacing={2}>

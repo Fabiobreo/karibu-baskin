@@ -1,8 +1,19 @@
 "use client";
 import { useState } from "react";
 import {
-  Box, Typography, Paper, TextField, Select, MenuItem,
-  Button, Stack, Divider, FormControl, InputLabel, Chip, Alert,
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  Stack,
+  Divider,
+  FormControl,
+  InputLabel,
+  Chip,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -60,12 +71,7 @@ export default function NuovoUtentePage() {
 
   return (
     <Box>
-      <Button
-        href="/admin/utenti"
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 2 }}
-        size="small"
-      >
+      <Button href="/admin/utenti" startIcon={<ArrowBackIcon />} sx={{ mb: 2 }} size="small">
         Torna agli utenti
       </Button>
 
@@ -73,7 +79,8 @@ export default function NuovoUtentePage() {
         Nuovo utente
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        L&apos;utente potrà accedere con Google usando la stessa email — l&apos;account si collegherà automaticamente.
+        L&apos;utente potrà accedere con Google usando la stessa email — l&apos;account si
+        collegherà automaticamente.
       </Typography>
 
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 }, maxWidth: 520 }}>
@@ -120,12 +127,22 @@ export default function NuovoUtentePage() {
                     value={form.appRole}
                     onChange={(e) => set("appRole", e.target.value)}
                     renderValue={(val) => (
-                      <Chip label={ROLE_LABELS_IT[val as AppRole]} size="small" color={ROLE_CHIP_COLORS[val as AppRole]} sx={{ fontWeight: 600 }} />
+                      <Chip
+                        label={ROLE_LABELS_IT[val as AppRole]}
+                        size="small"
+                        color={ROLE_CHIP_COLORS[val as AppRole]}
+                        sx={{ fontWeight: 600 }}
+                      />
                     )}
                   >
                     {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                       <MenuItem key={r} value={r}>
-                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} sx={{ fontWeight: 600 }} />
+                        <Chip
+                          label={ROLE_LABELS_IT[r]}
+                          size="small"
+                          color={ROLE_CHIP_COLORS[r]}
+                          sx={{ fontWeight: 600 }}
+                        />
                       </MenuItem>
                     ))}
                   </Select>
@@ -144,12 +161,20 @@ export default function NuovoUtentePage() {
                         <Chip
                           label={ROLE_LABELS[parseInt(val) as keyof typeof ROLE_LABELS]}
                           size="small"
-                          sx={{ bgcolor: ROLE_COLORS[parseInt(val)], color: "#fff", fontWeight: 700 }}
+                          sx={{
+                            bgcolor: ROLE_COLORS[parseInt(val)],
+                            color: "#fff",
+                            fontWeight: 700,
+                          }}
                         />
-                      ) : <em style={{ color: "#999" }}>Non impostato</em>
+                      ) : (
+                        <em style={{ color: "#999" }}>Non impostato</em>
+                      )
                     }
                   >
-                    <MenuItem value=""><em>Non impostato</em></MenuItem>
+                    <MenuItem value="">
+                      <em>Non impostato</em>
+                    </MenuItem>
                     {[1, 2, 3, 4, 5].map((r) => (
                       <MenuItem key={r} value={r.toString()}>
                         <Chip
@@ -180,7 +205,9 @@ export default function NuovoUtentePage() {
                     value={form.gender}
                     onChange={(e) => set("gender", e.target.value)}
                   >
-                    <MenuItem value=""><em>Non impostato</em></MenuItem>
+                    <MenuItem value="">
+                      <em>Non impostato</em>
+                    </MenuItem>
                     <MenuItem value="MALE">Maschio</MenuItem>
                     <MenuItem value="FEMALE">Femmina</MenuItem>
                   </Select>

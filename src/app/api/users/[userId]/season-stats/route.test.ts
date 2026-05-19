@@ -18,14 +18,14 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 
-function makeGET(userId: string, season?: string): [NextRequest, { params: Promise<{ userId: string }> }] {
+function makeGET(
+  userId: string,
+  season?: string
+): [NextRequest, { params: Promise<{ userId: string }> }] {
   const url = season
     ? `http://localhost/api/users/${userId}/season-stats?season=${season}`
     : `http://localhost/api/users/${userId}/season-stats`;
-  return [
-    new NextRequest(url),
-    { params: Promise.resolve({ userId }) },
-  ];
+  return [new NextRequest(url), { params: Promise.resolve({ userId }) }];
 }
 
 describe("GET /api/users/[userId]/season-stats", () => {

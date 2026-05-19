@@ -53,54 +53,56 @@ export async function POST(
     select: { name: true },
   });
 
-  try { await prisma.$transaction(async (tx) => {
-    // Aggiorna stato richiesta solo se ancora PENDING — previene doppio accept concorrente
-    const { count } = await tx.linkRequest.updateMany({
-      where: { id: requestId, status: "PENDING" },
-      data: { status: newStatus },
-    });
-    if (count === 0) {
-      throw new Error("Richiesta già elaborata");
-    }
-
-    if (accept) {
-      // Verifica che il child non sia già collegato ad altro utente
-      const alreadyLinked = await tx.child.findUnique({ where: { userId } });
-      if (alreadyLinked && alreadyLinked.id !== linkRequest.childId) {
-        throw new Error("Questo account è già collegato a un altro figlio");
-      }
-
-      // Collega il child all'utente.
-      // La promozione è solo a livello appRole (GUEST → ATHLETE).
-      // Il ruolo Baskin NON viene copiato automaticamente: richiede conferma esplicita
-      // dell'admin per evitare che un genitore malevolo assegni ruoli sportivi a terzi.
-      const targetUser = await tx.user.findUnique({ where: { id: userId } });
-      if (targetUser?.appRole === "GUEST") {
-        await tx.user.update({ where: { id: userId }, data: { appRole: "ATHLETE" } });
-      }
-      await tx.child.update({
-        where: { id: linkRequest.childId },
-        data: { userId },
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Aggiorna stato richiesta solo se ancora PENDING — previene doppio accept concorrente
+      const { count } = await tx.linkRequest.updateMany({
+        where: { id: requestId, status: "PENDING" },
+        data: { status: newStatus },
       });
-    }
+      if (count === 0) {
+        throw new Error("Richiesta già elaborata");
+      }
 
-    // Notifica in-app al genitore
-    const parentName = respondingUser?.name ?? "Il tuo figlio/a";
-    const childName = linkRequest.child.name;
-    await tx.appNotification.create({
-      data: {
-        type: "LINK_RESPONSE",
-        title: accept
-          ? `${parentName} ha accettato il collegamento`
-          : `${parentName} ha rifiutato il collegamento`,
-        body: accept
-          ? `L'account di ${parentName} è stato collegato a ${childName}.`
-          : `La richiesta di collegamento per ${childName} è stata rifiutata.`,
-        url: "/profilo",
-        targetUserId: linkRequest.parentId,
-      },
+      if (accept) {
+        // Verifica che il child non sia già collegato ad altro utente
+        const alreadyLinked = await tx.child.findUnique({ where: { userId } });
+        if (alreadyLinked && alreadyLinked.id !== linkRequest.childId) {
+          throw new Error("Questo account è già collegato a un altro figlio");
+        }
+
+        // Collega il child all'utente.
+        // La promozione è solo a livello appRole (GUEST → ATHLETE).
+        // Il ruolo Baskin NON viene copiato automaticamente: richiede conferma esplicita
+        // dell'admin per evitare che un genitore malevolo assegni ruoli sportivi a terzi.
+        const targetUser = await tx.user.findUnique({ where: { id: userId } });
+        if (targetUser?.appRole === "GUEST") {
+          await tx.user.update({ where: { id: userId }, data: { appRole: "ATHLETE" } });
+        }
+        await tx.child.update({
+          where: { id: linkRequest.childId },
+          data: { userId },
+        });
+      }
+
+      // Notifica in-app al genitore
+      const parentName = respondingUser?.name ?? "Il tuo figlio/a";
+      const childName = linkRequest.child.name;
+      await tx.appNotification.create({
+        data: {
+          type: "LINK_RESPONSE",
+          title: accept
+            ? `${parentName} ha accettato il collegamento`
+            : `${parentName} ha rifiutato il collegamento`,
+          body: accept
+            ? `L'account di ${parentName} è stato collegato a ${childName}.`
+            : `La richiesta di collegamento per ${childName} è stata rifiutata.`,
+          url: "/profilo",
+          targetUserId: linkRequest.parentId,
+        },
+      });
     });
-  }); } catch (err: unknown) {
+  } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "";
     if (msg === "Richiesta già elaborata") {
       return NextResponse.json({ error: "Richiesta già elaborata" }, { status: 409 });
@@ -115,9 +117,7 @@ export async function POST(
   const parentName = respondingUser?.name ?? "Il tuo figlio/a";
   const childName = linkRequest.child.name;
   await sendPushToUser(linkRequest.parentId, {
-    title: accept
-      ? `${parentName} ha accettato!`
-      : `${parentName} ha rifiutato`,
+    title: accept ? `${parentName} ha accettato!` : `${parentName} ha rifiutato`,
     body: accept
       ? `L'account è stato collegato a ${childName}.`
       : `La richiesta per ${childName} è stata rifiutata.`,

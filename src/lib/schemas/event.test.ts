@@ -58,15 +58,15 @@ describe("EventCreateSchema", () => {
   });
 
   it("rifiuta location oltre 200 caratteri", () => {
-    expect(
-      EventCreateSchema.safeParse({ ...valid, location: "x".repeat(201) }).success,
-    ).toBe(false);
+    expect(EventCreateSchema.safeParse({ ...valid, location: "x".repeat(201) }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta description oltre 2000 caratteri", () => {
-    expect(
-      EventCreateSchema.safeParse({ ...valid, description: "x".repeat(2001) }).success,
-    ).toBe(false);
+    expect(EventCreateSchema.safeParse({ ...valid, description: "x".repeat(2001) }).success).toBe(
+      false
+    );
   });
 });
 

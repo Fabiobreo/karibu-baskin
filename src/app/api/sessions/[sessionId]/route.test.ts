@@ -50,16 +50,10 @@ function makeParams(sessionId: string) {
 }
 
 function makeGet(sessionId: string): [NextRequest, ReturnType<typeof makeParams>] {
-  return [
-    new NextRequest(`http://localhost/api/sessions/${sessionId}`),
-    makeParams(sessionId),
-  ];
+  return [new NextRequest(`http://localhost/api/sessions/${sessionId}`), makeParams(sessionId)];
 }
 
-function makePATCH(
-  sessionId: string,
-  body: object,
-): [NextRequest, ReturnType<typeof makeParams>] {
+function makePATCH(sessionId: string, body: object): [NextRequest, ReturnType<typeof makeParams>] {
   return [
     new NextRequest(`http://localhost/api/sessions/${sessionId}`, {
       method: "PATCH",
@@ -96,10 +90,7 @@ describe("GET /api/sessions/[sessionId]", () => {
   it("cerca per ID o dateSlug (OR clause)", async () => {
     await GET(...makeGet("2025-06-01T18:00"));
     const call = p.trainingSession.findFirst.mock.calls[0][0];
-    expect(call.where.OR).toEqual([
-      { id: "2025-06-01T18:00" },
-      { dateSlug: "2025-06-01T18:00" },
-    ]);
+    expect(call.where.OR).toEqual([{ id: "2025-06-01T18:00" }, { dateSlug: "2025-06-01T18:00" }]);
   });
 
   it("restituisce 404 se la sessione non esiste", async () => {
@@ -178,9 +169,7 @@ describe("PATCH /api/sessions/[sessionId]", () => {
 
   it("aggiorna allowedRoles e openRoles", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
-    await PATCH(
-      ...makePATCH("sess-abc", { allowedRoles: [1, 2, 3], openRoles: [1] }),
-    );
+    await PATCH(...makePATCH("sess-abc", { allowedRoles: [1, 2, 3], openRoles: [1] }));
     const data = p.trainingSession.update.mock.calls[0][0].data;
     expect(data.allowedRoles).toEqual([1, 2, 3]);
     expect(data.openRoles).toEqual([1]);
@@ -210,7 +199,10 @@ describe("PATCH /api/sessions/[sessionId]", () => {
 
   it("restituisce 404 se la sessione non esiste (P2025)", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.trainingSession.update.mockRejectedValue(p2025);
     const res = await PATCH(...makePATCH("inesistente", { title: "Test" }));
     expect(res.status).toBe(404);
@@ -256,7 +248,10 @@ describe("DELETE /api/sessions/[sessionId]", () => {
 
   it("restituisce 404 se la sessione non esiste (P2025)", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.trainingSession.delete.mockRejectedValue(p2025);
     const res = await DELETE(...makeDELETE("inesistente"));
     expect(res.status).toBe(404);

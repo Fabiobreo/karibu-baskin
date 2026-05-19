@@ -16,7 +16,7 @@ describe("GroupCreateSchema", () => {
 
   it("accetta un payload completo (con championship)", () => {
     expect(
-      GroupCreateSchema.safeParse({ ...valid, championship: "Campionato Regionale" }).success,
+      GroupCreateSchema.safeParse({ ...valid, championship: "Campionato Regionale" }).success
     ).toBe(true);
   });
 
@@ -58,9 +58,9 @@ describe("GroupCreateSchema", () => {
   });
 
   it("rifiuta championship oltre 200 caratteri", () => {
-    expect(
-      GroupCreateSchema.safeParse({ ...valid, championship: "x".repeat(201) }).success,
-    ).toBe(false);
+    expect(GroupCreateSchema.safeParse({ ...valid, championship: "x".repeat(201) }).success).toBe(
+      false
+    );
   });
 });
 
@@ -159,7 +159,7 @@ describe("GroupMatchCreateSchema", () => {
 
   it("accetta homeScore e awayScore null (partita non ancora disputata)", () => {
     expect(
-      GroupMatchCreateSchema.safeParse({ ...valid, homeScore: null, awayScore: null }).success,
+      GroupMatchCreateSchema.safeParse({ ...valid, homeScore: null, awayScore: null }).success
     ).toBe(true);
   });
 });

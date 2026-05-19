@@ -25,7 +25,7 @@ const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
 
 const makeParams = (id: string) =>
-  ({ params: Promise.resolve({ id }) } as { params: Promise<{ id: string }> });
+  ({ params: Promise.resolve({ id }) }) as { params: Promise<{ id: string }> };
 
 const baseTeam = { id: "opp-1", name: "Basket Vicenza", city: "Vicenza", notes: null };
 

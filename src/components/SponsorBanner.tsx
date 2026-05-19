@@ -8,15 +8,51 @@ import Image from "next/image";
 // Lasciare src: null finché l'immagine non è disponibile → mostra placeholder
 
 const SPONSORS = [
-  { name: "Denis M. Photographer", url: "https://www.facebook.com/Denis.M.photographer", color: "#1A1A1A", initials: "DM", src: "/sponsors/denis.jpg" },
-  { name: "Villani and Partners",  url: "https://villaniandpartners.eu/",                color: "#1E88E5", initials: "VP", src: "/sponsors/villani.png" },
-  { name: "LLP",                   url: "https://www.llp.it/",                           color: "#43A047", initials: "LLP", src: "/sponsors/LLP.png" },
-  { name: "Tetti Tecchio",         url: "https://www.tettitecchio.it/",                  color: "#FF6D00", initials: "TT", src: "/sponsors/tettitecchio.png" },
-  { name: "Saby Sport",            url: "https://www.sabysport.com/",                    color: "#F44336", initials: "SS", src: "/sponsors/sabysport.png" },
-  { name: "CGRD",                  url: "https://www.cgrd.it/it/",                       color: "#8E24AA", initials: "CG", src: "/sponsors/cgrd.png" },
+  {
+    name: "Denis M. Photographer",
+    url: "https://www.facebook.com/Denis.M.photographer",
+    color: "#1A1A1A",
+    initials: "DM",
+    src: "/sponsors/denis.jpg",
+  },
+  {
+    name: "Villani and Partners",
+    url: "https://villaniandpartners.eu/",
+    color: "#1E88E5",
+    initials: "VP",
+    src: "/sponsors/villani.png",
+  },
+  {
+    name: "LLP",
+    url: "https://www.llp.it/",
+    color: "#43A047",
+    initials: "LLP",
+    src: "/sponsors/LLP.png",
+  },
+  {
+    name: "Tetti Tecchio",
+    url: "https://www.tettitecchio.it/",
+    color: "#FF6D00",
+    initials: "TT",
+    src: "/sponsors/tettitecchio.png",
+  },
+  {
+    name: "Saby Sport",
+    url: "https://www.sabysport.com/",
+    color: "#F44336",
+    initials: "SS",
+    src: "/sponsors/sabysport.png",
+  },
+  {
+    name: "CGRD",
+    url: "https://www.cgrd.it/it/",
+    color: "#8E24AA",
+    initials: "CG",
+    src: "/sponsors/cgrd.png",
+  },
 ] satisfies { name: string; url: string; color: string; initials: string; src: string | null }[];
 
-type Sponsor = typeof SPONSORS[number];
+type Sponsor = (typeof SPONSORS)[number];
 
 export default function SponsorBanner() {
   return (
@@ -74,7 +110,7 @@ export default function SponsorBanner() {
           gap: 3,
           width: "max-content",
           "@keyframes marquee": {
-            "0%":   { transform: "translateX(0)" },
+            "0%": { transform: "translateX(0)" },
             "100%": { transform: "translateX(-50%)" },
           },
           // 6 copie: -50% copre 3 set → stessa velocità per sponsor
@@ -82,9 +118,12 @@ export default function SponsorBanner() {
           "&:hover": { animationPlayState: "paused" },
         }}
       >
-        {Array(6).fill(SPONSORS).flat().map((s, i) => (
-          <SponsorCard key={i} sponsor={s} />
-        ))}
+        {Array(6)
+          .fill(SPONSORS)
+          .flat()
+          .map((s, i) => (
+            <SponsorCard key={i} sponsor={s} />
+          ))}
       </Box>
     </Box>
   );
@@ -135,13 +174,32 @@ function SponsorCard({ sponsor }: { sponsor: Sponsor }) {
             style={{ objectFit: "contain", padding: "4px" }}
           />
         ) : (
-          <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "1rem", letterSpacing: "0.06em", userSelect: "none" }}>
+          <Typography
+            sx={{
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: "1rem",
+              letterSpacing: "0.06em",
+              userSelect: "none",
+            }}
+          >
             {sponsor.initials}
           </Typography>
         )}
       </Box>
 
-      <Typography variant="caption" sx={{ color: "text.secondary", fontSize: "0.68rem", fontWeight: 500, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <Typography
+        variant="caption"
+        sx={{
+          color: "text.secondary",
+          fontSize: "0.68rem",
+          fontWeight: 500,
+          maxWidth: 110,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
         {sponsor.name}
       </Typography>
     </Box>

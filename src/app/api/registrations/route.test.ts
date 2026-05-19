@@ -45,7 +45,13 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
-  registration: { findFirst: Mock; findMany: Mock; create: Mock; updateMany: Mock; deleteMany: Mock };
+  registration: {
+    findFirst: Mock;
+    findMany: Mock;
+    create: Mock;
+    updateMany: Mock;
+    deleteMany: Mock;
+  };
   trainingSession: { findUnique: Mock; update: Mock; updateMany: Mock };
   user: { findUnique: Mock; update: Mock };
   child: { findUnique: Mock; update: Mock };
@@ -83,7 +89,12 @@ describe("POST /api/registrations", () => {
     mockAuth.mockResolvedValue(null);
     p.trainingSession.findUnique.mockResolvedValue({ ...baseSession });
     p.registration.findFirst.mockResolvedValue(null);
-    p.registration.create.mockResolvedValue({ id: "reg-1", sessionId: "sess-1", role: 3, name: "Mario" });
+    p.registration.create.mockResolvedValue({
+      id: "reg-1",
+      sessionId: "sess-1",
+      role: 3,
+      name: "Mario",
+    });
     p.child.findUnique.mockResolvedValue(null);
     p.user.findUnique.mockResolvedValue(null);
     p.teamMembership.findFirst.mockResolvedValue(null);
@@ -160,7 +171,12 @@ describe("POST /api/registrations", () => {
 
     it("salva anonymousEmail normalizzata se fornita", async () => {
       const res = await POST(
-        makePost({ sessionId: "sess-1", role: 3, name: "Mario", anonymousEmail: "MARIO@example.com" }),
+        makePost({
+          sessionId: "sess-1",
+          role: 3,
+          name: "Mario",
+          anonymousEmail: "MARIO@example.com",
+        })
       );
       expect(res.status).toBe(201);
       const data = p.registration.create.mock.calls[0][0].data;
@@ -202,7 +218,12 @@ describe("POST /api/registrations", () => {
     });
 
     it("salva sportRoleSuggested se l'utente non ha ruolo confermato", async () => {
-      p.user.findUnique.mockResolvedValue({ name: "Fabio", appRole: "ATHLETE", sportRole: null, sportRoleSuggested: null });
+      p.user.findUnique.mockResolvedValue({
+        name: "Fabio",
+        appRole: "ATHLETE",
+        sportRole: null,
+        sportRoleSuggested: null,
+      });
       p.child.findUnique.mockResolvedValue(null);
       const res = await POST(makePost({ sessionId: "sess-1", role: 3, roleVariant: "A" }));
       expect(res.status).toBe(201);
@@ -217,7 +238,7 @@ describe("POST /api/registrations", () => {
       p.child.findUnique.mockResolvedValue({ id: "child-linked" });
       // La seconda chiamata a findFirst (per linkedChild) restituisce una registrazione esistente
       p.registration.findFirst
-        .mockResolvedValueOnce(null)        // check userId duplicate
+        .mockResolvedValueOnce(null) // check userId duplicate
         .mockResolvedValueOnce({ id: "existing-via-parent" }); // check childId duplicate
       const res = await POST(makePost({ sessionId: "sess-1", role: 3 }));
       expect(res.status).toBe(409);
@@ -298,8 +319,8 @@ describe("POST /api/registrations", () => {
         userId: "linked-user",
       });
       p.registration.findFirst
-        .mockResolvedValueOnce(null)             // check childId duplicate
-        .mockResolvedValueOnce({ id: "dup" });   // check linked userId
+        .mockResolvedValueOnce(null) // check childId duplicate
+        .mockResolvedValueOnce({ id: "dup" }); // check linked userId
       const res = await POST(makePost({ sessionId: "sess-1", role: 3, childId: "child-1" }));
       expect(res.status).toBe(409);
       const json = await res.json();
@@ -314,7 +335,9 @@ describe("POST /api/registrations", () => {
         sportRole: null,
         userId: null,
       });
-      const res = await POST(makePost({ sessionId: "sess-1", role: 2, roleVariant: "B", childId: "child-1" }));
+      const res = await POST(
+        makePost({ sessionId: "sess-1", role: 2, roleVariant: "B", childId: "child-1" })
+      );
       expect(res.status).toBe(201);
       expect(p.child.update).toHaveBeenCalledWith({
         where: { id: "child-1" },
@@ -381,7 +404,9 @@ describe("DELETE /api/registrations (bulk per nome)", () => {
   });
 
   it("restituisce 403 per utente non staff", async () => {
-    const req = new NextRequest("http://localhost/api/registrations?name=Mario", { method: "DELETE" });
+    const req = new NextRequest("http://localhost/api/registrations?name=Mario", {
+      method: "DELETE",
+    });
     const res = await DELETE(req);
     expect(res.status).toBe(403);
   });
@@ -396,7 +421,9 @@ describe("DELETE /api/registrations (bulk per nome)", () => {
   it("restituisce 204 (no content) se non ci sono iscrizioni anonime con quel nome", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
     p.registration.findMany.mockResolvedValue([]);
-    const req = new NextRequest("http://localhost/api/registrations?name=Mario", { method: "DELETE" });
+    const req = new NextRequest("http://localhost/api/registrations?name=Mario", {
+      method: "DELETE",
+    });
     const res = await DELETE(req);
     expect(res.status).toBe(204);
     expect(p.registration.deleteMany).not.toHaveBeenCalled();
@@ -408,7 +435,9 @@ describe("DELETE /api/registrations (bulk per nome)", () => {
       { id: "r1", sessionId: "sess-1" },
       { id: "r2", sessionId: "sess-2" },
     ]);
-    const req = new NextRequest("http://localhost/api/registrations?name=Mario", { method: "DELETE" });
+    const req = new NextRequest("http://localhost/api/registrations?name=Mario", {
+      method: "DELETE",
+    });
     const res = await DELETE(req);
     expect(res.status).toBe(204);
     expect(p.registration.deleteMany).toHaveBeenCalledWith({ where: { id: { in: ["r1", "r2"] } } });

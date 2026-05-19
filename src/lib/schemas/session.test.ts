@@ -42,20 +42,30 @@ describe("SessionCreateSchema", () => {
   });
 
   it("rifiuta allowedRoles fuori range (0, 6)", () => {
-    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [0] }).success).toBe(false);
-    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [6] }).success).toBe(false);
+    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [0] }).success).toBe(
+      false
+    );
+    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [6] }).success).toBe(
+      false
+    );
   });
 
   it("accetta allowedRoles validi (1-5)", () => {
-    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [1, 2, 3, 4, 5] }).success).toBe(true);
+    expect(
+      SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [1, 2, 3, 4, 5] }).success
+    ).toBe(true);
   });
 
   it("accetta restrictTeamId null", () => {
-    expect(SessionCreateSchema.safeParse({ ...validCreate, restrictTeamId: null }).success).toBe(true);
+    expect(SessionCreateSchema.safeParse({ ...validCreate, restrictTeamId: null }).success).toBe(
+      true
+    );
   });
 
   it("rifiuta allowedRoles con numeri non interi", () => {
-    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [1.5] }).success).toBe(false);
+    expect(SessionCreateSchema.safeParse({ ...validCreate, allowedRoles: [1.5] }).success).toBe(
+      false
+    );
   });
 });
 

@@ -29,7 +29,10 @@ export async function PUT(
   const raw = await req.json().catch(() => null);
   const parsed = MatchResultUpdateSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
 
   const data: Record<string, unknown> = {};

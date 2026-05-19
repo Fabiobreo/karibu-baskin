@@ -48,8 +48,8 @@ interface Props {
   registrationIds?: string[];
   coaches?: { id: string; name: string }[];
   slugMap?: Record<string, string>; // reg.id → user.slug
-  currentUserTeamIndex?: number;    // tab da selezionare di default su mobile
-  editMode?: boolean;               // controllato dal parent (via TeamsHeader)
+  currentUserTeamIndex?: number; // tab da selezionare di default su mobile
+  editMode?: boolean; // controllato dal parent (via TeamsHeader)
   onExitEditMode?: () => void;
   // Stato squadre gestito dal parent
   teams: TeamsData | null;
@@ -61,16 +61,20 @@ interface Props {
 
 function RoleBadge({ role, count }: { role: number; count: number }) {
   return (
-    <Box sx={{
-      display: "inline-flex", alignItems: "center",
-      borderRadius: "16px", overflow: "hidden",
-      bgcolor: ROLE_COLORS[role], color: "#fff",
-      fontSize: "0.8rem", lineHeight: 1,
-      opacity: count === 0 ? 0.28 : 1,
-    }}>
-      <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>
-        {ROLE_LABELS[role]}
-      </Box>
+    <Box
+      sx={{
+        display: "inline-flex",
+        alignItems: "center",
+        borderRadius: "16px",
+        overflow: "hidden",
+        bgcolor: ROLE_COLORS[role],
+        color: "#fff",
+        fontSize: "0.8rem",
+        lineHeight: 1,
+        opacity: count === 0 ? 0.28 : 1,
+      }}
+    >
+      <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>{ROLE_LABELS[role]}</Box>
       <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
         {count} giocator{count !== 1 ? "i" : "e"}
       </Box>
@@ -80,7 +84,15 @@ function RoleBadge({ role, count }: { role: number; count: number }) {
 
 // ── Layout mobile: tab per squadra ────────────────────────────────────────────
 
-export function MobileTeamTabs({ teams, slugMap = {}, defaultTab = 0 }: { teams: TeamsData; slugMap?: Record<string, string>; defaultTab?: number }) {
+export function MobileTeamTabs({
+  teams,
+  slugMap = {},
+  defaultTab = 0,
+}: {
+  teams: TeamsData;
+  slugMap?: Record<string, string>;
+  defaultTab?: number;
+}) {
   const [tab, setTab] = useState(defaultTab);
   const meta = TEAM_META.slice(0, teams.numTeams);
   const allTeams = [teams.teamA, teams.teamB, ...(teams.teamC ? [teams.teamC] : [])];
@@ -103,12 +115,23 @@ export function MobileTeamTabs({ teams, slugMap = {}, defaultTab = 0 }: { teams:
             key={m.name}
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: m.color, flexShrink: 0 }} />
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    bgcolor: m.color,
+                    flexShrink: 0,
+                  }}
+                />
                 <span>{m.name}</span>
                 <Chip
                   label={allTeams[i].length}
                   size="small"
-                  sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700,
+                  sx={{
+                    height: 18,
+                    fontSize: "0.65rem",
+                    fontWeight: 700,
                     bgcolor: tab === i ? m.color : "action.selected",
                     color: tab === i ? "#fff" : "text.secondary",
                   }}
@@ -135,10 +158,15 @@ export function MobileTeamTabs({ teams, slugMap = {}, defaultTab = 0 }: { teams:
                       <ListItemText
                         primary={
                           slug ? (
-                            <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
+                            <Link
+                              href={`/giocatori/${slug}`}
+                              style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
+                            >
                               {a.name}
                             </Link>
-                          ) : a.name
+                          ) : (
+                            a.name
+                          )
                         }
                       />
                     </ListItem>
@@ -155,12 +183,14 @@ export function MobileTeamTabs({ teams, slugMap = {}, defaultTab = 0 }: { teams:
 
 // ── Layout desktop: griglia allineata cross-column ────────────────────────────
 
-export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slugMap?: Record<string, string> }) {
-  const allTeams = [
-    teams.teamA,
-    teams.teamB,
-    ...(teams.teamC ? [teams.teamC] : []),
-  ];
+export function AlignedTeamGrid({
+  teams,
+  slugMap = {},
+}: {
+  teams: TeamsData;
+  slugMap?: Record<string, string>;
+}) {
+  const allTeams = [teams.teamA, teams.teamB, ...(teams.teamC ? [teams.teamC] : [])];
   const meta = TEAM_META.slice(0, teams.numTeams);
   const cols = teams.numTeams;
 
@@ -169,12 +199,20 @@ export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slu
   // ── Header ──
   meta.forEach((m, i) => {
     cells.push(
-      <Box key={`header-${i}`} sx={{
-        px: 2, py: 1.5,
-        backgroundColor: m.color,
-        display: "flex", alignItems: "center", gap: 1,
-      }}>
-        <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>{m.name}</Typography>
+      <Box
+        key={`header-${i}`}
+        sx={{
+          px: 2,
+          py: 1.5,
+          backgroundColor: m.color,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
+          {m.name}
+        </Typography>
         <Chip
           label={`${allTeams[i].length} atlet${allTeams[i].length !== 1 ? "i" : "a"}`}
           size="small"
@@ -193,9 +231,14 @@ export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slu
     // Riga badge
     groups.forEach((group, i) => {
       cells.push(
-        <Box key={`badge-${role}-${i}`} sx={{
-          px: 2, pt: 1, pb: 0.5,
-        }}>
+        <Box
+          key={`badge-${role}-${i}`}
+          sx={{
+            px: 2,
+            pt: 1,
+            pb: 0.5,
+          }}
+        >
           <RoleBadge role={role} count={group.length} />
         </Box>
       );
@@ -207,20 +250,28 @@ export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slu
         const athlete = group[idx];
         const slug = athlete ? slugMap[athlete.id] : undefined;
         cells.push(
-          <Box key={`player-${role}-${idx}-${i}`} sx={{
-            px: 3,
-            minHeight: 32,
-            display: "flex", alignItems: "center",
-          }}>
-            {athlete && (
-              slug ? (
-                <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{athlete.name}</Typography>
+          <Box
+            key={`player-${role}-${idx}-${i}`}
+            sx={{
+              px: 3,
+              minHeight: 32,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {athlete &&
+              (slug ? (
+                <Link
+                  href={`/giocatori/${slug}`}
+                  style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {athlete.name}
+                  </Typography>
                 </Link>
               ) : (
                 <Typography variant="body2">{athlete.name}</Typography>
-              )
-            )}
+              ))}
           </Box>
         );
       });
@@ -228,11 +279,14 @@ export function AlignedTeamGrid({ teams, slugMap = {} }: { teams: TeamsData; slu
   }
 
   return (
-    <Paper variant="outlined" sx={{
-      overflow: "hidden",
-      display: "grid",
-      gridTemplateColumns: `repeat(${cols}, 1fr)`,
-    }}>
+    <Paper
+      variant="outlined"
+      sx={{
+        overflow: "hidden",
+        display: "grid",
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+      }}
+    >
       {cells}
     </Paper>
   );
@@ -255,7 +309,8 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
 
-  const teamKeys: TeamKey[] = localTeams.numTeams === 3 ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
+  const teamKeys: TeamKey[] =
+    localTeams.numTeams === 3 ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
   const meta = TEAM_META.slice(0, localTeams.numTeams);
 
   async function moveTo(toKey: TeamKey) {
@@ -316,11 +371,16 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
           return (
             <Paper key={key} variant="outlined" sx={{ overflow: "hidden" }}>
               {/* Header */}
-              <Box sx={{
-                px: 2, py: 1,
-                backgroundColor: m.color,
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-              }}>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: m.color,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography variant="subtitle2" sx={{ color: "#fff", fontWeight: 700 }}>
                     {m.name}
@@ -328,8 +388,13 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                   <Chip
                     label={teamList.length}
                     size="small"
-                    sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700,
-                      bgcolor: "rgba(255,255,255,0.3)", color: "#fff" }}
+                    sx={{
+                      height: 18,
+                      fontSize: "0.65rem",
+                      fontWeight: 700,
+                      bgcolor: "rgba(255,255,255,0.3)",
+                      color: "#fff",
+                    }}
                   />
                 </Box>
                 {canMoveTo && (
@@ -366,7 +431,9 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                           label={a.name}
                           size="small"
                           disabled={saving}
-                          onClick={() => setSelected(isSelected ? null : { id: a.id, fromKey: key })}
+                          onClick={() =>
+                            setSelected(isSelected ? null : { id: a.id, fromKey: key })
+                          }
                           sx={{
                             fontWeight: 600,
                             fontSize: "0.78rem",
@@ -403,7 +470,19 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
 
 // ── TeamDisplay ───────────────────────────────────────────────────────────────
 
-export default function TeamDisplay({ sessionId, isStaff, registrationIds, coaches, slugMap = {}, currentUserTeamIndex, editMode = false, onExitEditMode, teams, teamsLoading, onTeamsGenerated }: Props) {
+export default function TeamDisplay({
+  sessionId,
+  isStaff,
+  registrationIds,
+  coaches,
+  slugMap = {},
+  currentUserTeamIndex,
+  editMode = false,
+  onExitEditMode,
+  teams,
+  teamsLoading,
+  onTeamsGenerated,
+}: Props) {
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
@@ -452,8 +531,12 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
   if (teamsLoading) {
     return (
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 6 }}><Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} /></Grid>
-        <Grid size={{ xs: 12, md: 6 }}><Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} /></Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} />
+        </Grid>
       </Grid>
     );
   }
@@ -461,14 +544,17 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
   // Staff senza squadre create → pannello di creazione
   if (!teams && isStaff) {
     return (
-      <Box sx={{
-        py: 3, px: 3,
-        textAlign: "center",
-        borderRadius: 2,
-        border: "1px dashed",
-        borderColor: "primary.main",
-        backgroundColor: "background.paper",
-      }}>
+      <Box
+        sx={{
+          py: 3,
+          px: 3,
+          textAlign: "center",
+          borderRadius: 2,
+          border: "1px dashed",
+          borderColor: "primary.main",
+          backgroundColor: "background.paper",
+        }}
+      >
         <GroupsIcon sx={{ fontSize: 36, color: "primary.main", mb: 1 }} />
         <Typography variant="body1" fontWeight={600} gutterBottom>
           Crea le squadre
@@ -484,10 +570,16 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
             value={numTeams}
             exclusive
             size="small"
-            onChange={(_e, val) => { if (val) setNumTeams(val as 2 | 3); }}
+            onChange={(_e, val) => {
+              if (val) setNumTeams(val as 2 | 3);
+            }}
           >
-            <ToggleButton value={2} sx={{ px: 3, fontWeight: 600 }}>2 squadre</ToggleButton>
-            <ToggleButton value={3} sx={{ px: 3, fontWeight: 600 }}>3 squadre</ToggleButton>
+            <ToggleButton value={2} sx={{ px: 3, fontWeight: 600 }}>
+              2 squadre
+            </ToggleButton>
+            <ToggleButton value={3} sx={{ px: 3, fontWeight: 600 }}>
+              3 squadre
+            </ToggleButton>
           </ToggleButtonGroup>
 
           <Button
@@ -512,13 +604,16 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
   // Nessuna squadra, utente normale
   if (!teams) {
     return (
-      <Box sx={{
-        py: 4, px: 3,
-        textAlign: "center",
-        borderRadius: 2,
-        border: "1px dashed rgba(0,0,0,0.15)",
-        backgroundColor: "background.paper",
-      }}>
+      <Box
+        sx={{
+          py: 4,
+          px: 3,
+          textAlign: "center",
+          borderRadius: 2,
+          border: "1px dashed rgba(0,0,0,0.15)",
+          backgroundColor: "background.paper",
+        }}
+      >
         <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
         <Typography variant="body1" color="text.secondary" fontWeight={500}>
           Squadre non ancora pubblicate
@@ -571,7 +666,12 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
       {/* Allenatori presenti */}
       {coaches && coaches.length > 0 && (
         <Box sx={{ mt: 1.5, display: "flex", alignItems: "baseline", gap: 1, flexWrap: "wrap" }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ whiteSpace: "nowrap" }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            fontWeight={700}
+            sx={{ whiteSpace: "nowrap" }}
+          >
             Allenatori:
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -581,9 +681,17 @@ export default function TeamDisplay({ sessionId, isStaff, registrationIds, coach
                 <Chip
                   key={c.id}
                   size="small"
-                  label={slug
-                    ? <Link href={`/giocatori/${slug}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>{c.name}</Link>
-                    : c.name
+                  label={
+                    slug ? (
+                      <Link
+                        href={`/giocatori/${slug}`}
+                        style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
+                      >
+                        {c.name}
+                      </Link>
+                    ) : (
+                      c.name
+                    )
                   }
                   variant="outlined"
                   sx={{ fontSize: "0.75rem" }}

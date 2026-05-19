@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import {
-  Box, Typography, Paper, Chip, Grid2 as Grid, Collapse, Button, Divider,
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Grid2 as Grid,
+  Collapse,
+  Button,
+  Divider,
 } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -82,24 +89,40 @@ export default function SquadreArchivio({ seasons, bySeason }: Props) {
                         }}
                       >
                         {/* Strip colorata laterale */}
-                        <Box sx={{ width: 5, alignSelf: "stretch", flexShrink: 0, backgroundColor: team.color ?? "#757575" }} />
+                        <Box
+                          sx={{
+                            width: 5,
+                            alignSelf: "stretch",
+                            flexShrink: 0,
+                            backgroundColor: team.color ?? "#757575",
+                          }}
+                        />
                         <Box sx={{ px: 1.5, py: 1.5, flex: 1, minWidth: 0 }}>
                           <Typography variant="body2" fontWeight={700} noWrap>
                             {team.name}
                           </Typography>
                           {team.championship && (
-                            <Typography variant="caption" color="text.disabled" noWrap sx={{ display: "block" }}>
+                            <Typography
+                              variant="caption"
+                              color="text.disabled"
+                              noWrap
+                              sx={{ display: "block" }}
+                            >
                               {team.championship}
                             </Typography>
                           )}
                           <Box sx={{ display: "flex", gap: 1.5, mt: 0.5 }}>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
                               <GroupsIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-                              <Typography variant="caption" color="text.disabled">{team._count.memberships}</Typography>
+                              <Typography variant="caption" color="text.disabled">
+                                {team._count.memberships}
+                              </Typography>
                             </Box>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
                               <SportsSoccerIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-                              <Typography variant="caption" color="text.disabled">{team._count.matches}</Typography>
+                              <Typography variant="caption" color="text.disabled">
+                                {team._count.matches}
+                              </Typography>
                             </Box>
                           </Box>
                         </Box>

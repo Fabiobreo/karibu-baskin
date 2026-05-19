@@ -17,7 +17,16 @@ export async function GET() {
       OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
     },
     include: {
-      child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true, birthDate: true } },
+      child: {
+        select: {
+          id: true,
+          name: true,
+          sportRole: true,
+          sportRoleVariant: true,
+          gender: true,
+          birthDate: true,
+        },
+      },
       parent: { select: { id: true, name: true, image: true, email: true } },
     },
     orderBy: { createdAt: "desc" },

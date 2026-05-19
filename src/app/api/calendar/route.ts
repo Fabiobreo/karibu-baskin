@@ -7,9 +7,9 @@ export interface CalendarEvent {
   id: string;
   type: CalendarEventType;
   title: string;
-  date: string;       // ISO
-  endDate?: string;   // ISO
-  color: string;      // hex
+  date: string; // ISO
+  endDate?: string; // ISO
+  color: string; // hex
   teamName?: string;
   opponent?: string;
   isHome?: boolean;
@@ -62,10 +62,7 @@ export async function GET(req: Request) {
     }),
     prisma.event.findMany({
       where: {
-        OR: [
-          { date: { gte: start, lt: end } },
-          { endDate: { gte: start, lt: end } },
-        ],
+        OR: [{ date: { gte: start, lt: end } }, { endDate: { gte: start, lt: end } }],
       },
       orderBy: { date: "asc" },
     }),
@@ -85,9 +82,7 @@ export async function GET(req: Request) {
     ...matches.map((m) => ({
       id: m.id,
       type: "match" as const,
-      title: m.isHome
-        ? `vs ${m.opponent.name}`
-        : `@ ${m.opponent.name}`,
+      title: m.isHome ? `vs ${m.opponent.name}` : `@ ${m.opponent.name}`,
       date: m.date.toISOString(),
       color: m.team?.color ?? "#F44336",
       teamName: m.team?.name,

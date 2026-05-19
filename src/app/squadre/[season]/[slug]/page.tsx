@@ -1,7 +1,15 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
-  Box, Container, Typography, Grid2 as Grid, Paper, Chip, Avatar, Stack, Divider,
+  Box,
+  Container,
+  Typography,
+  Grid2 as Grid,
+  Paper,
+  Chip,
+  Avatar,
+  Stack,
+  Divider,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -32,8 +40,20 @@ async function getTeam(season: string, slug: string) {
       memberships: {
         orderBy: [{ isCaptain: "desc" }, { createdAt: "asc" }],
         include: {
-          user: { select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true, gender: true, slug: true } },
-          child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              gender: true,
+              slug: true,
+            },
+          },
+          child: {
+            select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true },
+          },
         },
       },
       matches: {
@@ -113,23 +133,44 @@ export default async function TeamProfilePage({ params }: Props) {
           overflow: "hidden",
         }}
       >
-        <Box sx={{ position: "absolute", top: -60, right: -60, width: 260, height: 260, borderRadius: "50%", backgroundColor: `${teamColor}22`, pointerEvents: "none" }} />
+        <Box
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: `${teamColor}22`,
+            pointerEvents: "none",
+          }}
+        />
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Chip
             label={`Stagione ${team.season}`}
             size="small"
             sx={{ mb: 2, fontWeight: 700, backgroundColor: teamColor, color: "#fff" }}
           />
-          <Typography variant="h3" fontWeight={800} sx={{ mb: 1, fontSize: { xs: "2rem", md: "2.8rem" } }}>
+          <Typography
+            variant="h3"
+            fontWeight={800}
+            sx={{ mb: 1, fontSize: { xs: "2rem", md: "2.8rem" } }}
+          >
             {team.name}
           </Typography>
           {team.championship && (
-            <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, mb: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: "rgba(255,255,255,0.65)", fontWeight: 400, mb: 1 }}
+            >
               {team.championship}
             </Typography>
           )}
           {team.description && (
-            <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.6)", maxWidth: 580, mt: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{ color: "rgba(255,255,255,0.6)", maxWidth: 580, mt: 1 }}
+            >
               {team.description}
             </Typography>
           )}
@@ -137,11 +178,15 @@ export default async function TeamProfilePage({ params }: Props) {
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-
         {/* Statistiche */}
         {playedMatches.length > 0 && (
           <Box sx={{ mb: 6 }}>
-            <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+            <Typography
+              variant="overline"
+              color="primary"
+              fontWeight={700}
+              sx={{ letterSpacing: "0.1em" }}
+            >
               Statistiche
             </Typography>
             <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 3 }}>
@@ -157,11 +202,22 @@ export default async function TeamProfilePage({ params }: Props) {
                 { label: "Punti subiti", value: pointsAgainst, color: "#757575" },
               ].map((s) => (
                 <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
-                  <Paper elevation={0} sx={{ p: 2, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}>
-                    <Typography variant="h4" fontWeight={800} sx={{ color: s.color, fontSize: { xs: "1.8rem", md: "2rem" } }}>
+                  <Paper
+                    elevation={0}
+                    sx={{ p: 2, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}
+                  >
+                    <Typography
+                      variant="h4"
+                      fontWeight={800}
+                      sx={{ color: s.color, fontSize: { xs: "1.8rem", md: "2rem" } }}
+                    >
                       {s.value}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}
+                    >
                       {s.label}
                     </Typography>
                   </Paper>
@@ -178,7 +234,12 @@ export default async function TeamProfilePage({ params }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <GroupsIcon color="primary" />
-                <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+                <Typography
+                  variant="overline"
+                  color="primary"
+                  fontWeight={700}
+                  sx={{ letterSpacing: "0.1em" }}
+                >
                   Rosa
                 </Typography>
               </Box>
@@ -195,10 +256,13 @@ export default async function TeamProfilePage({ params }: Props) {
                   return (
                     <Grid key={m.id} size={{ xs: 12, sm: 6, md: 4 }}>
                       {isUser ? (
-                        <Link href={`/giocatori/${m.user!.slug ?? m.user!.id}`} style={{ textDecoration: "none" }}>
+                        <Link
+                          href={`/giocatori/${m.user!.slug ?? m.user!.id}`}
+                          style={{ textDecoration: "none" }}
+                        >
                           <AthleteCard
                             name={athlete.name ?? "—"}
-                            image={"image" in athlete ? athlete.image ?? undefined : undefined}
+                            image={"image" in athlete ? (athlete.image ?? undefined) : undefined}
                             roleNum={roleNum}
                             roleVariant={athlete.sportRoleVariant}
                             isCaptain={m.isCaptain}
@@ -227,7 +291,12 @@ export default async function TeamProfilePage({ params }: Props) {
           <>
             <Divider sx={{ mb: 6 }} />
             <Box>
-              <Typography variant="overline" color="primary" fontWeight={700} sx={{ letterSpacing: "0.1em" }}>
+              <Typography
+                variant="overline"
+                color="primary"
+                fontWeight={700}
+                sx={{ letterSpacing: "0.1em" }}
+              >
                 Calendario
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 3 }}>
@@ -235,7 +304,11 @@ export default async function TeamProfilePage({ params }: Props) {
               </Typography>
               <Stack spacing={1.5}>
                 {team.matches.map((match) => (
-                  <Link key={match.id} href={`/partite/${match.slug ?? match.id}`} style={{ textDecoration: "none" }}>
+                  <Link
+                    key={match.id}
+                    href={`/partite/${match.slug ?? match.id}`}
+                    style={{ textDecoration: "none" }}
+                  >
                     <Paper
                       elevation={0}
                       sx={{
@@ -243,76 +316,100 @@ export default async function TeamProfilePage({ params }: Props) {
                         overflow: "hidden",
                         cursor: "pointer",
                         transition: "box-shadow 0.15s, border-color 0.15s",
-                        "&:hover": { boxShadow: "0 2px 12px rgba(0,0,0,0.1)", borderColor: "rgba(0,0,0,0.15)" },
+                        "&:hover": {
+                          boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+                          borderColor: "rgba(0,0,0,0.15)",
+                        },
                       }}
                     >
-                    <Box sx={{ display: "flex", alignItems: "stretch" }}>
-                      <Box
-                        sx={{
-                          width: 6,
-                          flexShrink: 0,
-                          backgroundColor: match.result ? RESULT_COLOR[match.result] : "rgba(0,0,0,0.08)",
-                        }}
-                      />
-                      <Box sx={{ flex: 1, p: 2, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-                        <Box sx={{ minWidth: 80 }}>
-                          <Typography variant="caption" color="text.disabled" fontWeight={600} sx={{ display: "block" }}>
-                            {format(new Date(match.date), "d MMM yyyy", { locale: it })}
-                          </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
-                            {match.isHome
-                              ? <HomeIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-                              : <FlightIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-                            }
-                            <Typography variant="caption" color="text.disabled">
-                              {match.isHome ? "Casa" : "Trasferta"}
+                      <Box sx={{ display: "flex", alignItems: "stretch" }}>
+                        <Box
+                          sx={{
+                            width: 6,
+                            flexShrink: 0,
+                            backgroundColor: match.result
+                              ? RESULT_COLOR[match.result]
+                              : "rgba(0,0,0,0.08)",
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            flex: 1,
+                            p: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 2,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <Box sx={{ minWidth: 80 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.disabled"
+                              fontWeight={600}
+                              sx={{ display: "block" }}
+                            >
+                              {format(new Date(match.date), "d MMM yyyy", { locale: it })}
                             </Typography>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
+                              {match.isHome ? (
+                                <HomeIcon sx={{ fontSize: 13, color: "text.disabled" }} />
+                              ) : (
+                                <FlightIcon sx={{ fontSize: 13, color: "text.disabled" }} />
+                              )}
+                              <Typography variant="caption" color="text.disabled">
+                                {match.isHome ? "Casa" : "Trasferta"}
+                              </Typography>
+                            </Box>
                           </Box>
-                        </Box>
 
-                        <Box sx={{ flex: 1, minWidth: 120 }}>
-                          <Typography variant="body2" fontWeight={700}>
-                            vs {match.opponent.name}
-                          </Typography>
-                          {match.opponent.city && (
-                            <Typography variant="caption" color="text.secondary">
-                              {match.opponent.city}
+                          <Box sx={{ flex: 1, minWidth: 120 }}>
+                            <Typography variant="body2" fontWeight={700}>
+                              vs {match.opponent.name}
                             </Typography>
+                            {match.opponent.city && (
+                              <Typography variant="caption" color="text.secondary">
+                                {match.opponent.city}
+                              </Typography>
+                            )}
+                          </Box>
+
+                          {(match.ourScore !== null || match.theirScore !== null) && (
+                            <Box sx={{ textAlign: "center", minWidth: 60 }}>
+                              <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>
+                                {match.ourScore ?? "—"} – {match.theirScore ?? "—"}
+                              </Typography>
+                            </Box>
                           )}
-                        </Box>
 
-                        {(match.ourScore !== null || match.theirScore !== null) && (
-                          <Box sx={{ textAlign: "center", minWidth: 60 }}>
-                            <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>
-                              {match.ourScore ?? "—"} – {match.theirScore ?? "—"}
-                            </Typography>
-                          </Box>
-                        )}
-
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-                          <Chip
-                            label={MATCH_TYPE_LABEL[match.matchType]}
-                            size="small"
-                            variant="outlined"
-                            sx={{ fontWeight: 600, fontSize: "0.7rem" }}
-                          />
-                          {match.result && (
+                          <Box
+                            sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}
+                          >
                             <Chip
-                              label={RESULT_LABEL[match.result]}
+                              label={MATCH_TYPE_LABEL[match.matchType]}
                               size="small"
-                              sx={{
-                                backgroundColor: RESULT_COLOR[match.result],
-                                color: "#fff",
-                                fontWeight: 800,
-                                fontSize: "0.7rem",
-                                minWidth: 28,
-                              }}
+                              variant="outlined"
+                              sx={{ fontWeight: 600, fontSize: "0.7rem" }}
                             />
-                          )}
-                          <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled", ml: "auto" }} />
+                            {match.result && (
+                              <Chip
+                                label={RESULT_LABEL[match.result]}
+                                size="small"
+                                sx={{
+                                  backgroundColor: RESULT_COLOR[match.result],
+                                  color: "#fff",
+                                  fontWeight: 800,
+                                  fontSize: "0.7rem",
+                                  minWidth: 28,
+                                }}
+                              />
+                            )}
+                            <ChevronRightIcon
+                              sx={{ fontSize: 18, color: "text.disabled", ml: "auto" }}
+                            />
+                          </Box>
                         </Box>
                       </Box>
-                    </Box>
                     </Paper>
                   </Link>
                 ))}
@@ -371,10 +468,10 @@ function AthleteCard({
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-          <Typography variant="body2" fontWeight={700} noWrap>{name}</Typography>
-          {isCaptain && (
-            <EmojiEventsIcon sx={{ fontSize: 14, color: "#F9A825", flexShrink: 0 }} />
-          )}
+          <Typography variant="body2" fontWeight={700} noWrap>
+            {name}
+          </Typography>
+          {isCaptain && <EmojiEventsIcon sx={{ fontSize: 14, color: "#F9A825", flexShrink: 0 }} />}
         </Box>
         {roleNum && (
           <Chip

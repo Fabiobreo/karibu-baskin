@@ -38,15 +38,30 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rl = checkRateLimit(ip, "registrations", 20, 60_000);
   if (!rl.allowed) {
-    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche secondo." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Troppe richieste. Riprova tra qualche secondo." },
+      { status: 429 }
+    );
   }
 
   const raw = await req.json().catch(() => null);
   const parsed = RegistrationPostSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
-  const { sessionId, role, name: bodyName, roleVariant, childId, note, anonymousEmail, registeredAsCoach } = parsed.data;
+  const {
+    sessionId,
+    role,
+    name: bodyName,
+    roleVariant,
+    childId,
+    note,
+    anonymousEmail,
+    registeredAsCoach,
+  } = parsed.data;
 
   const trimmedNote = note?.trim().slice(0, 300) || null;
 
@@ -64,10 +79,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
   }
 
-  const sessionEnd = trainingSession.endTime
-    ?? new Date(trainingSession.date.getTime() + 2 * 60 * 60 * 1000);
+  const sessionEnd =
+    trainingSession.endTime ?? new Date(trainingSession.date.getTime() + 2 * 60 * 60 * 1000);
   if (new Date() > sessionEnd) {
-    return NextResponse.json({ error: "Le iscrizioni per questo allenamento sono chiuse" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Le iscrizioni per questo allenamento sono chiuse" },
+      { status: 400 }
+    );
   }
 
   const restrictions = {
@@ -82,7 +100,10 @@ export async function POST(req: NextRequest) {
   // ── Iscrizione figlio (genitore loggato) ────────────────────────────────────
   if (childId) {
     if (!userId) {
-      return NextResponse.json({ error: "Devi essere autenticato per iscrivere un figlio" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Devi essere autenticato per iscrivere un figlio" },
+        { status: 401 }
+      );
     }
 
     const child = await prisma.child.findUnique({ where: { id: childId } });
@@ -97,7 +118,10 @@ export async function POST(req: NextRequest) {
     const effectiveRole = child.sportRole ?? role;
 
     // Controllo restrizioni
-    const parent = await prisma.user.findUnique({ where: { id: userId }, select: { appRole: true } });
+    const parent = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { appRole: true },
+    });
     if (parent?.appRole !== "COACH" && parent?.appRole !== "ADMIN") {
       let isInRestrictedTeam = false;
       if (restrictions.restrictTeamId) {
@@ -106,22 +130,38 @@ export async function POST(req: NextRequest) {
         });
         isInRestrictedTeam = !!membership;
       }
-      const check = checkRegistrationAllowed(restrictions, "ATHLETE", effectiveRole, isInRestrictedTeam);
+      const check = checkRegistrationAllowed(
+        restrictions,
+        "ATHLETE",
+        effectiveRole,
+        isInRestrictedTeam
+      );
       if (!check.allowed) {
-        return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
+        return NextResponse.json(
+          { error: check.reason ?? "Iscrizione non consentita per questo allenamento" },
+          { status: 403 }
+        );
       }
     }
 
     const existing = await prisma.registration.findFirst({ where: { sessionId, childId } });
     if (existing) {
-      return NextResponse.json({ error: `${child.name} è già iscritto a questo allenamento` }, { status: 409 });
+      return NextResponse.json(
+        { error: `${child.name} è già iscritto a questo allenamento` },
+        { status: 409 }
+      );
     }
 
     // Se il figlio ha un account collegato, controlla che non si sia già iscritto da solo
     if (child.userId) {
-      const accountReg = await prisma.registration.findFirst({ where: { sessionId, userId: child.userId } });
+      const accountReg = await prisma.registration.findFirst({
+        where: { sessionId, userId: child.userId },
+      });
       if (accountReg) {
-        return NextResponse.json({ error: `${child.name} è già iscritto con il proprio account` }, { status: 409 });
+        return NextResponse.json(
+          { error: `${child.name} è già iscritto con il proprio account` },
+          { status: 409 }
+        );
       }
     }
 
@@ -141,7 +181,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-        return NextResponse.json({ error: `${child.name} è già iscritto a questo allenamento` }, { status: 409 });
+        return NextResponse.json(
+          { error: `${child.name} è già iscritto a questo allenamento` },
+          { status: 409 }
+        );
       }
       throw err;
     }
@@ -175,9 +218,18 @@ export async function POST(req: NextRequest) {
         isInRestrictedTeam = true; // nessuna squadra → bypass
       }
     }
-    const check = checkRegistrationAllowed(restrictions, user.appRole, effectiveRole, isInRestrictedTeam, asCoach);
+    const check = checkRegistrationAllowed(
+      restrictions,
+      user.appRole,
+      effectiveRole,
+      isInRestrictedTeam,
+      asCoach
+    );
     if (!check.allowed) {
-      return NextResponse.json({ error: check.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
+      return NextResponse.json(
+        { error: check.reason ?? "Iscrizione non consentita per questo allenamento" },
+        { status: 403 }
+      );
     }
 
     const name = user.name?.trim() || (bodyName?.trim() ?? "");
@@ -193,9 +245,14 @@ export async function POST(req: NextRequest) {
     // Se l'utente è collegato come figlio di qualcuno, controlla che non sia già iscritto via childId
     const linkedChild = await prisma.child.findUnique({ where: { userId } });
     if (linkedChild) {
-      const childReg = await prisma.registration.findFirst({ where: { sessionId, childId: linkedChild.id } });
+      const childReg = await prisma.registration.findFirst({
+        where: { sessionId, childId: linkedChild.id },
+      });
       if (childReg) {
-        return NextResponse.json({ error: "Sei già iscritto a questo allenamento (tramite il tuo genitore)" }, { status: 409 });
+        return NextResponse.json(
+          { error: "Sei già iscritto a questo allenamento (tramite il tuo genitore)" },
+          { status: 409 }
+        );
       }
     }
 
@@ -208,13 +265,23 @@ export async function POST(req: NextRequest) {
           });
         }
         return tx.registration.create({
-          data: { sessionId, name: name.slice(0, 60), role, userId, note: trimmedNote, registeredAsCoach: asCoach },
+          data: {
+            sessionId,
+            name: name.slice(0, 60),
+            role,
+            userId,
+            note: trimmedNote,
+            registeredAsCoach: asCoach,
+          },
         });
       });
       return NextResponse.json(registration, { status: 201 });
     } catch (err: unknown) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-        return NextResponse.json({ error: "Sei già iscritto a questo allenamento" }, { status: 409 });
+        return NextResponse.json(
+          { error: "Sei già iscritto a questo allenamento" },
+          { status: 409 }
+        );
       }
       throw err;
     }
@@ -224,25 +291,42 @@ export async function POST(req: NextRequest) {
   // Throttle più stretto per gli anonimi: 3 iscrizioni per IP per sessione specifica.
   const anonRl = checkRateLimit(ip, `anon-reg:${sessionId}`, 3, 60_000);
   if (!anonRl.allowed) {
-    return NextResponse.json({ error: "Troppe richieste. Riprova tra qualche minuto." }, { status: 429 });
+    return NextResponse.json(
+      { error: "Troppe richieste. Riprova tra qualche minuto." },
+      { status: 429 }
+    );
   }
 
   // Utenti anonimi non possono iscriversi se ci sono restrizioni
   const anonCheck = checkRegistrationAllowed(restrictions, null, role, false);
   if (!anonCheck.allowed) {
-    return NextResponse.json({ error: anonCheck.reason ?? "Iscrizione non consentita per questo allenamento" }, { status: 403 });
+    return NextResponse.json(
+      { error: anonCheck.reason ?? "Iscrizione non consentita per questo allenamento" },
+      { status: 403 }
+    );
   }
 
   const trimmedName = bodyName?.trim().slice(0, 60) ?? "";
   if (!trimmedName) {
-    return NextResponse.json({ error: "Nome obbligatorio per gli utenti non registrati" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Nome obbligatorio per gli utenti non registrati" },
+      { status: 400 }
+    );
   }
 
   const existing = await prisma.registration.findFirst({
-    where: { sessionId, name: { equals: trimmedName, mode: "insensitive" }, userId: null, childId: null },
+    where: {
+      sessionId,
+      name: { equals: trimmedName, mode: "insensitive" },
+      userId: null,
+      childId: null,
+    },
   });
   if (existing) {
-    return NextResponse.json({ error: "Questo nome è già iscritto all'allenamento" }, { status: 409 });
+    return NextResponse.json(
+      { error: "Questo nome è già iscritto all'allenamento" },
+      { status: 409 }
+    );
   }
 
   const trimmedEmail = anonymousEmail?.trim().toLowerCase().slice(0, 254) || null;
@@ -254,7 +338,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(registration, { status: 201 });
   } catch (err: unknown) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return NextResponse.json({ error: "Questo nome è già iscritto all'allenamento" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Questo nome è già iscritto all'allenamento" },
+        { status: 409 }
+      );
     }
     throw err;
   }
@@ -268,7 +355,10 @@ export async function PATCH(req: NextRequest) {
   const rawPatch = await req.json().catch(() => null);
   const parsedPatch = RegistrationPatchSchema.safeParse(rawPatch);
   if (!parsedPatch.success) {
-    return NextResponse.json({ error: parsedPatch.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsedPatch.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
   const body = parsedPatch.data;
 

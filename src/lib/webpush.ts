@@ -12,7 +12,7 @@ try {
     webpush.setVapidDetails(
       `mailto:${process.env.VAPID_EMAIL ?? "admin@karibubaskin.it"}`,
       pub,
-      priv,
+      priv
     );
     pushEnabled = true;
   }
@@ -46,13 +46,13 @@ async function cleanupExpired(expired: string[]) {
 
 async function dispatchToSubs(
   subs: { endpoint: string; p256dh: string; auth: string }[],
-  data: string,
+  data: string
 ) {
   const results = await Promise.allSettled(
     subs.map((sub) =>
       webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        data,
+        data
       )
     )
   );
@@ -77,16 +77,14 @@ async function dispatchToSubs(
 export async function sendPushToAll(
   payload: PushPayload,
   adminOnly = false,
-  notifType?: ControllableNotifType,
+  notifType?: ControllableNotifType
 ): Promise<{ sent: number; removed: number }> {
   if (!pushEnabled) return { sent: 0, removed: 0 };
   const subs = await prisma.pushSubscription.findMany({
     include: { user: { select: { appRole: true, notifPrefs: true } } },
   });
 
-  let targets = adminOnly
-    ? subs.filter((s) => s.user?.appRole === "ADMIN")
-    : subs;
+  let targets = adminOnly ? subs.filter((s) => s.user?.appRole === "ADMIN") : subs;
 
   if (notifType) {
     targets = targets.filter((s) => {
@@ -106,7 +104,7 @@ export async function sendPushToAll(
 export async function sendPushToUsers(
   userIds: string[],
   payload: PushPayload,
-  notifType?: ControllableNotifType,
+  notifType?: ControllableNotifType
 ): Promise<{ sent: number; removed: number }> {
   if (!pushEnabled || userIds.length === 0) return { sent: 0, removed: 0 };
 
@@ -135,10 +133,14 @@ export async function sendPushToUsers(
 export async function sendPushToFilter(
   filter: { teamId?: string | null; sportRole?: number | null; sportRoles?: number[] },
   payload: PushPayload,
-  notifType?: ControllableNotifType,
+  notifType?: ControllableNotifType
 ) {
   const { teamId } = filter;
-  const roleFilter = filter.sportRoles?.length ? filter.sportRoles : filter.sportRole != null ? [filter.sportRole] : null;
+  const roleFilter = filter.sportRoles?.length
+    ? filter.sportRoles
+    : filter.sportRole != null
+      ? [filter.sportRole]
+      : null;
 
   if (!teamId && !roleFilter) {
     return sendPushToAll(payload, false, notifType);
@@ -158,16 +160,20 @@ export async function sendPushToFilter(
     const userWhere = roleFilter
       ? { id: { in: directUserIds }, sportRole: { in: roleFilter } }
       : { id: { in: directUserIds } };
-    const users = directUserIds.length > 0
-      ? await prisma.user.findMany({ where: userWhere, select: { id: true } })
-      : [];
+    const users =
+      directUserIds.length > 0
+        ? await prisma.user.findMany({ where: userWhere, select: { id: true } })
+        : [];
     for (const u of users) userIds.add(u.id);
 
     if (childIds.length > 0) {
       const childWhere = roleFilter
         ? { id: { in: childIds }, sportRole: { in: roleFilter } }
         : { id: { in: childIds } };
-      const children = await prisma.child.findMany({ where: childWhere, select: { parentId: true, userId: true } });
+      const children = await prisma.child.findMany({
+        where: childWhere,
+        select: { parentId: true, userId: true },
+      });
       for (const c of children) {
         userIds.add(c.parentId);
         if (c.userId) userIds.add(c.userId);
@@ -193,11 +199,19 @@ export async function sendPushToFilter(
   return sendPushToUsers([...userIds], payload, notifType);
 }
 
-export async function sendPushToTeam(teamId: string, payload: PushPayload, notifType?: ControllableNotifType) {
+export async function sendPushToTeam(
+  teamId: string,
+  payload: PushPayload,
+  notifType?: ControllableNotifType
+) {
   return sendPushToFilter({ teamId }, payload, notifType);
 }
 
-export async function sendPushToRole(sportRole: number, payload: PushPayload, notifType?: ControllableNotifType) {
+export async function sendPushToRole(
+  sportRole: number,
+  payload: PushPayload,
+  notifType?: ControllableNotifType
+) {
   return sendPushToFilter({ sportRole }, payload, notifType);
 }
 
@@ -208,7 +222,7 @@ export async function sendPushToRole(sportRole: number, payload: PushPayload, no
 export async function sendPushToUser(
   userId: string,
   payload: PushPayload,
-  notifType?: ControllableNotifType,
+  notifType?: ControllableNotifType
 ): Promise<{ sent: number; removed: number }> {
   if (!pushEnabled) return { sent: 0, removed: 0 };
   const subs = await prisma.pushSubscription.findMany({

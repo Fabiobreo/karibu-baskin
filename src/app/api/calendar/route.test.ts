@@ -146,8 +146,8 @@ describe("GET /api/calendar", () => {
 
   it("ordina gli eventi per data crescente", async () => {
     p.trainingSession.findMany.mockResolvedValue([trainingStub]); // July 7
-    p.match.findMany.mockResolvedValue([matchStub]);               // July 14
-    p.event.findMany.mockResolvedValue([eventStub]);               // July 20
+    p.match.findMany.mockResolvedValue([matchStub]); // July 14
+    p.event.findMany.mockResolvedValue([eventStub]); // July 20
     const res = await GET(makeRequest("?month=2025-07"));
     const json = await res.json();
     expect(json).toHaveLength(3);

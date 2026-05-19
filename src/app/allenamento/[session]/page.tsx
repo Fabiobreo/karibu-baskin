@@ -2,10 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import useSWR from "swr";
 import { useParams, useRouter } from "next/navigation";
-import {
-  Container, Typography, Box,
-  Paper, Skeleton, Grid2 as Grid,
-} from "@mui/material";
+import { Container, Typography, Box, Paper, Skeleton, Grid2 as Grid } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SiteHeader from "@/components/SiteHeader";
 import RegistrationForm, { type CurrentUser, type ChildInfo } from "@/components/RegistrationForm";
@@ -54,24 +51,26 @@ export default function SessionPage() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
   const [parentChildren, setParentChildren] = useState<ChildInfo[]>([]);
 
-  const fetcher = useCallback((url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject())), []);
-
-  const { data: session, isLoading: loading, mutate: mutateSession } = useSWR<Session>(
-    `/api/sessions/${encodeURIComponent(sessionParam)}`,
-    fetcher,
-    { revalidateOnFocus: true, refreshInterval: 60_000 },
+  const fetcher = useCallback(
+    (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promise.reject())),
+    []
   );
+
+  const {
+    data: session,
+    isLoading: loading,
+    mutate: mutateSession,
+  } = useSWR<Session>(`/api/sessions/${encodeURIComponent(sessionParam)}`, fetcher, {
+    revalidateOnFocus: true,
+    refreshInterval: 60_000,
+  });
   const realSessionId = session?.id ?? "";
 
   // Derive isEnded and isToday early so dynamic refresh intervals can use them
   const sessionDate = session ? new Date(session.date) : null;
   const sessionEnd = session?.endTime ? new Date(session.endTime) : null;
-  const isEnded = sessionDate
-    ? new Date() > sessionEndDate(sessionDate, sessionEnd)
-    : false;
-  const isToday = sessionDate
-    ? sessionDate.toDateString() === new Date().toDateString()
-    : false;
+  const isEnded = sessionDate ? new Date() > sessionEndDate(sessionDate, sessionEnd) : false;
+  const isToday = sessionDate ? sessionDate.toDateString() === new Date().toDateString() : false;
 
   // 30s when live today, 0 when ended (no changes expected), 2min for future sessions
   const refreshInterval = !session ? 60_000 : isEnded ? 0 : isToday ? 30_000 : 120_000;
@@ -80,15 +79,15 @@ export default function SessionPage() {
   const { data: registrations = [], mutate: mutateRegistrations } = useSWR<Registration[]>(
     regKey,
     fetcher,
-    { revalidateOnFocus: true, refreshInterval },
+    { revalidateOnFocus: true, refreshInterval }
   );
 
   const teamsKey = realSessionId ? `/api/teams/${realSessionId}` : null;
-  const { data: teamsRaw, isLoading: teamsLoading, mutate: mutateTeams } = useSWR<TeamsData>(
-    teamsKey,
-    fetcher,
-    { revalidateOnFocus: true, refreshInterval },
-  );
+  const {
+    data: teamsRaw,
+    isLoading: teamsLoading,
+    mutate: mutateTeams,
+  } = useSWR<TeamsData>(teamsKey, fetcher, { revalidateOnFocus: true, refreshInterval });
   const teams: TeamsData | null = teamsRaw?.generated ? teamsRaw : null;
 
   function refreshSecondary() {
@@ -118,8 +117,11 @@ export default function SessionPage() {
   useEffect(() => {
     const dateStr = session?.date ?? null;
     const endStr = session?.endTime ?? null;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!dateStr) { setCountdown(null); return; }
+     
+    if (!dateStr) {
+      setCountdown(null);
+      return;
+    }
 
     const sd = new Date(dateStr);
     const se = sessionEndDate(sd, endStr ? new Date(endStr) : null);
@@ -128,16 +130,31 @@ export default function SessionPage() {
       const now = new Date();
       if (now < sd) {
         const todayCheck = sd.toDateString() === now.toDateString();
-        if (!todayCheck) { setCountdown(null); return; }
+        if (!todayCheck) {
+          setCountdown(null);
+          return;
+        }
         const diff = sd.getTime() - now.getTime();
         const h = Math.floor(diff / (1000 * 60 * 60));
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        setCountdown(diff < 2 * 60 * 1000 ? "Sta per iniziare!" : h > 0 ? `Inizia fra ${h}h ${m}min` : `Inizia fra ${m} minuti`);
+        setCountdown(
+          diff < 2 * 60 * 1000
+            ? "Sta per iniziare!"
+            : h > 0
+              ? `Inizia fra ${h}h ${m}min`
+              : `Inizia fra ${m} minuti`
+        );
       } else if (now <= se) {
         const diff = se.getTime() - now.getTime();
         const h = Math.floor(diff / (1000 * 60 * 60));
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        setCountdown(diff < 60 * 1000 ? "Sta per finire" : h > 0 ? `Finisce fra ${h}h ${m}min` : `Finisce fra ${m} minuti`);
+        setCountdown(
+          diff < 60 * 1000
+            ? "Sta per finire"
+            : h > 0
+              ? `Finisce fra ${h}h ${m}min`
+              : `Finisce fra ${m} minuti`
+        );
       } else {
         setCountdown(null);
       }
@@ -185,24 +202,31 @@ export default function SessionPage() {
   );
 
   const myRegistration = currentUser
-    ? registrations.find((r) =>
-        r.userId === currentUser.id ||
-        (currentUser.linkedChildId && r.childId === currentUser.linkedChildId)
+    ? registrations.find(
+        (r) =>
+          r.userId === currentUser.id ||
+          (currentUser.linkedChildId && r.childId === currentUser.linkedChildId)
       )
     : null;
-  const myTeam = myRegistration && teams
-    ? TEAM_META.find((t) => {
-        const list = t.key === "teamC" ? teams.teamC : teams[t.key];
-        return list?.some((a) => a.id === myRegistration.id);
-      }) ?? null
-    : null;
-  const hasUnregisteredChildren = currentUser?.appRole === "PARENT" && parentChildren.some(
-    (c) => !registrations.some((r) => r.childId === c.id || (c.userId ? r.userId === c.userId : false))
-  );
+  const myTeam =
+    myRegistration && teams
+      ? (TEAM_META.find((t) => {
+          const list = t.key === "teamC" ? teams.teamC : teams[t.key];
+          return list?.some((a) => a.id === myRegistration.id);
+        }) ?? null)
+      : null;
+  const hasUnregisteredChildren =
+    currentUser?.appRole === "PARENT" &&
+    parentChildren.some(
+      (c) =>
+        !registrations.some((r) => r.childId === c.id || (c.userId ? r.userId === c.userId : false))
+    );
   const teamFirstLayout = !!myTeam && !hasUnregisteredChildren;
 
   const TEAM_KEYS = ["teamA", "teamB", "teamC"] as const;
-  const myTeamIndex = myTeam ? Math.max(0, TEAM_KEYS.indexOf(myTeam.key as typeof TEAM_KEYS[number])) : 0;
+  const myTeamIndex = myTeam
+    ? Math.max(0, TEAM_KEYS.indexOf(myTeam.key as (typeof TEAM_KEYS)[number]))
+    : 0;
 
   const rosterProps = {
     registrations,
@@ -220,7 +244,9 @@ export default function SessionPage() {
     sessionId,
     isStaff,
     registrationIds: registrations.filter((r) => !r.registeredAsCoach).map((r) => r.id),
-    coaches: registrations.filter((r) => r.registeredAsCoach).map((r) => ({ id: r.id, name: r.name })),
+    coaches: registrations
+      .filter((r) => r.registeredAsCoach)
+      .map((r) => ({ id: r.id, name: r.name })),
     slugMap,
     currentUserTeamIndex: myTeamIndex,
     editMode: editingTeams,
@@ -258,7 +284,6 @@ export default function SessionPage() {
           </Box>
         ) : session ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
             {/* Banner "la tua squadra" */}
             {myTeam && (
               <Paper
@@ -275,7 +300,15 @@ export default function SessionPage() {
               >
                 <GroupsIcon sx={{ fontSize: 36, opacity: 0.85, flexShrink: 0 }} />
                 <Box>
-                  <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 600, letterSpacing: 0.8, textTransform: "uppercase" }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      opacity: 0.8,
+                      fontWeight: 600,
+                      letterSpacing: 0.8,
+                      textTransform: "uppercase",
+                    }}
+                  >
                     La tua squadra
                   </Typography>
                   <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1.2 }}>
@@ -306,7 +339,17 @@ export default function SessionPage() {
               <>
                 <SectionErrorBoundary label="Squadre">
                   <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                    <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} sessionDate={session?.date} sessionEndTime={session?.endTime} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
+                    <TeamsHeader
+                      teams={teams}
+                      coaches={teamDisplayProps.coaches}
+                      sessionTitle={session?.title}
+                      sessionDate={session?.date}
+                      sessionEndTime={session?.endTime}
+                      isStaff={isStaff}
+                      removingTeams={removingTeams}
+                      onRemoveTeams={handleRemoveTeams}
+                      onEditTeams={() => setEditingTeams(true)}
+                    />
                     <TeamDisplay {...teamDisplayProps} />
                   </Paper>
                 </SectionErrorBoundary>
@@ -325,7 +368,17 @@ export default function SessionPage() {
                     </SectionErrorBoundary>
                     <SectionErrorBoundary label="Squadre">
                       <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                        <TeamsHeader teams={teams} coaches={teamDisplayProps.coaches} sessionTitle={session?.title} sessionDate={session?.date} sessionEndTime={session?.endTime} isStaff={isStaff} removingTeams={removingTeams} onRemoveTeams={handleRemoveTeams} onEditTeams={() => setEditingTeams(true)} />
+                        <TeamsHeader
+                          teams={teams}
+                          coaches={teamDisplayProps.coaches}
+                          sessionTitle={session?.title}
+                          sessionDate={session?.date}
+                          sessionEndTime={session?.endTime}
+                          isStaff={isStaff}
+                          removingTeams={removingTeams}
+                          onRemoveTeams={handleRemoveTeams}
+                          onEditTeams={() => setEditingTeams(true)}
+                        />
                         <TeamDisplay {...teamDisplayProps} />
                       </Paper>
                     </SectionErrorBoundary>
@@ -351,19 +404,22 @@ export default function SessionPage() {
                         registeredChildIds={registrations.map((r) => r.childId)}
                         currentUser={currentUser}
                         parentChildren={parentChildren}
-                        restrictions={session ? {
-                          allowedRoles: session.allowedRoles ?? [],
-                          restrictTeamId: session.restrictTeamId ?? null,
-                          openRoles: session.openRoles ?? [],
-                          restrictTeamName: session.restrictTeam?.name ?? null,
-                        } : undefined}
+                        restrictions={
+                          session
+                            ? {
+                                allowedRoles: session.allowedRoles ?? [],
+                                restrictTeamId: session.restrictTeamId ?? null,
+                                openRoles: session.openRoles ?? [],
+                                restrictTeamName: session.restrictTeam?.name ?? null,
+                              }
+                            : undefined
+                        }
                       />
                     </SectionErrorBoundary>
                   </Paper>
                 </Grid>
               </Grid>
             )}
-
           </Box>
         ) : (
           <Typography color="error">Allenamento non trovato.</Typography>

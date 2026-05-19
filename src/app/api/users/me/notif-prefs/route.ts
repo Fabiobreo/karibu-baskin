@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
 
-  const body = await req.json().catch(() => null) as Partial<NotifPrefs> | null;
+  const body = (await req.json().catch(() => null)) as Partial<NotifPrefs> | null;
   if (!body) return NextResponse.json({ error: "Payload non valido" }, { status: 400 });
 
   // Ottieni le prefs correnti e fai il merge con il body

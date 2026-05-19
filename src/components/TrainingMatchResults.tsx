@@ -2,7 +2,15 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import {
-  Box, Typography, Paper, TextField, Button, CircularProgress, Chip, IconButton, Tooltip,
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  CircularProgress,
+  Chip,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import EditIcon from "@mui/icons-material/Edit";
@@ -48,7 +56,12 @@ const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : Promi
 // ── Slot singolo matchup ──────────────────────────────────────────────────────
 
 function MatchupSlot({
-  def, result, sessionId, isStaff, onSaved, onDeleted,
+  def,
+  result,
+  sessionId,
+  isStaff,
+  onSaved,
+  onDeleted,
 }: {
   def: MatchupDef;
   result: MatchResult | undefined;
@@ -111,7 +124,9 @@ function MatchupSlot({
     if (!result) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/sessions/${sessionId}/match-results/${result.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/sessions/${sessionId}/match-results/${result.id}`, {
+        method: "DELETE",
+      });
       if (res.ok) {
         onDeleted();
       } else {
@@ -125,7 +140,12 @@ function MatchupSlot({
   }
 
   const label = (
-    <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: "block", mb: 1.25 }}>
+    <Typography
+      variant="caption"
+      fontWeight={700}
+      color="text.secondary"
+      sx={{ display: "block", mb: 1.25 }}
+    >
       {team1.name} — {team2.name}
     </Typography>
   );
@@ -145,29 +165,69 @@ function MatchupSlot({
         {label}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team1.color, flexShrink: 0 }} />
-            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>{team1.name}</Typography>
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                bgcolor: team1.color,
+                flexShrink: 0,
+              }}
+            />
+            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>
+              {team1.name}
+            </Typography>
             <TextField
               size="small"
               type="number"
               placeholder="0"
               value={score1}
               onChange={(e) => setScore1(e.target.value)}
-              inputProps={{ min: 0, style: { width: 52, padding: "4px 8px", textAlign: "center", fontSize: "1.1rem", fontWeight: 700 } }}
+              inputProps={{
+                min: 0,
+                style: {
+                  width: 52,
+                  padding: "4px 8px",
+                  textAlign: "center",
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                },
+              }}
               disabled={saving}
             />
           </Box>
-          <Typography color="text.disabled" fontWeight={700} sx={{ fontSize: "0.8rem" }}>vs</Typography>
+          <Typography color="text.disabled" fontWeight={700} sx={{ fontSize: "0.8rem" }}>
+            vs
+          </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: team2.color, flexShrink: 0 }} />
-            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>{team2.name}</Typography>
+            <Box
+              sx={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                bgcolor: team2.color,
+                flexShrink: 0,
+              }}
+            />
+            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>
+              {team2.name}
+            </Typography>
             <TextField
               size="small"
               type="number"
               placeholder="0"
               value={score2}
               onChange={(e) => setScore2(e.target.value)}
-              inputProps={{ min: 0, style: { width: 52, padding: "4px 8px", textAlign: "center", fontSize: "1.1rem", fontWeight: 700 } }}
+              inputProps={{
+                min: 0,
+                style: {
+                  width: 52,
+                  padding: "4px 8px",
+                  textAlign: "center",
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                },
+              }}
               disabled={saving}
             />
           </Box>
@@ -183,7 +243,12 @@ function MatchupSlot({
             Salva
           </Button>
           {editing && (
-            <Button size="small" onClick={() => setEditing(false)} disabled={saving} color="inherit">
+            <Button
+              size="small"
+              onClick={() => setEditing(false)}
+              disabled={saving}
+              color="inherit"
+            >
               Annulla
             </Button>
           )}
@@ -225,7 +290,9 @@ function MatchupSlot({
                 fontSize: "0.8rem",
               }}
             />
-            <Typography variant="caption" color="text.disabled" fontWeight={700}>vs</Typography>
+            <Typography variant="caption" color="text.disabled" fontWeight={700}>
+              vs
+            </Typography>
             <Chip
               label={`${team2.name}  ${s2}`}
               size="small"
@@ -239,17 +306,25 @@ function MatchupSlot({
               }}
             />
             {winner === 0 && (
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>Pareggio</Typography>
+              <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                Pareggio
+              </Typography>
             )}
           </Box>
         ) : (
-          <Typography variant="caption" color="text.disabled">Non ancora registrato</Typography>
+          <Typography variant="caption" color="text.disabled">
+            Non ancora registrato
+          </Typography>
         )}
       </Box>
       {isStaff && result && (
         <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
           <Tooltip title="Modifica">
-            <IconButton size="small" onClick={startEdit} sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "primary.main" } }}>
+            <IconButton
+              size="small"
+              onClick={startEdit}
+              sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "primary.main" } }}
+            >
               <EditIcon sx={{ fontSize: 14 }} />
             </IconButton>
           </Tooltip>
@@ -261,7 +336,11 @@ function MatchupSlot({
                 disabled={deleting}
                 sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "error.main" } }}
               >
-                {deleting ? <CircularProgress size={12} /> : <DeleteOutlineIcon sx={{ fontSize: 14 }} />}
+                {deleting ? (
+                  <CircularProgress size={12} />
+                ) : (
+                  <DeleteOutlineIcon sx={{ fontSize: 14 }} />
+                )}
               </IconButton>
             </span>
           </Tooltip>
@@ -277,7 +356,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
   const { data: results = [], mutate } = useSWR<MatchResult[]>(
     `/api/sessions/${sessionId}/match-results`,
     fetcher,
-    { revalidateOnFocus: false },
+    { revalidateOnFocus: false }
   );
 
   const hasThreeTeams = !!(teams?.teamC && teams.teamC.length > 0);

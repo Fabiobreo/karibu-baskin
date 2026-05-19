@@ -55,7 +55,10 @@ const mockSendPush = sendPushToUser as Mock;
 const mockCreateNotif = createAppNotification as Mock;
 const mockLogAudit = logAudit as Mock;
 
-function makePATCH(userId: string, body: object): [NextRequest, { params: Promise<{ userId: string }> }] {
+function makePATCH(
+  userId: string,
+  body: object
+): [NextRequest, { params: Promise<{ userId: string }> }] {
   return [
     new NextRequest(`http://localhost/api/users/${userId}`, {
       method: "PATCH",
@@ -179,7 +182,10 @@ describe("PATCH /api/users/[userId]", () => {
     const [req, ctx] = makePATCH("user-1", { sportRole: 2 });
     await PATCH(req, ctx);
     // fire-and-forget — viene chiamato prima della risposta
-    expect(mockSendPush).toHaveBeenCalledWith("user-1", expect.objectContaining({ title: "Ruolo sportivo assegnato" }));
+    expect(mockSendPush).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ title: "Ruolo sportivo assegnato" })
+    );
     expect(mockCreateNotif).toHaveBeenCalled();
   });
 
@@ -188,7 +194,10 @@ describe("PATCH /api/users/[userId]", () => {
     p.user.update.mockResolvedValue({ ...baseUser, sportRole: 3 });
     const [req, ctx] = makePATCH("user-1", { sportRole: 3 });
     await PATCH(req, ctx);
-    expect(mockSendPush).toHaveBeenCalledWith("user-1", expect.objectContaining({ title: "Ruolo sportivo aggiornato" }));
+    expect(mockSendPush).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({ title: "Ruolo sportivo aggiornato" })
+    );
   });
 
   it("non invia push se sportRole non cambia", async () => {
@@ -209,7 +218,10 @@ describe("PATCH /api/users/[userId]", () => {
   });
 
   it("restituisce 404 se l'utente non esiste (P2025)", async () => {
-    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "6.0.0" });
+    const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "6.0.0",
+    });
     p.user.update.mockRejectedValue(p2025);
     const [req, ctx] = makePATCH("non-existent", { appRole: "COACH" });
     const res = await PATCH(req, ctx);
@@ -224,7 +236,11 @@ describe("DELETE /api/users/[userId]", () => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "admin-1" } });
     mockIsAdmin.mockResolvedValue(true);
-    p.user.findUnique.mockResolvedValue({ email: "mario@example.com", name: "Mario Rossi", appRole: "ATHLETE" });
+    p.user.findUnique.mockResolvedValue({
+      email: "mario@example.com",
+      name: "Mario Rossi",
+      appRole: "ATHLETE",
+    });
     p.user.delete.mockResolvedValue(undefined);
     mockLogAudit.mockResolvedValue(undefined);
   });

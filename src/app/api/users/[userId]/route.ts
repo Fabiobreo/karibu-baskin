@@ -8,12 +8,14 @@ import { sendPushToUser } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
-import { VALID_APP_ROLES, VALID_GENDERS, VALID_SPORT_ROLES, VALID_SPORT_ROLE_VARIANTS } from "@/lib/validators";
+import {
+  VALID_APP_ROLES,
+  VALID_GENDERS,
+  VALID_SPORT_ROLES,
+  VALID_SPORT_ROLE_VARIANTS,
+} from "@/lib/validators";
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const actorSession = await auth();
   const isAdmin = await isAdminUser();
   if (!(await isCoachOrAdmin())) {
@@ -21,7 +23,7 @@ export async function PATCH(
   }
 
   const { userId } = await params;
-  const body = await req.json().catch(() => ({})) as {
+  const body = (await req.json().catch(() => ({}))) as {
     appRole?: AppRole;
     sportRole?: number | null;
     sportRoleVariant?: string | null;
@@ -63,7 +65,9 @@ export async function PATCH(
   if (body.email !== undefined && isAdmin) {
     const trimmed = body.email.trim().toLowerCase();
     if (trimmed) {
-      const conflict = await prisma.user.findFirst({ where: { email: trimmed, NOT: { id: userId } } });
+      const conflict = await prisma.user.findFirst({
+        where: { email: trimmed, NOT: { id: userId } },
+      });
       if (conflict) return NextResponse.json({ error: "Email già in uso" }, { status: 409 });
       data.email = trimmed;
     }
@@ -75,7 +79,10 @@ export async function PATCH(
   }
 
   if (body.sportRoleVariant !== undefined) {
-    if (body.sportRoleVariant !== null && !VALID_SPORT_ROLE_VARIANTS.includes(body.sportRoleVariant)) {
+    if (
+      body.sportRoleVariant !== null &&
+      !VALID_SPORT_ROLE_VARIANTS.includes(body.sportRoleVariant)
+    ) {
       return NextResponse.json({ error: "Variante ruolo non valida" }, { status: 400 });
     }
     data.sportRoleVariant = body.sportRoleVariant ?? null;
@@ -88,7 +95,10 @@ export async function PATCH(
     if (body.sportRole !== null && !VALID_SPORT_ROLES.includes(body.sportRole)) {
       return NextResponse.json({ error: "Ruolo sportivo non valido" }, { status: 400 });
     }
-    const current = await prisma.user.findUnique({ where: { id: userId }, select: { sportRole: true } });
+    const current = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { sportRole: true },
+    });
     prevSportRole = current?.sportRole ?? null;
     if (current && current.sportRole !== body.sportRole && body.sportRole !== null) {
       await prisma.sportRoleHistory.create({
@@ -110,8 +120,16 @@ export async function PATCH(
       where: { id: userId },
       data,
       select: {
-        id: true, name: true, email: true, appRole: true,
-        sportRole: true, sportRoleVariant: true, sportRoleSuggested: true, sportRoleSuggestedVariant: true, gender: true, birthDate: true,
+        id: true,
+        name: true,
+        email: true,
+        appRole: true,
+        sportRole: true,
+        sportRoleVariant: true,
+        sportRoleSuggested: true,
+        sportRoleSuggestedVariant: true,
+        gender: true,
+        birthDate: true,
       },
     });
   } catch (err: unknown) {
@@ -124,17 +142,39 @@ export async function PATCH(
   // Audit log
   const actorId = actorSession?.user?.id;
   if (actorId) {
-    const actions: Array<{ action: Parameters<typeof logAudit>[0]["action"]; before?: Record<string, unknown>; after?: Record<string, unknown> }> = [];
-    if (body.appRole !== undefined) actions.push({ action: "UPDATE_ROLE", before: { appRole: prevAppRole }, after: { appRole: user.appRole } });
-    if (body.sportRole !== undefined) actions.push({ action: "UPDATE_SPORT_ROLE", before: { sportRole: prevSportRole }, after: { sportRole: user.sportRole } });
+    const actions: Array<{
+      action: Parameters<typeof logAudit>[0]["action"];
+      before?: Record<string, unknown>;
+      after?: Record<string, unknown>;
+    }> = [];
+    if (body.appRole !== undefined)
+      actions.push({
+        action: "UPDATE_ROLE",
+        before: { appRole: prevAppRole },
+        after: { appRole: user.appRole },
+      });
+    if (body.sportRole !== undefined)
+      actions.push({
+        action: "UPDATE_SPORT_ROLE",
+        before: { sportRole: prevSportRole },
+        after: { sportRole: user.sportRole },
+      });
     for (const entry of actions) {
-      logAudit({ actorId, action: entry.action, targetType: "User", targetId: userId, before: entry.before, after: entry.after }).catch((err) => console.error("[audit] update user", err));
+      logAudit({
+        actorId,
+        action: entry.action,
+        targetType: "User",
+        targetId: userId,
+        before: entry.before,
+        after: entry.after,
+      }).catch((err) => console.error("[audit] update user", err));
     }
   }
 
   // 3.4 — notifica all'utente quando il suo ruolo sportivo viene confermato/aggiornato
   if (roleConfirmed && body.sportRole !== null && body.sportRole !== undefined) {
-    const roleName = ROLE_LABELS[body.sportRole as keyof typeof ROLE_LABELS] ?? `Ruolo ${body.sportRole}`;
+    const roleName =
+      ROLE_LABELS[body.sportRole as keyof typeof ROLE_LABELS] ?? `Ruolo ${body.sportRole}`;
     const isFirstTime = prevSportRole === null;
     const notifPayload = {
       title: isFirstTime ? "Ruolo sportivo assegnato" : "Ruolo sportivo aggiornato",
@@ -143,8 +183,12 @@ export async function PATCH(
         : `Il tuo ruolo Baskin è cambiato in: ${roleName}.`,
       url: "/profilo",
     };
-    sendPushToUser(userId, notifPayload).catch((err) => console.error("[push] sport role update", err));
-    createAppNotification({ type: "SYSTEM", targetUserId: userId, ...notifPayload }).catch((err) => console.error("[notification] sport role update", err));
+    sendPushToUser(userId, notifPayload).catch((err) =>
+      console.error("[push] sport role update", err)
+    );
+    createAppNotification({ type: "SYSTEM", targetUserId: userId, ...notifPayload }).catch((err) =>
+      console.error("[notification] sport role update", err)
+    );
   }
 
   return NextResponse.json(user);
@@ -166,14 +210,23 @@ export async function DELETE(
     return NextResponse.json({ error: "Non puoi eliminare il tuo account" }, { status: 400 });
   }
 
-  const deleted = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true, appRole: true } });
+  const deleted = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true, appRole: true },
+  });
   if (!deleted) {
     return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
   }
   await prisma.user.delete({ where: { id: userId } });
 
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "DELETE_USER", targetType: "User", targetId: userId, before: deleted ?? undefined }).catch((err) => console.error("[audit] delete user", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "DELETE_USER",
+      targetType: "User",
+      targetId: userId,
+      before: deleted ?? undefined,
+    }).catch((err) => console.error("[audit] delete user", err));
   }
 
   return NextResponse.json({ ok: true });

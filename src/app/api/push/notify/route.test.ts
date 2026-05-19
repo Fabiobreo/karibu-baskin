@@ -6,7 +6,7 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(true),
 }));
 vi.mock("@/lib/webpush", () => ({
-  sendPushToAll:    vi.fn().mockResolvedValue({ sent: 5, removed: 0 }),
+  sendPushToAll: vi.fn().mockResolvedValue({ sent: 5, removed: 0 }),
   sendPushToFilter: vi.fn().mockResolvedValue({ sent: 2, removed: 0 }),
 }));
 vi.mock("@/lib/appNotifications", () => ({
@@ -17,9 +17,9 @@ import { POST } from "./route";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToAll, sendPushToFilter } from "@/lib/webpush";
 
-const mockIsCoach    = isCoachOrAdmin as Mock;
-const mockToAll      = sendPushToAll as Mock;
-const mockToFilter   = sendPushToFilter as Mock;
+const mockIsCoach = isCoachOrAdmin as Mock;
+const mockToAll = sendPushToAll as Mock;
+const mockToFilter = sendPushToFilter as Mock;
 
 function makeReq(body: object) {
   return new NextRequest("http://localhost/api/push/notify", {
@@ -56,7 +56,9 @@ describe("POST /api/push/notify", () => {
   });
 
   it("usa sendPushToAll con targetAll: true", async () => {
-    const res = await POST(makeReq({ title: "Avviso", body: "Allenamento annullato", targetAll: true }));
+    const res = await POST(
+      makeReq({ title: "Avviso", body: "Allenamento annullato", targetAll: true })
+    );
     expect(res.status).toBe(200);
     expect(mockToAll).toHaveBeenCalledOnce();
     expect(mockToFilter).not.toHaveBeenCalled();
@@ -84,7 +86,9 @@ describe("POST /api/push/notify", () => {
   });
 
   it("usa sendPushToFilter con teamId + sportRole combinati", async () => {
-    const res = await POST(makeReq({ title: "Squadra + ruolo", body: "Testo", teamId: "team-1", sportRole: 3 }));
+    const res = await POST(
+      makeReq({ title: "Squadra + ruolo", body: "Testo", teamId: "team-1", sportRole: 3 })
+    );
     expect(res.status).toBe(200);
     expect(mockToFilter).toHaveBeenCalledWith(
       expect.objectContaining({ teamId: "team-1", sportRole: 3 }),

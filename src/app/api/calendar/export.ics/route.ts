@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-const LOCATION_DEFAULT = "Polisportivo Gino Cosaro, Via del Vigo 11, 36075 Montecchio Maggiore (VI)";
+const LOCATION_DEFAULT =
+  "Polisportivo Gino Cosaro, Via del Vigo 11, 36075 Montecchio Maggiore (VI)";
 const PRODID = "-//ASD Karibu Baskin//Karibu Baskin App//IT";
 
 function icsDate(d: Date): string {
-  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  return d
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}/, "");
 }
 
 function icsEscape(s: string): string {
@@ -27,7 +31,14 @@ function foldLine(line: string): string {
   return parts.join("\r\n");
 }
 
-function vevent(uid: string, summary: string, dtstart: Date, dtend: Date, description?: string, location?: string): string {
+function vevent(
+  uid: string,
+  summary: string,
+  dtstart: Date,
+  dtend: Date,
+  description?: string,
+  location?: string
+): string {
   const lines = [
     "BEGIN:VEVENT",
     `UID:${uid}@karibubaskin.it`,
@@ -53,12 +64,26 @@ export async function GET() {
     }),
     prisma.match.findMany({
       where: { date: { gte: now } },
-      select: { id: true, date: true, isHome: true, venue: true, team: { select: { name: true } }, opponent: { select: { name: true } } },
+      select: {
+        id: true,
+        date: true,
+        isHome: true,
+        venue: true,
+        team: { select: { name: true } },
+        opponent: { select: { name: true } },
+      },
       orderBy: { date: "asc" },
     }),
     prisma.event.findMany({
       where: { date: { gte: now } },
-      select: { id: true, title: true, date: true, endDate: true, description: true, location: true },
+      select: {
+        id: true,
+        title: true,
+        date: true,
+        endDate: true,
+        description: true,
+        location: true,
+      },
       orderBy: { date: "asc" },
     }),
   ]);
@@ -84,14 +109,16 @@ export async function GET() {
   for (const e of events) {
     const start = e.date;
     const end = e.endDate ?? new Date(e.date.getTime() + 60 * 60 * 1000);
-    vevents.push(vevent(
-      `event-${e.id}`,
-      e.title,
-      start,
-      end,
-      e.description ?? undefined,
-      e.location ?? undefined,
-    ));
+    vevents.push(
+      vevent(
+        `event-${e.id}`,
+        e.title,
+        start,
+        end,
+        e.description ?? undefined,
+        e.location ?? undefined
+      )
+    );
   }
 
   const ics = [

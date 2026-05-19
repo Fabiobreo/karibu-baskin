@@ -1,10 +1,28 @@
 "use client";
 import { useState } from "react";
 import {
-  Box, TextField, Button, Typography, List, ListItem,
-  ListItemText, ListItemButton, ListItemAvatar, IconButton, Paper, CircularProgress, Chip,
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  Select, MenuItem, Stack, Alert, Avatar,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemButton,
+  ListItemAvatar,
+  IconButton,
+  Paper,
+  CircularProgress,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Select,
+  MenuItem,
+  Stack,
+  Alert,
+  Avatar,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -60,7 +78,11 @@ const EMPTY_EDIT_FORM: EditFormState = { name: "", gender: "", birthDate: "" };
 
 function formatBirthDate(d: string | null): string {
   if (!d) return "—";
-  try { return format(new Date(d), "d MMMM yyyy", { locale: it }); } catch { return "—"; }
+  try {
+    return format(new Date(d), "d MMMM yyyy", { locale: it });
+  } catch {
+    return "—";
+  }
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
@@ -109,7 +131,9 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
     setCreateForm({ name: "", gender: "", birthDate: "" });
   }
 
-  function closeAdd() { setAddStep(null); }
+  function closeAdd() {
+    setAddStep(null);
+  }
 
   async function handleSearchEmail() {
     const email = emailInput.trim().toLowerCase();
@@ -182,7 +206,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         return;
       }
 
-      setChildren((prev) => [...prev, { ...newChild, pendingRequestId: linkData.requestId ?? null }]);
+      setChildren((prev) => [
+        ...prev,
+        { ...newChild, pendingRequestId: linkData.requestId ?? null },
+      ]);
       setAddStep("sent");
     } catch {
       showToast({ message: "Errore di rete", severity: "error" });
@@ -205,7 +232,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast({ message: data.error ?? "Errore nell'aggiunta", severity: "error" }); return; }
+      if (!res.ok) {
+        showToast({ message: data.error ?? "Errore nell'aggiunta", severity: "error" });
+        return;
+      }
       setChildren((prev) => [...prev, data]);
       showToast({ message: `${data.name} aggiunto!`, severity: "success" });
       closeAdd();
@@ -227,7 +257,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
     });
   }
 
-  function closeEdit() { setEditTarget(null); setEditForm(EMPTY_EDIT_FORM); }
+  function closeEdit() {
+    setEditTarget(null);
+    setEditForm(EMPTY_EDIT_FORM);
+  }
 
   async function handleSaveEdit() {
     if (!editTarget || !editForm.name.trim()) return;
@@ -243,8 +276,11 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast({ message: data.error ?? "Errore nel salvataggio", severity: "error" }); return; }
-      setChildren((prev) => prev.map((c) => c.id === editTarget.id ? data : c));
+      if (!res.ok) {
+        showToast({ message: data.error ?? "Errore nel salvataggio", severity: "error" });
+        return;
+      }
+      setChildren((prev) => prev.map((c) => (c.id === editTarget.id ? data : c)));
       showToast({ message: `${data.name} aggiornato`, severity: "success" });
       closeEdit();
     } catch {
@@ -273,12 +309,16 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       }
       if (data.pending) {
         // Richiesta inviata, in attesa di conferma
-        setChildren((prev) => prev.map((c) =>
-          c.id === linkTarget.id ? { ...c, pendingRequestId: data.requestId ?? null } : c
-        ));
+        setChildren((prev) =>
+          prev.map((c) =>
+            c.id === linkTarget.id ? { ...c, pendingRequestId: data.requestId ?? null } : c
+          )
+        );
         showToast({ message: `Richiesta inviata a ${linkTarget.name}`, severity: "info" });
       } else {
-        setChildren((prev) => prev.map((c) => c.id === linkTarget.id ? { ...c, userId: data.userId } : c));
+        setChildren((prev) =>
+          prev.map((c) => (c.id === linkTarget.id ? { ...c, userId: data.userId } : c))
+        );
         showToast({ message: `Account collegato a ${linkTarget.name}`, severity: "success" });
       }
       setLinkTarget(null);
@@ -298,8 +338,11 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ unlinkAccount: true }),
       });
-      if (!res.ok) { showToast({ message: "Errore nello scollegamento", severity: "error" }); return; }
-      setChildren((prev) => prev.map((c) => c.id === child.id ? { ...c, userId: null } : c));
+      if (!res.ok) {
+        showToast({ message: "Errore nello scollegamento", severity: "error" });
+        return;
+      }
+      setChildren((prev) => prev.map((c) => (c.id === child.id ? { ...c, userId: null } : c)));
       showToast({ message: `Account scollegato da ${child.name}`, severity: "info" });
     } catch {
       showToast({ message: "Errore di rete", severity: "error" });
@@ -322,12 +365,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   // ── Titoli dialog add ─────────────────────────────────────────────────────
 
   const ADD_TITLES: Record<AddStep, string> = {
-    choice:  "Aggiungi figlio/a",
-    email:   "Cerca per email",
-    name:    "Cerca per nome",
+    choice: "Aggiungi figlio/a",
+    email: "Cerca per email",
+    name: "Cerca per nome",
     confirm: "Conferma",
-    sent:    "Richiesta inviata",
-    create:  "Crea manualmente",
+    sent: "Richiesta inviata",
+    create: "Crea manualmente",
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -343,60 +386,149 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
                 <Avatar
                   src={child.user?.image ?? undefined}
-                  sx={{ width: 44, height: 44, flexShrink: 0, bgcolor: child.userId ? "primary.main" : "grey.400", fontSize: 17, mt: 0.25 }}
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    flexShrink: 0,
+                    bgcolor: child.userId ? "primary.main" : "grey.400",
+                    fontSize: 17,
+                    mt: 0.25,
+                  }}
                 >
                   {child.name[0].toUpperCase()}
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={700} noWrap>{child.name}</Typography>
+                  <Typography variant="body2" fontWeight={700} noWrap>
+                    {child.name}
+                  </Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
-                    <Chip label="Atleta" size="small" color="primary" sx={{ fontSize: "0.7rem", fontWeight: 600 }} />
+                    <Chip
+                      label="Atleta"
+                      size="small"
+                      color="primary"
+                      sx={{ fontSize: "0.7rem", fontWeight: 600 }}
+                    />
                     {child.sportRole && (
-                      <Chip label={sportRoleLabel(child.sportRole, child.sportRoleVariant)} size="small"
-                        sx={{ bgcolor: ROLE_COLORS[child.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.7rem" }} />
+                      <Chip
+                        label={sportRoleLabel(child.sportRole, child.sportRoleVariant)}
+                        size="small"
+                        sx={{
+                          bgcolor: ROLE_COLORS[child.sportRole],
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: "0.7rem",
+                        }}
+                      />
                     )}
                     {child.teamMemberships
                       ?.filter((m) => m.team.season === currentSeason)
                       .map((m, i) => (
-                        <Chip key={i} label={m.team.name} size="small"
-                          sx={{ bgcolor: m.team.color ?? "primary.main", color: "#fff", fontWeight: 700, fontSize: "0.7rem" }} />
+                        <Chip
+                          key={i}
+                          label={m.team.name}
+                          size="small"
+                          sx={{
+                            bgcolor: m.team.color ?? "primary.main",
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: "0.7rem",
+                          }}
+                        />
                       ))}
                     {child.gender && (
-                      <Chip label={GENDER_LABELS[child.gender]} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+                      <Chip
+                        label={GENDER_LABELS[child.gender]}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontSize: "0.7rem" }}
+                      />
                     )}
-                    {child.userId
-                      ? <Chip label="Account collegato" size="small" color="success" variant="outlined" sx={{ fontSize: "0.7rem" }} />
-                      : child.pendingRequestId
-                        ? <Chip label="In attesa di conferma" size="small" color="warning" variant="outlined" sx={{ fontSize: "0.7rem" }} />
-                        : <Chip label="Senza account" size="small" variant="outlined" sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }} />
-                    }
+                    {child.userId ? (
+                      <Chip
+                        label="Account collegato"
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        sx={{ fontSize: "0.7rem" }}
+                      />
+                    ) : child.pendingRequestId ? (
+                      <Chip
+                        label="In attesa di conferma"
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                        sx={{ fontSize: "0.7rem" }}
+                      />
+                    ) : (
+                      <Chip
+                        label="Senza account"
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }}
+                      />
+                    )}
                   </Box>
                   {child.birthDate && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                      Nato/a il {formatBirthDate(typeof child.birthDate === "string" ? child.birthDate : (child.birthDate as Date).toISOString())}
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", mt: 0.5 }}
+                    >
+                      Nato/a il{" "}
+                      {formatBirthDate(
+                        typeof child.birthDate === "string"
+                          ? child.birthDate
+                          : (child.birthDate as Date).toISOString()
+                      )}
                     </Typography>
                   )}
                   {child.userId && child.user?.email && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.25 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", mt: 0.25 }}
+                    >
                       {child.user.email}
                     </Typography>
                   )}
                 </Box>
                 <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
                   {child.userId ? (
-                    <IconButton size="small" onClick={() => handleUnlink(child)} title="Scollega account">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleUnlink(child)}
+                      title="Scollega account"
+                    >
                       <LinkOffIcon fontSize="small" />
                     </IconButton>
                   ) : child.pendingRequestId ? null : (
-                    <IconButton size="small" color="primary" onClick={() => { setLinkTarget(child); setLinkEmail(""); setLinkEmailError(null); }} title="Collega account">
+                    <IconButton
+                      size="small"
+                      color="primary"
+                      onClick={() => {
+                        setLinkTarget(child);
+                        setLinkEmail("");
+                        setLinkEmailError(null);
+                      }}
+                      title="Collega account"
+                    >
                       <LinkIcon fontSize="small" />
                     </IconButton>
                   )}
                   <IconButton size="small" onClick={() => openEdit(child)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" color="error" onClick={() => handleDelete(child)} disabled={deletingId === child.id}>
-                    {deletingId === child.id ? <CircularProgress size={16} /> : <DeleteIcon fontSize="small" />}
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleDelete(child)}
+                    disabled={deletingId === child.id}
+                  >
+                    {deletingId === child.id ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <DeleteIcon fontSize="small" />
+                    )}
                   </IconButton>
                 </Box>
               </Box>
@@ -414,31 +546,62 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       </Button>
 
       {/* ── Dialog collega account ── */}
-      <Dialog open={!!linkTarget} onClose={() => { setLinkTarget(null); setLinkEmail(""); setLinkEmailError(null); }} maxWidth="xs" fullWidth>
+      <Dialog
+        open={!!linkTarget}
+        onClose={() => {
+          setLinkTarget(null);
+          setLinkEmail("");
+          setLinkEmailError(null);
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 700 }}>Collega account — {linkTarget?.name}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Inserisci l&apos;email dell&apos;account Google con cui {linkTarget?.name}{" "}si logga nell&apos;app.
-            Riceverà una notifica per confermare il collegamento.
+            Inserisci l&apos;email dell&apos;account Google con cui {linkTarget?.name} si logga
+            nell&apos;app. Riceverà una notifica per confermare il collegamento.
           </Typography>
           <TextField
-            label="Email account" type="email" value={linkEmail}
-            onChange={(e) => { setLinkEmail(e.target.value); setLinkEmailError(null); }}
-            fullWidth size="small" autoFocus
+            label="Email account"
+            type="email"
+            value={linkEmail}
+            onChange={(e) => {
+              setLinkEmail(e.target.value);
+              setLinkEmailError(null);
+            }}
+            fullWidth
+            size="small"
+            autoFocus
             error={!!linkEmailError}
             onKeyDown={(e) => e.key === "Enter" && handleLink()}
           />
           {linkEmailError && (
-            <Alert severity="error" sx={{ mt: 1, py: 0.5 }}>{linkEmailError}</Alert>
+            <Alert severity="error" sx={{ mt: 1, py: 0.5 }}>
+              {linkEmailError}
+            </Alert>
           )}
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
             Una volta accettato, il genitore può iscrivere il figlio agli allenamenti e viceversa.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => { setLinkTarget(null); setLinkEmail(""); setLinkEmailError(null); }} disabled={linking}>Annulla</Button>
-          <Button variant="contained" onClick={handleLink} disabled={linking || !linkEmail.trim()}
-            startIcon={linking ? <CircularProgress size={14} color="inherit" /> : <LinkIcon />}>
+          <Button
+            onClick={() => {
+              setLinkTarget(null);
+              setLinkEmail("");
+              setLinkEmailError(null);
+            }}
+            disabled={linking}
+          >
+            Annulla
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleLink}
+            disabled={linking || !linkEmail.trim()}
+            startIcon={linking ? <CircularProgress size={14} color="inherit" /> : <LinkIcon />}
+          >
             {linking ? "Invio richiesta..." : "Invia richiesta"}
           </Button>
         </DialogActions>
@@ -450,26 +613,52 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
-              label="Nome e cognome *" value={editForm.name}
+              label="Nome e cognome *"
+              value={editForm.name}
               onChange={(e) => setEditForm((s) => ({ ...s, name: e.target.value }))}
-              fullWidth size="small" inputProps={{ maxLength: 60 }}
+              fullWidth
+              size="small"
+              inputProps={{ maxLength: 60 }}
             />
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Genere
               </Typography>
-              <Select fullWidth size="small" displayEmpty value={editForm.gender}
-                onChange={(e) => setEditForm((s) => ({ ...s, gender: e.target.value }))}>
-                <MenuItem value=""><em>Non specificato</em></MenuItem>
+              <Select
+                fullWidth
+                size="small"
+                displayEmpty
+                value={editForm.gender}
+                onChange={(e) => setEditForm((s) => ({ ...s, gender: e.target.value }))}
+              >
+                <MenuItem value="">
+                  <em>Non specificato</em>
+                </MenuItem>
                 <MenuItem value="MALE">Maschio</MenuItem>
                 <MenuItem value="FEMALE">Femmina</MenuItem>
               </Select>
             </Box>
             <Box>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
                 Data di nascita
               </Typography>
-              <TextField fullWidth size="small" type="date" value={editForm.birthDate}
+              <TextField
+                fullWidth
+                size="small"
+                type="date"
+                value={editForm.birthDate}
                 onChange={(e) => setEditForm((s) => ({ ...s, birthDate: e.target.value }))}
                 slotProps={{ inputLabel: { shrink: true } }}
               />
@@ -477,8 +666,14 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={closeEdit} disabled={saving}>Annulla</Button>
-          <Button variant="contained" onClick={handleSaveEdit} disabled={saving || !editForm.name.trim()}>
+          <Button onClick={closeEdit} disabled={saving}>
+            Annulla
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveEdit}
+            disabled={saving || !editForm.name.trim()}
+          >
             {saving ? "Salvataggio..." : "Salva modifiche"}
           </Button>
         </DialogActions>
@@ -486,49 +681,77 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
 
       {/* ── Dialog aggiungi (multi-step) ── */}
       <Dialog open={addStep !== null} onClose={closeAdd} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          {addStep ? ADD_TITLES[addStep] : ""}
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{addStep ? ADD_TITLES[addStep] : ""}</DialogTitle>
 
         <DialogContent>
-
           {/* Step: scelta metodo */}
           {addStep === "choice" && (
             <Stack spacing={1.5} sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Il tuo figlio/a è già registrato/a nell&apos;app? Cercalo, altrimenti crealo manualmente.
+                Il tuo figlio/a è già registrato/a nell&apos;app? Cercalo, altrimenti crealo
+                manualmente.
               </Typography>
               <Button
-                variant="outlined" fullWidth size="large"
+                variant="outlined"
+                fullWidth
+                size="large"
                 startIcon={<EmailIcon />}
-                onClick={() => { setEmailInput(""); setEmailError(null); setAddStep("email"); }}
+                onClick={() => {
+                  setEmailInput("");
+                  setEmailError(null);
+                  setAddStep("email");
+                }}
                 sx={{ justifyContent: "flex-start", py: 1.5 }}
               >
                 <Box sx={{ textAlign: "left" }}>
-                  <Typography variant="body2" fontWeight={600}>Cerca per email</Typography>
-                  <Typography variant="caption" color="text.secondary">Inserisci l&apos;email del suo account</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    Cerca per email
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Inserisci l&apos;email del suo account
+                  </Typography>
                 </Box>
               </Button>
               <Button
-                variant="outlined" fullWidth size="large"
+                variant="outlined"
+                fullWidth
+                size="large"
                 startIcon={<BadgeIcon />}
-                onClick={() => { setNameInput(""); setNameResults([]); setNameSearched(false); setAddStep("name"); }}
+                onClick={() => {
+                  setNameInput("");
+                  setNameResults([]);
+                  setNameSearched(false);
+                  setAddStep("name");
+                }}
                 sx={{ justifyContent: "flex-start", py: 1.5 }}
               >
                 <Box sx={{ textAlign: "left" }}>
-                  <Typography variant="body2" fontWeight={600}>Cerca per nome e cognome</Typography>
-                  <Typography variant="caption" color="text.secondary">Cerca tra gli utenti già registrati</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    Cerca per nome e cognome
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Cerca tra gli utenti già registrati
+                  </Typography>
                 </Box>
               </Button>
               <Button
-                variant="outlined" fullWidth size="large"
+                variant="outlined"
+                fullWidth
+                size="large"
                 startIcon={<AddCircleOutlineIcon />}
-                onClick={() => { setCreateForm({ name: "", gender: "", birthDate: "" }); setAddStep("create"); }}
+                onClick={() => {
+                  setCreateForm({ name: "", gender: "", birthDate: "" });
+                  setAddStep("create");
+                }}
                 sx={{ justifyContent: "flex-start", py: 1.5 }}
               >
                 <Box sx={{ textAlign: "left" }}>
-                  <Typography variant="body2" fontWeight={600}>Crea manualmente</Typography>
-                  <Typography variant="caption" color="text.secondary">Non è ancora registrato/a nell&apos;app</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    Crea manualmente
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Non è ancora registrato/a nell&apos;app
+                  </Typography>
                 </Box>
               </Button>
             </Stack>
@@ -538,17 +761,27 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "email" && (
             <Stack spacing={2} sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Cerca prima se il tuo figlio/a è già registrato/a nell&apos;app tramite la sua email.
+                Cerca prima se il tuo figlio/a è già registrato/a nell&apos;app tramite la sua
+                email.
               </Typography>
               <TextField
-                label="Email" type="email" value={emailInput}
-                onChange={(e) => { setEmailInput(e.target.value); setEmailError(null); }}
-                fullWidth size="small" autoFocus
+                label="Email"
+                type="email"
+                value={emailInput}
+                onChange={(e) => {
+                  setEmailInput(e.target.value);
+                  setEmailError(null);
+                }}
+                fullWidth
+                size="small"
+                autoFocus
                 onKeyDown={(e) => e.key === "Enter" && handleSearchEmail()}
                 error={!!emailError}
               />
               {emailError && (
-                <Alert severity="warning" sx={{ py: 0.5 }}>{emailError}</Alert>
+                <Alert severity="warning" sx={{ py: 0.5 }}>
+                  {emailError}
+                </Alert>
               )}
             </Stack>
           )}
@@ -561,23 +794,46 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               </Typography>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <TextField
-                  label="Nome e cognome" value={nameInput}
-                  onChange={(e) => { setNameInput(e.target.value); setNameSearched(false); }}
-                  fullWidth size="small" autoFocus
+                  label="Nome e cognome"
+                  value={nameInput}
+                  onChange={(e) => {
+                    setNameInput(e.target.value);
+                    setNameSearched(false);
+                  }}
+                  fullWidth
+                  size="small"
+                  autoFocus
                   onKeyDown={(e) => e.key === "Enter" && handleSearchName()}
                 />
-                <Button variant="contained" size="small" onClick={handleSearchName}
-                  disabled={searching || !nameInput.trim()} sx={{ flexShrink: 0, minWidth: 44, px: 1 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleSearchName}
+                  disabled={searching || !nameInput.trim()}
+                  sx={{ flexShrink: 0, minWidth: 44, px: 1 }}
+                >
                   {searching ? <CircularProgress size={16} color="inherit" /> : <SearchIcon />}
                 </Button>
               </Box>
               {nameSearched && nameResults.length > 0 && (
-                <List disablePadding sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}>
+                <List
+                  disablePadding
+                  sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+                >
                   {nameResults.map((u, idx) => (
                     <ListItem key={u.id} disablePadding divider={idx < nameResults.length - 1}>
-                      <ListItemButton onClick={() => { setFoundUser(u); setConfirmName(u.name ?? ""); setAddStep("confirm"); }}>
+                      <ListItemButton
+                        onClick={() => {
+                          setFoundUser(u);
+                          setConfirmName(u.name ?? "");
+                          setAddStep("confirm");
+                        }}
+                      >
                         <ListItemAvatar>
-                          <Avatar src={u.image ?? undefined} sx={{ width: 36, height: 36, fontSize: 15 }}>
+                          <Avatar
+                            src={u.image ?? undefined}
+                            sx={{ width: 36, height: 36, fontSize: 15 }}
+                          >
                             {(u.name ?? "?")[0].toUpperCase()}
                           </Avatar>
                         </ListItemAvatar>
@@ -586,7 +842,9 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                           secondary={[
                             u.gender ? GENDER_LABELS[u.gender as Gender] : null,
                             u.birthDate ? formatBirthDate(u.birthDate) : null,
-                          ].filter(Boolean).join(" · ")}
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         />
                       </ListItemButton>
                     </ListItem>
@@ -595,12 +853,18 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               )}
               {nameSearched && nameResults.length === 0 && (
                 <>
-                  <Alert severity="info" sx={{ py: 0.5 }}>Nessun risultato trovato.</Alert>
-                  <Button variant="outlined" size="small" startIcon={<PersonAddIcon />}
+                  <Alert severity="info" sx={{ py: 0.5 }}>
+                    Nessun risultato trovato.
+                  </Alert>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<PersonAddIcon />}
                     onClick={() => {
                       setCreateForm({ name: nameInput, gender: "", birthDate: "" });
                       setAddStep("create");
-                    }}>
+                    }}
+                  >
                     Crea manualmente
                   </Button>
                 </>
@@ -615,7 +879,14 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 Sei il genitore di questa persona?
               </Typography>
               <Paper variant="outlined" sx={{ p: 2.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: foundUser.gender || foundUser.birthDate ? 1.5 : 0 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: foundUser.gender || foundUser.birthDate ? 1.5 : 0,
+                  }}
+                >
                   <Avatar
                     src={foundUser.image ?? undefined}
                     sx={{ width: 48, height: 48, flexShrink: 0, fontSize: 20 }}
@@ -639,9 +910,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   label="Nome e cognome nel tuo profilo *"
                   value={confirmName}
                   onChange={(e) => setConfirmName(e.target.value)}
-                  fullWidth size="small"
+                  fullWidth
+                  size="small"
                   inputProps={{ maxLength: 60 }}
-                  helperText={!foundUser.name ? "Questo utente non ha un nome — inseriscilo tu." : undefined}
+                  helperText={
+                    !foundUser.name ? "Questo utente non ha un nome — inseriscilo tu." : undefined
+                  }
                   error={!foundUser.name && !confirmName.trim()}
                 />
               </Paper>
@@ -652,10 +926,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "sent" && (
             <Stack spacing={2} sx={{ mt: 1, alignItems: "center", textAlign: "center", py: 1 }}>
               <CheckCircleOutlineIcon color="success" sx={{ fontSize: 56 }} />
-              <Typography variant="body1" fontWeight={700}>Richiesta inviata!</Typography>
+              <Typography variant="body1" fontWeight={700}>
+                Richiesta inviata!
+              </Typography>
               <Typography variant="body2" color="text.secondary">
-                La richiesta di collegamento è stata inviata.
-                Ti avviseremo quando <strong>{confirmName || foundUser?.name}</strong> la confermerà.
+                La richiesta di collegamento è stata inviata. Ti avviseremo quando{" "}
+                <strong>{confirmName || foundUser?.name}</strong> la confermerà.
               </Typography>
             </Stack>
           )}
@@ -664,26 +940,53 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "create" && (
             <Stack spacing={2.5} sx={{ mt: 1 }}>
               <TextField
-                label="Nome e cognome *" value={createForm.name}
+                label="Nome e cognome *"
+                value={createForm.name}
                 onChange={(e) => setCreateForm((s) => ({ ...s, name: e.target.value }))}
-                fullWidth size="small" autoFocus inputProps={{ maxLength: 60 }}
+                fullWidth
+                size="small"
+                autoFocus
+                inputProps={{ maxLength: 60 }}
               />
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                  display="block"
+                  gutterBottom
+                >
                   Genere
                 </Typography>
-                <Select fullWidth size="small" displayEmpty value={createForm.gender}
-                  onChange={(e) => setCreateForm((s) => ({ ...s, gender: e.target.value }))}>
-                  <MenuItem value=""><em>Non specificato</em></MenuItem>
+                <Select
+                  fullWidth
+                  size="small"
+                  displayEmpty
+                  value={createForm.gender}
+                  onChange={(e) => setCreateForm((s) => ({ ...s, gender: e.target.value }))}
+                >
+                  <MenuItem value="">
+                    <em>Non specificato</em>
+                  </MenuItem>
                   <MenuItem value="MALE">Maschio</MenuItem>
                   <MenuItem value="FEMALE">Femmina</MenuItem>
                 </Select>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" gutterBottom>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={600}
+                  display="block"
+                  gutterBottom
+                >
                   Data di nascita
                 </Typography>
-                <TextField fullWidth size="small" type="date" value={createForm.birthDate}
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  value={createForm.birthDate}
                   onChange={(e) => setCreateForm((s) => ({ ...s, birthDate: e.target.value }))}
                   slotProps={{ inputLabel: { shrink: true } }}
                 />
@@ -693,44 +996,54 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               </Typography>
             </Stack>
           )}
-
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          {addStep === "choice" && (
-            <Button onClick={closeAdd}>Annulla</Button>
-          )}
+          {addStep === "choice" && <Button onClick={closeAdd}>Annulla</Button>}
           {addStep === "email" && (
             <>
               <Button onClick={() => setAddStep("choice")}>Indietro</Button>
-              <Button variant="contained" onClick={handleSearchEmail}
+              <Button
+                variant="contained"
+                onClick={handleSearchEmail}
                 disabled={searching || !emailInput.trim()}
-                startIcon={searching ? <CircularProgress size={14} color="inherit" /> : <SearchIcon />}>
+                startIcon={
+                  searching ? <CircularProgress size={14} color="inherit" /> : <SearchIcon />
+                }
+              >
                 {searching ? "Ricerca..." : "Cerca"}
               </Button>
             </>
           )}
-          {addStep === "name" && (
-            <Button onClick={() => setAddStep("choice")}>Indietro</Button>
-          )}
+          {addStep === "name" && <Button onClick={() => setAddStep("choice")}>Indietro</Button>}
           {addStep === "confirm" && (
             <>
-              <Button onClick={() => setAddStep("choice")} disabled={creating}>No, riprova</Button>
-              <Button variant="contained" onClick={handleConfirmYes}
+              <Button onClick={() => setAddStep("choice")} disabled={creating}>
+                No, riprova
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleConfirmYes}
                 disabled={creating || !confirmName.trim()}
-                startIcon={creating ? <CircularProgress size={14} color="inherit" /> : undefined}>
+                startIcon={creating ? <CircularProgress size={14} color="inherit" /> : undefined}
+              >
                 {creating ? "Invio richiesta..." : "Sì, è mio figlio/a"}
               </Button>
             </>
           )}
           {addStep === "sent" && (
-            <Button variant="contained" onClick={closeAdd}>Chiudi</Button>
+            <Button variant="contained" onClick={closeAdd}>
+              Chiudi
+            </Button>
           )}
           {addStep === "create" && (
             <>
               <Button onClick={() => setAddStep("choice")}>Indietro</Button>
-              <Button variant="contained" onClick={handleCreateManually}
-                disabled={creating || !createForm.name.trim()}>
+              <Button
+                variant="contained"
+                onClick={handleCreateManually}
+                disabled={creating || !createForm.name.trim()}
+              >
                 {creating ? "Salvataggio..." : "Aggiungi"}
               </Button>
             </>

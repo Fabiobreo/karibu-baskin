@@ -1,9 +1,29 @@
 "use client";
 
 import {
-  Box, Typography, Paper, Button, TextField, Stack, Chip, Avatar, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Select, MenuItem, FormControl,
-  InputLabel, Tooltip, CircularProgress, Divider, Alert, Grid2 as Grid,
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  Stack,
+  Chip,
+  Avatar,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Tooltip,
+  CircularProgress,
+  Divider,
+  Alert,
+  Grid2 as Grid,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -25,13 +45,13 @@ import Link from "next/link";
 
 const TEAM_COLORS = [
   { label: "Arancione", value: "#FF6D00" },
-  { label: "Blu",       value: "#1E88E5" },
-  { label: "Verde",     value: "#43A047" },
-  { label: "Rosso",     value: "#F44336" },
-  { label: "Viola",     value: "#8E24AA" },
-  { label: "Nero",      value: "#1A1A1A" },
-  { label: "Grigio",    value: "#757575" },
-  { label: "Oro",       value: "#FFB300" },
+  { label: "Blu", value: "#1E88E5" },
+  { label: "Verde", value: "#43A047" },
+  { label: "Rosso", value: "#F44336" },
+  { label: "Viola", value: "#8E24AA" },
+  { label: "Nero", value: "#1A1A1A" },
+  { label: "Grigio", value: "#757575" },
+  { label: "Oro", value: "#FFB300" },
 ];
 
 // ── Stagione corrente automatica ──────────────────────────────────────────────
@@ -64,7 +84,12 @@ type Membership = {
   userId: string | null;
   childId: string | null;
   user: User | null;
-  child: { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null } | null;
+  child: {
+    id: string;
+    name: string;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+  } | null;
 };
 
 type Team = {
@@ -79,26 +104,48 @@ type Team = {
 
 type TeamWithRoster = Team & { memberships: Membership[] };
 
-type Child = { id: string; name: string; sportRole: number | null; sportRoleVariant: string | null };
+type Child = {
+  id: string;
+  name: string;
+  sportRole: number | null;
+  sportRoleVariant: string | null;
+};
 
 // Valore nel Select: "u:{id}" per utenti, "c:{id}" per figli
-type SelectableEntry = { selectKey: string; id: string; kind: "user" | "child"; name: string | null; image?: string | null; sportRole: number | null; sportRoleVariant: string | null };
+type SelectableEntry = {
+  selectKey: string;
+  id: string;
+  kind: "user" | "child";
+  name: string | null;
+  image?: string | null;
+  sportRole: number | null;
+  sportRoleVariant: string | null;
+};
 
 type SeasonRecord = { label: string; isCurrent: boolean };
 type Props = { teams: Team[]; users: User[]; childPlayers: Child[]; seasons: SeasonRecord[] };
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
-export default function AdminSquadreClient({ teams: initialTeams, users, childPlayers, seasons: initialSeasons }: Props) {
+export default function AdminSquadreClient({
+  teams: initialTeams,
+  users,
+  childPlayers,
+  seasons: initialSeasons,
+}: Props) {
   const router = useRouter();
   const [teams, setTeams] = useState(initialTeams);
   const [isPending, startTransition] = useTransition();
 
   // Stagioni
-  const existingSeasons = Array.from(new Set(teams.map((t) => t.season))).sort((a, b) => b.localeCompare(a));
+  const existingSeasons = Array.from(new Set(teams.map((t) => t.season))).sort((a, b) =>
+    b.localeCompare(a)
+  );
   const [extraSeasons, setExtraSeasons] = useState<string[]>([]);
   const [autoSeason, setAutoSeason] = useState<string>("");
-  const allSeasons = Array.from(new Set([...existingSeasons, ...extraSeasons, ...(autoSeason ? [autoSeason] : [])])).sort((a, b) => b.localeCompare(a));
+  const allSeasons = Array.from(
+    new Set([...existingSeasons, ...extraSeasons, ...(autoSeason ? [autoSeason] : [])])
+  ).sort((a, b) => b.localeCompare(a));
   const [activeSeason, setActiveSeason] = useState<string>(
     initialSeasons.find((s) => s.isCurrent)?.label ?? existingSeasons[0] ?? ""
   );
@@ -117,7 +164,7 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setAutoSeason(cur);
     if (!activeSeason) setActiveSeason(cur);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Stagione "in corso" (dal DB)
@@ -133,8 +180,15 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ label: activeSeason }),
     });
-    setSeasons((prev) => prev.map((s) => ({ ...s, isCurrent: s.label === activeSeason }))
-      .concat(prev.some((s) => s.label === activeSeason) ? [] : [{ label: activeSeason, isCurrent: true }]));
+    setSeasons((prev) =>
+      prev
+        .map((s) => ({ ...s, isCurrent: s.label === activeSeason }))
+        .concat(
+          prev.some((s) => s.label === activeSeason)
+            ? []
+            : [{ label: activeSeason, isCurrent: true }]
+        )
+    );
     setSettingCurrent(false);
   }
 
@@ -145,12 +199,25 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   // Dialog crea/modifica squadra
   const [teamDialog, setTeamDialog] = useState(false);
   const [editTeam, setEditTeam] = useState<Team | null>(null);
-  const [teamForm, setTeamForm] = useState({ name: "", championship: "", color: TEAM_COLORS[0].value, description: "" });
+  const [teamForm, setTeamForm] = useState({
+    name: "",
+    championship: "",
+    color: TEAM_COLORS[0].value,
+    description: "",
+  });
   const [teamError, setTeamError] = useState("");
 
   // Dialog conferma generica
-  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
-    open: false, title: "", message: "", onConfirm: () => {},
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    open: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
   });
   function openConfirm(title: string, message: string, onConfirm: () => void) {
     setConfirmDialog({ open: true, title, message, onConfirm });
@@ -203,7 +270,10 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
 
   async function handleSaveTeam() {
     setTeamError("");
-    if (!teamForm.name.trim()) { setTeamError("Il nome è obbligatorio"); return; }
+    if (!teamForm.name.trim()) {
+      setTeamError("Il nome è obbligatorio");
+      return;
+    }
     startTransition(async () => {
       const method = editTeam ? "PUT" : "POST";
       const url = editTeam ? `/api/competitive-teams/${editTeam.id}` : "/api/competitive-teams";
@@ -212,7 +282,10 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...teamForm, season: editTeam ? editTeam.season : activeSeason }),
       });
-      if (!res.ok) { setTeamError("Errore nel salvataggio"); return; }
+      if (!res.ok) {
+        setTeamError("Errore nel salvataggio");
+        return;
+      }
       setTeamDialog(false);
       router.refresh();
     });
@@ -222,10 +295,11 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
     openConfirm(
       "Elimina squadra",
       `Eliminare "${teamName}"? Verranno eliminati anche rosa e partite associate.`,
-      () => startTransition(async () => {
-        await fetch(`/api/competitive-teams/${teamId}`, { method: "DELETE" });
-        setTeams((prev) => prev.filter((t) => t.id !== teamId));
-      }),
+      () =>
+        startTransition(async () => {
+          await fetch(`/api/competitive-teams/${teamId}`, { method: "DELETE" });
+          setTeams((prev) => prev.filter((t) => t.id !== teamId));
+        })
     );
   }
 
@@ -264,7 +338,13 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
       });
       setSelectedKey("");
       setAddingMember(false);
-      setTeams((prev) => prev.map((t) => t.id === rosaBase.id ? { ...t, _count: { ...t._count, memberships: t._count.memberships + 1 } } : t));
+      setTeams((prev) =>
+        prev.map((t) =>
+          t.id === rosaBase.id
+            ? { ...t, _count: { ...t._count, memberships: t._count.memberships + 1 } }
+            : t
+        )
+      );
       await reloadRosa(rosaBase.id);
     });
   }
@@ -272,8 +352,16 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   async function handleRemoveMember(membershipId: string) {
     if (!rosaBase) return;
     startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaBase.id}/members/${membershipId}`, { method: "DELETE" });
-      setTeams((prev) => prev.map((t) => t.id === rosaBase.id ? { ...t, _count: { ...t._count, memberships: t._count.memberships - 1 } } : t));
+      await fetch(`/api/competitive-teams/${rosaBase.id}/members/${membershipId}`, {
+        method: "DELETE",
+      });
+      setTeams((prev) =>
+        prev.map((t) =>
+          t.id === rosaBase.id
+            ? { ...t, _count: { ...t._count, memberships: t._count.memberships - 1 } }
+            : t
+        )
+      );
       await reloadRosa(rosaBase.id);
     });
   }
@@ -298,10 +386,26 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
     ? [
         ...users
           .filter((u) => !rosaTeam.memberships.some((m) => m.userId === u.id))
-          .map((u) => ({ selectKey: `u:${u.id}`, id: u.id, kind: "user" as const, name: u.name, image: u.image, sportRole: u.sportRole, sportRoleVariant: u.sportRoleVariant })),
+          .map((u) => ({
+            selectKey: `u:${u.id}`,
+            id: u.id,
+            kind: "user" as const,
+            name: u.name,
+            image: u.image,
+            sportRole: u.sportRole,
+            sportRoleVariant: u.sportRoleVariant,
+          })),
         ...childPlayers
           .filter((c) => !rosaTeam.memberships.some((m) => m.childId === c.id))
-          .map((c) => ({ selectKey: `c:${c.id}`, id: c.id, kind: "child" as const, name: c.name, image: null, sportRole: c.sportRole, sportRoleVariant: c.sportRoleVariant })),
+          .map((c) => ({
+            selectKey: `c:${c.id}`,
+            id: c.id,
+            kind: "child" as const,
+            name: c.name,
+            image: null,
+            sportRole: c.sportRole,
+            sportRoleVariant: c.sportRoleVariant,
+          })),
       ].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
     : [];
 
@@ -312,9 +416,20 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 3,
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
         <Box>
-          <Typography variant="h4" fontWeight={800}>Gestione Squadre</Typography>
+          <Typography variant="h4" fontWeight={800}>
+            Gestione Squadre
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             Organizza le squadre per stagione.
           </Typography>
@@ -343,14 +458,29 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
       </Box>
 
       {/* Intestazione stagione attiva */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 3,
+          flexWrap: "wrap",
+          gap: 1,
+        }}
+      >
         <Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography variant="h5" fontWeight={800}>
               Stagione {activeSeason}
             </Typography>
             {activeIsCurrentSeason && (
-              <Chip label="In corso" size="small" icon={<StarIcon />} color="warning" sx={{ fontWeight: 700 }} />
+              <Chip
+                label="In corso"
+                size="small"
+                icon={<StarIcon />}
+                color="warning"
+                sx={{ fontWeight: 700 }}
+              />
             )}
           </Box>
           <Typography variant="body2" color="text.secondary">
@@ -373,7 +503,11 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
               Segna come in corso
             </Button>
           )}
-          <Tooltip title={teamsInSeason.length >= 2 ? "Limite raggiunto: massimo 2 squadre per stagione" : ""}>
+          <Tooltip
+            title={
+              teamsInSeason.length >= 2 ? "Limite raggiunto: massimo 2 squadre per stagione" : ""
+            }
+          >
             <span>
               <Button
                 variant="contained"
@@ -388,49 +522,57 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
         </Box>
       </Box>
 
-          {/* Griglia squadre */}
-          {teamsInSeason.length === 0 ? (
-            <Paper
-              elevation={0}
-              variant="outlined"
-              sx={{
-                p: 5,
-                textAlign: "center",
-                borderStyle: "dashed",
-                borderColor: "divider",
-                cursor: teamsInSeason.length < 2 ? "pointer" : "default",
-                "&:hover": teamsInSeason.length < 2 ? { borderColor: "primary.main", bgcolor: "primary.50" } : {},
-              }}
-              onClick={teamsInSeason.length < 2 ? openCreate : undefined}
-            >
-              <AddIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
-              <Typography variant="body1" color="text.secondary">
-                Aggiungi la prima squadra della stagione {activeSeason}
-              </Typography>
-            </Paper>
-          ) : (
-            <Grid container spacing={3}>
-              {teamsInSeason.map((team) => {
-                const color = team.color ?? "#E65100";
-                const colorName = TEAM_COLORS.find((c) => c.value === color)?.label;
-                return (
-                  <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
-                    <TeamCard
-                      team={team}
-                      color={color}
-                      colorName={colorName}
-                      onEdit={() => openEdit(team)}
-                      onDelete={() => handleDeleteTeam(team.id, team.name)}
-                      onRosa={() => openRosa(team)}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          )}
+      {/* Griglia squadre */}
+      {teamsInSeason.length === 0 ? (
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            p: 5,
+            textAlign: "center",
+            borderStyle: "dashed",
+            borderColor: "divider",
+            cursor: teamsInSeason.length < 2 ? "pointer" : "default",
+            "&:hover":
+              teamsInSeason.length < 2
+                ? { borderColor: "primary.main", bgcolor: "primary.50" }
+                : {},
+          }}
+          onClick={teamsInSeason.length < 2 ? openCreate : undefined}
+        >
+          <AddIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
+          <Typography variant="body1" color="text.secondary">
+            Aggiungi la prima squadra della stagione {activeSeason}
+          </Typography>
+        </Paper>
+      ) : (
+        <Grid container spacing={3}>
+          {teamsInSeason.map((team) => {
+            const color = team.color ?? "#E65100";
+            const colorName = TEAM_COLORS.find((c) => c.value === color)?.label;
+            return (
+              <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
+                <TeamCard
+                  team={team}
+                  color={color}
+                  colorName={colorName}
+                  onEdit={() => openEdit(team)}
+                  onDelete={() => handleDeleteTeam(team.id, team.name)}
+                  onRosa={() => openRosa(team)}
+                />
+              </Grid>
+            );
+          })}
+        </Grid>
+      )}
 
       {/* ── Dialog: nuova stagione ─────────────────────────────────────────────── */}
-      <Dialog open={newSeasonDialog} onClose={() => setNewSeasonDialog(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={newSeasonDialog}
+        onClose={() => setNewSeasonDialog(false)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle fontWeight={700}>Nuova stagione</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
@@ -499,8 +641,13 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
               <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
                 Colore identificativo
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
-                Usato per distinguere visivamente la squadra nelle pagine pubbliche e nell&apos;intestazione della card.
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mb: 1.5 }}
+              >
+                Usato per distinguere visivamente la squadra nelle pagine pubbliche e
+                nell&apos;intestazione della card.
               </Typography>
               <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
                 {TEAM_COLORS.map((c) => (
@@ -513,10 +660,14 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
                         borderRadius: "50%",
                         backgroundColor: c.value,
                         cursor: "pointer",
-                        border: teamForm.color === c.value ? "3px solid #1A1A1A" : "3px solid transparent",
-                        boxShadow: teamForm.color === c.value
-                          ? `0 0 0 2px #fff, 0 0 0 4px ${c.value}`
-                          : "0 1px 3px rgba(0,0,0,0.25)",
+                        border:
+                          teamForm.color === c.value
+                            ? "3px solid #1A1A1A"
+                            : "3px solid transparent",
+                        boxShadow:
+                          teamForm.color === c.value
+                            ? `0 0 0 2px #fff, 0 0 0 4px ${c.value}`
+                            : "0 1px 3px rgba(0,0,0,0.25)",
                         transition: "all 0.15s",
                         "&:hover": { transform: "scale(1.15)" },
                       }}
@@ -525,9 +676,18 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
                 ))}
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
-                <Box sx={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: teamForm.color, flexShrink: 0 }} />
+                <Box
+                  sx={{
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    backgroundColor: teamForm.color,
+                    flexShrink: 0,
+                  }}
+                />
                 <Typography variant="caption" color="text.secondary">
-                  {TEAM_COLORS.find((c) => c.value === teamForm.color)?.label ?? "Personalizzato"} — selezionato
+                  {TEAM_COLORS.find((c) => c.value === teamForm.color)?.label ?? "Personalizzato"} —
+                  selezionato
                 </Typography>
               </Box>
             </Box>
@@ -544,7 +704,12 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setTeamDialog(false)}>Annulla</Button>
-          <Button variant="contained" onClick={handleSaveTeam} disabled={isPending} startIcon={isPending ? <CircularProgress size={16} /> : undefined}>
+          <Button
+            variant="contained"
+            onClick={handleSaveTeam}
+            disabled={isPending}
+            startIcon={isPending ? <CircularProgress size={16} /> : undefined}
+          >
             {editTeam ? "Salva" : "Crea squadra"}
           </Button>
         </DialogActions>
@@ -562,7 +727,10 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
           <>
             {/* Intestazione colorata */}
             <Box sx={{ px: 3, pt: 2.5, pb: 2, backgroundColor: rosaBase.color ?? "#E65100" }}>
-              <Typography variant="overline" sx={{ color: "rgba(255,255,255,0.7)", fontWeight: 700, letterSpacing: "0.1em" }}>
+              <Typography
+                variant="overline"
+                sx={{ color: "rgba(255,255,255,0.7)", fontWeight: 700, letterSpacing: "0.1em" }}
+              >
                 Gestione Rosa
               </Typography>
               <Typography variant="h6" fontWeight={800} sx={{ color: "#fff" }}>
@@ -591,28 +759,54 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
               )}
               {!rosaLoading && addingMember && (
                 <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2, borderStyle: "dashed" }}>
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+                  <Typography
+                    variant="caption"
+                    fontWeight={700}
+                    color="text.secondary"
+                    sx={{ display: "block", mb: 1.5 }}
+                  >
                     Seleziona un atleta da aggiungere
                   </Typography>
                   <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                     <FormControl size="small" sx={{ flex: 1, minWidth: 180 }}>
                       <InputLabel>Atleta</InputLabel>
-                      <Select value={selectedKey} label="Atleta" onChange={(e) => setSelectedKey(e.target.value as string)}>
+                      <Select
+                        value={selectedKey}
+                        label="Atleta"
+                        onChange={(e) => setSelectedKey(e.target.value as string)}
+                      >
                         {rosaAvailable.map((entry) => (
                           <MenuItem key={entry.selectKey} value={entry.selectKey}>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Avatar src={entry.image ?? undefined} sx={{ width: 22, height: 22, fontSize: 10 }}>
+                              <Avatar
+                                src={entry.image ?? undefined}
+                                sx={{ width: 22, height: 22, fontSize: 10 }}
+                              >
                                 {(entry.name ?? "?")[0].toUpperCase()}
                               </Avatar>
                               {entry.name ?? entry.id}
                               {entry.kind === "child" && (
-                                <Chip label="Figlio" size="small" sx={{ height: 15, fontSize: "0.58rem", fontWeight: 700 }} />
+                                <Chip
+                                  label="Figlio"
+                                  size="small"
+                                  sx={{ height: 15, fontSize: "0.58rem", fontWeight: 700 }}
+                                />
                               )}
                               {entry.sportRole && (
                                 <Chip
-                                  label={sportRoleLabel(entry.sportRole, entry.sportRoleVariant ?? null)}
+                                  label={sportRoleLabel(
+                                    entry.sportRole,
+                                    entry.sportRoleVariant ?? null
+                                  )}
                                   size="small"
-                                  sx={{ bgcolor: ROLE_COLORS[entry.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.58rem", height: 15, ml: 0.5 }}
+                                  sx={{
+                                    bgcolor: ROLE_COLORS[entry.sportRole],
+                                    color: "#fff",
+                                    fontWeight: 700,
+                                    fontSize: "0.58rem",
+                                    height: 15,
+                                    ml: 0.5,
+                                  }}
                                 />
                               )}
                             </Box>
@@ -620,10 +814,21 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
                         ))}
                       </Select>
                     </FormControl>
-                    <Button variant="contained" size="small" disabled={!selectedKey || isPending} onClick={handleAddMember}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      disabled={!selectedKey || isPending}
+                      onClick={handleAddMember}
+                    >
                       Aggiungi
                     </Button>
-                    <Button size="small" onClick={() => { setAddingMember(false); setSelectedKey(""); }}>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setAddingMember(false);
+                        setSelectedKey("");
+                      }}
+                    >
                       Annulla
                     </Button>
                   </Box>
@@ -662,31 +867,64 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
                           transition: "all 0.1s",
                         }}
                       >
-                        <Avatar src={image} sx={{ width: 34, height: 34, fontSize: 13, bgcolor: teamColor }}>
+                        <Avatar
+                          src={image}
+                          sx={{ width: 34, height: 34, fontSize: 13, bgcolor: teamColor }}
+                        >
                           {name[0].toUpperCase()}
                         </Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                            <Typography variant="body2" fontWeight={600} noWrap>{name}</Typography>
+                            <Typography variant="body2" fontWeight={600} noWrap>
+                              {name}
+                            </Typography>
                             {m.isCaptain && (
-                              <Chip label="Cap." size="small" sx={{ fontSize: "0.62rem", height: 16, bgcolor: "#F9A825", color: "#fff", fontWeight: 700 }} />
+                              <Chip
+                                label="Cap."
+                                size="small"
+                                sx={{
+                                  fontSize: "0.62rem",
+                                  height: 16,
+                                  bgcolor: "#F9A825",
+                                  color: "#fff",
+                                  fontWeight: 700,
+                                }}
+                              />
                             )}
                           </Box>
                           {athlete.sportRole && (
                             <Chip
-                              label={sportRoleLabel(athlete.sportRole, athlete.sportRoleVariant ?? null)}
+                              label={sportRoleLabel(
+                                athlete.sportRole,
+                                athlete.sportRoleVariant ?? null
+                              )}
                               size="small"
-                              sx={{ bgcolor: ROLE_COLORS[athlete.sportRole], color: "#fff", fontWeight: 700, fontSize: "0.62rem", height: 16, mt: 0.25 }}
+                              sx={{
+                                bgcolor: ROLE_COLORS[athlete.sportRole],
+                                color: "#fff",
+                                fontWeight: 700,
+                                fontSize: "0.62rem",
+                                height: 16,
+                                mt: 0.25,
+                              }}
                             />
                           )}
                         </Box>
                         <Tooltip title={m.isCaptain ? "Rimuovi capitano" : "Nomina capitano"}>
-                          <IconButton size="small" onClick={() => handleToggleCaptain(m.id, m.isCaptain)} sx={{ color: m.isCaptain ? "#F9A825" : "action.disabled" }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleToggleCaptain(m.id, m.isCaptain)}
+                            sx={{ color: m.isCaptain ? "#F9A825" : "action.disabled" }}
+                          >
                             <EmojiEventsIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Rimuovi dalla rosa">
-                          <IconButton size="small" color="error" onClick={() => handleRemoveMember(m.id)}>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleRemoveMember(m.id)}
+                          >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -702,7 +940,9 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
               <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
                 {rosaTeam
                   ? `${rosaTeam.memberships.length} ${rosaTeam.memberships.length === 1 ? "atleta" : "atleti"} in rosa`
-                  : rosaLoading ? "Caricamento…" : "—"}
+                  : rosaLoading
+                    ? "Caricamento…"
+                    : "—"}
               </Typography>
               <Button onClick={closeRosa}>Chiudi</Button>
             </DialogActions>
@@ -719,14 +959,19 @@ export default function AdminSquadreClient({ teams: initialTeams, users, childPl
       >
         <DialogTitle id="confirm-dialog-title">{confirmDialog.title}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="confirm-dialog-description">{confirmDialog.message}</DialogContentText>
+          <DialogContentText id="confirm-dialog-description">
+            {confirmDialog.message}
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeConfirm}>Annulla</Button>
           <Button
             color="error"
             variant="contained"
-            onClick={() => { closeConfirm(); confirmDialog.onConfirm(); }}
+            onClick={() => {
+              closeConfirm();
+              confirmDialog.onConfirm();
+            }}
           >
             Elimina
           </Button>
@@ -767,7 +1012,16 @@ function TeamCard({
       }}
     >
       {/* Intestazione colorata */}
-      <Box sx={{ px: 2.5, py: 2, backgroundColor: color, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          px: 2.5,
+          py: 2,
+          backgroundColor: color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }} noWrap>
             {team.name}
@@ -779,20 +1033,43 @@ function TeamCard({
           )}
         </Box>
         <Box sx={{ display: "flex", gap: 0.25, ml: 1, flexShrink: 0 }}>
-          <Link href={`/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`} style={{ textDecoration: "none" }}>
+          <Link
+            href={`/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`}
+            style={{ textDecoration: "none" }}
+          >
             <Tooltip title="Vedi pagina pubblica">
-              <IconButton size="small" sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" } }}>
+              <IconButton
+                size="small"
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+                }}
+              >
                 <VisibilityIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
           </Link>
           <Tooltip title="Modifica squadra">
-            <IconButton size="small" onClick={onEdit} sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" } }}>
+            <IconButton
+              size="small"
+              onClick={onEdit}
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+              }}
+            >
               <EditIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Elimina squadra">
-            <IconButton size="small" onClick={onDelete} sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" } }}>
+            <IconButton
+              size="small"
+              onClick={onDelete}
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+              }}
+            >
               <DeleteIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </Tooltip>
@@ -802,7 +1079,11 @@ function TeamCard({
       {/* Body */}
       <Box sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
         {team.description && (
-          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.65, fontSize: "0.83rem" }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ lineHeight: 1.65, fontSize: "0.83rem" }}
+          >
             {team.description}
           </Typography>
         )}
@@ -811,13 +1092,21 @@ function TeamCard({
         <Box sx={{ display: "flex", gap: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <GroupsIcon sx={{ fontSize: 17, color }} />
-            <Typography variant="body2" fontWeight={700}>{team._count.memberships}</Typography>
-            <Typography variant="body2" color="text.secondary">atleti</Typography>
+            <Typography variant="body2" fontWeight={700}>
+              {team._count.memberships}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              atleti
+            </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <SportsSoccerIcon sx={{ fontSize: 17, color: "text.disabled" }} />
-            <Typography variant="body2" fontWeight={700}>{team._count.matches}</Typography>
-            <Typography variant="body2" color="text.secondary">partite</Typography>
+            <Typography variant="body2" fontWeight={700}>
+              {team._count.matches}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              partite
+            </Typography>
           </Box>
         </Box>
 
@@ -829,7 +1118,11 @@ function TeamCard({
             fullWidth
             startIcon={<PeopleIcon />}
             onClick={onRosa}
-            sx={{ borderColor: color, color, "&:hover": { borderColor: color, bgcolor: `${color}0f` } }}
+            sx={{
+              borderColor: color,
+              color,
+              "&:hover": { borderColor: color, bgcolor: `${color}0f` },
+            }}
           >
             Gestisci rosa
           </Button>

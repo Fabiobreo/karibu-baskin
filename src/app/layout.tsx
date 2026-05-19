@@ -69,7 +69,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="it" className={inter.variable}>
-      <body className={inter.className} style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <body
+        className={inter.className}
+        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />

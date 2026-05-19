@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  RegistrationPostSchema,
-  RegistrationPatchSchema,
-  TeamMemberSchema,
-} from "./registration";
+import { RegistrationPostSchema, RegistrationPatchSchema, TeamMemberSchema } from "./registration";
 
 // --- RegistrationPostSchema ---
 
@@ -58,7 +54,9 @@ describe("RegistrationPostSchema", () => {
   });
 
   it("rifiuta note oltre 300 caratteri", () => {
-    expect(RegistrationPostSchema.safeParse({ ...base, note: "x".repeat(301) }).success).toBe(false);
+    expect(RegistrationPostSchema.safeParse({ ...base, note: "x".repeat(301) }).success).toBe(
+      false
+    );
   });
 
   it("accetta note al limite di 300 caratteri", () => {
@@ -66,7 +64,9 @@ describe("RegistrationPostSchema", () => {
   });
 
   it("rifiuta anonymousEmail malformata", () => {
-    expect(RegistrationPostSchema.safeParse({ ...base, anonymousEmail: "non-email" }).success).toBe(false);
+    expect(RegistrationPostSchema.safeParse({ ...base, anonymousEmail: "non-email" }).success).toBe(
+      false
+    );
   });
 
   it("accetta anonymousEmail stringa vuota (rimozione email)", () => {
@@ -75,7 +75,9 @@ describe("RegistrationPostSchema", () => {
 
   it("rifiuta anonymousEmail oltre 254 caratteri", () => {
     const longEmail = "a".repeat(244) + "@example.com";
-    expect(RegistrationPostSchema.safeParse({ ...base, anonymousEmail: longEmail }).success).toBe(false);
+    expect(RegistrationPostSchema.safeParse({ ...base, anonymousEmail: longEmail }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta roleVariant oltre 4 caratteri", () => {
@@ -110,7 +112,9 @@ describe("RegistrationPatchSchema", () => {
   });
 
   it("rifiuta name oltre 60 caratteri", () => {
-    expect(RegistrationPatchSchema.safeParse({ ...base, name: "a".repeat(61) }).success).toBe(false);
+    expect(RegistrationPatchSchema.safeParse({ ...base, name: "a".repeat(61) }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta ruolo fuori range", () => {
@@ -127,7 +131,9 @@ describe("RegistrationPatchSchema", () => {
   });
 
   it("rifiuta anonymousEmail malformata", () => {
-    expect(RegistrationPatchSchema.safeParse({ ...base, anonymousEmail: "ciaomondo" }).success).toBe(false);
+    expect(
+      RegistrationPatchSchema.safeParse({ ...base, anonymousEmail: "ciaomondo" }).success
+    ).toBe(false);
   });
 });
 

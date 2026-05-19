@@ -1,19 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { ChildCreateSchema, ChildPatchSchema } from "./child";
 import { EventCreateSchema, EventUpdateSchema } from "./event";
-import {
-  CompetitiveTeamCreateSchema,
-  CompetitiveTeamUpdateSchema,
-} from "./competitiveTeam";
-import {
-  OpposingTeamCreateSchema,
-  OpposingTeamUpdateSchema,
-} from "./opposingTeam";
-import {
-  GroupCreateSchema,
-  GroupUpdateSchema,
-  GroupMatchCreateSchema,
-} from "./group";
+import { CompetitiveTeamCreateSchema, CompetitiveTeamUpdateSchema } from "./competitiveTeam";
+import { OpposingTeamCreateSchema, OpposingTeamUpdateSchema } from "./opposingTeam";
+import { GroupCreateSchema, GroupUpdateSchema, GroupMatchCreateSchema } from "./group";
 
 // --- ChildCreateSchema ---
 
@@ -150,9 +140,9 @@ describe("EventCreateSchema", () => {
   });
 
   it("rifiuta description oltre 2000 caratteri", () => {
-    expect(
-      EventCreateSchema.safeParse({ ...base, description: "x".repeat(2001) }).success
-    ).toBe(false);
+    expect(EventCreateSchema.safeParse({ ...base, description: "x".repeat(2001) }).success).toBe(
+      false
+    );
   });
 
   it("accetta endDate null", () => {
@@ -210,25 +200,33 @@ describe("CompetitiveTeamCreateSchema", () => {
   });
 
   it("rifiuta nome oltre 200 caratteri", () => {
-    expect(
-      CompetitiveTeamCreateSchema.safeParse({ ...base, name: "x".repeat(201) }).success
-    ).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, name: "x".repeat(201) }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta stagione in formato non corretto", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2025-2026" }).success).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2025-2026" }).success).toBe(
+      false
+    );
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "25-26" }).success).toBe(false);
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2025" }).success).toBe(false);
   });
 
   it("accetta stagioni in formato YYYY-YY valide", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2024-25" }).success).toBe(true);
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2030-31" }).success).toBe(true);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2024-25" }).success).toBe(
+      true
+    );
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, season: "2030-31" }).success).toBe(
+      true
+    );
   });
 
   it("rifiuta colore in formato non hex", () => {
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "orange" }).success).toBe(false);
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#GG0000" }).success).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#GG0000" }).success).toBe(
+      false
+    );
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#FFF" }).success).toBe(false);
   });
 
@@ -394,11 +392,15 @@ describe("GroupMatchCreateSchema", () => {
   });
 
   it("rifiuta homeTeamId vuoto", () => {
-    expect(GroupMatchCreateSchema.safeParse({ homeTeamId: "", awayTeamId: "team-2" }).success).toBe(false);
+    expect(GroupMatchCreateSchema.safeParse({ homeTeamId: "", awayTeamId: "team-2" }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta awayTeamId vuoto", () => {
-    expect(GroupMatchCreateSchema.safeParse({ homeTeamId: "team-1", awayTeamId: "" }).success).toBe(false);
+    expect(GroupMatchCreateSchema.safeParse({ homeTeamId: "team-1", awayTeamId: "" }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta matchday non intero", () => {
@@ -415,7 +417,9 @@ describe("GroupMatchCreateSchema", () => {
   });
 
   it("accetta punteggio 0", () => {
-    expect(GroupMatchCreateSchema.safeParse({ ...base, homeScore: 0, awayScore: 0 }).success).toBe(true);
+    expect(GroupMatchCreateSchema.safeParse({ ...base, homeScore: 0, awayScore: 0 }).success).toBe(
+      true
+    );
   });
 
   it("accetta matchday null", () => {

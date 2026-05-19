@@ -3,8 +3,14 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
-  Container, Typography, Box, Button, CircularProgress,
-  Divider, Paper, List,
+  Container,
+  Typography,
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  Paper,
+  List,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import NotificationItem from "@/components/notifications/NotificationItem";
@@ -35,9 +41,9 @@ export default function NotifichePage() {
     try {
       const res = await fetch(`/api/notifications?limit=20&page=${p}`);
       if (!res.ok) return;
-      const data = await res.json() as { notifications?: NotifItem[]; hasMore?: boolean };
+      const data = (await res.json()) as { notifications?: NotifItem[]; hasMore?: boolean };
       const items = data.notifications ?? [];
-      setNotifications((prev) => append ? [...prev, ...items] : items);
+      setNotifications((prev) => (append ? [...prev, ...items] : items));
       setHasMore(data.hasMore ?? false);
     } catch {
       // silenzioso
@@ -64,7 +70,7 @@ export default function NotifichePage() {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     }, 1500);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   async function loadMore() {
@@ -81,9 +87,7 @@ export default function NotifichePage() {
   }
 
   function handleRead(id: string) {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
     refreshCount();
   }
 

@@ -36,9 +36,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
           if (!dbUser) return;
 
-          const slugToSet = (!dbUser.slug && (profile.name ?? user.name))
-            ? await generateUserSlug(profile.name ?? user.name ?? "")
-            : null;
+          const slugToSet =
+            !dbUser.slug && (profile.name ?? user.name)
+              ? await generateUserSlug(profile.name ?? user.name ?? "")
+              : null;
 
           await prisma.user.update({
             where: { id: dbUser.id },
@@ -72,7 +73,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       // Notifica admin quando un nuovo utente si registra
       sendPushToAll(
-        { title: "👤 Nuovo utente", body: `${user.name ?? user.email} si è registrato — in attesa di conferma.`, url: "/admin/utenti" },
+        {
+          title: "👤 Nuovo utente",
+          body: `${user.name ?? user.email} si è registrato — in attesa di conferma.`,
+          url: "/admin/utenti",
+        },
         true // solo admin
       ).catch(() => {});
     },

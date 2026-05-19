@@ -74,7 +74,9 @@ export default function LoSapeviCarousel() {
         key={`pb-${animKey}`}
         sx={{
           position: "absolute",
-          top: 0, left: 0, height: 3,
+          top: 0,
+          left: 0,
+          height: 3,
           bgcolor: "primary.main",
           "@keyframes fillBar": {
             from: { width: "0%" },
@@ -93,33 +95,46 @@ export default function LoSapeviCarousel() {
           pb: { xs: 2, md: 2.5 },
           "@keyframes slideFromRight": {
             from: { transform: "translateX(52px)", opacity: 0 },
-            to:   { transform: "translateX(0)",    opacity: 1 },
+            to: { transform: "translateX(0)", opacity: 1 },
           },
           "@keyframes slideFromLeft": {
             from: { transform: "translateX(-52px)", opacity: 0 },
-            to:   { transform: "translateX(0)",     opacity: 1 },
+            to: { transform: "translateX(0)", opacity: 1 },
           },
           animation: `${direction === "next" ? "slideFromRight" : "slideFromLeft"} 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
         }}
       >
         <Box sx={{ display: "flex", gap: 2.5, alignItems: "flex-start" }}>
           {/* Icona */}
-          <Box sx={{
-            flexShrink: 0, width: 40, height: 40, borderRadius: "50%",
-            bgcolor: "primary.main",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            mt: 0.25,
-          }}>
+          <Box
+            sx={{
+              flexShrink: 0,
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              bgcolor: "primary.main",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mt: 0.25,
+            }}
+          >
             <LightbulbIcon sx={{ fontSize: 20, color: "#fff" }} />
           </Box>
 
           {/* Testo */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="overline" sx={{
-              color: "primary.main", fontWeight: 700,
-              letterSpacing: "0.12em", fontSize: "0.68rem",
-              display: "block", mb: 0.25,
-            }}>
+            <Typography
+              variant="overline"
+              sx={{
+                color: "primary.main",
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                fontSize: "0.68rem",
+                display: "block",
+                mb: 0.25,
+              }}
+            >
               Lo sapevi?
             </Typography>
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 0.75, lineHeight: 1.3 }}>
@@ -133,10 +148,15 @@ export default function LoSapeviCarousel() {
       </Box>
 
       {/* Footer: dot indicators + frecce */}
-      <Box sx={{
-        px: { xs: 3, md: 4 }, pb: 2.5,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
+      <Box
+        sx={{
+          px: { xs: 3, md: 4 },
+          pb: 2.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Dot pill indicators — quello attivo si allunga */}
         <Box sx={{ display: "flex", gap: 0.75, alignItems: "center" }}>
           {LO_SAPEVI.map((_, i) => (
@@ -160,16 +180,24 @@ export default function LoSapeviCarousel() {
 
         {/* Frecce */}
         <Box sx={{ display: "flex", gap: 0.5 }}>
-          <IconButton size="small" onClick={goPrev} sx={{
-            color: "rgba(255,255,255,0.4)",
-            "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
-          }}>
+          <IconButton
+            size="small"
+            onClick={goPrev}
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
+            }}
+          >
             <ArrowBackIosNewIcon sx={{ fontSize: 14 }} />
           </IconButton>
-          <IconButton size="small" onClick={goNext} sx={{
-            color: "rgba(255,255,255,0.4)",
-            "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
-          }}>
+          <IconButton
+            size="small"
+            onClick={goNext}
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
+            }}
+          >
             <ArrowForwardIosIcon sx={{ fontSize: 14 }} />
           </IconButton>
         </Box>

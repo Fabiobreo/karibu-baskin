@@ -99,28 +99,29 @@ export function useRegistrationForm({
   const registeredUserIdSet = new Set(registeredUserIds.filter(Boolean) as string[]);
   const effectiveRegisteredChildIds = [
     ...registeredChildIds,
-    ...parentChildren
-      .filter((c) => c.userId && registeredUserIdSet.has(c.userId))
-      .map((c) => c.id),
+    ...parentChildren.filter((c) => c.userId && registeredUserIdSet.has(c.userId)).map((c) => c.id),
   ];
 
-  const selfRegistered = !!currentUser && (
-    registeredUserIds.includes(currentUser.id) ||
-    (!!currentUser.linkedChildId && registeredChildIds.includes(currentUser.linkedChildId))
-  );
+  const selfRegistered =
+    !!currentUser &&
+    (registeredUserIds.includes(currentUser.id) ||
+      (!!currentUser.linkedChildId && registeredChildIds.includes(currentUser.linkedChildId)));
   const defaultSubject: Subject = isParent
-    ? (parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ?? parentChildren[0]?.id ?? "self")
+    ? (parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id))?.id ??
+      parentChildren[0]?.id ??
+      "self")
     : "self";
   const [subject, setSubject] = useState<Subject>(defaultSubject);
 
-  const selectedChild = subject !== "self" ? parentChildren.find((c) => c.id === subject) ?? null : null;
+  const selectedChild =
+    subject !== "self" ? (parentChildren.find((c) => c.id === subject) ?? null) : null;
 
-  const confirmedRole = subject === "self"
-    ? (currentUser?.sportRole ?? null)
-    : (selectedChild?.sportRole ?? null);
-  const confirmedVariant = subject === "self"
-    ? (currentUser?.sportRoleVariant ?? null)
-    : (selectedChild?.sportRoleVariant ?? null);
+  const confirmedRole =
+    subject === "self" ? (currentUser?.sportRole ?? null) : (selectedChild?.sportRole ?? null);
+  const confirmedVariant =
+    subject === "self"
+      ? (currentUser?.sportRoleVariant ?? null)
+      : (selectedChild?.sportRoleVariant ?? null);
   const hasConfirmedRole = confirmedRole !== null;
 
   const [phase, setPhase] = useState<Phase>(hasConfirmedRole ? "confirm" : "questionnaire");
@@ -132,7 +133,9 @@ export function useRegistrationForm({
   useEffect(() => {
     if (!isParent || parentChildren.length === 0) return;
     if (subject === "self") {
-      const firstAvailable = parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ?? parentChildren[0];
+      const firstAvailable =
+        parentChildren.find((c) => !effectiveRegisteredChildIds.includes(c.id)) ??
+        parentChildren[0];
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubject(firstAvailable.id);
     }
@@ -147,7 +150,7 @@ export function useRegistrationForm({
     if (r != null) {
       // Transizione questionnaire → confirm solo se l'utente non ha già navigato
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPhase((prev) => prev === "questionnaire" ? "confirm" : prev);
+      setPhase((prev) => (prev === "questionnaire" ? "confirm" : prev));
       setChosenRole({ role: r, variant: v ?? undefined });
     } else {
       setPhase("questionnaire");
@@ -209,9 +212,7 @@ export function useRegistrationForm({
     setOptimisticSubjects((prev) => new Set(prev).add(submittedSubject));
     setLoading(true);
     try {
-      const roleToSend = isCoachRegistration
-        ? (currentUser?.sportRole ?? 1)
-        : chosenRole!.role;
+      const roleToSend = isCoachRegistration ? (currentUser?.sportRole ?? 1) : chosenRole!.role;
       const body: Record<string, unknown> = { sessionId, role: roleToSend };
       if (isCoachRegistration) body.registeredAsCoach = true;
       if (isAnon) body.name = name;
@@ -227,15 +228,18 @@ export function useRegistrationForm({
       });
 
       if (!res.ok) {
-        setOptimisticSubjects((prev) => { const s = new Set(prev); s.delete(submittedSubject); return s; });
+        setOptimisticSubjects((prev) => {
+          const s = new Set(prev);
+          s.delete(submittedSubject);
+          return s;
+        });
         const data = await res.json();
         showToast({ message: data.error ?? "Errore durante l'iscrizione", severity: "error" });
         return;
       }
 
-      const displayName = subject !== "self"
-        ? selectedChild?.name
-        : (currentUser?.name ?? name ?? "Atleta");
+      const displayName =
+        subject !== "self" ? selectedChild?.name : (currentUser?.name ?? name ?? "Atleta");
       showToast({ message: `${displayName} iscritto/a con successo!`, severity: "success" });
 
       setAnonymousName("");
@@ -248,7 +252,11 @@ export function useRegistrationForm({
       }
       onRegistered();
     } catch {
-      setOptimisticSubjects((prev) => { const s = new Set(prev); s.delete(submittedSubject); return s; });
+      setOptimisticSubjects((prev) => {
+        const s = new Set(prev);
+        s.delete(submittedSubject);
+        return s;
+      });
       showToast({ message: "Errore di rete, riprova", severity: "error" });
     } finally {
       setLoading(false);
@@ -256,13 +264,20 @@ export function useRegistrationForm({
   }
 
   return {
-    coachMode, setCoachMode,
-    subject, setSubject,
-    phase, setPhase,
-    chosenRole, setChosenRole,
-    anonymousName, setAnonymousName,
-    anonymousEmail, setAnonymousEmail,
-    note, setNote,
+    coachMode,
+    setCoachMode,
+    subject,
+    setSubject,
+    phase,
+    setPhase,
+    chosenRole,
+    setChosenRole,
+    anonymousName,
+    setAnonymousName,
+    anonymousEmail,
+    setAnonymousEmail,
+    note,
+    setNote,
     loading,
     selectedChild,
     confirmedRole,

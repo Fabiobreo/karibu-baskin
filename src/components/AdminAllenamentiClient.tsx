@@ -2,7 +2,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Box, Typography, Paper, IconButton, Tooltip, CircularProgress, Divider,
+  Box,
+  Typography,
+  Paper,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+  Divider,
   Button,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -67,7 +73,11 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
   }
 
   if (athletes.length === 0) {
-    return <Typography variant="caption" color="text.disabled">Nessun iscritto</Typography>;
+    return (
+      <Typography variant="caption" color="text.disabled">
+        Nessun iscritto
+      </Typography>
+    );
   }
 
   return (
@@ -101,18 +111,28 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
             />
             <Typography
               variant="body2"
-              sx={{ flex: 1, fontSize: "0.82rem", color: effective === false ? "text.disabled" : "text.primary" }}
+              sx={{
+                flex: 1,
+                fontSize: "0.82rem",
+                color: effective === false ? "text.disabled" : "text.primary",
+              }}
             >
               {a.name}
             </Typography>
-            <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.65rem", mr: 0.25 }}>
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ fontSize: "0.65rem", mr: 0.25 }}
+            >
               {ROLE_LABELS[a.role]}
             </Typography>
             <Tooltip
               title={
-                effective === true ? "Presente — clicca per segnare assente"
-                  : effective === false ? "Assente — clicca per resettare"
-                  : "Non marcato — clicca per segnare presente"
+                effective === true
+                  ? "Presente — clicca per segnare assente"
+                  : effective === false
+                    ? "Assente — clicca per resettare"
+                    : "Non marcato — clicca per segnare presente"
               }
               arrow
               placement="left"
@@ -208,7 +228,12 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
       >
         {/* Colonna sinistra: presenze */}
         <Box sx={{ p: 2.5, borderRight: { md: "1px solid" }, borderColor: { md: "divider" } }}>
-          <Typography variant="overline" fontWeight={700} color="text.secondary" sx={{ letterSpacing: "0.08em" }}>
+          <Typography
+            variant="overline"
+            fontWeight={700}
+            color="text.secondary"
+            sx={{ letterSpacing: "0.08em" }}
+          >
             Presenze — {s.presentCount}/{s.athleteCount}
           </Typography>
           <Divider sx={{ my: 1 }} />
@@ -217,11 +242,7 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
 
         {/* Colonna destra: risultati */}
         <Box sx={{ p: 2.5 }}>
-          <TrainingMatchResults
-            sessionId={s.id}
-            isStaff={true}
-            teams={s.teams}
-          />
+          <TrainingMatchResults sessionId={s.id} isStaff={true} teams={s.teams} />
         </Box>
       </Box>
 
@@ -260,7 +281,9 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
               color="success"
               onClick={handleConclude}
               disabled={concluding}
-              startIcon={concluding ? <CircularProgress size={13} color="inherit" /> : <DoneAllIcon />}
+              startIcon={
+                concluding ? <CircularProgress size={13} color="inherit" /> : <DoneAllIcon />
+              }
             >
               {concluding ? "Salvataggio..." : "Sì, concludi"}
             </Button>

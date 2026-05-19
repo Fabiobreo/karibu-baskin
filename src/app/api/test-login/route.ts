@@ -79,7 +79,11 @@ export async function GET(req: NextRequest) {
       expired: s.expires < new Date(),
     })),
     currentAuthSession: currentAuth
-      ? { userId: currentAuth.user?.id, email: currentAuth.user?.email, appRole: currentAuth.user?.appRole }
+      ? {
+          userId: currentAuth.user?.id,
+          email: currentAuth.user?.email,
+          appRole: currentAuth.user?.appRole,
+        }
       : null,
   });
 }
@@ -90,7 +94,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Non disponibile" }, { status: 404 });
   }
 
-  const body = await req.json().catch(() => ({})) as { email?: string; password?: string };
+  const body = (await req.json().catch(() => ({}))) as { email?: string; password?: string };
   const { email, password } = body;
 
   if (!email || !password) {
@@ -131,7 +135,12 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.json({
     ok: true,
-    debug: { cookieName, userId: user.id, email: user.email, tokenPrefix: sessionToken.slice(0, 8) + "…" },
+    debug: {
+      cookieName,
+      userId: user.id,
+      email: user.email,
+      tokenPrefix: sessionToken.slice(0, 8) + "…",
+    },
   });
 
   res.headers.set("Set-Cookie", cookieParts.join("; "));

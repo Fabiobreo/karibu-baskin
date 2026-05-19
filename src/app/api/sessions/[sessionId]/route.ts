@@ -35,7 +35,10 @@ export async function PATCH(
   const raw = await req.json().catch(() => null);
   const parsed = SessionUpdateSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
   const body = parsed.data;
 

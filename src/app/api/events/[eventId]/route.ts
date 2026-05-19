@@ -16,7 +16,10 @@ export async function PUT(req: Request, { params }: Params) {
   const raw = await req.json().catch(() => null);
   const parsed = EventUpdateSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
   const body = parsed.data;
 
@@ -27,7 +30,9 @@ export async function PUT(req: Request, { params }: Params) {
       data: {
         ...(body.title !== undefined && { title: body.title.trim() }),
         ...(body.date !== undefined && { date: new Date(body.date) }),
-        ...(body.endDate !== undefined && { endDate: body.endDate ? new Date(body.endDate) : null }),
+        ...(body.endDate !== undefined && {
+          endDate: body.endDate ? new Date(body.endDate) : null,
+        }),
         ...(body.location !== undefined && { location: body.location?.trim() || null }),
         ...(body.description !== undefined && { description: body.description?.trim() || null }),
       },
@@ -57,7 +62,12 @@ export async function DELETE(_req: Request, { params }: Params) {
     throw err;
   }
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "DELETE_EVENT", targetType: "Event", targetId: eventId }).catch((err) => console.error("[audit] delete event", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "DELETE_EVENT",
+      targetType: "Event",
+      targetId: eventId,
+    }).catch((err) => console.error("[audit] delete event", err));
   }
   return new NextResponse(null, { status: 204 });
 }

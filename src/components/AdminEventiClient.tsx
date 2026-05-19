@@ -1,9 +1,26 @@
 "use client";
 
 import {
-  Box, Typography, Paper, Button, TextField, Stack, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
-  Alert, Table, TableHead, TableBody, TableRow, TableCell, Tooltip, TablePagination,
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  Stack,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Alert,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Tooltip,
+  TablePagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -42,7 +59,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [error, setError] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [page, setPage]               = useState(0);
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const openCreate = () => {
@@ -72,7 +89,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ev) openEdit(ev);
     router.replace("/admin/eventi", { scroll: false });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSave = async () => {
@@ -91,8 +108,16 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     };
 
     const res = editingId
-      ? await fetch(`/api/events/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      : await fetch("/api/events", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      ? await fetch(`/api/events/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        })
+      : await fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -104,7 +129,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     if (editingId) {
       setEvents((prev) => prev.map((e) => (e.id === editingId ? saved : e)));
     } else {
-      setEvents((prev) => [...prev, saved].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+      setEvents((prev) =>
+        [...prev, saved].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      );
     }
     setDialogOpen(false);
     startTransition(() => router.refresh());
@@ -124,7 +151,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <EventNoteIcon color="primary" />
-          <Typography variant="h5" fontWeight={800}>Gestione Eventi</Typography>
+          <Typography variant="h5" fontWeight={800}>
+            Gestione Eventi
+          </Typography>
         </Box>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           Aggiungi evento
@@ -137,8 +166,12 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
             <TableRow>
               <TableCell sx={{ fontWeight: 700 }}>Titolo</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Data inizio</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>Data fine</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>Luogo</TableCell>
+              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                Data fine
+              </TableCell>
+              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+                Luogo
+              </TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -146,9 +179,16 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
             {events.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map((ev) => (
               <TableRow key={ev.id} hover>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>{ev.title}</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    {ev.title}
+                  </Typography>
                   {ev.description && (
-                    <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block", maxWidth: 220 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      noWrap
+                      sx={{ display: "block", maxWidth: 220 }}
+                    >
                       {ev.description}
                     </Typography>
                   )}
@@ -167,7 +207,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                       {format(new Date(ev.endDate), "d MMM yyyy", { locale: it })}
                     </Typography>
                   ) : (
-                    <Typography variant="caption" color="text.disabled">—</Typography>
+                    <Typography variant="caption" color="text.disabled">
+                      —
+                    </Typography>
                   )}
                 </TableCell>
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
@@ -177,15 +219,30 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                       <Typography variant="body2">{ev.location}</Typography>
                     </Box>
                   ) : (
-                    <Typography variant="caption" color="text.disabled">—</Typography>
+                    <Typography variant="caption" color="text.disabled">
+                      —
+                    </Typography>
                   )}
                 </TableCell>
                 <TableCell align="right" sx={{ whiteSpace: "nowrap" }}>
                   <Tooltip title="Modifica">
-                    <IconButton size="small" aria-label="Modifica evento" onClick={() => openEdit(ev)}><EditIcon fontSize="small" /></IconButton>
+                    <IconButton
+                      size="small"
+                      aria-label="Modifica evento"
+                      onClick={() => openEdit(ev)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
                   </Tooltip>
                   <Tooltip title="Elimina">
-                    <IconButton size="small" aria-label="Elimina evento" color="error" onClick={() => setDeleteId(ev.id)}><DeleteIcon fontSize="small" /></IconButton>
+                    <IconButton
+                      size="small"
+                      aria-label="Elimina evento"
+                      color="error"
+                      onClick={() => setDeleteId(ev.id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </Tooltip>
                 </TableCell>
               </TableRow>
@@ -205,7 +262,10 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
           page={page}
           onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value)); setPage(0); }}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value));
+            setPage(0);
+          }}
           rowsPerPageOptions={[10, 25, 50]}
           labelRowsPerPage="Righe:"
           labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
@@ -215,9 +275,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
       {/* Dialog crea/modifica */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={700}>
-          {editingId ? "Modifica evento" : "Nuovo evento"}
-        </DialogTitle>
+        <DialogTitle fontWeight={700}>{editingId ? "Modifica evento" : "Nuovo evento"}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
@@ -277,7 +335,11 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteId(null)}>Annulla</Button>
-          <Button color="error" variant="contained" onClick={() => deleteId && handleDelete(deleteId)}>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => deleteId && handleDelete(deleteId)}
+          >
             Elimina
           </Button>
         </DialogActions>

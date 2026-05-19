@@ -25,7 +25,10 @@ export async function POST(req: Request) {
   const raw = await req.json().catch(() => null);
   const parsed = EventCreateSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
   const body = parsed.data;
 
@@ -40,7 +43,13 @@ export async function POST(req: Request) {
   });
 
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "CREATE_EVENT", targetType: "Event", targetId: event.id, after: { title: event.title, date: event.date } }).catch((err) => console.error("[audit] create event", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "CREATE_EVENT",
+      targetType: "Event",
+      targetId: event.id,
+      after: { title: event.title, date: event.date },
+    }).catch((err) => console.error("[audit] create event", err));
   }
 
   return NextResponse.json(event, { status: 201 });

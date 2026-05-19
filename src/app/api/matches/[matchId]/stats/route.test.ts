@@ -25,7 +25,7 @@ const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
 
 const makeParams = (matchId: string) =>
-  ({ params: Promise.resolve({ matchId }) } as { params: Promise<{ matchId: string }> });
+  ({ params: Promise.resolve({ matchId }) }) as { params: Promise<{ matchId: string }> };
 
 const stat1 = {
   id: "stat-1",

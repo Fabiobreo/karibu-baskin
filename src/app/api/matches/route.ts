@@ -37,7 +37,10 @@ export async function POST(req: Request) {
   const raw = await req.json().catch(() => null);
   const parsed = MatchCreateSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
   }
   const body = parsed.data;
 
@@ -47,7 +50,9 @@ export async function POST(req: Request) {
     const derived = deriveResult(body.ourScore, body.theirScore);
     if (resolvedResult !== null && resolvedResult !== derived) {
       return NextResponse.json(
-        { error: `Il risultato ${resolvedResult} non corrisponde al punteggio (${body.ourScore}–${body.theirScore} → ${derived})` },
+        {
+          error: `Il risultato ${resolvedResult} non corrisponde al punteggio (${body.ourScore}–${body.theirScore} → ${derived})`,
+        },
         { status: 400 }
       );
     }
@@ -61,9 +66,8 @@ export async function POST(req: Request) {
     prisma.competitiveTeam.findUnique({ where: { id: body.teamId }, select: { name: true } }),
     prisma.opposingTeam.findUnique({ where: { id: body.opponentId }, select: { name: true } }),
   ]);
-  const slug = team && opponent
-    ? await generateMatchSlug(team.name, opponent.name, matchDate)
-    : null;
+  const slug =
+    team && opponent ? await generateMatchSlug(team.name, opponent.name, matchDate) : null;
 
   const match = await prisma.match.create({
     data: {
@@ -89,7 +93,13 @@ export async function POST(req: Request) {
     },
   });
   if (session?.user?.id) {
-    logAudit({ actorId: session.user.id, action: "CREATE_MATCH", targetType: "Match", targetId: match.id, after: { teamId: body.teamId, opponentId: body.opponentId, date: body.date } }).catch((err) => console.error("[audit] create match", err));
+    logAudit({
+      actorId: session.user.id,
+      action: "CREATE_MATCH",
+      targetType: "Match",
+      targetId: match.id,
+      after: { teamId: body.teamId, opponentId: body.opponentId, date: body.date },
+    }).catch((err) => console.error("[audit] create match", err));
   }
 
   return NextResponse.json(match, { status: 201 });

@@ -25,7 +25,7 @@ const mockIsCoach = isCoachOrAdmin as Mock;
 const makeParams = (groupId: string, matchId: string) =>
   ({
     params: Promise.resolve({ groupId, matchId }),
-  } as { params: Promise<{ groupId: string; matchId: string }> });
+  }) as { params: Promise<{ groupId: string; matchId: string }> };
 
 const baseMatch = {
   id: "gm-1",

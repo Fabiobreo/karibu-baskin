@@ -49,11 +49,7 @@ function assignToSmallest(athlete: Athlete, buckets: Athlete[][], groupCounts: n
   groupCounts[idx]++;
 }
 
-export function generateTeams(
-  athletes: Athlete[],
-  sessionId: string,
-  numTeams: 2 | 3 = 2,
-): Teams {
+export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 2 | 3 = 2): Teams {
   const buckets: Athlete[][] = Array.from({ length: numTeams }, () => []);
   const lowCounts = new Array<number>(numTeams).fill(0);
   const highCounts = new Array<number>(numTeams).fill(0);
@@ -74,7 +70,7 @@ export function generateTeams(
 
     const group = seededShuffle(
       athletes.filter((a) => a.role === role),
-      stringToSeed(`${sessionId}-r${role}`),
+      stringToSeed(`${sessionId}-r${role}`)
     );
 
     if (needsGenderBalance) {
@@ -106,7 +102,7 @@ export function generateTeams(
   // Passo 2: distribuisci gli avanzi low bilanciando il totale R1+R2 per squadra
   const shuffledLowLeftovers = seededShuffle(
     lowLeftovers,
-    stringToSeed(`${sessionId}-low-leftovers`),
+    stringToSeed(`${sessionId}-low-leftovers`)
   );
   for (const a of shuffledLowLeftovers) {
     assignToSmallest(a, buckets, lowCounts);
@@ -115,17 +111,14 @@ export function generateTeams(
   // Passo 3: distribuisci gli avanzi high (uomini R3-5) bilanciando il totale per squadra
   const shuffledHighLeftovers = seededShuffle(
     highLeftovers,
-    stringToSeed(`${sessionId}-high-leftovers`),
+    stringToSeed(`${sessionId}-high-leftovers`)
   );
   for (const a of shuffledHighLeftovers) {
     assignToSmallest(a, buckets, highCounts);
   }
 
   // Passo 3.5: distribuisci le donne R4+R5 bilanciando il conteggio femminile per squadra
-  const shuffledWomenR45 = seededShuffle(
-    womenR45,
-    stringToSeed(`${sessionId}-women-r45`),
-  );
+  const shuffledWomenR45 = seededShuffle(womenR45, stringToSeed(`${sessionId}-women-r45`));
   for (const a of shuffledWomenR45) {
     const minVal = Math.min(...womenR45Counts);
     const idx = womenR45Counts.indexOf(minVal);

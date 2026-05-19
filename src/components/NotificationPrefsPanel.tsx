@@ -1,14 +1,25 @@
 "use client";
 import { useState, useEffect } from "react";
 import {
-  Box, Typography, Alert, Switch, FormControlLabel,
-  Divider, CircularProgress, Button, Skeleton,
+  Box,
+  Typography,
+  Alert,
+  Switch,
+  FormControlLabel,
+  Divider,
+  CircularProgress,
+  Button,
+  Skeleton,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationsOffIcon from "@mui/icons-material/NotificationsOff";
 import {
-  CONTROLLABLE_TYPES, NOTIF_TYPE_LABELS, NOTIF_TYPE_DESC,
-  mergePrefs, type NotifPrefs, type ControllableNotifType,
+  CONTROLLABLE_TYPES,
+  NOTIF_TYPE_LABELS,
+  NOTIF_TYPE_DESC,
+  mergePrefs,
+  type NotifPrefs,
+  type ControllableNotifType,
 } from "@/lib/notifPrefs";
 
 function urlBase64ToUint8Array(base64String: string) {
@@ -24,7 +35,9 @@ interface Props {
 
 export default function NotificationPrefsPanel({ initialPrefs }: Props) {
   // ── Push subscription state ───────────────────────────────────────────────
-  const [pushStatus, setPushStatus] = useState<"loading" | "unsupported" | "granted" | "denied" | "default">("loading");
+  const [pushStatus, setPushStatus] = useState<
+    "loading" | "unsupported" | "granted" | "denied" | "default"
+  >("loading");
   const [subscribed, setSubscribed] = useState(false);
   const [pushSaving, setPushSaving] = useState(false);
   const [pushError, setPushError] = useState("");
@@ -95,7 +108,11 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
     }
   }
 
-  async function togglePref(channel: "push" | "inApp", type: ControllableNotifType, value: boolean) {
+  async function togglePref(
+    channel: "push" | "inApp",
+    type: ControllableNotifType,
+    value: boolean
+  ) {
     const newPrefs: NotifPrefs = {
       ...prefs,
       [channel]: { ...prefs[channel], [type]: value },
@@ -157,9 +174,19 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
           {subscribed && (
             <Box sx={{ pl: 1 }}>
               {CONTROLLABLE_TYPES.map((type) => (
-                <Box key={type} sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", py: 0.5 }}>
+                <Box
+                  key={type}
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    py: 0.5,
+                  }}
+                >
                   <Box sx={{ flex: 1, pr: 1 }}>
-                    <Typography variant="body2" sx={{ lineHeight: 1.3 }}>{NOTIF_TYPE_LABELS[type]}</Typography>
+                    <Typography variant="body2" sx={{ lineHeight: 1.3 }}>
+                      {NOTIF_TYPE_LABELS[type]}
+                    </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                       {NOTIF_TYPE_DESC[type]}
                     </Typography>

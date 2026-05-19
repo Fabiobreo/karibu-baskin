@@ -27,15 +27,19 @@ type PrismaMock = {
 const p = prisma as unknown as PrismaMock;
 const mockSend = (webpush as unknown as { sendNotification: Mock }).sendNotification;
 
-function sub(endpoint: string, opts: { userId?: string; appRole?: string; notifPrefs?: unknown } = {}) {
+function sub(
+  endpoint: string,
+  opts: { userId?: string; appRole?: string; notifPrefs?: unknown } = {}
+) {
   return {
     endpoint,
     p256dh: "p256dh-key",
     auth: "auth-key",
     userId: opts.userId ?? null,
-    user: opts.appRole !== undefined || opts.notifPrefs !== undefined
-      ? { appRole: opts.appRole ?? "ATHLETE", notifPrefs: opts.notifPrefs ?? null }
-      : null,
+    user:
+      opts.appRole !== undefined || opts.notifPrefs !== undefined
+        ? { appRole: opts.appRole ?? "ATHLETE", notifPrefs: opts.notifPrefs ?? null }
+        : null,
   };
 }
 
@@ -69,14 +73,22 @@ describe("sendPushToAll()", () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ endpoint: "ep2" }),
-      expect.any(String),
+      expect.any(String)
     );
   });
 
   it("rispetta le preferenze utente per notifType", async () => {
     p.pushSubscription.findMany.mockResolvedValue([
-      sub("ep1", { userId: "u1", appRole: "ATHLETE", notifPrefs: { push: { NEW_TRAINING: false } } }),
-      sub("ep2", { userId: "u2", appRole: "ATHLETE", notifPrefs: { push: { NEW_TRAINING: true } } }),
+      sub("ep1", {
+        userId: "u1",
+        appRole: "ATHLETE",
+        notifPrefs: { push: { NEW_TRAINING: false } },
+      }),
+      sub("ep2", {
+        userId: "u2",
+        appRole: "ATHLETE",
+        notifPrefs: { push: { NEW_TRAINING: true } },
+      }),
     ]);
 
     await sendPushToAll({ title: "Test", body: "Corpo" }, false, "NEW_TRAINING");
@@ -84,7 +96,7 @@ describe("sendPushToAll()", () => {
     expect(mockSend).toHaveBeenCalledTimes(1);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({ endpoint: "ep2" }),
-      expect.any(String),
+      expect.any(String)
     );
   });
 
@@ -101,9 +113,7 @@ describe("sendPushToAll()", () => {
       sub("ep-valid", { userId: "u1", appRole: "ATHLETE" }),
       sub("ep-gone", { userId: "u2", appRole: "ATHLETE" }),
     ]);
-    mockSend
-      .mockResolvedValueOnce({ statusCode: 201 })
-      .mockRejectedValueOnce({ statusCode: 410 });
+    mockSend.mockResolvedValueOnce({ statusCode: 201 }).mockRejectedValueOnce({ statusCode: 410 });
 
     const result = await sendPushToAll({ title: "Test", body: "Corpo" });
 
@@ -114,7 +124,9 @@ describe("sendPushToAll()", () => {
   });
 
   it("gestisce 404 come subscription scaduta", async () => {
-    p.pushSubscription.findMany.mockResolvedValue([sub("ep-404", { userId: "u1", appRole: "ATHLETE" })]);
+    p.pushSubscription.findMany.mockResolvedValue([
+      sub("ep-404", { userId: "u1", appRole: "ATHLETE" }),
+    ]);
     mockSend.mockRejectedValue({ statusCode: 404 });
 
     const result = await sendPushToAll({ title: "Test", body: "Corpo" });
@@ -124,7 +136,9 @@ describe("sendPushToAll()", () => {
   });
 
   it("non chiama deleteMany se non ci sono subscription scadute", async () => {
-    p.pushSubscription.findMany.mockResolvedValue([sub("ep1", { userId: "u1", appRole: "ATHLETE" })]);
+    p.pushSubscription.findMany.mockResolvedValue([
+      sub("ep1", { userId: "u1", appRole: "ATHLETE" }),
+    ]);
 
     await sendPushToAll({ title: "Test", body: "Corpo" });
 
@@ -134,10 +148,22 @@ describe("sendPushToAll()", () => {
   it("include url, icon e type nel payload JSON inviato", async () => {
     p.pushSubscription.findMany.mockResolvedValue([sub("ep1", { appRole: "ATHLETE" })]);
 
-    await sendPushToAll({ title: "Titolo", body: "Corpo", url: "/notifiche", icon: "/icon.png", type: "NEW_TRAINING" });
+    await sendPushToAll({
+      title: "Titolo",
+      body: "Corpo",
+      url: "/notifiche",
+      icon: "/icon.png",
+      type: "NEW_TRAINING",
+    });
 
     const data = JSON.parse(mockSend.mock.calls[0][1] as string);
-    expect(data).toMatchObject({ title: "Titolo", body: "Corpo", url: "/notifiche", icon: "/icon.png", type: "NEW_TRAINING" });
+    expect(data).toMatchObject({
+      title: "Titolo",
+      body: "Corpo",
+      url: "/notifiche",
+      icon: "/icon.png",
+      type: "NEW_TRAINING",
+    });
   });
 
   it("usa url=/ e icon=/logo.png come default", async () => {
@@ -181,25 +207,40 @@ describe("sendPushToUsers()", () => {
     await sendPushToUsers(["u1", "u2"], { title: "T", body: "B" });
 
     expect(p.pushSubscription.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: { in: ["u1", "u2"] } } }),
+      expect.objectContaining({ where: { userId: { in: ["u1", "u2"] } } })
     );
   });
 
   it("rispetta le preferenze utente per notifType", async () => {
     p.pushSubscription.findMany.mockResolvedValue([
-      { endpoint: "ep1", p256dh: "k", auth: "a", userId: "u1", user: { notifPrefs: { push: { TEAMS_READY: false } } } },
+      {
+        endpoint: "ep1",
+        p256dh: "k",
+        auth: "a",
+        userId: "u1",
+        user: { notifPrefs: { push: { TEAMS_READY: false } } },
+      },
       { endpoint: "ep2", p256dh: "k", auth: "a", userId: "u2", user: { notifPrefs: null } },
     ]);
 
     await sendPushToUsers(["u1", "u2"], { title: "T", body: "B" }, "TEAMS_READY");
 
     expect(mockSend).toHaveBeenCalledTimes(1);
-    expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({ endpoint: "ep2" }), expect.any(String));
+    expect(mockSend).toHaveBeenCalledWith(
+      expect.objectContaining({ endpoint: "ep2" }),
+      expect.any(String)
+    );
   });
 
   it("invia a tutti senza filtro se notifType non è fornito", async () => {
     p.pushSubscription.findMany.mockResolvedValue([
-      { endpoint: "ep1", p256dh: "k", auth: "a", userId: "u1", user: { notifPrefs: { push: { NEW_TRAINING: false } } } },
+      {
+        endpoint: "ep1",
+        p256dh: "k",
+        auth: "a",
+        userId: "u1",
+        user: { notifPrefs: { push: { NEW_TRAINING: false } } },
+      },
       { endpoint: "ep2", p256dh: "k", auth: "a", userId: "u2", user: { notifPrefs: null } },
     ]);
 
@@ -238,7 +279,13 @@ describe("sendPushToUser()", () => {
 
   it("rispetta le preferenze utente per notifType", async () => {
     p.pushSubscription.findMany.mockResolvedValue([
-      { endpoint: "ep1", p256dh: "k", auth: "a", userId: "u1", user: { notifPrefs: { push: { MATCH_RESULT: false } } } },
+      {
+        endpoint: "ep1",
+        p256dh: "k",
+        auth: "a",
+        userId: "u1",
+        user: { notifPrefs: { push: { MATCH_RESULT: false } } },
+      },
     ]);
 
     const result = await sendPushToUser("u1", { title: "T", body: "B" }, "MATCH_RESULT");
@@ -251,7 +298,10 @@ describe("sendPushToUser()", () => {
     p.pushSubscription.findMany.mockResolvedValue([]);
 
     await sendPushToUser("u1", { title: "T", body: "B" });
-    expect(p.pushSubscription.findMany).toHaveBeenCalledWith({ where: { userId: "u1" }, include: undefined });
+    expect(p.pushSubscription.findMany).toHaveBeenCalledWith({
+      where: { userId: "u1" },
+      include: undefined,
+    });
 
     vi.clearAllMocks();
     p.pushSubscription.findMany.mockResolvedValue([]);
@@ -268,9 +318,7 @@ describe("sendPushToUser()", () => {
       { endpoint: "ep-ok", p256dh: "k", auth: "a", userId: "u1" },
       { endpoint: "ep-410", p256dh: "k", auth: "a", userId: "u1" },
     ]);
-    mockSend
-      .mockResolvedValueOnce({ statusCode: 201 })
-      .mockRejectedValueOnce({ statusCode: 410 });
+    mockSend.mockResolvedValueOnce({ statusCode: 201 }).mockRejectedValueOnce({ statusCode: 410 });
 
     const result = await sendPushToUser("u1", { title: "T", body: "B" });
 

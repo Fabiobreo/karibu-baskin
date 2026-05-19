@@ -1,9 +1,7 @@
 "use client";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  BottomNavigation, BottomNavigationAction, Badge, Avatar, Box, Paper,
-} from "@mui/material";
+import { BottomNavigation, BottomNavigationAction, Badge, Avatar, Box, Paper } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -31,7 +29,12 @@ export default function BottomNav() {
 
   const user = session?.user;
   const initials = user?.name
-    ? user.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
+    ? user.name
+        .split(" ")
+        .map((n: string) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
     : "?";
   const visibleCount = mounted ? unreadCount : 0;
 
@@ -67,11 +70,7 @@ export default function BottomNav() {
           },
         }}
       >
-        <BottomNavigationAction
-          label="Home"
-          value="/"
-          icon={<HomeIcon fontSize="small" />}
-        />
+        <BottomNavigationAction label="Home" value="/" icon={<HomeIcon fontSize="small" />} />
         <BottomNavigationAction
           label="Allenamenti"
           value="/allenamenti"

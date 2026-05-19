@@ -2,16 +2,16 @@ import { describe, it, expect } from "vitest";
 import { generateTeams, type Athlete } from "./teamGenerator";
 
 const athletes: Athlete[] = [
-  { id: "u1", name: "Alice",   role: 5 },
-  { id: "u2", name: "Bob",     role: 5 },
-  { id: "u3", name: "Carla",   role: 4 },
-  { id: "u4", name: "Davide",  role: 4 },
-  { id: "u5", name: "Elena",   role: 3 },
-  { id: "u6", name: "Fabio",   role: 3 },
-  { id: "u7", name: "Giada",   role: 2 },
-  { id: "u8", name: "Hector",  role: 2 },
-  { id: "u9", name: "Irene",   role: 1 },
-  { id: "u10", name: "Luca",   role: 1 },
+  { id: "u1", name: "Alice", role: 5 },
+  { id: "u2", name: "Bob", role: 5 },
+  { id: "u3", name: "Carla", role: 4 },
+  { id: "u4", name: "Davide", role: 4 },
+  { id: "u5", name: "Elena", role: 3 },
+  { id: "u6", name: "Fabio", role: 3 },
+  { id: "u7", name: "Giada", role: 2 },
+  { id: "u8", name: "Hector", role: 2 },
+  { id: "u9", name: "Irene", role: 1 },
+  { id: "u10", name: "Luca", role: 1 },
 ];
 
 describe("generateTeams — 2 squadre", () => {
@@ -59,7 +59,7 @@ describe("generateTeams — 2 squadre", () => {
     const lowB = result.teamB.filter((a) => a.role <= 2).length;
     const highA = result.teamA.filter((a) => a.role >= 3).length;
     const highB = result.teamB.filter((a) => a.role >= 3).length;
-    expect(lowA + lowB).toBe(4);   // 2 atleti per ruolo × 2 ruoli bassi
+    expect(lowA + lowB).toBe(4); // 2 atleti per ruolo × 2 ruoli bassi
     expect(highA + highB).toBe(6); // 2 atleti per ruolo × 3 ruoli alti
     expect(Math.abs(lowA - lowB)).toBeLessThanOrEqual(1);
     expect(Math.abs(highA - highB)).toBeLessThanOrEqual(1);
@@ -79,7 +79,9 @@ describe("generateTeams — 3 squadre", () => {
 
   it("tutti gli atleti sono distribuiti tra 3 squadre", () => {
     const result = generateTeams(athletes, "session-abc", 3);
-    const allIds = [...result.teamA, ...result.teamB, ...(result.teamC ?? [])].map((a) => a.id).sort();
+    const allIds = [...result.teamA, ...result.teamB, ...(result.teamC ?? [])]
+      .map((a) => a.id)
+      .sort();
     expect(allIds).toEqual(athletes.map((a) => a.id).sort());
   });
 
@@ -120,11 +122,9 @@ describe("generateTeams — 3 squadre", () => {
     const result = generateTeams(uneven, "session-step4", 3);
     const sizes = [result.teamA.length, result.teamB.length, (result.teamC ?? []).length];
     expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
-    const allIds = [
-      ...result.teamA,
-      ...result.teamB,
-      ...(result.teamC ?? []),
-    ].map((a) => a.id).sort();
+    const allIds = [...result.teamA, ...result.teamB, ...(result.teamC ?? [])]
+      .map((a) => a.id)
+      .sort();
     expect(allIds).toEqual(uneven.map((a) => a.id).sort());
   });
 });
