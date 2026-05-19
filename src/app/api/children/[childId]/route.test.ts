@@ -8,8 +8,9 @@ vi.mock("@/lib/db", () => ({
     registration: { findMany: vi.fn(), deleteMany: vi.fn() },
     trainingSession: { updateMany: vi.fn() },
     user: { findUnique: vi.fn() },
-    linkRequest: { findFirst: vi.fn(), create: vi.fn() },
+    linkRequest: { findFirst: vi.fn(), create: vi.fn(), count: vi.fn() },
     appNotification: { create: vi.fn() },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -36,8 +37,9 @@ type PrismaMock = {
   registration: { findMany: Mock; deleteMany: Mock };
   trainingSession: { updateMany: Mock };
   user: { findUnique: Mock };
-  linkRequest: { findFirst: Mock; create: Mock };
+  linkRequest: { findFirst: Mock; create: Mock; count: Mock };
   appNotification: { create: Mock };
+  $transaction: Mock;
 };
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
@@ -80,11 +82,19 @@ const baseChild = {
 
 describe("PATCH /api/children/[childId]", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "parent-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
     p.child.findUnique.mockResolvedValue(baseChild);
     p.child.update.mockResolvedValue(baseChild);
+    p.linkRequest.count.mockResolvedValue(0);
+    // $transaction callback: esegue il callback con i mock esistenti come tx
+    p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>
+      fn({
+        linkRequest: p.linkRequest,
+        appNotification: p.appNotification,
+      })
+    );
   });
 
   it("restituisce 401 se non autenticato", async () => {
@@ -269,7 +279,7 @@ describe("PATCH /api/children/[childId]", () => {
 
 describe("DELETE /api/children/[childId]", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "parent-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
     p.child.findUnique.mockResolvedValue(baseChild);
@@ -277,6 +287,8 @@ describe("DELETE /api/children/[childId]", () => {
     p.registration.deleteMany.mockResolvedValue(undefined);
     p.trainingSession.updateMany.mockResolvedValue(undefined);
     p.child.delete.mockResolvedValue(undefined);
+    // $transaction array: esegue le operazioni passate come Promise.all
+    p.$transaction.mockImplementation((ops: Promise<unknown>[]) => Promise.all(ops));
   });
 
   it("restituisce 401 se non autenticato", async () => {

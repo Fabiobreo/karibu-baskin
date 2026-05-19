@@ -15,7 +15,13 @@ vi.mock("@/lib/db", () => ({
     trainingSession: { findUnique: vi.fn(), update: vi.fn() },
     child: { findUnique: vi.fn(), update: vi.fn() },
     user: { findUnique: vi.fn(), update: vi.fn() },
-    linkRequest: { findUnique: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    linkRequest: {
+      findUnique: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+    },
     appNotification: { create: vi.fn() },
     teamMembership: { findFirst: vi.fn() },
   },
@@ -32,6 +38,7 @@ vi.mock("@/lib/webpush", () => ({
 }));
 vi.mock("@/lib/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
+  createTargetedAppNotifications: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("@/lib/rateLimit", () => ({
   checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 19 }),
@@ -52,7 +59,7 @@ type PrismaMock = {
   trainingSession: { findUnique: Mock; update: Mock };
   child: { findUnique: Mock; update: Mock };
   user: { findUnique: Mock; update: Mock };
-  linkRequest: { findUnique: Mock; findFirst: Mock; create: Mock; update: Mock };
+  linkRequest: { findUnique: Mock; findFirst: Mock; create: Mock; update: Mock; updateMany: Mock };
   appNotification: { create: Mock };
   teamMembership: { findFirst: Mock };
 };
@@ -333,10 +340,10 @@ describe("Flow: link-request accept → appRole + sportRole utente aggiornati", 
     const json = await res.json();
     expect(json.status).toBe("ACCEPTED");
 
-    // Verifica che user.update sia stato chiamato con appRole ATHLETE e sportRole dal figlio
+    // Verifica che user.update sia stato chiamato con appRole ATHLETE
+    // (sportRole NON viene copiato automaticamente — richiede conferma esplicita admin)
     const updateData = p.user.update.mock.calls[0][0].data;
     expect(updateData.appRole).toBe("ATHLETE");
-    expect(updateData.sportRole).toBe(2);
 
     // Verifica che il child sia stato collegato all'utente
     expect(p.child.update).toHaveBeenCalledWith(

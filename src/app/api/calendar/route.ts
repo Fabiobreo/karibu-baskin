@@ -75,7 +75,7 @@ export async function GET(req: Request) {
       title: t.title,
       date: t.date.toISOString(),
       endDate: t.endTime?.toISOString(),
-      color: t.team?.color ?? "#00897B",
+      color: t.team?.color ?? "#FF6D00",
       teamName: t.team?.name,
       href: `/allenamento/${t.dateSlug ?? t.id}`,
     })),

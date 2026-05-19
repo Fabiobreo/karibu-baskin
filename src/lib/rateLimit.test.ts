@@ -60,8 +60,8 @@ describe("getClientIp", () => {
     headers: { get: (k: string) => (k === "x-forwarded-for" ? headerValue : null) },
   });
 
-  it("estrae il primo IP dall'header X-Forwarded-For", () => {
-    expect(getClientIp(makeReq("1.2.3.4, 5.6.7.8"))).toBe("1.2.3.4");
+  it("estrae l'ultimo IP dall'header X-Forwarded-For (anti-spoofing)", () => {
+    expect(getClientIp(makeReq("1.2.3.4, 5.6.7.8"))).toBe("5.6.7.8");
   });
 
   it("restituisce 'unknown' se l'header è assente", () => {

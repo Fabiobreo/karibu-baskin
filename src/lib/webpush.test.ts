@@ -1,12 +1,17 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 
-vi.mock("web-push", () => ({
-  default: {
-    setVapidDetails: vi.fn(),
-    sendNotification: vi.fn(),
-  },
-}));
+// Impostare le env var PRIMA che webpush.ts venga caricato, così pushEnabled = true
+vi.mock("web-push", () => {
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = "fake-public-key";
+  process.env.VAPID_PRIVATE_KEY = "fake-private-key";
+  return {
+    default: {
+      setVapidDetails: vi.fn(),
+      sendNotification: vi.fn(),
+    },
+  };
+});
 
 vi.mock("@/lib/db", () => ({
   prisma: {

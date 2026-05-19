@@ -77,7 +77,7 @@ describe("POST /api/link-requests/[requestId]/respond", () => {
     });
     p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>
       fn({
-        linkRequest: { update: vi.fn().mockResolvedValue(undefined) },
+        linkRequest: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
         child: {
           findUnique: vi.fn().mockResolvedValue(null),
           update: vi.fn().mockResolvedValue(undefined),
@@ -86,7 +86,9 @@ describe("POST /api/link-requests/[requestId]/respond", () => {
           findUnique: vi.fn().mockResolvedValue({ appRole: "ATHLETE", sportRole: null }),
           update: vi.fn().mockResolvedValue(undefined),
         },
-        appNotification: { create: vi.fn().mockResolvedValue(undefined) },
+        appNotification: {
+          create: vi.fn().mockResolvedValue(undefined),
+        },
       })
     );
   });

@@ -17,11 +17,10 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 
-function makeRequest(authHeader?: string): Request {
+function makeRequest(authHeader?: string, withCronHeader = false): Request {
   const headers: Record<string, string> = {};
-  if (authHeader !== undefined) {
-    headers["authorization"] = authHeader;
-  }
+  if (authHeader !== undefined) headers["authorization"] = authHeader;
+  if (withCronHeader) headers["x-vercel-cron"] = "1";
   return new Request("http://localhost/api/cron/cleanup-notifications", { headers });
 }
 
@@ -55,7 +54,9 @@ describe("GET /api/cron/cleanup-notifications", () => {
     p.appNotification.deleteMany.mockResolvedValue({ count: 5 });
     p.linkRequest.deleteMany.mockResolvedValue({ count: 2 });
 
-    const res = await GET(makeRequest("Bearer test-cron-secret") as Parameters<typeof GET>[0]);
+    const res = await GET(
+      makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]
+    );
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.deletedNotifications).toBe(5);
@@ -63,7 +64,7 @@ describe("GET /api/cron/cleanup-notifications", () => {
   });
 
   it("elimina solo notifiche con almeno una lettura", async () => {
-    await GET(makeRequest("Bearer test-cron-secret") as Parameters<typeof GET>[0]);
+    await GET(makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]);
     expect(p.appNotification.deleteMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -74,7 +75,7 @@ describe("GET /api/cron/cleanup-notifications", () => {
   });
 
   it("elimina solo link-request PENDING scadute", async () => {
-    await GET(makeRequest("Bearer test-cron-secret") as Parameters<typeof GET>[0]);
+    await GET(makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]);
     expect(p.linkRequest.deleteMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -86,7 +87,7 @@ describe("GET /api/cron/cleanup-notifications", () => {
 
   it("usa una cutoff di 90 giorni fa", async () => {
     const before = Date.now();
-    await GET(makeRequest("Bearer test-cron-secret") as Parameters<typeof GET>[0]);
+    await GET(makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]);
     const after = Date.now();
 
     const call = p.appNotification.deleteMany.mock.calls[0][0];
@@ -97,7 +98,9 @@ describe("GET /api/cron/cleanup-notifications", () => {
   });
 
   it("restituisce 0 se non c'è nulla da eliminare", async () => {
-    const res = await GET(makeRequest("Bearer test-cron-secret") as Parameters<typeof GET>[0]);
+    const res = await GET(
+      makeRequest("Bearer test-cron-secret", true) as Parameters<typeof GET>[0]
+    );
     const json = await res.json();
     expect(json.deletedNotifications).toBe(0);
     expect(json.deletedExpiredLinks).toBe(0);

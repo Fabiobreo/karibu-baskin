@@ -93,8 +93,10 @@ describe("checkRegistrationAllowed — GUEST", () => {
     expect(checkRegistrationAllowed(teamRestriction, "GUEST", 3, false)).toEqual({ allowed: true });
   });
 
-  it("GUEST è ammesso anche con restrizioni ruolo", () => {
-    expect(checkRegistrationAllowed(roleRestriction, "GUEST", 1, false)).toEqual({ allowed: true });
+  it("GUEST è bloccato da restrizioni ruolo (sottoposto solo a allowedRoles)", () => {
+    const result = checkRegistrationAllowed(roleRestriction, "GUEST", 1, false);
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/ruoli/i);
   });
 });
 
@@ -227,10 +229,9 @@ describe("checkRegistrationAllowed — anonimo (null) con restrizioni", () => {
     expect(checkRegistrationAllowed(roleRestriction, null, 3, false)).toEqual({ allowed: true });
   });
 
-  it("anonimo bloccato da restrizione squadra (isInRestrictedTeam sempre false)", () => {
-    const result = checkRegistrationAllowed(teamRestriction, null, 3, false);
-    expect(result.allowed).toBe(false);
-    expect(result.reason).toMatch(/squadra/i);
+  it("anonimo bypassa la restrizione di squadra (non verificabile senza account)", () => {
+    // Per CLAUDE.md: anonimi bypass del controllo squadra, sottoposti solo a allowedRoles
+    expect(checkRegistrationAllowed(teamRestriction, null, 3, false)).toEqual({ allowed: true });
   });
 
   it("anonimo con ruolo aperto bypassa la restrizione di squadra", () => {
@@ -245,9 +246,8 @@ describe("checkRegistrationAllowed — anonimo (null) con restrizioni", () => {
     expect(result.reason).toMatch(/ruoli/i);
   });
 
-  it("anonimo bloccato da restrizione combinata: ruolo ok ma non membro", () => {
-    const result = checkRegistrationAllowed(fullRestriction, null, 3, false);
-    expect(result.allowed).toBe(false);
-    expect(result.reason).toMatch(/squadra/i);
+  it("anonimo con ruolo ok bypassa la restrizione squadra (non verificabile senza account)", () => {
+    // Per CLAUDE.md: anonimi non possono essere verificati come membri di una squadra
+    expect(checkRegistrationAllowed(fullRestriction, null, 3, false)).toEqual({ allowed: true });
   });
 });

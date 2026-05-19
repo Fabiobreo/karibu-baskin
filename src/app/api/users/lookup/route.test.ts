@@ -23,7 +23,7 @@ type PrismaMock = { user: { findUnique: Mock; findMany: Mock } };
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
 
-const authedSession = { user: { id: "u-self" } };
+const authedSession = { user: { id: "u-self", appRole: "PARENT" } };
 
 function makeReq(qs: string): NextRequest {
   return new NextRequest(`http://localhost/api/users/lookup${qs}`);

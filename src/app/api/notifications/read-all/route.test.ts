@@ -3,6 +3,7 @@ import type { Mock } from "vitest";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     appNotification: { findMany: vi.fn() },
     appNotificationRead: { createMany: vi.fn() },
   },
@@ -17,6 +18,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 
 type PrismaMock = {
+  user: { findUnique: Mock };
   appNotification: { findMany: Mock };
   appNotificationRead: { createMany: Mock };
 };
@@ -27,6 +29,7 @@ describe("PATCH /api/notifications/read-all", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    p.user.findUnique.mockResolvedValue({ createdAt: new Date(0) });
     p.appNotification.findMany.mockResolvedValue([]);
     p.appNotificationRead.createMany.mockResolvedValue({ count: 0 });
   });
@@ -72,7 +75,10 @@ describe("PATCH /api/notifications/read-all", () => {
     expect(p.appNotification.findMany).toHaveBeenCalledWith({
       where: {
         reads: { none: { userId: "user-1" } },
-        OR: [{ targetUserId: null }, { targetUserId: "user-1" }],
+        OR: [
+          { targetUserId: null, createdAt: { gte: expect.any(Date) } },
+          { targetUserId: "user-1" },
+        ],
       },
       select: { id: true },
     });

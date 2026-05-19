@@ -22,6 +22,7 @@ vi.mock("@/lib/authjs", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
+  isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("@/lib/webpush", () => ({
@@ -39,7 +40,7 @@ vi.mock("@/lib/audit", () => ({
 import { PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isAdminUser, isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUser } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { logAudit } from "@/lib/audit";
@@ -51,6 +52,7 @@ type PrismaMock = {
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
 const mockIsAdmin = isAdminUser as Mock;
+const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
 const mockSendPush = sendPushToUser as Mock;
 const mockCreateNotif = createAppNotification as Mock;
 const mockLogAudit = logAudit as Mock;
@@ -92,6 +94,7 @@ describe("PATCH /api/users/[userId]", () => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "admin-1" } });
     mockIsAdmin.mockResolvedValue(true);
+    mockIsCoachOrAdmin.mockResolvedValue(true);
     p.user.findUnique.mockResolvedValue(baseUser);
     p.user.update.mockResolvedValue({ ...baseUser });
     p.sportRoleHistory.create.mockResolvedValue(undefined);
@@ -100,6 +103,7 @@ describe("PATCH /api/users/[userId]", () => {
 
   it("restituisce 401 se l'utente non è admin", async () => {
     mockIsAdmin.mockResolvedValue(false);
+    mockIsCoachOrAdmin.mockResolvedValue(false);
     const [req, ctx] = makePATCH("user-1", { appRole: "COACH" });
     const res = await PATCH(req, ctx);
     expect(res.status).toBe(401);

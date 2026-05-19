@@ -7,10 +7,12 @@ import { ROLE_LABELS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import type { AppRole, Gender } from "@prisma/client";
 
 // Prefixes formula-trigger characters to prevent CSV injection in Excel/Sheets.
-// Trim leading whitespace first — " =cmd" would otherwise bypass a prefix-only check.
+// Tabs and carriage returns are checked on the raw string; other triggers (=+-@) are
+// checked after trimming spaces so that " =cmd" is also caught.
 function sanitizeCsvValue(s: string): string {
   const trimmed = s.trimStart();
-  return /^[=+\-@\t\r]/.test(trimmed) ? `'${s}` : s;
+  if (/^[\t\r]/.test(s) || /^[=+\-@]/.test(trimmed)) return `'${s}`;
+  return s;
 }
 
 function csvRow(values: (string | number | null | undefined)[]): string {

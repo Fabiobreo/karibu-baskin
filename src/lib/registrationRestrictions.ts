@@ -46,11 +46,6 @@ export function checkRegistrationAllowed(
   // Nessuna restrizione → tutti ammessi
   if (!hasRestrictions(restrictions)) return { allowed: true };
 
-  // openRoles bypassa tutto (allowedRoles + restrizione squadra)
-  if (restrictions.restrictTeamId !== null && restrictions.openRoles.includes(sportRole)) {
-    return { allowed: true };
-  }
-
   // Controllo ruoli ammessi — si applica a tutti tranne COACH/ADMIN (inclusi GUEST e anonimi)
   if (restrictions.allowedRoles.length > 0 && !restrictions.allowedRoles.includes(sportRole)) {
     return {
@@ -59,9 +54,10 @@ export function checkRegistrationAllowed(
     };
   }
 
-  // Controllo restrizione squadra — bypass per anonimi e GUEST (nuovi utenti senza squadra)
+  // Controllo restrizione squadra — bypass per anonimi e GUEST (nuovi utenti senza squadra).
+  // openRoles esenta SOLO dalla restrizione squadra, non da allowedRoles.
   if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
-    if (!isInRestrictedTeam) {
+    if (!isInRestrictedTeam && !restrictions.openRoles.includes(sportRole)) {
       return {
         allowed: false,
         reason: "Questo allenamento è riservato ai membri di una squadra specifica",

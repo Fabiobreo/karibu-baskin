@@ -3,6 +3,7 @@ import type { Mock } from "vitest";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     appNotification: { count: vi.fn() },
   },
 }));
@@ -16,6 +17,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 
 type PrismaMock = {
+  user: { findUnique: Mock };
   appNotification: { count: Mock };
 };
 const p = prisma as unknown as PrismaMock;
@@ -25,6 +27,7 @@ describe("GET /api/notifications/unread-count", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    p.user.findUnique.mockResolvedValue({ createdAt: new Date(0) });
     p.appNotification.count.mockResolvedValue(3);
   });
 
@@ -57,7 +60,10 @@ describe("GET /api/notifications/unread-count", () => {
     expect(p.appNotification.count).toHaveBeenCalledWith({
       where: {
         reads: { none: { userId: "user-1" } },
-        OR: [{ targetUserId: null }, { targetUserId: "user-1" }],
+        OR: [
+          { targetUserId: null, createdAt: { gte: expect.any(Date) } },
+          { targetUserId: "user-1" },
+        ],
       },
     });
   });
