@@ -63,7 +63,7 @@ export default function SponsorBanner() {
         borderColor: "divider",
         bgcolor: "background.paper",
         pt: 1.5,
-        pb: 2,
+        pb: { xs: "calc(16px + 60px + env(safe-area-inset-bottom, 0px))", md: 2 },
         overflow: "hidden",
         position: "relative",
         "&::before, &::after": {
@@ -77,11 +77,13 @@ export default function SponsorBanner() {
         },
         "&::before": {
           left: 0,
-          background: "linear-gradient(to right, var(--Paper-overlay, #fff), transparent)",
+          background: (theme) =>
+            `linear-gradient(to right, ${theme.palette.background.paper}, transparent)`,
         },
         "&::after": {
           right: 0,
-          background: "linear-gradient(to left, var(--Paper-overlay, #fff), transparent)",
+          background: (theme) =>
+            `linear-gradient(to left, ${theme.palette.background.paper}, transparent)`,
         },
       }}
     >

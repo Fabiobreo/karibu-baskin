@@ -198,7 +198,7 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
           py: 1.5,
           borderBottom: "1px solid",
           borderColor: "divider",
-          bgcolor: "grey.50",
+          bgcolor: (theme) => theme.palette.mode === "dark" ? "#000" : "grey.50",
           display: "flex",
           alignItems: "baseline",
           gap: 2,
@@ -257,7 +257,7 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
           alignItems: "center",
           justifyContent: "flex-end",
           gap: 1.5,
-          bgcolor: confirming ? "success.50" : "grey.50",
+          bgcolor: confirming ? "success.50" : (theme) => theme.palette.mode === "dark" ? "grey.850" : "grey.50",
           transition: "background-color 0.2s",
         }}
       >

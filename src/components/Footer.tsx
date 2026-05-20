@@ -13,6 +13,7 @@ export default function Footer() {
       component="footer"
       sx={{
         mt: "auto",
+        display: { xs: "none", md: "block" },
         background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
         color: "rgba(255,255,255,0.85)",
         pt: { xs: 1, sm: 2 },

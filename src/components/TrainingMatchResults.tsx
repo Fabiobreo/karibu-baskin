@@ -382,7 +382,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
           py: 1.5,
           borderBottom: "1px solid",
           borderColor: "divider",
-          bgcolor: "grey.50",
+          bgcolor: (theme) => theme.palette.mode === "dark" ? "#000" : "grey.50",
         }}
       >
         <SportsBasketballIcon sx={{ fontSize: 18, color: "primary.main" }} />

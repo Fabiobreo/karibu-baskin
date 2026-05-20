@@ -130,6 +130,11 @@ export default function SessionCard({
           position: "relative",
           cursor: "pointer",
           "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
+          ...((!muted && !live) && {
+            border: (theme) =>
+              theme.palette.mode === "dark" ? "1px solid" : undefined,
+            borderColor: "divider",
+          }),
           ...(live && {
             outline: "2px solid #2E7D32",
             "@keyframes pulse-border": {
@@ -163,9 +168,12 @@ export default function SessionCard({
           sx={{
             px,
             py: hero ? { xs: 2, sm: 2.5 } : 1.5,
-            background: muted
-              ? "rgba(0,0,0,0.04)"
-              : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+            background: (theme) =>
+              muted
+                ? theme.palette.action.hover
+                : theme.palette.mode === "dark"
+                  ? "#000"
+                  : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
             display: "flex",
             alignItems: hero ? "flex-start" : "center",
             justifyContent: "space-between",
