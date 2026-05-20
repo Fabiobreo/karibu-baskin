@@ -27,6 +27,14 @@ vi.mock("@/lib/appNotifications", () => ({
   createTargetedAppNotifications: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("@/lib/authjs", () => ({
+  auth: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock("@/lib/audit", () => ({
+  logAudit: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET, POST, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";

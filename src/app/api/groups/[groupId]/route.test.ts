@@ -18,6 +18,14 @@ vi.mock("@/lib/standings", () => ({
   computeStandings: vi.fn().mockReturnValue([]),
 }));
 
+vi.mock("@/lib/authjs", () => ({
+  auth: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock("@/lib/audit", () => ({
+  logAudit: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { GET, PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";

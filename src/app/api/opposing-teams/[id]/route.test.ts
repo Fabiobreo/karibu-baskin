@@ -4,6 +4,7 @@ import type { Mock } from "vitest";
 vi.mock("@/lib/db", () => ({
   prisma: {
     opposingTeam: {
+      findUnique: vi.fn().mockResolvedValue(null),
       update: vi.fn(),
       delete: vi.fn(),
     },
@@ -12,6 +13,14 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
+}));
+
+vi.mock("@/lib/authjs", () => ({
+  auth: vi.fn().mockResolvedValue(null),
+}));
+
+vi.mock("@/lib/audit", () => ({
+  logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { PUT, DELETE } from "./route";
