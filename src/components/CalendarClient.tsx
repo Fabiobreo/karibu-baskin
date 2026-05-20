@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Typography,
@@ -49,6 +49,7 @@ import {
   isSameMonth,
   isToday,
   isSameDay,
+  addDays,
 } from "date-fns";
 import { it } from "date-fns/locale";
 import type { CalendarEvent } from "@/app/api/calendar/route";
@@ -164,6 +165,45 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
       if (dayEvs.length > 0 || isStaff) setDayView(day);
     } else if (isStaff) {
       setCreateDay(day);
+    } else if (dayEvs.length > 0) {
+      setDayView(day);
+    }
+  }
+
+  // Keyboard navigation: ←→ giorno, ↑↓ settimana
+  const pendingFocusKey = useRef<string | null>(null);
+  useEffect(() => {
+    const key = pendingFocusKey.current;
+    if (!key) return;
+    const el = document.querySelector<HTMLElement>(`[data-day="${key}"]`);
+    if (el) {
+      el.focus();
+      pendingFocusKey.current = null;
+    }
+  });
+
+  function handleDayKeyDown(e: React.KeyboardEvent, day: Date) {
+    let delta = 0;
+    if (e.key === "ArrowLeft") delta = -1;
+    else if (e.key === "ArrowRight") delta = 1;
+    else if (e.key === "ArrowUp") delta = -7;
+    else if (e.key === "ArrowDown") delta = 7;
+    else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleDayClick(day);
+      return;
+    } else return;
+
+    e.preventDefault();
+    const newDay = addDays(day, delta);
+    pendingFocusKey.current = newDay.toISOString();
+    if (newDay.getFullYear() !== year || newDay.getMonth() !== month) {
+      setYear(newDay.getFullYear());
+      setMonth(newDay.getMonth());
+    } else {
+      const el = document.querySelector<HTMLElement>(`[data-day="${newDay.toISOString()}"]`);
+      el?.focus();
+      pendingFocusKey.current = null;
     }
   }
 
@@ -281,7 +321,10 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             return (
               <Box
                 key={day.toISOString()}
+                data-day={day.toISOString()}
+                tabIndex={isStaff || dayEvents.length > 0 ? 0 : -1}
                 onClick={() => handleDayClick(day)}
+                onKeyDown={(e) => handleDayKeyDown(e, day)}
                 sx={{
                   minHeight: { xs: 72, sm: 116 },
                   bgcolor: "background.paper",
@@ -289,6 +332,12 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                   opacity: inMonth ? 1 : 0.38,
                   cursor: isStaff || dayEvents.length > 0 ? "pointer" : "default",
                   "&:hover": isStaff || dayEvents.length > 0 ? { bgcolor: "action.hover" } : {},
+                  "&:focus-visible": {
+                    outline: "2px solid",
+                    outlineColor: "primary.main",
+                    outlineOffset: -2,
+                    zIndex: 1,
+                  },
                   transition: "background-color 0.12s",
                 }}
               >

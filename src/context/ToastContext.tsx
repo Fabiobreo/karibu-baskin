@@ -14,7 +14,7 @@ interface ToastContextValue {
   showToast: (options: ToastOptions) => void;
 }
 
-const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
+export const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);

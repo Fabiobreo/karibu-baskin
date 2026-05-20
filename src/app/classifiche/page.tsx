@@ -13,6 +13,7 @@ import {
   TableRow,
   TableCell,
   Button,
+  Tooltip,
 } from "@mui/material";
 import GironeMatchList from "@/components/GironeMatchList";
 import SiteHeader from "@/components/SiteHeader";
@@ -164,6 +165,36 @@ export default async function ClassifichePage({ searchParams }: Props) {
           >
             Stagione {currentSeason}
           </Typography>
+          <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
+            <Link href="/risultati" style={{ textDecoration: "none" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  borderColor: "rgba(255,255,255,0.3)",
+                  fontSize: "0.78rem",
+                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+                }}
+              >
+                Tutti i risultati
+              </Button>
+            </Link>
+            <Link href="/calendario" style={{ textDecoration: "none" }}>
+              <Button
+                size="small"
+                variant="outlined"
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  borderColor: "rgba(255,255,255,0.3)",
+                  fontSize: "0.78rem",
+                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+                }}
+              >
+                Calendario
+              </Button>
+            </Link>
+          </Box>
         </Container>
       </Box>
 
@@ -253,7 +284,15 @@ export default async function ClassifichePage({ searchParams }: Props) {
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                {["G", "V", "P", "S", "PF", "PS", "Pt"].map((h, i) => (
+                                {[
+                                  { h: "G", xs: true },
+                                  { h: "V", xs: true },
+                                  { h: "P", xs: true },
+                                  { h: "S", xs: true },
+                                  { h: "PF", xs: false },
+                                  { h: "PS", xs: false },
+                                  { h: "Pt", xs: true },
+                                ].map(({ h, xs }, i) => (
                                   <TableCell
                                     key={h}
                                     align={i === 0 ? "left" : "center"}
@@ -261,6 +300,7 @@ export default async function ClassifichePage({ searchParams }: Props) {
                                       fontWeight: 700,
                                       fontSize: "0.72rem",
                                       color: h === "Pt" ? "primary.main" : undefined,
+                                      display: xs ? undefined : { xs: "none", sm: "table-cell" },
                                     }}
                                   >
                                     {h}
@@ -289,8 +329,18 @@ export default async function ClassifichePage({ searchParams }: Props) {
                                 >
                                   {losses}
                                 </TableCell>
-                                <TableCell align="center">{pf}</TableCell>
-                                <TableCell align="center">{pa}</TableCell>
+                                <TableCell
+                                  align="center"
+                                  sx={{ display: { xs: "none", sm: "table-cell" } }}
+                                >
+                                  {pf}
+                                </TableCell>
+                                <TableCell
+                                  align="center"
+                                  sx={{ display: { xs: "none", sm: "table-cell" } }}
+                                >
+                                  {pa}
+                                </TableCell>
                                 <TableCell
                                   align="center"
                                   sx={{ fontWeight: 800, color: "primary.main", fontSize: "1rem" }}

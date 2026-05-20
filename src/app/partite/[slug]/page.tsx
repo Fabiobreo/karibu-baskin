@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
-import { Container, Typography, Box, Paper, Chip, Divider, Stack } from "@mui/material";
-import MatchStatsTable from "@/components/MatchStatsTable";
+import { Container, Typography, Box, Chip } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
+import MatchDetailTabs from "@/components/MatchDetailTabs";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
@@ -57,7 +57,7 @@ async function getMatch(slug: string) {
     include: {
       team: { select: { id: true, name: true, color: true, season: true, championship: true } },
       opponent: { select: { name: true, city: true } },
-      group: { select: { name: true, championship: true } },
+      group: { select: { id: true, name: true, championship: true } },
       playerStats: {
         include: {
           user: {
@@ -73,6 +73,22 @@ async function getMatch(slug: string) {
           child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
         },
         orderBy: { points: "desc" },
+      },
+      callups: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              slug: true,
+              sportRole: true,
+              sportRoleVariant: true,
+            },
+          },
+          child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+        },
+        orderBy: { id: "asc" },
       },
       _count: { select: { playerStats: true } },
     },
@@ -99,10 +115,37 @@ export default async function MatchDetailPage({ params }: Props) {
   const meta = match.result ? RESULT_META[match.result] : null;
   const heroBg = meta?.gradient ?? "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)";
   const hasScore = match.ourScore !== null && match.theirScore !== null;
-  const hasStats = match.playerStats.length > 0;
 
   const teamSeasonParam = match.team.season.replace("-", "");
   const teamSlug = slugify(match.team.name);
+
+  const infoCards = [
+    {
+      icon: <EmojiEventsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
+      label: "Competizione",
+      value: match.team.championship ?? MATCH_TYPE_LABEL[match.matchType],
+    },
+    {
+      icon: <CalendarTodayIcon sx={{ fontSize: 20, color: "primary.main" }} />,
+      label: "Stagione",
+      value: match.team.season,
+    },
+    {
+      icon: match.isHome ? (
+        <HomeIcon sx={{ fontSize: 20, color: "primary.main" }} />
+      ) : (
+        <FlightIcon sx={{ fontSize: 20, color: "primary.main" }} />
+      ),
+      label: "Campo",
+      value: match.isHome ? "Casa" : "Trasferta",
+    },
+    {
+      icon: <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
+      label: "Girone",
+      value: match.group?.name ?? "—",
+      ...(match.group?.id ? { href: `/gironi/${match.group.id}` } : {}),
+    },
+  ];
 
   return (
     <>
@@ -345,136 +388,15 @@ export default async function MatchDetailPage({ params }: Props) {
         </Container>
       </Box>
 
-      {/* ── Body ────────────────────────────────────────────────────────────── */}
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        {/* Info cards */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
-            gap: 1.5,
-            mb: 5,
-          }}
-        >
-          {[
-            {
-              icon: <EmojiEventsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
-              label: "Competizione",
-              value: match.team.championship ?? MATCH_TYPE_LABEL[match.matchType],
-            },
-            {
-              icon: <CalendarTodayIcon sx={{ fontSize: 20, color: "primary.main" }} />,
-              label: "Stagione",
-              value: match.team.season,
-            },
-            {
-              icon: match.isHome ? (
-                <HomeIcon sx={{ fontSize: 20, color: "primary.main" }} />
-              ) : (
-                <FlightIcon sx={{ fontSize: 20, color: "primary.main" }} />
-              ),
-              label: "Campo",
-              value: match.isHome ? "Casa" : "Trasferta",
-            },
-            {
-              icon: <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
-              label: "Girone",
-              value: match.group?.name ?? "—",
-            },
-          ].map((info) => (
-            <Paper
-              key={info.label}
-              elevation={0}
-              sx={{
-                p: 2,
-                border: "1px solid rgba(0,0,0,0.07)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 0.5,
-              }}
-            >
-              {info.icon}
-              <Typography
-                variant="caption"
-                color="text.disabled"
-                fontWeight={700}
-                sx={{ textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.6rem" }}
-              >
-                {info.label}
-              </Typography>
-              <Typography
-                variant="body2"
-                fontWeight={700}
-                sx={{ fontSize: "0.82rem", lineHeight: 1.3 }}
-              >
-                {info.value}
-              </Typography>
-            </Paper>
-          ))}
-        </Box>
-
-        {match.notes && (
-          <Paper
-            elevation={0}
-            sx={{
-              p: 2.5,
-              mb: 4,
-              border: "1px solid rgba(0,0,0,0.07)",
-              borderLeft: "4px solid",
-              borderLeftColor: "primary.main",
-              bgcolor: "rgba(230,81,0,0.03)",
-            }}
-          >
-            <Typography
-              variant="caption"
-              color="text.disabled"
-              fontWeight={700}
-              sx={{
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                display: "block",
-                mb: 0.75,
-                fontSize: "0.62rem",
-              }}
-            >
-              Note
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ fontStyle: "italic", lineHeight: 1.6, whiteSpace: "pre-line" }}
-            >
-              {match.notes}
-            </Typography>
-          </Paper>
-        )}
-
-        {/* Stats */}
-        {hasStats ? (
-          <>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <Typography
-                variant="overline"
-                color="primary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em" }}
-              >
-                Statistiche
-              </Typography>
-            </Box>
-            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
-              Marcatori
-            </Typography>
-            <MatchStatsTable stats={match.playerStats} />
-          </>
-        ) : (
-          match.result && (
-            <Paper elevation={0} variant="outlined" sx={{ p: 3, textAlign: "center" }}>
-              <Typography variant="body2" color="text.disabled">
-                Nessuna statistica individuale disponibile per questa partita.
-              </Typography>
-            </Paper>
-          )
-        )}
+      {/* ── Body con tabs ──────────────────────────────────────────────────── */}
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <MatchDetailTabs
+          infoCards={infoCards}
+          notes={match.notes}
+          stats={match.playerStats}
+          callups={match.callups}
+          matchType={match.matchType}
+        />
       </Container>
     </>
   );

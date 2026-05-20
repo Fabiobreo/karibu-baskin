@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { PlayerStatsBatchSchema } from "@/lib/schemas";
+import { sendPushToAll } from "@/lib/webpush";
+import { createAppNotification } from "@/lib/appNotifications";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -66,5 +68,34 @@ export async function PUT(req: Request, { params }: Params) {
     })
   );
 
-  return NextResponse.json(results.filter(Boolean));
+  const saved = results.filter(Boolean);
+
+  // Notifica push + in-app fire-and-forget agli atleti con stats
+  if (saved.length > 0) {
+    prisma.match
+      .findUnique({
+        where: { id: matchId },
+        select: {
+          team: { select: { name: true } },
+          opponent: { select: { name: true } },
+          slug: true,
+        },
+      })
+      .then((match) => {
+        if (!match) return;
+        const title = "Statistiche disponibili";
+        const body = `Le tue statistiche per ${match.team.name} vs ${match.opponent.name} sono online.`;
+        const url = `/partite/${match.slug ?? matchId}`;
+        sendPushToAll({ title, body, url, type: "MATCH_RESULT" }, false).catch(console.error);
+        createAppNotification({
+          title,
+          body,
+          url,
+          type: "MATCH_RESULT",
+        }).catch(console.error);
+      })
+      .catch(console.error);
+  }
+
+  return NextResponse.json(saved);
 }

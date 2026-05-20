@@ -14,7 +14,10 @@ import {
   Avatar,
   Chip,
   TablePagination,
+  InputAdornment,
+  TextField,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 
@@ -51,6 +54,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
+  const [nameSearch, setNameSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -69,6 +73,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     setPage(0);
   }
 
+  function handleNameSearch(val: string) {
+    setNameSearch(val);
+    setPage(0);
+  }
+
   function getValue(row: PlayerStatRow, col: SortKey): number {
     if (col === "avgPoints") return row.matches > 0 ? row.points / row.matches : 0;
     return row[col];
@@ -80,7 +89,13 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     return sortDir === "asc" ? aVal - bVal : bVal - aVal;
   });
 
-  const filtered = roleFilter !== null ? sorted.filter((r) => r.sportRole === roleFilter) : sorted;
+  const filtered = sorted
+    .filter((r) => roleFilter === null || r.sportRole === roleFilter)
+    .filter(
+      (r) =>
+        nameSearch.trim() === "" ||
+        (r.name ?? "").toLowerCase().includes(nameSearch.trim().toLowerCase())
+    );
 
   const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -91,58 +106,76 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
-      {/* Role filter chips */}
+      {/* Search + role filter */}
       <Box
         sx={{
           px: 2,
           py: 1.5,
           borderBottom: "1px solid rgba(0,0,0,0.07)",
           display: "flex",
-          gap: 0.75,
+          gap: 1.5,
           flexWrap: "wrap",
           alignItems: "center",
         }}
       >
-        <Typography
-          variant="caption"
-          color="text.disabled"
-          fontWeight={700}
-          sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
-        >
-          Ruolo:
-        </Typography>
-        <Chip
-          label="Tutti"
+        <TextField
           size="small"
-          variant={roleFilter === null ? "filled" : "outlined"}
-          color={roleFilter === null ? "primary" : "default"}
-          onClick={() => handleRoleFilter(null)}
-          sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.72rem" }}
+          placeholder="Cerca giocatore…"
+          value={nameSearch}
+          onChange={(e) => handleNameSearch(e.target.value)}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={{ width: 200, "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
         />
-        {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
-          <Chip
-            key={r}
-            label={`R${r}`}
-            size="small"
-            onClick={() => handleRoleFilter(r)}
-            sx={{
-              fontWeight: 700,
-              cursor: "pointer",
-              fontSize: "0.72rem",
-              bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
-              color: roleFilter === r ? "#fff" : "text.primary",
-              border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.23)"}`,
-              "&:hover": {
-                bgcolor: roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.04)",
-              },
-            }}
-          />
-        ))}
-        {filtered.length !== rows.length && (
-          <Typography variant="caption" color="text.disabled" sx={{ ml: "auto" }}>
-            {filtered.length} giocatori
+        <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
+          <Typography
+            variant="caption"
+            color="text.disabled"
+            fontWeight={700}
+            sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
+          >
+            Ruolo:
           </Typography>
-        )}
+          <Chip
+            label="Tutti"
+            size="small"
+            variant={roleFilter === null ? "filled" : "outlined"}
+            color={roleFilter === null ? "primary" : "default"}
+            onClick={() => handleRoleFilter(null)}
+            sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.72rem" }}
+          />
+          {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
+            <Chip
+              key={r}
+              label={`R${r}`}
+              size="small"
+              onClick={() => handleRoleFilter(r)}
+              sx={{
+                fontWeight: 700,
+                cursor: "pointer",
+                fontSize: "0.72rem",
+                bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
+                color: roleFilter === r ? "#fff" : "text.primary",
+                border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.23)"}`,
+                "&:hover": {
+                  bgcolor: roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.04)",
+                },
+              }}
+            />
+          ))}
+          {filtered.length !== rows.length && (
+            <Typography variant="caption" color="text.disabled" sx={{ ml: "auto" }}>
+              {filtered.length} giocatori
+            </Typography>
+          )}
+        </Box>
       </Box>
 
       {/* Table */}

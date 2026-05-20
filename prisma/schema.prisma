@@ -152,6 +152,10 @@ model Child {
   birthDate        DateTime?
   createdAt        DateTime  @default(now())
 
+  // Consenso del genitore/tutore al trattamento dei dati del minore (GDPR art. 8 + D.Lgs. 196/2003)
+  // null = consenso non ancora registrato (record creati prima dell'introduzione del flag)
+  parentalConsentAt DateTime?
+
   // Collegamento opzionale a un account User (se il figlio si registra in futuro)
   userId String? @unique
 

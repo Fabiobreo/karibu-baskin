@@ -23,7 +23,11 @@ import {
   Stack,
   Alert,
   Avatar,
+  Checkbox,
+  FormControlLabel,
+  Link as MuiLink,
 } from "@mui/material";
+import NextLink from "next/link";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -102,6 +106,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   const [searching, setSearching] = useState(false);
   const [createForm, setCreateForm] = useState({ name: "", gender: "", birthDate: "" });
   const [creating, setCreating] = useState(false);
+  const [parentalConsent, setParentalConsent] = useState(false);
 
   // Edit existing child
   const [editTarget, setEditTarget] = useState<ChildData | null>(null);
@@ -129,6 +134,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
     setFoundUser(null);
     setConfirmName("");
     setCreateForm({ name: "", gender: "", birthDate: "" });
+    setParentalConsent(false);
   }
 
   function closeAdd() {
@@ -186,7 +192,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       const createRes = await fetch("/api/users/me/children", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: confirmName.trim() }),
+        body: JSON.stringify({ name: confirmName.trim(), parentalConsent: true }),
       });
       const newChild = await createRes.json();
       if (!createRes.ok) {
@@ -229,6 +235,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           name: createForm.name.trim(),
           gender: createForm.gender || null,
           birthDate: createForm.birthDate || null,
+          parentalConsent: true,
         }),
       });
       const data = await res.json();
@@ -922,6 +929,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   error={!foundUser.name && !confirmName.trim()}
                 />
               </Paper>
+              <ParentalConsentBox checked={parentalConsent} onChange={setParentalConsent} />
             </Stack>
           )}
 
@@ -997,6 +1005,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               <Typography variant="caption" color="text.secondary">
                 Il ruolo Baskin verrà assegnato dall&apos;allenatore.
               </Typography>
+              <ParentalConsentBox checked={parentalConsent} onChange={setParentalConsent} />
             </Stack>
           )}
         </DialogContent>
@@ -1027,7 +1036,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               <Button
                 variant="contained"
                 onClick={handleConfirmYes}
-                disabled={creating || !confirmName.trim()}
+                disabled={creating || !confirmName.trim() || !parentalConsent}
                 startIcon={creating ? <CircularProgress size={14} color="inherit" /> : undefined}
               >
                 {creating ? "Invio richiesta..." : "Sì, è mio figlio/a"}
@@ -1045,7 +1054,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               <Button
                 variant="contained"
                 onClick={handleCreateManually}
-                disabled={creating || !createForm.name.trim()}
+                disabled={creating || !createForm.name.trim() || !parentalConsent}
               >
                 {creating ? "Salvataggio..." : "Aggiungi"}
               </Button>
@@ -1054,5 +1063,39 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         </DialogActions>
       </Dialog>
     </Box>
+  );
+}
+
+function ParentalConsentBox({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <Paper variant="outlined" sx={{ p: 1.5, bgcolor: "action.hover" }}>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={(e) => onChange(e.target.checked)}
+            size="small"
+            sx={{ alignSelf: "flex-start", mt: -0.5 }}
+          />
+        }
+        sx={{ alignItems: "flex-start", m: 0 }}
+        label={
+          <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.55 }}>
+            Confermo di essere il <strong>genitore o tutore legale</strong> del minore e presto il
+            consenso al trattamento dei suoi dati personali per le finalità descritte nell&apos;
+            <MuiLink component={NextLink} href="/privacy" target="_blank" rel="noopener">
+              informativa privacy
+            </MuiLink>
+            .
+          </Typography>
+        }
+      />
+    </Paper>
   );
 }

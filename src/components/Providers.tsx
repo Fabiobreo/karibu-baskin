@@ -2,9 +2,23 @@
 import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { NotificationProvider } from "@/context/NotificationContext";
+import { ThemeContextProvider, useThemeMode } from "@/context/ThemeContext";
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { Session } from "next-auth";
+
+// Componente separato per accedere al context DOPO che ThemeContextProvider è montato
+function ThemedContent({ children }: { children: React.ReactNode }) {
+  const { activeTheme } = useThemeMode();
+  return (
+    <ThemeProvider theme={activeTheme}>
+      <CssBaseline />
+      {children}
+    </ThemeProvider>
+  );
+}
 
 export default function Providers({
   children,
@@ -28,7 +42,11 @@ export default function Providers({
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
-        <NotificationProvider>{children}</NotificationProvider>
+        <ThemeContextProvider>
+          <ThemedContent>
+            <NotificationProvider>{children}</NotificationProvider>
+          </ThemedContent>
+        </ThemeContextProvider>
       </SessionProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

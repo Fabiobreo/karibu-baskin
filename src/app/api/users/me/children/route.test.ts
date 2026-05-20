@@ -146,8 +146,20 @@ describe("POST /api/users/me/children", () => {
     expect(res.status).toBe(400);
   });
 
+  it("restituisce 400 se il consenso del genitore non è prestato", async () => {
+    const req = makeRequest({ name: "Figlio" });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    expect(p.child.create).not.toHaveBeenCalled();
+  });
+
   it("crea il figlio e restituisce 201", async () => {
-    const req = makeRequest({ name: "  Luca  ", sportRole: 2, gender: "MALE" });
+    const req = makeRequest({
+      name: "  Luca  ",
+      sportRole: 2,
+      gender: "MALE",
+      parentalConsent: true,
+    });
     const res = await POST(req);
     expect(res.status).toBe(201);
     const call = p.child.create.mock.calls[0][0].data;
@@ -155,10 +167,11 @@ describe("POST /api/users/me/children", () => {
     expect(call.parentId).toBe("user-1");
     expect(call.sportRole).toBe(2);
     expect(call.gender).toBe("MALE");
+    expect(call.parentalConsentAt).toBeInstanceOf(Date);
   });
 
   it("imposta sportRole e birthDate a null se non forniti", async () => {
-    const req = makeRequest({ name: "Figlio" });
+    const req = makeRequest({ name: "Figlio", parentalConsent: true });
     await POST(req);
     const call = p.child.create.mock.calls[0][0].data;
     expect(call.sportRole).toBeNull();
@@ -166,7 +179,7 @@ describe("POST /api/users/me/children", () => {
   });
 
   it("converte birthDate in oggetto Date", async () => {
-    const req = makeRequest({ name: "Figlio", birthDate: "2015-06-15" });
+    const req = makeRequest({ name: "Figlio", birthDate: "2015-06-15", parentalConsent: true });
     await POST(req);
     const call = p.child.create.mock.calls[0][0].data;
     expect(call.birthDate).toBeInstanceOf(Date);

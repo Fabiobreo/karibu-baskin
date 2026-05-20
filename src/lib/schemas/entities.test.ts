@@ -8,8 +8,20 @@ import { GroupCreateSchema, GroupUpdateSchema, GroupMatchCreateSchema } from "./
 // --- ChildCreateSchema ---
 
 describe("ChildCreateSchema", () => {
-  it("accetta un payload minimo (solo nome)", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna" }).success).toBe(true);
+  const baseConsent = { parentalConsent: true as const };
+
+  it("accetta un payload minimo (nome + consenso)", () => {
+    expect(ChildCreateSchema.safeParse({ name: "Anna", ...baseConsent }).success).toBe(true);
+  });
+
+  it("rifiuta payload senza parentalConsent", () => {
+    expect(ChildCreateSchema.safeParse({ name: "Anna" }).success).toBe(false);
+  });
+
+  it("rifiuta parentalConsent false", () => {
+    expect(ChildCreateSchema.safeParse({ name: "Anna", parentalConsent: false }).success).toBe(
+      false
+    );
   });
 
   it("accetta un payload completo", () => {
@@ -19,12 +31,13 @@ describe("ChildCreateSchema", () => {
       sportRoleVariant: "5a",
       gender: "MALE",
       birthDate: "2012-05-20",
+      ...baseConsent,
     };
     expect(ChildCreateSchema.safeParse(full).success).toBe(true);
   });
 
   it("rifiuta nome vuoto", () => {
-    const result = ChildCreateSchema.safeParse({ name: "" });
+    const result = ChildCreateSchema.safeParse({ name: "", ...baseConsent });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toContain("obbligatorio");
@@ -32,36 +45,54 @@ describe("ChildCreateSchema", () => {
   });
 
   it("rifiuta nome oltre 60 caratteri", () => {
-    expect(ChildCreateSchema.safeParse({ name: "a".repeat(61) }).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ name: "a".repeat(61), ...baseConsent }).success).toBe(
+      false
+    );
   });
 
   it("rifiuta sportRole 0 (fuori range)", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna", sportRole: 0 }).success).toBe(false);
+    expect(
+      ChildCreateSchema.safeParse({ name: "Anna", sportRole: 0, ...baseConsent }).success
+    ).toBe(false);
   });
 
   it("rifiuta sportRole 6 (fuori range)", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna", sportRole: 6 }).success).toBe(false);
+    expect(
+      ChildCreateSchema.safeParse({ name: "Anna", sportRole: 6, ...baseConsent }).success
+    ).toBe(false);
   });
 
   it("accetta sportRole null (non assegnato)", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna", sportRole: null }).success).toBe(true);
+    expect(
+      ChildCreateSchema.safeParse({ name: "Anna", sportRole: null, ...baseConsent }).success
+    ).toBe(true);
   });
 
   it("rifiuta gender non valido", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna", gender: "OTHER" }).success).toBe(false);
+    expect(
+      ChildCreateSchema.safeParse({ name: "Anna", gender: "OTHER", ...baseConsent }).success
+    ).toBe(false);
   });
 
   it("accetta gender FEMALE", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna", gender: "FEMALE" }).success).toBe(true);
+    expect(
+      ChildCreateSchema.safeParse({ name: "Anna", gender: "FEMALE", ...baseConsent }).success
+    ).toBe(true);
   });
 
   it("accetta gender null", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Anna", gender: null }).success).toBe(true);
+    expect(
+      ChildCreateSchema.safeParse({ name: "Anna", gender: null, ...baseConsent }).success
+    ).toBe(true);
   });
 
   it("rifiuta sportRoleVariant oltre 50 caratteri", () => {
     expect(
-      ChildCreateSchema.safeParse({ name: "Anna", sportRoleVariant: "x".repeat(51) }).success
+      ChildCreateSchema.safeParse({
+        name: "Anna",
+        sportRoleVariant: "x".repeat(51),
+        ...baseConsent,
+      }).success
     ).toBe(false);
   });
 });

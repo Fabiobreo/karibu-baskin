@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 // global-error sostituisce interamente il layout root, quindi
 // non ha accesso a MUI ThemeProvider — usiamo CSS inline puro.
@@ -11,6 +12,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[global error boundary]", {
       name: error.name,
       message: error.message,

@@ -10,6 +10,10 @@ export const ChildCreateSchema = z.object({
   sportRoleVariant: z.string().max(50).nullable().optional(),
   gender: GenderEnum,
   birthDate: z.string().nullable().optional(),
+  parentalConsent: z.literal(true, {
+    message:
+      "Devi confermare di essere il genitore/tutore legale e prestare il consenso al trattamento dei dati",
+  }),
 });
 
 export const ChildPatchSchema = z.object({

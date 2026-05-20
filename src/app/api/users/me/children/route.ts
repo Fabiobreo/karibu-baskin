@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
       sportRoleVariant: sportRoleVariant ?? null,
       gender: gender ?? null,
       birthDate: birthDate ? new Date(birthDate) : null,
+      parentalConsentAt: new Date(),
     },
   });
 

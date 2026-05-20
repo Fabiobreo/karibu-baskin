@@ -17,9 +17,11 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TableFooter,
   Avatar,
   Chip,
   Paper,
+  Divider,
 } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
@@ -155,6 +157,35 @@ export default function MatchStatsDialog({
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, notes: value } : r)));
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>, rowIdx: number, colIdx: number) {
+    if (e.key !== "Tab") return;
+    e.preventDefault();
+    const totalCols = STAT_COLS.length + 1; // +1 per Note
+    let nextRow = rowIdx;
+    let nextCol = colIdx + (e.shiftKey ? -1 : 1);
+    if (nextCol >= totalCols) {
+      nextCol = 0;
+      nextRow = rowIdx + 1;
+    } else if (nextCol < 0) {
+      nextCol = totalCols - 1;
+      nextRow = rowIdx - 1;
+    }
+    if (nextRow < 0 || nextRow >= rows.length) return;
+    const id = `stats-cell-${nextRow}-${nextCol}`;
+    (document.getElementById(id) as HTMLInputElement | null)?.focus();
+  }
+
+  const totals = rows.reduce(
+    (acc, r) => ({
+      points: acc.points + (parseInt(r.points || "0", 10) || 0),
+      baskets: acc.baskets + (parseInt(r.baskets || "0", 10) || 0),
+      assists: acc.assists + (parseInt(r.assists || "0", 10) || 0),
+      rebounds: acc.rebounds + (parseInt(r.rebounds || "0", 10) || 0),
+      fouls: acc.fouls + (parseInt(r.fouls || "0", 10) || 0),
+    }),
+    { points: 0, baskets: 0, assists: 0, rebounds: 0, fouls: 0 }
+  );
+
   async function handleSave() {
     setSaving(true);
     setError("");
@@ -255,7 +286,7 @@ export default function MatchStatsDialog({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row) => (
+                  {rows.map((row, rowIdx) => (
                     <TableRow key={row.key}>
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -290,12 +321,14 @@ export default function MatchStatsDialog({
                           </Box>
                         </Box>
                       </TableCell>
-                      {STAT_COLS.map((col) => (
+                      {STAT_COLS.map((col, colIdx) => (
                         <TableCell key={col.key} align="center" sx={{ py: 0.5, px: 0.75 }}>
                           <TextField
+                            id={`stats-cell-${rowIdx}-${colIdx}`}
                             type="number"
                             value={row[col.key]}
                             onChange={(e) => update(row.key, col.key, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, rowIdx, colIdx)}
                             size="small"
                             slotProps={{
                               htmlInput: {
@@ -309,8 +342,10 @@ export default function MatchStatsDialog({
                       ))}
                       <TableCell sx={{ py: 0.5, px: 0.75 }}>
                         <TextField
+                          id={`stats-cell-${rowIdx}-${STAT_COLS.length}`}
                           value={row.notes}
                           onChange={(e) => updateNote(row.key, e.target.value)}
+                          onKeyDown={(e) => handleKeyDown(e, rowIdx, STAT_COLS.length)}
                           size="small"
                           placeholder="Opzionale"
                           slotProps={{
@@ -325,6 +360,29 @@ export default function MatchStatsDialog({
                     </TableRow>
                   ))}
                 </TableBody>
+                <TableFooter>
+                  <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+                    <TableCell
+                      sx={{ fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
+                    >
+                      Totale
+                    </TableCell>
+                    {STAT_COLS.map((col) => (
+                      <TableCell
+                        key={col.key}
+                        align="center"
+                        sx={{
+                          fontWeight: 800,
+                          fontSize: "0.82rem",
+                          color: col.key === "points" ? "primary.main" : "text.primary",
+                        }}
+                      >
+                        {totals[col.key]}
+                      </TableCell>
+                    ))}
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
               </Table>
             </Box>
           </Paper>

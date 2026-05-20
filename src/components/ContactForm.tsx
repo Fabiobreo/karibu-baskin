@@ -1,7 +1,16 @@
 "use client";
 import { useActionState } from "react";
 import { submitContactForm, type ContactFormState } from "@/app/actions/contact";
-import { Box, TextField, Button, Typography, Alert, CircularProgress } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+  Link as MuiLink,
+} from "@mui/material";
+import NextLink from "next/link";
 import SendIcon from "@mui/icons-material/Send";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
@@ -86,6 +95,14 @@ export default function ContactForm() {
       >
         {pending ? "Invio in corso..." : "Invia messaggio"}
       </Button>
+      <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+        Inviando il messaggio acconsenti al trattamento dei dati per rispondere alla tua richiesta.
+        Maggiori informazioni nell&apos;
+        <MuiLink component={NextLink} href="/privacy">
+          informativa privacy
+        </MuiLink>
+        .
+      </Typography>
     </Box>
   );
 }

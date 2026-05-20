@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import { Analytics } from "@vercel/analytics/react";
-import theme from "@/theme";
 import { ToastProvider } from "@/context/ToastContext";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
@@ -74,22 +71,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
       >
         <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <ServiceWorkerRegistrar />
-            <Providers session={session}>
-              <ToastProvider>
-                <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
-                  <OfflineBanner />
-                  {children}
-                </Box>
-                <SponsorBanner />
-                <Footer />
-                <BottomNav />
-                <SwUpdateToast />
-              </ToastProvider>
-            </Providers>
-          </ThemeProvider>
+          <ServiceWorkerRegistrar />
+          <Providers session={session}>
+            <ToastProvider>
+              <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
+                <OfflineBanner />
+                {children}
+              </Box>
+              <SponsorBanner />
+              <Footer />
+              <BottomNav />
+              <SwUpdateToast />
+            </ToastProvider>
+          </Providers>
         </AppRouterCacheProvider>
         <Analytics />
       </body>

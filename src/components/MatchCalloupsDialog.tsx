@@ -11,13 +11,15 @@ import {
   Typography,
   Box,
   Checkbox,
-  FormControlLabel,
   Chip,
   Divider,
   Alert,
+  Avatar,
+  Paper,
 } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
-import { ROLE_COLORS, ROLE_LABELS, sportRoleLabel } from "@/lib/constants";
+import StarIcon from "@mui/icons-material/Star";
+import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 
 interface Member {
   id: string;
@@ -27,6 +29,7 @@ interface Member {
   user: {
     id: string;
     name: string | null;
+    image: string | null;
     sportRole: number | null;
     sportRoleVariant: string | null;
   } | null;
@@ -185,7 +188,13 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
             </Box>
             <Divider sx={{ mb: 1.5 }} />
 
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 0.75,
+              }}
+            >
               {members.map((m) => {
                 const person = m.user ?? m.child;
                 if (!person) return null;
@@ -200,40 +209,71 @@ export default function MatchCalloupsDialog({ open, onClose, matchId, teamId, ma
                       (person as { sportRoleVariant?: string | null }).sportRoleVariant ?? null
                     )
                   : null;
+                const image = m.user?.image ?? null;
+                const name = person.name ?? "—";
 
                 return (
-                  <FormControlLabel
+                  <Paper
                     key={m.id}
-                    control={
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={() => (isUser ? toggleUser(m.userId!) : toggleChild(m.childId!))}
-                        size="small"
-                      />
-                    }
-                    label={
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Typography variant="body2" fontWeight={isSelected ? 700 : 400}>
-                          {person.name}
-                          {m.isCaptain && " ★"}
+                    elevation={0}
+                    onClick={() => (isUser ? toggleUser(m.userId!) : toggleChild(m.childId!))}
+                    sx={{
+                      p: 1.25,
+                      border: "1px solid",
+                      borderColor: isSelected ? "primary.main" : "rgba(0,0,0,0.12)",
+                      bgcolor: isSelected ? "rgba(230,81,0,0.06)" : "background.paper",
+                      borderRadius: 1.5,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.25,
+                      transition: "border-color 0.15s, background 0.15s",
+                      "&:hover": { borderColor: "primary.light" },
+                    }}
+                  >
+                    <Checkbox checked={isSelected} size="small" sx={{ p: 0 }} onChange={() => {}} />
+                    <Avatar
+                      src={image ?? undefined}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        fontSize: 13,
+                        bgcolor: role ? ROLE_COLORS[role] : "grey.400",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {name[0]}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={isSelected ? 700 : 500}
+                          noWrap
+                          sx={{ fontSize: "0.82rem" }}
+                        >
+                          {name}
                         </Typography>
-                        {roleLabel && role && (
-                          <Chip
-                            label={roleLabel}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[role],
-                              color: "#fff",
-                              fontWeight: 600,
-                              fontSize: "0.65rem",
-                              height: 18,
-                            }}
-                          />
+                        {m.isCaptain && (
+                          <StarIcon sx={{ fontSize: 12, color: "#F9A825", flexShrink: 0 }} />
                         )}
                       </Box>
-                    }
-                    sx={{ mx: 0, py: 0.25 }}
-                  />
+                      {roleLabel && role && (
+                        <Chip
+                          label={roleLabel}
+                          size="small"
+                          sx={{
+                            bgcolor: ROLE_COLORS[role],
+                            color: "#fff",
+                            fontWeight: 600,
+                            fontSize: "0.58rem",
+                            height: 14,
+                            mt: 0.25,
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Paper>
                 );
               })}
             </Box>

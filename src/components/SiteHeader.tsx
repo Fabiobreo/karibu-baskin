@@ -30,6 +30,9 @@ import HomeIcon from "@mui/icons-material/Home";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -37,6 +40,8 @@ import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import { useThemeMode } from "@/context/ThemeContext";
+import Tooltip from "@mui/material/Tooltip";
 
 // Voci semplici del nav
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
@@ -55,6 +60,21 @@ const PARTITE_LINKS = [
   { label: "Classifiche", href: "/classifiche" },
 ];
 
+const COLOR_MODE_ORDER = ["light", "dark", "system"] as const;
+type ColorMode = (typeof COLOR_MODE_ORDER)[number];
+
+const MODE_LABELS: Record<ColorMode, string> = {
+  light: "Tema chiaro",
+  dark: "Tema scuro",
+  system: "Segui sistema",
+};
+
+function ThemeModeIcon({ mode }: { mode: ColorMode }) {
+  if (mode === "light") return <LightModeIcon fontSize="small" />;
+  if (mode === "dark") return <DarkModeIcon fontSize="small" />;
+  return <SettingsBrightnessIcon fontSize="small" />;
+}
+
 export default function SiteHeader() {
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -62,6 +82,12 @@ export default function SiteHeader() {
   const [partiteAnchor, setPartiteAnchor] = useState<null | HTMLElement>(null);
   const [partiteOpen, setPartiteOpen] = useState(false);
   const mounted = useHasMounted();
+  const { mode: colorMode, setMode: setColorMode } = useThemeMode();
+
+  function cycleColorMode() {
+    const idx = COLOR_MODE_ORDER.indexOf(colorMode as ColorMode);
+    setColorMode(COLOR_MODE_ORDER[(idx + 1) % COLOR_MODE_ORDER.length]);
+  }
   const pathnameRaw = usePathname();
   const pathname = mounted ? pathnameRaw : null;
   const partiteActive =
@@ -242,6 +268,18 @@ export default function SiteHeader() {
           )}
 
           <Box sx={{ flex: { xs: 1, md: 0 } }} />
+
+          {/* Toggle tema (desktop) */}
+          <Tooltip title={MODE_LABELS[colorMode as ColorMode]} arrow>
+            <IconButton
+              onClick={cycleColorMode}
+              size="small"
+              aria-label={MODE_LABELS[colorMode as ColorMode]}
+              sx={{ color: "rgba(255,255,255,0.7)", display: { xs: "none", md: "flex" } }}
+            >
+              <ThemeModeIcon mode={colorMode as ColorMode} />
+            </IconButton>
+          </Tooltip>
 
           {/* Campanellino notifiche (desktop) */}
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
@@ -537,24 +575,39 @@ export default function SiteHeader() {
           )}
         </List>
 
-        {/* Esci — in fondo, solo se loggato */}
-        {user && (
-          <Box>
-            <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-            <ListItemButton
-              onClick={() => {
-                setDrawerOpen(false);
-                signOut({ callbackUrl: "/" });
-              }}
-              sx={{ py: 1.25, color: "#ef5350" }}
-            >
-              <ListItemIcon sx={{ minWidth: 34 }}>
-                <LogoutIcon fontSize="small" sx={{ color: "#ef5350" }} />
-              </ListItemIcon>
-              <ListItemText primary="Esci" primaryTypographyProps={{ fontSize: "0.95rem" }} />
-            </ListItemButton>
-          </Box>
-        )}
+        {/* Footer drawer: toggle tema + logout */}
+        <Box>
+          <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+          <ListItemButton
+            onClick={cycleColorMode}
+            sx={{ py: 1.25, color: "rgba(255,255,255,0.7)" }}
+          >
+            <ListItemIcon sx={{ minWidth: 34 }}>
+              <ThemeModeIcon mode={colorMode as ColorMode} />
+            </ListItemIcon>
+            <ListItemText
+              primary={MODE_LABELS[colorMode as ColorMode]}
+              primaryTypographyProps={{ fontSize: "0.9rem" }}
+            />
+          </ListItemButton>
+          {user && (
+            <>
+              <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+              <ListItemButton
+                onClick={() => {
+                  setDrawerOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                sx={{ py: 1.25, color: "#ef5350" }}
+              >
+                <ListItemIcon sx={{ minWidth: 34 }}>
+                  <LogoutIcon fontSize="small" sx={{ color: "#ef5350" }} />
+                </ListItemIcon>
+                <ListItemText primary="Esci" primaryTypographyProps={{ fontSize: "0.95rem" }} />
+              </ListItemButton>
+            </>
+          )}
+        </Box>
       </Drawer>
     </>
   );

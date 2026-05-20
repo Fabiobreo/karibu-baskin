@@ -88,9 +88,21 @@ export default function Footer() {
           </Box>
         </Box>
         <Divider sx={{ width: "100%", borderColor: "rgba(255,255,255,0.08)" }} />
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
-          © {year} Karibu Baskin Montecchio Maggiore
-        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
+            © {year} Karibu Baskin Montecchio Maggiore
+          </Typography>
+          <Link
+            href="/privacy"
+            style={{
+              fontSize: "0.72rem",
+              color: "rgba(255,255,255,0.45)",
+              textDecorationColor: "rgba(255,255,255,0.2)",
+            }}
+          >
+            Informativa privacy
+          </Link>
+        </Box>
       </Box>
 
       {/* ── Mobile: singola riga compatta ── */}
@@ -146,9 +158,17 @@ export default function Footer() {
             <YouTubeIcon sx={{ fontSize: 17 }} />
           </IconButton>
         </Box>
-        <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.65rem" }}>
-          © {year}
-        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.25 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.65rem" }}
+          >
+            © {year}
+          </Typography>
+          <Link href="/privacy" style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)" }}>
+            Privacy
+          </Link>
+        </Box>
       </Box>
     </Box>
   );

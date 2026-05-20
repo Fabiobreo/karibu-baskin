@@ -12,15 +12,19 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Button,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import GironeOurMatchRow from "@/components/GironeOurMatchRow";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { computeStandings } from "@/lib/standings";
 import type { StandingEntry } from "@/lib/standings";
+import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -140,6 +144,19 @@ export default async function GironePage({ params }: Params) {
     <>
       <SiteHeader />
       <Container maxWidth="md" sx={{ py: 4 }}>
+        {/* Back */}
+        <Box sx={{ mb: 2 }}>
+          <Link href="/classifiche" style={{ textDecoration: "none" }}>
+            <Button
+              startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+              size="small"
+              sx={{ color: "text.secondary", fontSize: "0.78rem" }}
+            >
+              Classifiche
+            </Button>
+          </Link>
+        </Box>
+
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1, flexWrap: "wrap" }}>
@@ -212,53 +229,72 @@ export default async function GironePage({ params }: Params) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {standings.map((s, i) => (
-                  <TableRow
-                    key={s.id}
-                    sx={{
-                      bgcolor: s.isOurs ? "primary.main" : undefined,
-                      "& td": s.isOurs ? { color: "#fff", fontWeight: 700 } : {},
-                    }}
-                  >
-                    <TableCell sx={{ pl: 2 }}>
-                      <Typography
-                        variant="body2"
-                        color={s.isOurs ? "inherit" : "text.disabled"}
-                        fontWeight={600}
-                      >
-                        {i + 1}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={s.isOurs ? 800 : 600}>
-                        {s.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.played}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.won}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.drawn}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.lost}</Typography>
-                    </TableCell>
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      <Typography variant="body2">{s.goalsFor}</Typography>
-                    </TableCell>
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      <Typography variant="body2">{s.goalsAgainst}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2" fontWeight={800}>
-                        {s.points}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {standings.map((s, i) => {
+                  const teamSlug = slugify(s.name);
+                  const seasonParam = group.team.season.replace("-", "");
+                  return (
+                    <TableRow
+                      key={s.id}
+                      sx={{
+                        bgcolor: s.isOurs ? "primary.main" : undefined,
+                        "& td": s.isOurs ? { color: "#fff", fontWeight: 700 } : {},
+                      }}
+                    >
+                      <TableCell sx={{ pl: 2 }}>
+                        <Typography
+                          variant="body2"
+                          color={s.isOurs ? "inherit" : "text.disabled"}
+                          fontWeight={600}
+                        >
+                          {i + 1}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {s.isOurs ? (
+                          <Link
+                            href={`/squadre/${seasonParam}/${teamSlug}`}
+                            style={{ textDecoration: "none", color: "inherit" }}
+                          >
+                            <Typography
+                              variant="body2"
+                              fontWeight={800}
+                              sx={{ "&:hover": { textDecoration: "underline" } }}
+                            >
+                              {s.name}
+                            </Typography>
+                          </Link>
+                        ) : (
+                          <Typography variant="body2" fontWeight={600}>
+                            {s.name}
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">{s.played}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">{s.won}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">{s.drawn}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2">{s.lost}</Typography>
+                      </TableCell>
+                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                        <Typography variant="body2">{s.goalsFor}</Typography>
+                      </TableCell>
+                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                        <Typography variant="body2">{s.goalsAgainst}</Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="body2" fontWeight={800}>
+                          {s.points}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
