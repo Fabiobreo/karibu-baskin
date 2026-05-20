@@ -130,11 +130,11 @@ export default function SessionCard({
           position: "relative",
           cursor: "pointer",
           "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
-          ...((!muted && !live) && {
-            border: (theme) =>
-              theme.palette.mode === "dark" ? "1px solid" : undefined,
-            borderColor: "divider",
-          }),
+          ...(!muted &&
+            !live && {
+              border: (theme) => (theme.palette.mode === "dark" ? "1px solid" : undefined),
+              borderColor: "divider",
+            }),
           ...(live && {
             outline: "2px solid #2E7D32",
             "@keyframes pulse-border": {
