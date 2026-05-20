@@ -4,10 +4,10 @@ import { ChildCreateSchema, ChildPatchSchema } from "./child";
 // ─── ChildCreateSchema ────────────────────────────────────────────────────────
 
 describe("ChildCreateSchema", () => {
-  const valid = { name: "Marco Rossi" };
+  const C = { parentalConsent: true as const };
 
-  it("accetta un payload minimo valido (solo nome)", () => {
-    expect(ChildCreateSchema.safeParse(valid).success).toBe(true);
+  it("accetta un payload minimo valido (nome + consenso)", () => {
+    expect(ChildCreateSchema.safeParse({ name: "Marco Rossi", ...C }).success).toBe(true);
   });
 
   it("accetta un payload completo", () => {
@@ -17,12 +17,23 @@ describe("ChildCreateSchema", () => {
       sportRoleVariant: "A",
       gender: "MALE",
       birthDate: "2010-05-20",
+      ...C,
     };
     expect(ChildCreateSchema.safeParse(full).success).toBe(true);
   });
 
+  it("rifiuta payload senza parentalConsent", () => {
+    expect(ChildCreateSchema.safeParse({ name: "Marco Rossi" }).success).toBe(false);
+  });
+
+  it("rifiuta parentalConsent false", () => {
+    expect(
+      ChildCreateSchema.safeParse({ name: "Marco Rossi", parentalConsent: false }).success
+    ).toBe(false);
+  });
+
   it("rifiuta nome vuoto", () => {
-    const result = ChildCreateSchema.safeParse({ name: "" });
+    const result = ChildCreateSchema.safeParse({ name: "", ...C });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toContain("Il nome è obbligatorio");
@@ -30,51 +41,59 @@ describe("ChildCreateSchema", () => {
   });
 
   it("rifiuta nome oltre 60 caratteri", () => {
-    expect(ChildCreateSchema.safeParse({ name: "x".repeat(61) }).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ name: "x".repeat(61), ...C }).success).toBe(false);
   });
 
   it("rifiuta nome mancante", () => {
-    expect(ChildCreateSchema.safeParse({}).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ ...C }).success).toBe(false);
   });
 
   it("rifiuta sportRole fuori range (0)", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: 0 }).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: 0, ...C }).success).toBe(false);
   });
 
   it("rifiuta sportRole fuori range (6)", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: 6 }).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: 6, ...C }).success).toBe(false);
   });
 
   it("accetta sportRole nel range 1-5", () => {
     for (const r of [1, 2, 3, 4, 5]) {
-      expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: r }).success).toBe(true);
+      expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: r, ...C }).success).toBe(true);
     }
   });
 
   it("accetta sportRole null", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: null }).success).toBe(true);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: null, ...C }).success).toBe(
+      true
+    );
   });
 
   it("rifiuta sportRole non intero", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: 2.5 }).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", sportRole: 2.5, ...C }).success).toBe(
+      false
+    );
   });
 
   it("accetta gender MALE e FEMALE", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: "MALE" }).success).toBe(true);
-    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: "FEMALE" }).success).toBe(true);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: "MALE", ...C }).success).toBe(true);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: "FEMALE", ...C }).success).toBe(
+      true
+    );
   });
 
   it("rifiuta gender non riconosciuto", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: "OTHER" }).success).toBe(false);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: "OTHER", ...C }).success).toBe(
+      false
+    );
   });
 
   it("accetta gender null", () => {
-    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: null }).success).toBe(true);
+    expect(ChildCreateSchema.safeParse({ name: "Marco", gender: null, ...C }).success).toBe(true);
   });
 
   it("rifiuta sportRoleVariant oltre 50 caratteri", () => {
     expect(
-      ChildCreateSchema.safeParse({ name: "Marco", sportRoleVariant: "x".repeat(51) }).success
+      ChildCreateSchema.safeParse({ name: "Marco", sportRoleVariant: "x".repeat(51), ...C }).success
     ).toBe(false);
   });
 });

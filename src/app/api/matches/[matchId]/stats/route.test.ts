@@ -7,7 +7,15 @@ vi.mock("@/lib/db", () => ({
       findMany: vi.fn(),
       upsert: vi.fn(),
     },
+    match: {
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
   },
+}));
+
+vi.mock("@/lib/webpush", () => ({ sendPushToAll: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@/lib/appNotifications", () => ({
+  createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
