@@ -5,6 +5,8 @@ import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { SessionCreateSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { Prisma } from "@prisma/client";
@@ -52,6 +54,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
@@ -121,6 +124,23 @@ export async function POST(req: NextRequest) {
     body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
     url: `/allenamento/${session.dateSlug ?? session.id}`,
   }).catch((err) => console.error("[notification] new training", err));
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "CREATE_SESSION",
+      targetType: "TrainingSession",
+      targetId: session.id,
+      after: {
+        title: session.title,
+        date: session.date.toISOString(),
+        endTime: session.endTime?.toISOString() ?? null,
+        allowedRoles: session.allowedRoles,
+        restrictTeamId: session.restrictTeamId,
+        openRoles: session.openRoles,
+      },
+    }).catch((err) => console.error("[audit] create session", err));
+  }
 
   return NextResponse.json(session, { status: 201 });
 }

@@ -26,6 +26,7 @@ import MessageIcon from "@mui/icons-material/Message";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import MapEmbed from "@/components/MapEmbed";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
@@ -377,25 +378,8 @@ export default function ContattiPage() {
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
                 La nostra sede
               </Typography>
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  border: "1px solid rgba(0,0,0,0.07)",
-                  height: 220,
-                  mb: 2,
-                }}
-              >
-                <iframe
-                  src="https://maps.google.com/maps?q=Polisportivo+Gino+Cosaro,+Via+del+Vigo+11,+Montecchio+Maggiore+VI&output=embed"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Polisportivo Gino Cosaro - Montecchio Maggiore"
-                />
+              <Box sx={{ mb: 2 }}>
+                <MapEmbed height={220} />
               </Box>
               <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
                 <LocationOnIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />

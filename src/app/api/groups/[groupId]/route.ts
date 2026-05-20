@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { computeStandings } from "@/lib/standings";
 import { GroupUpdateSchema } from "@/lib/schemas";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ groupId: string }> };
 
@@ -38,6 +40,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -56,6 +59,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 
+  const before = await prisma.group.findUnique({
+    where: { id: groupId },
+    select: { name: true, championship: true },
+  });
+
   try {
     const group = await prisma.group.update({
       where: { id: groupId },
@@ -70,6 +78,16 @@ export async function PUT(req: NextRequest, { params }: Params) {
         _count: { select: { matches: true } },
       },
     });
+    if (authSession?.user?.id) {
+      logAudit({
+        actorId: authSession.user.id,
+        action: "UPDATE_GROUP",
+        targetType: "Group",
+        targetId: groupId,
+        before,
+        after: { name: group.name, championship: group.championship },
+      }).catch((err) => console.error("[audit] update group", err));
+    }
     return NextResponse.json(group);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
@@ -80,11 +98,16 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
   const { groupId } = await params;
+  const before = await prisma.group.findUnique({
+    where: { id: groupId },
+    select: { name: true, season: true, championship: true },
+  });
   await prisma.match.updateMany({ where: { groupId }, data: { groupId: null } });
   try {
     await prisma.group.delete({ where: { id: groupId } });
@@ -93,6 +116,15 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Girone non trovato" }, { status: 404 });
     }
     throw err;
+  }
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "DELETE_GROUP",
+      targetType: "Group",
+      targetId: groupId,
+      before,
+    }).catch((err) => console.error("[audit] delete group", err));
   }
   return new NextResponse(null, { status: 204 });
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { GroupCreateSchema } from "@/lib/schemas";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");
@@ -22,6 +24,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -47,6 +50,21 @@ export async function POST(req: NextRequest) {
       _count: { select: { matches: true } },
     },
   });
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "CREATE_GROUP",
+      targetType: "Group",
+      targetId: group.id,
+      after: {
+        name: group.name,
+        season: group.season,
+        championship: group.championship,
+        teamId: group.teamId,
+      },
+    }).catch((err) => console.error("[audit] create group", err));
+  }
 
   return NextResponse.json(group, { status: 201 });
 }

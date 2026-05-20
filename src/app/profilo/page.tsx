@@ -306,7 +306,7 @@ export default async function ProfiloPage() {
 
         {/* Sezione figli (solo PARENT e ADMIN) */}
         {isParent && (
-          <Paper elevation={0} variant="outlined" sx={{ p: 3 }}>
+          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
               I miei figli
             </Typography>
@@ -316,6 +316,21 @@ export default async function ProfiloPage() {
             <ParentChildLinker initialChildren={user.children as ChildData[]} />
           </Paper>
         )}
+
+        {/* Eliminazione account (GDPR art. 17) */}
+        <Box sx={{ mt: 2, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
+          <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
+            Hai il diritto di richiedere la cancellazione del tuo account e dei tuoi dati personali
+            ai sensi dell&apos;art. 17 GDPR.
+          </Typography>
+          <Link
+            href={`mailto:asdkaribubaskin@gmail.com?subject=${encodeURIComponent("Richiesta eliminazione account GDPR")}&body=${encodeURIComponent(`Salve,\n\nrichiedo l'eliminazione del mio account e di tutti i dati personali associati.\n\nEmail account: ${user.email}\n\nGrazie.`)}`}
+          >
+            <Button size="small" color="error" variant="outlined" sx={{ fontSize: "0.78rem" }}>
+              Richiedi eliminazione account
+            </Button>
+          </Link>
+        </Box>
       </Container>
     </>
   );

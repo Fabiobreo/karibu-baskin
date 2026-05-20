@@ -9,6 +9,7 @@ import { logAudit } from "@/lib/audit";
 type Params = { params: Promise<{ eventId: string }> };
 
 export async function PUT(req: Request, { params }: Params) {
+  const session = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -24,6 +25,7 @@ export async function PUT(req: Request, { params }: Params) {
   const body = parsed.data;
 
   const { eventId } = await params;
+  const before = await prisma.event.findUnique({ where: { id: eventId } });
   try {
     const event = await prisma.event.update({
       where: { id: eventId },
@@ -37,6 +39,30 @@ export async function PUT(req: Request, { params }: Params) {
         ...(body.description !== undefined && { description: body.description?.trim() || null }),
       },
     });
+    if (session?.user?.id) {
+      logAudit({
+        actorId: session.user.id,
+        action: "UPDATE_EVENT",
+        targetType: "Event",
+        targetId: eventId,
+        before: before
+          ? {
+              title: before.title,
+              date: before.date.toISOString(),
+              endDate: before.endDate?.toISOString() ?? null,
+              location: before.location,
+              description: before.description,
+            }
+          : null,
+        after: {
+          title: event.title,
+          date: event.date.toISOString(),
+          endDate: event.endDate?.toISOString() ?? null,
+          location: event.location,
+          description: event.description,
+        },
+      }).catch((err) => console.error("[audit] update event", err));
+    }
     return NextResponse.json(event);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {

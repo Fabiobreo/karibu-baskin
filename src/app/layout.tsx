@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import SponsorBanner from "@/components/SponsorBanner";
 import BottomNav from "@/components/BottomNav";
 import SwUpdateToast from "@/components/SwUpdateToast";
+import CookieBanner from "@/components/CookieBanner";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
 import "./globals.css";
@@ -82,6 +83,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Footer />
               <BottomNav />
               <SwUpdateToast />
+              <CookieBanner />
             </ToastProvider>
           </Providers>
         </AppRouterCacheProvider>

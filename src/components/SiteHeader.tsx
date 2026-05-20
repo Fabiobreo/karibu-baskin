@@ -269,18 +269,6 @@ export default function SiteHeader() {
 
           <Box sx={{ flex: { xs: 1, md: 0 } }} />
 
-          {/* Toggle tema (desktop) */}
-          <Tooltip title={MODE_LABELS[colorMode as ColorMode]} arrow>
-            <IconButton
-              onClick={cycleColorMode}
-              size="small"
-              aria-label={MODE_LABELS[colorMode as ColorMode]}
-              sx={{ color: "rgba(255,255,255,0.7)", display: { xs: "none", md: "flex" } }}
-            >
-              <ThemeModeIcon mode={colorMode as ColorMode} />
-            </IconButton>
-          </Tooltip>
-
           {/* Campanellino notifiche (desktop) */}
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
             <NotificationBell />
@@ -344,6 +332,13 @@ export default function SiteHeader() {
                     </ListItemIcon>
                     Il mio profilo
                   </MenuItem>
+                  <MenuItem onClick={cycleColorMode}>
+                    <ListItemIcon>
+                      <ThemeModeIcon mode={colorMode as ColorMode} />
+                    </ListItemIcon>
+                    {MODE_LABELS[colorMode as ColorMode]}
+                  </MenuItem>
+                  <Divider />
                   <MenuItem
                     onClick={() => {
                       setMenuAnchor(null);
@@ -575,23 +570,23 @@ export default function SiteHeader() {
           )}
         </List>
 
-        {/* Footer drawer: toggle tema + logout */}
+        {/* Footer drawer: sezione utente */}
         <Box>
           <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-          <ListItemButton
-            onClick={cycleColorMode}
-            sx={{ py: 1.25, color: "rgba(255,255,255,0.7)" }}
-          >
-            <ListItemIcon sx={{ minWidth: 34 }}>
-              <ThemeModeIcon mode={colorMode as ColorMode} />
-            </ListItemIcon>
-            <ListItemText
-              primary={MODE_LABELS[colorMode as ColorMode]}
-              primaryTypographyProps={{ fontSize: "0.9rem" }}
-            />
-          </ListItemButton>
-          {user && (
+          {user ? (
             <>
+              <ListItemButton
+                onClick={cycleColorMode}
+                sx={{ py: 1.25, color: "rgba(255,255,255,0.7)" }}
+              >
+                <ListItemIcon sx={{ minWidth: 34 }}>
+                  <ThemeModeIcon mode={colorMode as ColorMode} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={MODE_LABELS[colorMode as ColorMode]}
+                  primaryTypographyProps={{ fontSize: "0.9rem" }}
+                />
+              </ListItemButton>
               <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
               <ListItemButton
                 onClick={() => {
@@ -606,7 +601,40 @@ export default function SiteHeader() {
                 <ListItemText primary="Esci" primaryTypographyProps={{ fontSize: "0.95rem" }} />
               </ListItemButton>
             </>
+          ) : (
+            <ListItemButton
+              onClick={cycleColorMode}
+              sx={{ py: 1.25, color: "rgba(255,255,255,0.7)" }}
+            >
+              <ListItemIcon sx={{ minWidth: 34 }}>
+                <ThemeModeIcon mode={colorMode as ColorMode} />
+              </ListItemIcon>
+              <ListItemText
+                primary={MODE_LABELS[colorMode as ColorMode]}
+                primaryTypographyProps={{ fontSize: "0.9rem" }}
+              />
+            </ListItemButton>
           )}
+          <Box
+            sx={{
+              px: 2,
+              py: 1,
+              borderTop: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <Link
+              href="/privacy"
+              onClick={() => setDrawerOpen(false)}
+              style={{
+                fontSize: "0.75rem",
+                color: "rgba(255,255,255,0.35)",
+                textDecoration: "underline",
+                textDecorationColor: "rgba(255,255,255,0.15)",
+              }}
+            >
+              Informativa privacy
+            </Link>
+          </Box>
         </Box>
       </Drawer>
     </>

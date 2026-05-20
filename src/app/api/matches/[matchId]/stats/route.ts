@@ -4,6 +4,8 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { PlayerStatsBatchSchema } from "@/lib/schemas";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -24,6 +26,7 @@ export async function GET(_req: Request, { params }: Params) {
 
 // Upsert batch: riceve array di stats per la partita
 export async function PUT(req: Request, { params }: Params) {
+  const authSession = await auth();
   if (!(await isAdminUser())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -69,6 +72,16 @@ export async function PUT(req: Request, { params }: Params) {
   );
 
   const saved = results.filter(Boolean);
+
+  if (authSession?.user?.id && saved.length > 0) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "UPDATE_MATCH_STATS",
+      targetType: "Match",
+      targetId: matchId,
+      after: { rowCount: saved.length },
+    }).catch((err) => console.error("[audit] update match stats", err));
+  }
 
   // Notifica push + in-app fire-and-forget agli atleti con stats
   if (saved.length > 0) {

@@ -153,6 +153,14 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
         </Alert>
       ) : (
         <Box>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
+            Riceverai notifiche su nuovi allenamenti e partite. Puoi disattivare in qualsiasi
+            momento.{" "}
+            <a href="/privacy" style={{ color: "inherit" }}>
+              Informativa privacy
+            </a>
+            .
+          </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: subscribed ? 1.5 : 0 }}>
             <Button
               variant={subscribed ? "outlined" : "contained"}

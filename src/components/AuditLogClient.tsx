@@ -9,6 +9,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TableContainer,
   TablePagination,
   Chip,
   IconButton,
@@ -27,6 +28,8 @@ import {
   CircularProgress,
   Tooltip,
   Alert,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -79,11 +82,29 @@ const ACTION_LABELS: Record<string, string> = {
   UPDATE_MATCH: "Modifica partita",
   DELETE_MATCH: "Eliminazione partita",
   CREATE_EVENT: "Creazione evento",
+  UPDATE_EVENT: "Modifica evento",
   DELETE_EVENT: "Eliminazione evento",
   LINK_ACCEPTED: "Collegamento genitore-figlio accettato",
   LINK_REJECTED: "Collegamento genitore-figlio rifiutato",
   EXPORT_PII: "Esportazione dati personali (CSV)",
   DELETE_ANONYMOUS_REGS: "Eliminazione iscrizioni anonime",
+  CREATE_SESSION: "Creazione allenamento",
+  UPDATE_SESSION: "Modifica allenamento",
+  DELETE_SESSION: "Eliminazione allenamento",
+  CONCLUDE_SESSION: "Conclusione allenamento",
+  GENERATE_TEAMS: "Generazione squadre allenamento",
+  UPDATE_TEAMS: "Modifica manuale squadre",
+  DELETE_TEAMS: "Reset squadre allenamento",
+  CREATE_TRAINING_MATCH_RESULT: "Risultato partitella registrato",
+  UPDATE_CALLUPS: "Aggiornamento convocazioni",
+  UPDATE_MATCH_STATS: "Aggiornamento statistiche partita",
+  CREATE_GROUP: "Creazione girone",
+  UPDATE_GROUP: "Modifica girone",
+  DELETE_GROUP: "Eliminazione girone",
+  CREATE_OPPOSING_TEAM: "Creazione squadra avversaria",
+  UPDATE_OPPOSING_TEAM: "Modifica squadra avversaria",
+  DELETE_OPPOSING_TEAM: "Eliminazione squadra avversaria",
+  DELETE_REGISTRATION: "Eliminazione iscrizione (staff)",
 };
 
 const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" | "info"> = {
@@ -101,10 +122,28 @@ const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" 
   CREATE_MATCH: "success",
   UPDATE_MATCH: "info",
   CREATE_EVENT: "success",
+  UPDATE_EVENT: "info",
   LINK_ACCEPTED: "success",
   LINK_REJECTED: "warning",
   EXPORT_PII: "warning",
   DELETE_ANONYMOUS_REGS: "error",
+  CREATE_SESSION: "success",
+  UPDATE_SESSION: "info",
+  DELETE_SESSION: "error",
+  CONCLUDE_SESSION: "info",
+  GENERATE_TEAMS: "success",
+  UPDATE_TEAMS: "info",
+  DELETE_TEAMS: "warning",
+  CREATE_TRAINING_MATCH_RESULT: "success",
+  UPDATE_CALLUPS: "info",
+  UPDATE_MATCH_STATS: "info",
+  CREATE_GROUP: "success",
+  UPDATE_GROUP: "info",
+  DELETE_GROUP: "error",
+  CREATE_OPPOSING_TEAM: "success",
+  UPDATE_OPPOSING_TEAM: "info",
+  DELETE_OPPOSING_TEAM: "error",
+  DELETE_REGISTRATION: "warning",
 };
 
 const TARGET_TYPE_LABELS: Record<string, string> = {
@@ -115,6 +154,9 @@ const TARGET_TYPE_LABELS: Record<string, string> = {
   Match: "Partita",
   Event: "Evento",
   Registration: "Iscrizione",
+  TrainingSession: "Allenamento",
+  Group: "Girone",
+  OpposingTeam: "Squadra avversaria",
 };
 
 const ALL_ACTIONS = Object.keys(ACTION_LABELS);
@@ -149,7 +191,7 @@ function JsonDiff({
   const allKeys = [...new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])];
 
   return (
-    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
       <Box>
         <Typography
           variant="caption"
@@ -287,6 +329,8 @@ export default function AuditLogClient() {
   }
 
   const hasFilters = action || targetType || from || to;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -394,81 +438,155 @@ export default function AuditLogClient() {
           </Box>
         )}
 
-        {!loading && !error && data && (
+        {!loading && !error && data && !isMobile && (
           <>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ "& th": { fontWeight: 700, bgcolor: "action.hover" } }}>
-                  <TableCell>Data</TableCell>
-                  <TableCell>Attore</TableCell>
-                  <TableCell>Azione</TableCell>
-                  <TableCell>Target</TableCell>
-                  <TableCell align="center">Dettagli</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.items.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                      Nessun evento trovato.
-                    </TableCell>
+            <TableContainer sx={{ overflowX: "auto" }}>
+              <Table size="small" sx={{ minWidth: 720 }}>
+                <TableHead>
+                  <TableRow sx={{ "& th": { fontWeight: 700, bgcolor: "action.hover" } }}>
+                    <TableCell>Data</TableCell>
+                    <TableCell>Attore</TableCell>
+                    <TableCell>Azione</TableCell>
+                    <TableCell>Target</TableCell>
+                    <TableCell align="center">Dettagli</TableCell>
                   </TableRow>
-                )}
-                {data.items.map((item) => (
-                  <TableRow key={item.id} hover>
-                    <TableCell sx={{ whiteSpace: "nowrap" }}>
-                      <Typography variant="caption">{formatDate(item.createdAt)}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      {item.actor ? (
-                        <Box>
-                          <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
-                            {item.actor.name ?? "—"}
-                          </Typography>
+                </TableHead>
+                <TableBody>
+                  {data.items.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                        Nessun evento trovato.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {data.items.map((item) => (
+                    <TableRow key={item.id} hover>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>
+                        <Typography variant="caption">{formatDate(item.createdAt)}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        {item.actor ? (
+                          <Box>
+                            <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
+                              {item.actor.name ?? "—"}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {item.actor.email} · {ROLE_LABELS_IT[item.actor.appRole]}
+                            </Typography>
+                          </Box>
+                        ) : (
                           <Typography variant="caption" color="text.secondary">
-                            {item.actor.email} · {ROLE_LABELS_IT[item.actor.appRole]}
+                            ID: {item.actorId.slice(0, 8)}…
                           </Typography>
-                        </Box>
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">
-                          ID: {item.actorId.slice(0, 8)}…
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={ACTION_LABELS[item.action] ?? item.action}
-                        color={ACTION_COLORS[item.action] ?? "default"}
-                        size="small"
-                        sx={{ fontSize: "0.7rem" }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={item.targetLabel ? 600 : 400}>
-                        {item.targetLabel ?? (
-                          <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>
                         )}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {TARGET_TYPE_LABELS[item.targetType] ?? item.targetType}
-                      </Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="Vedi dettagli">
-                        <IconButton
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={ACTION_LABELS[item.action] ?? item.action}
+                          color={ACTION_COLORS[item.action] ?? "default"}
                           size="small"
-                          onClick={() => setDetail(item)}
-                          aria-label="Vedi dettagli"
+                          sx={{ fontSize: "0.7rem" }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          fontWeight={item.targetLabel ? 600 : 400}
+                          sx={{ wordBreak: "break-word" }}
                         >
-                          <InfoOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                          {item.targetLabel ?? (
+                            <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>
+                          )}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {TARGET_TYPE_LABELS[item.targetType] ?? item.targetType}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Vedi dettagli">
+                          <IconButton
+                            size="small"
+                            onClick={() => setDetail(item)}
+                            aria-label="Vedi dettagli"
+                          >
+                            <InfoOutlinedIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
 
+            <TablePagination
+              component="div"
+              count={data.total}
+              page={page}
+              rowsPerPage={pageSize}
+              rowsPerPageOptions={[10, 25, 50, 100]}
+              onPageChange={(_, p) => setPage(p)}
+              onRowsPerPageChange={(e) => {
+                setPageSize(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              labelRowsPerPage="Righe:"
+              labelDisplayedRows={({ from: f, to: t, count }) => `${f}–${t} di ${count}`}
+            />
+          </>
+        )}
+
+        {!loading && !error && data && isMobile && (
+          <>
+            <Stack divider={<Box sx={{ borderTop: 1, borderColor: "divider" }} />}>
+              {data.items.length === 0 && (
+                <Box sx={{ py: 4, textAlign: "center", color: "text.secondary" }}>
+                  <Typography variant="body2">Nessun evento trovato.</Typography>
+                </Box>
+              )}
+              {data.items.map((item) => (
+                <Box
+                  key={item.id}
+                  onClick={() => setDetail(item)}
+                  sx={{
+                    p: 1.5,
+                    cursor: "pointer",
+                    "&:hover": { bgcolor: "action.hover" },
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
+                  }}
+                >
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
+                    <Chip
+                      label={ACTION_LABELS[item.action] ?? item.action}
+                      color={ACTION_COLORS[item.action] ?? "default"}
+                      size="small"
+                      sx={{ fontSize: "0.68rem", maxWidth: "100%" }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ whiteSpace: "nowrap" }}
+                    >
+                      {formatDate(item.createdAt)}
+                    </Typography>
+                  </Stack>
+                  <Typography variant="body2" fontWeight={600} sx={{ wordBreak: "break-word" }}>
+                    {item.targetLabel ?? (
+                      <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>
+                    )}{" "}
+                    <Typography component="span" variant="caption" color="text.secondary">
+                      ({TARGET_TYPE_LABELS[item.targetType] ?? item.targetType})
+                    </Typography>
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.actor?.name ?? item.actor?.email ?? "—"}
+                    {item.actor?.appRole && ` · ${ROLE_LABELS_IT[item.actor.appRole]}`}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
             <TablePagination
               component="div"
               count={data.total}
@@ -505,7 +623,13 @@ export default function AuditLogClient() {
             </DialogTitle>
             <DialogContent dividers>
               <Stack gap={2}>
-                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    gap: 1,
+                  }}
+                >
                   <Box>
                     <Typography variant="caption" color="text.secondary">
                       Attore

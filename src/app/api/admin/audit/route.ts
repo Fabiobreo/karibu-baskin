@@ -89,6 +89,37 @@ async function resolveTargetLabels(
           });
           break;
         }
+        case "TrainingSession": {
+          const rows = await prisma.trainingSession.findMany({
+            where: { id: { in: ids } },
+            select: { id: true, title: true, date: true },
+          });
+          rows.forEach((r) => {
+            result[`TrainingSession:${r.id}`] =
+              `${r.title} — ${new Date(r.date).toLocaleDateString("it-IT")}`;
+          });
+          break;
+        }
+        case "Group": {
+          const rows = await prisma.group.findMany({
+            where: { id: { in: ids } },
+            select: { id: true, name: true, season: true },
+          });
+          rows.forEach((r) => {
+            result[`Group:${r.id}`] = `${r.name} (${r.season})`;
+          });
+          break;
+        }
+        case "OpposingTeam": {
+          const rows = await prisma.opposingTeam.findMany({
+            where: { id: { in: ids } },
+            select: { id: true, name: true },
+          });
+          rows.forEach((r) => {
+            result[`OpposingTeam:${r.id}`] = r.name;
+          });
+          break;
+        }
         case "Registration": {
           const rows = await prisma.registration.findMany({
             where: { id: { in: ids } },

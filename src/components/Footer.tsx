@@ -105,68 +105,84 @@ export default function Footer() {
         </Box>
       </Box>
 
-      {/* ── Mobile: singola riga compatta ── */}
+      {/* ── Mobile: due righe per leggibilità ── */}
       <Box
         sx={{
           display: { xs: "flex", sm: "none" },
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
+          flexDirection: "column",
+          gap: 0.75,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Image
-            src="/logo.png"
-            alt="Karibu Baskin"
-            width={24}
-            height={24}
-            style={{ objectFit: "contain" }}
-          />
-          <Typography variant="caption" fontWeight={700} sx={{ color: "rgba(255,255,255,0.7)" }}>
-            Karibu Baskin
-          </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Image
+              src="/logo.png"
+              alt="Karibu Baskin"
+              width={24}
+              height={24}
+              style={{ objectFit: "contain" }}
+            />
+            <Typography variant="caption" fontWeight={700} sx={{ color: "rgba(255,255,255,0.7)" }}>
+              Karibu Baskin
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 0 }}>
+            <IconButton
+              component="a"
+              href="https://www.instagram.com/karibubaskin"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#E1306C" }, p: 0.5 }}
+              aria-label="Instagram"
+            >
+              <InstagramIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            <IconButton
+              component="a"
+              href="https://www.facebook.com/karibu.baskin"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#1877F2" }, p: 0.5 }}
+              aria-label="Facebook"
+            >
+              <FacebookIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            <IconButton
+              component="a"
+              href="https://youtube.com/@karibubaskin"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#FF0000" }, p: 0.5 }}
+              aria-label="YouTube"
+            >
+              <YouTubeIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+          </Box>
         </Box>
-        <Box sx={{ display: "flex", gap: 0 }}>
-          <IconButton
-            component="a"
-            href="https://www.instagram.com/karibubaskin"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#E1306C" }, p: 0.5 }}
-            aria-label="Instagram"
-          >
-            <InstagramIcon sx={{ fontSize: 17 }} />
-          </IconButton>
-          <IconButton
-            component="a"
-            href="https://www.facebook.com/karibu.baskin"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#1877F2" }, p: 0.5 }}
-            aria-label="Facebook"
-          >
-            <FacebookIcon sx={{ fontSize: 17 }} />
-          </IconButton>
-          <IconButton
-            component="a"
-            href="https://youtube.com/@karibubaskin"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#FF0000" }, p: 0.5 }}
-            aria-label="YouTube"
-          >
-            <YouTubeIcon sx={{ fontSize: 17 }} />
-          </IconButton>
-        </Box>
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.25 }}>
-          <Typography
-            variant="caption"
-            sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.65rem" }}
-          >
-            © {year}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1.5,
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            pt: 0.75,
+          }}
+        >
+          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
+            © {year} Karibu Baskin
           </Typography>
-          <Link href="/privacy" style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)" }}>
-            Privacy
+          <Link
+            href="/privacy"
+            style={{
+              fontSize: "0.8rem",
+              color: "rgba(255,255,255,0.75)",
+              textDecoration: "underline",
+              textDecorationColor: "rgba(255,255,255,0.35)",
+              padding: "4px 0",
+            }}
+          >
+            Informativa privacy
           </Link>
         </Box>
       </Box>

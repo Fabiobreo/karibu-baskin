@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 const MatchResultSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),
@@ -27,6 +29,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
@@ -60,6 +63,21 @@ export async function POST(
       notes: parsed.data.notes?.trim() || null,
     },
   });
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "CREATE_TRAINING_MATCH_RESULT",
+      targetType: "TrainingSession",
+      targetId: sessionId,
+      after: {
+        matchup: result.matchup,
+        scoreA: result.scoreA,
+        scoreB: result.scoreB,
+        scoreC: result.scoreC,
+      },
+    }).catch((err) => console.error("[audit] training match result", err));
+  }
 
   return NextResponse.json(result, { status: 201 });
 }

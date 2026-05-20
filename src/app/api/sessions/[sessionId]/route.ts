@@ -3,6 +3,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { SessionUpdateSchema } from "@/lib/schemas";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(
   _req: NextRequest,
@@ -28,6 +30,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
@@ -52,6 +55,8 @@ export async function PATCH(
   if ("restrictTeamId" in body) data.restrictTeamId = body.restrictTeamId ?? null;
   if (body.openRoles !== undefined) data.openRoles = body.openRoles;
 
+  const before = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
+
   let session;
   try {
     session = await prisma.trainingSession.update({
@@ -68,6 +73,34 @@ export async function PATCH(
     }
     throw err;
   }
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "UPDATE_SESSION",
+      targetType: "TrainingSession",
+      targetId: sessionId,
+      before: before
+        ? {
+            title: before.title,
+            date: before.date.toISOString(),
+            endTime: before.endTime?.toISOString() ?? null,
+            allowedRoles: before.allowedRoles,
+            restrictTeamId: before.restrictTeamId,
+            openRoles: before.openRoles,
+          }
+        : null,
+      after: {
+        title: session.title,
+        date: session.date.toISOString(),
+        endTime: session.endTime?.toISOString() ?? null,
+        allowedRoles: session.allowedRoles,
+        restrictTeamId: session.restrictTeamId,
+        openRoles: session.openRoles,
+      },
+    }).catch((err) => console.error("[audit] update session", err));
+  }
+
   return NextResponse.json(session);
 }
 
@@ -75,11 +108,13 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const authSession = await auth();
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
   const { sessionId } = await params;
+  const before = await prisma.trainingSession.findUnique({ where: { id: sessionId } });
   try {
     await prisma.trainingSession.delete({ where: { id: sessionId } });
   } catch (err) {
@@ -88,5 +123,21 @@ export async function DELETE(
     }
     throw err;
   }
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "DELETE_SESSION",
+      targetType: "TrainingSession",
+      targetId: sessionId,
+      before: before
+        ? {
+            title: before.title,
+            date: before.date.toISOString(),
+          }
+        : null,
+    }).catch((err) => console.error("[audit] delete session", err));
+  }
+
   return new NextResponse(null, { status: 204 });
 }

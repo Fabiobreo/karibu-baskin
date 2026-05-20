@@ -6,6 +6,8 @@ import { generateTeams } from "@/lib/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUsers } from "@/lib/webpush";
 import { createTargetedAppNotifications } from "@/lib/appNotifications";
+import { auth } from "@/lib/authjs";
+import { logAudit } from "@/lib/audit";
 
 // GET — ritorna le squadre salvate in DB
 export async function GET(
@@ -30,6 +32,7 @@ export async function POST(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+  const authSession = await auth();
 
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
@@ -103,6 +106,20 @@ export async function POST(
     }).catch((err) => console.error("[notification] teams ready", err));
   }
 
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "GENERATE_TEAMS",
+      targetType: "TrainingSession",
+      targetId: sessionId,
+      after: {
+        numTeams,
+        athleteCount: athletes.length,
+        coachCount: coaches.length,
+      },
+    }).catch((err) => console.error("[audit] generate teams", err));
+  }
+
   return NextResponse.json({ ...teams, coaches, generated: true });
 }
 
@@ -112,6 +129,7 @@ export async function PUT(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+  const authSession = await auth();
 
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
@@ -122,10 +140,26 @@ export async function PUT(
     return NextResponse.json({ error: "Dati non validi" }, { status: 400 });
   }
 
+  const beforeSession = await prisma.trainingSession.findUnique({
+    where: { id: sessionId },
+    select: { teams: true },
+  });
+
   await prisma.trainingSession.update({
     where: { id: sessionId },
     data: { teams: { ...body, generated: true } as object },
   });
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "UPDATE_TEAMS",
+      targetType: "TrainingSession",
+      targetId: sessionId,
+      before: (beforeSession?.teams as Record<string, unknown> | null) ?? null,
+      after: { ...body, generated: true },
+    }).catch((err) => console.error("[audit] update teams", err));
+  }
 
   return NextResponse.json({ ...body, generated: true });
 }
@@ -136,6 +170,7 @@ export async function DELETE(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   const { sessionId } = await params;
+  const authSession = await auth();
 
   if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
@@ -151,6 +186,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
     }
     throw err;
+  }
+
+  if (authSession?.user?.id) {
+    logAudit({
+      actorId: authSession.user.id,
+      action: "DELETE_TEAMS",
+      targetType: "TrainingSession",
+      targetId: sessionId,
+    }).catch((err) => console.error("[audit] delete teams", err));
   }
 
   return NextResponse.json({ ok: true });
