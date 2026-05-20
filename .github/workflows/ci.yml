@@ -33,6 +33,9 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
+      - name: Install Playwright browsers (per Storybook/vitest browser)
+        run: npx playwright install chromium --with-deps
+
       - name: Test
         run: npm test
 
