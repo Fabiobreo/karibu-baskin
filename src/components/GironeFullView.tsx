@@ -34,7 +34,7 @@ export type OurMatchData = {
   ourScore: number | null;
   theirScore: number | null;
   result: string | null;
-  opponent: { id: string; name: string; slug: string | null };
+  opponent: { id: string; name: string; slug: string | null } | null;
 };
 
 export type ExternalMatchData = {
@@ -298,8 +298,9 @@ export default function GironeFullView({
               <Table size="small">
                 <TableBody>
                   {current.ours.map((m) => {
-                    const home = m.isHome ? teamName : m.opponent.name;
-                    const away = m.isHome ? m.opponent.name : teamName;
+                    const opponentNameLocal = m.opponent?.name ?? "Avversario";
+                    const home = m.isHome ? teamName : opponentNameLocal;
+                    const away = m.isHome ? opponentNameLocal : teamName;
                     const homeScore = m.isHome ? m.ourScore : m.theirScore;
                     const awayScore = m.isHome ? m.theirScore : m.ourScore;
                     const href = `/partite/${m.slug ?? m.id}`;
@@ -317,10 +318,11 @@ export default function GironeFullView({
                         <TableCell
                           align="center"
                           sx={{
-                            width: 70,
+                            width: 90,
                             fontWeight: 800,
                             fontSize: "0.82rem",
                             fontVariantNumeric: "tabular-nums",
+                            whiteSpace: "nowrap",
                           }}
                         >
                           {homeScore !== null && awayScore !== null
@@ -360,10 +362,11 @@ export default function GironeFullView({
                       <TableCell
                         align="center"
                         sx={{
-                          width: 70,
+                          width: 90,
                           fontWeight: 700,
                           fontSize: "0.8rem",
                           fontVariantNumeric: "tabular-nums",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {gm.homeScore !== null && gm.awayScore !== null

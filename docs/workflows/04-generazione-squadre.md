@@ -33,11 +33,11 @@ generateTeams(registrations, sessionId, numTeams: 2 | 3)
 
 ## Nomi squadre in UI
 
-| Chiave | Nome | Colore |
-|--------|------|--------|
+| Chiave  | Nome      | Colore    |
+| ------- | --------- | --------- |
 | `teamA` | Arancioni | `#E65100` |
-| `teamB` | Neri | `#1A1A1A` |
-| `teamC` | Bianchi | `#757575` |
+| `teamB` | Neri      | `#1A1A1A` |
+| `teamC` | Bianchi   | `#757575` |
 
 ## Trigger
 
@@ -46,6 +46,7 @@ generateTeams(registrations, sessionId, numTeams: 2 | 3)
 Body: `{ "numTeams": 2 }` o `{ "numTeams": 3 }`.
 
 Al completamento:
+
 1. Salva il JSON in `TrainingSession.teams`
 2. Invia push solo agli **utenti iscritti come atleti** con `notifPrefs.push.TEAMS_READY = true`
 3. Crea in-app notification `TEAMS_READY` (globale, filtrata dalle preferenze in-app dell'utente)
@@ -53,6 +54,7 @@ Al completamento:
 ## Reset squadre
 
 Le squadre vengono azzerate (`teams = Prisma.DbNull`) automaticamente in tre casi:
+
 - Un atleta si disiscrivi (`DELETE /api/registrations/[id]`)
 - Un figlio viene eliminato (CASCADE in `DELETE /api/children/[childId]`)
 - L'admin clicca "Azzera squadre" (`DELETE /api/teams/[sessionId]`)
@@ -60,6 +62,7 @@ Le squadre vengono azzerate (`teams = Prisma.DbNull`) automaticamente in tre cas
 ## Componente `TeamDisplay`
 
 Client Component controllato — non fa fetch internamente. Riceve da `page.tsx`:
+
 - `teams: TeamsData | null`
 - `teamsLoading: boolean`
 - `onTeamsGenerated: (teams) => void`

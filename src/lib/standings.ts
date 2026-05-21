@@ -17,7 +17,10 @@ export type StandingEntry = {
 type OurMatchInput = {
   ourScore: number | null;
   theirScore: number | null;
-  opponent: { id: string; name: string };
+  // Le partite della classifica sono SEMPRE contro un avversario esterno
+  // (le amichevoli interne non finiscono in girone). Lo schema lo rende nullable
+  // a livello DB, ma in pratica per i record con groupId non null è sempre presente.
+  opponent: { id: string; name: string } | null;
 };
 
 type GroupMatchInput = {
@@ -67,9 +70,11 @@ export function computeStandings(
     }
   }
 
-  // ourScore/theirScore sono già relativi a noi — nessun swap necessario
+  // ourScore/theirScore sono già relativi a noi — nessun swap necessario.
+  // Skippa le partite senza avversario esterno (amichevoli interne, non in girone).
   for (const m of ourMatches) {
     if (m.ourScore == null || m.theirScore == null) continue;
+    if (!m.opponent) continue;
     addResult(getOrCreate(ourTeam.id, ourTeam.name, true), m.ourScore, m.theirScore);
     addResult(getOrCreate(m.opponent.id, m.opponent.name, false), m.theirScore, m.ourScore);
   }

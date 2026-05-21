@@ -189,6 +189,7 @@ export async function GET(req: NextRequest) {
             date: true,
             team: { select: { name: true } },
             opponent: { select: { name: true } },
+            opponentTeam: { select: { name: true } },
             result: true,
             ourScore: true,
             theirScore: true,
@@ -219,7 +220,7 @@ export async function GET(req: NextRequest) {
       csvRow([
         s.match.date.toISOString().slice(0, 10),
         s.match.team.name,
-        s.match.opponent.name,
+        s.match.opponent?.name ?? s.match.opponentTeam?.name ?? "",
         s.match.result ?? "",
         s.user?.name ?? "",
         s.user?.email ?? "",

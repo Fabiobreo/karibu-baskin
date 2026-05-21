@@ -36,6 +36,17 @@ export interface PlayerStatRow {
   fouls: number;
   illegalFouls: number;
   shotsAttempted: number;
+  teams: { id: string; name: string; color: string | null }[];
+  // Quote "in prestito": partite/punti/tiri fatti giocando per una squadra
+  // diversa dalla propria. Sommate al valore principale danno il totale.
+  loanMatches: number;
+  loanPoints: number;
+  loanTwoPointers: number;
+  loanThreePointers: number;
+  loanFreeThrows: number;
+  loanFouls: number;
+  loanIllegalFouls: number;
+  loanShotsAttempted: number;
 }
 
 type SortKey =
@@ -50,13 +61,13 @@ type SortKey =
   | "avgPoints";
 
 const COLS: { key: SortKey; label: string; title?: string }[] = [
-  { key: "matches", label: "G", title: "Partite giocate" },
-  { key: "points", label: "Pt", title: "Punti totali" },
-  { key: "avgPoints", label: "Med", title: "Media punti a partita" },
+  { key: "matches", label: "Giocate", title: "Partite giocate" },
+  { key: "points", label: "Punti", title: "Punti totali" },
+  { key: "avgPoints", label: "Media", title: "Media punti a partita" },
   { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
   { key: "twoPointers", label: "2pt", title: "Canestri da 2" },
   { key: "threePointers", label: "3pt", title: "Canestri da 3" },
-  { key: "fouls", label: "F", title: "Falli" },
+  { key: "fouls", label: "Falli", title: "Falli" },
   { key: "illegalFouls", label: "Illegali", title: "Falli illegali" },
 ];
 
@@ -90,14 +101,44 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     setPage(0);
   }
 
-  function getValue(row: PlayerStatRow, col: SortKey): number {
-    if (col === "avgPoints") return row.matches > 0 ? row.points / row.matches : 0;
-    return row[col];
+  // Mappa colonna ordinabile → coppia (primario, prestito) della riga.
+  // Il totale si ottiene come primary + loan. Sort sempre sul totale.
+  function getParts(row: PlayerStatRow, col: SortKey): { primary: number; loan: number } {
+    switch (col) {
+      case "matches":
+        return { primary: row.matches, loan: row.loanMatches };
+      case "points":
+        return { primary: row.points, loan: row.loanPoints };
+      case "twoPointers":
+        return { primary: row.twoPointers, loan: row.loanTwoPointers };
+      case "threePointers":
+        return { primary: row.threePointers, loan: row.loanThreePointers };
+      case "freeThrows":
+        return { primary: row.freeThrows, loan: row.loanFreeThrows };
+      case "fouls":
+        return { primary: row.fouls, loan: row.loanFouls };
+      case "illegalFouls":
+        return { primary: row.illegalFouls, loan: row.loanIllegalFouls };
+      case "shotsAttempted":
+        return { primary: row.shotsAttempted, loan: row.loanShotsAttempted };
+      case "avgPoints": {
+        const totMatches = row.matches + row.loanMatches;
+        const avg = totMatches > 0 ? (row.points + row.loanPoints) / totMatches : 0;
+        // La media non ha senso splittata: la modelliamo come "tutta primaria"
+        // così la cella non mostra (+X) per la media.
+        return { primary: avg, loan: 0 };
+      }
+    }
+  }
+
+  function getTotal(row: PlayerStatRow, col: SortKey): number {
+    const { primary, loan } = getParts(row, col);
+    return primary + loan;
   }
 
   const sorted = [...rows].sort((a, b) => {
-    const aVal = getValue(a, sortBy);
-    const bVal = getValue(b, sortBy);
+    const aVal = getTotal(a, sortBy);
+    const bVal = getTotal(b, sortBy);
     return sortDir === "asc" ? aVal - bVal : bVal - aVal;
   });
 
@@ -200,12 +241,19 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 200 }}>
+                Giocatore
+              </TableCell>
               {COLS.map((col) => (
                 <TableCell
                   key={col.key}
                   align="center"
-                  sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    whiteSpace: "nowrap",
+                    px: 1,
+                  }}
                 >
                   <TableSortLabel
                     active={sortBy === col.key}
@@ -237,7 +285,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   <TableCell sx={{ color: "text.disabled", fontWeight: 700, fontSize: "0.8rem" }}>
                     {page * rowsPerPage + i + 1}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ minWidth: 200 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Avatar
                         src={row.image ?? undefined}
@@ -267,26 +315,51 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                             {row.name}
                           </Typography>
                         )}
-                        {row.sportRole && (
-                          <Chip
-                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[row.sportRole],
-                              color: "#fff",
-                              fontWeight: 600,
-                              fontSize: "0.58rem",
-                              height: 14,
-                              mt: 0.25,
-                            }}
-                          />
-                        )}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.5,
+                            mt: 0.25,
+                            alignItems: "center",
+                          }}
+                        >
+                          {row.sportRole && (
+                            <Chip
+                              label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
+                              size="small"
+                              sx={{
+                                bgcolor: ROLE_COLORS[row.sportRole],
+                                color: "#fff",
+                                fontWeight: 600,
+                                fontSize: "0.58rem",
+                                height: 14,
+                              }}
+                            />
+                          )}
+                          {row.teams.map((t) => (
+                            <Chip
+                              key={t.id}
+                              label={t.name}
+                              size="small"
+                              sx={{
+                                bgcolor: t.color ?? "primary.main",
+                                color: "#fff",
+                                fontWeight: 600,
+                                fontSize: "0.58rem",
+                                height: 14,
+                              }}
+                            />
+                          ))}
+                        </Box>
                       </Box>
                     </Box>
                   </TableCell>
                   {COLS.map((col) => {
-                    const val = getValue(row, col.key);
+                    const { primary, loan } = getParts(row, col.key);
                     const isActive = sortBy === col.key;
+                    const primaryLabel =
+                      col.key === "avgPoints" ? primary.toFixed(1) : primary.toString();
                     return (
                       <TableCell
                         key={col.key}
@@ -295,9 +368,25 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           fontWeight: isActive ? 700 : 400,
                           color: isActive ? "primary.main" : "text.primary",
                           fontSize: "0.82rem",
+                          whiteSpace: "nowrap",
+                          px: 1,
                         }}
                       >
-                        {col.key === "avgPoints" ? val.toFixed(1) : val}
+                        {primaryLabel}
+                        {loan > 0 && (
+                          <Typography
+                            component="span"
+                            sx={{
+                              ml: 0.5,
+                              fontSize: "0.7rem",
+                              color: "text.disabled",
+                              fontWeight: 600,
+                            }}
+                            title="Stats fatte giocando in prestito per un'altra squadra"
+                          >
+                            (+{loan})
+                          </Typography>
+                        )}
                       </TableCell>
                     );
                   })}

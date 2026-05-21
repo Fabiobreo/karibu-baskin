@@ -10,6 +10,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import HistoryIcon from "@mui/icons-material/History";
 import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
+import AdminProssimePartite from "@/components/AdminProssimePartite";
 import Link from "next/link";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 
@@ -179,6 +180,9 @@ export default async function AdminPage() {
           </Link>
         </Paper>
       )}
+
+      {/* Partite imminenti — convocazioni mancanti */}
+      <AdminProssimePartite />
 
       <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
 

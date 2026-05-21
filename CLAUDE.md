@@ -152,31 +152,31 @@ src/
 
 ## Modelli Prisma principali
 
-| Modello Prisma | Tabella DB | Scopo |
-|---|---|---|
-| `TrainingSession` | `TrainingSession` | Allenamenti |
-| `Registration` | `Registration` | Iscrizioni (userId o childId o anonimo) |
-| `User` | `User` | Utenti Auth.js + dati atleta |
-| `Session` | `Session` | Sessioni OAuth (Auth.js) |
-| `Account` | `Account` | Provider OAuth (Google) |
-| `Child` | `Child` | Figli senza account, gestiti dal genitore |
-| `LinkRequest` | `LinkRequest` | Richiesta collegamento genitore-figlio |
-| `SportRoleHistory` | `SportRoleHistory` | Storico cambi ruolo sportivo |
-| `PushSubscription` | `PushSubscription` | Subscription Web Push |
-| `Season` | `Season` | Stagioni sportive (es. "2025-26") |
-| `CompetitiveTeam` | `CompetitiveTeam` | Squadre agonistiche per stagione |
-| `TeamMembership` | `TeamMembership` | Appartenenza giocatore (User o Child) a una squadra |
-| `Match` | `OfficialMatch` | Partite ufficiali |
-| `OpposingTeam` | `OpposingTeam` | Squadre avversarie |
-| `PlayerMatchStats` | `PlayerMatchStats` | Statistiche giocatore per partita |
-| `Event` | `Event` | Eventi generici (tornei, trasferte…) |
-| `AppNotification` | `AppNotification` | Notifiche in-app |
-| `AppNotificationRead` | `AppNotificationRead` | Tracking lettura notifiche per utente |
-| `Group` | `Group` | Gironi di campionato |
-| `GroupMatch` | `GroupMatch` | Partite di girone |
-| `MatchCallup` | `MatchCallup` | Convocazioni giocatore per partita |
-| `TrainingMatchResult` | `TrainingMatchResult` | Risultati partitelle a fine allenamento |
-| `AuditEvent` | `AuditEvent` | Log azioni admin (audit trail) |
+| Modello Prisma        | Tabella DB            | Scopo                                               |
+| --------------------- | --------------------- | --------------------------------------------------- |
+| `TrainingSession`     | `TrainingSession`     | Allenamenti                                         |
+| `Registration`        | `Registration`        | Iscrizioni (userId o childId o anonimo)             |
+| `User`                | `User`                | Utenti Auth.js + dati atleta                        |
+| `Session`             | `Session`             | Sessioni OAuth (Auth.js)                            |
+| `Account`             | `Account`             | Provider OAuth (Google)                             |
+| `Child`               | `Child`               | Figli senza account, gestiti dal genitore           |
+| `LinkRequest`         | `LinkRequest`         | Richiesta collegamento genitore-figlio              |
+| `SportRoleHistory`    | `SportRoleHistory`    | Storico cambi ruolo sportivo                        |
+| `PushSubscription`    | `PushSubscription`    | Subscription Web Push                               |
+| `Season`              | `Season`              | Stagioni sportive (es. "2025-26")                   |
+| `CompetitiveTeam`     | `CompetitiveTeam`     | Squadre agonistiche per stagione                    |
+| `TeamMembership`      | `TeamMembership`      | Appartenenza giocatore (User o Child) a una squadra |
+| `Match`               | `OfficialMatch`       | Partite ufficiali                                   |
+| `OpposingTeam`        | `OpposingTeam`        | Squadre avversarie                                  |
+| `PlayerMatchStats`    | `PlayerMatchStats`    | Statistiche giocatore per partita                   |
+| `Event`               | `Event`               | Eventi generici (tornei, trasferte…)                |
+| `AppNotification`     | `AppNotification`     | Notifiche in-app                                    |
+| `AppNotificationRead` | `AppNotificationRead` | Tracking lettura notifiche per utente               |
+| `Group`               | `Group`               | Gironi di campionato                                |
+| `GroupMatch`          | `GroupMatch`          | Partite di girone                                   |
+| `MatchCallup`         | `MatchCallup`         | Convocazioni giocatore per partita                  |
+| `TrainingMatchResult` | `TrainingMatchResult` | Risultati partitelle a fine allenamento             |
+| `AuditEvent`          | `AuditEvent`          | Log azioni admin (audit trail)                      |
 
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
@@ -200,6 +200,7 @@ src/
 - **Immagine profilo:** aggiornata ad ogni login tramite callback `signIn` in `authjs.ts` (salva `name` e `image` da Google profile). Richiede `lh3.googleusercontent.com` in `next.config.ts` `images.remotePatterns`.
 
 **Test login (solo sviluppo):** `src/app/api/test-login/route.ts` + `src/components/TestLoginForm.tsx`.
+
 - Abilitato solo se `ENABLE_TEST_LOGIN=true` nell'env.
 - Crea manualmente una riga `Session` nel DB e imposta il cookie `authjs.session-token` via header raw `Set-Cookie` (non `NextResponse.cookies.set()` — bug Turbopack).
 - Cookie name: `authjs.session-token` (dev) / `__Secure-authjs.session-token` (prod).
@@ -211,11 +212,13 @@ src/
 La logica è in `src/lib/registrationRestrictions.ts` — usata sia server-side (API `POST /api/registrations`) che client-side (`RegistrationForm`).
 
 Campi su `TrainingSession`:
+
 - `allowedRoles Int[]` — ruoli sportivi ammessi (vuoto = tutti)
 - `restrictTeamId String?` — restringe a membri di una squadra specifica (null = nessuna restrizione)
 - `openRoles Int[]` — ruoli esenti dalla restrizione di squadra (es. ruolo 1 sempre ammesso)
 
 Comportamento `checkRegistrationAllowed()`:
+
 - COACH e ADMIN: sempre ammessi
 - GUEST / anonimo: bypass del controllo squadra, sottoposti solo a `allowedRoles`
 - ATHLETE/PARENT: controllo `allowedRoles` poi controllo squadra
@@ -253,6 +256,7 @@ TEST_PASSWORD=                    # Password per il login di test (default: kari
 ## Offline / PWA
 
 Service worker (`public/sw.js`) con 3 strategie (versione `karibu-v4`):
+
 - **Cache-first:** asset statici (`/logo.png`, `/_next/static/*`, ecc.)
 - **Network-first + cache fallback:** pagine HTML (fallback su `/offline.html` se mai visitata)
 - **Network-first + cache fallback:** `GET /api/sessions*` e `GET /api/teams/*` — cache usata solo se offline (era stale-while-revalidate, rimossa per evitare dati obsoleti)
@@ -271,6 +275,7 @@ Layout: form iscrizione in cima, lista iscritti (`RosterByRole`) sotto — layou
 Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID iscrizioni vs ID nelle squadre salvate — resistente a sostituzioni (un utente esce, uno entra).
 
 `RegistrationForm` — aspetti chiave:
+
 - `CurrentUser.teamMemberships: TeamMembershipInfo[]` (non più solo `teamMembershipIds`)
 - Badge squadra corrente mostrato nell'intestazione soggetto (stagione corrente filtrata)
 - Lock message sostituisce solo il pulsante di invio, lasciando visibile il risultato questionario e "Rifai il questionario"
@@ -279,6 +284,7 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 ## Calendario (`/calendario`)
 
 `CalendarClient` — comportamento:
+
 - **Mobile (< 600px):** click su giorno apre `DayEventsDialog` con lista eventi del giorno; se staff e nessun evento mostra "Aggiungi"
 - **Desktop:** click su giorno per staff crea allenamento/evento; per utenti normali apre il giorno se ci sono eventi
 - `EventDetailDialog` mostra pulsante matita (modifica) per staff, con link a `/admin/partite?edit=[id]` o `/admin/eventi?edit=[id]` o alla pagina allenamento
@@ -287,6 +293,7 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 ## Gestione utenti admin (`/admin/utenti`)
 
 `AdminUserList` supporta:
+
 - **Ricerca** per nome/email
 - **Filtri:** ruolo utente (chip toggle), ruolo Baskin (select), genere (toggle group)
 - **Ordinamento:** per nome, ruolo utente, ruolo Baskin, data iscrizione, n° allenamenti (`TableSortLabel`)
@@ -296,6 +303,7 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 ## Gestione partite admin (`/admin/partite`)
 
 `AdminPartiteClient` — aspetti chiave:
+
 - Dropdown squadra filtra a `currentSeasonTeams` (stagione corrente), fallback a tutte le squadre se nessuna
 - Dopo salvataggio (PUT): aggiorna stato locale preservando `_count` dall'entry esistente (la risposta API non include `_count`)
 - `getCurrentSeason()`: calcola stagione come `YYYY-YY`, inizio da settembre
@@ -392,7 +400,12 @@ export default function Xxx({ initialItems }: XxxProps) {
   async function handleCreate() {
     setLoading(true);
     try {
-      const res = await fetch("/api/xxx", { method: "POST", body: JSON.stringify({ /* ... */ }) });
+      const res = await fetch("/api/xxx", {
+        method: "POST",
+        body: JSON.stringify({
+          /* ... */
+        }),
+      });
       if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
       const created = await res.json();
       setItems((prev) => [created, ...prev]);
@@ -406,8 +419,12 @@ export default function Xxx({ initialItems }: XxxProps) {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h6" sx={{ color: "text.primary" }}>Titolo</Typography>
-      <Button onClick={handleCreate} disabled={loading} variant="contained">Crea</Button>
+      <Typography variant="h6" sx={{ color: "text.primary" }}>
+        Titolo
+      </Typography>
+      <Button onClick={handleCreate} disabled={loading} variant="contained">
+        Crea
+      </Button>
     </Box>
   );
 }

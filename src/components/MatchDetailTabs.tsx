@@ -1,10 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Tabs, Tab, Paper, Typography, Avatar, Chip, Stack, Divider } from "@mui/material";
+import {
+  Box,
+  Tabs,
+  Tab,
+  Paper,
+  Typography,
+  Avatar,
+  Chip,
+  Stack,
+  Divider,
+  Button,
+} from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import LockIcon from "@mui/icons-material/Lock";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -48,9 +60,18 @@ interface Props {
   stats: MatchStatRow[];
   callups: CalloupsEntry[];
   matchType: string;
+  /** Se false, la tab Convocati mostra un invito al login. */
+  canSeeCallups: boolean;
 }
 
-export default function MatchDetailTabs({ infoCards, notes, stats, callups, matchType }: Props) {
+export default function MatchDetailTabs({
+  infoCards,
+  notes,
+  stats,
+  callups,
+  matchType,
+  canSeeCallups,
+}: Props) {
   const [tab, setTab] = useState(0);
 
   const hasStats = stats.length > 0;
@@ -82,9 +103,15 @@ export default function MatchDetailTabs({ infoCards, notes, stats, callups, matc
             sx={{ minHeight: 48, fontSize: "0.82rem", fontWeight: 600 }}
           />
           <Tab
-            icon={<GroupsIcon sx={{ fontSize: 16 }} />}
+            icon={
+              canSeeCallups ? (
+                <GroupsIcon sx={{ fontSize: 16 }} />
+              ) : (
+                <LockIcon sx={{ fontSize: 14 }} />
+              )
+            }
             iconPosition="start"
-            label={`Convocati${hasCallups ? ` (${callups.length})` : ""}`}
+            label={`Convocati${canSeeCallups && hasCallups ? ` (${callups.length})` : ""}`}
             sx={{ minHeight: 48, fontSize: "0.82rem", fontWeight: 600 }}
           />
           <Tab
@@ -232,7 +259,27 @@ export default function MatchDetailTabs({ infoCards, notes, stats, callups, matc
       {/* Tab 1 — Convocati */}
       {tab === 1 && (
         <Box sx={{ pt: 3 }}>
-          {!hasCallups ? (
+          {!canSeeCallups ? (
+            <Box sx={{ textAlign: "center", py: 8 }}>
+              <LockIcon sx={{ fontSize: 44, color: "text.disabled", mb: 1.5 }} />
+              <Typography variant="h6" color="text.secondary" fontWeight={700}>
+                Riservato ai membri
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.disabled"
+                sx={{ mt: 0.5, mb: 2.5, maxWidth: 360, mx: "auto" }}
+              >
+                La lista dei convocati è visibile solo agli atleti, ai genitori e allo staff.
+                Effettua l&apos;accesso per visualizzarla.
+              </Typography>
+              <Link href="/login" style={{ textDecoration: "none" }}>
+                <Button variant="contained" color="primary" sx={{ fontWeight: 700 }}>
+                  Accedi
+                </Button>
+              </Link>
+            </Box>
+          ) : !hasCallups ? (
             <Box sx={{ textAlign: "center", py: 8 }}>
               <GroupsIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />
               <Typography variant="h6" color="text.secondary" fontWeight={700}>

@@ -11,7 +11,7 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-* richiesti da MUI/Emotion
-      "style-src 'self' 'unsafe-inline'",                // Emotion CSS-in-JS
+      "style-src 'self' 'unsafe-inline'", // Emotion CSS-in-JS
       "img-src 'self' data: blob: https://lh3.googleusercontent.com",
       "font-src 'self'",
       "connect-src 'self' https://*.neon.tech wss:",

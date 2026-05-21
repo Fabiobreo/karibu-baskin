@@ -22,6 +22,7 @@ Il layout `/admin/(dashboard)/layout.tsx` verifica che l'utente sia almeno COACH
 Componente: `AdminUserList`
 
 Funzionalità:
+
 - Ricerca per nome/email
 - Filtri: ruolo app (chip toggle), ruolo Baskin (select), genere (toggle group)
 - Ordinamento per nome, ruolo, data iscrizione, n° allenamenti (`TableSortLabel`)
@@ -38,6 +39,7 @@ Quando un utente ha `sportRoleSuggested` (autovalutazione in attesa), l'admin ve
 Componente: `AdminSessionEditor` (nel calendario e nella pagina dedicata)
 
 Il form di creazione/modifica include `SessionRestrictionEditor` per impostare:
+
 - Ruoli ammessi (`allowedRoles`)
 - Squadra ristretta (`restrictTeamId`)
 - Ruoli aperti (`openRoles`)
@@ -69,6 +71,7 @@ Componente: `AdminAnonymousRegistrations`
 Le iscrizioni senza `userId` e `childId` sono raggruppate per nome (case-insensitive) nel pannello admin. Ogni gruppo mostra le sessioni come chip con data cliccabili.
 
 Azioni su un gruppo:
+
 - **Modifica**: cambia nome, email, ruolo Baskin per tutte le iscrizioni del gruppo
 - **Elimina**: cancella tutte le iscrizioni + azzera squadre degli allenamenti coinvolti
 
@@ -77,6 +80,7 @@ Icona: `WarningIcon` con sfondo giallo per chi non ha email.
 ## Calendario admin (`/calendario`)
 
 Il `CalendarClient` ha comportamento differenziato per staff:
+
 - Click su giorno senza eventi → dialog per creare allenamento o evento
 - Click su evento → `EventDetailDialog` con icona matita → link a `/admin/partite?edit=[id]` o `/admin/eventi?edit=[id]`
 
@@ -84,13 +88,13 @@ Quando si arriva a `/admin/partite?edit=[id]` il componente legge `useSearchPara
 
 ## Principi di sicurezza nelle API
 
-| Endpoint | Protezione |
-|----------|------------|
-| `POST/PATCH/DELETE /api/sessions` | `isCoachOrAdmin()` |
-| `POST /api/teams/[sessionId]` | `isCoachOrAdmin()` |
-| `PUT/DELETE /api/matches/[matchId]` | `isAdminUser()` |
-| `PATCH /api/users/[userId]` | `isAdminUser()` |
-| `DELETE /api/users/[userId]` | `isAdminUser()` (non sé stessi) |
-| `PATCH/DELETE /api/registrations` (bulk) | `isCoachOrAdmin()` |
+| Endpoint                                 | Protezione                      |
+| ---------------------------------------- | ------------------------------- |
+| `POST/PATCH/DELETE /api/sessions`        | `isCoachOrAdmin()`              |
+| `POST /api/teams/[sessionId]`            | `isCoachOrAdmin()`              |
+| `PUT/DELETE /api/matches/[matchId]`      | `isAdminUser()`                 |
+| `PATCH /api/users/[userId]`              | `isAdminUser()`                 |
+| `DELETE /api/users/[userId]`             | `isAdminUser()` (non sé stessi) |
+| `PATCH/DELETE /api/registrations` (bulk) | `isCoachOrAdmin()`              |
 
 `isCoachOrAdmin()` e `isAdminUser()` sono definiti in `src/lib/apiAuth.ts` e usano `auth()` di Auth.js internamente.

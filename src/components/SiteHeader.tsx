@@ -56,8 +56,10 @@ const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
 
 // Voci dropdown "Partite"
 const PARTITE_LINKS = [
+  { label: "Prossime partite", href: "/partite" },
   { label: "Risultati", href: "/risultati" },
   { label: "Classifiche", href: "/classifiche" },
+  { label: "Marcatori", href: "/marcatori" },
 ];
 
 const COLOR_MODE_ORDER = ["light", "dark", "system"] as const;
@@ -93,6 +95,7 @@ export default function SiteHeader() {
   const partiteActive =
     pathname === "/risultati" ||
     pathname === "/classifiche" ||
+    pathname === "/marcatori" ||
     (pathname?.startsWith("/partite") ?? false) ||
     (pathname?.startsWith("/gironi") ?? false);
 

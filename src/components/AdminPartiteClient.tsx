@@ -71,7 +71,8 @@ type Group = {
 type Match = {
   id: string;
   teamId: string;
-  opponentId: string;
+  opponentId: string | null;
+  opponentTeamId?: string | null;
   date: Date | string;
   isHome: boolean;
   venue: string | null;
@@ -83,7 +84,8 @@ type Match = {
   matchday: number | null;
   groupId: string | null;
   team: Team;
-  opponent: OpposingTeam;
+  opponent: OpposingTeam | null;
+  opponentTeam?: { id: string; name: string; color: string | null } | null;
   group: { id: string; name: string } | null;
   _count: { playerStats: number };
 };
@@ -125,7 +127,9 @@ const RESULT_COLORS: Record<MatchResult, string> = {
 
 const matchFormSchema = z.object({
   teamId: z.string().min(1, "Seleziona una squadra"),
+  opponentKind: z.enum(["external", "internal"]),
   opponentId: z.string(),
+  opponentTeamId: z.string(),
   newOpponentName: z.string(),
   newOpponentCity: z.string(),
   date: z.string().min(1, "Data obbligatoria"),
@@ -151,7 +155,9 @@ type MatchFormValues = z.infer<typeof matchFormSchema>;
 
 const defaultMatchValues: MatchFormValues = {
   teamId: "",
+  opponentKind: "external",
   opponentId: "",
+  opponentTeamId: "",
   newOpponentName: "",
   newOpponentCity: "",
   date: "",
@@ -220,6 +226,8 @@ export default function AdminPartiteClient({
   const watchDate = watch("date");
   const watchOurScore = watch("ourScore");
   const watchTheirScore = watch("theirScore");
+  const watchOpponentKind = watch("opponentKind");
+  const watchTeamId = watch("teamId");
   const teamsForForm = teams.filter((t) => t.season === seasonForDate(watchDate ?? ""));
   const displayTeams = teamsForForm.length > 0 ? teamsForForm : teams;
   const [useNewOpponent, setUseNewOpponent] = useState(false);
@@ -292,7 +300,9 @@ export default function AdminPartiteClient({
   function openEdit(match: Match) {
     resetMatchForm({
       teamId: match.teamId,
-      opponentId: match.opponentId,
+      opponentKind: match.opponentTeamId ? "internal" : "external",
+      opponentId: match.opponentId ?? "",
+      opponentTeamId: match.opponentTeamId ?? "",
       newOpponentName: "",
       newOpponentCity: "",
       date: format(new Date(match.date), "yyyy-MM-dd'T'HH:mm"),
@@ -315,8 +325,19 @@ export default function AdminPartiteClient({
   const handleSaveMatch = rhfHandleSubmit(async (values) => {
     setError("");
 
-    // Validazione condizionale per il campo avversaria
-    if (useNewOpponent) {
+    // Validazione condizionale: tre casi (esterna esistente, esterna nuova, interna)
+    if (values.opponentKind === "internal") {
+      if (!values.opponentTeamId) {
+        setFieldError("opponentTeamId", { message: "Seleziona la squadra interna avversaria" });
+        return;
+      }
+      if (values.opponentTeamId === values.teamId) {
+        setFieldError("opponentTeamId", {
+          message: "Una squadra non può giocare contro se stessa",
+        });
+        return;
+      }
+    } else if (useNewOpponent) {
       if (!values.newOpponentName.trim()) {
         setFieldError("newOpponentName", { message: "Nome avversaria obbligatorio" });
         return;
@@ -326,10 +347,15 @@ export default function AdminPartiteClient({
       return;
     }
 
-    let opponentId = values.opponentId;
+    let opponentId: string | null = values.opponentId;
+    let opponentTeamId: string | null = null;
+    const isInternal = values.opponentKind === "internal";
 
-    // Crea avversaria al volo se necessario
-    if (useNewOpponent) {
+    if (isInternal) {
+      opponentId = null;
+      opponentTeamId = values.opponentTeamId;
+    } else if (useNewOpponent) {
+      // Crea avversaria esterna al volo
       const res = await fetch("/api/opposing-teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -350,16 +376,19 @@ export default function AdminPartiteClient({
     const payload = {
       teamId: values.teamId,
       opponentId,
+      opponentTeamId,
       date: values.date,
       isHome: values.isHome,
       venue: values.venue || null,
-      matchType: values.matchType,
+      // Le partite interne sono sempre amichevoli
+      matchType: isInternal ? "FRIENDLY" : values.matchType,
       ourScore: values.ourScore !== "" ? Number(values.ourScore) : null,
       theirScore: values.theirScore !== "" ? Number(values.theirScore) : null,
       result: values.result || null,
       notes: values.notes || null,
       matchday: values.matchday !== "" ? Number(values.matchday) : null,
-      groupId: values.groupId || null,
+      // Le amichevoli interne non hanno girone
+      groupId: isInternal ? null : values.groupId || null,
     };
 
     const method = editMatch ? "PUT" : "POST";
@@ -637,9 +666,18 @@ export default function AdminPartiteClient({
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" fontWeight={600}>
-                          {m.opponent.name}
+                          {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
+                          {m.opponentTeam && (
+                            <Typography
+                              component="span"
+                              variant="caption"
+                              sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
+                            >
+                              (interna)
+                            </Typography>
+                          )}
                         </Typography>
-                        {m.opponent.city && (
+                        {m.opponent?.city && (
                           <Typography variant="caption" color="text.secondary">
                             {m.opponent.city}
                           </Typography>
@@ -1079,7 +1117,7 @@ export default function AdminPartiteClient({
           open={!!statsMatch}
           onClose={() => setStatsMatch(null)}
           matchId={statsMatch.id}
-          matchLabel={`${statsMatch.team.name} vs ${statsMatch.opponent.name} (${format(new Date(statsMatch.date), "d MMM yyyy", { locale: it })})`}
+          matchLabel={`${statsMatch.team.name} vs ${statsMatch.opponent?.name ?? statsMatch.opponentTeam?.name ?? "Avversario"} (${format(new Date(statsMatch.date), "d MMM yyyy", { locale: it })})`}
           onStatsSaved={(count) => {
             setMatches((prev) =>
               prev.map((m) =>
@@ -1458,56 +1496,113 @@ export default function AdminPartiteClient({
             />
 
             <Box>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={useNewOpponent}
-                    onChange={(e) => setUseNewOpponent(e.target.checked)}
-                    size="small"
-                  />
-                }
-                label={<Typography variant="body2">Crea nuova avversaria</Typography>}
+              {/* Toggle Esterno / Interno */}
+              <Controller
+                name="opponentKind"
+                control={control}
+                render={({ field }) => (
+                  <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
+                    <Button
+                      variant={field.value === "external" ? "contained" : "outlined"}
+                      size="small"
+                      onClick={() => field.onChange("external")}
+                      sx={{ flex: 1, textTransform: "none" }}
+                    >
+                      Squadra esterna
+                    </Button>
+                    <Button
+                      variant={field.value === "internal" ? "contained" : "outlined"}
+                      size="small"
+                      onClick={() => {
+                        field.onChange("internal");
+                        setValue("matchType", "FRIENDLY");
+                      }}
+                      sx={{ flex: 1, textTransform: "none" }}
+                    >
+                      Amichevole interna
+                    </Button>
+                  </Box>
+                )}
               />
-              {useNewOpponent ? (
-                <Box sx={{ display: "flex", gap: 1.5, mt: 1, flexWrap: "wrap" }}>
-                  <TextField
-                    label="Nome avversaria"
-                    size="small"
-                    {...register("newOpponentName")}
-                    error={!!matchErrors.newOpponentName}
-                    helperText={matchErrors.newOpponentName?.message}
-                    sx={{ flex: 2 }}
-                  />
-                  <TextField
-                    label="Città"
-                    size="small"
-                    {...register("newOpponentCity")}
-                    sx={{ flex: 1 }}
-                  />
-                </Box>
-              ) : (
+
+              {watchOpponentKind === "internal" ? (
                 <Controller
-                  name="opponentId"
+                  name="opponentTeamId"
                   control={control}
                   render={({ field }) => (
-                    <FormControl fullWidth sx={{ mt: 1 }} error={!!matchErrors.opponentId}>
-                      <InputLabel>Squadra avversaria</InputLabel>
-                      <Select {...field} label="Squadra avversaria">
-                        {opponents.map((o) => (
-                          <MenuItem key={o.id} value={o.id}>
-                            {o.name}
-                            {o.city ? ` (${o.city})` : ""}
-                          </MenuItem>
-                        ))}
+                    <FormControl fullWidth error={!!matchErrors.opponentTeamId}>
+                      <InputLabel>Squadra interna avversaria</InputLabel>
+                      <Select {...field} label="Squadra interna avversaria">
+                        {teams
+                          .filter((t) => t.id !== watchTeamId)
+                          .map((t) => (
+                            <MenuItem key={t.id} value={t.id}>
+                              {t.name} — {t.season}
+                            </MenuItem>
+                          ))}
                       </Select>
-                      {matchErrors.opponentId && (
+                      {matchErrors.opponentTeamId && (
                         <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                          {matchErrors.opponentId.message}
+                          {matchErrors.opponentTeamId.message}
                         </Typography>
                       )}
                     </FormControl>
                   )}
                 />
+              ) : (
+                <>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={useNewOpponent}
+                        onChange={(e) => setUseNewOpponent(e.target.checked)}
+                        size="small"
+                      />
+                    }
+                    label={<Typography variant="body2">Crea nuova avversaria</Typography>}
+                  />
+                  {useNewOpponent ? (
+                    <Box sx={{ display: "flex", gap: 1.5, mt: 1, flexWrap: "wrap" }}>
+                      <TextField
+                        label="Nome avversaria"
+                        size="small"
+                        {...register("newOpponentName")}
+                        error={!!matchErrors.newOpponentName}
+                        helperText={matchErrors.newOpponentName?.message}
+                        sx={{ flex: 2 }}
+                      />
+                      <TextField
+                        label="Città"
+                        size="small"
+                        {...register("newOpponentCity")}
+                        sx={{ flex: 1 }}
+                      />
+                    </Box>
+                  ) : (
+                    <Controller
+                      name="opponentId"
+                      control={control}
+                      render={({ field }) => (
+                        <FormControl fullWidth sx={{ mt: 1 }} error={!!matchErrors.opponentId}>
+                          <InputLabel>Squadra avversaria</InputLabel>
+                          <Select {...field} label="Squadra avversaria">
+                            {opponents.map((o) => (
+                              <MenuItem key={o.id} value={o.id}>
+                                {o.name}
+                                {o.city ? ` (${o.city})` : ""}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                          {matchErrors.opponentId && (
+                            <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                              {matchErrors.opponentId.message}
+                            </Typography>
+                          )}
+                        </FormControl>
+                      )}
+                    />
+                  )}
+                </>
               )}
             </Box>
 

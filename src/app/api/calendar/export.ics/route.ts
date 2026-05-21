@@ -71,6 +71,7 @@ export async function GET() {
         venue: true,
         team: { select: { name: true } },
         opponent: { select: { name: true } },
+        opponentTeam: { select: { name: true } },
       },
       orderBy: { date: "asc" },
     }),
@@ -99,9 +100,10 @@ export async function GET() {
   for (const m of matches) {
     const start = m.date;
     const end = new Date(m.date.getTime() + 90 * 60 * 1000);
+    const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
     const summary = m.isHome
-      ? `${m.team.name} vs ${m.opponent.name}`
-      : `${m.team.name} @ ${m.opponent.name}`;
+      ? `${m.team.name} vs ${opponentName}`
+      : `${m.team.name} @ ${opponentName}`;
     const location = m.isHome ? LOCATION_DEFAULT : (m.venue ?? undefined);
     vevents.push(vevent(`match-${m.id}`, summary, start, end, undefined, location));
   }

@@ -44,7 +44,7 @@ export interface MatchStatRow {
 }
 
 const COLS: { key: keyof MatchStatRow; label: string; title: string; primary?: boolean }[] = [
-  { key: "points", label: "Pt", title: "Punti", primary: true },
+  { key: "points", label: "Punti", title: "Punti", primary: true },
   { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
   { key: "twoPointers", label: "2pt", title: "Canestri da 2" },
   { key: "threePointers", label: "3pt", title: "Canestri da 3" },

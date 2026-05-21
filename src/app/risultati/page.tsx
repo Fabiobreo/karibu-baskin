@@ -1,10 +1,9 @@
 import { prisma } from "@/lib/db";
-import { Container, Typography, Box, Paper, Chip, Stack, Divider } from "@mui/material";
+import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -70,21 +69,8 @@ export default async function RisultatiPage({ searchParams }: Props) {
       theirScore: true,
       result: true,
       team: { select: { id: true, name: true, color: true, season: true, championship: true } },
-      opponent: { select: { name: true, city: true } },
-    },
-  });
-
-  // Partite future della stagione
-  const upcoming = await prisma.match.findMany({
-    where: { result: null, date: { gte: new Date() }, team: { season } },
-    orderBy: { date: "asc" },
-    select: {
-      id: true,
-      slug: true,
-      date: true,
-      isHome: true,
-      team: { select: { id: true, name: true, color: true } },
-      opponent: { select: { name: true, city: true } },
+      opponent: { select: { id: true, name: true, city: true } },
+      opponentTeam: { select: { id: true, name: true } },
     },
   });
 
@@ -107,10 +93,15 @@ export default async function RisultatiPage({ searchParams }: Props) {
   }
   const teamGroups = Array.from(teamMap.values());
 
-  // Statistiche per il badge hero
-  const wins = matches.filter((m) => m.result === "WIN").length;
-  const losses = matches.filter((m) => m.result === "LOSS").length;
-  const draws = matches.filter((m) => m.result === "DRAW").length;
+  // Statistiche per squadra per il badge hero
+  const teamStats = teamGroups.map((team) => ({
+    id: team.id,
+    name: team.name,
+    color: team.color,
+    wins: team.matches.filter((m) => m.result === "WIN").length,
+    draws: team.matches.filter((m) => m.result === "DRAW").length,
+    losses: team.matches.filter((m) => m.result === "LOSS").length,
+  }));
 
   return (
     <>
@@ -144,26 +135,65 @@ export default async function RisultatiPage({ searchParams }: Props) {
           >
             Partite ufficiali
           </Typography>
-          {matches.length > 0 && (
-            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-              <Chip
-                label={`${wins} ${wins === 1 ? "vittoria" : "vittorie"}`}
-                size="small"
-                sx={{ bgcolor: "#2E7D32", color: "#fff", fontWeight: 700 }}
-              />
-              {draws > 0 && (
-                <Chip
-                  label={`${draws} ${draws === 1 ? "pareggio" : "pareggi"}`}
-                  size="small"
-                  sx={{ bgcolor: "#E65100", color: "#fff", fontWeight: 700 }}
-                />
-              )}
-              <Chip
-                label={`${losses} ${losses === 1 ? "sconfitta" : "sconfitte"}`}
-                size="small"
-                sx={{ bgcolor: "#C62828", color: "#fff", fontWeight: 700 }}
-              />
-            </Box>
+          {teamStats.length > 0 && (
+            <Stack spacing={1} sx={{ mt: 0.5 }}>
+              {teamStats.map((t) => (
+                <Box
+                  key={t.id}
+                  sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
+                >
+                  <Box
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      bgcolor: t.color ?? "#E65100",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#fff", minWidth: 0 }}>
+                    {t.name}
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Chip
+                      label={`${t.wins}V`}
+                      size="small"
+                      sx={{
+                        bgcolor: "#2E7D32",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: "0.68rem",
+                        height: 20,
+                      }}
+                    />
+                    {t.draws > 0 && (
+                      <Chip
+                        label={`${t.draws}P`}
+                        size="small"
+                        sx={{
+                          bgcolor: "#E65100",
+                          color: "#fff",
+                          fontWeight: 800,
+                          fontSize: "0.68rem",
+                          height: 20,
+                        }}
+                      />
+                    )}
+                    <Chip
+                      label={`${t.losses}S`}
+                      size="small"
+                      sx={{
+                        bgcolor: "#C62828",
+                        color: "#fff",
+                        fontWeight: 800,
+                        fontSize: "0.68rem",
+                        height: 20,
+                      }}
+                    />
+                  </Box>
+                </Box>
+              ))}
+            </Stack>
           )}
         </Container>
       </Box>
@@ -199,7 +229,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
         )}
 
         {/* ── Nessun dato ─────────────────────────────────────────────────── */}
-        {teamGroups.length === 0 && upcoming.length === 0 && (
+        {teamGroups.length === 0 && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
@@ -297,88 +327,19 @@ export default async function RisultatiPage({ searchParams }: Props) {
           })}
         </Stack>
 
-        {/* ── Prossime partite ────────────────────────────────────────────── */}
-        {upcoming.length > 0 && (
-          <>
-            {teamGroups.length > 0 && <Divider sx={{ my: 5 }} />}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <CalendarTodayIcon color="primary" sx={{ fontSize: 18 }} />
+        {/* ── Link a prossime partite ─────────────────────────────────────── */}
+        {teamGroups.length > 0 && (
+          <Box sx={{ textAlign: "right", mt: 4 }}>
+            <Link href="/partite" style={{ textDecoration: "none" }}>
               <Typography
-                variant="overline"
+                variant="body2"
                 color="primary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em" }}
+                sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
               >
-                In programma
+                Vedi le prossime partite →
               </Typography>
-            </Box>
-            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
-              Prossime partite
-            </Typography>
-            <Stack spacing={1}>
-              {upcoming.map((m) => (
-                <Link
-                  key={m.id}
-                  href={`/partite/${m.slug ?? m.id}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      border: "1px solid rgba(0,0,0,0.07)",
-                      p: 2,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      flexWrap: "wrap",
-                      borderLeft: `4px solid ${m.team.color ?? "#E65100"}`,
-                      cursor: "pointer",
-                      transition: "box-shadow 0.15s, border-color 0.15s",
-                      "&:hover": {
-                        boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-                        borderColor: "rgba(0,0,0,0.15)",
-                      },
-                    }}
-                  >
-                    <Chip
-                      label={m.team.name}
-                      size="small"
-                      sx={{
-                        bgcolor: m.team.color ?? "#E65100",
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "0.65rem",
-                      }}
-                    />
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={700}>
-                        vs {m.opponent.name}
-                        {m.opponent.city ? (
-                          <Typography component="span" variant="caption" color="text.secondary">
-                            {" "}
-                            ({m.opponent.city})
-                          </Typography>
-                        ) : null}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {format(new Date(m.date), "EEEE d MMMM · HH:mm", { locale: it })}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Chip
-                        label={m.isHome ? "Casa" : "Trasferta"}
-                        size="small"
-                        variant="outlined"
-                        icon={m.isHome ? <HomeIcon /> : <FlightIcon />}
-                        sx={{ fontSize: "0.65rem" }}
-                      />
-                      <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
-                    </Box>
-                  </Paper>
-                </Link>
-              ))}
-            </Stack>
-          </>
+            </Link>
+          </Box>
         )}
       </Container>
     </>
@@ -402,7 +363,8 @@ type MatchItem = Awaited<
         theirScore: true;
         result: true;
         team: { select: { id: true; name: true; color: true; season: true; championship: true } };
-        opponent: { select: { name: true; city: true } };
+        opponent: { select: { id: true; name: true; city: true } };
+        opponentTeam: { select: { id: true; name: true } };
       };
     }>
   >
@@ -418,6 +380,14 @@ function MatchCard({ match: m }: { match: MatchItem }) {
         textColor: m.result === "WIN" ? "#2E7D32" : m.result === "LOSS" ? "#C62828" : "#E65100",
       }
     : null;
+
+  const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
+  // Ordine casa/trasferta: in casa Karibu a sinistra, in trasferta Karibu a destra.
+  const leftName = m.isHome ? m.team.name : opponentName;
+  const rightName = m.isHome ? opponentName : m.team.name;
+  const leftScore = m.isHome ? m.ourScore : m.theirScore;
+  const rightScore = m.isHome ? m.theirScore : m.ourScore;
+  const leftIsUs = m.isHome;
 
   return (
     <Link href={`/partite/${m.slug ?? m.id}`} style={{ textDecoration: "none" }}>
@@ -466,30 +436,68 @@ function MatchCard({ match: m }: { match: MatchItem }) {
               </Box>
             </Box>
 
-            {/* Avversario */}
-            <Box sx={{ flex: 1, minWidth: 100 }}>
-              <Typography variant="body2" fontWeight={700}>
-                vs {m.opponent.name}
+            {/* Match-up: SquadraSx PunteggioSx – PunteggioDx SquadraDx */}
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 200,
+                display: "flex",
+                alignItems: "center",
+                gap: 1.25,
+                justifyContent: "center",
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: leftIsUs ? 800 : 600,
+                  color: leftIsUs ? "text.primary" : "text.secondary",
+                  textAlign: "right",
+                  flex: "1 1 0",
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {leftName}
               </Typography>
-              {m.opponent.city && (
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
-                  {m.opponent.city}
+              {leftScore !== null && rightScore !== null ? (
+                <Typography
+                  fontWeight={900}
+                  sx={{
+                    fontSize: "1.15rem",
+                    fontVariantNumeric: "tabular-nums",
+                    lineHeight: 1,
+                    flexShrink: 0,
+                    px: 0.5,
+                  }}
+                >
+                  {leftScore}–{rightScore}
+                </Typography>
+              ) : (
+                <Typography
+                  sx={{ color: "text.disabled", fontWeight: 700, fontSize: "0.85rem", px: 0.5 }}
+                >
+                  vs
                 </Typography>
               )}
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: leftIsUs ? 600 : 800,
+                  color: leftIsUs ? "text.secondary" : "text.primary",
+                  textAlign: "left",
+                  flex: "1 1 0",
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {rightName}
+              </Typography>
             </Box>
-
-            {/* Punteggio */}
-            {m.ourScore !== null && m.theirScore !== null && (
-              <Box sx={{ flexShrink: 0, textAlign: "center", minWidth: 56 }}>
-                <Typography
-                  variant="body1"
-                  fontWeight={900}
-                  sx={{ fontSize: "1.15rem", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}
-                >
-                  {m.ourScore}–{m.theirScore}
-                </Typography>
-              </Box>
-            )}
 
             {/* Esito */}
             <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 1 }}>

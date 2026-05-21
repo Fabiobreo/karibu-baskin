@@ -18,20 +18,21 @@ Allenamento termina (iscrizioni chiuse automaticamente)
 
 ## Struttura dati: `TrainingSession`
 
-| Campo | Tipo | Significato |
-|-------|------|-------------|
-| `id` | CUID | Identificatore primario |
-| `dateSlug` | `String?` unique | URL leggibile es. `"2025-03-15T18:00"` |
-| `date` | `DateTime` | Inizio allenamento |
-| `endTime` | `DateTime?` | Fine (se null, si assume +2h da `date`) |
-| `teams` | `Json?` | Squadre create (`{ teamA, teamB, teamC?, generated }`) |
-| `allowedRoles` | `Int[]` | Ruoli sportivi ammessi (vuoto = tutti) |
-| `restrictTeamId` | `String?` | Restringe ai membri di questa squadra agonistica |
-| `openRoles` | `Int[]` | Ruoli esenti dalla restrizione di squadra |
+| Campo            | Tipo             | Significato                                            |
+| ---------------- | ---------------- | ------------------------------------------------------ |
+| `id`             | CUID             | Identificatore primario                                |
+| `dateSlug`       | `String?` unique | URL leggibile es. `"2025-03-15T18:00"`                 |
+| `date`           | `DateTime`       | Inizio allenamento                                     |
+| `endTime`        | `DateTime?`      | Fine (se null, si assume +2h da `date`)                |
+| `teams`          | `Json?`          | Squadre create (`{ teamA, teamB, teamC?, generated }`) |
+| `allowedRoles`   | `Int[]`          | Ruoli sportivi ammessi (vuoto = tutti)                 |
+| `restrictTeamId` | `String?`        | Restringe ai membri di questa squadra agonistica       |
+| `openRoles`      | `Int[]`          | Ruoli esenti dalla restrizione di squadra              |
 
 ## Creazione (solo COACH/ADMIN)
 
 `POST /api/sessions` — payload:
+
 ```json
 {
   "title": "Allenamento martedì",
@@ -47,12 +48,14 @@ Allenamento termina (iscrizioni chiuse automaticamente)
 Il `dateSlug` viene generato automaticamente dal client (`SessionRestrictionEditor`) nel formato `YYYY-MM-DDTHH:mm`. È `@unique` — se già esiste, la creazione fallisce con errore Prisma P2002.
 
 Dopo la creazione vengono triggerate (fire-and-forget):
+
 - Push a tutti gli iscritti con `notifPrefs.push.NEW_TRAINING = true`
 - In-app notification di tipo `NEW_TRAINING`
 
 ## URL di accesso
 
 Gli allenamenti sono accessibili tramite:
+
 - `/allenamento/[dateSlug]` — URL canonico leggibile
 - `/allenamento/[cuid]` — retrocompatibilità
 

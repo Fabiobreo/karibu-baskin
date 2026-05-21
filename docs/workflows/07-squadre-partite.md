@@ -5,6 +5,7 @@
 Una stagione è identificata da una stringa `YYYY-YY` (es. `"2025-26"`).
 
 Calcolo della stagione corrente (usato ovunque nell'app):
+
 ```typescript
 const year = new Date().getFullYear();
 const start = new Date().getMonth() >= 8 ? year : year - 1; // agosto = inizio stagione
@@ -16,6 +17,7 @@ Il modello `Season` tiene traccia delle stagioni con un flag `isCurrent`. La sta
 ## `CompetitiveTeam`
 
 Una squadra agonistica appartiene a una stagione e può avere:
+
 - `color` (hex) — usato nei badge e UI
 - `championship` — es. "Gold Ovest", "Silver Est"
 - `memberships` → `TeamMembership[]`
@@ -34,20 +36,21 @@ TeamMembership {
 Esattamente uno tra `userId` e `childId` deve essere non-null.
 
 L'aggiunta di membri è gestita da `AdminSquadreClient`:
+
 - Il selettore mostra utenti e figli non ancora nella squadra
 - Gli utenti appaiono con prefisso `u:id`, i figli con `c:id`
 - Il backend riceve `{ userId }` o `{ childId }` e crea la `TeamMembership`
 
 ## `Match` (tabella: `OfficialMatch`)
 
-| Campo | Significato |
-|-------|-------------|
-| `teamId` | La nostra squadra agonistica |
-| `opponentId` | Squadra avversaria (`OpposingTeam`) |
-| `isHome` | Casa (true) o trasferta |
-| `matchType` | `LEAGUE` / `TOURNAMENT` / `FRIENDLY` |
-| `ourScore` / `theirScore` | Risultato |
-| `result` | `WIN` / `LOSS` / `DRAW` (calcolato/inserito dall'admin) |
+| Campo                     | Significato                                             |
+| ------------------------- | ------------------------------------------------------- |
+| `teamId`                  | La nostra squadra agonistica                            |
+| `opponentId`              | Squadra avversaria (`OpposingTeam`)                     |
+| `isHome`                  | Casa (true) o trasferta                                 |
+| `matchType`               | `LEAGUE` / `TOURNAMENT` / `FRIENDLY`                    |
+| `ourScore` / `theirScore` | Risultato                                               |
+| `result`                  | `WIN` / `LOSS` / `DRAW` (calcolato/inserito dall'admin) |
 
 ### Workflow risultato
 
@@ -67,12 +70,14 @@ Gestite tramite `POST/PATCH /api/matches/[matchId]/stats`.
 ## Badge squadra
 
 In tutta l'app, l'appartenenza alla stagione corrente viene mostrata come badge colorato:
+
 - Nella `RegistrationForm` (accanto al nome dell'utente/figlio)
 - Nel `ParentChildLinker` (profilo genitore)
 - Nel profilo giocatore `/giocatori/[slug]`
 - Nei tabelloni degli allenamenti (`RosterByRole`)
 
 Filtro stagione corrente su `teamMemberships`:
+
 ```typescript
 .filter((m) => m.team.season === currentSeason)
 ```

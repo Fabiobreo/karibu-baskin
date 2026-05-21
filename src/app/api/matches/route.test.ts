@@ -104,7 +104,9 @@ describe("GET /api/matches", () => {
     const res = await GET(req);
     expect(res.status).toBe(200);
     expect(p.match.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { teamId: "team-42" } })
+      expect.objectContaining({
+        where: { OR: [{ teamId: "team-42" }, { opponentTeamId: "team-42" }] },
+      })
     );
   });
 

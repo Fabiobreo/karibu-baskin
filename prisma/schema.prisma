@@ -290,7 +290,9 @@ model CompetitiveTeam {
   createdAt    DateTime @default(now())
 
   memberships          TeamMembership[]
-  matches              Match[]
+  matches              Match[]           @relation("MatchTeam")
+  opponentInMatches    Match[]           @relation("MatchOpponentTeam")
+  callups              MatchCallup[]     @relation("MatchCallupTeam")
   groups               Group[]
   trainingSessions     TrainingSession[] @relation("TrainingTeam")
   restrictedSessions   TrainingSession[] @relation("TrainingRestriction")
@@ -380,7 +382,11 @@ model Match {
   id         String       @id @default(cuid())
   slug       String?      @unique  // es. "kapuleti-vs-roma-baskin-2025-10-12"
   teamId     String
-  opponentId String
+  // Esattamente uno tra opponentId e opponentTeamId dev'essere valorizzato:
+  // - opponentId: avversaria esterna (OpposingTeam) — per partite ufficiali e amichevoli vs esterni
+  // - opponentTeamId: amichevole interna tra due nostre squadre (CompetitiveTeam)
+  opponentId       String?
+  opponentTeamId   String?
   date       DateTime
   isHome     Boolean      @default(true)
   venue      String?
@@ -395,13 +401,19 @@ model Match {
   groupId  String?
   group    Group?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
-  team        CompetitiveTeam    @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  opponent    OpposingTeam       @relation(fields: [opponentId], references: [id])
-  playerStats PlayerMatchStats[]
-  callups     MatchCallup[]
+  // Timestamp dell'invio del reminder push "convocazioni mancanti" (T-3 giorni
+  // con < roster minimo). Usato per garantire idempotenza del cron.
+  callupReminderSentAt DateTime?
+
+  team          CompetitiveTeam    @relation("MatchTeam", fields: [teamId], references: [id], onDelete: Cascade)
+  opponent      OpposingTeam?      @relation(fields: [opponentId], references: [id])
+  opponentTeam  CompetitiveTeam?   @relation("MatchOpponentTeam", fields: [opponentTeamId], references: [id])
+  playerStats   PlayerMatchStats[]
+  callups       MatchCallup[]
 
   @@index([teamId, date])
   @@index([opponentId])
+  @@index([opponentTeamId])
   @@index([groupId])
   @@map("OfficialMatch")
 }
@@ -412,16 +424,29 @@ model MatchCallup {
   id      String @id @default(cuid())
   matchId String
 
+  // Squadra per cui il giocatore è convocato. Nullable per retro-compatibilità
+  // con i record creati prima dell'introduzione delle amichevoli interne; il
+  // codice tratta null come "match.teamId" (la squadra principale della partita).
+  // Per le amichevoli interne può essere match.teamId OPPURE match.opponentTeamId.
+  teamId  String?
+
   userId  String?
   childId String?
 
-  match Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+  // true se il giocatore convocato NON è membro della squadra per cui è
+  // convocato (teamId ?? match.teamId) nella stagione di quella squadra
+  // — gioca quindi "in prestito" da un'altra squadra della società.
+  isLoan Boolean @default(false)
+
+  match Match            @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team  CompetitiveTeam? @relation("MatchCallupTeam", fields: [teamId], references: [id], onDelete: SetNull)
+  user  User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child?           @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@unique([matchId, userId])
   @@unique([matchId, childId])
   @@index([matchId])
+  @@index([teamId])
 }
 
 // ── Statistiche giocatore per partita ────────────────────────────────────────
@@ -487,6 +512,11 @@ model PlayerMatchStats {
   illegalFouls    Int    @default(0) // falli illegali (solo R4/R5)
   shotsAttempted  Int    @default(0) // tiri tentati (solo R5)
   notes           String? @db.Text
+
+  // true se il giocatore NON è membro della squadra che ha disputato la partita
+  // per quella stagione (ha giocato "in prestito"). Calcolato automaticamente
+  // al salvataggio.
+  isLoan Boolean @default(false)
 
   // Esattamente uno dei due deve essere valorizzato
   userId  String?

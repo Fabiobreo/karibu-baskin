@@ -20,6 +20,7 @@ export default async function AdminPartitePage() {
       include: {
         team: { select: { id: true, name: true, season: true, color: true } },
         opponent: { select: { id: true, name: true, city: true } },
+        opponentTeam: { select: { id: true, name: true, color: true } },
         group: { select: { id: true, name: true } },
         _count: { select: { playerStats: true } },
       },

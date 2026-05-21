@@ -14,6 +14,7 @@ Child {
 ```
 
 Un figlio può:
+
 - Essere iscritto dal genitore tramite `childId` nella Registration
 - Avere statistiche partita (`PlayerMatchStats`)
 - Essere membro di una squadra agonistica (`TeamMembership`)
@@ -22,6 +23,7 @@ Un figlio può:
 ## Aggiunta figli (in `/profilo`)
 
 Il genitore usa il componente `ParentChildLinker`:
+
 1. Inserisce nome, ruolo, genere, data nascita del figlio
 2. `POST /api/users/me/children` → crea riga `Child`
 
@@ -50,19 +52,20 @@ Al login (ogni visita di `/profilo`), il server confronta `user.name` con i nomi
 ```typescript
 // src/app/profilo/page.tsx
 const anonymousMatches = await prisma.registration.findMany({
-  where: { userId: null, childId: null, name: { equals: user.name.trim(), mode: "insensitive" } }
+  where: { userId: null, childId: null, name: { equals: user.name.trim(), mode: "insensitive" } },
 });
 ```
 
 Se ci sono corrispondenze, viene mostrata la card `ClaimAnonymousCard`:
 
-> *"Abbiamo trovato X iscrizioni con il tuo nome. Eri tu?"*
+> _"Abbiamo trovato X iscrizioni con il tuo nome. Eri tu?"_
 > **[Sì, ero io]** → `POST /api/registrations/claim` → `updateMany({ data: { userId: user.id } })`
 > **[No, non ero io]** → dismiss locale (nessuna modifica al DB)
 
 ### Gestione admin iscrizioni anonime
 
 Nel pannello admin (`AdminAnonymousRegistrations`):
+
 - Le iscrizioni anonime sono raggruppate per nome (case-insensitive)
 - Ogni gruppo mostra le sessioni frequentate come chip cliccabili
 - Si può **modificare** nome, email, ruolo di un gruppo (aggiorna tutte le iscrizioni del gruppo)

@@ -4,6 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { CallupsSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { buildLoanLookup, isLoanParticipation } from "@/lib/loanDetection";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -26,7 +27,14 @@ export async function GET(_req: Request, { params }: Params) {
       child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
     },
   });
-  return NextResponse.json(callups);
+  // Normalizza teamId: per i record legacy (null) restituisci match.teamId
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { teamId: true },
+  });
+  const fallbackTeamId = match?.teamId ?? null;
+  const normalized = callups.map((c) => ({ ...c, teamId: c.teamId ?? fallbackTeamId }));
+  return NextResponse.json(normalized);
 }
 
 // PUT — sostituisce i convocati per la partita (batch)
@@ -43,24 +51,68 @@ export async function PUT(req: Request, { params }: Params) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Payload non valido" }, { status: 400 });
   }
-  const { userIds, childIds } = parsed.data;
+  const { teamId: requestedTeamId, userIds, childIds } = parsed.data;
 
-  // Verifica che la partita esista
-  const match = await prisma.match.findUnique({ where: { id: matchId }, select: { id: true } });
+  // Carica la partita per validare il teamId richiesto e calcolare il fallback.
+  const match = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { teamId: true, opponentTeamId: true },
+  });
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
 
+  // teamId effettivo: quello richiesto o, per backward-compat, match.teamId
+  const effectiveTeamId = requestedTeamId ?? match.teamId;
+
+  // Valida che il teamId richiesto sia uno dei due lati della partita
+  if (
+    requestedTeamId &&
+    requestedTeamId !== match.teamId &&
+    requestedTeamId !== match.opponentTeamId
+  ) {
+    return NextResponse.json(
+      { error: "La squadra non partecipa a questa partita" },
+      { status: 400 }
+    );
+  }
+
+  // Verifica che la partita esista e carica i membri della squadra "lato"
+  // selezionato per marcare ogni convocazione come prestito o meno.
+  const loanLookup = await buildLoanLookup(matchId, effectiveTeamId);
+  if (!loanLookup) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+
+  // Cancella solo i callup per QUESTO lato. I record legacy (teamId NULL)
+  // appartengono semanticamente a match.teamId, quindi vengono inclusi solo
+  // quando si sta aggiornando match.teamId.
+  const deleteWhere =
+    effectiveTeamId === match.teamId
+      ? {
+          matchId,
+          OR: [{ teamId: effectiveTeamId }, { teamId: null }],
+        }
+      : { matchId, teamId: effectiveTeamId };
+
   const before = await prisma.matchCallup.findMany({
-    where: { matchId },
+    where: deleteWhere,
     select: { userId: true, childId: true },
   });
 
-  // Sostituisci i convocati
+  // Sostituisci i convocati per il lato selezionato
   await prisma.$transaction([
-    prisma.matchCallup.deleteMany({ where: { matchId } }),
+    prisma.matchCallup.deleteMany({ where: deleteWhere }),
     prisma.matchCallup.createMany({
       data: [
-        ...userIds.map((userId) => ({ matchId, userId })),
-        ...childIds.map((childId) => ({ matchId, childId })),
+        ...userIds.map((userId) => ({
+          matchId,
+          teamId: effectiveTeamId,
+          userId,
+          isLoan: isLoanParticipation(loanLookup, { userId }),
+        })),
+        ...childIds.map((childId) => ({
+          matchId,
+          teamId: effectiveTeamId,
+          childId,
+          isLoan: isLoanParticipation(loanLookup, { childId }),
+        })),
       ],
       skipDuplicates: true,
     }),
@@ -73,10 +125,11 @@ export async function PUT(req: Request, { params }: Params) {
       targetType: "Match",
       targetId: matchId,
       before: {
+        teamId: effectiveTeamId,
         userIds: before.map((c) => c.userId).filter(Boolean),
         childIds: before.map((c) => c.childId).filter(Boolean),
       },
-      after: { userIds, childIds },
+      after: { teamId: effectiveTeamId, userIds, childIds },
     }).catch((err) => console.error("[audit] update callups", err));
   }
 

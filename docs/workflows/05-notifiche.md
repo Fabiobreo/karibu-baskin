@@ -19,17 +19,18 @@ Evento (es. nuovo allenamento)
 
 ### Helper (`src/lib/webpush.ts`)
 
-| Funzione | Quando usarla |
-|----------|---------------|
-| `sendPushToAll(payload, adminOnly?, notifType?)` | Broadcast (NEW_TRAINING, MATCH_RESULT) |
-| `sendPushToUsers(userIds[], payload, notifType?)` | Audience ristretta (TEAMS_READY) |
-| `sendPushToUser(userId, payload)` | Utente singolo (LINK_REQUEST/RESPONSE) |
+| Funzione                                          | Quando usarla                          |
+| ------------------------------------------------- | -------------------------------------- |
+| `sendPushToAll(payload, adminOnly?, notifType?)`  | Broadcast (NEW_TRAINING, MATCH_RESULT) |
+| `sendPushToUsers(userIds[], payload, notifType?)` | Audience ristretta (TEAMS_READY)       |
+| `sendPushToUser(userId, payload)`                 | Utente singolo (LINK_REQUEST/RESPONSE) |
 
 Tutte e tre rispettano le preferenze push dell'utente se `notifType` è specificato.
 
 ### Attivazione (UI)
 
 Il componente `NotificationPrefsPanel` in `/profilo`:
+
 1. Chiede il permesso browser (`Notification.requestPermission()`)
 2. Ottiene chiave VAPID pubblica da `/api/push/vapid-public-key`
 3. Crea subscription con Service Worker (`pushManager.subscribe`)
@@ -58,6 +59,7 @@ AppNotificationRead {
 ### Visibilità
 
 `GET /api/notifications` restituisce le notifiche visibili all'utente:
+
 - `targetUserId = null` (broadcast) **oppure** `targetUserId = userId` (personale)
 - Filtrate per preferenze in-app: i tipi disabilitati dall'utente non compaiono
 
@@ -69,16 +71,16 @@ AppNotificationRead {
 
 ## Tipi di notifica e destinatari
 
-| Tipo | Trigger | Push | In-app | Audience |
-|------|---------|------|--------|----------|
-| `NEW_TRAINING` | Creazione allenamento | ✅ tutti (con pref) | ✅ tutti (con pref) | Broadcast |
-| `TEAMS_READY` | Generazione squadre | ✅ iscritti (con pref) | ✅ tutti (con pref) | Push: solo iscritti |
-| `MATCH_RESULT` | Inserimento risultato partita* | ✅ tutti (con pref) | ✅ tutti (con pref) | Broadcast |
-| `SYSTEM` | Nuovo utente registrato | ✅ solo admin | ✅ no (non creata) | Solo admin |
-| `LINK_REQUEST` | Richiesta collegamento genitore-figlio | `sendPushToUser` | `targetUserId` | Utente specifico |
-| `LINK_RESPONSE` | Risposta alla richiesta | `sendPushToUser` | `targetUserId` | Utente specifico |
+| Tipo            | Trigger                                | Push                   | In-app              | Audience            |
+| --------------- | -------------------------------------- | ---------------------- | ------------------- | ------------------- |
+| `NEW_TRAINING`  | Creazione allenamento                  | ✅ tutti (con pref)    | ✅ tutti (con pref) | Broadcast           |
+| `TEAMS_READY`   | Generazione squadre                    | ✅ iscritti (con pref) | ✅ tutti (con pref) | Push: solo iscritti |
+| `MATCH_RESULT`  | Inserimento risultato partita\*        | ✅ tutti (con pref)    | ✅ tutti (con pref) | Broadcast           |
+| `SYSTEM`        | Nuovo utente registrato                | ✅ solo admin          | ✅ no (non creata)  | Solo admin          |
+| `LINK_REQUEST`  | Richiesta collegamento genitore-figlio | `sendPushToUser`       | `targetUserId`      | Utente specifico    |
+| `LINK_RESPONSE` | Risposta alla richiesta                | `sendPushToUser`       | `targetUserId`      | Utente specifico    |
 
-*MATCH_RESULT viene inviata solo quando il risultato viene impostato **per la prima volta** (da `null` a non-null).
+\*MATCH_RESULT viene inviata solo quando il risultato viene impostato **per la prima volta** (da `null` a non-null).
 
 ## Preferenze utente (`notifPrefs`)
 

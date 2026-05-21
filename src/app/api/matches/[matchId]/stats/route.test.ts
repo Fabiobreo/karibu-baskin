@@ -8,7 +8,10 @@ vi.mock("@/lib/db", () => ({
       upsert: vi.fn(),
     },
     match: {
-      findUnique: vi.fn().mockResolvedValue(null),
+      findUnique: vi.fn().mockResolvedValue({ teamId: "team-1", team: { season: "2025-26" } }),
+    },
+    teamMembership: {
+      findMany: vi.fn().mockResolvedValue([{ userId: "user-1", childId: null }]),
     },
   },
 }));

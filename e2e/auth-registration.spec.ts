@@ -24,7 +24,10 @@ test.describe("Login + iscrizione", () => {
   let sessionSlug = "";
 
   test.beforeAll(async () => {
-    test.skip(!ADMIN_EMAIL || !ATHLETE_EMAIL, "E2E_ADMIN_EMAIL / E2E_ATHLETE_EMAIL non configurati");
+    test.skip(
+      !ADMIN_EMAIL || !ATHLETE_EMAIL,
+      "E2E_ADMIN_EMAIL / E2E_ATHLETE_EMAIL non configurati"
+    );
     const s = await createTestSession(ADMIN_EMAIL);
     sessionId = s.id;
     sessionSlug = s.slug;
@@ -48,18 +51,15 @@ test.describe("Login + iscrizione", () => {
       .getByRole("button", { name: "Cammino, ma non corro" })
       .isVisible()
       .catch(() => false);
-    test.skip(
-      hasQuestionnaire,
-      "L'atleta non ha un ruolo impostato — compilare sportRole nel DB"
-    );
+    test.skip(hasQuestionnaire, "L'atleta non ha un ruolo impostato — compilare sportRole nel DB");
 
     // Click diretto su "Iscriviti"
     await page.getByRole("button", { name: "Iscriviti" }).click();
 
     // Dopo l'iscrizione il bottone non è più visibile (o è disabilitato)
     // e il nome dell'atleta compare nel roster
-    await expect(
-      page.getByRole("button", { name: "Iscriviti" })
-    ).not.toBeVisible({ timeout: 6000 });
+    await expect(page.getByRole("button", { name: "Iscriviti" })).not.toBeVisible({
+      timeout: 6000,
+    });
   });
 });

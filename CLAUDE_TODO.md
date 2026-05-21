@@ -27,6 +27,7 @@ Analisi codebase con priorità d'intervento. Aggiornato automaticamente.
 Non c'è pagina che mostra la frequenza agli allenamenti nel tempo. Utile per lo staff per monitorare la regolarità.
 
 **Scope:**
+
 - Sezione "Presenze" nel pannello admin utente (`/admin/utenti/[id]`)
 - Eventualmente su profilo pubblico giocatore (visibile solo allo staff)
 
@@ -39,6 +40,7 @@ Upload immagini da parte di admin/coach (es. foto profilo squadra, foto giocator
 **Stack:** Vercel Blob SDK (`@vercel/blob`) — `put()` per upload, `del()` per cancellazione.
 
 **⚠️ NB — Storage limitato su piano Hobby:**
+
 - Il piano gratuito Vercel include **5 GB** di Blob storage.
 - Vercel **non invia notifiche** al raggiungimento del limite — gli upload falliscono silenziosamente.
 - Monitorare manualmente: dashboard Vercel → Storage → Usage.
@@ -46,6 +48,7 @@ Upload immagini da parte di admin/coach (es. foto profilo squadra, foto giocator
 
 **Regola implementativa obbligatoria — nessun file orfano:**
 Quando un'immagine viene sostituita, eliminare sempre la vecchia prima di salvare la nuova URL:
+
 1. Leggi URL attuale dal DB
 2. `put()` nuova immagine → ottieni nuovo URL
 3. Salva nuovo URL nel DB
@@ -69,17 +72,19 @@ Sezione gallery nel sito che mostra le foto pubblicate sui social della squadra,
 Usare un widget embed di terze parti (es. Elfsight, Behold.so) — zero codice ma dipendenza esterna e possibile costo mensile.
 
 **Prerequisiti:**
+
 - Decidere quale social è più aggiornato (IG o FB)
 - Creare app Meta su developers.facebook.com
 - Ottenere token con permesso `instagram_basic` o `pages_read_engagement`
 
 ---
 
-### F4. **Sistema TrueSkill per-ruolo** *(futuro — già in memory)*
+### F4. **Sistema TrueSkill per-ruolo** _(futuro — già in memory)_
 
 Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile solo COACH/ADMIN.
 
 **Decisione di design (maggio 2026):** usare **TrueSkill** (non ELO) perché:
+
 - ELO converge troppo lentamente con pochi dati per giocatore
 - TrueSkill modella l'incertezza (μ + σ) e converge più velocemente
 - Progettato nativamente per sport di squadra
@@ -87,6 +92,7 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 **Rating per-ruolo:** un rating separato per ogni ruolo sportivo (1-5) — i ruoli Baskin non sono comparabili tra loro.
 
 **Bilanciamento in due livelli:**
+
 1. Strutturale: distribuzione equa dei ruoli tra le squadre
 2. Skill: a parità di ruoli, bilanciare per rating TrueSkill
 
@@ -96,9 +102,9 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 
 ## Note operative
 
-| Categoria | Quando fare |
-|---|---|
-| 🔴 Critico | Prima del prossimo push in produzione |
-| 🟡 Media (M1) | Boy-scout rule: quando si tocca il file per altro |
-| 📋 Feature (F1–F4) | In ordine: F1 → F2 → F3 → F4 |
-| 🛠 DX / ✨ UX / 🏗 INF | Raccogliere in sprint dedicati |
+| Categoria              | Quando fare                                       |
+| ---------------------- | ------------------------------------------------- |
+| 🔴 Critico             | Prima del prossimo push in produzione             |
+| 🟡 Media (M1)          | Boy-scout rule: quando si tocca il file per altro |
+| 📋 Feature (F1–F4)     | In ordine: F1 → F2 → F3 → F4                      |
+| 🛠 DX / ✨ UX / 🏗 INF | Raccogliere in sprint dedicati                    |

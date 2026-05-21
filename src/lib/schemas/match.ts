@@ -10,7 +10,7 @@ export function deriveResult(ourScore: number, theirScore: number): MatchResult 
 
 const MatchBaseSchema = z.object({
   isHome: z.boolean().optional(),
-  venue: z.string().max(200).optional(),
+  venue: z.string().max(200).nullable().optional(),
   matchType: z.nativeEnum(MatchType).optional(),
   result: z.nativeEnum(MatchResult).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
@@ -20,15 +20,30 @@ const MatchBaseSchema = z.object({
 
 export const MatchCreateSchema = MatchBaseSchema.extend({
   teamId: z.string().min(1),
-  opponentId: z.string().min(1),
+  // Esattamente uno tra opponentId (esterno) e opponentTeamId (interno) dev'essere fornito.
+  opponentId: z.string().min(1).nullable().optional(),
+  opponentTeamId: z.string().min(1).nullable().optional(),
   date: z.string().datetime({ offset: true }).or(z.string().min(1)),
-  ourScore: z.number().int().min(0).optional(),
-  theirScore: z.number().int().min(0).optional(),
-});
+  ourScore: z.number().int().min(0).nullable().optional(),
+  theirScore: z.number().int().min(0).nullable().optional(),
+})
+  .refine((d) => !!d.opponentId !== !!d.opponentTeamId, {
+    message: "Specifica esattamente un avversario (esterno OPPURE interno)",
+    path: ["opponentId"],
+  })
+  .refine((d) => !d.opponentTeamId || d.opponentTeamId !== d.teamId, {
+    message: "Una squadra non può giocare contro se stessa",
+    path: ["opponentTeamId"],
+  })
+  .refine((d) => !d.opponentTeamId || d.matchType === "FRIENDLY" || d.matchType === undefined, {
+    message: "Le partite tra squadre interne possono essere solo amichevoli",
+    path: ["matchType"],
+  });
 
 export const MatchUpdateSchema = MatchBaseSchema.extend({
   date: z.string().min(1).optional(),
-  opponentId: z.string().min(1).optional(),
+  opponentId: z.string().min(1).nullable().optional(),
+  opponentTeamId: z.string().min(1).nullable().optional(),
   ourScore: z.number().int().min(0).nullable().optional(),
   theirScore: z.number().int().min(0).nullable().optional(),
 });
@@ -82,6 +97,9 @@ export function isStatFieldAllowed(role: number | null | undefined, field: StatF
 }
 
 export const CallupsSchema = z.object({
+  // Per le amichevoli interne specificare la squadra (match.teamId o match.opponentTeamId).
+  // Se omesso, le convocazioni si applicano a match.teamId (comportamento legacy).
+  teamId: z.string().min(1).optional(),
   userIds: z.array(z.string().min(1)).max(100).default([]),
   childIds: z.array(z.string().min(1)).max(100).default([]),
 });

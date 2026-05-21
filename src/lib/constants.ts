@@ -41,6 +41,9 @@ export const ROLE_COLORS: Record<number, string> = {
 export const ROLES = [1, 2, 3, 4, 5] as const;
 export type Role = (typeof ROLES)[number];
 
+/** Numero minimo di convocati per disputare una partita di Baskin. */
+export const MIN_CALLUPS = 6;
+
 export const TEAM_META = [
   { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
   { key: "teamB" as const, name: "Neri", color: "#1A1A1A" },

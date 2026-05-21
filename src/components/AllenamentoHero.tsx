@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -93,11 +93,7 @@ export default function AllenamientoHero({
 }: Props) {
   const status = getSessionStatus(sessionDate, sessionEnd);
 
-  const [sessionUrl, setSessionUrl] = useState("");
-
-  useEffect(() => {
-    setSessionUrl(window.location.href);
-  }, []);
+  const [sessionUrl] = useState(() => (typeof window !== "undefined" ? window.location.href : ""));
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -182,6 +178,32 @@ export default function AllenamientoHero({
           overflow: "hidden",
         }}
       >
+        {isStaff && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: { xs: 12, md: 16 },
+              right: { xs: 12, md: 20 },
+              zIndex: 2,
+            }}
+          >
+            <Tooltip title="Modifica allenamento">
+              <IconButton
+                onClick={openEdit}
+                size="small"
+                aria-label="Modifica allenamento"
+                sx={{
+                  color: "#fff",
+                  bgcolor: "rgba(255,255,255,0.1)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <EditIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
         <Box
           sx={{
             position: "absolute",
@@ -207,61 +229,45 @@ export default function AllenamientoHero({
           }}
         />
 
-        <Box sx={{ maxWidth: "md", mx: "auto", position: "relative" }}>
-          <Box sx={{ mb: 2 }}>
-            <Button
-              href="/allenamenti"
-              startIcon={<ArrowBackIcon sx={{ fontSize: "0.95rem !important" }} />}
-              size="small"
-              sx={{
-                color: "rgba(255,255,255,0.55)",
-                fontSize: "0.78rem",
-                fontWeight: 500,
-                px: 0,
-                minWidth: 0,
-                "&:hover": { color: "#fff", backgroundColor: "transparent" },
-              }}
-            >
-              Allenamenti
-            </Button>
-          </Box>
+        <Box sx={{ position: "relative", mb: 2 }}>
+          <Button
+            href="/allenamenti"
+            startIcon={<ArrowBackIcon sx={{ fontSize: "0.95rem !important" }} />}
+            size="small"
+            sx={{
+              color: "rgba(255,255,255,0.55)",
+              fontSize: "0.78rem",
+              fontWeight: 500,
+              px: 0,
+              minWidth: 0,
+              "&:hover": { color: "#fff", backgroundColor: "transparent" },
+            }}
+          >
+            Allenamenti
+          </Button>
+        </Box>
 
-          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 1.5 }}>
-            <Typography
-              variant="h4"
-              component="h1"
-              sx={{
-                fontWeight: 800,
-                lineHeight: 1.15,
-                fontSize: { xs: "1.7rem", sm: "2.2rem", md: "2.6rem" },
-                flex: 1,
-              }}
-            >
-              {session.title}
-            </Typography>
-            {isStaff && (
-              <Tooltip title="Modifica allenamento">
-                <IconButton
-                  onClick={openEdit}
-                  size="small"
-                  aria-label="Modifica allenamento"
-                  sx={{
-                    color: "rgba(255,255,255,0.55)",
-                    mt: 0.5,
-                    flexShrink: 0,
-                    "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.1)" },
-                  }}
-                >
-                  <EditIcon sx={{ fontSize: "1.1rem" }} />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
+        <Box sx={{ maxWidth: "md", mx: "auto", position: "relative", textAlign: "center" }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 800,
+              lineHeight: 1.15,
+              fontSize: { xs: "1.7rem", sm: "2.2rem", md: "2.6rem" },
+              mb: 1.5,
+              // Lascia spazio alla matita absolute top-right per lo staff
+              px: isStaff ? { xs: 5, md: 6 } : 0,
+            }}
+          >
+            {session.title}
+          </Typography>
 
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: 1,
               flexWrap: "wrap",
               mb: countdown ? 0.75 : 2,
@@ -350,7 +356,15 @@ export default function AllenamientoHero({
           </Box>
 
           {countdown && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.75,
+                mb: 2,
+              }}
+            >
               <AccessTimeIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.55)" }} />
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
                 {countdown}
@@ -362,6 +376,7 @@ export default function AllenamientoHero({
             sx={{
               display: "flex",
               flexWrap: "wrap",
+              justifyContent: "center",
               gap: { xs: 1, sm: 2.5 },
               mb: 2.5,
               opacity: 0.82,
@@ -382,7 +397,9 @@ export default function AllenamientoHero({
             </Box>
           </Box>
 
-          <ShareSection sessionTitle={session.title} sessionUrl={sessionUrl} dark />
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <ShareSection sessionTitle={session.title} sessionUrl={sessionUrl} dark />
+          </Box>
         </Box>
       </Box>
 

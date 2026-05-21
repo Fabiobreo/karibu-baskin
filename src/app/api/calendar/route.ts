@@ -57,6 +57,7 @@ export async function GET(req: Request) {
         result: true,
         team: { select: { name: true, color: true } },
         opponent: { select: { name: true } },
+        opponentTeam: { select: { name: true } },
       },
       orderBy: { date: "asc" },
     }),
@@ -79,19 +80,22 @@ export async function GET(req: Request) {
       teamName: t.team?.name,
       href: `/allenamento/${t.dateSlug ?? t.id}`,
     })),
-    ...matches.map((m) => ({
-      id: m.id,
-      type: "match" as const,
-      title: m.isHome ? `vs ${m.opponent.name}` : `@ ${m.opponent.name}`,
-      date: m.date.toISOString(),
-      color: m.team?.color ?? "#F44336",
-      teamName: m.team?.name,
-      opponent: m.opponent.name,
-      isHome: m.isHome,
-      result: m.result,
-      location: m.venue ?? undefined,
-      href: `/partite/${m.slug ?? m.id}`,
-    })),
+    ...matches.map((m) => {
+      const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
+      return {
+        id: m.id,
+        type: "match" as const,
+        title: m.isHome ? `vs ${opponentName}` : `@ ${opponentName}`,
+        date: m.date.toISOString(),
+        color: m.team?.color ?? "#F44336",
+        teamName: m.team?.name,
+        opponent: opponentName,
+        isHome: m.isHome,
+        result: m.result,
+        location: m.venue ?? undefined,
+        href: `/partite/${m.slug ?? m.id}`,
+      };
+    }),
     ...events.map((e) => ({
       id: e.id,
       type: "event" as const,

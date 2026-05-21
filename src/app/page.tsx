@@ -7,6 +7,7 @@ import SiteHeader from "@/components/SiteHeader";
 import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/HeroSection";
 import LoSapeviCard from "@/components/LoSapeviCard";
+import ProssimePartiteHome from "@/components/ProssimePartiteHome";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -94,6 +95,8 @@ export default async function HomePage() {
     <>
       <SiteHeader />
       <HeroSection />
+
+      <ProssimePartiteHome />
 
       <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <HomeSessionsSection

@@ -5,11 +5,13 @@ Web app per la squadra Karibu Baskin di Montecchio Maggiore (VI). Gestione allen
 ## Setup locale
 
 ### 1. Installa le dipendenze
+
 ```bash
 npm install
 ```
 
 ### 2. Configura le variabili d'ambiente
+
 ```bash
 cp .env.example .env.local
 # Modifica .env.local con i tuoi valori
@@ -18,11 +20,13 @@ cp .env.example .env.local
 Vedi [`docs/SETUP.md`](docs/SETUP.md) per le istruzioni dettagliate su ogni servizio esterno (Google OAuth, Neon, Resend, Web Push).
 
 ### 3. Esegui le migration
+
 ```bash
 npm run db:migrate
 ```
 
 ### 4. Avvia il server di sviluppo
+
 ```bash
 npm run dev
 ```

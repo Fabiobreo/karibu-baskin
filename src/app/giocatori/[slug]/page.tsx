@@ -12,6 +12,7 @@ import {
   Divider,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
+import PlayerShareButtons from "@/components/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -35,11 +36,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Cerca per slug, poi per ID (retrocompatibilità)
   const user = await prisma.user.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
-    select: { name: true },
+    select: {
+      name: true,
+      sportRole: true,
+      sportRoleVariant: true,
+      matchStats: { select: { points: true } },
+    },
   });
   if (!user) return { title: "Giocatore non trovato" };
-  const title = `${user.name ?? "Giocatore"} | Karibu Baskin`;
-  const description = `Profilo di ${user.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore: statistiche, squadre e partite.`;
+  const totalPoints = user.matchStats.reduce((s, m) => s + m.points, 0);
+  const matchesPlayed = user.matchStats.length;
+  const avgPoints = matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : null;
+  const roleLabel = user.sportRole
+    ? sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)
+    : null;
+  const title = `${user.name ?? "Giocatore"} · Karibu Baskin`;
+  const descParts: string[] = [];
+  if (roleLabel) descParts.push(roleLabel);
+  if (matchesPlayed > 0) {
+    descParts.push(`${totalPoints} punti totali`);
+    if (avgPoints) descParts.push(`${avgPoints} a partita`);
+    descParts.push(`${matchesPlayed} ${matchesPlayed === 1 ? "partita" : "partite"}`);
+  }
+  const description =
+    descParts.length > 0
+      ? `${descParts.join(" · ")} — Karibu Baskin, Montecchio Maggiore`
+      : `Profilo di ${user.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore.`;
   const url = `https://karibu-baskin.vercel.app/giocatori/${slug}`;
   return {
     title,
@@ -93,6 +115,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             include: {
               team: { select: { id: true, name: true, color: true, season: true } },
               opponent: { select: { id: true, name: true, city: true } },
+              opponentTeam: { select: { id: true, name: true } },
             },
           },
         },
@@ -106,6 +129,86 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   const currentSeason = getCurrentSeason();
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
+
+  // ── Medaglie: calcola se l'utente è 1°/2°/3° top scorer per ciascuna (squadra, stagione)
+  const teamSeasonPairs = user.teamMemberships.map((m) => ({
+    teamId: m.team.id,
+    teamName: m.team.name,
+    teamColor: m.team.color,
+    season: m.team.season,
+  }));
+  type Medal = {
+    teamId: string;
+    teamName: string;
+    teamColor: string | null;
+    season: string;
+    rank: 1 | 2 | 3;
+    points: number;
+  };
+  const medals: Medal[] = [];
+  if (teamSeasonPairs.length > 0) {
+    // Fetch di tutti i playerStats per le (team, season) del giocatore, esclusi i prestiti.
+    // Le partite del team in quella stagione vengono filtrate via match.team.season.
+    const allRelevantStats = await prisma.playerMatchStats.findMany({
+      where: {
+        isLoan: false,
+        OR: teamSeasonPairs.map((p) => ({
+          match: { teamId: p.teamId, team: { season: p.season } },
+        })),
+      },
+      select: {
+        points: true,
+        userId: true,
+        childId: true,
+        match: { select: { teamId: true, team: { select: { season: true } } } },
+      },
+    });
+    // Aggrega per (teamId, season, playerKey)
+    type Agg = { teamId: string; season: string; playerKey: string; points: number };
+    const aggMap = new Map<string, Agg>();
+    for (const s of allRelevantStats) {
+      const playerKey = s.userId ? `u:${s.userId}` : s.childId ? `c:${s.childId}` : null;
+      if (!playerKey) continue;
+      const key = `${s.match.teamId}::${s.match.team.season}::${playerKey}`;
+      const existing = aggMap.get(key);
+      if (existing) existing.points += s.points;
+      else
+        aggMap.set(key, {
+          teamId: s.match.teamId,
+          season: s.match.team.season,
+          playerKey,
+          points: s.points,
+        });
+    }
+    // Raggruppa per (teamId, season) e ordina
+    const byTeamSeason = new Map<string, Agg[]>();
+    for (const agg of aggMap.values()) {
+      const k = `${agg.teamId}::${agg.season}`;
+      const arr = byTeamSeason.get(k) ?? [];
+      arr.push(agg);
+      byTeamSeason.set(k, arr);
+    }
+    const userKey = `u:${user.id}`;
+    for (const pair of teamSeasonPairs) {
+      const arr = byTeamSeason.get(`${pair.teamId}::${pair.season}`);
+      if (!arr || arr.length === 0) continue;
+      const sorted = [...arr].filter((a) => a.points > 0).sort((a, b) => b.points - a.points);
+      const idx = sorted.findIndex((a) => a.playerKey === userKey);
+      if (idx === -1) continue;
+      const rank = idx + 1;
+      if (rank > 3) continue;
+      medals.push({
+        teamId: pair.teamId,
+        teamName: pair.teamName,
+        teamColor: pair.teamColor,
+        season: pair.season,
+        rank: rank as 1 | 2 | 3,
+        points: sorted[idx].points,
+      });
+    }
+    // Ordina: stagione più recente prima, rank migliore prima
+    medals.sort((a, b) => b.season.localeCompare(a.season) || a.rank - b.rank);
+  }
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
   const seasons = Array.from(
@@ -135,61 +238,146 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   const hasStats = matchesPlayed > 0;
 
+  // Colore dominante: colore della squadra corrente, fallback all'arancione Karibu
+  const playerColor = currentTeams[0]?.team.color ?? "#E65100";
+
   return (
     <>
       <SiteHeader />
 
-      {/* Hero */}
+      {/* Hero — design "carta giocatore" condivisibile */}
       <Box
         sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+          background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 30%, ${playerColor} 130%)`,
           color: "#fff",
-          py: { xs: 6, md: 8 },
+          py: { xs: 5, md: 7 },
           px: 2,
           position: "relative",
           overflow: "hidden",
         }}
       >
+        {/* Iniziale gigante in filigrana */}
         <Box
           sx={{
             position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            top: "50%",
+            right: { xs: -40, md: -20 },
+            transform: "translateY(-50%)",
+            fontSize: { xs: "14rem", md: "20rem" },
+            fontWeight: 900,
+            color: "#fff",
+            opacity: 0.05,
+            lineHeight: 1,
             pointerEvents: "none",
+            userSelect: "none",
+            fontFamily: "inherit",
           }}
-        />
+        >
+          {(user.name ?? "?")[0].toUpperCase()}
+        </Box>
+
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
-            <Avatar
-              src={user.image ?? undefined}
-              sx={{ width: 80, height: 80, fontSize: 28, border: "3px solid rgba(230,81,0,0.5)" }}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: { xs: "flex-start", sm: "center" },
+              gap: { xs: 2.5, md: 3.5 },
+              flexDirection: { xs: "column", sm: "row" },
+            }}
+          >
+            {/* Avatar grande con ring */}
+            <Box
+              sx={{
+                position: "relative",
+                flexShrink: 0,
+              }}
             >
-              {(user.name ?? "?")[0].toUpperCase()}
-            </Avatar>
-            <Box>
-              <Chip
-                label="Giocatore"
-                color="primary"
-                size="small"
-                sx={{ mb: 1, fontWeight: 700 }}
-              />
+              <Avatar
+                src={user.image ?? undefined}
+                sx={{
+                  width: { xs: 110, md: 140 },
+                  height: { xs: 110, md: 140 },
+                  fontSize: { xs: 42, md: 54 },
+                  fontWeight: 800,
+                  bgcolor: playerColor,
+                  border: `4px solid ${playerColor}`,
+                  boxShadow: `0 8px 28px ${playerColor}66, 0 0 0 6px rgba(0,0,0,0.25)`,
+                }}
+              >
+                {(user.name ?? "?")[0].toUpperCase()}
+              </Avatar>
+              {user.sportRole && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: -8,
+                    right: -8,
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    bgcolor: ROLE_COLORS[user.sportRole],
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 900,
+                    fontSize: "1.2rem",
+                    border: "3px solid #1A1A1A",
+                    boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  {user.sportRole}
+                </Box>
+              )}
+            </Box>
+
+            {/* Info giocatore */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
-                variant="h3"
-                fontWeight={800}
-                sx={{ mb: 0.5, fontSize: { xs: "1.8rem", md: "2.5rem" } }}
+                variant="overline"
+                sx={{
+                  color: playerColor,
+                  fontWeight: 800,
+                  letterSpacing: "0.14em",
+                  lineHeight: 1,
+                  textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+                }}
+              >
+                ★ Karibu Baskin
+              </Typography>
+              <Typography
+                variant="h2"
+                fontWeight={900}
+                sx={{
+                  fontSize: { xs: "2.2rem", md: "3.4rem" },
+                  lineHeight: 1.05,
+                  mt: 0.5,
+                  textShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                }}
               >
                 {user.name ?? "—"}
               </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mt: 0.5 }}>
+
+              {/* Ruolo + squadra corrente */}
+              <Box
+                sx={{
+                  mt: 1.5,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.75,
+                  alignItems: "center",
+                }}
+              >
                 {user.sportRole && (
                   <Chip
                     label={sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)}
                     size="small"
-                    sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700 }}
+                    sx={{
+                      bgcolor: ROLE_COLORS[user.sportRole],
+                      color: "#fff",
+                      fontWeight: 800,
+                      fontSize: "0.72rem",
+                    }}
                   />
                 )}
                 {currentTeams.map((m) => (
@@ -198,21 +386,206 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     icon={
                       m.isCaptain ? (
                         <EmojiEventsIcon
-                          sx={{ fontSize: "0.9rem !important", color: "#F9A825 !important" }}
+                          sx={{ fontSize: "0.95rem !important", color: "#FFD54F !important" }}
                         />
                       ) : undefined
                     }
                     label={m.team.name}
                     size="small"
                     sx={{
-                      bgcolor: m.team.color ? `${m.team.color}33` : "rgba(255,255,255,0.15)",
+                      bgcolor: m.team.color ?? "#424242",
                       color: "#fff",
-                      border: "1px solid",
-                      borderColor: m.team.color ?? "rgba(255,255,255,0.4)",
-                      fontWeight: 600,
+                      fontWeight: 700,
+                      fontSize: "0.72rem",
                     }}
                   />
                 ))}
+              </Box>
+
+              {/* Medaglie top scorer */}
+              {medals.length > 0 && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    gap: 0.75,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {medals.slice(0, 4).map((m, i) => {
+                    const isFirst = m.rank === 1;
+                    const isSecond = m.rank === 2;
+                    const medalColor = isFirst ? "#FFC107" : isSecond ? "#BDBDBD" : "#CD7F32";
+                    const medalLabel = isFirst
+                      ? "Top scorer"
+                      : isSecond
+                        ? "2° marcatore"
+                        : "3° marcatore";
+                    return (
+                      <Box
+                        key={`${m.teamId}-${m.season}-${i}`}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.75,
+                          bgcolor: "rgba(0,0,0,0.35)",
+                          border: `1.5px solid ${medalColor}`,
+                          borderRadius: 999,
+                          pl: 0.5,
+                          pr: 1.25,
+                          py: 0.3,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
+                            background: `radial-gradient(circle at 30% 30%, ${medalColor} 0%, ${
+                              isFirst ? "#FFA000" : isSecond ? "#9E9E9E" : "#8D6E63"
+                            } 100%)`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <EmojiEventsIcon sx={{ fontSize: 13, color: "#fff" }} />
+                        </Box>
+                        <Box sx={{ lineHeight: 1 }}>
+                          <Typography
+                            sx={{
+                              fontSize: "0.62rem",
+                              fontWeight: 800,
+                              color: medalColor,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.05em",
+                              display: "block",
+                            }}
+                          >
+                            {medalLabel}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: "0.65rem",
+                              fontWeight: 600,
+                              color: "#E0E0E0",
+                            }}
+                          >
+                            {m.teamName} · {m.season}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    );
+                  })}
+                  {medals.length > 4 && (
+                    <Chip
+                      label={`+${medals.length - 4}`}
+                      size="small"
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.1)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: "0.7rem",
+                      }}
+                    />
+                  )}
+                </Box>
+              )}
+
+              {/* Hero stat: punti totali stagione corrente o overall se nessun filtro */}
+              {hasStats && (
+                <Box
+                  sx={{
+                    mt: 2.5,
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+                    <Typography
+                      sx={{
+                        fontSize: { xs: "2.4rem", md: "3rem" },
+                        fontWeight: 900,
+                        color: "#fff",
+                        lineHeight: 1,
+                        fontVariantNumeric: "tabular-nums",
+                        textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+                      }}
+                    >
+                      {totalPoints}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        color: "#E0E0E0",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      Punti totali
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+                    <Typography
+                      sx={{
+                        fontSize: { xs: "1.4rem", md: "1.7rem" },
+                        fontWeight: 800,
+                        color: playerColor,
+                        lineHeight: 1,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {(totalPoints / matchesPlayed).toFixed(1)}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        color: "#BDBDBD",
+                      }}
+                    >
+                      a partita
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+                    <Typography
+                      sx={{
+                        fontSize: { xs: "1.4rem", md: "1.7rem" },
+                        fontWeight: 800,
+                        color: "#fff",
+                        lineHeight: 1,
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {matchesPlayed}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        color: "#BDBDBD",
+                      }}
+                    >
+                      {matchesPlayed === 1 ? "partita" : "partite"}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Share section */}
+              <Box sx={{ mt: 2.5 }}>
+                <PlayerShareButtons
+                  playerName={user.name ?? "Giocatore"}
+                  totalPoints={totalPoints}
+                  matchesPlayed={matchesPlayed}
+                  medalsCount={medals.length}
+                  slug={slug}
+                  playerColor={playerColor}
+                />
               </Box>
             </Box>
           </Box>
@@ -368,6 +741,100 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           </>
         )}
 
+        {/* Albo medaglie */}
+        {medals.length > 0 && (
+          <>
+            <Divider sx={{ mb: 5 }} />
+            <Box sx={{ mb: 5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <EmojiEventsIcon sx={{ color: "#FFC107" }} />
+                <Typography
+                  variant="overline"
+                  sx={{ color: "#FFC107", fontWeight: 700, letterSpacing: "0.1em" }}
+                >
+                  Albo
+                </Typography>
+              </Box>
+              <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>
+                Medaglie e riconoscimenti
+              </Typography>
+              <Grid container spacing={2}>
+                {medals.map((m, i) => {
+                  const isFirst = m.rank === 1;
+                  const isSecond = m.rank === 2;
+                  const medalColor = isFirst ? "#FFC107" : isSecond ? "#9E9E9E" : "#CD7F32";
+                  const medalGradient = isFirst
+                    ? "linear-gradient(135deg, #FFD54F 0%, #FFA000 100%)"
+                    : isSecond
+                      ? "linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)"
+                      : "linear-gradient(135deg, #D7A56B 0%, #8D6E63 100%)";
+                  const medalLabel = isFirst
+                    ? "Top scorer"
+                    : isSecond
+                      ? "2° marcatore"
+                      : "3° marcatore";
+                  return (
+                    <Grid key={`${m.teamId}-${m.season}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          border: "1px solid",
+                          borderColor: isFirst ? medalColor : "rgba(0,0,0,0.07)",
+                          boxShadow: isFirst ? `0 4px 16px ${medalColor}33` : "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          height: "100%",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 46,
+                            height: 46,
+                            borderRadius: "50%",
+                            background: medalGradient,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            border: "3px solid #fff",
+                            boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <EmojiEventsIcon sx={{ fontSize: 22, color: "#fff" }} />
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: medalColor,
+                              fontWeight: 800,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.06em",
+                              fontSize: "0.65rem",
+                              display: "block",
+                            }}
+                          >
+                            {medalLabel}
+                          </Typography>
+                          <Typography variant="body2" fontWeight={800} noWrap>
+                            {m.teamName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Stagione {m.season} · {m.points} punti
+                          </Typography>
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Box>
+          </>
+        )}
+
         {/* Squadre */}
         {user.teamMemberships.length > 0 && (
           <>
@@ -508,7 +975,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           >
                             <Box>
                               <Typography variant="body2" fontWeight={700}>
-                                {ms.match.team.name} vs {ms.match.opponent.name}
+                                {ms.match.team.name} vs{" "}
+                                {ms.match.opponent?.name ??
+                                  ms.match.opponentTeam?.name ??
+                                  "Avversario"}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
                                 {format(new Date(ms.match.date), "d MMMM yyyy", { locale: it })}

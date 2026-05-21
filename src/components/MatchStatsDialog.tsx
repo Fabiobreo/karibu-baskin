@@ -78,12 +78,12 @@ interface StatRow {
 }
 
 const STAT_COLS: { key: StatField; label: string; title: string }[] = [
+  { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
   { key: "twoPointers", label: "2pt", title: "Canestri da 2 punti" },
   { key: "threePointers", label: "3pt", title: "Canestri da 3 punti" },
-  { key: "freeThrows", label: "TL", title: "Tiri liberi" },
-  { key: "fouls", label: "Fal", title: "Falli" },
-  { key: "illegalFouls", label: "FI", title: "Falli illegali" },
-  { key: "shotsAttempted", label: "Tir", title: "Tiri tentati" },
+  { key: "fouls", label: "Falli", title: "Falli" },
+  { key: "illegalFouls", label: "Illegali", title: "Falli illegali" },
+  { key: "shotsAttempted", label: "Tiri", title: "Tiri tentati" },
 ];
 
 const STAT_FIELDS: readonly StatField[] = STAT_COLS.map((c) => c.key);

@@ -11,6 +11,9 @@ vi.mock("@/lib/db", () => ({
     match: {
       findUnique: vi.fn(),
     },
+    teamMembership: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     $transaction: vi.fn(),
   },
 }));
@@ -89,7 +92,10 @@ describe("PUT /api/matches/[matchId]/callups", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(false);
-    p.match.findUnique.mockResolvedValue({ id: "match-1" });
+    p.match.findUnique.mockResolvedValue({
+      teamId: "team-1",
+      team: { season: "2025-26" },
+    });
     p.matchCallup.deleteMany.mockResolvedValue({ count: 0 });
     p.matchCallup.createMany.mockResolvedValue({ count: 2 });
     p.$transaction.mockImplementation((ops: unknown[]) => Promise.all(ops));

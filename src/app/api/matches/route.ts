@@ -16,11 +16,12 @@ export async function GET(req: NextRequest) {
   const teamId = searchParams.get("teamId");
 
   const matches = await prisma.match.findMany({
-    where: teamId ? { teamId } : undefined,
+    where: teamId ? { OR: [{ teamId }, { opponentTeamId: teamId }] } : undefined,
     orderBy: { date: "desc" },
     include: {
       team: { select: { id: true, name: true, season: true, color: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      opponentTeam: { select: { id: true, name: true, season: true, color: true } },
       group: { select: { id: true, name: true } },
       _count: { select: { playerStats: true } },
     },
@@ -46,7 +47,12 @@ export async function POST(req: Request) {
 
   // Auto-derive result from scores; reject contradictions
   let resolvedResult: MatchResult | null = body.result ?? null;
-  if (body.ourScore !== undefined && body.theirScore !== undefined) {
+  if (
+    body.ourScore !== undefined &&
+    body.ourScore !== null &&
+    body.theirScore !== undefined &&
+    body.theirScore !== null
+  ) {
     const derived = deriveResult(body.ourScore, body.theirScore);
     if (resolvedResult !== null && resolvedResult !== derived) {
       return NextResponse.json(
@@ -61,33 +67,50 @@ export async function POST(req: Request) {
 
   const matchDate = new Date(body.date);
 
-  // Fetch team and opponent names for slug generation
-  const [team, opponent] = await Promise.all([
+  // Fetch nomi per la generazione dello slug (sia avversario esterno che interno)
+  const [team, opponentExt, opponentInt] = await Promise.all([
     prisma.competitiveTeam.findUnique({ where: { id: body.teamId }, select: { name: true } }),
-    prisma.opposingTeam.findUnique({ where: { id: body.opponentId }, select: { name: true } }),
+    body.opponentId
+      ? prisma.opposingTeam.findUnique({
+          where: { id: body.opponentId },
+          select: { name: true },
+        })
+      : Promise.resolve(null),
+    body.opponentTeamId
+      ? prisma.competitiveTeam.findUnique({
+          where: { id: body.opponentTeamId },
+          select: { name: true },
+        })
+      : Promise.resolve(null),
   ]);
+  const opponentName = opponentExt?.name ?? opponentInt?.name ?? null;
   const slug =
-    team && opponent ? await generateMatchSlug(team.name, opponent.name, matchDate) : null;
+    team && opponentName ? await generateMatchSlug(team.name, opponentName, matchDate) : null;
+
+  // Le partite interne sono sempre amichevoli (lo schema lo richiede)
+  const resolvedMatchType = body.opponentTeamId ? "FRIENDLY" : (body.matchType ?? "LEAGUE");
 
   const match = await prisma.match.create({
     data: {
       slug,
       teamId: body.teamId,
-      opponentId: body.opponentId,
+      opponentId: body.opponentId ?? null,
+      opponentTeamId: body.opponentTeamId ?? null,
       date: matchDate,
       isHome: body.isHome ?? true,
       venue: body.venue?.trim() || null,
-      matchType: body.matchType ?? "LEAGUE",
+      matchType: resolvedMatchType,
       ourScore: body.ourScore ?? null,
       theirScore: body.theirScore ?? null,
       result: resolvedResult,
       notes: body.notes?.trim() || null,
       matchday: body.matchday ?? null,
-      groupId: body.groupId ?? null,
+      groupId: body.opponentTeamId ? null : (body.groupId ?? null),
     },
     include: {
       team: { select: { id: true, name: true, season: true, color: true, championship: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      opponentTeam: { select: { id: true, name: true, season: true, color: true } },
       group: { select: { id: true, name: true } },
       _count: { select: { playerStats: true } },
     },
@@ -98,7 +121,12 @@ export async function POST(req: Request) {
       action: "CREATE_MATCH",
       targetType: "Match",
       targetId: match.id,
-      after: { teamId: body.teamId, opponentId: body.opponentId, date: body.date },
+      after: {
+        teamId: body.teamId,
+        opponentId: body.opponentId,
+        opponentTeamId: body.opponentTeamId,
+        date: body.date,
+      },
     }).catch((err) => console.error("[audit] create match", err));
   }
 

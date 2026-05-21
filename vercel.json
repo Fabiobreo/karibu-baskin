@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/training-open-reminder",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/match-callup-reminder",
+      "schedule": "0 9 * * *"
     }
   ]
 }

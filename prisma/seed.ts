@@ -130,8 +130,8 @@ type AthleteSpec = {
 };
 
 const COACHES: { name: string; gender: Gender }[] = [
-  { name: "Alessandro Merlin", gender: "MALE"   },
-  { name: "Roberta Pasin",     gender: "FEMALE" },
+  { name: "Alessandro Merlin", gender: "MALE" },
+  { name: "Roberta Pasin", gender: "FEMALE" },
 ];
 
 type ParentSpec = {
@@ -143,67 +143,71 @@ type ParentSpec = {
 
 const PARENTS: ParentSpec[] = [
   {
-    name: "Roberto Ferrari", gender: "MALE", birthYear: 1978,
+    name: "Roberto Ferrari",
+    gender: "MALE",
+    birthYear: 1978,
     children: [
-      { name: "Tommaso Ferrari", gender: "MALE",   sportRole: 3, birthYear: 2010 },
-      { name: "Lucia Ferrari",   gender: "FEMALE", sportRole: 2, birthYear: 2013 },
+      { name: "Tommaso Ferrari", gender: "MALE", sportRole: 3, birthYear: 2010 },
+      { name: "Lucia Ferrari", gender: "FEMALE", sportRole: 2, birthYear: 2013 },
     ],
   },
   {
-    name: "Maria Grasso", gender: "FEMALE", birthYear: 1982,
-    children: [
-      { name: "Davide Grasso", gender: "MALE", sportRole: 1, birthYear: 2008 },
-    ],
+    name: "Maria Grasso",
+    gender: "FEMALE",
+    birthYear: 1982,
+    children: [{ name: "Davide Grasso", gender: "MALE", sportRole: 1, birthYear: 2008 }],
   },
   {
-    name: "Claudio Santini", gender: "MALE", birthYear: 1975,
+    name: "Claudio Santini",
+    gender: "MALE",
+    birthYear: 1975,
     children: [
-      { name: "Elena Santini",   gender: "FEMALE", sportRole: 4, birthYear: 2009 },
-      { name: "Mattia Santini",  gender: "MALE",   sportRole: 3, birthYear: 2011 },
+      { name: "Elena Santini", gender: "FEMALE", sportRole: 4, birthYear: 2009 },
+      { name: "Mattia Santini", gender: "MALE", sportRole: 3, birthYear: 2011 },
     ],
   },
 ];
 
 const KAPULETI_ATHLETES: AthleteSpec[] = [
-  { name: "Marco Verdi",       gender: "MALE",   sportRole: 5, captain: true, birthYear: 1992 },
-  { name: "Elena Fontana",     gender: "FEMALE", sportRole: 4,                birthYear: 1996 },
-  { name: "Davide Conti",      gender: "MALE",   sportRole: 3,                birthYear: 1990 },
-  { name: "Valentina Mele",    gender: "FEMALE", sportRole: 3,                birthYear: 1998 },
-  { name: "Luca Ferrero",      gender: "MALE",   sportRole: 4,                birthYear: 1994 },
-  { name: "Chiara Gallo",      gender: "FEMALE", sportRole: 2, variant: "P",  birthYear: 2001 },
-  { name: "Simone Greco",      gender: "MALE",   sportRole: 5,                birthYear: 1989 },
-  { name: "Marta Russo",       gender: "FEMALE", sportRole: 3,                birthYear: 2000 },
-  { name: "Federico Marino",   gender: "MALE",   sportRole: 2, variant: "T",  birthYear: 2003 },
-  { name: "Beatrice Caruso",   gender: "FEMALE", sportRole: 4,                birthYear: 1995 },
-  { name: "Nicola Romano",     gender: "MALE",   sportRole: 1,                birthYear: 1988 },
-  { name: "Alessia Ricci",     gender: "FEMALE", sportRole: 5,                birthYear: 1997 },
-  { name: "Giorgio Esposito",  gender: "MALE",   sportRole: 3,                birthYear: 2002 },
-  { name: "Sara Lombardi",     gender: "FEMALE", sportRole: 2, variant: "S",  birthYear: 2005 },
+  { name: "Marco Verdi", gender: "MALE", sportRole: 5, captain: true, birthYear: 1992 },
+  { name: "Elena Fontana", gender: "FEMALE", sportRole: 4, birthYear: 1996 },
+  { name: "Davide Conti", gender: "MALE", sportRole: 3, birthYear: 1990 },
+  { name: "Valentina Mele", gender: "FEMALE", sportRole: 3, birthYear: 1998 },
+  { name: "Luca Ferrero", gender: "MALE", sportRole: 4, birthYear: 1994 },
+  { name: "Chiara Gallo", gender: "FEMALE", sportRole: 2, variant: "P", birthYear: 2001 },
+  { name: "Simone Greco", gender: "MALE", sportRole: 5, birthYear: 1989 },
+  { name: "Marta Russo", gender: "FEMALE", sportRole: 3, birthYear: 2000 },
+  { name: "Federico Marino", gender: "MALE", sportRole: 2, variant: "T", birthYear: 2003 },
+  { name: "Beatrice Caruso", gender: "FEMALE", sportRole: 4, birthYear: 1995 },
+  { name: "Nicola Romano", gender: "MALE", sportRole: 1, birthYear: 1988 },
+  { name: "Alessia Ricci", gender: "FEMALE", sportRole: 5, birthYear: 1997 },
+  { name: "Giorgio Esposito", gender: "MALE", sportRole: 3, birthYear: 2002 },
+  { name: "Sara Lombardi", gender: "FEMALE", sportRole: 2, variant: "S", birthYear: 2005 },
 ];
 
 const MONTEKKI_ATHLETES: AthleteSpec[] = [
-  { name: "Andrea Costa",      gender: "MALE",   sportRole: 3, captain: true, birthYear: 1993 },
-  { name: "Irene Barbieri",    gender: "FEMALE", sportRole: 2,                birthYear: 2002 },
-  { name: "Matteo Villa",      gender: "MALE",   sportRole: 4,                birthYear: 1991 },
-  { name: "Francesca Serra",   gender: "FEMALE", sportRole: 3,                birthYear: 1999 },
-  { name: "Lorenzo Colombo",   gender: "MALE",   sportRole: 1, variant: "S",  birthYear: 1985 },
-  { name: "Giulia Moretti",    gender: "FEMALE", sportRole: 5,                birthYear: 1996 },
-  { name: "Stefano Ferrari",   gender: "MALE",   sportRole: 2, variant: "R",  birthYear: 2001 },
-  { name: "Alice Bruno",       gender: "FEMALE", sportRole: 4,                birthYear: 1994 },
-  { name: "Riccardo Leone",    gender: "MALE",   sportRole: 5,                birthYear: 1990 },
-  { name: "Martina Vitale",    gender: "FEMALE", sportRole: 3,                birthYear: 2003 },
-  { name: "Emanuele Poli",     gender: "MALE",   sportRole: 2,                birthYear: 2006 },
-  { name: "Noemi Gatti",       gender: "FEMALE", sportRole: 1,                birthYear: 2004 },
+  { name: "Andrea Costa", gender: "MALE", sportRole: 3, captain: true, birthYear: 1993 },
+  { name: "Irene Barbieri", gender: "FEMALE", sportRole: 2, birthYear: 2002 },
+  { name: "Matteo Villa", gender: "MALE", sportRole: 4, birthYear: 1991 },
+  { name: "Francesca Serra", gender: "FEMALE", sportRole: 3, birthYear: 1999 },
+  { name: "Lorenzo Colombo", gender: "MALE", sportRole: 1, variant: "S", birthYear: 1985 },
+  { name: "Giulia Moretti", gender: "FEMALE", sportRole: 5, birthYear: 1996 },
+  { name: "Stefano Ferrari", gender: "MALE", sportRole: 2, variant: "R", birthYear: 2001 },
+  { name: "Alice Bruno", gender: "FEMALE", sportRole: 4, birthYear: 1994 },
+  { name: "Riccardo Leone", gender: "MALE", sportRole: 5, birthYear: 1990 },
+  { name: "Martina Vitale", gender: "FEMALE", sportRole: 3, birthYear: 2003 },
+  { name: "Emanuele Poli", gender: "MALE", sportRole: 2, birthYear: 2006 },
+  { name: "Noemi Gatti", gender: "FEMALE", sportRole: 1, birthYear: 2004 },
 ];
 
 const OPPOSING_TEAMS: { name: string; city: string }[] = [
-  { name: "Falchi Vicenza",  city: "Vicenza"              },
-  { name: "Aquile Padova",   city: "Padova"               },
-  { name: "Leoni Verona",    city: "Verona"               },
-  { name: "Tigri Treviso",   city: "Treviso"              },
-  { name: "Orsi Bassano",    city: "Bassano del Grappa"   },
-  { name: "Delfini Rovigo",  city: "Rovigo"               },
-  { name: "Lupi Belluno",    city: "Belluno"              },
+  { name: "Falchi Vicenza", city: "Vicenza" },
+  { name: "Aquile Padova", city: "Padova" },
+  { name: "Leoni Verona", city: "Verona" },
+  { name: "Tigri Treviso", city: "Treviso" },
+  { name: "Orsi Bassano", city: "Bassano del Grappa" },
+  { name: "Delfini Rovigo", city: "Rovigo" },
+  { name: "Lupi Belluno", city: "Belluno" },
 ];
 
 type MatchDef = {
@@ -214,6 +218,9 @@ type MatchDef = {
   our?: number;
   their?: number;
   result?: MatchResult;
+  // Nomi atleti presi in prestito dall'altra squadra Karibu per questa partita.
+  // Devono corrispondere esattamente al `name` in KAPULETI_ATHLETES / MONTEKKI_ATHLETES.
+  loanFromOther?: string[];
 };
 
 type GroupMatchDef = {
@@ -226,71 +233,384 @@ type GroupMatchDef = {
 };
 
 const KAPULETI_MATCHES: MatchDef[] = [
-  { oppName: "Falchi Vicenza", date: past(91),   isHome: true,  matchday: 1, our: 72, their: 58, result: "WIN"  },
-  { oppName: "Aquile Padova",  date: past(77),   isHome: false, matchday: 2, our: 45, their: 61, result: "LOSS" },
-  { oppName: "Leoni Verona",   date: past(63),   isHome: true,  matchday: 3, our: 83, their: 67, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: past(56),   isHome: false, matchday: 3, our: 60, their: 55, result: "WIN"  },
-  { oppName: "Orsi Bassano",   date: past(49),   isHome: true,  matchday: 4, our: 78, their: 74, result: "WIN"  },
-  { oppName: "Delfini Rovigo", date: past(42),   isHome: false, matchday: 4, our: 55, their: 66, result: "LOSS" },
-  { oppName: "Leoni Verona",   date: past(35),   isHome: false, matchday: 5, our: 71, their: 68, result: "WIN"  },
-  { oppName: "Falchi Vicenza", date: past(21),   isHome: false, matchday: 6, our: 63, their: 59, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: past(7),    isHome: true,  matchday: 6, our: 80, their: 72, result: "WIN"  },
-  { oppName: "Orsi Bassano",   date: future(7),  isHome: false, matchday: 6 },
-  { oppName: "Aquile Padova",  date: future(21), isHome: true,  matchday: 7 },
-  { oppName: "Delfini Rovigo", date: future(35), isHome: true,  matchday: 7 },
+  {
+    oppName: "Falchi Vicenza",
+    date: past(91),
+    isHome: true,
+    matchday: 1,
+    our: 72,
+    their: 58,
+    result: "WIN",
+  },
+  {
+    oppName: "Aquile Padova",
+    date: past(77),
+    isHome: false,
+    matchday: 2,
+    our: 45,
+    their: 61,
+    result: "LOSS",
+  },
+  {
+    oppName: "Leoni Verona",
+    date: past(63),
+    isHome: true,
+    matchday: 3,
+    our: 83,
+    their: 67,
+    result: "WIN",
+  },
+  {
+    oppName: "Tigri Treviso",
+    date: past(56),
+    isHome: false,
+    matchday: 3,
+    our: 60,
+    their: 55,
+    result: "WIN",
+  },
+  {
+    oppName: "Orsi Bassano",
+    date: past(49),
+    isHome: true,
+    matchday: 4,
+    our: 78,
+    their: 74,
+    result: "WIN",
+  },
+  {
+    oppName: "Delfini Rovigo",
+    date: past(42),
+    isHome: false,
+    matchday: 4,
+    our: 55,
+    their: 66,
+    result: "LOSS",
+    // Kapuleti senza Beatrice → prendono Alice Bruno (Mon R4) in prestito
+    loanFromOther: ["Alice Bruno"],
+  },
+  {
+    oppName: "Leoni Verona",
+    date: past(35),
+    isHome: false,
+    matchday: 5,
+    our: 71,
+    their: 68,
+    result: "WIN",
+  },
+  {
+    oppName: "Falchi Vicenza",
+    date: past(21),
+    isHome: false,
+    matchday: 6,
+    our: 63,
+    their: 59,
+    result: "WIN",
+    // Trasferta lunga → Giulia Moretti (Mon R5) sostituisce un Kap assente
+    loanFromOther: ["Giulia Moretti"],
+  },
+  {
+    oppName: "Tigri Treviso",
+    date: past(7),
+    isHome: true,
+    matchday: 6,
+    our: 80,
+    their: 72,
+    result: "WIN",
+  },
+  { oppName: "Orsi Bassano", date: future(7), isHome: false, matchday: 6 },
+  { oppName: "Aquile Padova", date: future(21), isHome: true, matchday: 7 },
+  { oppName: "Delfini Rovigo", date: future(35), isHome: true, matchday: 7 },
 ];
 
 const MONTEKKI_MATCHES: MatchDef[] = [
-  { oppName: "Lupi Belluno",   date: past(88),   isHome: true,  matchday: 1, our: 52, their: 48, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: past(74),   isHome: false, matchday: 2, our: 38, their: 55, result: "LOSS" },
-  { oppName: "Falchi Vicenza", date: past(60),   isHome: true,  matchday: 3, our: 61, their: 61, result: "DRAW" },
-  { oppName: "Aquile Padova",  date: past(46),   isHome: false, matchday: 4, our: 44, their: 50, result: "LOSS" },
-  { oppName: "Leoni Verona",   date: past(32),   isHome: true,  matchday: 4, our: 58, their: 47, result: "WIN"  },
-  { oppName: "Lupi Belluno",   date: past(18),   isHome: false, matchday: 5, our: 49, their: 53, result: "LOSS" },
-  { oppName: "Orsi Bassano",   date: past(4),    isHome: true,  matchday: 5, our: 67, their: 52, result: "WIN"  },
-  { oppName: "Tigri Treviso",  date: future(4),  isHome: false, matchday: 5 },
-  { oppName: "Falchi Vicenza", date: future(18), isHome: true,  matchday: 6 },
-  { oppName: "Aquile Padova",  date: future(32), isHome: false, matchday: 6 },
+  {
+    oppName: "Lupi Belluno",
+    date: past(88),
+    isHome: true,
+    matchday: 1,
+    our: 52,
+    their: 48,
+    result: "WIN",
+  },
+  {
+    oppName: "Tigri Treviso",
+    date: past(74),
+    isHome: false,
+    matchday: 2,
+    our: 38,
+    their: 55,
+    result: "LOSS",
+  },
+  {
+    oppName: "Falchi Vicenza",
+    date: past(60),
+    isHome: true,
+    matchday: 3,
+    our: 61,
+    their: 61,
+    result: "DRAW",
+  },
+  {
+    oppName: "Aquile Padova",
+    date: past(46),
+    isHome: false,
+    matchday: 4,
+    our: 44,
+    their: 50,
+    result: "LOSS",
+    // Montekki tirati su R4 → Elena Fontana (Kap) viene in prestito
+    loanFromOther: ["Elena Fontana"],
+  },
+  {
+    oppName: "Leoni Verona",
+    date: past(32),
+    isHome: true,
+    matchday: 4,
+    our: 58,
+    their: 47,
+    result: "WIN",
+  },
+  {
+    oppName: "Lupi Belluno",
+    date: past(18),
+    isHome: false,
+    matchday: 5,
+    our: 49,
+    their: 53,
+    result: "LOSS",
+    // Simone Greco (Kap R5) in prestito ai Mon
+    loanFromOther: ["Simone Greco"],
+  },
+  {
+    oppName: "Orsi Bassano",
+    date: past(4),
+    isHome: true,
+    matchday: 5,
+    our: 67,
+    their: 52,
+    result: "WIN",
+    // Doppio prestito Kap → Mon (entrambi R5 di Kapuleti)
+    loanFromOther: ["Alessia Ricci", "Simone Greco"],
+  },
+  { oppName: "Tigri Treviso", date: future(4), isHome: false, matchday: 5 },
+  { oppName: "Falchi Vicenza", date: future(18), isHome: true, matchday: 6 },
+  { oppName: "Aquile Padova", date: future(32), isHome: false, matchday: 6 },
 ];
 
 // Partite tra le altre squadre del Girone A Ovest — Gold (senza Kapuleti)
 const KAPULETI_GROUP_MATCHES: GroupMatchDef[] = [
-  { homeName: "Falchi Vicenza",  awayName: "Aquile Padova",  date: past(92), matchday: 1, homeScore: 68, awayScore: 54 },
-  { homeName: "Leoni Verona",    awayName: "Tigri Treviso",  date: past(91), matchday: 1, homeScore: 72, awayScore: 65 },
-  { homeName: "Delfini Rovigo",  awayName: "Orsi Bassano",   date: past(90), matchday: 1, homeScore: 48, awayScore: 62 },
-  { homeName: "Aquile Padova",   awayName: "Leoni Verona",   date: past(78), matchday: 2, homeScore: 55, awayScore: 70 },
-  { homeName: "Tigri Treviso",   awayName: "Falchi Vicenza", date: past(77), matchday: 2, homeScore: 61, awayScore: 74 },
-  { homeName: "Orsi Bassano",    awayName: "Delfini Rovigo", date: past(76), matchday: 2, homeScore: 59, awayScore: 53 },
-  { homeName: "Falchi Vicenza",  awayName: "Leoni Verona",   date: past(64), matchday: 3, homeScore: 77, awayScore: 68 },
-  { homeName: "Aquile Padova",   awayName: "Delfini Rovigo", date: past(63), matchday: 3, homeScore: 66, awayScore: 58 },
-  { homeName: "Tigri Treviso",   awayName: "Orsi Bassano",   date: past(62), matchday: 3, homeScore: 63, awayScore: 57 },
-  { homeName: "Leoni Verona",    awayName: "Orsi Bassano",   date: past(50), matchday: 4, homeScore: 80, awayScore: 55 },
-  { homeName: "Delfini Rovigo",  awayName: "Tigri Treviso",  date: past(49), matchday: 4, homeScore: 50, awayScore: 68 },
-  { homeName: "Orsi Bassano",    awayName: "Aquile Padova",  date: past(36), matchday: 5, homeScore: 44, awayScore: 71 },
-  { homeName: "Leoni Verona",    awayName: "Delfini Rovigo", date: past(35), matchday: 5, homeScore: 75, awayScore: 60 },
-  { homeName: "Aquile Padova",   awayName: "Falchi Vicenza", date: future(9),  matchday: 6 },
-  { homeName: "Orsi Bassano",    awayName: "Leoni Verona",   date: future(10), matchday: 6 },
-  { homeName: "Falchi Vicenza",  awayName: "Delfini Rovigo", date: future(22), matchday: 7 },
-  { homeName: "Tigri Treviso",   awayName: "Aquile Padova",  date: future(22), matchday: 7 },
+  {
+    homeName: "Falchi Vicenza",
+    awayName: "Aquile Padova",
+    date: past(92),
+    matchday: 1,
+    homeScore: 68,
+    awayScore: 54,
+  },
+  {
+    homeName: "Leoni Verona",
+    awayName: "Tigri Treviso",
+    date: past(91),
+    matchday: 1,
+    homeScore: 72,
+    awayScore: 65,
+  },
+  {
+    homeName: "Delfini Rovigo",
+    awayName: "Orsi Bassano",
+    date: past(90),
+    matchday: 1,
+    homeScore: 48,
+    awayScore: 62,
+  },
+  {
+    homeName: "Aquile Padova",
+    awayName: "Leoni Verona",
+    date: past(78),
+    matchday: 2,
+    homeScore: 55,
+    awayScore: 70,
+  },
+  {
+    homeName: "Tigri Treviso",
+    awayName: "Falchi Vicenza",
+    date: past(77),
+    matchday: 2,
+    homeScore: 61,
+    awayScore: 74,
+  },
+  {
+    homeName: "Orsi Bassano",
+    awayName: "Delfini Rovigo",
+    date: past(76),
+    matchday: 2,
+    homeScore: 59,
+    awayScore: 53,
+  },
+  {
+    homeName: "Falchi Vicenza",
+    awayName: "Leoni Verona",
+    date: past(64),
+    matchday: 3,
+    homeScore: 77,
+    awayScore: 68,
+  },
+  {
+    homeName: "Aquile Padova",
+    awayName: "Delfini Rovigo",
+    date: past(63),
+    matchday: 3,
+    homeScore: 66,
+    awayScore: 58,
+  },
+  {
+    homeName: "Tigri Treviso",
+    awayName: "Orsi Bassano",
+    date: past(62),
+    matchday: 3,
+    homeScore: 63,
+    awayScore: 57,
+  },
+  {
+    homeName: "Leoni Verona",
+    awayName: "Orsi Bassano",
+    date: past(50),
+    matchday: 4,
+    homeScore: 80,
+    awayScore: 55,
+  },
+  {
+    homeName: "Delfini Rovigo",
+    awayName: "Tigri Treviso",
+    date: past(49),
+    matchday: 4,
+    homeScore: 50,
+    awayScore: 68,
+  },
+  {
+    homeName: "Orsi Bassano",
+    awayName: "Aquile Padova",
+    date: past(36),
+    matchday: 5,
+    homeScore: 44,
+    awayScore: 71,
+  },
+  {
+    homeName: "Leoni Verona",
+    awayName: "Delfini Rovigo",
+    date: past(35),
+    matchday: 5,
+    homeScore: 75,
+    awayScore: 60,
+  },
+  { homeName: "Aquile Padova", awayName: "Falchi Vicenza", date: future(9), matchday: 6 },
+  { homeName: "Orsi Bassano", awayName: "Leoni Verona", date: future(10), matchday: 6 },
+  { homeName: "Falchi Vicenza", awayName: "Delfini Rovigo", date: future(22), matchday: 7 },
+  { homeName: "Tigri Treviso", awayName: "Aquile Padova", date: future(22), matchday: 7 },
 ];
 
 // Partite tra le altre squadre del Girone B Ovest — Silver (senza Montekki)
 const MONTEKKI_GROUP_MATCHES: GroupMatchDef[] = [
-  { homeName: "Lupi Belluno",    awayName: "Falchi Vicenza", date: past(89), matchday: 1, homeScore: 44, awayScore: 61 },
-  { homeName: "Aquile Padova",   awayName: "Tigri Treviso",  date: past(89), matchday: 1, homeScore: 58, awayScore: 67 },
-  { homeName: "Leoni Verona",    awayName: "Orsi Bassano",   date: past(88), matchday: 1, homeScore: 70, awayScore: 53 },
-  { homeName: "Falchi Vicenza",  awayName: "Aquile Padova",  date: past(75), matchday: 2, homeScore: 72, awayScore: 60 },
-  { homeName: "Tigri Treviso",   awayName: "Leoni Verona",   date: past(74), matchday: 2, homeScore: 65, awayScore: 72 },
-  { homeName: "Orsi Bassano",    awayName: "Lupi Belluno",   date: past(73), matchday: 2, homeScore: 49, awayScore: 55 },
-  { homeName: "Lupi Belluno",    awayName: "Leoni Verona",   date: past(61), matchday: 3, homeScore: 52, awayScore: 66 },
-  { homeName: "Aquile Padova",   awayName: "Orsi Bassano",   date: past(60), matchday: 3, homeScore: 63, awayScore: 50 },
-  { homeName: "Falchi Vicenza",  awayName: "Tigri Treviso",  date: past(59), matchday: 3, homeScore: 78, awayScore: 55 },
-  { homeName: "Leoni Verona",    awayName: "Aquile Padova",  date: past(33), matchday: 4, homeScore: 61, awayScore: 68 },
-  { homeName: "Orsi Bassano",    awayName: "Falchi Vicenza", date: past(32), matchday: 4, homeScore: 47, awayScore: 73 },
-  { homeName: "Tigri Treviso",   awayName: "Lupi Belluno",   date: past(31), matchday: 4, homeScore: 74, awayScore: 50 },
-  { homeName: "Falchi Vicenza",  awayName: "Leoni Verona",   date: future(6),  matchday: 5 },
-  { homeName: "Lupi Belluno",    awayName: "Aquile Padova",  date: future(6),  matchday: 5 },
-  { homeName: "Orsi Bassano",    awayName: "Tigri Treviso",  date: future(20), matchday: 6 },
+  {
+    homeName: "Lupi Belluno",
+    awayName: "Falchi Vicenza",
+    date: past(89),
+    matchday: 1,
+    homeScore: 44,
+    awayScore: 61,
+  },
+  {
+    homeName: "Aquile Padova",
+    awayName: "Tigri Treviso",
+    date: past(89),
+    matchday: 1,
+    homeScore: 58,
+    awayScore: 67,
+  },
+  {
+    homeName: "Leoni Verona",
+    awayName: "Orsi Bassano",
+    date: past(88),
+    matchday: 1,
+    homeScore: 70,
+    awayScore: 53,
+  },
+  {
+    homeName: "Falchi Vicenza",
+    awayName: "Aquile Padova",
+    date: past(75),
+    matchday: 2,
+    homeScore: 72,
+    awayScore: 60,
+  },
+  {
+    homeName: "Tigri Treviso",
+    awayName: "Leoni Verona",
+    date: past(74),
+    matchday: 2,
+    homeScore: 65,
+    awayScore: 72,
+  },
+  {
+    homeName: "Orsi Bassano",
+    awayName: "Lupi Belluno",
+    date: past(73),
+    matchday: 2,
+    homeScore: 49,
+    awayScore: 55,
+  },
+  {
+    homeName: "Lupi Belluno",
+    awayName: "Leoni Verona",
+    date: past(61),
+    matchday: 3,
+    homeScore: 52,
+    awayScore: 66,
+  },
+  {
+    homeName: "Aquile Padova",
+    awayName: "Orsi Bassano",
+    date: past(60),
+    matchday: 3,
+    homeScore: 63,
+    awayScore: 50,
+  },
+  {
+    homeName: "Falchi Vicenza",
+    awayName: "Tigri Treviso",
+    date: past(59),
+    matchday: 3,
+    homeScore: 78,
+    awayScore: 55,
+  },
+  {
+    homeName: "Leoni Verona",
+    awayName: "Aquile Padova",
+    date: past(33),
+    matchday: 4,
+    homeScore: 61,
+    awayScore: 68,
+  },
+  {
+    homeName: "Orsi Bassano",
+    awayName: "Falchi Vicenza",
+    date: past(32),
+    matchday: 4,
+    homeScore: 47,
+    awayScore: 73,
+  },
+  {
+    homeName: "Tigri Treviso",
+    awayName: "Lupi Belluno",
+    date: past(31),
+    matchday: 4,
+    homeScore: 74,
+    awayScore: 50,
+  },
+  { homeName: "Falchi Vicenza", awayName: "Leoni Verona", date: future(6), matchday: 5 },
+  { homeName: "Lupi Belluno", awayName: "Aquile Padova", date: future(6), matchday: 5 },
+  { homeName: "Orsi Bassano", awayName: "Tigri Treviso", date: future(20), matchday: 6 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -391,14 +711,14 @@ async function seed() {
   console.log("👟 Allenatori...");
   for (const c of COACHES) {
     await prisma.user.upsert({
-      where:  { email: toEmail(c.name) },
+      where: { email: toEmail(c.name) },
       update: {},
       create: {
-        email:   toEmail(c.name),
-        name:    c.name,
-        slug:    toSlug(c.name),
+        email: toEmail(c.name),
+        name: c.name,
+        slug: toSlug(c.name),
         appRole: "COACH" as AppRole,
-        gender:  c.gender,
+        gender: c.gender,
       },
     });
     console.log(`  ✓ ${c.name} (COACH)`);
@@ -408,14 +728,14 @@ async function seed() {
   console.log("\n👨‍👧 Genitori e figli...");
   for (const p of PARENTS) {
     const parent = await prisma.user.upsert({
-      where:  { email: toEmail(p.name) },
+      where: { email: toEmail(p.name) },
       update: {},
       create: {
-        email:     toEmail(p.name),
-        name:      p.name,
-        slug:      toSlug(p.name),
-        appRole:   "PARENT" as AppRole,
-        gender:    p.gender,
+        email: toEmail(p.name),
+        name: p.name,
+        slug: toSlug(p.name),
+        appRole: "PARENT" as AppRole,
+        gender: p.gender,
         birthDate: new Date(`${p.birthYear}-06-15`),
       },
     });
@@ -423,13 +743,13 @@ async function seed() {
     for (const ch of p.children) {
       const childId = `mock-child-${toSlug(ch.name)}`;
       await prisma.child.upsert({
-        where:  { id: childId },
+        where: { id: childId },
         update: {},
         create: {
-          id:        childId,
-          parentId:  parent.id,
-          name:      ch.name,
-          gender:    ch.gender,
+          id: childId,
+          parentId: parent.id,
+          name: ch.name,
+          gender: ch.gender,
           sportRole: ch.sportRole ?? null,
           birthDate: new Date(`${ch.birthYear}-03-20`),
         },
@@ -440,45 +760,55 @@ async function seed() {
 
   // ── Atleti Kapuleti ──────────────────────────────────────────────────────────
   console.log("\n👥 Atleti Kapuleti...");
-  const kapUserIds: { id: string; sportRole: number; captain: boolean }[] = [];
+  const kapUserIds: { id: string; name: string; sportRole: number; captain: boolean }[] = [];
   for (const a of KAPULETI_ATHLETES) {
     const user = await prisma.user.upsert({
-      where:  { email: toEmail(a.name) },
+      where: { email: toEmail(a.name) },
       update: {},
       create: {
-        email:            toEmail(a.name),
-        name:             a.name,
-        slug:             toSlug(a.name),
-        appRole:          "ATHLETE" as AppRole,
-        gender:           a.gender,
-        sportRole:        a.sportRole,
+        email: toEmail(a.name),
+        name: a.name,
+        slug: toSlug(a.name),
+        appRole: "ATHLETE" as AppRole,
+        gender: a.gender,
+        sportRole: a.sportRole,
         sportRoleVariant: a.variant ?? null,
-        birthDate:        new Date(`${a.birthYear ?? 1993}-05-10`),
+        birthDate: new Date(`${a.birthYear ?? 1993}-05-10`),
       },
     });
-    kapUserIds.push({ id: user.id, sportRole: a.sportRole, captain: !!a.captain });
+    kapUserIds.push({
+      id: user.id,
+      name: a.name,
+      sportRole: a.sportRole,
+      captain: !!a.captain,
+    });
     console.log(`  ✓ ${a.name} (R${a.sportRole}${a.variant ?? ""})`);
   }
 
   // ── Atleti Montekki ──────────────────────────────────────────────────────────
   console.log("\n👥 Atleti Montekki...");
-  const monUserIds: { id: string; sportRole: number; captain: boolean }[] = [];
+  const monUserIds: { id: string; name: string; sportRole: number; captain: boolean }[] = [];
   for (const a of MONTEKKI_ATHLETES) {
     const user = await prisma.user.upsert({
-      where:  { email: toEmail(a.name) },
+      where: { email: toEmail(a.name) },
       update: {},
       create: {
-        email:            toEmail(a.name),
-        name:             a.name,
-        slug:             toSlug(a.name),
-        appRole:          "ATHLETE" as AppRole,
-        gender:           a.gender,
-        sportRole:        a.sportRole,
+        email: toEmail(a.name),
+        name: a.name,
+        slug: toSlug(a.name),
+        appRole: "ATHLETE" as AppRole,
+        gender: a.gender,
+        sportRole: a.sportRole,
         sportRoleVariant: a.variant ?? null,
-        birthDate:        new Date(`${a.birthYear ?? 1995}-08-22`),
+        birthDate: new Date(`${a.birthYear ?? 1995}-08-22`),
       },
     });
-    monUserIds.push({ id: user.id, sportRole: a.sportRole, captain: !!a.captain });
+    monUserIds.push({
+      id: user.id,
+      name: a.name,
+      sportRole: a.sportRole,
+      captain: !!a.captain,
+    });
     console.log(`  ✓ ${a.name} (R${a.sportRole}${a.variant ?? ""})`);
   }
 
@@ -487,24 +817,26 @@ async function seed() {
 
   const kapuleti = await prisma.competitiveTeam.create({
     data: {
-      name:         "Kapuleti",
-      season:       SEASON,
+      name: "Kapuleti",
+      season: SEASON,
       championship: "Campionato Veneto — Gold Ovest",
-      color:        "#E65100",
-      description:  "La formazione dei Kapuleti milita nel campionato Veneto Gold Ovest. " +
-                    "Nata nel 2021 da un gruppo di giocatori affiatati, punta ogni anno al vertice del girone.",
+      color: "#E65100",
+      description:
+        "La formazione dei Kapuleti milita nel campionato Veneto Gold Ovest. " +
+        "Nata nel 2021 da un gruppo di giocatori affiatati, punta ogni anno al vertice del girone.",
     },
   });
   console.log("  ✓ Kapuleti — Gold Ovest");
 
   const montekki = await prisma.competitiveTeam.create({
     data: {
-      name:         "Montekki",
-      season:       SEASON,
+      name: "Montekki",
+      season: SEASON,
       championship: "Campionato Veneto — Silver Ovest",
-      color:        "#546E7A",
-      description:  "La formazione dei Montekki milita nel campionato Veneto Silver Ovest. " +
-                    "Mix di giovani leve e giocatori esperti, è il vivaio del club.",
+      color: "#546E7A",
+      description:
+        "La formazione dei Montekki milita nel campionato Veneto Silver Ovest. " +
+        "Mix di giovani leve e giocatori esperti, è il vivaio del club.",
     },
   });
   console.log("  ✓ Montekki — Silver Ovest");
@@ -514,20 +846,20 @@ async function seed() {
 
   const kapGroup = await prisma.group.create({
     data: {
-      name:         "Girone A Ovest — Gold",
-      season:       SEASON,
+      name: "Girone A Ovest — Gold",
+      season: SEASON,
       championship: "Gold",
-      teamId:       kapuleti.id,
+      teamId: kapuleti.id,
     },
   });
   console.log("  ✓ Girone Kapuleti (Gold)");
 
   const monGroup = await prisma.group.create({
     data: {
-      name:         "Girone B Ovest — Silver",
-      season:       SEASON,
+      name: "Girone B Ovest — Silver",
+      season: SEASON,
       championship: "Silver",
-      teamId:       montekki.id,
+      teamId: montekki.id,
     },
   });
   console.log("  ✓ Girone Montekki (Silver)");
@@ -565,7 +897,8 @@ async function seed() {
   const opponents: Record<string, string> = {};
   for (const opp of OPPOSING_TEAMS) {
     const existing = await prisma.opposingTeam.findFirst({ where: { name: opp.name } });
-    const team = existing ?? await prisma.opposingTeam.create({ data: { name: opp.name, city: opp.city } });
+    const team =
+      existing ?? (await prisma.opposingTeam.create({ data: { name: opp.name, city: opp.city } }));
     opponents[opp.name] = team.id;
     console.log(`  ✓ ${opp.name}`);
   }
@@ -576,63 +909,99 @@ async function seed() {
     teamId: string,
     groupId: string,
     defs: MatchDef[],
-    rosterIds: { id: string; sportRole: number }[],
-    label: string,
+    rosterIds: { id: string; name: string; sportRole: number }[],
+    otherRoster: { id: string; name: string; sportRole: number }[],
+    label: string
   ) {
     console.log(`\n🏅 Partite ${label}...`);
     for (const m of defs) {
       const match = await prisma.match.create({
         data: {
-          slug:       toMatchSlug(label, m.oppName, m.date),
+          slug: toMatchSlug(label, m.oppName, m.date),
           teamId,
           groupId,
           opponentId: opponents[m.oppName],
-          date:       m.date,
-          isHome:     m.isHome,
-          matchday:   m.matchday ?? null,
-          matchType:  "LEAGUE" as MatchType,
-          ourScore:   m.our   ?? null,
+          date: m.date,
+          isHome: m.isHome,
+          matchday: m.matchday ?? null,
+          matchType: "LEAGUE" as MatchType,
+          ourScore: m.our ?? null,
           theirScore: m.their ?? null,
-          result:     m.result ?? null,
-          venue:      m.isHome ? "PalaKaribu, Montecchio Maggiore" : undefined,
+          result: m.result ?? null,
+          venue: m.isHome ? "PalaKaribu, Montecchio Maggiore" : undefined,
         },
       });
 
-      const score = m.our !== undefined
-        ? `${m.our}–${m.their} (${m.result})`
-        : "da giocare";
-      console.log(`  ✓ vs ${m.oppName} ${m.isHome ? "C" : "T"} — ${score}`);
+      const score = m.our !== undefined ? `${m.our}–${m.their} (${m.result})` : "da giocare";
 
       // Statistiche solo per partite già disputate
-      if (!m.result) continue;
+      if (!m.result) {
+        console.log(`  ✓ vs ${m.oppName} ${m.isHome ? "C" : "T"} — ${score}`);
+        continue;
+      }
 
-      // ~10 giocatori casuali partecipano
-      const participants = [...rosterIds]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, Math.min(10, rosterIds.length));
+      // Risolvi i prestiti dichiarati: cerca nell'altro roster i nomi indicati.
+      // I prestati prendono il posto di alcuni membri "regolari" (riduco la
+      // dimensione del campione regolare di pari numero, così il numero di
+      // partecipanti totali resta ~10).
+      const loaners: { id: string; name: string; sportRole: number }[] = [];
+      for (const loanName of m.loanFromOther ?? []) {
+        const found = otherRoster.find((p) => p.name === loanName);
+        if (!found) {
+          throw new Error(
+            `[seed] Prestito non trovato: "${loanName}" non è in nessuno dei roster ` +
+              `dell'altra squadra (controllare nome esatto in KAPULETI_ATHLETES / MONTEKKI_ATHLETES).`
+          );
+        }
+        loaners.push(found);
+      }
+
+      const regularCount = Math.max(0, Math.min(10, rosterIds.length) - loaners.length);
+      const regulars = [...rosterIds].sort(() => Math.random() - 0.5).slice(0, regularCount);
+
+      const participants = [
+        ...regulars.map((p) => ({ ...p, isLoan: false })),
+        ...loaners.map((p) => ({ ...p, isLoan: true })),
+      ];
 
       // Convocazioni
-      for (const { id: userId } of participants) {
-        await prisma.matchCallup.create({ data: { matchId: match.id, userId } });
+      for (const { id: userId, isLoan } of participants) {
+        await prisma.matchCallup.create({
+          data: { matchId: match.id, userId, isLoan },
+        });
       }
 
       // Statistiche
-      for (const { id: userId, sportRole } of participants) {
+      for (const { id: userId, sportRole, isLoan } of participants) {
         await prisma.playerMatchStats.create({
-          data: { matchId: match.id, userId, ...statsForRole(sportRole) },
+          data: { matchId: match.id, userId, isLoan, ...statsForRole(sportRole) },
         });
       }
+
+      const loanSuffix =
+        loaners.length > 0 ? ` [prestiti: ${loaners.map((l) => l.name).join(", ")}]` : "";
+      console.log(`  ✓ vs ${m.oppName} ${m.isHome ? "C" : "T"} — ${score}${loanSuffix}`);
     }
   }
 
-  await createMatches(kapuleti.id, kapGroup.id, KAPULETI_MATCHES, kapUserIds, "Kapuleti");
-  await createMatches(montekki.id, monGroup.id, MONTEKKI_MATCHES, monUserIds, "Montekki");
+  await createMatches(
+    kapuleti.id,
+    kapGroup.id,
+    KAPULETI_MATCHES,
+    kapUserIds,
+    monUserIds,
+    "Kapuleti"
+  );
+  await createMatches(
+    montekki.id,
+    monGroup.id,
+    MONTEKKI_MATCHES,
+    monUserIds,
+    kapUserIds,
+    "Montekki"
+  );
 
-  async function createGroupMatches(
-    groupId: string,
-    defs: GroupMatchDef[],
-    label: string,
-  ) {
+  async function createGroupMatches(groupId: string, defs: GroupMatchDef[], label: string) {
     console.log(`\n📋 Partite girone ${label}...`);
     for (const gm of defs) {
       await prisma.groupMatch.create({
@@ -640,15 +1009,13 @@ async function seed() {
           groupId,
           homeTeamId: opponents[gm.homeName],
           awayTeamId: opponents[gm.awayName],
-          date:       gm.date,
-          matchday:   gm.matchday ?? null,
-          homeScore:  gm.homeScore ?? null,
-          awayScore:  gm.awayScore ?? null,
+          date: gm.date,
+          matchday: gm.matchday ?? null,
+          homeScore: gm.homeScore ?? null,
+          awayScore: gm.awayScore ?? null,
         },
       });
-      const score = gm.homeScore !== undefined
-        ? `${gm.homeScore}–${gm.awayScore}`
-        : "da giocare";
+      const score = gm.homeScore !== undefined ? `${gm.homeScore}–${gm.awayScore}` : "da giocare";
       console.log(`  ✓ ${gm.homeName} vs ${gm.awayName} — ${score}`);
     }
   }
@@ -664,7 +1031,7 @@ async function seed() {
   // Profili di presenza: 0=assente costante, 1=presente costante, 2=alterno
   // Indice parallelo a kapUserIds / monUserIds
   const kapAttendanceProfile = [1, 1, 2, 1, 0, 1, 2, 1, 1, 0, 2, 1, 1, 0]; // 14 atleti Kap
-  const monAttendanceProfile = [1, 0, 1, 2, 1, 1, 0, 1, 1, 2, 0, 1];       // 12 atleti Mon
+  const monAttendanceProfile = [1, 0, 1, 2, 1, 1, 0, 1, 1, 2, 0, 1]; // 12 atleti Mon
 
   function attended(profile: number, sessionIndex: number): boolean {
     if (profile === 1) return true;
@@ -705,38 +1072,55 @@ async function seed() {
     // Finestra (-14g): 4 allenamenti eligibili per il calcolo presenze
     {
       title: "Allenamento Kapuleti",
-      date: past(13, 18), endTime: past(13, 20),
-      teamId: kapuleti.id, restrictTeamId: kapuleti.id,
-      allowedRoles: [], openRoles: [],
-      roster: kapRosterFull, attendanceProfiles: kapAttendanceProfile,
+      date: past(13, 18),
+      endTime: past(13, 20),
+      teamId: kapuleti.id,
+      restrictTeamId: kapuleti.id,
+      allowedRoles: [],
+      openRoles: [],
+      roster: kapRosterFull,
+      attendanceProfiles: kapAttendanceProfile,
     },
     {
       title: "Allenamento Montekki",
-      date: past(12, 18), endTime: past(12, 20),
-      teamId: montekki.id, restrictTeamId: montekki.id,
-      allowedRoles: [], openRoles: [],
-      roster: monRosterFull, attendanceProfiles: monAttendanceProfileFull,
+      date: past(12, 18),
+      endTime: past(12, 20),
+      teamId: montekki.id,
+      restrictTeamId: montekki.id,
+      allowedRoles: [],
+      openRoles: [],
+      roster: monRosterFull,
+      attendanceProfiles: monAttendanceProfileFull,
     },
     {
       title: "Allenamento congiunto",
-      date: past(6, 18), endTime: past(6, 21),
+      date: past(6, 18),
+      endTime: past(6, 21),
       teamId: null,
-      allowedRoles: [], openRoles: [],
+      allowedRoles: [],
+      openRoles: [],
       roster: [...kapRosterFull, ...monRosterFull],
       attendanceProfiles: [...kapAttendanceProfile, ...monAttendanceProfileFull],
     },
     {
       title: "Allenamento Montekki",
-      date: past(5, 18), endTime: past(5, 20),
-      teamId: montekki.id, restrictTeamId: montekki.id,
-      allowedRoles: [], openRoles: [],
-      roster: monRosterFull, attendanceProfiles: monAttendanceProfileFull,
+      date: past(5, 18),
+      endTime: past(5, 20),
+      teamId: montekki.id,
+      restrictTeamId: montekki.id,
+      allowedRoles: [],
+      openRoles: [],
+      roster: monRosterFull,
+      attendanceProfiles: monAttendanceProfileFull,
     },
     {
       title: "Allenamento solo R3-R4-R5 Kapuleti",
-      date: past(3, 18), endTime: past(3, 20),
-      teamId: kapuleti.id, restrictTeamId: kapuleti.id,
-      allowedRoles: [3, 4, 5], openRoles: [],
+      date: past(3, 18),
+      endTime: past(3, 20),
+      teamId: kapuleti.id,
+      restrictTeamId: kapuleti.id,
+      allowedRoles: [3, 4, 5],
+      openRoles: [],
       roster: kapRosterFull.filter((u) => [3, 4, 5].includes(u.sportRole)),
       attendanceProfiles: kapAttendanceProfile.filter((_, i) =>
         [3, 4, 5].includes(kapRosterFull[i]?.sportRole ?? 0)
@@ -745,17 +1129,25 @@ async function seed() {
     // Più vecchi (fuori finestra) — non influenzano il calcolo ma danno storico
     {
       title: "Allenamento Kapuleti",
-      date: past(20, 18), endTime: past(20, 20),
-      teamId: kapuleti.id, restrictTeamId: kapuleti.id,
-      allowedRoles: [], openRoles: [],
-      roster: kapRosterFull, attendanceProfiles: kapAttendanceProfile,
+      date: past(20, 18),
+      endTime: past(20, 20),
+      teamId: kapuleti.id,
+      restrictTeamId: kapuleti.id,
+      allowedRoles: [],
+      openRoles: [],
+      roster: kapRosterFull,
+      attendanceProfiles: kapAttendanceProfile,
     },
     {
       title: "Allenamento Montekki",
-      date: past(21, 18), endTime: past(21, 20),
-      teamId: montekki.id, restrictTeamId: montekki.id,
-      allowedRoles: [], openRoles: [],
-      roster: monRosterFull, attendanceProfiles: monAttendanceProfileFull,
+      date: past(21, 18),
+      endTime: past(21, 20),
+      teamId: montekki.id,
+      restrictTeamId: montekki.id,
+      allowedRoles: [],
+      openRoles: [],
+      roster: monRosterFull,
+      attendanceProfiles: monAttendanceProfileFull,
     },
   ];
 
@@ -763,18 +1155,18 @@ async function seed() {
     const t = pastTrainings[si];
     const dateSlug = toDateSlug(t.date);
     const session = await prisma.trainingSession.upsert({
-      where:  { dateSlug },
+      where: { dateSlug },
       update: {},
       create: {
-        title:         t.title,
-        date:          t.date,
-        endTime:       t.endTime,
+        title: t.title,
+        date: t.date,
+        endTime: t.endTime,
         dateSlug,
-        teamId:        t.teamId,
+        teamId: t.teamId,
         restrictTeamId: t.restrictTeamId ?? null,
-        allowedRoles:  t.allowedRoles,
-        openRoles:     t.openRoles ?? [],
-        managedAt:     t.endTime, // già gestita
+        allowedRoles: t.allowedRoles,
+        openRoles: t.openRoles ?? [],
+        managedAt: t.endTime, // già gestita
       },
     });
 
@@ -786,15 +1178,17 @@ async function seed() {
       await prisma.registration.create({
         data: {
           sessionId: session.id,
-          name:      "", // placeholder — non usato nella logica convocazioni
-          role:      member.sportRole,
-          attended:  isPresent,
+          name: "", // placeholder — non usato nella logica convocazioni
+          role: member.sportRole,
+          attended: isPresent,
           ...(member.kind === "user" ? { userId: member.id } : { childId: member.id }),
         },
       });
       if (isPresent) presCount++;
     }
-    console.log(`  ✓ ${t.title} (${t.date.toLocaleDateString("it-IT")}) — ${presCount}/${t.roster.length} presenti`);
+    console.log(
+      `  ✓ ${t.title} (${t.date.toLocaleDateString("it-IT")}) — ${presCount}/${t.roster.length} presenti`
+    );
   }
 
   // ── Allenamenti futuri ────────────────────────────────────────────────────────
@@ -846,26 +1240,26 @@ async function seed() {
   for (const t of trainingDefs) {
     const dateSlug = toDateSlug(t.date);
     await prisma.trainingSession.upsert({
-      where:  { dateSlug },
+      where: { dateSlug },
       update: {},
       create: {
-        title:          t.title,
-        date:           t.date,
-        endTime:        t.endTime,
+        title: t.title,
+        date: t.date,
+        endTime: t.endTime,
         dateSlug,
-        teamId:         t.teamId,
+        teamId: t.teamId,
         restrictTeamId: t.restrictTeamId ?? null,
-        allowedRoles:   t.allowedRoles,
+        allowedRoles: t.allowedRoles,
       },
     });
     console.log(`  ✓ ${t.title} — ${t.date.toLocaleDateString("it-IT")}`);
   }
 
   // ── Riepilogo ────────────────────────────────────────────────────────────────
-  const kapPlayed     = KAPULETI_MATCHES.filter((m) => m.result).length;
-  const monPlayed     = MONTEKKI_MATCHES.filter((m) => m.result).length;
-  const kapGmPlayed   = KAPULETI_GROUP_MATCHES.filter((m) => m.homeScore !== undefined).length;
-  const monGmPlayed   = MONTEKKI_GROUP_MATCHES.filter((m) => m.homeScore !== undefined).length;
+  const kapPlayed = KAPULETI_MATCHES.filter((m) => m.result).length;
+  const monPlayed = MONTEKKI_MATCHES.filter((m) => m.result).length;
+  const kapGmPlayed = KAPULETI_GROUP_MATCHES.filter((m) => m.homeScore !== undefined).length;
+  const monGmPlayed = MONTEKKI_GROUP_MATCHES.filter((m) => m.homeScore !== undefined).length;
 
   console.log(`
 ✅ Seed completato!
@@ -897,9 +1291,9 @@ async function backfillMatchSlugs() {
   const matches = await prisma.match.findMany({
     where: { slug: null },
     select: {
-      id:       true,
-      date:     true,
-      team:     { select: { name: true } },
+      id: true,
+      date: true,
+      team: { select: { name: true } },
       opponent: { select: { name: true } },
     },
   });
@@ -913,7 +1307,8 @@ async function backfillMatchSlugs() {
   const usedSlugs = new Set<string>();
 
   for (const m of matches) {
-    const base = toMatchSlug(m.team.name, m.opponent.name, m.date);
+    const opponentName = m.opponent?.name ?? "avversario";
+    const base = toMatchSlug(m.team.name, opponentName, m.date);
     let slug = base;
     let n = 2;
     while (usedSlugs.has(slug)) {
@@ -934,12 +1329,17 @@ async function backfillMatchSlugs() {
 const command = process.argv[2] ?? "seed";
 
 const run =
-  command === "nuke"     ? nuke :
-  command === "cleanup"  ? nuke :                // retrocompatibilità
-  command === "seed"     ? seed :
-  command === "demo"     ? seed :                // retrocompatibilità
-  command === "backfill" ? backfillMatchSlugs :  // backfill slug partite esistenti
-  seed;
+  command === "nuke"
+    ? nuke
+    : command === "cleanup"
+      ? nuke // retrocompatibilità
+      : command === "seed"
+        ? seed
+        : command === "demo"
+          ? seed // retrocompatibilità
+          : command === "backfill"
+            ? backfillMatchSlugs // backfill slug partite esistenti
+            : seed;
 
 run()
   .catch(console.error)

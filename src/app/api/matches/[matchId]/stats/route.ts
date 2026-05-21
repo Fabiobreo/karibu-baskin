@@ -6,6 +6,7 @@ import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { buildLoanLookup, isLoanParticipation } from "@/lib/loanDetection";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -42,12 +43,23 @@ export async function PUT(req: Request, { params }: Params) {
   }
   const body = parsed.data;
 
+  // Carica una volta sola i membri della squadra che disputa la partita per
+  // quella stagione → permette di marcare ogni stat come prestito o meno.
+  const loanLookup = await buildLoanLookup(matchId);
+  if (!loanLookup) {
+    return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+  }
+
   // Upsert ogni riga
   const results = await Promise.all(
     body.map((s) => {
       const twoPointers = s.twoPointers ?? 0;
       const threePointers = s.threePointers ?? 0;
       const freeThrows = s.freeThrows ?? 0;
+      const isLoan = isLoanParticipation(loanLookup, {
+        userId: s.userId,
+        childId: s.childId,
+      });
       const data = {
         twoPointers,
         threePointers,
@@ -57,6 +69,7 @@ export async function PUT(req: Request, { params }: Params) {
         illegalFouls: s.illegalFouls ?? 0,
         shotsAttempted: s.shotsAttempted ?? 0,
         notes: s.notes?.trim() || null,
+        isLoan,
       };
       if (s.userId) {
         return prisma.playerMatchStats.upsert({
@@ -96,13 +109,15 @@ export async function PUT(req: Request, { params }: Params) {
         select: {
           team: { select: { name: true } },
           opponent: { select: { name: true } },
+          opponentTeam: { select: { name: true } },
           slug: true,
         },
       })
       .then((match) => {
         if (!match) return;
         const title = "Statistiche disponibili";
-        const body = `Le tue statistiche per ${match.team.name} vs ${match.opponent.name} sono online.`;
+        const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
+        const body = `Le tue statistiche per ${match.team.name} vs ${opponentName} sono online.`;
         const url = `/partite/${match.slug ?? matchId}`;
         sendPushToAll({ title, body, url, type: "MATCH_RESULT" }, false).catch(console.error);
         createAppNotification({

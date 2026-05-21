@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/squadre`, priority: 0.8, changeFrequency: "weekly" },
     { url: `${BASE}/risultati`, priority: 0.75, changeFrequency: "weekly" },
     { url: `${BASE}/classifiche`, priority: 0.75, changeFrequency: "weekly" },
+    { url: `${BASE}/marcatori`, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/il-baskin`, priority: 0.6, changeFrequency: "monthly" },
     { url: `${BASE}/la-squadra`, priority: 0.6, changeFrequency: "monthly" },
     { url: `${BASE}/contatti`, priority: 0.5, changeFrequency: "monthly" },

@@ -19,6 +19,7 @@ export async function GET(_req: Request, { params }: Params) {
     include: {
       team: { select: { id: true, name: true, season: true, color: true, championship: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      opponentTeam: { select: { id: true, name: true, season: true, color: true } },
       playerStats: {
         include: {
           user: {
@@ -60,11 +61,42 @@ export async function PUT(req: Request, { params }: Params) {
       slug: true,
       teamId: true,
       opponentId: true,
+      opponentTeamId: true,
+      matchType: true,
       date: true,
     },
   });
   if (!previous) {
     return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+  }
+
+  // Validazione XOR opponentId / opponentTeamId
+  // Calcola lo stato finale (se non specificato, usa il precedente)
+  const finalOpponentId = body.opponentId !== undefined ? body.opponentId : previous.opponentId;
+  const finalOpponentTeamId =
+    body.opponentTeamId !== undefined ? body.opponentTeamId : previous.opponentTeamId;
+  if (!!finalOpponentId === !!finalOpponentTeamId) {
+    return NextResponse.json(
+      { error: "Specifica esattamente un avversario (esterno OPPURE interno)" },
+      { status: 400 }
+    );
+  }
+  if (finalOpponentTeamId && finalOpponentTeamId === previous.teamId) {
+    return NextResponse.json(
+      { error: "Una squadra non può giocare contro se stessa" },
+      { status: 400 }
+    );
+  }
+  const finalMatchType = finalOpponentTeamId
+    ? "FRIENDLY"
+    : body.matchType !== undefined
+      ? body.matchType
+      : previous.matchType;
+  if (finalOpponentTeamId && finalMatchType !== "FRIENDLY") {
+    return NextResponse.json(
+      { error: "Le partite tra squadre interne possono essere solo amichevoli" },
+      { status: 400 }
+    );
   }
 
   // 2.3 — Auto-derive result from scores (takes precedence over explicit result field)
@@ -90,18 +122,32 @@ export async function PUT(req: Request, { params }: Params) {
     resolvedResult = derived;
   }
 
-  // Genera slug se manca (backfill per partite create prima dell'introduzione dello slug)
+  // Genera slug se manca (backfill per partite create prima dell'introduzione dello slug).
+  // Supporta sia avversari esterni (OpposingTeam) che interni (CompetitiveTeam).
   let slugToSet: string | null | undefined = undefined; // undefined = non aggiornare
   if (!previous?.slug) {
-    const teamId = body.opponentId ? (previous?.teamId ?? "") : (previous?.teamId ?? "");
-    const opponentId = body.opponentId ?? previous?.opponentId ?? "";
     const matchDate = body.date ? new Date(body.date) : (previous?.date ?? new Date());
-    const [teamRec, oppRec] = await Promise.all([
-      prisma.competitiveTeam.findUnique({ where: { id: teamId }, select: { name: true } }),
-      prisma.opposingTeam.findUnique({ where: { id: opponentId }, select: { name: true } }),
+    const [teamRec, oppExtRec, oppIntRec] = await Promise.all([
+      prisma.competitiveTeam.findUnique({
+        where: { id: previous.teamId },
+        select: { name: true },
+      }),
+      finalOpponentId
+        ? prisma.opposingTeam.findUnique({
+            where: { id: finalOpponentId },
+            select: { name: true },
+          })
+        : Promise.resolve(null),
+      finalOpponentTeamId
+        ? prisma.competitiveTeam.findUnique({
+            where: { id: finalOpponentTeamId },
+            select: { name: true },
+          })
+        : Promise.resolve(null),
     ]);
-    if (teamRec && oppRec) {
-      slugToSet = await generateMatchSlug(teamRec.name, oppRec.name, matchDate);
+    const opponentName = oppExtRec?.name ?? oppIntRec?.name ?? null;
+    if (teamRec && opponentName) {
+      slugToSet = await generateMatchSlug(teamRec.name, opponentName, matchDate);
     }
   }
 
@@ -111,15 +157,22 @@ export async function PUT(req: Request, { params }: Params) {
       ...(slugToSet !== undefined && { slug: slugToSet }),
       ...(body.date !== undefined && { date: new Date(body.date) }),
       ...(body.isHome !== undefined && { isHome: body.isHome }),
-      ...(body.venue !== undefined && { venue: body.venue.trim() || null }),
-      ...(body.matchType !== undefined && { matchType: body.matchType }),
+      ...(body.venue !== undefined && { venue: body.venue?.trim() || null }),
+      matchType: finalMatchType,
       ...(body.ourScore !== undefined && { ourScore: body.ourScore }),
       ...(body.theirScore !== undefined && { theirScore: body.theirScore }),
       result: resolvedResult,
       ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
-      ...(body.opponentId !== undefined && { opponentId: body.opponentId }),
+      // Aggiorna opponentId/opponentTeamId in modo coerente (uno solo non-null)
+      ...(body.opponentId !== undefined || body.opponentTeamId !== undefined
+        ? {
+            opponentId: finalOpponentId ?? null,
+            opponentTeamId: finalOpponentTeamId ?? null,
+          }
+        : {}),
       ...("matchday" in body && { matchday: body.matchday ?? null }),
-      ...("groupId" in body && { groupId: body.groupId ?? null }),
+      // Le amichevoli interne non hanno gironi
+      ...("groupId" in body && { groupId: finalOpponentTeamId ? null : (body.groupId ?? null) }),
     },
     select: {
       id: true,
@@ -136,9 +189,11 @@ export async function PUT(req: Request, { params }: Params) {
       groupId: true,
       teamId: true,
       opponentId: true,
+      opponentTeamId: true,
       createdAt: true,
       team: { select: { id: true, name: true, season: true, color: true, championship: true } },
       opponent: { select: { id: true, name: true, city: true } },
+      opponentTeam: { select: { id: true, name: true, season: true, color: true } },
       group: { select: { id: true, name: true } },
     },
   });
@@ -152,7 +207,8 @@ export async function PUT(req: Request, { params }: Params) {
     };
     const label = RESULT_LABEL[resolvedResult] ?? resolvedResult;
     const score = `${match.ourScore}–${match.theirScore}`;
-    const msgTitle = `🏀 ${label}! ${match.team.name} vs ${match.opponent.name}`;
+    const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
+    const msgTitle = `🏀 ${label}! ${match.team.name} vs ${opponentName}`;
     const msgBody = `Risultato finale: ${score}`;
     const matchUrl = `/partite/${match.slug ?? matchId}`;
     sendPushToAll(

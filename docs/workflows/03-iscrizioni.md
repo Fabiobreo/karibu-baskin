@@ -12,17 +12,18 @@ POST /api/registrations
 
 ## Modello `Registration`
 
-| Campo | Significato |
-|-------|-------------|
-| `userId` | Utente con account (null se figlio o anonimo) |
-| `childId` | Figlio senza account (null se utente o anonimo) |
-| `role` | Ruolo sportivo usato (1–5) |
-| `name` | Nome visualizzato nel tabellone |
-| `note` | Comunicazione libera (es. "Devo uscire alle 11") |
-| `anonymousEmail` | Email opzionale per iscrizioni anonime |
+| Campo               | Significato                                                |
+| ------------------- | ---------------------------------------------------------- |
+| `userId`            | Utente con account (null se figlio o anonimo)              |
+| `childId`           | Figlio senza account (null se utente o anonimo)            |
+| `role`              | Ruolo sportivo usato (1–5)                                 |
+| `name`              | Nome visualizzato nel tabellone                            |
+| `note`              | Comunicazione libera (es. "Devo uscire alle 11")           |
+| `anonymousEmail`    | Email opzionale per iscrizioni anonime                     |
 | `registeredAsCoach` | `true` se il COACH si iscrive come allenatore (non atleta) |
 
 Vincoli DB:
+
 - `@@unique([sessionId, userId])` — un utente max una iscrizione per allenamento
 - `@@unique([sessionId, childId])` — un figlio max una iscrizione per allenamento
 
@@ -53,15 +54,15 @@ La logica è condivisa tra server (API) e client (RegistrationForm) per coerenza
 checkRegistrationAllowed(restrictions, appRole, sportRole, isInRestrictedTeam, registeredAsCoach)
 ```
 
-| Caso | Risultato |
-|------|-----------|
-| `appRole === "ADMIN"` | sempre ammesso |
-| `registeredAsCoach === true` | sempre ammesso (COACH come allenatore) |
-| `appRole === "GUEST"` | sempre ammesso (bypass squadra, solo `allowedRoles`) |
-| Nessuna restrizione | ammesso |
-| `allowedRoles` non vuoto e `sportRole` non incluso | bloccato |
-| `restrictTeamId` impostato e `sportRole` in `openRoles` | ammesso |
-| `restrictTeamId` impostato e non membro squadra | bloccato |
+| Caso                                                    | Risultato                                            |
+| ------------------------------------------------------- | ---------------------------------------------------- |
+| `appRole === "ADMIN"`                                   | sempre ammesso                                       |
+| `registeredAsCoach === true`                            | sempre ammesso (COACH come allenatore)               |
+| `appRole === "GUEST"`                                   | sempre ammesso (bypass squadra, solo `allowedRoles`) |
+| Nessuna restrizione                                     | ammesso                                              |
+| `allowedRoles` non vuoto e `sportRole` non incluso      | bloccato                                             |
+| `restrictTeamId` impostato e `sportRole` in `openRoles` | ammesso                                              |
+| `restrictTeamId` impostato e non membro squadra         | bloccato                                             |
 
 ### Campi di restrizione su `TrainingSession`
 
@@ -72,6 +73,7 @@ openRoles     []    → ruoli esenti dalla restrizione di squadra
 ```
 
 Esempio: allenamento per R4/R5 della squadra Gold, ma R1 sempre ammessi:
+
 ```
 allowedRoles  = [4, 5, 1]
 restrictTeamId = "id-squadra-gold"
@@ -92,6 +94,7 @@ Il toggle è visibile solo agli utenti con `appRole === "COACH"` nel `Registrati
 `DELETE /api/registrations/[registrationId]`
 
 Chi può disiscrivere:
+
 - Sé stessi (proprio `userId`)
 - Il proprio figlio (genitore)
 - Qualsiasi iscritto (COACH/ADMIN)

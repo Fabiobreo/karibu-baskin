@@ -19,6 +19,8 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import StarIcon from "@mui/icons-material/Star";
@@ -30,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import type { CandidateInput } from "@/lib/callupStats";
+import type { TeamCallupContext } from "@/lib/callupContext";
 
 interface StatRow {
   candidate: CandidateInput;
@@ -44,80 +47,108 @@ interface Props {
   matchId: string;
   matchLabel: string;
   matchDateISO: string;
-  teamSeason: string;
   windowEligibleSessions: number;
-  stats: StatRow[];
-  initialSelectedUserIds: string[];
-  initialSelectedChildIds: string[];
+  teams: TeamCallupContext[];
 }
 
 type SortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
 
 const ROLES = [1, 2, 3, 4, 5] as const;
 
+interface TeamSelectionState {
+  userIds: Set<string>;
+  childIds: Set<string>;
+}
+
 export default function ConvocazioniClient({
   matchId,
   matchLabel,
-  teamSeason,
   windowEligibleSessions,
-  stats,
-  initialSelectedUserIds,
-  initialSelectedChildIds,
+  teams,
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
+  const isMulti = teams.length > 1;
 
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
-    new Set(initialSelectedUserIds)
-  );
-  const [selectedChildIds, setSelectedChildIds] = useState<Set<string>>(
-    new Set(initialSelectedChildIds)
-  );
+  // Stato selezione per ciascuna squadra
+  const [selectionByTeam, setSelectionByTeam] = useState<Map<string, TeamSelectionState>>(() => {
+    const m = new Map<string, TeamSelectionState>();
+    for (const t of teams) {
+      m.set(t.id, {
+        userIds: new Set(t.initialSelectedUserIds),
+        childIds: new Set(t.initialSelectedChildIds),
+      });
+    }
+    return m;
+  });
+
+  const [activeIndex, setActiveIndex] = useState(0);
   const [sortKey, setSortKey] = useState<SortKey>("role");
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const activeTeam = teams[activeIndex] ?? teams[0];
+  const activeSelection = selectionByTeam.get(activeTeam.id) ?? {
+    userIds: new Set<string>(),
+    childIds: new Set<string>(),
+  };
+
   function isSelected(row: StatRow): boolean {
     return row.candidate.kind === "user"
-      ? selectedUserIds.has(row.candidate.id)
-      : selectedChildIds.has(row.candidate.id);
+      ? activeSelection.userIds.has(row.candidate.id)
+      : activeSelection.childIds.has(row.candidate.id);
+  }
+
+  function updateActiveSelection(updater: (curr: TeamSelectionState) => TeamSelectionState) {
+    setSelectionByTeam((prev) => {
+      const next = new Map(prev);
+      const curr = next.get(activeTeam.id) ?? {
+        userIds: new Set<string>(),
+        childIds: new Set<string>(),
+      };
+      next.set(activeTeam.id, updater(curr));
+      return next;
+    });
   }
 
   function toggle(row: StatRow) {
     if (row.candidate.kind === "user") {
-      setSelectedUserIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(row.candidate.id)) next.delete(row.candidate.id);
-        else next.add(row.candidate.id);
-        return next;
+      updateActiveSelection((curr) => {
+        const nextUserIds = new Set(curr.userIds);
+        if (nextUserIds.has(row.candidate.id)) nextUserIds.delete(row.candidate.id);
+        else nextUserIds.add(row.candidate.id);
+        return { userIds: nextUserIds, childIds: curr.childIds };
       });
     } else {
-      setSelectedChildIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(row.candidate.id)) next.delete(row.candidate.id);
-        else next.add(row.candidate.id);
-        return next;
+      updateActiveSelection((curr) => {
+        const nextChildIds = new Set(curr.childIds);
+        if (nextChildIds.has(row.candidate.id)) nextChildIds.delete(row.candidate.id);
+        else nextChildIds.add(row.candidate.id);
+        return { userIds: curr.userIds, childIds: nextChildIds };
       });
     }
   }
 
   function selectAll() {
-    setSelectedUserIds(
-      new Set(stats.filter((s) => s.candidate.kind === "user").map((s) => s.candidate.id))
-    );
-    setSelectedChildIds(
-      new Set(stats.filter((s) => s.candidate.kind === "child").map((s) => s.candidate.id))
-    );
+    updateActiveSelection(() => ({
+      userIds: new Set(
+        activeTeam.stats.filter((s) => s.candidate.kind === "user").map((s) => s.candidate.id)
+      ),
+      childIds: new Set(
+        activeTeam.stats.filter((s) => s.candidate.kind === "child").map((s) => s.candidate.id)
+      ),
+    }));
   }
 
   function clearAll() {
-    setSelectedUserIds(new Set());
-    setSelectedChildIds(new Set());
+    updateActiveSelection(() => ({ userIds: new Set(), childIds: new Set() }));
   }
 
   const filtered = useMemo(() => {
-    return stats.filter((s) => (roleFilter === null ? true : s.candidate.sportRole === roleFilter));
-  }, [stats, roleFilter]);
+    return activeTeam.stats.filter((s) =>
+      roleFilter === null ? true : s.candidate.sportRole === roleFilter
+    );
+  }, [activeTeam.stats, roleFilter]);
 
   const sorted = useMemo(() => {
     const copy = [...filtered];
@@ -126,7 +157,6 @@ export default function ConvocazioniClient({
         case "presences":
           return b.presences - a.presences || a.candidate.name.localeCompare(b.candidate.name);
         case "lastCallup": {
-          // null (mai convocato) prima, poi descrescente (più giorni = più "fermo")
           const av = a.daysSinceLastCallup ?? Number.POSITIVE_INFINITY;
           const bv = b.daysSinceLastCallup ?? Number.POSITIVE_INFINITY;
           return bv - av || a.candidate.name.localeCompare(b.candidate.name);
@@ -148,10 +178,9 @@ export default function ConvocazioniClient({
     return copy;
   }, [filtered, sortKey]);
 
-  // Copertura ruoli sui selezionati
   const coverage = useMemo(() => {
     const map = new Map<number, number>();
-    for (const s of stats) {
+    for (const s of activeTeam.stats) {
       if (!isSelected(s)) continue;
       const r = s.candidate.sportRole;
       if (r == null) continue;
@@ -159,27 +188,47 @@ export default function ConvocazioniClient({
     }
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stats, selectedUserIds, selectedChildIds]);
+  }, [activeTeam.stats, selectionByTeam, activeIndex]);
 
-  const totalSelected = selectedUserIds.size + selectedChildIds.size;
+  const totalSelectedActive = activeSelection.userIds.size + activeSelection.childIds.size;
+  const totalSelectedAll = Array.from(selectionByTeam.values()).reduce(
+    (acc, s) => acc + s.userIds.size + s.childIds.size,
+    0
+  );
 
   async function handleSave() {
     setSaving(true);
     try {
-      const res = await fetch(`/api/matches/${matchId}/callups`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userIds: [...selectedUserIds],
-          childIds: [...selectedChildIds],
-        }),
-      });
-      if (!res.ok) {
-        showToast({ message: "Errore nel salvataggio", severity: "error" });
+      // Una PUT per ogni squadra (anche se è una sola). Per le interne salviamo
+      // entrambe in sequenza; se una fallisce, comunichiamo l'errore ma proviamo
+      // comunque la successiva.
+      const errors: string[] = [];
+      for (const team of teams) {
+        const sel = selectionByTeam.get(team.id);
+        const userIds = sel ? [...sel.userIds] : [];
+        const childIds = sel ? [...sel.childIds] : [];
+        const res = await fetch(`/api/matches/${matchId}/callups`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            teamId: team.id,
+            userIds,
+            childIds,
+          }),
+        });
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          errors.push(`${team.name}: ${data.error ?? "errore"}`);
+        }
+      }
+      if (errors.length > 0) {
+        showToast({
+          message: `Errori salvataggio — ${errors.join("; ")}`,
+          severity: "error",
+        });
         return;
       }
-      showToast({ message: `Salvati ${totalSelected} convocati`, severity: "success" });
-      router.push("/admin/partite");
+      showToast({ message: `Salvati ${totalSelectedAll} convocati`, severity: "success" });
       router.refresh();
     } catch {
       showToast({ message: "Errore di rete", severity: "error" });
@@ -220,12 +269,63 @@ export default function ConvocazioniClient({
           {matchLabel}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Stagione {teamSeason} — presenze calcolate sulle ultime 2 settimane
+          {isMulti
+            ? "Amichevole interna — convoca i giocatori per ciascuna squadra"
+            : `Stagione ${activeTeam.season}`}
+          {" — presenze calcolate sulle ultime 2 settimane"}
           {windowEligibleSessions > 0
             ? ` (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento gestito" : "allenamenti gestiti"})`
             : " (nessun allenamento gestito in finestra)"}
         </Typography>
       </Box>
+
+      {/* Tab squadra (solo se interno con 2 squadre) */}
+      {isMulti && (
+        <Paper variant="outlined" elevation={0} sx={{ mb: 2 }}>
+          <Tabs
+            value={activeIndex}
+            onChange={(_, v) => setActiveIndex(v as number)}
+            variant="fullWidth"
+            sx={{
+              "& .MuiTab-root": { textTransform: "none", fontWeight: 700, fontSize: "0.92rem" },
+            }}
+          >
+            {teams.map((t, idx) => {
+              const sel = selectionByTeam.get(t.id);
+              const count = sel ? sel.userIds.size + sel.childIds.size : 0;
+              return (
+                <Tab
+                  key={t.id}
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          bgcolor: t.color ?? "#E65100",
+                        }}
+                      />
+                      <span>{t.name}</span>
+                      <Chip
+                        label={count}
+                        size="small"
+                        sx={{
+                          height: 18,
+                          fontSize: "0.7rem",
+                          bgcolor: idx === activeIndex ? "primary.main" : "rgba(0,0,0,0.06)",
+                          color: idx === activeIndex ? "#fff" : "text.secondary",
+                          fontWeight: 800,
+                        }}
+                      />
+                    </Box>
+                  }
+                />
+              );
+            })}
+          </Tabs>
+        </Paper>
+      )}
 
       {/* Sticky toolbar */}
       <Paper
@@ -246,7 +346,7 @@ export default function ConvocazioniClient({
       >
         <Chip
           icon={<CheckCircleIcon sx={{ fontSize: "16px !important" }} />}
-          label={`${totalSelected} convocati`}
+          label={`${totalSelectedActive} convocati${isMulti ? ` per ${activeTeam.name}` : ""}`}
           color="primary"
           sx={{ fontWeight: 700 }}
         />
@@ -294,7 +394,7 @@ export default function ConvocazioniClient({
             disabled={saving}
             startIcon={saving ? <CircularProgress size={14} /> : undefined}
           >
-            Salva
+            Salva{isMulti ? " entrambe" : ""}
           </Button>
         </Box>
       </Paper>
