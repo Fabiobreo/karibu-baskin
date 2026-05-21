@@ -1,14 +1,5 @@
 import { prisma } from "@/lib/db";
-import {
-  Container,
-  Typography,
-  Box,
-  Paper,
-  Chip,
-  Stack,
-  Divider,
-  Button,
-} from "@mui/material";
+import { Container, Typography, Box, Paper, Chip, Stack, Divider, Button } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -104,9 +95,7 @@ function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
     get(gm.matchday).external.push(ext);
   }
 
-  return Array.from(map.values()).sort(
-    (a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)
-  );
+  return Array.from(map.values()).sort((a, b) => (a.matchday ?? 999) - (b.matchday ?? 999));
 }
 
 export default async function ClassifichePage({ searchParams }: Props) {
@@ -355,8 +344,8 @@ export default async function ClassifichePage({ searchParams }: Props) {
             {hasStats ? (
               <>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Dati relativi alla stagione <strong>{activeSeason}</strong>. Filtra per ruolo
-                  o clicca sull&apos;intestazione per ordinare.
+                  Dati relativi alla stagione <strong>{activeSeason}</strong>. Filtra per ruolo o
+                  clicca sull&apos;intestazione per ordinare.
                 </Typography>
                 <ClassificaInternaTable rows={statRows} />
               </>

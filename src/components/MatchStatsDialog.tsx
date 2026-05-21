@@ -283,7 +283,12 @@ export default function MatchStatsDialog({
                     <TableCell
                       align="center"
                       title="Punti calcolati (2pt×2 + 3pt×3 + TL)"
-                      sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 52, color: "primary.main" }}
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        minWidth: 52,
+                        color: "primary.main",
+                      }}
                     >
                       Pt
                     </TableCell>

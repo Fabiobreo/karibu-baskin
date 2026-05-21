@@ -62,9 +62,7 @@ export default function OpenRegistrationsAlert({ sessionId, onOpened }: Props) {
           variant="contained"
           color="warning"
           size="small"
-          startIcon={
-            loading ? <CircularProgress size={14} color="inherit" /> : <LockOpenIcon />
-          }
+          startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <LockOpenIcon />}
           sx={{ fontWeight: 700, flexShrink: 0 }}
         >
           {loading ? "Apertura..." : "Apri iscrizioni"}

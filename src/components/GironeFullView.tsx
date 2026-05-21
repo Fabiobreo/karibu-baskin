@@ -310,9 +310,7 @@ export default function GironeFullView({
                         onClick={() => router.push(href)}
                         sx={{ cursor: "pointer", bgcolor: "rgba(230,81,0,0.04)" }}
                       >
-                        <TableCell
-                          sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}
-                        >
+                        <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
                           {format(new Date(m.date), "d MMM", { locale: it })}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700, fontSize: "0.8rem" }}>{home}</TableCell>
@@ -355,9 +353,7 @@ export default function GironeFullView({
                   })}
                   {current.external.map((gm) => (
                     <TableRow key={gm.id}>
-                      <TableCell
-                        sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}
-                      >
+                      <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
                         {gm.date ? format(new Date(gm.date), "d MMM", { locale: it }) : "—"}
                       </TableCell>
                       <TableCell sx={{ fontSize: "0.8rem" }}>{gm.homeTeam.name}</TableCell>

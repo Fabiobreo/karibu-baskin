@@ -51,12 +51,7 @@ interface Props {
   initialSelectedChildIds: string[];
 }
 
-type SortKey =
-  | "role"
-  | "presences"
-  | "lastCallup"
-  | "seasonCallups"
-  | "name";
+type SortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
 
 const ROLES = [1, 2, 3, 4, 5] as const;
 
@@ -121,9 +116,7 @@ export default function ConvocazioniClient({
   }
 
   const filtered = useMemo(() => {
-    return stats.filter((s) =>
-      roleFilter === null ? true : s.candidate.sportRole === roleFilter
-    );
+    return stats.filter((s) => (roleFilter === null ? true : s.candidate.sportRole === roleFilter));
   }, [stats, roleFilter]);
 
   const sorted = useMemo(() => {
@@ -444,9 +437,7 @@ export default function ConvocazioniClient({
                         {selected ? (
                           <CheckCircleIcon sx={{ color: "primary.main", fontSize: 22 }} />
                         ) : (
-                          <RadioButtonUncheckedIcon
-                            sx={{ color: "text.disabled", fontSize: 22 }}
-                          />
+                          <RadioButtonUncheckedIcon sx={{ color: "text.disabled", fontSize: 22 }} />
                         )}
                       </TableCell>
                       <TableCell>
@@ -555,10 +546,7 @@ export default function ConvocazioniClient({
 
                       {/* Partite stagione */}
                       <TableCell align="center">
-                        <Typography
-                          variant="body2"
-                          sx={{ fontSize: "0.82rem", fontWeight: 600 }}
-                        >
+                        <Typography variant="body2" sx={{ fontSize: "0.82rem", fontWeight: 600 }}>
                           {row.seasonCallups}
                         </Typography>
                       </TableCell>
@@ -579,8 +567,7 @@ export default function ConvocazioniClient({
                             sx={{
                               fontSize: "0.82rem",
                               fontWeight: row.daysSinceLastCallup >= 30 ? 700 : 500,
-                              color:
-                                row.daysSinceLastCallup >= 30 ? "#E65100" : "text.secondary",
+                              color: row.daysSinceLastCallup >= 30 ? "#E65100" : "text.secondary",
                             }}
                           >
                             {row.daysSinceLastCallup}g

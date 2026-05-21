@@ -60,7 +60,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           onClose={() => setOpen(false)}
           action={toast.action}
           variant="filled"
-          sx={{ width: "100%", borderRadius: 2, position: "relative", overflow: "hidden", pb: toast.progressMs ? 1.25 : undefined }}
+          sx={{
+            width: "100%",
+            borderRadius: 2,
+            position: "relative",
+            overflow: "hidden",
+            pb: toast.progressMs ? 1.25 : undefined,
+          }}
         >
           {toast.message}
           {toast.progressMs && (

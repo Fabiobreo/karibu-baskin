@@ -74,9 +74,7 @@ export default function CloseRegistrationsAlert({ sessionId, onClosed }: Props) 
               variant="contained"
               color="error"
               disabled={loading}
-              startIcon={
-                loading ? <CircularProgress size={14} color="inherit" /> : <LockIcon />
-              }
+              startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <LockIcon />}
               onClick={handleClose}
             >
               {loading ? "Chiusura..." : "Conferma"}

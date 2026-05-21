@@ -449,27 +449,27 @@ export default function SessionPage() {
                           </Typography>
                         </Box>
                       ) : (
-                      <RegistrationForm
-                        sessionId={sessionId}
-                        onRegistered={refreshSecondary}
-                        onOptimisticAdd={handleOptimisticAdd}
-                        onSubmitError={invalidateRegistrations}
-                        registeredNames={registrations.map((r) => r.name)}
-                        registeredUserIds={registrations.map((r) => r.userId)}
-                        registeredChildIds={registrations.map((r) => r.childId)}
-                        currentUser={currentUser}
-                        parentChildren={parentChildren}
-                        restrictions={
-                          session
-                            ? {
-                                allowedRoles: session.allowedRoles ?? [],
-                                restrictTeamId: session.restrictTeamId ?? null,
-                                openRoles: session.openRoles ?? [],
-                                restrictTeamName: session.restrictTeam?.name ?? null,
-                              }
-                            : undefined
-                        }
-                      />
+                        <RegistrationForm
+                          sessionId={sessionId}
+                          onRegistered={refreshSecondary}
+                          onOptimisticAdd={handleOptimisticAdd}
+                          onSubmitError={invalidateRegistrations}
+                          registeredNames={registrations.map((r) => r.name)}
+                          registeredUserIds={registrations.map((r) => r.userId)}
+                          registeredChildIds={registrations.map((r) => r.childId)}
+                          currentUser={currentUser}
+                          parentChildren={parentChildren}
+                          restrictions={
+                            session
+                              ? {
+                                  allowedRoles: session.allowedRoles ?? [],
+                                  restrictTeamId: session.restrictTeamId ?? null,
+                                  openRoles: session.openRoles ?? [],
+                                  restrictTeamName: session.restrictTeam?.name ?? null,
+                                }
+                              : undefined
+                          }
+                        />
                       )}
                     </SectionErrorBoundary>
                   </Paper>
