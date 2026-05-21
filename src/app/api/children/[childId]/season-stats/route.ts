@@ -13,24 +13,44 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chil
       childId,
       ...(season ? { match: { team: { season } } } : {}),
     },
-    select: { points: true, baskets: true, fouls: true, assists: true, rebounds: true },
+    select: {
+      points: true,
+      twoPointers: true,
+      threePointers: true,
+      freeThrows: true,
+      fouls: true,
+      illegalFouls: true,
+      shotsAttempted: true,
+    },
   });
 
   const matchesPlayed = stats.length;
   const totals = stats.reduce(
     (acc, s) => ({
       points: acc.points + s.points,
-      baskets: acc.baskets + s.baskets,
+      twoPointers: acc.twoPointers + s.twoPointers,
+      threePointers: acc.threePointers + s.threePointers,
+      freeThrows: acc.freeThrows + s.freeThrows,
       fouls: acc.fouls + s.fouls,
-      assists: acc.assists + s.assists,
-      rebounds: acc.rebounds + s.rebounds,
+      illegalFouls: acc.illegalFouls + s.illegalFouls,
+      shotsAttempted: acc.shotsAttempted + s.shotsAttempted,
     }),
-    { points: 0, baskets: 0, fouls: 0, assists: 0, rebounds: 0 }
+    {
+      points: 0,
+      twoPointers: 0,
+      threePointers: 0,
+      freeThrows: 0,
+      fouls: 0,
+      illegalFouls: 0,
+      shotsAttempted: 0,
+    }
   );
+  const baskets = totals.twoPointers + totals.threePointers + totals.freeThrows;
 
   return NextResponse.json({
     matchesPlayed,
     ...totals,
+    baskets,
     avgPoints: matchesPlayed > 0 ? Math.round((totals.points / matchesPlayed) * 10) / 10 : 0,
     season,
   });

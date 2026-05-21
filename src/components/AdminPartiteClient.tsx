@@ -53,7 +53,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
-import MatchCalloupsDialog from "@/components/MatchCalloupsDialog";
 import MatchStatsDialog from "@/components/MatchStatsDialog";
 import GroupCsvImportDialog from "@/components/GroupCsvImportDialog";
 import { seasonForDate } from "@/components/SessionRestrictionEditor";
@@ -227,7 +226,6 @@ export default function AdminPartiteClient({
   const [opponentForm, setOpponentForm] = useState({ name: "", city: "" });
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [callupMatch, setCallupMatch] = useState<Match | null>(null);
   const [statsMatch, setStatsMatch] = useState<Match | null>(null);
 
   // Dialog gestione risultati esterni girone
@@ -385,8 +383,9 @@ export default function AdminPartiteClient({
     } else {
       setMatches((prev) => [saved, ...prev]);
       setMatchDialog(false);
-      // Apri automaticamente i convocati per la nuova partita
-      setCallupMatch(saved);
+      // Apri automaticamente la pagina convocazioni per la nuova partita
+      router.push(`/admin/partite/${saved.id}/convocazioni`);
+      return;
     }
     router.refresh();
   });
@@ -702,7 +701,7 @@ export default function AdminPartiteClient({
                             size="small"
                             color="primary"
                             aria-label="Convocati partita"
-                            onClick={() => setCallupMatch(m)}
+                            onClick={() => router.push(`/admin/partite/${m.id}/convocazioni`)}
                           >
                             <GroupsIcon fontSize="small" />
                           </IconButton>
@@ -1072,17 +1071,6 @@ export default function AdminPartiteClient({
               openGmDialog(csvImportGroup);
             }
           }}
-        />
-      )}
-
-      {/* Dialog convocati */}
-      {callupMatch && (
-        <MatchCalloupsDialog
-          open={!!callupMatch}
-          onClose={() => setCallupMatch(null)}
-          matchId={callupMatch.id}
-          teamId={callupMatch.teamId}
-          matchLabel={`${callupMatch.team.name} vs ${callupMatch.opponent.name} (${format(new Date(callupMatch.date), "d MMM yyyy", { locale: it })})`}
         />
       )}
 

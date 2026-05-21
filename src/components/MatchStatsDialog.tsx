@@ -21,10 +21,10 @@ import {
   Avatar,
   Chip,
   Paper,
-  Divider,
 } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { STAT_FIELDS_BY_ROLE, computePoints, type StatField } from "@/lib/schemas/match";
 
 interface CalledPlayer {
   id: string;
@@ -50,10 +50,12 @@ interface ExistingStat {
   userId: string | null;
   childId: string | null;
   points: number;
-  baskets: number;
-  assists: number;
-  rebounds: number;
+  twoPointers: number;
+  threePointers: number;
+  freeThrows: number;
   fouls: number;
+  illegalFouls: number;
+  shotsAttempted: number;
   notes?: string | null;
 }
 
@@ -65,24 +67,31 @@ interface StatRow {
   image: string | null;
   sportRole: number | null;
   sportRoleVariant: string | null;
-  points: string;
-  baskets: string;
-  assists: string;
-  rebounds: string;
+  twoPointers: string;
+  threePointers: string;
+  freeThrows: string;
   fouls: string;
+  illegalFouls: string;
+  shotsAttempted: string;
   notes: string;
   hasExistingStats: boolean;
 }
 
-type StatField = "points" | "baskets" | "assists" | "rebounds" | "fouls";
-
 const STAT_COLS: { key: StatField; label: string; title: string }[] = [
-  { key: "points", label: "Pt", title: "Punti" },
-  { key: "baskets", label: "Can", title: "Canestri" },
-  { key: "assists", label: "Ast", title: "Assist" },
-  { key: "rebounds", label: "Rim", title: "Rimbalzi" },
+  { key: "twoPointers", label: "2pt", title: "Canestri da 2 punti" },
+  { key: "threePointers", label: "3pt", title: "Canestri da 3 punti" },
+  { key: "freeThrows", label: "TL", title: "Tiri liberi" },
   { key: "fouls", label: "Fal", title: "Falli" },
+  { key: "illegalFouls", label: "FI", title: "Falli illegali" },
+  { key: "shotsAttempted", label: "Tir", title: "Tiri tentati" },
 ];
+
+const STAT_FIELDS: readonly StatField[] = STAT_COLS.map((c) => c.key);
+
+function isAllowed(role: number | null, field: StatField): boolean {
+  if (!role) return true;
+  return STAT_FIELDS_BY_ROLE[role]?.includes(field) ?? false;
+}
 
 interface Props {
   open: boolean;
@@ -133,11 +142,12 @@ export default function MatchStatsDialog({
             sportRole: person.sportRole,
             sportRoleVariant:
               (person as { sportRoleVariant?: string | null }).sportRoleVariant ?? null,
-            points: String(ex?.points ?? 0),
-            baskets: String(ex?.baskets ?? 0),
-            assists: String(ex?.assists ?? 0),
-            rebounds: String(ex?.rebounds ?? 0),
+            twoPointers: String(ex?.twoPointers ?? 0),
+            threePointers: String(ex?.threePointers ?? 0),
+            freeThrows: String(ex?.freeThrows ?? 0),
             fouls: String(ex?.fouls ?? 0),
+            illegalFouls: String(ex?.illegalFouls ?? 0),
+            shotsAttempted: String(ex?.shotsAttempted ?? 0),
             notes: ex?.notes ?? "",
             hasExistingStats: ex !== undefined,
           };
@@ -157,63 +167,56 @@ export default function MatchStatsDialog({
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, notes: value } : r)));
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>, rowIdx: number, colIdx: number) {
-    if (e.key !== "Tab") return;
-    e.preventDefault();
-    const totalCols = STAT_COLS.length + 1; // +1 per Note
-    let nextRow = rowIdx;
-    let nextCol = colIdx + (e.shiftKey ? -1 : 1);
-    if (nextCol >= totalCols) {
-      nextCol = 0;
-      nextRow = rowIdx + 1;
-    } else if (nextCol < 0) {
-      nextCol = totalCols - 1;
-      nextRow = rowIdx - 1;
-    }
-    if (nextRow < 0 || nextRow >= rows.length) return;
-    const id = `stats-cell-${nextRow}-${nextCol}`;
-    (document.getElementById(id) as HTMLInputElement | null)?.focus();
+  function rowPoints(r: StatRow): number {
+    return computePoints({
+      twoPointers: parseInt(r.twoPointers || "0", 10) || 0,
+      threePointers: parseInt(r.threePointers || "0", 10) || 0,
+      freeThrows: parseInt(r.freeThrows || "0", 10) || 0,
+    });
   }
 
   const totals = rows.reduce(
-    (acc, r) => ({
-      points: acc.points + (parseInt(r.points || "0", 10) || 0),
-      baskets: acc.baskets + (parseInt(r.baskets || "0", 10) || 0),
-      assists: acc.assists + (parseInt(r.assists || "0", 10) || 0),
-      rebounds: acc.rebounds + (parseInt(r.rebounds || "0", 10) || 0),
-      fouls: acc.fouls + (parseInt(r.fouls || "0", 10) || 0),
-    }),
-    { points: 0, baskets: 0, assists: 0, rebounds: 0, fouls: 0 }
+    (acc, r) => {
+      for (const f of STAT_FIELDS) {
+        acc[f] += parseInt(r[f] || "0", 10) || 0;
+      }
+      acc.points += rowPoints(r);
+      return acc;
+    },
+    {
+      twoPointers: 0,
+      threePointers: 0,
+      freeThrows: 0,
+      fouls: 0,
+      illegalFouls: 0,
+      shotsAttempted: 0,
+      points: 0,
+    }
   );
 
   async function handleSave() {
     setSaving(true);
     setError("");
     try {
-      // che non hanno ancora statistiche nel DB. Se il record esiste già (hasExistingStats),
-      // viene sempre incluso per permettere di azzerare valori precedentemente inseriti.
       const payload = rows
         .filter((r) => {
           if (r.hasExistingStats) return true;
           return (
-            parseInt(r.points || "0", 10) > 0 ||
-            parseInt(r.baskets || "0", 10) > 0 ||
-            parseInt(r.assists || "0", 10) > 0 ||
-            parseInt(r.rebounds || "0", 10) > 0 ||
-            parseInt(r.fouls || "0", 10) > 0 ||
-            r.notes.trim().length > 0
+            STAT_FIELDS.some((f) => parseInt(r[f] || "0", 10) > 0) || r.notes.trim().length > 0
           );
         })
-        .map((r) => ({
-          ...(r.userId ? { userId: r.userId } : {}),
-          ...(r.childId ? { childId: r.childId } : {}),
-          points: parseInt(r.points || "0", 10),
-          baskets: parseInt(r.baskets || "0", 10),
-          assists: parseInt(r.assists || "0", 10),
-          rebounds: parseInt(r.rebounds || "0", 10),
-          fouls: parseInt(r.fouls || "0", 10),
-          ...(r.notes.trim() ? { notes: r.notes.trim() } : {}),
-        }));
+        .map((r) => {
+          // Azzera campi non ammessi per il ruolo
+          const entry: Record<string, number | string> = {
+            ...(r.userId ? { userId: r.userId } : {}),
+            ...(r.childId ? { childId: r.childId } : {}),
+          };
+          for (const f of STAT_FIELDS) {
+            entry[f] = isAllowed(r.sportRole, f) ? parseInt(r[f] || "0", 10) || 0 : 0;
+          }
+          if (r.notes.trim()) entry.notes = r.notes.trim();
+          return entry;
+        });
       const res = await fetch(`/api/matches/${matchId}/stats`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -233,7 +236,7 @@ export default function MatchStatsDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 700 }}>
         <LeaderboardIcon color="primary" />
         Statistiche giocatori
@@ -263,7 +266,7 @@ export default function MatchStatsDialog({
         ) : (
           <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", mt: 1 }}>
             <Box sx={{ overflowX: "auto" }}>
-              <Table size="small" sx={{ minWidth: 620 }}>
+              <Table size="small" sx={{ minWidth: 760 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
                     <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
@@ -272,11 +275,18 @@ export default function MatchStatsDialog({
                         key={col.key}
                         align="center"
                         title={col.title}
-                        sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 56 }}
+                        sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 52 }}
                       >
                         {col.label}
                       </TableCell>
                     ))}
+                    <TableCell
+                      align="center"
+                      title="Punti calcolati (2pt×2 + 3pt×3 + TL)"
+                      sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 52, color: "primary.main" }}
+                    >
+                      Pt
+                    </TableCell>
                     <TableCell
                       sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }}
                       title="Note (opzionale)"
@@ -286,79 +296,115 @@ export default function MatchStatsDialog({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows.map((row, rowIdx) => (
-                    <TableRow key={row.key}>
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Avatar
-                            src={row.image ?? undefined}
-                            sx={{ width: 24, height: 24, fontSize: 10 }}
-                          >
-                            {row.name[0]}
-                          </Avatar>
-                          <Box>
-                            <Typography
-                              variant="body2"
-                              fontWeight={600}
-                              sx={{ fontSize: "0.82rem" }}
+                  {rows.map((row) => {
+                    const pts = rowPoints(row);
+                    return (
+                      <TableRow key={row.key}>
+                        <TableCell>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Avatar
+                              src={row.image ?? undefined}
+                              sx={{ width: 24, height: 24, fontSize: 10 }}
                             >
-                              {row.name}
-                            </Typography>
-                            {row.sportRole && (
-                              <Chip
-                                label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
-                                size="small"
-                                sx={{
-                                  bgcolor: ROLE_COLORS[row.sportRole],
-                                  color: "#fff",
-                                  fontWeight: 600,
-                                  fontSize: "0.55rem",
-                                  height: 14,
-                                  mt: 0.2,
-                                }}
-                              />
-                            )}
+                              {row.name[0]}
+                            </Avatar>
+                            <Box>
+                              <Typography
+                                variant="body2"
+                                fontWeight={600}
+                                sx={{ fontSize: "0.82rem" }}
+                              >
+                                {row.name}
+                              </Typography>
+                              {row.sportRole && (
+                                <Chip
+                                  label={sportRoleLabel(
+                                    row.sportRole,
+                                    row.sportRoleVariant ?? null
+                                  )}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: ROLE_COLORS[row.sportRole],
+                                    color: "#fff",
+                                    fontWeight: 600,
+                                    fontSize: "0.55rem",
+                                    height: 14,
+                                    mt: 0.2,
+                                  }}
+                                />
+                              )}
+                            </Box>
                           </Box>
-                        </Box>
-                      </TableCell>
-                      {STAT_COLS.map((col, colIdx) => (
-                        <TableCell key={col.key} align="center" sx={{ py: 0.5, px: 0.75 }}>
+                        </TableCell>
+                        {STAT_COLS.map((col) => {
+                          const allowed = isAllowed(row.sportRole, col.key);
+                          return (
+                            <TableCell key={col.key} align="center" sx={{ py: 0.5, px: 0.5 }}>
+                              {allowed ? (
+                                <TextField
+                                  type="number"
+                                  value={row[col.key]}
+                                  onChange={(e) => update(row.key, col.key, e.target.value)}
+                                  size="small"
+                                  slotProps={{
+                                    htmlInput: {
+                                      min: 0,
+                                      style: {
+                                        textAlign: "center",
+                                        padding: "4px 6px",
+                                        width: 40,
+                                      },
+                                    },
+                                  }}
+                                  sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
+                                />
+                              ) : (
+                                <Typography
+                                  variant="body2"
+                                  color="text.disabled"
+                                  sx={{ fontSize: "0.78rem" }}
+                                  title={
+                                    row.sportRole
+                                      ? `Non applicabile per ${sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}`
+                                      : "Non applicabile"
+                                  }
+                                >
+                                  —
+                                </Typography>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell
+                          align="center"
+                          sx={{
+                            py: 0.5,
+                            px: 0.5,
+                            fontWeight: 800,
+                            color: "primary.main",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          {pts}
+                        </TableCell>
+                        <TableCell sx={{ py: 0.5, px: 0.75 }}>
                           <TextField
-                            id={`stats-cell-${rowIdx}-${colIdx}`}
-                            type="number"
-                            value={row[col.key]}
-                            onChange={(e) => update(row.key, col.key, e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(e, rowIdx, colIdx)}
+                            value={row.notes}
+                            onChange={(e) => updateNote(row.key, e.target.value)}
                             size="small"
+                            placeholder="Opzionale"
                             slotProps={{
                               htmlInput: {
-                                min: 0,
-                                style: { textAlign: "center", padding: "4px 6px", width: 44 },
+                                maxLength: 500,
+                                style: { padding: "4px 8px", fontSize: "0.78rem" },
                               },
                             }}
-                            sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
+                            sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
                           />
                         </TableCell>
-                      ))}
-                      <TableCell sx={{ py: 0.5, px: 0.75 }}>
-                        <TextField
-                          id={`stats-cell-${rowIdx}-${STAT_COLS.length}`}
-                          value={row.notes}
-                          onChange={(e) => updateNote(row.key, e.target.value)}
-                          onKeyDown={(e) => handleKeyDown(e, rowIdx, STAT_COLS.length)}
-                          size="small"
-                          placeholder="Opzionale"
-                          slotProps={{
-                            htmlInput: {
-                              maxLength: 500,
-                              style: { padding: "4px 8px", fontSize: "0.78rem" },
-                            },
-                          }}
-                          sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
                 <TableFooter>
                   <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
@@ -371,15 +417,17 @@ export default function MatchStatsDialog({
                       <TableCell
                         key={col.key}
                         align="center"
-                        sx={{
-                          fontWeight: 800,
-                          fontSize: "0.82rem",
-                          color: col.key === "points" ? "primary.main" : "text.primary",
-                        }}
+                        sx={{ fontWeight: 800, fontSize: "0.82rem", color: "text.primary" }}
                       >
                         {totals[col.key]}
                       </TableCell>
                     ))}
+                    <TableCell
+                      align="center"
+                      sx={{ fontWeight: 800, fontSize: "0.9rem", color: "primary.main" }}
+                    >
+                      {totals.points}
+                    </TableCell>
                     <TableCell />
                   </TableRow>
                 </TableFooter>

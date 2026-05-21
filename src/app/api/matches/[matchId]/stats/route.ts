@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { PlayerStatsBatchSchema } from "@/lib/schemas";
+import { PlayerStatsBatchSchema, computePoints } from "@/lib/schemas";
 import { sendPushToAll } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { auth } from "@/lib/authjs";
@@ -45,12 +45,17 @@ export async function PUT(req: Request, { params }: Params) {
   // Upsert ogni riga
   const results = await Promise.all(
     body.map((s) => {
+      const twoPointers = s.twoPointers ?? 0;
+      const threePointers = s.threePointers ?? 0;
+      const freeThrows = s.freeThrows ?? 0;
       const data = {
-        points: s.points ?? 0,
-        baskets: s.baskets ?? 0,
+        twoPointers,
+        threePointers,
+        freeThrows,
+        points: computePoints({ twoPointers, threePointers, freeThrows }),
         fouls: s.fouls ?? 0,
-        assists: s.assists ?? 0,
-        rebounds: s.rebounds ?? 0,
+        illegalFouls: s.illegalFouls ?? 0,
+        shotsAttempted: s.shotsAttempted ?? 0,
         notes: s.notes?.trim() || null,
       };
       if (s.userId) {

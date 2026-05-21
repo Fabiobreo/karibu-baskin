@@ -29,8 +29,12 @@ export interface ClassificaRow {
   kind: "user" | "child";
   matches: number;
   points: number;
-  baskets: number;
+  twoPointers: number;
+  threePointers: number;
+  freeThrows: number;
   fouls: number;
+  illegalFouls: number;
+  shotsAttempted: number;
   avgPoints: number;
 }
 
@@ -52,9 +56,9 @@ export default function ClassificaTableClient({
     <TableContainer
       component={Paper}
       elevation={0}
-      sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}
+      sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, overflow: "auto" }}
     >
-      <Table size="small">
+      <Table size="small" sx={{ minWidth: 720 }}>
         <TableHead>
           <TableRow
             sx={{
@@ -69,15 +73,23 @@ export default function ClassificaTableClient({
           >
             <TableCell sx={{ width: 36, pl: 2 }}>#</TableCell>
             <TableCell>Giocatore</TableCell>
-            <TableCell align="center">Partite</TableCell>
+            <TableCell align="center">G</TableCell>
             <TableCell align="center" sx={{ color: "primary.main !important" }}>
-              Punti
-            </TableCell>
-            <TableCell align="center">Canestri</TableCell>
-            <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-              Media pt.
+              Pt
             </TableCell>
             <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+              Media
+            </TableCell>
+            <TableCell align="center" title="Canestri da 2 punti">
+              2pt
+            </TableCell>
+            <TableCell align="center" title="Canestri da 3 punti">
+              3pt
+            </TableCell>
+            <TableCell align="center" title="Tiri liberi">
+              TL
+            </TableCell>
+            <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
               Falli
             </TableCell>
           </TableRow>
@@ -154,19 +166,28 @@ export default function ClassificaTableClient({
                     {row.points}
                   </Typography>
                 </TableCell>
-                <TableCell align="center">
-                  <Typography variant="body2" fontWeight={600}>
-                    {row.baskets}
-                  </Typography>
-                </TableCell>
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   <Typography variant="body2" color="text.secondary">
                     {row.avgPoints.toFixed(1)}
                   </Typography>
                 </TableCell>
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                <TableCell align="center">{row.twoPointers}</TableCell>
+                <TableCell align="center">{row.threePointers}</TableCell>
+                <TableCell align="center">{row.freeThrows}</TableCell>
+                <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
                   <Typography variant="body2" color="text.secondary">
                     {row.fouls}
+                    {row.illegalFouls > 0 && (
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        color="#C62828"
+                        sx={{ ml: 0.5 }}
+                        title="Falli illegali"
+                      >
+                        ({row.illegalFouls})
+                      </Typography>
+                    )}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -174,7 +195,7 @@ export default function ClassificaTableClient({
           })}
           {rows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} align="center" sx={{ py: 6, color: "text.disabled" }}>
+              <TableCell colSpan={9} align="center" sx={{ py: 6, color: "text.disabled" }}>
                 Nessuna statistica disponibile.
               </TableCell>
             </TableRow>

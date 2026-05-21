@@ -208,10 +208,12 @@ export async function GET(req: NextRequest) {
       "Email",
       "Ruolo",
       "Punti",
-      "Canestri",
-      "Assist",
-      "Rimbalzi",
+      "Canestri 2pt",
+      "Canestri 3pt",
+      "Tiri liberi",
       "Falli",
+      "Falli illegali",
+      "Tiri tentati",
     ]);
     const rows = stats.map((s) =>
       csvRow([
@@ -223,10 +225,12 @@ export async function GET(req: NextRequest) {
         s.user?.email ?? "",
         s.user?.sportRole ? sportRoleLabel(s.user.sportRole, s.user.sportRoleVariant ?? null) : "",
         s.points,
-        s.baskets,
-        s.assists,
-        s.rebounds,
+        s.twoPointers,
+        s.threePointers,
+        s.freeThrows,
         s.fouls,
+        s.illegalFouls,
+        s.shotsAttempted,
       ])
     );
 

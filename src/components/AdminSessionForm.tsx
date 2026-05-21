@@ -11,6 +11,8 @@ import {
   CircularProgress,
   Typography,
   Divider,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SessionRestrictionEditor, {
@@ -53,6 +55,7 @@ export default function AdminSessionForm({
   onLoadingChange,
 }: Props) {
   const [restrictions, setRestrictions] = useState<RestrictionValue>(DEFAULT_RESTRICTIONS);
+  const [openImmediately, setOpenImmediately] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const {
@@ -85,6 +88,7 @@ export default function AdminSessionForm({
           allowedRoles: restrictions.allowedRoles,
           restrictTeamId: restrictions.restrictTeamId,
           openRoles: restrictions.openRoles,
+          openImmediately,
         }),
       });
 
@@ -100,6 +104,7 @@ export default function AdminSessionForm({
 
       reset();
       setRestrictions(DEFAULT_RESTRICTIONS);
+      setOpenImmediately(false);
       onCreated();
     } catch {
       setApiError("Errore di rete, riprova");
@@ -175,6 +180,30 @@ export default function AdminSessionForm({
         onChange={setRestrictions}
         disabled={isSubmitting}
         seasonFilter={dateValue ? seasonForDate(new Date(dateValue)) : undefined}
+      />
+
+      <Divider sx={{ my: 2 }} />
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={openImmediately}
+            onChange={(e) => setOpenImmediately(e.target.checked)}
+            disabled={isSubmitting}
+          />
+        }
+        label={
+          <Box>
+            <Typography variant="body2" fontWeight={600}>
+              Apri subito le iscrizioni
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Invia la notifica e abilita le iscrizioni. Se lasciato disattivato, potrai aprire le
+              iscrizioni in seguito dal pulsante dedicato.
+            </Typography>
+          </Box>
+        }
+        sx={{ alignItems: "flex-start", m: 0 }}
       />
 
       {apiError && (

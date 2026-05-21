@@ -124,10 +124,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   // Aggregazioni statistiche
   const totalPoints = filteredStats.reduce((s, ms) => s + ms.points, 0);
-  const totalBaskets = filteredStats.reduce((s, ms) => s + ms.baskets, 0);
+  const totalTwo = filteredStats.reduce((s, ms) => s + ms.twoPointers, 0);
+  const totalThree = filteredStats.reduce((s, ms) => s + ms.threePointers, 0);
+  const totalFreeThrows = filteredStats.reduce((s, ms) => s + ms.freeThrows, 0);
   const totalFouls = filteredStats.reduce((s, ms) => s + ms.fouls, 0);
-  const totalAssists = filteredStats.reduce((s, ms) => s + ms.assists, 0);
-  const totalRebounds = filteredStats.reduce((s, ms) => s + ms.rebounds, 0);
+  const totalIllegalFouls = filteredStats.reduce((s, ms) => s + ms.illegalFouls, 0);
+  const totalShots = filteredStats.reduce((s, ms) => s + ms.shotsAttempted, 0);
+  const totalBaskets = totalTwo + totalThree + totalFreeThrows;
   const matchesPlayed = filteredStats.length;
 
   const hasStats = matchesPlayed > 0;
@@ -323,20 +326,21 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {[
                 { label: "Partite", value: matchesPlayed, color: "#1565C0" },
                 { label: "Punti totali", value: totalPoints, color: "#E65100" },
-                { label: "Canestri", value: totalBaskets, color: "#2E7D32" },
-                { label: "Assist", value: totalAssists, color: "#7B1FA2" },
-                { label: "Rimbalzi", value: totalRebounds, color: "#00838F" },
-                { label: "Falli", value: totalFouls, color: "#C62828" },
                 {
                   label: "Media punti",
                   value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—",
                   color: "#1A1A1A",
                 },
-                {
-                  label: "Media canestri",
-                  value: matchesPlayed > 0 ? (totalBaskets / matchesPlayed).toFixed(1) : "—",
-                  color: "#555",
-                },
+                { label: "Canestri 2pt", value: totalTwo, color: "#2E7D32" },
+                { label: "Canestri 3pt", value: totalThree, color: "#7B1FA2" },
+                { label: "Tiri liberi", value: totalFreeThrows, color: "#00838F" },
+                { label: "Falli", value: totalFouls, color: "#C62828" },
+                ...(totalIllegalFouls > 0
+                  ? [{ label: "Falli illegali", value: totalIllegalFouls, color: "#B71C1C" }]
+                  : []),
+                ...(totalShots > 0
+                  ? [{ label: "Tiri tentati", value: totalShots, color: "#555" }]
+                  : []),
               ].map((s) => (
                 <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
                   <Paper
@@ -531,10 +535,18 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           </Box>
                           <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                             <StatItem label="Punti" value={ms.points} />
-                            <StatItem label="Canestri" value={ms.baskets} />
-                            {ms.assists > 0 && <StatItem label="Assist" value={ms.assists} />}
-                            {ms.rebounds > 0 && <StatItem label="Rimbalzi" value={ms.rebounds} />}
-                            <StatItem label="Falli" value={ms.fouls} />
+                            {ms.twoPointers > 0 && <StatItem label="2pt" value={ms.twoPointers} />}
+                            {ms.threePointers > 0 && (
+                              <StatItem label="3pt" value={ms.threePointers} />
+                            )}
+                            {ms.freeThrows > 0 && <StatItem label="TL" value={ms.freeThrows} />}
+                            {ms.fouls > 0 && <StatItem label="Falli" value={ms.fouls} />}
+                            {ms.illegalFouls > 0 && (
+                              <StatItem label="Falli ill." value={ms.illegalFouls} />
+                            )}
+                            {ms.shotsAttempted > 0 && (
+                              <StatItem label="Tiri" value={ms.shotsAttempted} />
+                            )}
                           </Box>
                           {ms.notes && (
                             <Typography

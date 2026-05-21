@@ -49,10 +49,12 @@ const stat1 = {
   userId: "user-1",
   childId: null,
   points: 10,
-  baskets: 3,
+  twoPointers: 2,
+  threePointers: 2,
+  freeThrows: 0,
   fouls: 2,
-  assists: 1,
-  rebounds: 5,
+  illegalFouls: 0,
+  shotsAttempted: 0,
   notes: null,
   user: { id: "user-1", name: "Mario Rossi", image: null, sportRole: 3, sportRoleVariant: null },
   child: null,
@@ -96,7 +98,7 @@ describe("PUT /api/matches/[matchId]/stats", () => {
     const req = new Request("http://localhost/api/matches/match-1/stats", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify([{ userId: "user-1", points: 10 }]),
+      body: JSON.stringify([{ userId: "user-1", twoPointers: 3 }]),
     });
     const res = await PUT(req, makeParams("match-1"));
     expect(res.status).toBe(403);
@@ -124,24 +126,32 @@ describe("PUT /api/matches/[matchId]/stats", () => {
     expect(res.status).toBe(400);
   });
 
-  it("esegue upsert per userId e restituisce i risultati filtrati", async () => {
+  it("calcola points dai tiri e fa upsert per userId", async () => {
     mockIsAdmin.mockResolvedValue(true);
     const req = new Request("http://localhost/api/matches/match-1/stats", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify([
-        { userId: "user-1", points: 10, baskets: 3, fouls: 2, assists: 1, rebounds: 5 },
+        {
+          userId: "user-1",
+          twoPointers: 3,
+          threePointers: 2,
+          freeThrows: 1,
+          fouls: 2,
+          illegalFouls: 0,
+          shotsAttempted: 0,
+        },
       ]),
     });
     const res = await PUT(req, makeParams("match-1"));
     expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json).toHaveLength(1);
     const upsertCall = p.playerMatchStats.upsert.mock.calls[0][0];
     expect(upsertCall.where).toHaveProperty("matchId_userId");
-    expect(upsertCall.create.points).toBe(10);
-    expect(upsertCall.create.matchId).toBe("match-1");
-    expect(upsertCall.create.userId).toBe("user-1");
+    // 3*2 + 2*3 + 1 = 13
+    expect(upsertCall.create.points).toBe(13);
+    expect(upsertCall.create.twoPointers).toBe(3);
+    expect(upsertCall.create.threePointers).toBe(2);
+    expect(upsertCall.create.freeThrows).toBe(1);
   });
 
   it("esegue upsert per childId", async () => {
@@ -151,15 +161,14 @@ describe("PUT /api/matches/[matchId]/stats", () => {
     const req = new Request("http://localhost/api/matches/match-1/stats", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify([
-        { childId: "child-1", points: 8, baskets: 2, fouls: 1, assists: 0, rebounds: 3 },
-      ]),
+      body: JSON.stringify([{ childId: "child-1", twoPointers: 2, freeThrows: 1 }]),
     });
     const res = await PUT(req, makeParams("match-1"));
     expect(res.status).toBe(200);
     const upsertCall = p.playerMatchStats.upsert.mock.calls[0][0];
     expect(upsertCall.where).toHaveProperty("matchId_childId");
     expect(upsertCall.create.childId).toBe("child-1");
+    expect(upsertCall.create.points).toBe(5); // 2*2 + 1
   });
 
   it("usa 0 come default per campi numerici non forniti", async () => {
@@ -172,10 +181,12 @@ describe("PUT /api/matches/[matchId]/stats", () => {
     await PUT(req, makeParams("match-1"));
     const upsertCall = p.playerMatchStats.upsert.mock.calls[0][0];
     expect(upsertCall.create.points).toBe(0);
-    expect(upsertCall.create.baskets).toBe(0);
+    expect(upsertCall.create.twoPointers).toBe(0);
+    expect(upsertCall.create.threePointers).toBe(0);
+    expect(upsertCall.create.freeThrows).toBe(0);
     expect(upsertCall.create.fouls).toBe(0);
-    expect(upsertCall.create.assists).toBe(0);
-    expect(upsertCall.create.rebounds).toBe(0);
+    expect(upsertCall.create.illegalFouls).toBe(0);
+    expect(upsertCall.create.shotsAttempted).toBe(0);
   });
 
   it("trimma le note e le imposta a null se stringa vuota", async () => {

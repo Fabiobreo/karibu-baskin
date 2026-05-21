@@ -5,6 +5,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { SessionUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { notifySessionOpen } from "@/lib/sessionNotify";
 
 export async function GET(
   _req: NextRequest,
@@ -72,6 +73,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
     }
     throw err;
+  }
+
+  if (session.registrationOpen) {
+    notifySessionOpen(session, "updated");
   }
 
   if (authSession?.user?.id) {

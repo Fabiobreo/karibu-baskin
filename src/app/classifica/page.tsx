@@ -31,7 +31,15 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
   const stats = await prisma.playerMatchStats.groupBy({
     by: ["userId", "childId"],
     where: { match: { team: { season: selectedSeason } } },
-    _sum: { points: true, baskets: true, fouls: true },
+    _sum: {
+      points: true,
+      twoPointers: true,
+      threePointers: true,
+      freeThrows: true,
+      fouls: true,
+      illegalFouls: true,
+      shotsAttempted: true,
+    },
     _count: { matchId: true },
   });
 
@@ -68,8 +76,12 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
   for (const s of stats) {
     const matches = s._count.matchId;
     const points = s._sum.points ?? 0;
-    const baskets = s._sum.baskets ?? 0;
+    const twoPointers = s._sum.twoPointers ?? 0;
+    const threePointers = s._sum.threePointers ?? 0;
+    const freeThrows = s._sum.freeThrows ?? 0;
     const fouls = s._sum.fouls ?? 0;
+    const illegalFouls = s._sum.illegalFouls ?? 0;
+    const shotsAttempted = s._sum.shotsAttempted ?? 0;
     const avgPoints = matches > 0 ? points / matches : 0;
     if (s.userId) {
       const u = userMap.get(s.userId);
@@ -84,8 +96,12 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
           kind: "user",
           matches,
           points,
-          baskets,
+          twoPointers,
+          threePointers,
+          freeThrows,
           fouls,
+          illegalFouls,
+          shotsAttempted,
           avgPoints,
         });
     } else if (s.childId) {
@@ -101,8 +117,12 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
           kind: "child",
           matches,
           points,
-          baskets,
+          twoPointers,
+          threePointers,
+          freeThrows,
           fouls,
+          illegalFouls,
+          shotsAttempted,
           avgPoints,
         });
     }

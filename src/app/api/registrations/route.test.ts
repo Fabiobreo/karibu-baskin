@@ -72,6 +72,7 @@ const baseSession = {
   allowedRoles: [] as number[],
   restrictTeamId: null as string | null,
   openRoles: [] as number[],
+  registrationOpen: true,
 };
 
 function makePost(body: unknown): NextRequest {
@@ -135,6 +136,27 @@ describe("POST /api/registrations", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toContain("chiuse");
+  });
+
+  it("restituisce 403 se le iscrizioni non sono ancora aperte (utente anonimo)", async () => {
+    p.trainingSession.findUnique.mockResolvedValue({ ...baseSession, registrationOpen: false });
+    const res = await POST(makePost({ sessionId: "sess-1", role: 3, name: "Mario" }));
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toMatch(/non sono ancora aperte/i);
+  });
+
+  it("permette l'iscrizione a COACH anche se le iscrizioni non sono aperte", async () => {
+    p.trainingSession.findUnique.mockResolvedValue({ ...baseSession, registrationOpen: false });
+    mockAuth.mockResolvedValue({ user: { id: "coach-1", appRole: "COACH" } });
+    p.user.findUnique.mockResolvedValue({
+      name: "Coach",
+      appRole: "COACH",
+      sportRole: 3,
+      sportRoleSuggested: null,
+    });
+    const res = await POST(makePost({ sessionId: "sess-1", role: 3 }));
+    expect(res.status).toBe(201);
   });
 
   describe("iscrizione anonima", () => {

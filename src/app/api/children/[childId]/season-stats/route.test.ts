@@ -56,9 +56,33 @@ describe("GET /api/children/[childId]/season-stats", () => {
   it("aggrega correttamente le statistiche", async () => {
     p.child.findUnique.mockResolvedValue({ id: "c1" });
     p.playerMatchStats.findMany.mockResolvedValue([
-      { points: 8, baskets: 3, fouls: 3, assists: 0, rebounds: 2 },
-      { points: 12, baskets: 5, fouls: 1, assists: 2, rebounds: 4 },
-      { points: 4, baskets: 1, fouls: 2, assists: 1, rebounds: 1 },
+      {
+        points: 8,
+        twoPointers: 2,
+        threePointers: 1,
+        freeThrows: 1,
+        fouls: 3,
+        illegalFouls: 0,
+        shotsAttempted: 0,
+      },
+      {
+        points: 12,
+        twoPointers: 3,
+        threePointers: 2,
+        freeThrows: 0,
+        fouls: 1,
+        illegalFouls: 1,
+        shotsAttempted: 0,
+      },
+      {
+        points: 4,
+        twoPointers: 1,
+        threePointers: 0,
+        freeThrows: 2,
+        fouls: 2,
+        illegalFouls: 0,
+        shotsAttempted: 0,
+      },
     ]);
     const [req, ctx] = makeGET("c1");
     const res = await GET(req, ctx);
@@ -66,10 +90,12 @@ describe("GET /api/children/[childId]/season-stats", () => {
     const json = await res.json();
     expect(json.matchesPlayed).toBe(3);
     expect(json.points).toBe(24);
-    expect(json.baskets).toBe(9);
+    expect(json.twoPointers).toBe(6);
+    expect(json.threePointers).toBe(3);
+    expect(json.freeThrows).toBe(3);
+    expect(json.baskets).toBe(12); // 6+3+3
     expect(json.fouls).toBe(6);
-    expect(json.assists).toBe(3);
-    expect(json.rebounds).toBe(7);
+    expect(json.illegalFouls).toBe(1);
     expect(json.avgPoints).toBe(8);
   });
 

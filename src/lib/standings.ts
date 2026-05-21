@@ -1,4 +1,4 @@
-// src/app/gironi/[groupId]/page.tsx e src/app/api/groups/[groupId]/route.ts.
+// src/app/classifiche/page.tsx e src/app/api/groups/[groupId]/route.ts.
 // Usa il sistema punti Baskin: V=2, P=1, S=0 (NON il 3-1-0 del calcio).
 
 export type StandingEntry = {

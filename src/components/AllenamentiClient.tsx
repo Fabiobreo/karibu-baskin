@@ -12,6 +12,7 @@ import {
   Divider,
   LinearProgress,
   IconButton,
+  Tooltip,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -41,6 +42,7 @@ import AddIcon from "@mui/icons-material/Add";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import { it } from "date-fns/locale";
@@ -104,10 +106,14 @@ function SessionRow({
   isStaff = false,
   generating = false,
   removingTeams = false,
+  openingRegistrations = false,
+  closingRegistrations = false,
   onEdit,
   onDelete,
   onGenerateTeams,
   onRemoveTeams,
+  onOpenRegistrations,
+  onCloseRegistrations,
 }: {
   session: SessionWithCount;
   isRegistered?: boolean;
@@ -116,10 +122,14 @@ function SessionRow({
   isStaff?: boolean;
   generating?: boolean;
   removingTeams?: boolean;
+  openingRegistrations?: boolean;
+  closingRegistrations?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   onGenerateTeams?: () => void;
   onRemoveTeams?: () => void;
+  onOpenRegistrations?: () => void;
+  onCloseRegistrations?: () => void;
 }) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [teamsOpen, setTeamsOpen] = useState(false);
@@ -127,6 +137,12 @@ function SessionRow({
   const endTime = s.endTime ? new Date(s.endTime) : null;
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
   const myTeam = findMyTeam(s.teams, myRegistrationId);
+  const sessEnd = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
+  const isPast = new Date() > sessEnd;
+  const isRegOpen = s.registrationOpen === true;
+  const wasOpened = !!s.registrationOpenedAt;
+  const showInArrivo = !isRegOpen && !wasOpened && !isPast && !muted;
+  const showChiuse = !isRegOpen && (wasOpened || isPast) && !muted;
 
   return (
     <>
@@ -209,9 +225,41 @@ function SessionRow({
 
         {/* Titolo + orario */}
         <Box sx={{ flex: 1, minWidth: 0, position: "relative", zIndex: 1, pointerEvents: "none" }}>
-          <Typography variant="body2" fontWeight={600} noWrap>
-            {s.title}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <Typography variant="body2" fontWeight={600} noWrap>
+              {s.title}
+            </Typography>
+            {showInArrivo && (
+              <Chip
+                icon={<HourglassEmptyIcon sx={{ fontSize: "0.75rem !important", color: "#fff" }} />}
+                label="In arrivo"
+                size="small"
+                sx={{
+                  bgcolor: "#6D4C41",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "0.6rem",
+                  height: 18,
+                  "& .MuiChip-icon": { ml: 0.5 },
+                }}
+              />
+            )}
+            {showChiuse && (
+              <Chip
+                icon={<LockIcon sx={{ fontSize: "0.7rem !important", color: "#fff" }} />}
+                label="Iscrizioni chiuse"
+                size="small"
+                sx={{
+                  bgcolor: "#546E7A",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "0.6rem",
+                  height: 18,
+                  "& .MuiChip-icon": { ml: 0.5 },
+                }}
+              />
+            )}
+          </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
             <Typography variant="caption" color="text.disabled">
               {format(date, "HH:mm")}
@@ -330,6 +378,52 @@ function SessionRow({
             </IconButton>
           )}
 
+          {isStaff && !isRegOpen && !isPast && onOpenRegistrations && (
+            <Tooltip title="Apri iscrizioni">
+              <span>
+                <IconButton
+                  size="small"
+                  aria-label="Apri iscrizioni"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onOpenRegistrations();
+                  }}
+                  disabled={openingRegistrations}
+                  sx={{ color: "warning.main", p: 0.25 }}
+                >
+                  {openingRegistrations ? (
+                    <CircularProgress size={13} color="inherit" />
+                  ) : (
+                    <LockOpenIcon sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
+          {isStaff && isRegOpen && !isPast && onCloseRegistrations && (
+            <Tooltip title="Chiudi iscrizioni">
+              <span>
+                <IconButton
+                  size="small"
+                  aria-label="Chiudi iscrizioni"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onCloseRegistrations();
+                  }}
+                  disabled={closingRegistrations}
+                  sx={{ color: "text.secondary", p: 0.25 }}
+                >
+                  {closingRegistrations ? (
+                    <CircularProgress size={13} color="inherit" />
+                  ) : (
+                    <LockIcon sx={{ fontSize: 16 }} />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
           {isStaff ? (
             <>
               <IconButton
@@ -530,6 +624,68 @@ export default function AllenamentiClient({
   const [generating, setGenerating] = useState<string | null>(null);
   const [removingTeams, setRemovingTeams] = useState<string | null>(null);
 
+  // Apertura iscrizioni
+  const [openingRegs, setOpeningRegs] = useState<string | null>(null);
+  const [confirmOpenSession, setConfirmOpenSession] = useState<SessionWithCount | null>(null);
+  const [closingRegs, setClosingRegs] = useState<string | null>(null);
+  const [confirmCloseSession, setConfirmCloseSession] = useState<SessionWithCount | null>(null);
+
+  async function handleOpenRegistrations(s: SessionWithCount) {
+    setConfirmOpenSession(null);
+    setOpeningRegs(s.id);
+    try {
+      const res = await fetch(`/api/sessions/${s.id}/open-registrations`, { method: "POST" });
+      if (res.ok) {
+        setSessions((prev) =>
+          prev.map((p) =>
+            p.id === s.id
+              ? {
+                  ...p,
+                  registrationOpen: true,
+                  registrationOpenedAt: p.registrationOpenedAt ?? new Date().toISOString(),
+                }
+              : p
+          )
+        );
+        showToast({
+          message: `Iscrizioni aperte per "${s.title}" — notifica inviata`,
+          severity: "success",
+        });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast({ message: data.error ?? "Errore nell'apertura", severity: "error" });
+      }
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setOpeningRegs(null);
+    }
+  }
+
+  async function handleCloseRegistrations(s: SessionWithCount) {
+    setConfirmCloseSession(null);
+    setClosingRegs(s.id);
+    try {
+      const res = await fetch(`/api/sessions/${s.id}/close-registrations`, { method: "POST" });
+      if (res.ok) {
+        setSessions((prev) =>
+          prev.map((p) => (p.id === s.id ? { ...p, registrationOpen: false } : p))
+        );
+        showToast({
+          message: `Iscrizioni chiuse per "${s.title}" — notifica inviata`,
+          severity: "success",
+        });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast({ message: data.error ?? "Errore nella chiusura", severity: "error" });
+      }
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setClosingRegs(null);
+    }
+  }
+
   function openEdit(s: SessionWithCount) {
     const date = new Date(s.date);
     const end = s.endTime ? new Date(s.endTime) : null;
@@ -720,8 +876,12 @@ export default function AllenamentiClient({
                 onDelete={() => setToDelete(s)}
                 onGenerateTeams={() => setTeamPickSession(s)}
                 onRemoveTeams={() => handleRemoveTeams(s)}
+                onOpenRegistrations={() => setConfirmOpenSession(s)}
+                onCloseRegistrations={() => setConfirmCloseSession(s)}
                 generating={generating === s.id}
                 removingTeams={removingTeams === s.id}
+                openingRegistrations={openingRegs === s.id}
+                closingRegistrations={closingRegs === s.id}
               />
             ))}
           </Box>
@@ -759,8 +919,12 @@ export default function AllenamentiClient({
                 onDelete={() => setToDelete(s)}
                 onGenerateTeams={() => setTeamPickSession(s)}
                 onRemoveTeams={() => handleRemoveTeams(s)}
+                onOpenRegistrations={() => setConfirmOpenSession(s)}
+                onCloseRegistrations={() => setConfirmCloseSession(s)}
                 generating={generating === s.id}
                 removingTeams={removingTeams === s.id}
+                openingRegistrations={openingRegs === s.id}
+                closingRegistrations={closingRegs === s.id}
               />
             ))}
           </Box>
@@ -919,10 +1083,14 @@ export default function AllenamentiClient({
                                         isStaff={isStaff}
                                         generating={generating === s.id}
                                         removingTeams={removingTeams === s.id}
+                                        openingRegistrations={openingRegs === s.id}
+                                        closingRegistrations={closingRegs === s.id}
                                         onEdit={() => openEdit(s)}
                                         onDelete={() => setToDelete(s)}
                                         onGenerateTeams={() => setTeamPickSession(s)}
                                         onRemoveTeams={() => handleRemoveTeams(s)}
+                                        onOpenRegistrations={() => setConfirmOpenSession(s)}
+                                        onCloseRegistrations={() => setConfirmCloseSession(s)}
                                       />
                                     </Box>
                                   ))}
@@ -1088,6 +1256,66 @@ export default function AllenamentiClient({
           </Box>
         )}
       </Box>
+
+      {/* ── Dialog: conferma apertura iscrizioni ── */}
+      <Dialog open={!!confirmOpenSession} onClose={() => setConfirmOpenSession(null)}>
+        <DialogTitle>Apri iscrizioni</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Aprire le iscrizioni per &quot;{confirmOpenSession?.title}&quot;? Verrà inviata una
+            notifica push e in-app a tutti gli utenti interessati.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConfirmOpenSession(null)}
+            disabled={openingRegs !== null}
+            color="inherit"
+          >
+            Annulla
+          </Button>
+          <Button
+            onClick={() => confirmOpenSession && handleOpenRegistrations(confirmOpenSession)}
+            variant="contained"
+            color="warning"
+            disabled={openingRegs !== null}
+            startIcon={
+              openingRegs ? <CircularProgress size={14} color="inherit" /> : <LockOpenIcon />
+            }
+          >
+            {openingRegs ? "Apertura..." : "Apri e notifica"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Dialog: conferma chiusura iscrizioni ── */}
+      <Dialog open={!!confirmCloseSession} onClose={() => setConfirmCloseSession(null)}>
+        <DialogTitle>Chiudi iscrizioni</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Chiudere le iscrizioni per &quot;{confirmCloseSession?.title}&quot;? Gli utenti non
+            iscritti non potranno più iscriversi. Verrà inviata una notifica.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConfirmCloseSession(null)}
+            disabled={closingRegs !== null}
+            color="inherit"
+          >
+            Annulla
+          </Button>
+          <Button
+            onClick={() => confirmCloseSession && handleCloseRegistrations(confirmCloseSession)}
+            variant="contained"
+            color="error"
+            disabled={closingRegs !== null}
+            startIcon={closingRegs ? <CircularProgress size={14} color="inherit" /> : <LockIcon />}
+          >
+            {closingRegs ? "Chiusura..." : "Chiudi e notifica"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* ── Dialog: nuovo allenamento ── */}
       <Dialog

@@ -7,26 +7,19 @@ import {
   Chip,
   Stack,
   Divider,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
   Button,
-  Tooltip,
 } from "@mui/material";
-import GironeMatchList from "@/components/GironeMatchList";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import ClassificaInternaTable from "@/components/ClassificaInternaTable";
 import type { PlayerStatRow } from "@/components/ClassificaInternaTable";
+import GironeFullView from "@/components/GironeFullView";
+import type { MatchdayBucket, OurMatchData, ExternalMatchData } from "@/components/GironeFullView";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import { computeStandings } from "@/lib/standings";
 
 export const metadata: Metadata = {
   title: "Classifiche | Karibu Baskin",
@@ -37,34 +30,83 @@ export const revalidate = 3600;
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
-const RESULT_LABEL: Record<string, { label: string; color: string; bg: string }> = {
-  WIN: { label: "V", color: "#2E7D32", bg: "#E8F5E9" },
-  DRAW: { label: "P", color: "#E65100", bg: "#FFF3E0" },
-  LOSS: { label: "S", color: "#C62828", bg: "#FFEBEE" },
-};
-
 function groupsQuery(season: string) {
   return prisma.group.findMany({
     where: { season },
     include: {
-      team: { select: { id: true, name: true, color: true } },
+      team: { select: { id: true, name: true, color: true, season: true } },
       matches: {
-        where: { result: { not: null } },
+        orderBy: [{ matchday: "asc" }, { date: "asc" }],
         select: {
           id: true,
           slug: true,
           date: true,
-          result: true,
+          matchday: true,
+          isHome: true,
           ourScore: true,
           theirScore: true,
-          isHome: true,
-          opponent: { select: { name: true } },
+          result: true,
+          opponent: { select: { id: true, name: true, slug: true } },
         },
-        orderBy: { date: "asc" },
+      },
+      groupMatches: {
+        orderBy: [{ matchday: "asc" }, { date: "asc" }],
+        select: {
+          id: true,
+          date: true,
+          matchday: true,
+          homeScore: true,
+          awayScore: true,
+          homeTeam: { select: { id: true, name: true } },
+          awayTeam: { select: { id: true, name: true } },
+        },
       },
     },
     orderBy: { name: "asc" },
   });
+}
+
+type GroupWithData = Awaited<ReturnType<typeof groupsQuery>>[number];
+
+function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
+  const map = new Map<number | null, MatchdayBucket>();
+
+  function get(day: number | null): MatchdayBucket {
+    if (!map.has(day)) map.set(day, { matchday: day, ours: [], external: [] });
+    return map.get(day)!;
+  }
+
+  for (const m of group.matches) {
+    const ours: OurMatchData = {
+      id: m.id,
+      slug: m.slug,
+      date: m.date.toISOString(),
+      matchday: m.matchday,
+      isHome: m.isHome,
+      ourScore: m.ourScore,
+      theirScore: m.theirScore,
+      result: m.result,
+      opponent: m.opponent,
+    };
+    get(m.matchday).ours.push(ours);
+  }
+
+  for (const gm of group.groupMatches) {
+    const ext: ExternalMatchData = {
+      id: gm.id,
+      date: gm.date ? gm.date.toISOString() : null,
+      matchday: gm.matchday,
+      homeScore: gm.homeScore,
+      awayScore: gm.awayScore,
+      homeTeam: gm.homeTeam,
+      awayTeam: gm.awayTeam,
+    };
+    get(gm.matchday).external.push(ext);
+  }
+
+  return Array.from(map.values()).sort(
+    (a, b) => (a.matchday ?? 999) - (b.matchday ?? 999)
+  );
 }
 
 export default async function ClassifichePage({ searchParams }: Props) {
@@ -74,11 +116,19 @@ export default async function ClassifichePage({ searchParams }: Props) {
   const currentSeason = getCurrentSeason();
   const activeSeason = seasonFilter ?? currentSeason;
 
-  const [currentGroups, seasons, allStats] = await Promise.all([
+  const [currentGroups, groupSeasons, statSeasons, allStats] = await Promise.all([
     // Championship standings: always current season
     groupsQuery(currentSeason),
-    // Available seasons for the stats filter chip
+    // Stagioni con gironi (per classifica campionato)
     prisma.group.findMany({
+      select: { season: true },
+      distinct: ["season"],
+      orderBy: { season: "desc" },
+    }),
+    // Stagioni con statistiche (per classifica interna marcatori — può includere
+    // stagioni senza girone, es. tornei o amichevoli)
+    prisma.competitiveTeam.findMany({
+      where: { matches: { some: { playerStats: { some: {} } } } },
       select: { season: true },
       distinct: ["season"],
       orderBy: { season: "desc" },
@@ -90,7 +140,15 @@ export default async function ClassifichePage({ searchParams }: Props) {
         userId: { not: null },
         match: { team: { season: activeSeason } },
       },
-      _sum: { points: true, baskets: true, assists: true, rebounds: true, fouls: true },
+      _sum: {
+        points: true,
+        twoPointers: true,
+        threePointers: true,
+        freeThrows: true,
+        fouls: true,
+        illegalFouls: true,
+        shotsAttempted: true,
+      },
       _count: { matchId: true },
     }),
   ]);
@@ -123,13 +181,17 @@ export default async function ClassifichePage({ searchParams }: Props) {
       sportRoleVariant: userMap[s.userId!].sportRoleVariant,
       matches: s._count.matchId,
       points: s._sum.points ?? 0,
-      baskets: s._sum.baskets ?? 0,
-      assists: s._sum.assists ?? 0,
-      rebounds: s._sum.rebounds ?? 0,
+      twoPointers: s._sum.twoPointers ?? 0,
+      threePointers: s._sum.threePointers ?? 0,
+      freeThrows: s._sum.freeThrows ?? 0,
       fouls: s._sum.fouls ?? 0,
+      illegalFouls: s._sum.illegalFouls ?? 0,
+      shotsAttempted: s._sum.shotsAttempted ?? 0,
     }));
 
-  const availableSeasons = seasons.map((s) => s.season);
+  const availableSeasons = Array.from(
+    new Set([...groupSeasons.map((s) => s.season), ...statSeasons.map((s) => s.season)])
+  ).sort((a, b) => b.localeCompare(a));
   const hasStats = statRows.length > 0;
   const hasCurrentGroups = currentGroups.length > 0;
 
@@ -217,147 +279,24 @@ export default async function ClassifichePage({ searchParams }: Props) {
               Classifica campionato
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Stagione {currentSeason} — record per girone
+              Stagione {currentSeason} — classifica e calendario per giornata
             </Typography>
 
-            <Stack spacing={2}>
+            <Stack spacing={3}>
               {currentGroups.map((g) => {
-                const played = g.matches.length;
-                const wins = g.matches.filter((m) => m.result === "WIN").length;
-                const draws = g.matches.filter((m) => m.result === "DRAW").length;
-                const losses = g.matches.filter((m) => m.result === "LOSS").length;
-                const points = wins * 2 + draws;
-                const pf = g.matches.reduce((s, m) => s + (m.ourScore ?? 0), 0);
-                const pa = g.matches.reduce((s, m) => s + (m.theirScore ?? 0), 0);
-
+                const standings = computeStandings(g.team, g.matches, g.groupMatches);
+                const matchdays = buildMatchdays(g);
                 return (
-                  <Paper key={g.id} elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
-                    {/* Header */}
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                        bgcolor: "rgba(0,0,0,0.03)",
-                        borderBottom: "1px solid rgba(0,0,0,0.07)",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <Chip
-                        label={g.team.name}
-                        size="small"
-                        sx={{ bgcolor: g.team.color ?? "#E65100", color: "#fff", fontWeight: 700 }}
-                      />
-                      <Typography variant="subtitle2" fontWeight={700}>
-                        {g.name}
-                      </Typography>
-                      {g.championship && (
-                        <Typography variant="caption" color="text.secondary">
-                          ({g.championship})
-                        </Typography>
-                      )}
-                      <Box sx={{ ml: "auto" }}>
-                        <Link href={`/gironi/${g.id}`} style={{ textDecoration: "none" }}>
-                          <Button
-                            size="small"
-                            endIcon={<OpenInNewIcon sx={{ fontSize: "14px !important" }} />}
-                            sx={{ fontSize: "0.72rem" }}
-                          >
-                            Girone completo
-                          </Button>
-                        </Link>
-                      </Box>
-                    </Box>
-
-                    {played === 0 ? (
-                      <Box sx={{ px: 2, py: 2 }}>
-                        <Typography variant="body2" color="text.disabled">
-                          Nessuna partita giocata in questo girone.
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <>
-                        {/* Record complessivo */}
-                        <Box sx={{ overflowX: "auto" }}>
-                          <Table size="small">
-                            <TableHead>
-                              <TableRow>
-                                {[
-                                  { h: "G", xs: true },
-                                  { h: "V", xs: true },
-                                  { h: "P", xs: true },
-                                  { h: "S", xs: true },
-                                  { h: "PF", xs: false },
-                                  { h: "PS", xs: false },
-                                  { h: "Pt", xs: true },
-                                ].map(({ h, xs }, i) => (
-                                  <TableCell
-                                    key={h}
-                                    align={i === 0 ? "left" : "center"}
-                                    sx={{
-                                      fontWeight: 700,
-                                      fontSize: "0.72rem",
-                                      color: h === "Pt" ? "primary.main" : undefined,
-                                      display: xs ? undefined : { xs: "none", sm: "table-cell" },
-                                    }}
-                                  >
-                                    {h}
-                                  </TableCell>
-                                ))}
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              <TableRow>
-                                <TableCell sx={{ fontWeight: 600 }}>{played}</TableCell>
-                                <TableCell
-                                  align="center"
-                                  sx={{ color: "#2E7D32", fontWeight: 700 }}
-                                >
-                                  {wins}
-                                </TableCell>
-                                <TableCell
-                                  align="center"
-                                  sx={{ color: "#E65100", fontWeight: 600 }}
-                                >
-                                  {draws}
-                                </TableCell>
-                                <TableCell
-                                  align="center"
-                                  sx={{ color: "#C62828", fontWeight: 600 }}
-                                >
-                                  {losses}
-                                </TableCell>
-                                <TableCell
-                                  align="center"
-                                  sx={{ display: { xs: "none", sm: "table-cell" } }}
-                                >
-                                  {pf}
-                                </TableCell>
-                                <TableCell
-                                  align="center"
-                                  sx={{ display: { xs: "none", sm: "table-cell" } }}
-                                >
-                                  {pa}
-                                </TableCell>
-                                <TableCell
-                                  align="center"
-                                  sx={{ fontWeight: 800, color: "primary.main", fontSize: "1rem" }}
-                                >
-                                  {points}
-                                </TableCell>
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                        </Box>
-
-                        {/* Lista partite del girone */}
-                        <Divider />
-                        <GironeMatchList matches={g.matches} />
-                      </>
-                    )}
-                  </Paper>
+                  <GironeFullView
+                    key={g.id}
+                    groupName={g.name}
+                    championship={g.championship}
+                    teamName={g.team.name}
+                    teamColor={g.team.color}
+                    teamSeason={g.team.season}
+                    standings={standings}
+                    matchdays={matchdays}
+                  />
                 );
               })}
             </Stack>
@@ -365,7 +304,7 @@ export default async function ClassifichePage({ searchParams }: Props) {
         )}
 
         {/* ── Classifica interna (marcatori) ── */}
-        {(hasStats || availableSeasons.length > 1) && (
+        {(hasStats || availableSeasons.length > 0) && (
           <>
             {hasCurrentGroups && <Divider sx={{ mb: 5 }} />}
 
@@ -385,7 +324,7 @@ export default async function ClassifichePage({ searchParams }: Props) {
             </Typography>
 
             {/* Filtri stagione */}
-            {availableSeasons.length > 1 && (
+            {availableSeasons.length > 0 && (
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 3, alignItems: "center" }}>
                 <Typography
                   variant="caption"
@@ -416,10 +355,8 @@ export default async function ClassifichePage({ searchParams }: Props) {
             {hasStats ? (
               <>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Filtra per ruolo o clicca sull&apos;intestazione per ordinare.
-                  {activeSeason !== currentSeason && (
-                    <> Dati relativi alla stagione {activeSeason}.</>
-                  )}
+                  Dati relativi alla stagione <strong>{activeSeason}</strong>. Filtra per ruolo
+                  o clicca sull&apos;intestazione per ordinare.
                 </Typography>
                 <ClassificaInternaTable rows={statRows} />
               </>

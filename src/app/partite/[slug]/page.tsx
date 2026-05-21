@@ -143,7 +143,7 @@ export default async function MatchDetailPage({ params }: Props) {
       icon: <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
       label: "Girone",
       value: match.group?.name ?? "—",
-      ...(match.group?.id ? { href: `/gironi/${match.group.id}` } : {}),
+      ...(match.group?.id ? { href: `/classifiche` } : {}),
     },
   ];
 

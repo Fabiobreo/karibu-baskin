@@ -20,10 +20,12 @@ import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 export interface MatchStatRow {
   id: string;
   points: number;
-  baskets: number;
-  assists: number;
-  rebounds: number;
+  twoPointers: number;
+  threePointers: number;
+  freeThrows: number;
   fouls: number;
+  illegalFouls: number;
+  shotsAttempted: number;
   notes?: string | null;
   user: {
     id: string;
@@ -41,6 +43,16 @@ export interface MatchStatRow {
   } | null;
 }
 
+const COLS: { key: keyof MatchStatRow; label: string; title: string; primary?: boolean }[] = [
+  { key: "points", label: "Pt", title: "Punti", primary: true },
+  { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
+  { key: "twoPointers", label: "2pt", title: "Canestri da 2" },
+  { key: "threePointers", label: "3pt", title: "Canestri da 3" },
+  { key: "shotsAttempted", label: "Tiri", title: "Tiri tentati" },
+  { key: "fouls", label: "F", title: "Falli" },
+  { key: "illegalFouls", label: "Illegali", title: "Falli illegali" },
+];
+
 export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -51,7 +63,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
   return (
     <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
       <Box sx={{ overflowX: "auto" }}>
-        <Table size="small" sx={{ minWidth: 480 }}>
+        <Table size="small" sx={{ minWidth: 620 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
               <TableCell
@@ -60,24 +72,18 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                 #
               </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Giocatore</TableCell>
-              {(["Pt", "Can", "Ast", "Rim", "Fal"] as const).map((h) => (
+              {COLS.map((col) => (
                 <TableCell
-                  key={h}
+                  key={col.key as string}
                   align="center"
-                  sx={{ fontWeight: 700, fontSize: "0.72rem" }}
-                  title={
-                    h === "Pt"
-                      ? "Punti"
-                      : h === "Can"
-                        ? "Canestri"
-                        : h === "Ast"
-                          ? "Assist"
-                          : h === "Rim"
-                            ? "Rimbalzi"
-                            : "Falli"
-                  }
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: "0.72rem",
+                    color: col.primary ? "primary.main" : undefined,
+                  }}
+                  title={col.title}
                 >
-                  {h}
+                  {col.label}
                 </TableCell>
               ))}
             </TableRow>
@@ -156,31 +162,37 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontWeight: 800, color: "primary.main", fontSize: "0.85rem" }}
-                  >
-                    {stat.points}
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontSize: "0.82rem" }}>
-                    {stat.baskets}
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontSize: "0.82rem" }}>
-                    {stat.assists}
-                  </TableCell>
-                  <TableCell align="center" sx={{ fontSize: "0.82rem" }}>
-                    {stat.rebounds}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      fontSize: "0.82rem",
-                      color: stat.fouls >= 4 ? "#C62828" : undefined,
-                      fontWeight: stat.fouls >= 4 ? 700 : 400,
-                    }}
-                  >
-                    {stat.fouls}
-                  </TableCell>
+                  {COLS.map((col) => {
+                    const val = stat[col.key] as number;
+                    const allowedForRole =
+                      col.key === "points" || !role
+                        ? true
+                        : (() => {
+                            if (col.key === "shotsAttempted") return role === 5;
+                            if (col.key === "illegalFouls") return role === 4 || role === 5;
+                            if (col.key === "freeThrows" || col.key === "fouls") return role >= 3;
+                            return true;
+                          })();
+                    return (
+                      <TableCell
+                        key={col.key as string}
+                        align="center"
+                        sx={{
+                          fontSize: "0.82rem",
+                          fontWeight: col.primary ? 800 : 400,
+                          color: col.primary
+                            ? "primary.main"
+                            : !allowedForRole
+                              ? "text.disabled"
+                              : col.key === "fouls" && val >= 4
+                                ? "#C62828"
+                                : undefined,
+                        }}
+                      >
+                        {allowedForRole ? val : "—"}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               );
             })}

@@ -40,6 +40,7 @@ export const SessionCreateSchema = z.object({
   allowedRoles: sportRoleArray,
   restrictTeamId: z.string().nullable().optional(),
   openRoles: sportRoleArray,
+  openImmediately: z.boolean().optional(),
 });
 
 export const SessionUpdateSchema = z.object({

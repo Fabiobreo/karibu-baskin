@@ -23,6 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -52,6 +53,8 @@ export interface SessionWithCount {
   restrictTeamId?: string | null;
   openRoles?: number[];
   restrictTeam?: { id: string; name: string; color: string | null } | null;
+  registrationOpen?: boolean;
+  registrationOpenedAt?: string | Date | null;
   _count: { registrations: number };
 }
 
@@ -80,8 +83,12 @@ export default function SessionCard({
   onDelete,
   onGenerateTeams,
   onRemoveTeams,
+  onOpenRegistrations,
+  onCloseRegistrations,
   generating = false,
   removingTeams = false,
+  openingRegistrations = false,
+  closingRegistrations = false,
 }: {
   session: SessionWithCount;
   hero?: boolean;
@@ -94,8 +101,12 @@ export default function SessionCard({
   onDelete?: () => void;
   onGenerateTeams?: () => void;
   onRemoveTeams?: () => void;
+  onOpenRegistrations?: () => void;
+  onCloseRegistrations?: () => void;
   generating?: boolean;
   removingTeams?: boolean;
+  openingRegistrations?: boolean;
+  closingRegistrations?: boolean;
 }) {
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -109,6 +120,15 @@ export default function SessionCard({
       ? (TEAM_META.find((t) => s.teams![t.key]?.some((a) => a.id === myRegistrationId)) ?? null)
       : null;
   const status = getStatusLabel(date, endTime);
+  const now = new Date();
+  const sessEnd = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
+  const isPast = now > sessEnd;
+  const isRegOpen = s.registrationOpen === true;
+  const wasOpened = !!s.registrationOpenedAt;
+  // Mostra "In arrivo" solo per sessioni FUTURE mai aperte. Le passate (e i futuri chiusi
+  // manualmente) usano "Iscrizioni chiuse".
+  const showInArrivo = !isRegOpen && !wasOpened && !isPast && !muted;
+  const showChiuse = !isRegOpen && (wasOpened || isPast) && !muted;
 
   const px = 2;
   const iconSize = 13;
@@ -206,6 +226,32 @@ export default function SessionCard({
               mt: hero ? 0.25 : 0,
             }}
           >
+            {showInArrivo && (
+              <Chip
+                icon={<HourglassEmptyIcon sx={{ fontSize: "0.9rem !important", color: "#fff" }} />}
+                label="In arrivo"
+                size="small"
+                sx={{
+                  bgcolor: "#6D4C41",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "0.68rem",
+                }}
+              />
+            )}
+            {showChiuse && (
+              <Chip
+                icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "#fff" }} />}
+                label="Iscrizioni chiuse"
+                size="small"
+                sx={{
+                  bgcolor: "#546E7A",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "0.68rem",
+                }}
+              />
+            )}
             <Chip
               label={status.label}
               size="small"
@@ -367,7 +413,7 @@ export default function SessionCard({
                 zIndex: 2,
               }}
             >
-              {!isRegistered && !muted && (
+              {!isRegistered && !muted && isRegOpen && (
                 <Button
                   component={Link}
                   href={href}
@@ -376,6 +422,52 @@ export default function SessionCard({
                   sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4 }}
                 >
                   Iscriviti →
+                </Button>
+              )}
+              {isStaff && !isRegOpen && !isPast && onOpenRegistrations && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="warning"
+                  startIcon={
+                    openingRegistrations ? (
+                      <CircularProgress size={13} color="inherit" />
+                    ) : (
+                      <LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />
+                    )
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onOpenRegistrations();
+                  }}
+                  disabled={openingRegistrations}
+                  sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4 }}
+                >
+                  {openingRegistrations ? "Apertura..." : "Apri iscrizioni"}
+                </Button>
+              )}
+              {isStaff && isRegOpen && !isPast && onCloseRegistrations && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="inherit"
+                  startIcon={
+                    closingRegistrations ? (
+                      <CircularProgress size={13} color="inherit" />
+                    ) : (
+                      <LockIcon sx={{ fontSize: "0.85rem !important" }} />
+                    )
+                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onCloseRegistrations();
+                  }}
+                  disabled={closingRegistrations}
+                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                >
+                  {closingRegistrations ? "Chiusura..." : "Chiudi iscrizioni"}
                 </Button>
               )}
               {hasTeams && (

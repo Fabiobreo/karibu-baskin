@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
 import { SessionCreateSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { notifySessionOpen } from "@/lib/sessionNotify";
 import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
@@ -38,6 +35,8 @@ export async function GET(req: NextRequest) {
       allowedRoles: true,
       openRoles: true,
       restrictTeamId: true,
+      registrationOpen: true,
+      registrationOpenedAt: true,
       _count: { select: { registrations: true } },
       restrictTeam: { select: { id: true, name: true, color: true } },
     },
@@ -67,7 +66,16 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const { title, date, endTime, dateSlug, allowedRoles, restrictTeamId, openRoles } = parsed.data;
+  const {
+    title,
+    date,
+    endTime,
+    dateSlug,
+    allowedRoles,
+    restrictTeamId,
+    openRoles,
+    openImmediately,
+  } = parsed.data;
 
   let session;
   try {
@@ -80,6 +88,8 @@ export async function POST(req: NextRequest) {
         allowedRoles: allowedRoles ?? [],
         restrictTeamId: restrictTeamId ?? null,
         openRoles: openRoles ?? [],
+        registrationOpen: openImmediately === true,
+        registrationOpenedAt: openImmediately === true ? new Date() : null,
       },
       include: { _count: { select: { registrations: true } } },
     });
@@ -93,37 +103,10 @@ export async function POST(req: NextRequest) {
     throw err;
   }
 
-  // Notifica push (fire-and-forget) — targeting granulare in base alle restrizioni
-  const timeRange = session.endTime
-    ? `${format(session.date, "HH:mm")}–${format(session.endTime, "HH:mm")}`
-    : `ore ${format(session.date, "HH:mm")}`;
-  const pushPayload = {
-    title: "🏀 Nuovo allenamento",
-    body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
-    url: `/allenamento/${session.dateSlug ?? session.id}`,
-    type: "NEW_TRAINING",
-  };
-  if (session.restrictTeamId) {
-    // Allenamento riservato a una squadra specifica (± ruoli aperti)
-    sendPushToTeam(session.restrictTeamId, pushPayload, "NEW_TRAINING").catch((err) =>
-      console.error("[push] new training (team)", err)
-    );
-  } else if (session.allowedRoles.length > 0) {
-    // Allenamento riservato per ruolo (senza vincolo di squadra)
-    sendPushToFilter({ sportRoles: session.allowedRoles }, pushPayload, "NEW_TRAINING").catch(
-      (err) => console.error("[push] new training (roles)", err)
-    );
-  } else {
-    sendPushToAll(pushPayload, false, "NEW_TRAINING").catch((err) =>
-      console.error("[push] new training", err)
-    );
+  // Notifiche SOLO se le iscrizioni sono state aperte contestualmente alla creazione.
+  if (session.registrationOpen) {
+    notifySessionOpen(session, "new");
   }
-  createAppNotification({
-    type: "NEW_TRAINING",
-    title: "Nuovo allenamento",
-    body: `${session.title} — ${format(session.date, "EEEE d MMMM", { locale: it })}, ${timeRange}`,
-    url: `/allenamento/${session.dateSlug ?? session.id}`,
-  }).catch((err) => console.error("[notification] new training", err));
 
   if (authSession?.user?.id) {
     logAudit({
@@ -138,6 +121,7 @@ export async function POST(req: NextRequest) {
         allowedRoles: session.allowedRoles,
         restrictTeamId: session.restrictTeamId,
         openRoles: session.openRoles,
+        registrationOpen: session.registrationOpen,
       },
     }).catch((err) => console.error("[audit] create session", err));
   }

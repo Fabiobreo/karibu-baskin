@@ -7,7 +7,8 @@
       "mcp__Claude_in_Chrome__browser_batch",
       "mcp__Claude_in_Chrome__navigate",
       "mcp__Claude_in_Chrome__computer",
-      "mcp__Claude_in_Chrome__get_page_text"
+      "mcp__Claude_in_Chrome__get_page_text",
+      "PowerShell(npx tsc --noEmit 2>&1)"
     ]
   }
 }

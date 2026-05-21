@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
       allowedRoles: true,
       restrictTeamId: true,
       openRoles: true,
+      registrationOpen: true,
     },
   });
   if (!trainingSession) {
@@ -86,6 +87,26 @@ export async function POST(req: NextRequest) {
       { error: "Le iscrizioni per questo allenamento sono chiuse" },
       { status: 400 }
     );
+  }
+
+  // Iscrizioni non ancora aperte: bypass per COACH/ADMIN così possono iscrivere manualmente
+  if (!trainingSession.registrationOpen) {
+    const preAuthSession = await auth();
+    const preRoleId = preAuthSession?.user?.id ?? null;
+    let isStaffEarly = false;
+    if (preRoleId) {
+      const u = await prisma.user.findUnique({
+        where: { id: preRoleId },
+        select: { appRole: true },
+      });
+      isStaffEarly = u?.appRole === "COACH" || u?.appRole === "ADMIN";
+    }
+    if (!isStaffEarly) {
+      return NextResponse.json(
+        { error: "Le iscrizioni per questo allenamento non sono ancora aperte" },
+        { status: 403 }
+      );
+    }
   }
 
   const restrictions = {

@@ -11,6 +11,8 @@ import RosterByRole from "@/components/RosterByRole";
 import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
 import AllenamentoHero from "@/components/AllenamentoHero";
 import AllenamentoEndedView from "@/components/AllenamentoEndedView";
+import OpenRegistrationsAlert from "@/components/OpenRegistrationsAlert";
+import CloseRegistrationsAlert from "@/components/CloseRegistrationsAlert";
 import TeamsHeader from "@/components/TeamsHeader";
 import SectionErrorBoundary from "@/components/SectionErrorBoundary";
 import { TEAM_META } from "@/lib/constants";
@@ -27,6 +29,8 @@ interface Session {
   restrictTeamId: string | null;
   openRoles: number[];
   restrictTeam: { id: string; name: string; color: string | null } | null;
+  registrationOpen: boolean;
+  registrationOpenedAt: string | null;
   _count: { registrations: number };
 }
 
@@ -420,7 +424,31 @@ export default function SessionPage() {
                       top: { md: 24 },
                     }}
                   >
+                    {session.registrationOpen === false && isStaff && !isEnded && (
+                      <OpenRegistrationsAlert
+                        sessionId={realSessionId}
+                        onOpened={() => mutateSession()}
+                      />
+                    )}
+                    {session.registrationOpen === true && isStaff && !isEnded && (
+                      <CloseRegistrationsAlert
+                        sessionId={realSessionId}
+                        onClosed={() => mutateSession()}
+                      />
+                    )}
                     <SectionErrorBoundary label="Modulo iscrizione">
+                      {session.registrationOpen === false && !isStaff ? (
+                        <Box sx={{ textAlign: "center", py: 2 }}>
+                          <Typography variant="h6" fontWeight={700} gutterBottom>
+                            {session.registrationOpenedAt ? "Iscrizioni chiuse" : "In arrivo"}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {session.registrationOpenedAt
+                              ? "Le iscrizioni per questo allenamento sono state chiuse."
+                              : "Le iscrizioni per questo allenamento non sono ancora aperte. Riceverai una notifica appena saranno disponibili."}
+                          </Typography>
+                        </Box>
+                      ) : (
                       <RegistrationForm
                         sessionId={sessionId}
                         onRegistered={refreshSecondary}
@@ -442,6 +470,7 @@ export default function SessionPage() {
                             : undefined
                         }
                       />
+                      )}
                     </SectionErrorBoundary>
                   </Paper>
                 </Grid>

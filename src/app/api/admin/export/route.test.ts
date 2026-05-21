@@ -269,10 +269,12 @@ describe("GET /api/admin/export", () => {
             theirScore: 45,
           },
           points: 12,
-          baskets: 4,
-          assists: 3,
-          rebounds: 5,
+          twoPointers: 3,
+          threePointers: 2,
+          freeThrows: 0,
           fouls: 2,
+          illegalFouls: 0,
+          shotsAttempted: 0,
         },
       ]);
     });
@@ -282,8 +284,9 @@ describe("GET /api/admin/export", () => {
       expect(res.status).toBe(200);
       const text = await res.text();
       expect(text).toContain("Punti");
-      expect(text).toContain("Canestri");
-      expect(text).toContain("Assist");
+      expect(text).toContain("Canestri 2pt");
+      expect(text).toContain("Tiri liberi");
+      expect(text).toContain("Falli illegali");
     });
 
     it("include dati giocatore e partita nelle righe", async () => {

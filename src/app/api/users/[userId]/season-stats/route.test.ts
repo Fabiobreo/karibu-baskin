@@ -53,11 +53,27 @@ describe("GET /api/users/[userId]/season-stats", () => {
     expect(json.season).toBeNull();
   });
 
-  it("aggrega correttamente punti, canestri, falli, assist, rimbalzi", async () => {
+  it("aggrega correttamente punti, canestri, falli", async () => {
     p.user.findUnique.mockResolvedValue({ id: "u1" });
     p.playerMatchStats.findMany.mockResolvedValue([
-      { points: 10, baskets: 4, fouls: 2, assists: 1, rebounds: 3 },
-      { points: 20, baskets: 8, fouls: 1, assists: 3, rebounds: 5 },
+      {
+        points: 10,
+        twoPointers: 2,
+        threePointers: 2,
+        freeThrows: 0,
+        fouls: 2,
+        illegalFouls: 0,
+        shotsAttempted: 0,
+      },
+      {
+        points: 20,
+        twoPointers: 4,
+        threePointers: 3,
+        freeThrows: 3,
+        fouls: 1,
+        illegalFouls: 1,
+        shotsAttempted: 0,
+      },
     ]);
     const [req, ctx] = makeGET("u1");
     const res = await GET(req, ctx);
@@ -65,19 +81,29 @@ describe("GET /api/users/[userId]/season-stats", () => {
     const json = await res.json();
     expect(json.matchesPlayed).toBe(2);
     expect(json.points).toBe(30);
-    expect(json.baskets).toBe(12);
+    expect(json.twoPointers).toBe(6);
+    expect(json.threePointers).toBe(5);
+    expect(json.freeThrows).toBe(3);
+    expect(json.baskets).toBe(14);
     expect(json.fouls).toBe(3);
-    expect(json.assists).toBe(4);
-    expect(json.rebounds).toBe(8);
+    expect(json.illegalFouls).toBe(1);
     expect(json.avgPoints).toBe(15);
   });
 
   it("arrotonda avgPoints a 1 decimale", async () => {
+    const empty = {
+      twoPointers: 0,
+      threePointers: 0,
+      freeThrows: 0,
+      fouls: 0,
+      illegalFouls: 0,
+      shotsAttempted: 0,
+    };
     p.user.findUnique.mockResolvedValue({ id: "u1" });
     p.playerMatchStats.findMany.mockResolvedValue([
-      { points: 10, baskets: 0, fouls: 0, assists: 0, rebounds: 0 },
-      { points: 10, baskets: 0, fouls: 0, assists: 0, rebounds: 0 },
-      { points: 11, baskets: 0, fouls: 0, assists: 0, rebounds: 0 },
+      { points: 10, ...empty },
+      { points: 10, ...empty },
+      { points: 11, ...empty },
     ]);
     const [req, ctx] = makeGET("u1");
     const res = await GET(req, ctx);
@@ -88,7 +114,15 @@ describe("GET /api/users/[userId]/season-stats", () => {
   it("filtra per stagione quando fornita", async () => {
     p.user.findUnique.mockResolvedValue({ id: "u1" });
     p.playerMatchStats.findMany.mockResolvedValue([
-      { points: 15, baskets: 6, fouls: 1, assists: 2, rebounds: 4 },
+      {
+        points: 15,
+        twoPointers: 6,
+        threePointers: 1,
+        freeThrows: 0,
+        fouls: 1,
+        illegalFouls: 0,
+        shotsAttempted: 0,
+      },
     ]);
     const [req, ctx] = makeGET("u1", "2025-26");
     const res = await GET(req, ctx);

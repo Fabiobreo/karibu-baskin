@@ -143,12 +143,12 @@ describe("PlayerStatsEntrySchema — refinement userId XOR childId", () => {
     expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", childId: "c1" }).success).toBe(false);
   });
 
-  it("rifiuta fouls > 5", () => {
-    expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", fouls: 6 }).success).toBe(false);
+  it("rifiuta fouls > 99", () => {
+    expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", fouls: 100 }).success).toBe(false);
   });
 
-  it("rifiuta points negativo", () => {
-    expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", points: -1 }).success).toBe(false);
+  it("rifiuta twoPointers negativo", () => {
+    expect(PlayerStatsEntrySchema.safeParse({ userId: "u1", twoPointers: -1 }).success).toBe(false);
   });
 
   it("rifiuta notes oltre 500 caratteri", () => {

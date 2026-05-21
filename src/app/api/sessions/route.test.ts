@@ -16,12 +16,8 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("@/lib/webpush", () => ({
-  sendPushToAll: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("@/lib/appNotifications", () => ({
-  createAppNotification: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/lib/sessionNotify", () => ({
+  notifySessionOpen: vi.fn(),
 }));
 
 vi.mock("@/lib/rateLimit", () => ({
@@ -40,7 +36,7 @@ vi.mock("@/lib/audit", () => ({
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { createAppNotification } from "@/lib/appNotifications";
+import { notifySessionOpen } from "@/lib/sessionNotify";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { Prisma } from "@prisma/client";
 
@@ -237,13 +233,35 @@ describe("POST /api/sessions", () => {
     expect(data.openRoles).toEqual([1]);
   });
 
-  it("le notifiche push sono fire-and-forget (non bloccano la risposta)", async () => {
-    const { sendPushToAll } = await import("@/lib/webpush");
+  it("non invia notifiche se openImmediately è false (default)", async () => {
     mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.trainingSession.create.mockResolvedValueOnce({
+      ...baseSession,
+      registrationOpen: false,
+      _count: { registrations: 0 },
+    });
     const res = await POST(makePost({ title: "Allenamento", date: "2025-06-05T18:00:00Z" }));
     expect(res.status).toBe(201);
-    expect(sendPushToAll).toHaveBeenCalledOnce();
-    expect(createAppNotification).toHaveBeenCalledOnce();
+    expect(notifySessionOpen).not.toHaveBeenCalled();
+    const data = p.trainingSession.create.mock.calls[0][0].data;
+    expect(data.registrationOpen).toBe(false);
+  });
+
+  it("apre subito le iscrizioni e notifica se openImmediately=true", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.trainingSession.create.mockResolvedValueOnce({
+      ...baseSession,
+      registrationOpen: true,
+      _count: { registrations: 0 },
+    });
+    const res = await POST(
+      makePost({ title: "Allenamento", date: "2025-06-05T18:00:00Z", openImmediately: true })
+    );
+    expect(res.status).toBe(201);
+    expect(notifySessionOpen).toHaveBeenCalledOnce();
+    const data = p.trainingSession.create.mock.calls[0][0].data;
+    expect(data.registrationOpen).toBe(true);
+    expect(data.registrationOpenedAt).toBeInstanceOf(Date);
   });
 
   it("restituisce 409 se esiste già un allenamento nella stessa data (P2002)", async () => {

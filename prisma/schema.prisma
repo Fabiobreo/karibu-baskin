@@ -212,6 +212,11 @@ model TrainingSession {
   openRoles      Int[]            @default([])  // ruoli esenti dalla restrizione di squadra
   restrictTeam   CompetitiveTeam? @relation("TrainingRestriction", fields: [restrictTeamId], references: [id], onDelete: SetNull)
 
+  // Apertura/chiusura iscrizioni
+  registrationOpen      Boolean   @default(false)  // false = "in arrivo" (mai aperto) o "iscrizioni chiuse" (chiuso manualmente)
+  registrationOpenedAt  DateTime?                  // timestamp prima apertura — distingue "mai aperto" da "chiuso manualmente"
+  openReminderSentAt    DateTime?                  // ultima notifica reminder agli admin per allenamento non ancora aperto
+
   // Gestione admin
   managedAt      DateTime?                      // impostato quando lo staff conclude la gestione post-allenamento
 
@@ -472,14 +477,16 @@ model AppNotificationRead {
 // ── Statistiche giocatore per partita ────────────────────────────────────────
 
 model PlayerMatchStats {
-  id      String @id @default(cuid())
-  matchId String
-  points  Int    @default(0)
-  baskets Int    @default(0)
-  fouls   Int    @default(0)
-  assists Int    @default(0)
-  rebounds Int   @default(0)
-  notes   String? @db.Text
+  id              String @id @default(cuid())
+  matchId         String
+  points          Int    @default(0) // = 2*twoPointers + 3*threePointers + freeThrows (calcolato server-side)
+  twoPointers     Int    @default(0) // canestri da 2 punti
+  threePointers   Int    @default(0) // canestri da 3 punti
+  freeThrows      Int    @default(0) // tiri liberi (1 punto)
+  fouls           Int    @default(0) // falli normali
+  illegalFouls    Int    @default(0) // falli illegali (solo R4/R5)
+  shotsAttempted  Int    @default(0) // tiri tentati (solo R5)
+  notes           String? @db.Text
 
   // Esattamente uno dei due deve essere valorizzato
   userId  String?

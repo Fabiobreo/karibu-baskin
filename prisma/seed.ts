@@ -65,16 +65,49 @@ function toEmail(name: string): string {
   return `${name.toLowerCase().replace(/ /g, ".")}@mock.test`;
 }
 
-/** Statistiche per partita calibrate per ruolo */
+/** Statistiche per partita calibrate per ruolo Baskin */
 function statsForRole(sportRole: number) {
+  const base = {
+    twoPointers: 0,
+    threePointers: 0,
+    freeThrows: 0,
+    fouls: 0,
+    illegalFouls: 0,
+    shotsAttempted: 0,
+  };
   switch (sportRole) {
-    case 1: return { points: randInt(0, 6),  baskets: randInt(0, 2), assists: randInt(0, 1), rebounds: randInt(0, 3), fouls: randInt(0, 2) };
-    case 2: return { points: randInt(0, 10), baskets: randInt(0, 4), assists: randInt(0, 2), rebounds: randInt(0, 5), fouls: randInt(0, 3) };
-    case 3: return { points: randInt(0, 12), baskets: randInt(0, 5), assists: randInt(0, 3), rebounds: randInt(0, 6), fouls: randInt(0, 4) };
-    case 4: return { points: randInt(2, 16), baskets: randInt(1, 6), assists: randInt(0, 4), rebounds: randInt(1, 7), fouls: randInt(0, 4) };
-    case 5: return { points: randInt(2, 18), baskets: randInt(1, 7), assists: randInt(1, 6), rebounds: randInt(1, 8), fouls: randInt(0, 5) };
-    default: return { points: 0, baskets: 0, assists: 0, rebounds: 0, fouls: 0 };
+    case 1:
+      base.twoPointers = randInt(0, 2);
+      base.threePointers = randInt(0, 1);
+      break;
+    case 2:
+      base.twoPointers = randInt(0, 3);
+      base.threePointers = randInt(0, 2);
+      break;
+    case 3:
+      base.twoPointers = randInt(0, 4);
+      base.threePointers = randInt(0, 2);
+      base.freeThrows = randInt(0, 3);
+      base.fouls = randInt(0, 4);
+      break;
+    case 4:
+      base.twoPointers = randInt(1, 5);
+      base.threePointers = randInt(0, 2);
+      base.freeThrows = randInt(0, 4);
+      base.fouls = randInt(0, 4);
+      base.illegalFouls = randInt(0, 2);
+      break;
+    case 5:
+      base.twoPointers = randInt(1, 6);
+      base.threePointers = randInt(0, 3);
+      base.freeThrows = randInt(1, 5);
+      base.fouls = randInt(0, 5);
+      base.illegalFouls = randInt(0, 2);
+      base.shotsAttempted = randInt(3, 12);
+      break;
   }
+  const points = base.twoPointers * 2 + base.threePointers * 3 + base.freeThrows;
+  return { ...base, points };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -578,6 +611,12 @@ async function seed() {
         .sort(() => Math.random() - 0.5)
         .slice(0, Math.min(10, rosterIds.length));
 
+      // Convocazioni
+      for (const { id: userId } of participants) {
+        await prisma.matchCallup.create({ data: { matchId: match.id, userId } });
+      }
+
+      // Statistiche
       for (const { id: userId, sportRole } of participants) {
         await prisma.playerMatchStats.create({
           data: { matchId: match.id, userId, ...statsForRole(sportRole) },
@@ -617,8 +656,149 @@ async function seed() {
   await createGroupMatches(kapGroup.id, KAPULETI_GROUP_MATCHES, "Gold Ovest");
   await createGroupMatches(monGroup.id, MONTEKKI_GROUP_MATCHES, "Silver Ovest");
 
-  // ── Allenamenti ──────────────────────────────────────────────────────────────
-  console.log("\n📅 Allenamenti...");
+  // ── Allenamenti passati (con presenze) ──────────────────────────────────────
+  // Crea allenamenti nella finestra degli ultimi 14 giorni (+ alcuni più vecchi)
+  // con managedAt impostato e iscrizioni/presenze variabili per testare la pagina convocazioni.
+  console.log("\n📅 Allenamenti passati con presenze...");
+
+  // Profili di presenza: 0=assente costante, 1=presente costante, 2=alterno
+  // Indice parallelo a kapUserIds / monUserIds
+  const kapAttendanceProfile = [1, 1, 2, 1, 0, 1, 2, 1, 1, 0, 2, 1, 1, 0]; // 14 atleti Kap
+  const monAttendanceProfile = [1, 0, 1, 2, 1, 1, 0, 1, 1, 2, 0, 1];       // 12 atleti Mon
+
+  function attended(profile: number, sessionIndex: number): boolean {
+    if (profile === 1) return true;
+    if (profile === 0) return false;
+    return sessionIndex % 2 === 0; // alterno: presente nei pari
+  }
+
+  type PastTrainingDef = {
+    title: string;
+    date: Date;
+    endTime: Date;
+    teamId: string | null;
+    restrictTeamId?: string;
+    allowedRoles: number[];
+    openRoles?: number[];
+    roster: { id: string; sportRole: number; kind: "user" | "child" }[];
+    attendanceProfiles: number[];
+  };
+
+  // Prende i child mock come roster entries
+  const monChildRoster = mockChildren.map((ch) => ({
+    id: ch.id,
+    sportRole: ch.sportRole!,
+    kind: "child" as const,
+  }));
+
+  const kapRosterFull = kapUserIds.map((u) => ({ ...u, kind: "user" as const }));
+  const monRosterFull = [
+    ...monUserIds.map((u) => ({ ...u, kind: "user" as const })),
+    ...monChildRoster,
+  ];
+  const monAttendanceProfileFull = [
+    ...monAttendanceProfile,
+    ...monChildRoster.map(() => 2), // figli: alterni
+  ];
+
+  const pastTrainings: PastTrainingDef[] = [
+    // Finestra (-14g): 4 allenamenti eligibili per il calcolo presenze
+    {
+      title: "Allenamento Kapuleti",
+      date: past(13, 18), endTime: past(13, 20),
+      teamId: kapuleti.id, restrictTeamId: kapuleti.id,
+      allowedRoles: [], openRoles: [],
+      roster: kapRosterFull, attendanceProfiles: kapAttendanceProfile,
+    },
+    {
+      title: "Allenamento Montekki",
+      date: past(12, 18), endTime: past(12, 20),
+      teamId: montekki.id, restrictTeamId: montekki.id,
+      allowedRoles: [], openRoles: [],
+      roster: monRosterFull, attendanceProfiles: monAttendanceProfileFull,
+    },
+    {
+      title: "Allenamento congiunto",
+      date: past(6, 18), endTime: past(6, 21),
+      teamId: null,
+      allowedRoles: [], openRoles: [],
+      roster: [...kapRosterFull, ...monRosterFull],
+      attendanceProfiles: [...kapAttendanceProfile, ...monAttendanceProfileFull],
+    },
+    {
+      title: "Allenamento Montekki",
+      date: past(5, 18), endTime: past(5, 20),
+      teamId: montekki.id, restrictTeamId: montekki.id,
+      allowedRoles: [], openRoles: [],
+      roster: monRosterFull, attendanceProfiles: monAttendanceProfileFull,
+    },
+    {
+      title: "Allenamento solo R3-R4-R5 Kapuleti",
+      date: past(3, 18), endTime: past(3, 20),
+      teamId: kapuleti.id, restrictTeamId: kapuleti.id,
+      allowedRoles: [3, 4, 5], openRoles: [],
+      roster: kapRosterFull.filter((u) => [3, 4, 5].includes(u.sportRole)),
+      attendanceProfiles: kapAttendanceProfile.filter((_, i) =>
+        [3, 4, 5].includes(kapRosterFull[i]?.sportRole ?? 0)
+      ),
+    },
+    // Più vecchi (fuori finestra) — non influenzano il calcolo ma danno storico
+    {
+      title: "Allenamento Kapuleti",
+      date: past(20, 18), endTime: past(20, 20),
+      teamId: kapuleti.id, restrictTeamId: kapuleti.id,
+      allowedRoles: [], openRoles: [],
+      roster: kapRosterFull, attendanceProfiles: kapAttendanceProfile,
+    },
+    {
+      title: "Allenamento Montekki",
+      date: past(21, 18), endTime: past(21, 20),
+      teamId: montekki.id, restrictTeamId: montekki.id,
+      allowedRoles: [], openRoles: [],
+      roster: monRosterFull, attendanceProfiles: monAttendanceProfileFull,
+    },
+  ];
+
+  for (let si = 0; si < pastTrainings.length; si++) {
+    const t = pastTrainings[si];
+    const dateSlug = toDateSlug(t.date);
+    const session = await prisma.trainingSession.upsert({
+      where:  { dateSlug },
+      update: {},
+      create: {
+        title:         t.title,
+        date:          t.date,
+        endTime:       t.endTime,
+        dateSlug,
+        teamId:        t.teamId,
+        restrictTeamId: t.restrictTeamId ?? null,
+        allowedRoles:  t.allowedRoles,
+        openRoles:     t.openRoles ?? [],
+        managedAt:     t.endTime, // già gestita
+      },
+    });
+
+    let presCount = 0;
+    for (let ri = 0; ri < t.roster.length; ri++) {
+      const member = t.roster[ri];
+      const profile = t.attendanceProfiles[ri] ?? 2;
+      const isPresent = attended(profile, si);
+      await prisma.registration.create({
+        data: {
+          sessionId: session.id,
+          name:      "", // placeholder — non usato nella logica convocazioni
+          role:      member.sportRole,
+          attended:  isPresent,
+          ...(member.kind === "user" ? { userId: member.id } : { childId: member.id }),
+        },
+      });
+      if (isPresent) presCount++;
+    }
+    console.log(`  ✓ ${t.title} (${t.date.toLocaleDateString("it-IT")}) — ${presCount}/${t.roster.length} presenti`);
+  }
+
+  // ── Allenamenti futuri ────────────────────────────────────────────────────────
+  console.log("\n📅 Allenamenti futuri...");
 
   const trainingDefs = [
     {
@@ -626,6 +806,7 @@ async function seed() {
       date: future(3, 18),
       endTime: future(3, 20),
       teamId: kapuleti.id,
+      restrictTeamId: kapuleti.id,
       allowedRoles: [],
     },
     {
@@ -633,6 +814,7 @@ async function seed() {
       date: future(4, 18),
       endTime: future(4, 20),
       teamId: montekki.id,
+      restrictTeamId: montekki.id,
       allowedRoles: [],
     },
     {
@@ -640,6 +822,7 @@ async function seed() {
       date: future(10, 18),
       endTime: future(10, 21),
       teamId: null,
+      restrictTeamId: null,
       allowedRoles: [],
     },
     {
@@ -647,6 +830,7 @@ async function seed() {
       date: future(17, 18),
       endTime: future(17, 20),
       teamId: kapuleti.id,
+      restrictTeamId: kapuleti.id,
       allowedRoles: [],
     },
     {
@@ -654,22 +838,24 @@ async function seed() {
       date: future(18, 18),
       endTime: future(18, 20),
       teamId: montekki.id,
+      restrictTeamId: montekki.id,
       allowedRoles: [],
     },
   ];
 
   for (const t of trainingDefs) {
-    const dateSlug = toDateSlug(t.date); // ora locale, es. "2026-04-28T18:00"
+    const dateSlug = toDateSlug(t.date);
     await prisma.trainingSession.upsert({
       where:  { dateSlug },
       update: {},
       create: {
-        title:        t.title,
-        date:         t.date,
-        endTime:      t.endTime,
+        title:          t.title,
+        date:           t.date,
+        endTime:        t.endTime,
         dateSlug,
-        teamId:       t.teamId,
-        allowedRoles: t.allowedRoles,
+        teamId:         t.teamId,
+        restrictTeamId: t.restrictTeamId ?? null,
+        allowedRoles:   t.allowedRoles,
       },
     });
     console.log(`  ✓ ${t.title} — ${t.date.toLocaleDateString("it-IT")}`);
@@ -695,7 +881,8 @@ async function seed() {
    🏅 Partite Montekki:  ${MONTEKKI_MATCHES.length} (${monPlayed} giocate)
    📋 Partite girone Gold:   ${KAPULETI_GROUP_MATCHES.length} (${kapGmPlayed} giocate)
    📋 Partite girone Silver: ${MONTEKKI_GROUP_MATCHES.length} (${monGmPlayed} giocate)
-   📅 Allenamenti:       ${trainingDefs.length} futuri
+   📅 Allenamenti passati: ${pastTrainings.length} (con presenze)
+   📅 Allenamenti futuri:  ${trainingDefs.length}
 
    Per pulire: npx tsx prisma/seed.ts nuke
   `);

@@ -23,6 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import ShareSection from "@/components/ShareSection";
@@ -48,6 +49,8 @@ interface Session {
   restrictTeamId: string | null;
   openRoles: number[];
   restrictTeam: { id: string; name: string; color: string | null } | null;
+  registrationOpen: boolean;
+  registrationOpenedAt: string | null;
 }
 
 interface StatusBadge {
@@ -264,6 +267,44 @@ export default function AllenamientoHero({
               mb: countdown ? 0.75 : 2,
             }}
           >
+            {(() => {
+              if (session.registrationOpen) return null;
+              const sessEnd = sessionEndDate(sessionDate, sessionEnd);
+              const isPast = new Date() >= sessEnd;
+              const wasOpened = !!session.registrationOpenedAt;
+              if (!wasOpened && !isPast) {
+                return (
+                  <Chip
+                    icon={
+                      <HourglassEmptyIcon sx={{ fontSize: "0.85rem !important", color: "#fff" }} />
+                    }
+                    label="In arrivo"
+                    size="small"
+                    sx={{
+                      bgcolor: "#6D4C41",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "0.72rem",
+                      letterSpacing: 0.5,
+                    }}
+                  />
+                );
+              }
+              return (
+                <Chip
+                  icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "#fff" }} />}
+                  label="Iscrizioni chiuse"
+                  size="small"
+                  sx={{
+                    bgcolor: "#546E7A",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: "0.72rem",
+                    letterSpacing: 0.5,
+                  }}
+                />
+              );
+            })()}
             <Chip
               label={status.label}
               size="small"

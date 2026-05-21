@@ -330,12 +330,13 @@ export default function RosterByRole({
       pendingDeleteRegRef.current = null;
       setPendingDeleteId(null);
       void executeDeletion(reg);
-    }, 8000);
+    }, 3000);
 
     showToast({
       message: msg,
       severity: "success",
-      duration: 8000,
+      duration: 3000,
+      progressMs: 3000,
       action: (
         <Button
           size="small"

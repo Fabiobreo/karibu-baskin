@@ -30,22 +30,34 @@ export interface PlayerStatRow {
   sportRoleVariant: string | null;
   matches: number;
   points: number;
-  baskets: number;
-  assists: number;
-  rebounds: number;
+  twoPointers: number;
+  threePointers: number;
+  freeThrows: number;
   fouls: number;
+  illegalFouls: number;
+  shotsAttempted: number;
 }
 
-type SortKey = "matches" | "points" | "baskets" | "assists" | "rebounds" | "fouls" | "avgPoints";
+type SortKey =
+  | "matches"
+  | "points"
+  | "twoPointers"
+  | "threePointers"
+  | "freeThrows"
+  | "fouls"
+  | "illegalFouls"
+  | "shotsAttempted"
+  | "avgPoints";
 
 const COLS: { key: SortKey; label: string; title?: string }[] = [
   { key: "matches", label: "G", title: "Partite giocate" },
   { key: "points", label: "Pt", title: "Punti totali" },
-  { key: "baskets", label: "Can", title: "Canestri" },
-  { key: "assists", label: "Ast", title: "Assist" },
-  { key: "rebounds", label: "Rim", title: "Rimbalzi" },
-  { key: "fouls", label: "Fal", title: "Falli" },
-  { key: "avgPoints", label: "Med.Pt", title: "Media punti a partita" },
+  { key: "avgPoints", label: "Med", title: "Media punti a partita" },
+  { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
+  { key: "twoPointers", label: "2pt", title: "Canestri da 2" },
+  { key: "threePointers", label: "3pt", title: "Canestri da 3" },
+  { key: "fouls", label: "F", title: "Falli" },
+  { key: "illegalFouls", label: "Illegali", title: "Falli illegali" },
 ];
 
 const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
@@ -180,7 +192,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
 
       {/* Table */}
       <Box sx={{ overflowX: "auto" }}>
-        <Table size="small" sx={{ minWidth: 560 }}>
+        <Table size="small" sx={{ minWidth: 720 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
               <TableCell

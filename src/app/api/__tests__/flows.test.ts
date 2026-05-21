@@ -80,6 +80,7 @@ describe("Flow: iscrizione anonima → claim", () => {
     allowedRoles: [],
     restrictTeamId: null,
     openRoles: [],
+    registrationOpen: true,
   };
 
   beforeEach(() => {
