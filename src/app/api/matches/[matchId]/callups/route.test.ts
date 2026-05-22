@@ -14,6 +14,9 @@ vi.mock("@/lib/db", () => ({
     teamMembership: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    matchAvailability: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     $transaction: vi.fn(),
   },
 }));
@@ -37,6 +40,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 type PrismaMock = {
   matchCallup: { findMany: Mock; deleteMany: Mock; createMany: Mock };
   match: { findUnique: Mock };
+  matchAvailability: { findMany: Mock };
   $transaction: Mock;
 };
 const p = prisma as unknown as PrismaMock;
@@ -98,6 +102,12 @@ describe("PUT /api/matches/[matchId]/callups", () => {
     });
     p.matchCallup.deleteMany.mockResolvedValue({ count: 0 });
     p.matchCallup.createMany.mockResolvedValue({ count: 2 });
+    p.matchCallup.findMany.mockResolvedValue([]);
+    p.matchAvailability.findMany.mockResolvedValue([
+      { userId: "user-1", childId: null },
+      { userId: "user-2", childId: null },
+      { userId: null, childId: "child-1" },
+    ]);
     p.$transaction.mockImplementation((ops: unknown[]) => Promise.all(ops));
   });
 

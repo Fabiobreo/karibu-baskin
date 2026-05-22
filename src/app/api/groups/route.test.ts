@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
-    group: { findMany: vi.fn(), create: vi.fn() },
+    group: { findMany: vi.fn(), create: vi.fn(), findUnique: vi.fn() },
   },
 }));
 
@@ -25,7 +25,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
-  group: { findMany: Mock; create: Mock };
+  group: { findMany: Mock; create: Mock; findUnique: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
@@ -100,6 +100,7 @@ describe("POST /api/groups", () => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(false);
     p.group.create.mockResolvedValue({ ...baseGroup, id: "g-new" });
+    p.group.findUnique.mockResolvedValue(null);
   });
 
   it("restituisce 403 per utente non staff", async () => {
