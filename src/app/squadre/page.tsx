@@ -6,18 +6,17 @@ import {
   Grid2 as Grid,
   Paper,
   Chip,
-  Stack,
   Divider,
+  Button,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import StarIcon from "@mui/icons-material/Star";
-import ScheduleIcon from "@mui/icons-material/Schedule";
+import HistoryIcon from "@mui/icons-material/History";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
-import SquadreArchivio from "@/components/SquadreArchivio";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -44,18 +43,8 @@ export default async function SquadrePage() {
 
   const currentSeason = seasonRecords.find((s) => s.isCurrent)?.label ?? null;
 
-  const bySeason = teams.reduce<Record<string, typeof teams>>((acc, t) => {
-    if (!acc[t.season]) acc[t.season] = [];
-    acc[t.season].push(t);
-    return acc;
-  }, {});
-
-  const allSeasons = Object.keys(bySeason).sort((a, b) => b.localeCompare(a));
-
-  const currentTeams = currentSeason ? (bySeason[currentSeason] ?? []) : [];
-  const futureSeasons = currentSeason ? allSeasons.filter((s) => s > currentSeason) : [];
-  const pastSeasons = currentSeason ? allSeasons.filter((s) => s < currentSeason) : [];
-  const noCurrentSet = !currentSeason;
+  const currentTeams = currentSeason ? teams.filter((t) => t.season === currentSeason) : teams;
+  const hasPastSeasons = teams.some((t) => !currentSeason || t.season < currentSeason);
 
   return (
     <>
@@ -152,8 +141,8 @@ export default async function SquadrePage() {
 
         <Divider sx={{ mb: 7 }} />
 
-        {/* Nessuna squadra */}
-        {allSeasons.length === 0 && (
+        {/* Squadre stagione corrente */}
+        {currentTeams.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <GroupsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
@@ -163,12 +152,9 @@ export default async function SquadrePage() {
               Le squadre verranno aggiunte dall&apos;amministratore.
             </Typography>
           </Box>
-        )}
-
-        <Stack spacing={8}>
-          {/* ── Stagione in corso ── */}
-          {currentSeason && (
-            <Box>
+        ) : (
+          <Box>
+            {currentSeason && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
                 <Chip
                   label="In corso"
@@ -186,107 +172,55 @@ export default async function SquadrePage() {
                   Stagione {currentSeason}
                 </Typography>
               </Box>
-              <Typography
-                variant="h4"
-                fontWeight={800}
-                sx={{ mb: 3, fontSize: { xs: "1.7rem", md: "2.1rem" } }}
-              >
-                Stagione in corso
-              </Typography>
-              <TeamGrid teams={currentTeams} />
-              {currentTeams.length === 0 && (
-                <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-                  Squadre in definizione.
+            )}
+            <Typography
+              variant="h4"
+              fontWeight={800}
+              sx={{ mb: 3, fontSize: { xs: "1.7rem", md: "2.1rem" } }}
+            >
+              Le nostre squadre
+            </Typography>
+            <TeamGrid teams={currentTeams} />
+          </Box>
+        )}
+
+        {/* Link archivio */}
+        {hasPastSeasons && (
+          <Box
+            sx={{
+              mt: 6,
+              p: { xs: 2.5, md: 3 },
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <HistoryIcon sx={{ color: "text.secondary" }} />
+              <Box>
+                <Typography variant="subtitle1" fontWeight={700}>
+                  Stagioni precedenti
                 </Typography>
-              )}
+                <Typography variant="body2" color="text.secondary">
+                  Consulta le squadre delle stagioni passate.
+                </Typography>
+              </Box>
             </Box>
-          )}
-
-          {/* ── Prossime stagioni ── */}
-          {futureSeasons.length > 0 && (
-            <Box>
-              <Divider sx={{ mb: 4 }} />
-              <Stack spacing={4}>
-                {futureSeasons.map((season) => (
-                  <Box key={season}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-                      <Chip
-                        label="In arrivo"
-                        size="small"
-                        icon={<ScheduleIcon />}
-                        variant="outlined"
-                        sx={{ fontWeight: 700, color: "text.secondary", borderColor: "divider" }}
-                      />
-                      <Typography
-                        variant="overline"
-                        color="text.secondary"
-                        fontWeight={700}
-                        sx={{ letterSpacing: "0.1em" }}
-                      >
-                        Stagione {season}
-                      </Typography>
-                    </Box>
-                    <Typography
-                      variant="h5"
-                      fontWeight={800}
-                      color="text.secondary"
-                      sx={{ mb: 3, fontSize: { xs: "1.4rem", md: "1.7rem" } }}
-                    >
-                      Prossima stagione
-                    </Typography>
-                    <Box
-                      sx={{
-                        border: "2px dashed",
-                        borderColor: "divider",
-                        borderRadius: 2,
-                        p: { xs: 2, md: 3 },
-                      }}
-                    >
-                      <TeamGrid teams={bySeason[season]} muted />
-                      {bySeason[season].length === 0 && (
-                        <Typography variant="body2" color="text.disabled">
-                          Squadre in definizione.
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
-          )}
-
-          {/* ── Fallback: nessuna stagione corrente marcata ── */}
-          {noCurrentSet && allSeasons.length > 0 && (
-            <Stack spacing={6}>
-              {allSeasons.map((season) => (
-                <Box key={season}>
-                  <Typography
-                    variant="overline"
-                    color="primary"
-                    fontWeight={700}
-                    sx={{ letterSpacing: "0.1em", display: "block", mb: 0.5 }}
-                  >
-                    Stagione {season}
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    fontWeight={800}
-                    sx={{ mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
-                  >
-                    Stagione {season}
-                  </Typography>
-                  <TeamGrid teams={bySeason[season]} />
-                </Box>
-              ))}
-            </Stack>
-          )}
-        </Stack>
-
-        {/* ── Archivio stagioni passate ── */}
-        {pastSeasons.length > 0 && <SquadreArchivio seasons={pastSeasons} bySeason={bySeason} />}
+            <Link href="/squadre/archivio" style={{ textDecoration: "none" }}>
+              <Button variant="outlined" size="small">
+                Vai all&apos;archivio
+              </Button>
+            </Link>
+          </Box>
+        )}
 
         {/* CTA */}
-        {allSeasons.length > 0 && (
+        {currentTeams.length > 0 && (
           <Box
             sx={{
               mt: 8,

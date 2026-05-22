@@ -32,6 +32,7 @@ export default async function AdminProssimePartite() {
     take: 5,
     select: {
       id: true,
+      slug: true,
       date: true,
       team: { select: { name: true, color: true } },
       opponent: { select: { name: true } },
@@ -85,39 +86,52 @@ export default async function AdminProssimePartite() {
                 bgcolor: isMissing ? "rgba(211,47,47,0.04)" : "transparent",
               }}
             >
-              <Box
-                sx={{
-                  width: 4,
-                  alignSelf: "stretch",
-                  borderRadius: 1,
-                  backgroundColor: m.team.color,
+              <Link
+                href={m.slug ? `/partite/${m.slug}` : "#"}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  flex: 1,
+                  minWidth: 0,
                 }}
-              />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  variant="body2"
-                  fontWeight={700}
-                  sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                >
-                  {m.team.name} vs {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {relativeShort(m.date, now)} · {format(m.date, "HH:mm")}
-                </Typography>
-              </Box>
-              <Chip
-                size="small"
-                color={chipColor}
-                icon={
-                  isOk ? (
-                    <CheckCircleIcon sx={{ fontSize: 14 }} />
-                  ) : (
-                    <WarningAmberIcon sx={{ fontSize: 14 }} />
-                  )
-                }
-                label={chipLabel}
-                sx={{ fontWeight: 700, flexShrink: 0 }}
-              />
+              >
+                <Box
+                  sx={{
+                    width: 4,
+                    alignSelf: "stretch",
+                    borderRadius: 1,
+                    backgroundColor: m.team.color,
+                  }}
+                />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={700}
+                    sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  >
+                    {m.team.name} vs {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {relativeShort(m.date, now)} · {format(m.date, "HH:mm")}
+                  </Typography>
+                </Box>
+                <Chip
+                  size="small"
+                  color={chipColor}
+                  icon={
+                    isOk ? (
+                      <CheckCircleIcon sx={{ fontSize: 14 }} />
+                    ) : (
+                      <WarningAmberIcon sx={{ fontSize: 14 }} />
+                    )
+                  }
+                  label={chipLabel}
+                  sx={{ fontWeight: 700, flexShrink: 0 }}
+                />
+              </Link>
               <Link
                 href={`/admin/partite/${m.id}/convocazioni`}
                 style={{ textDecoration: "none", flexShrink: 0 }}

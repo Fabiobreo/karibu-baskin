@@ -10,14 +10,12 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
-import type { MatchResult } from "@prisma/client";
 import { slugify } from "@/lib/slugUtils";
+import { computeStandings } from "@/lib/standings";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import GroupsIcon from "@mui/icons-material/Groups";
 import BoltIcon from "@mui/icons-material/Bolt";
 
 export const revalidate = 3600;
@@ -25,7 +23,7 @@ export const revalidate = 3600;
 type Props = { params: Promise<{ slug: string }> };
 
 const RESULT_META: Record<
-  MatchResult,
+  "WIN" | "LOSS" | "DRAW",
   { label: string; color: string; bg: string; gradient: string }
 > = {
   WIN: {
@@ -123,26 +121,98 @@ export default async function MatchDetailPage({ params }: Props) {
 
   const isStaffEarly = session?.user?.appRole === "COACH" || session?.user?.appRole === "ADMIN";
 
-  // Per lo staff: precarica avversarie esterne, squadre interne (per amichevoli
-  // tra le nostre squadre) e gironi della squadra/stagione per il dialog di modifica.
-  const [opposingTeamsForEdit, internalTeamsForEdit, groupsForEdit] = isStaffEarly
-    ? await Promise.all([
-        prisma.opposingTeam.findMany({
+  // Filtro avversario per scontri diretti
+  const opponentWhere = match.opponentId
+    ? { opponentId: match.opponentId }
+    : match.opponentTeamId
+      ? { opponentTeamId: match.opponentTeamId }
+      : null;
+
+  const [
+    prevMatchesRaw,
+    ourGroupMatchesRaw,
+    groupMatchesRaw,
+    opposingTeamsForEdit,
+    internalTeamsForEdit,
+    groupsForEdit,
+  ] = await Promise.all([
+    opponentWhere
+      ? prisma.match.findMany({
+          where: { id: { not: match.id }, teamId: match.team.id, ...opponentWhere },
+          select: {
+            id: true,
+            slug: true,
+            date: true,
+            ourScore: true,
+            theirScore: true,
+            result: true,
+            isHome: true,
+          },
+          orderBy: { date: "desc" },
+          take: 5,
+        })
+      : Promise.resolve([]),
+    match.groupId
+      ? prisma.match.findMany({
+          where: { groupId: match.groupId },
+          select: {
+            ourScore: true,
+            theirScore: true,
+            opponent: { select: { id: true, name: true } },
+          },
+        })
+      : Promise.resolve([]),
+    match.groupId
+      ? prisma.groupMatch.findMany({
+          where: { groupId: match.groupId },
+          select: {
+            homeScore: true,
+            awayScore: true,
+            homeTeam: { select: { id: true, name: true } },
+            awayTeam: { select: { id: true, name: true } },
+          },
+        })
+      : Promise.resolve([]),
+    isStaffEarly
+      ? prisma.opposingTeam.findMany({
           orderBy: { name: "asc" },
           select: { id: true, name: true, city: true },
-        }),
-        prisma.competitiveTeam.findMany({
+        })
+      : Promise.resolve([]),
+    isStaffEarly
+      ? prisma.competitiveTeam.findMany({
           where: { id: { not: match.team.id }, season: match.team.season },
           orderBy: { name: "asc" },
           select: { id: true, name: true, season: true },
-        }),
-        prisma.group.findMany({
+        })
+      : Promise.resolve([]),
+    isStaffEarly
+      ? prisma.group.findMany({
           where: { teamId: match.team.id, season: match.team.season },
           orderBy: { name: "asc" },
           select: { id: true, name: true, championship: true, season: true },
-        }),
-      ])
-    : [[], [], []];
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const groupStandings =
+    match.groupId && ourGroupMatchesRaw.length > 0
+      ? computeStandings(
+          { id: match.team.id, name: match.team.name },
+          ourGroupMatchesRaw,
+          groupMatchesRaw
+        )
+      : null;
+
+  const prevMatches = prevMatchesRaw.map((m) => ({
+    id: m.id,
+    slug: m.slug,
+    date: m.date.toISOString(),
+    ourScore: m.ourScore,
+    theirScore: m.theirScore,
+    result: m.result as string | null,
+    isHome: m.isHome,
+  }));
 
   // I convocati sono visibili solo agli utenti loggati con un ruolo
   // diverso da GUEST. Gli ospiti e gli anonimi vedono un invito al login.
@@ -164,34 +234,6 @@ export default async function MatchDetailPage({ params }: Props) {
 
   const teamSeasonParam = match.team.season.replace("-", "");
   const teamSlug = slugify(match.team.name);
-
-  const infoCards = [
-    {
-      icon: <EmojiEventsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
-      label: "Competizione",
-      value: match.team.championship ?? MATCH_TYPE_LABEL[match.matchType],
-    },
-    {
-      icon: <CalendarTodayIcon sx={{ fontSize: 20, color: "primary.main" }} />,
-      label: "Stagione",
-      value: match.team.season,
-    },
-    {
-      icon: match.isHome ? (
-        <HomeIcon sx={{ fontSize: 20, color: "primary.main" }} />
-      ) : (
-        <FlightIcon sx={{ fontSize: 20, color: "primary.main" }} />
-      ),
-      label: "Campo",
-      value: match.isHome ? "Casa" : "Trasferta",
-    },
-    {
-      icon: <GroupsIcon sx={{ fontSize: 20, color: "primary.main" }} />,
-      label: "Girone",
-      value: match.group?.name ?? "—",
-      ...(match.group?.id ? { href: `/classifiche` } : {}),
-    },
-  ];
 
   return (
     <>
@@ -565,12 +607,16 @@ export default async function MatchDetailPage({ params }: Props) {
       {/* ── Body con tabs ──────────────────────────────────────────────────── */}
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <MatchDetailTabs
-          infoCards={infoCards}
           notes={match.notes}
           stats={match.playerStats}
           callups={match.callups}
-          matchType={match.matchType}
           canSeeCallups={canSeeCallups}
+          hasScore={hasScore}
+          prevMatches={prevMatches}
+          groupStandings={groupStandings}
+          ourTeamId={match.team.id}
+          groupName={match.group?.name ?? null}
+          opponentName={opponentName}
         />
       </Container>
     </>

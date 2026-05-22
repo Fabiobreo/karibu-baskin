@@ -42,14 +42,16 @@ import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { useThemeMode } from "@/context/ThemeContext";
 import Tooltip from "@mui/material/Tooltip";
+import useSWR from "swr";
+import { getCurrentSeason } from "@/lib/seasonUtils";
+import { slugify } from "@/lib/slugUtils";
 
 // Voci semplici del nav
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
   { label: "Allenamenti", href: "/allenamenti" },
   { label: "Calendario", href: "/calendario" },
-  // "Partite" è un dropdown — gestito separatamente
-  { label: "Squadre", href: "/squadre" },
+  // "Partite" e "Squadre" sono dropdown — gestiti separatamente (inseriti prima di Il Baskin)
   { label: "Il Baskin", href: "/il-baskin" },
   { label: "Contatti", href: "/contatti" },
 ];
@@ -61,6 +63,9 @@ const PARTITE_LINKS = [
   { label: "Classifiche", href: "/classifiche" },
   { label: "Marcatori", href: "/marcatori" },
 ];
+
+// Voce fissa dropdown Squadre
+const SQUADRE_BASE_LINK = { label: "Chi siamo", href: "/squadre" };
 
 const COLOR_MODE_ORDER = ["light", "dark", "system"] as const;
 type ColorMode = (typeof COLOR_MODE_ORDER)[number];
@@ -83,6 +88,8 @@ export default function SiteHeader() {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [partiteAnchor, setPartiteAnchor] = useState<null | HTMLElement>(null);
   const [partiteOpen, setPartiteOpen] = useState(false);
+  const [squadreAnchor, setSquadreAnchor] = useState<null | HTMLElement>(null);
+  const [squadreOpen, setSquadreOpen] = useState(false);
   const mounted = useHasMounted();
   const { mode: colorMode, setMode: setColorMode } = useThemeMode();
 
@@ -98,6 +105,23 @@ export default function SiteHeader() {
     pathname === "/marcatori" ||
     (pathname?.startsWith("/partite") ?? false) ||
     (pathname?.startsWith("/gironi") ?? false);
+  const squadreActive = pathname?.startsWith("/squadre") ?? false;
+
+  // Squadre della stagione corrente per i link dinamici del dropdown
+  const { data: allTeams } = useSWR<{ id: string; name: string; season: string }[]>(
+    "/api/competitive-teams",
+    (url: string) => fetch(url).then((r) => r.json())
+  );
+  const currentSeason = getCurrentSeason();
+  const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
+  const squadreLinks = [
+    SQUADRE_BASE_LINK,
+    ...currentTeams.map((t) => ({
+      label: t.name,
+      href: `/squadre/${currentSeason.replace("-", "")}/${slugify(t.name)}`,
+    })),
+    { label: "Archivio", href: "/squadre/archivio" },
+  ];
 
   const { data: session, status } = useSession();
 
@@ -173,12 +197,13 @@ export default function SiteHeader() {
           >
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href;
-              // Inserisci dropdown "Partite" dopo "Calendario"
-              const isAfterCalendario = link.href === "/squadre";
+              // Inserisci i dropdown "Partite" e "Squadre" prima di "Il Baskin"
+              const isBeforeIlBaskin = link.href === "/il-baskin";
               return (
                 <Box key={link.href} sx={{ display: "contents" }}>
-                  {isAfterCalendario && (
+                  {isBeforeIlBaskin && (
                     <>
+                      {/* Dropdown Partite */}
                       <Button
                         size="small"
                         onClick={(e) => setPartiteAnchor(e.currentTarget)}
@@ -220,6 +245,52 @@ export default function SiteHeader() {
                             }}
                           >
                             {pl.label}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+
+                      {/* Dropdown Squadre */}
+                      <Button
+                        size="small"
+                        onClick={(e) => setSquadreAnchor(e.currentTarget)}
+                        endIcon={
+                          <KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />
+                        }
+                        sx={{
+                          color: squadreActive ? "#fff" : "rgba(255,255,255,0.6)",
+                          fontWeight: squadreActive ? 700 : 500,
+                          fontSize: "0.85rem",
+                          borderBottom: squadreActive
+                            ? "2px solid #E65100"
+                            : "2px solid transparent",
+                          borderRadius: 0,
+                          pb: "2px",
+                          "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                        }}
+                      >
+                        Squadre
+                      </Button>
+                      <Menu
+                        anchorEl={squadreAnchor}
+                        open={Boolean(squadreAnchor)}
+                        onClose={() => setSquadreAnchor(null)}
+                        transformOrigin={{ horizontal: "left", vertical: "top" }}
+                        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+                        PaperProps={{ sx: { mt: 0.5, minWidth: 160 } }}
+                      >
+                        {squadreLinks.map((sl) => (
+                          <MenuItem
+                            key={sl.href}
+                            component={Link}
+                            href={sl.href}
+                            selected={pathname === sl.href}
+                            onClick={() => setSquadreAnchor(null)}
+                            sx={{
+                              fontSize: "0.9rem",
+                              fontWeight: pathname === sl.href ? 700 : 400,
+                            }}
+                          >
+                            {sl.label}
                           </MenuItem>
                         ))}
                       </Menu>
@@ -522,9 +593,65 @@ export default function SiteHeader() {
             </List>
           </Collapse>
 
-          {/* Voci dopo "Partite" */}
+          {/* Squadre — voce padre espandibile */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => setSquadreOpen((o) => !o)}
+              sx={{
+                py: 1.25,
+                color: squadreActive ? "#E65100" : "rgba(255,255,255,0.8)",
+                borderLeft: squadreActive ? "3px solid #E65100" : "3px solid transparent",
+              }}
+            >
+              <ListItemText
+                primary="Squadre"
+                primaryTypographyProps={{
+                  fontWeight: squadreActive ? 700 : 400,
+                  fontSize: "0.95rem",
+                }}
+              />
+              {squadreOpen ? (
+                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              ) : (
+                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              )}
+            </ListItemButton>
+          </ListItem>
+
+          <Collapse in={squadreOpen} timeout="auto" unmountOnExit>
+            <List disablePadding>
+              {squadreLinks.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <ListItem key={link.href} disablePadding>
+                    <ListItemButton
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        router.push(link.href);
+                      }}
+                      sx={{
+                        py: 1,
+                        pl: 4,
+                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
+                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                      }}
+                    >
+                      <ListItemText
+                        primary={link.label}
+                        primaryTypographyProps={{
+                          fontWeight: active ? 700 : 400,
+                          fontSize: "0.88rem",
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Collapse>
+
+          {/* Voci dopo "Squadre" */}
           {[
-            { label: "Squadre", href: "/squadre" },
             { label: "Il Baskin", href: "/il-baskin" },
             { label: "Contatti", href: "/contatti" },
           ].map((link) => {

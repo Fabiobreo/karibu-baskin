@@ -1342,14 +1342,14 @@ function NextMatchCard({
           </Box>
         </Box>
 
-        {/* ── CORPO bianco: matchup tipo cartellone ───────────────────────── */}
+        {/* ── CORPO: matchup tipo cartellone ───────────────────────────────── */}
         <Box
           sx={{
             display: "grid",
             gridTemplateColumns: "1fr auto 1fr",
             alignItems: "stretch",
             position: "relative",
-            bgcolor: "#fff",
+            bgcolor: "background.paper",
           }}
         >
           {/* NOI */}
@@ -1362,7 +1362,7 @@ function NextMatchCard({
               justifyContent: "center",
               gap: 1,
               borderRight: `1px solid ${teamColor}22`,
-              bgcolor: isHomeMatch ? `${teamColor}08` : "#fff",
+              bgcolor: isHomeMatch ? `${teamColor}08` : "background.paper",
             }}
           >
             <Box
@@ -1449,7 +1449,7 @@ function NextMatchCard({
               justifyContent: "center",
               gap: 1,
               borderLeft: "1px solid rgba(0,0,0,0.06)",
-              bgcolor: !isHomeMatch ? "rgba(0,0,0,0.025)" : "#fff",
+              bgcolor: !isHomeMatch ? "rgba(0,0,0,0.025)" : "background.paper",
             }}
           >
             <Box
@@ -1505,7 +1505,7 @@ function NextMatchCard({
         {(match.venue || (prev && prevOurScore !== null && prevTheirScore !== null)) && (
           <Box
             sx={{
-              bgcolor: "#FAFAFA",
+              bgcolor: "background.paper",
               borderTop: "1px solid rgba(0,0,0,0.06)",
               px: { xs: 2.5, md: 3.5 },
               py: 1.5,

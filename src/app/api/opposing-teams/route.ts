@@ -4,6 +4,7 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { OpposingTeamCreateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { generateOpposingTeamSlug } from "@/lib/slugUtils";
 
 export async function GET() {
   const teams = await prisma.opposingTeam.findMany({
@@ -29,10 +30,15 @@ export async function POST(req: Request) {
   }
   const body = parsed.data;
 
+  const slug = await generateOpposingTeamSlug(body.name);
   const team = await prisma.opposingTeam.create({
     data: {
       name: body.name.trim(),
+      slug: slug || null,
       city: body.city?.trim() || null,
+      address: body.address?.trim() || null,
+      website: body.website?.trim() || null,
+      colors: body.colors?.trim() || null,
       notes: body.notes?.trim() || null,
     },
   });

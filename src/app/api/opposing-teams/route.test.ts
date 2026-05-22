@@ -6,6 +6,7 @@ vi.mock("@/lib/db", () => ({
     opposingTeam: {
       findMany: vi.fn(),
       create: vi.fn(),
+      findUnique: vi.fn().mockResolvedValue(null),
     },
   },
 }));
@@ -27,7 +28,7 @@ import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 
 type PrismaMock = {
-  opposingTeam: { findMany: Mock; create: Mock };
+  opposingTeam: { findMany: Mock; create: Mock; findUnique: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;

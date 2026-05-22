@@ -8,6 +8,8 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import DownloadIcon from "@mui/icons-material/Download";
 import HistoryIcon from "@mui/icons-material/History";
+import TableChartIcon from "@mui/icons-material/TableChart";
+import ShieldIcon from "@mui/icons-material/Shield";
 import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
 import AdminProssimePartite from "@/components/AdminProssimePartite";
@@ -101,59 +103,68 @@ export default async function AdminPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
       {/* Navigazione */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
-          gap: 2,
-        }}
-      >
-        <NavCard
-          href="/admin/utenti"
-          icon={<PersonIcon />}
-          label="Gestione Utenti"
-          stat={`${totalUsers} utenti · +${recentCount} negli ultimi 30gg`}
-          badge={pendingRoleCount}
-          color="#E65100"
-        />
-        <NavCard
-          href="/admin/allenamenti"
-          icon={<CalendarMonthIcon />}
-          label="Gestione Allenamenti"
-          badge={sessionsIncomplete}
-          badgeLabel={sessionsIncomplete === 1 ? "da completare" : "da completare"}
-          color="#00897B"
-        />
-        <NavCard
-          href="/admin/squadre"
-          icon={<GroupsIcon />}
-          label="Gestione Squadre"
-          color="#1565C0"
-        />
-        <NavCard
-          href="/admin/partite"
-          icon={<EmojiEventsIcon />}
-          label="Gestione Partite"
-          color="#2E7D32"
-        />
-        <NavCard
-          href="/admin/eventi"
-          icon={<CalendarMonthIcon />}
-          label="Gestione Eventi"
-          color="#6A1B9A"
-        />
-        <NavCard
-          href="/admin/esporta"
-          icon={<DownloadIcon />}
-          label="Esporta CSV"
-          color="#37474F"
-        />
-        <NavCard
-          href="/admin/audit"
-          icon={<HistoryIcon />}
-          label="Registro Attività"
-          color="#4527A0"
-        />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <NavSection title="Attività">
+          <NavCard
+            href="/admin/allenamenti"
+            icon={<CalendarMonthIcon />}
+            label="Gestione Allenamenti"
+            badge={sessionsIncomplete}
+            badgeLabel="da completare"
+            color="#00897B"
+          />
+          <NavCard
+            href="/admin/partite"
+            icon={<EmojiEventsIcon />}
+            label="Gestione Partite"
+            color="#2E7D32"
+          />
+          <NavCard
+            href="/admin/eventi"
+            icon={<CalendarMonthIcon />}
+            label="Gestione Eventi"
+            color="#6A1B9A"
+          />
+        </NavSection>
+
+        <NavSection title="Anagrafiche">
+          <NavCard
+            href="/admin/utenti"
+            icon={<PersonIcon />}
+            label="Gestione Utenti"
+            stat={`${totalUsers} utenti · +${recentCount} negli ultimi 30gg`}
+            badge={pendingRoleCount}
+            color="#E65100"
+          />
+          <NavCard
+            href="/admin/squadre"
+            icon={<GroupsIcon />}
+            label="Gestione Squadre"
+            color="#1565C0"
+          />
+          <NavCard href="/admin/gironi" icon={<TableChartIcon />} label="Gironi" color="#00695C" />
+          <NavCard
+            href="/admin/avversarie"
+            icon={<ShieldIcon />}
+            label="Squadre avversarie"
+            color="#5D4037"
+          />
+        </NavSection>
+
+        <NavSection title="Strumenti">
+          <NavCard
+            href="/admin/esporta"
+            icon={<DownloadIcon />}
+            label="Esporta CSV"
+            color="#37474F"
+          />
+          <NavCard
+            href="/admin/audit"
+            icon={<HistoryIcon />}
+            label="Registro Attività"
+            color="#4527A0"
+          />
+        </NavSection>
       </Box>
 
       {/* Badge suggerimenti ruolo */}
@@ -187,6 +198,34 @@ export default async function AdminPage() {
       <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
 
       <AdminNotificationSender currentSeason={getCurrentSeason()} />
+    </Box>
+  );
+}
+
+function NavSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Box>
+      <Typography
+        variant="overline"
+        sx={{
+          fontWeight: 700,
+          color: "text.secondary",
+          letterSpacing: 1,
+          display: "block",
+          mb: 1.25,
+        }}
+      >
+        {title}
+      </Typography>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+          gap: 2,
+        }}
+      >
+        {children}
+      </Box>
     </Box>
   );
 }

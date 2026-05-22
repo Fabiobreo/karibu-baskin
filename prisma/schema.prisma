@@ -328,6 +328,9 @@ model OpposingTeam {
   name      String
   slug      String?  @unique
   city      String?
+  address   String?
+  website   String?
+  colors    String?
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 

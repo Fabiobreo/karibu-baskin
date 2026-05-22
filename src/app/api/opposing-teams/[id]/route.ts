@@ -4,6 +4,7 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { OpposingTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { generateOpposingTeamSlug } from "@/lib/slugUtils";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -26,13 +27,22 @@ export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
   const before = await prisma.opposingTeam.findUnique({
     where: { id },
-    select: { name: true, city: true, notes: true },
+    select: { name: true, city: true, notes: true, slug: true },
   });
+  let newSlug: string | undefined;
+  if (body.name !== undefined && body.name.trim() !== before?.name) {
+    const generated = await generateOpposingTeamSlug(body.name);
+    if (generated) newSlug = generated;
+  }
   const team = await prisma.opposingTeam.update({
     where: { id },
     data: {
       ...(body.name !== undefined && { name: body.name.trim() }),
+      ...(newSlug !== undefined && { slug: newSlug }),
       ...(body.city !== undefined && { city: body.city?.trim() || null }),
+      ...(body.address !== undefined && { address: body.address?.trim() || null }),
+      ...(body.website !== undefined && { website: body.website?.trim() || null }),
+      ...(body.colors !== undefined && { colors: body.colors?.trim() || null }),
       ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
     },
   });
