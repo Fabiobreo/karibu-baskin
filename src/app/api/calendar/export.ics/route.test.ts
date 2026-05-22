@@ -11,6 +11,9 @@ vi.mock("@/lib/db", () => ({
 
 import { GET } from "./route";
 import { prisma } from "@/lib/db";
+import { NextRequest } from "next/server";
+
+const mockReq = () => new NextRequest("http://localhost/api/calendar/export.ics");
 
 type PrismaMock = {
   trainingSession: { findMany: Mock };
@@ -30,22 +33,22 @@ describe("GET /api/calendar/export.ics", () => {
   });
 
   it("restituisce Content-Type text/calendar", async () => {
-    const res = await GET();
+    const res = await GET(mockReq());
     expect(res.headers.get("Content-Type")).toContain("text/calendar");
   });
 
   it("restituisce header Content-Disposition attachment", async () => {
-    const res = await GET();
+    const res = await GET(mockReq());
     expect(res.headers.get("Content-Disposition")).toContain("karibu-baskin.ics");
   });
 
   it("restituisce header Cache-Control no-store", async () => {
-    const res = await GET();
+    const res = await GET(mockReq());
     expect(res.headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("restituisce calendaro vuoto con struttura VCALENDAR", async () => {
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("BEGIN:VCALENDAR");
     expect(ics).toContain("END:VCALENDAR");
@@ -62,7 +65,7 @@ describe("GET /api/calendar/export.ics", () => {
         endTime: new Date("2025-09-10T10:30:00Z"),
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("BEGIN:VEVENT");
     expect(ics).toContain("UID:training-s-1@karibubaskin.it");
@@ -79,7 +82,7 @@ describe("GET /api/calendar/export.ics", () => {
         endTime: null,
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     // 09:00 + 90min = 10:30 → DTEND:20250910T103000Z
     expect(ics).toContain("DTEND:20250910T103000Z");
@@ -94,7 +97,7 @@ describe("GET /api/calendar/export.ics", () => {
         endTime: null,
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("LOCATION:Polisportivo Gino Cosaro");
   });
@@ -110,7 +113,7 @@ describe("GET /api/calendar/export.ics", () => {
         opponent: { name: "Team B" },
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("UID:match-m-1@karibubaskin.it");
     expect(ics).toContain("SUMMARY:Karibu Baskin vs Team B");
@@ -127,7 +130,7 @@ describe("GET /api/calendar/export.ics", () => {
         opponent: { name: "Team C" },
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("SUMMARY:Karibu Baskin @ Team C");
     expect(ics).toContain("LOCATION:Palazzetto Avversario");
@@ -144,7 +147,7 @@ describe("GET /api/calendar/export.ics", () => {
         opponent: { name: "Team D" },
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("LOCATION:Polisportivo Gino Cosaro");
   });
@@ -160,7 +163,7 @@ describe("GET /api/calendar/export.ics", () => {
         location: "Palazzetto Nord",
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("UID:event-e-1@karibubaskin.it");
     expect(ics).toContain("SUMMARY:Torneo Estivo");
@@ -179,7 +182,7 @@ describe("GET /api/calendar/export.ics", () => {
         location: null,
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     // 09:00 + 60min = 10:00 → DTEND:20250910T100000Z
     expect(ics).toContain("DTEND:20250910T100000Z");
@@ -196,7 +199,7 @@ describe("GET /api/calendar/export.ics", () => {
         location: null,
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     expect(ics).toContain("SUMMARY:Evento\\, speciale\\; test");
   });
@@ -230,7 +233,7 @@ describe("GET /api/calendar/export.ics", () => {
         location: null,
       },
     ]);
-    const res = await GET();
+    const res = await GET(mockReq());
     const ics = await res.text();
     const count = (ics.match(/BEGIN:VEVENT/g) ?? []).length;
     expect(count).toBe(3);

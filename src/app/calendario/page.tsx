@@ -1,8 +1,8 @@
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import DownloadIcon from "@mui/icons-material/Download";
 import SiteHeader from "@/components/SiteHeader";
 import CalendarClient from "@/components/CalendarClient";
+import SubscribeCalendarButton from "@/components/SubscribeCalendarButton";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
@@ -44,17 +44,7 @@ export default async function CalendarioPage() {
               Calendario
             </Typography>
           </Box>
-          <Button
-            component="a"
-            href="/api/calendar/export.ics"
-            download="karibu-baskin.ics"
-            size="small"
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            sx={{ fontWeight: 600 }}
-          >
-            Aggiungi al calendario
-          </Button>
+          <SubscribeCalendarButton />
         </Box>
         <CalendarClient isStaff={isStaff} isAdmin={isAdmin} teams={teams} />
       </Container>

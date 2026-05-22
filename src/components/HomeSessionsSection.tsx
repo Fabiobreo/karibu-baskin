@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import SessionHeroCard from "@/components/SessionHeroCard";
 import { useToast } from "@/context/ToastContext";
@@ -131,14 +132,26 @@ export default function HomeSessionsSection({
 
       {upcoming.length > 0 && (
         <>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}
-          >
-            Prossimi allenamenti
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+            <SportsBasketballIcon sx={{ color: "primary.main", fontSize: 32 }} />
+            <Box>
+              <Typography
+                variant="overline"
+                color="primary"
+                fontWeight={700}
+                sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
+              >
+                Palestra
+              </Typography>
+              <Typography
+                variant="h5"
+                fontWeight={800}
+                sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
+              >
+                Prossimi allenamenti
+              </Typography>
+            </Box>
+          </Box>
           <Grid container spacing={2}>
             {upcoming.map((s) => (
               <Grid key={s.id} size={{ xs: 12, sm: upcoming.length > 1 ? 6 : 12 }}>

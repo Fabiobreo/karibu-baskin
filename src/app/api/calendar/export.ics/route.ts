@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 const LOCATION_DEFAULT =
   "Polisportivo Gino Cosaro, Via del Vigo 11, 36075 Montecchio Maggiore (VI)";
@@ -53,7 +54,11 @@ function vevent(
   return lines.join("\r\n");
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "export-ics", 30, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+  }
   const now = new Date();
 
   const [trainings, matches, events] = await Promise.all([
