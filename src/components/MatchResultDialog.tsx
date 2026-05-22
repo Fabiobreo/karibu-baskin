@@ -48,6 +48,8 @@ interface Props {
   onClose: () => void;
   matchId: string;
   matchLabel: string;
+  ourTeamName: string;
+  theirTeamName: string;
   initialOurScore: number | null;
   initialTheirScore: number | null;
   initialResult: MatchResult | null;
@@ -59,6 +61,8 @@ export default function MatchResultDialog({
   onClose,
   matchId,
   matchLabel,
+  ourTeamName,
+  theirTeamName,
   initialOurScore,
   initialTheirScore,
   initialResult,
@@ -114,26 +118,6 @@ export default function MatchResultDialog({
     }
   }
 
-  async function handleClear() {
-    setSaving(true);
-    setError("");
-    try {
-      const res = await fetch(`/api/matches/${matchId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ourScore: null, theirScore: null, result: null }),
-      });
-      if (!res.ok) {
-        setError("Errore nel reset");
-        return;
-      }
-      onSaved(matchId, { ourScore: null, theirScore: null, result: null });
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 700 }}>
@@ -151,30 +135,36 @@ export default function MatchResultDialog({
           </Alert>
         )}
 
-        <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", mt: 1 }}>
+        <Box
+          sx={{ display: "flex", gap: 1, alignItems: "center", mt: 1, justifyContent: "center" }}
+        >
           <TextField
-            label="Nostri"
+            label={ourTeamName}
             type="number"
+            size="small"
             value={ourScore}
             onChange={(e) => setOurScore(e.target.value)}
             slotProps={{
-              htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1.4rem" } },
+              htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1.1rem" } },
+              inputLabel: { sx: { fontSize: "0.85rem" } },
             }}
-            sx={{ flex: 1 }}
+            sx={{ width: 150 }}
             autoFocus
           />
-          <Typography variant="h5" color="text.disabled">
+          <Typography variant="h6" color="text.disabled">
             –
           </Typography>
           <TextField
-            label="Avversario"
+            label={theirTeamName}
             type="number"
+            size="small"
             value={theirScore}
             onChange={(e) => setTheirScore(e.target.value)}
             slotProps={{
-              htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1.4rem" } },
+              htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1.1rem" } },
+              inputLabel: { sx: { fontSize: "0.85rem" } },
             }}
-            sx={{ flex: 1 }}
+            sx={{ width: 150 }}
           />
         </Box>
 
@@ -197,10 +187,7 @@ export default function MatchResultDialog({
           )}
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2, justifyContent: "space-between" }}>
-        <Button color="error" onClick={handleClear} disabled={saving} size="small">
-          Azzera
-        </Button>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button onClick={onClose} disabled={saving}>
             Annulla

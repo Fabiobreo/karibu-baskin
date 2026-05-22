@@ -71,6 +71,27 @@ export async function generateOpposingTeamSlug(name: string): Promise<string> {
 }
 
 /**
+ * Genera uno slug univoco per un girone a partire da stagione e nome.
+ * es. season="2025-26", name="Girone A Ovest" → "2025-26-girone-a-ovest"
+ */
+export async function generateGroupSlug(name: string, season: string): Promise<string> {
+  const base = slugify(`${season} ${name}`);
+  if (!base) return "";
+
+  const existing = await prisma.group.findUnique({ where: { slug: base } });
+  if (!existing) return base;
+
+  let n = 2;
+  while (n < 1000) {
+    const candidate = `${base}-${n}`;
+    const found = await prisma.group.findUnique({ where: { slug: candidate } });
+    if (!found) return candidate;
+    n++;
+  }
+  return "";
+}
+
+/**
  * Genera uno slug univoco per una partita.
  * Formato: "{team-slug}-vs-{opponent-slug}-{YYYY-MM-DD}"
  * Se esiste già, aggiunge suffisso numerico: "-2", "-3", ecc.

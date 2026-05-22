@@ -4,6 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { GroupCreateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { generateGroupSlug } from "@/lib/slugUtils";
 
 export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");
@@ -38,12 +39,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const name = parsed.data.name.trim();
+  const season = parsed.data.season.trim();
+  const slug = (await generateGroupSlug(name, season)) || null;
+
   const group = await prisma.group.create({
     data: {
-      name: parsed.data.name.trim(),
-      season: parsed.data.season.trim(),
+      name,
+      season,
       championship: parsed.data.championship?.trim() || null,
       teamId: parsed.data.teamId,
+      slug,
     },
     include: {
       team: { select: { id: true, name: true, color: true } },

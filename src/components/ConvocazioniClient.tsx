@@ -41,6 +41,7 @@ interface StatRow {
   eligibleSessions: number;
   seasonCallups: number;
   daysSinceLastCallup: number | null;
+  availability: boolean | null;
 }
 
 interface Props {
@@ -130,12 +131,17 @@ export default function ConvocazioniClient({
   }
 
   function selectAll() {
+    // "Tutti" seleziona solo i disponibili (esclude chi ha marcato Non disponibile)
     updateActiveSelection(() => ({
       userIds: new Set(
-        activeTeam.stats.filter((s) => s.candidate.kind === "user").map((s) => s.candidate.id)
+        activeTeam.stats
+          .filter((s) => s.candidate.kind === "user" && s.availability !== false)
+          .map((s) => s.candidate.id)
       ),
       childIds: new Set(
-        activeTeam.stats.filter((s) => s.candidate.kind === "child").map((s) => s.candidate.id)
+        activeTeam.stats
+          .filter((s) => s.candidate.kind === "child" && s.availability !== false)
+          .map((s) => s.candidate.id)
       ),
     }));
   }
@@ -144,14 +150,24 @@ export default function ConvocazioniClient({
     updateActiveSelection(() => ({ userIds: new Set(), childIds: new Set() }));
   }
 
-  const filtered = useMemo(() => {
-    return activeTeam.stats.filter((s) =>
-      roleFilter === null ? true : s.candidate.sportRole === roleFilter
+  const filteredAvailable = useMemo(() => {
+    return activeTeam.stats.filter(
+      (s) =>
+        s.availability !== false &&
+        (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
+    );
+  }, [activeTeam.stats, roleFilter]);
+
+  const filteredUnavailable = useMemo(() => {
+    return activeTeam.stats.filter(
+      (s) =>
+        s.availability === false &&
+        (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
   }, [activeTeam.stats, roleFilter]);
 
   const sorted = useMemo(() => {
-    const copy = [...filtered];
+    const copy = [...filteredAvailable];
     copy.sort((a, b) => {
       switch (sortKey) {
         case "presences":
@@ -176,7 +192,7 @@ export default function ConvocazioniClient({
       }
     });
     return copy;
-  }, [filtered, sortKey]);
+  }, [filteredAvailable, sortKey]);
 
   const coverage = useMemo(() => {
     const map = new Map<number, number>();
@@ -565,6 +581,19 @@ export default function ConvocazioniClient({
                               {row.candidate.isCaptain && (
                                 <StarIcon sx={{ fontSize: 13, color: "#F9A825" }} />
                               )}
+                              {row.availability === true && (
+                                <Chip
+                                  label="Disponibile"
+                                  size="small"
+                                  sx={{
+                                    bgcolor: "#E8F5E9",
+                                    color: "#2E7D32",
+                                    fontWeight: 700,
+                                    fontSize: "0.6rem",
+                                    height: 16,
+                                  }}
+                                />
+                              )}
                             </Box>
                             {role && (
                               <Chip
@@ -681,6 +710,100 @@ export default function ConvocazioniClient({
             </Table>
           </Box>
         </Paper>
+      )}
+
+      {/* Non disponibili — chip compatti, NON selezionabili */}
+      {filteredUnavailable.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Typography
+            variant="overline"
+            color="error"
+            fontWeight={800}
+            sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
+          >
+            Non disponibili ({filteredUnavailable.length})
+          </Typography>
+          <Stack spacing={0.75}>
+            {ROLES.map((r) => {
+              const inRole = filteredUnavailable.filter((row) => row.candidate.sportRole === r);
+              if (inRole.length === 0) return null;
+              return (
+                <Box
+                  key={`unavail-role-${r}`}
+                  sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
+                >
+                  <Chip
+                    label={`R${r}`}
+                    size="small"
+                    sx={{
+                      bgcolor: ROLE_COLORS[r],
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "0.68rem",
+                      height: 18,
+                      minWidth: 32,
+                    }}
+                  />
+                  {inRole.map((row) => (
+                    <Chip
+                      key={`unavail-${row.candidate.kind}-${row.candidate.id}`}
+                      label={row.candidate.name}
+                      size="small"
+                      sx={{
+                        fontSize: "0.72rem",
+                        height: 22,
+                        fontWeight: 600,
+                        bgcolor: "rgba(198,40,40,0.06)",
+                        color: "text.secondary",
+                        border: "1px solid rgba(198,40,40,0.25)",
+                        "& .MuiChip-label": { px: 1 },
+                      }}
+                    />
+                  ))}
+                </Box>
+              );
+            })}
+            {(() => {
+              const noRole = filteredUnavailable.filter((row) => row.candidate.sportRole == null);
+              if (noRole.length === 0) return null;
+              return (
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
+                  key="unavail-role-none"
+                >
+                  <Chip
+                    label="—"
+                    size="small"
+                    sx={{
+                      bgcolor: "grey.400",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "0.68rem",
+                      height: 18,
+                      minWidth: 32,
+                    }}
+                  />
+                  {noRole.map((row) => (
+                    <Chip
+                      key={`unavail-${row.candidate.kind}-${row.candidate.id}`}
+                      label={row.candidate.name}
+                      size="small"
+                      sx={{
+                        fontSize: "0.72rem",
+                        height: 22,
+                        fontWeight: 600,
+                        bgcolor: "rgba(198,40,40,0.06)",
+                        color: "text.secondary",
+                        border: "1px solid rgba(198,40,40,0.25)",
+                        "& .MuiChip-label": { px: 1 },
+                      }}
+                    />
+                  ))}
+                </Box>
+              );
+            })()}
+          </Stack>
+        </Box>
       )}
     </Container>
   );

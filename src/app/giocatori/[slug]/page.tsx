@@ -702,7 +702,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 {
                   label: "Media punti",
                   value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—",
-                  color: "#1A1A1A",
+                  color: "text.primary",
                 },
                 { label: "Canestri 2pt", value: totalTwo, color: "#2E7D32" },
                 { label: "Canestri 3pt", value: totalThree, color: "#7B1FA2" },

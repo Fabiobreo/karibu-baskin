@@ -96,6 +96,17 @@ export function isStatFieldAllowed(role: number | null | undefined, field: StatF
   return STAT_FIELDS_BY_ROLE[role]?.includes(field) ?? false;
 }
 
+export const MvpsSchema = z.object({
+  userIds: z.array(z.string().min(1)).max(3).default([]),
+  childIds: z.array(z.string().min(1)).max(3).default([]),
+});
+
+export const AvailabilitySchema = z.object({
+  available: z.boolean(),
+  // Per i genitori che marcano la disponibilità di un figlio
+  childId: z.string().min(1).optional(),
+});
+
 export const CallupsSchema = z.object({
   // Per le amichevoli interne specificare la squadra (match.teamId o match.opponentTeamId).
   // Se omesso, le convocazioni si applicano a match.teamId (comportamento legacy).

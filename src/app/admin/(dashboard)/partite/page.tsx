@@ -34,12 +34,33 @@ export default async function AdminPartitePage() {
     }),
   ]);
 
+  // GroupMatch contestuali: tutte le partite tra terzi dei gironi in cui giochiamo
+  const groupIds = Array.from(new Set(matches.map((m) => m.groupId).filter(Boolean))) as string[];
+  const groupMatches =
+    groupIds.length === 0
+      ? []
+      : await prisma.groupMatch.findMany({
+          where: { groupId: { in: groupIds } },
+          orderBy: [{ matchday: "asc" }, { date: "asc" }],
+          select: {
+            id: true,
+            groupId: true,
+            matchday: true,
+            date: true,
+            homeScore: true,
+            awayScore: true,
+            homeTeam: { select: { id: true, name: true } },
+            awayTeam: { select: { id: true, name: true } },
+          },
+        });
+
   return (
     <AdminPartiteClient
       teams={teams}
       opposingTeams={opposingTeams}
       matches={matches}
       groups={groups}
+      groupMatches={groupMatches}
     />
   );
 }

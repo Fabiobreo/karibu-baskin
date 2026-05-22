@@ -25,6 +25,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -405,6 +406,17 @@ export default function SiteHeader() {
                       <AccountCircleIcon fontSize="small" />
                     </ListItemIcon>
                     Il mio profilo
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setMenuAnchor(null);
+                      router.push("/profilo/disponibilita");
+                    }}
+                  >
+                    <ListItemIcon>
+                      <EventAvailableIcon fontSize="small" />
+                    </ListItemIcon>
+                    Le mie disponibilità
                   </MenuItem>
                   <MenuItem onClick={cycleColorMode}>
                     <ListItemIcon>

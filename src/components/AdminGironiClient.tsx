@@ -31,6 +31,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 type Team = { id: string; name: string; season: string; color: string | null };
 type Group = {
   id: string;
+  slug: string | null;
   name: string;
   season: string;
   championship: string | null;
@@ -181,7 +182,7 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
                 <TableRow key={g.id} hover>
                   <TableCell>
                     <Link
-                      href={`/admin/gironi/${g.id}`}
+                      href={`/admin/gironi/${g.slug ?? g.id}`}
                       style={{ textDecoration: "none", color: "inherit" }}
                     >
                       <Typography
@@ -228,7 +229,7 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
                         color="primary"
                         aria-label="Apri girone"
                         component={Link}
-                        href={`/admin/gironi/${g.id}`}
+                        href={`/admin/gironi/${g.slug ?? g.id}`}
                       >
                         <OpenInNewIcon fontSize="small" />
                       </IconButton>

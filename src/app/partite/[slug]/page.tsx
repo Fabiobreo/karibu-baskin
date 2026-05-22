@@ -12,11 +12,14 @@ import { it } from "date-fns/locale";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
 import { computeStandings } from "@/lib/standings";
+import MatchTabellinoButton from "@/components/MatchTabellinoButton";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import { ROLE_COLORS } from "@/lib/constants";
 
 export const revalidate = 3600;
 
@@ -92,6 +95,15 @@ async function getMatch(slug: string) {
           child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
         },
         orderBy: { id: "asc" },
+      },
+      mvps: {
+        include: {
+          user: {
+            select: { id: true, name: true, image: true, slug: true, sportRole: true },
+          },
+          child: { select: { id: true, name: true, sportRole: true } },
+        },
+        orderBy: { createdAt: "asc" },
       },
       _count: { select: { playerStats: true } },
     },
@@ -277,15 +289,25 @@ export default async function MatchDetailPage({ params }: Props) {
           }}
         />
 
-        {isStaff && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: { xs: 12, md: 16 },
-              right: { xs: 12, md: 20 },
-              zIndex: 2,
-            }}
-          >
+        {/* Azioni in alto a destra: share tabellino + edit (staff) */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 20 },
+            zIndex: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          {hasScore && (
+            <MatchTabellinoButton
+              matchId={match.id}
+              filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${format(new Date(match.date), "yyyy-MM-dd")}.png`}
+            />
+          )}
+          {isStaff && (
             <MatchEditButton
               matchId={match.id}
               initial={{
@@ -306,8 +328,8 @@ export default async function MatchDetailPage({ params }: Props) {
               internalTeams={internalTeamsForEdit}
               groups={groupsForEdit}
             />
-          </Box>
-        )}
+          )}
+        </Box>
 
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           {/* Contenuto centrato */}
@@ -603,6 +625,105 @@ export default async function MatchDetailPage({ params }: Props) {
           {/* fine Box centrato */}
         </Container>
       </Box>
+
+      {/* ── MVP ───────────────────────────────────────────────────────────── */}
+      {match.mvps.length > 0 && (
+        <Container maxWidth="md" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: 2,
+              background: "linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%)",
+              border: "1px solid #F9A825",
+              boxShadow: "0 2px 8px rgba(249,168,37,0.15)",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                mb: 1.5,
+                justifyContent: "center",
+              }}
+            >
+              <EmojiEventsIcon sx={{ color: "#F57F17" }} />
+              <Typography
+                variant="overline"
+                fontWeight={800}
+                sx={{ color: "#F57F17", letterSpacing: "0.12em" }}
+              >
+                MVP della partita
+              </Typography>
+              <EmojiEventsIcon sx={{ color: "#F57F17" }} />
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 2,
+                justifyContent: "center",
+              }}
+            >
+              {match.mvps.map((m) => {
+                const person = m.user ?? m.child;
+                if (!person) return null;
+                const role = person.sportRole;
+                const name = person.name ?? "—";
+                const slug = m.user?.slug ?? null;
+                const content = (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 1.5,
+                      bgcolor: "#fff",
+                      border: "1px solid rgba(245,127,23,0.3)",
+                      cursor: slug ? "pointer" : "default",
+                      transition: "transform 0.15s",
+                      "&:hover": slug ? { transform: "translateY(-2px)" } : undefined,
+                    }}
+                  >
+                    <EmojiEventsIcon sx={{ color: "#F9A825", fontSize: 20 }} />
+                    <Box>
+                      <Typography variant="body2" fontWeight={800} sx={{ color: "#1a1a1a" }}>
+                        {name}
+                      </Typography>
+                      {role && (
+                        <Box
+                          sx={{
+                            display: "inline-block",
+                            mt: 0.25,
+                            px: 0.75,
+                            py: 0.125,
+                            borderRadius: 0.5,
+                            bgcolor: ROLE_COLORS[role],
+                            color: "#fff",
+                            fontSize: "0.6rem",
+                            fontWeight: 700,
+                          }}
+                        >
+                          R{role}
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                );
+                return slug ? (
+                  <Link key={m.id} href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
+                    {content}
+                  </Link>
+                ) : (
+                  <Box key={m.id}>{content}</Box>
+                );
+              })}
+            </Box>
+          </Box>
+        </Container>
+      )}
 
       {/* ── Body con tabs ──────────────────────────────────────────────────── */}
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>

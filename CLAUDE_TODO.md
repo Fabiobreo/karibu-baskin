@@ -1,37 +1,16 @@
 # CLAUDE_TODO.md — Karibu Baskin
 
-Analisi codebase con priorità d'intervento. Aggiornato automaticamente.
+## 🟠 MUST-HAVE — Gestiti offline (no sviluppo)
 
----
+Feature che per una società sportiva sono "obbligatorie" ma che il direttivo gestisce manualmente fuori dall'app. Tracciati qui solo per memoria: **non implementare senza esplicita richiesta.**
 
-## 🔴 CRITICO — Sicurezza
-
----
-
-## 🟡 MEDIA PRIORITÀ — Performance e QoL tecnico
-
-### M1. **Componenti troppo grandi — refactor incrementale**
-
-- `AdminPartiteClient.tsx` — ~1130 righe
-- `CalendarClient.tsx` — ~1097 righe
-- `AdminUserList.tsx` — ~1055 righe
-
-**Non fare refactor standalone.** Estrarre sub-componenti e custom hooks quando si toccano per altre ragioni.
+- **Certificati medici** — raccolta cartacea, scadenze monitorate offline.
+- **Modulistica / documenti scaricabili** (regolamento, modulo iscrizione, codice condotta) — distribuiti a mano.
+- **Privacy minori / consenso immagini** — modulo firmato a mano dal genitore, non tracciato nel DB.
 
 ---
 
 ## 📋 FEATURES PIANIFICATE
-
-### F1. **Storico presenze giocatore**
-
-Non c'è pagina che mostra la frequenza agli allenamenti nel tempo. Utile per lo staff per monitorare la regolarità.
-
-**Scope:**
-
-- Sezione "Presenze" nel pannello admin utente (`/admin/utenti/[id]`)
-- Eventualmente su profilo pubblico giocatore (visibile solo allo staff)
-
----
 
 ### F2. **Gestione immagini con Vercel Blob**
 
@@ -100,11 +79,57 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 
 ---
 
+### F5. **Must-have tecnici residui**
+
+_(Nessuno aperto al momento — la lista cresce quando emergono nuovi requisiti che non possono essere gestiti offline.)_
+
+---
+
+### F6. **Nice-to-have ad alto impatto community**
+
+#### 🚧 Da progettare
+
+- **Alert copertura ruoli sulle partite** — quando in una partita la somma dei _disponibili_ per ruolo è sotto soglia minima, mostrare warning al coach (banner nella pagina admin partita + eventuale push). Definire soglie per-ruolo (es. almeno 2 giocatori di ruolo 1, ecc.) — magari configurabili nelle impostazioni partita o globali per stagione. Modello `MatchAvailability` già disponibile; ricordare che il **default è "non disponibile"** (chi non risponde è considerato assente).
+- **Reminder push per chi non ha risposto alla disponibilità** — cron a T-N giorni dalla partita che invia push ai membri di squadra senza record `MatchAvailability` per quel match. Ridurrebbe il numero di "non disponibili per default" che in realtà sono solo distratti.
+
+#### Altri nice-to-have community
+
+- **Badge / achievement giocatore** — calcolati on-the-fly da dati esistenti: "10 partite giocate", "Primo canestro", "Tripla doppia", "100% presenze del mese", **"MVP della partita"** (ora che `MatchMvp` esiste). Nessuna tabella nuova: helper in `lib/badges.ts` + sezione nel profilo pubblico.
+- **Compleanni** — banner home + push ai compagni nel giorno del compleanno. Campo `birthDate` già presente su `User`. Cron giornaliero.
+- **Confronto testa a testa con avversaria** — sulle pagine `/avversarie/[slug]` mostrare bilancio storico (V/N/P, canestri fatti/subiti, ultime 5). Dati già in `Match`.
+- **Recap automatico post-allenamento** — cron il giorno dopo: "Eravate N, squadra X ha vinto, top scorer Y" via push + AppNotification. Dati già in `TrainingMatchResult`.
+
+#### ✅ Già implementati (per memoria)
+
+- **MVP partita** — scelti dai coach (max 3) dalla pagina statistiche partita; visualizzati nel banner dorato su `/partite/[slug]`. Modello `MatchMvp`.
+- **Disponibilità partite** — pagina `/profilo/disponibilita` (con link in profilo + menù utente) per atleti e genitori; integrazione in pagina convocazioni admin (sezione "Non disponibili" raggruppati per ruolo, non selezionabili); default = non disponibile per chi non ha risposto; vincolo niente modifiche su partite passate (mostrate in grigetto). Modello `MatchAvailability`.
+- **Tabellino partita condivisibile** — endpoint `/api/matches/[matchId]/tabellino` (Node runtime + `next/og` `ImageResponse`) genera PNG 1080×1350 con risultato, MVP e top scorer; bottone "Condividi/Scarica tabellino" nella hero di `/partite/[slug]` quando c'è punteggio (Web Share API su mobile, download fallback).
+
+---
+
+### F7. **Nice-to-have di contenuto**
+
+- **Bacheca / news** — nuovo modello `Post` (titolo, body markdown, autore, pubblicazione) + pagina `/news` + push automatica alla pubblicazione. Storico permanente delle comunicazioni (oggi solo notifiche effimere).
+- **Pagina staff / "Chi siamo"** — `/la-squadra` esiste ma manca sezione dedicata ad allenatori e dirigenti (foto, ruolo, bio breve). Statica o derivata da `User` con flag `isStaffPublic`.
+- **FAQ** — pagina statica con domande ricorrenti. Riduce il volume di `/contatti`.
+- **Sondaggi/poll rapidi** — modello `Poll` con opzioni multiple, voto utente loggato, scadenza. Utile per scelte logistiche (cena fine stagione, orari trasferte).
+
+---
+
+### F8. **Rifiniture SEO / social**
+
+- **Sitemap dinamica** — verificare che `sitemap.ts` includa slug di giocatori, avversarie, partite, squadre.
+- **OG image dinamico per entità** — già presente `opengraph-image.tsx` root; aggiungere varianti per `/partite/[slug]`, `/giocatori/[slug]`, `/squadre/[season]/[slug]` migliora drasticamente la condivisione social.
+- **Storico ruolo sportivo nel profilo** — `SportRoleHistory` esiste lato DB ma non è esposto. Mostrarlo al giocatore stesso e/o nel profilo pubblico.
+
+---
+
 ## Note operative
 
 | Categoria              | Quando fare                                       |
 | ---------------------- | ------------------------------------------------- |
 | 🔴 Critico             | Prima del prossimo push in produzione             |
 | 🟡 Media (M1)          | Boy-scout rule: quando si tocca il file per altro |
-| 📋 Feature (F1–F4)     | In ordine: F1 → F2 → F3 → F4                      |
+| 🟠 Must-have offline   | Gestiti fuori dall'app — non implementare         |
+| 📋 Feature (F2–F8)     | F2 → F5 (must-have tecnici) → F6 → F7 → F8        |
 | 🛠 DX / ✨ UX / 🏗 INF | Raccogliere in sprint dedicati                    |

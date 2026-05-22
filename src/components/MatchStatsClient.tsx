@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
@@ -98,13 +99,36 @@ interface Props {
   matchLabel: string;
 }
 
+const MVP_MAX = 3;
+
+function mvpKeyFor(row: { userId: string | null; childId: string | null }): string {
+  return row.userId ? `user-${row.userId}` : `child-${row.childId}`;
+}
+
 export default function MatchStatsClient({ matchId, matchLabel }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
   const [rows, setRows] = useState<StatRow[]>([]);
+  const [mvpKeys, setMvpKeys] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  function toggleMvp(key: string) {
+    setMvpKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        if (next.size >= MVP_MAX) {
+          showToast({ message: `Massimo ${MVP_MAX} MVP per partita`, severity: "warning" });
+          return prev;
+        }
+        next.add(key);
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     setError("");
@@ -113,8 +137,20 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
     Promise.all([
       fetch(`/api/matches/${matchId}/callups`).then((r) => r.json()),
       fetch(`/api/matches/${matchId}/stats`).then((r) => r.json()),
+      fetch(`/api/matches/${matchId}/mvps`).then((r) => r.json()),
     ])
-      .then(([callups, existingStats]: [CalledPlayer[], ExistingStat[]]) => {
+      .then(
+        ([callups, existingStats, mvps]: [
+          CalledPlayer[],
+          ExistingStat[],
+          Array<{ userId: string | null; childId: string | null }>,
+        ]) => {
+          const initialMvps = new Set<string>(mvps.map((m) => mvpKeyFor(m)));
+          setMvpKeys(initialMvps);
+          return [callups, existingStats] as const;
+        }
+      )
+      .then(([callups, existingStats]) => {
         const statsMap = new Map<string, ExistingStat>();
         for (const s of existingStats) {
           statsMap.set(s.userId ?? s.childId ?? "", s);
@@ -216,7 +252,26 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
         setError("Errore nel salvataggio delle statistiche");
         return;
       }
-      showToast({ message: "Statistiche salvate", severity: "success" });
+
+      // Salva MVPs
+      const mvpUserIds: string[] = [];
+      const mvpChildIds: string[] = [];
+      for (const key of mvpKeys) {
+        if (key.startsWith("user-")) mvpUserIds.push(key.slice(5));
+        else if (key.startsWith("child-")) mvpChildIds.push(key.slice(6));
+      }
+      const mvpRes = await fetch(`/api/matches/${matchId}/mvps`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userIds: mvpUserIds, childIds: mvpChildIds }),
+      });
+      if (!mvpRes.ok) {
+        const data = (await mvpRes.json().catch(() => ({}))) as { error?: string };
+        setError(data.error ?? "Errore nel salvataggio degli MVP");
+        return;
+      }
+
+      showToast({ message: "Statistiche e MVP salvati", severity: "success" });
       router.push("/admin/partite");
       router.refresh();
     } catch {
@@ -268,176 +323,233 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
           </Link>
         </Paper>
       ) : (
-        <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
-          <Box sx={{ overflowX: "auto" }}>
-            <Table size="small" sx={{ minWidth: 760 }}>
-              <TableHead>
-                <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
-                  <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
-                  {STAT_COLS.map((col) => (
-                    <TableCell
-                      key={col.key}
-                      align="center"
-                      title={col.title}
-                      sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 52 }}
-                    >
-                      {col.label}
-                    </TableCell>
-                  ))}
-                  <TableCell
-                    align="center"
-                    title="Punti calcolati (2pt×2 + 3pt×3 + TL)"
+        <>
+          {/* MVP picker — max 3 dai convocati */}
+          <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <EmojiEventsIcon sx={{ color: "#F9A825" }} />
+              <Typography variant="subtitle1" fontWeight={700}>
+                MVP della partita
+              </Typography>
+              <Chip
+                label={`${mvpKeys.size} / ${MVP_MAX}`}
+                size="small"
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: mvpKeys.size > 0 ? "#FFF8E1" : "rgba(0,0,0,0.04)",
+                  color: mvpKeys.size > 0 ? "#F57F17" : "text.secondary",
+                }}
+              />
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+              Seleziona fino a {MVP_MAX} giocatori MVP. Verranno salvati insieme alle statistiche.
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+              {rows.map((row) => {
+                const key = mvpKeyFor(row);
+                const selected = mvpKeys.has(key);
+                return (
+                  <Chip
+                    key={key}
+                    label={row.name}
+                    onClick={() => toggleMvp(key)}
+                    icon={
+                      selected ? (
+                        <EmojiEventsIcon sx={{ fontSize: "16px !important", color: "#fff" }} />
+                      ) : undefined
+                    }
                     sx={{
                       fontWeight: 700,
-                      fontSize: "0.75rem",
-                      minWidth: 52,
-                      color: "primary.main",
+                      cursor: "pointer",
+                      bgcolor: selected ? "#F9A825" : "transparent",
+                      color: selected ? "#fff" : "text.primary",
+                      border: `1px solid ${selected ? "#F9A825" : "rgba(0,0,0,0.23)"}`,
+                      "&:hover": {
+                        bgcolor: selected ? "#F57F17" : "rgba(249,168,37,0.08)",
+                      },
                     }}
-                  >
-                    Pt
-                  </TableCell>
-                  <TableCell
-                    sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }}
-                    title="Note (opzionale)"
-                  >
-                    Note
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row) => {
-                  const pts = rowPoints(row);
-                  return (
-                    <TableRow key={row.key}>
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Avatar
-                            src={row.image ?? undefined}
-                            sx={{ width: 24, height: 24, fontSize: 10 }}
-                          >
-                            {row.name[0]}
-                          </Avatar>
-                          <Box>
-                            <Typography
-                              variant="body2"
-                              fontWeight={600}
-                              sx={{ fontSize: "0.82rem" }}
-                            >
-                              {row.name}
-                            </Typography>
-                            {row.sportRole && (
-                              <Chip
-                                label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
-                                size="small"
-                                sx={{
-                                  bgcolor: ROLE_COLORS[row.sportRole],
-                                  color: "#fff",
-                                  fontWeight: 600,
-                                  fontSize: "0.55rem",
-                                  height: 14,
-                                  mt: 0.2,
-                                }}
-                              />
-                            )}
-                          </Box>
-                        </Box>
+                  />
+                );
+              })}
+            </Box>
+          </Paper>
+
+          <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
+            <Box sx={{ overflowX: "auto" }}>
+              <Table size="small" sx={{ minWidth: 760 }}>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
+                    {STAT_COLS.map((col) => (
+                      <TableCell
+                        key={col.key}
+                        align="center"
+                        title={col.title}
+                        sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 52 }}
+                      >
+                        {col.label}
                       </TableCell>
-                      {STAT_COLS.map((col) => {
-                        const allowed = isAllowed(row.sportRole, col.key);
-                        return (
-                          <TableCell key={col.key} align="center" sx={{ py: 0.5, px: 0.5 }}>
-                            {allowed ? (
-                              <TextField
-                                type="number"
-                                value={row[col.key]}
-                                onChange={(e) => update(row.key, col.key, e.target.value)}
-                                size="small"
-                                slotProps={{
-                                  htmlInput: {
-                                    min: 0,
-                                    style: {
-                                      textAlign: "center",
-                                      padding: "4px 6px",
-                                      width: 40,
-                                    },
-                                  },
-                                }}
-                                sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
-                              />
-                            ) : (
+                    ))}
+                    <TableCell
+                      align="center"
+                      title="Punti calcolati (2pt×2 + 3pt×3 + TL)"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        minWidth: 52,
+                        color: "primary.main",
+                      }}
+                    >
+                      Pt
+                    </TableCell>
+                    <TableCell
+                      sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }}
+                      title="Note (opzionale)"
+                    >
+                      Note
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => {
+                    const pts = rowPoints(row);
+                    return (
+                      <TableRow key={row.key}>
+                        <TableCell>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Avatar
+                              src={row.image ?? undefined}
+                              sx={{ width: 24, height: 24, fontSize: 10 }}
+                            >
+                              {row.name[0]}
+                            </Avatar>
+                            <Box>
                               <Typography
                                 variant="body2"
-                                color="text.disabled"
-                                sx={{ fontSize: "0.78rem" }}
-                                title={
-                                  row.sportRole
-                                    ? `Non applicabile per ${sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}`
-                                    : "Non applicabile"
-                                }
+                                fontWeight={600}
+                                sx={{ fontSize: "0.82rem" }}
                               >
-                                —
+                                {row.name}
                               </Typography>
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                      <TableCell
-                        align="center"
-                        sx={{
-                          py: 0.5,
-                          px: 0.5,
-                          fontWeight: 800,
-                          color: "primary.main",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {pts}
-                      </TableCell>
-                      <TableCell sx={{ py: 0.5, px: 0.75 }}>
-                        <TextField
-                          value={row.notes}
-                          onChange={(e) => updateNote(row.key, e.target.value)}
-                          size="small"
-                          placeholder="Opzionale"
-                          slotProps={{
-                            htmlInput: {
-                              maxLength: 500,
-                              style: { padding: "4px 8px", fontSize: "0.78rem" },
-                            },
+                              {row.sportRole && (
+                                <Chip
+                                  label={sportRoleLabel(
+                                    row.sportRole,
+                                    row.sportRoleVariant ?? null
+                                  )}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: ROLE_COLORS[row.sportRole],
+                                    color: "#fff",
+                                    fontWeight: 600,
+                                    fontSize: "0.55rem",
+                                    height: 14,
+                                    mt: 0.2,
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          </Box>
+                        </TableCell>
+                        {STAT_COLS.map((col) => {
+                          const allowed = isAllowed(row.sportRole, col.key);
+                          return (
+                            <TableCell key={col.key} align="center" sx={{ py: 0.5, px: 0.5 }}>
+                              {allowed ? (
+                                <TextField
+                                  type="number"
+                                  value={row[col.key]}
+                                  onChange={(e) => update(row.key, col.key, e.target.value)}
+                                  size="small"
+                                  slotProps={{
+                                    htmlInput: {
+                                      min: 0,
+                                      style: {
+                                        textAlign: "center",
+                                        padding: "4px 6px",
+                                        width: 40,
+                                      },
+                                    },
+                                  }}
+                                  sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
+                                />
+                              ) : (
+                                <Typography
+                                  variant="body2"
+                                  color="text.disabled"
+                                  sx={{ fontSize: "0.78rem" }}
+                                  title={
+                                    row.sportRole
+                                      ? `Non applicabile per ${sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}`
+                                      : "Non applicabile"
+                                  }
+                                >
+                                  —
+                                </Typography>
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell
+                          align="center"
+                          sx={{
+                            py: 0.5,
+                            px: 0.5,
+                            fontWeight: 800,
+                            color: "primary.main",
+                            fontSize: "0.9rem",
                           }}
-                          sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-              <TableFooter>
-                <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
-                  <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}>
-                    Totale
-                  </TableCell>
-                  {STAT_COLS.map((col) => (
+                        >
+                          {pts}
+                        </TableCell>
+                        <TableCell sx={{ py: 0.5, px: 0.75 }}>
+                          <TextField
+                            value={row.notes}
+                            onChange={(e) => updateNote(row.key, e.target.value)}
+                            size="small"
+                            placeholder="Opzionale"
+                            slotProps={{
+                              htmlInput: {
+                                maxLength: 500,
+                                style: { padding: "4px 8px", fontSize: "0.78rem" },
+                              },
+                            }}
+                            sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+                <TableFooter>
+                  <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
                     <TableCell
-                      key={col.key}
-                      align="center"
-                      sx={{ fontWeight: 800, fontSize: "0.82rem", color: "text.primary" }}
+                      sx={{ fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
                     >
-                      {totals[col.key]}
+                      Totale
                     </TableCell>
-                  ))}
-                  <TableCell
-                    align="center"
-                    sx={{ fontWeight: 800, fontSize: "0.9rem", color: "primary.main" }}
-                  >
-                    {totals.points}
-                  </TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </Box>
-        </Paper>
+                    {STAT_COLS.map((col) => (
+                      <TableCell
+                        key={col.key}
+                        align="center"
+                        sx={{ fontWeight: 800, fontSize: "0.82rem", color: "text.primary" }}
+                      >
+                        {totals[col.key]}
+                      </TableCell>
+                    ))}
+                    <TableCell
+                      align="center"
+                      sx={{ fontWeight: 800, fontSize: "0.9rem", color: "primary.main" }}
+                    >
+                      {totals.points}
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </Box>
+          </Paper>
+        </>
       )}
 
       {!loading && rows.length > 0 && (

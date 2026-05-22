@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminGironeWorkspaceClient from "@/components/AdminGironeWorkspaceClient";
+import { generateGroupSlug } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Workspace Girone | Admin" };
@@ -16,8 +17,9 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
   }
   const { groupId } = await params;
 
-  const group = await prisma.group.findUnique({
-    where: { id: groupId },
+  // Risolvi per slug o per id (cuid legacy)
+  const group = await prisma.group.findFirst({
+    where: { OR: [{ slug: groupId }, { id: groupId }] },
     include: {
       team: { select: { id: true, name: true, season: true, color: true } },
       matches: {
@@ -41,9 +43,23 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
           awayTeam: { select: { id: true, name: true, slug: true } },
         },
       },
+      groupTeams: {
+        include: {
+          opposingTeam: { select: { id: true, name: true, slug: true, city: true } },
+        },
+      },
     },
   });
   if (!group) notFound();
+
+  // Backfill slug per gironi legacy creati prima dell'introduzione del campo
+  if (!group.slug) {
+    const newSlug = await generateGroupSlug(group.name, group.season);
+    if (newSlug) {
+      await prisma.group.update({ where: { id: group.id }, data: { slug: newSlug } });
+      group.slug = newSlug;
+    }
+  }
 
   const [opponents, teams, allGroups] = await Promise.all([
     prisma.opposingTeam.findMany({
@@ -78,6 +94,7 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
         ...gm,
         date: gm.date ? gm.date.toISOString() : null,
       }))}
+      explicitTeams={group.groupTeams.map((gt) => gt.opposingTeam)}
       allOpponents={opponents}
       ourTeams={teams}
       allGroups={allGroups}

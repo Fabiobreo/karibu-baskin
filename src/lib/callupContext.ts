@@ -24,6 +24,7 @@ export interface TeamCallupContext {
     eligibleSessions: number;
     seasonCallups: number;
     daysSinceLastCallup: number | null;
+    availability: boolean | null; // true=disponibile, false=non disponibile, null=non risposto
   }>;
   initialSelectedUserIds: string[];
   initialSelectedChildIds: string[];
@@ -232,6 +233,27 @@ export async function buildTeamCallupContext({
     childId: c.childId,
   }));
 
+  const availabilities =
+    candidateUserIds.length > 0 || candidateChildIds.length > 0
+      ? await prisma.matchAvailability.findMany({
+          where: {
+            matchId,
+            OR: [
+              candidateUserIds.length > 0 ? { userId: { in: candidateUserIds } } : null,
+              candidateChildIds.length > 0 ? { childId: { in: candidateChildIds } } : null,
+            ].filter((x): x is NonNullable<typeof x> => x !== null),
+          },
+          select: { userId: true, childId: true, available: true },
+        })
+      : [];
+
+  const availByUserId = new Map<string, boolean>();
+  const availByChildId = new Map<string, boolean>();
+  for (const a of availabilities) {
+    if (a.userId) availByUserId.set(a.userId, a.available);
+    if (a.childId) availByChildId.set(a.childId, a.available);
+  }
+
   const stats = computeCandidateStats({
     candidates,
     windowSessions: windowSessionsInput,
@@ -252,6 +274,11 @@ export async function buildTeamCallupContext({
       eligibleSessions: s.eligibleSessions,
       seasonCallups: s.seasonCallups,
       daysSinceLastCallup: s.daysSinceLastCallup,
+      // Default: chi non ha risposto è considerato NON disponibile.
+      availability:
+        s.candidate.kind === "user"
+          ? (availByUserId.get(s.candidate.id) ?? false)
+          : (availByChildId.get(s.candidate.id) ?? false),
     })),
     initialSelectedUserIds: existingCallups.map((c) => c.userId).filter((id): id is string => !!id),
     initialSelectedChildIds: existingCallups

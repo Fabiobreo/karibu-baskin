@@ -13,6 +13,7 @@ import {
   Button,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
@@ -175,18 +176,30 @@ export default async function ProfiloPage() {
             ))}
           </Box>
 
-          {user.slug && (
-            <Link href={`/giocatori/${user.slug}`} style={{ textDecoration: "none" }}>
+          <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
+            {user.slug && (
+              <Link href={`/giocatori/${user.slug}`} style={{ textDecoration: "none" }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
+                  sx={{ fontSize: "0.78rem", fontWeight: 600 }}
+                >
+                  Vedi il tuo profilo pubblico
+                </Button>
+              </Link>
+            )}
+            <Link href="/profilo/disponibilita" style={{ textDecoration: "none" }}>
               <Button
                 size="small"
                 variant="outlined"
-                startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-                sx={{ mt: 2, fontSize: "0.78rem", fontWeight: 600 }}
+                startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
+                sx={{ fontSize: "0.78rem", fontWeight: 600 }}
               >
-                Vedi il tuo profilo pubblico
+                Le mie disponibilità
               </Button>
             </Link>
-          )}
+          </Stack>
 
           {user.appRole === "GUEST" && (
             <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1.5 }}>
@@ -316,6 +329,19 @@ export default async function ProfiloPage() {
             <ParentChildLinker initialChildren={user.children as ChildData[]} />
           </Paper>
         )}
+
+        {/* Export dati personali (GDPR art. 20) */}
+        <Box sx={{ mt: 2, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
+          <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
+            Puoi scaricare una copia dei tuoi dati personali e di quelli dei tuoi figli collegati ai
+            sensi dell&apos;art. 20 GDPR.
+          </Typography>
+          <a href="/api/users/me/export" download style={{ textDecoration: "none" }}>
+            <Button size="small" variant="outlined" sx={{ fontSize: "0.78rem" }}>
+              Scarica i miei dati
+            </Button>
+          </a>
+        </Box>
 
         {/* Eliminazione account (GDPR art. 17) */}
         <Box sx={{ mt: 2, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>

@@ -25,6 +25,8 @@ import {
   Tooltip,
   Stack,
   Divider,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -90,10 +92,13 @@ type GroupData = {
   team: Team;
 };
 
+type ExplicitTeam = { id: string; name: string; slug: string | null; city: string | null };
+
 type Props = {
   group: GroupData;
   ourMatches: OurMatch[];
   groupMatches: GroupMatch[];
+  explicitTeams: ExplicitTeam[];
   allOpponents: OpposingTeam[];
   ourTeams: Team[];
   allGroups: MatchFormGroup[];
@@ -112,6 +117,7 @@ export default function AdminGironeWorkspaceClient({
   group,
   ourMatches: initialOur,
   groupMatches: initialGm,
+  explicitTeams: initialExplicit,
   allOpponents: initialOpponents,
   ourTeams,
   allGroups,
@@ -123,12 +129,15 @@ export default function AdminGironeWorkspaceClient({
   const [opponents, setOpponents] = useState(initialOpponents);
   const [ourMatches, setOurMatches] = useState(initialOur);
   const [gmMatches, setGmMatches] = useState(initialGm);
+  const [explicitTeams, setExplicitTeams] = useState<ExplicitTeam[]>(initialExplicit);
 
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatchData, setEditMatchData] = useState<MatchFormMatch | null>(null);
   const [resultMatch, setResultMatch] = useState<OurMatch | null>(null);
 
   const [oppDialog, setOppDialog] = useState(false);
+  const [oppMode, setOppMode] = useState<"existing" | "new">("existing");
+  const [oppSelectedId, setOppSelectedId] = useState("");
   const [oppForm, setOppForm] = useState({ name: "", city: "" });
   const [oppSaving, setOppSaving] = useState(false);
   const [oppError, setOppError] = useState("");
@@ -138,7 +147,7 @@ export default function AdminGironeWorkspaceClient({
   const [gmError, setGmError] = useState("");
   const [csvOpen, setCsvOpen] = useState(false);
 
-  // Derive opposing teams that appear in this girone (from gm matches or our matches)
+  // Derive opposing teams that appear in this girone (gm matches, our matches, or explicit)
   const opponentIdsInGroup = new Set<string>();
   for (const gm of gmMatches) {
     opponentIdsInGroup.add(gm.homeTeamId);
@@ -147,6 +156,9 @@ export default function AdminGironeWorkspaceClient({
   for (const m of ourMatches) {
     if (m.opponent) opponentIdsInGroup.add(m.opponent.id);
   }
+  const derivedIds = new Set(opponentIdsInGroup);
+  const explicitIds = new Set(explicitTeams.map((t) => t.id));
+  for (const id of explicitIds) opponentIdsInGroup.add(id);
   const teamsInGroup = opponents
     .filter((o) => opponentIdsInGroup.has(o.id))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -199,31 +211,103 @@ export default function AdminGironeWorkspaceClient({
     });
   }
 
-  async function handleCreateOpponent() {
-    if (!oppForm.name.trim()) return;
-    setOppSaving(true);
+  async function associateToGroup(opposingTeam: {
+    id: string;
+    name: string;
+    slug: string | null;
+    city: string | null;
+  }): Promise<boolean> {
+    const res = await fetch(`/api/groups/${group.id}/teams`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ opposingTeamId: opposingTeam.id }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setOppError(data.error ?? "Errore nell'associazione");
+      return false;
+    }
+    setExplicitTeams((prev) =>
+      prev.some((t) => t.id === opposingTeam.id) ? prev : [...prev, opposingTeam]
+    );
+    return true;
+  }
+
+  async function handleAddOpponentToGroup() {
     setOppError("");
+    setOppSaving(true);
     try {
-      const res = await fetch("/api/opposing-teams", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(oppForm),
-      });
-      if (!res.ok) {
-        setOppError("Errore nella creazione");
-        return;
+      if (oppMode === "existing") {
+        if (!oppSelectedId) {
+          setOppError("Seleziona una squadra");
+          return;
+        }
+        const found = opponents.find((o) => o.id === oppSelectedId);
+        if (!found) {
+          setOppError("Squadra non trovata");
+          return;
+        }
+        const ok = await associateToGroup({
+          id: found.id,
+          name: found.name,
+          slug: found.slug,
+          city: found.city ?? null,
+        });
+        if (!ok) return;
+        showToast({ message: `"${found.name}" aggiunta al girone`, severity: "success" });
+      } else {
+        if (!oppForm.name.trim()) {
+          setOppError("Inserisci un nome");
+          return;
+        }
+        const res = await fetch("/api/opposing-teams", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(oppForm),
+        });
+        if (!res.ok) {
+          setOppError("Errore nella creazione");
+          return;
+        }
+        const created = (await res.json()) as OpposingTeam;
+        setOpponents((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
+        const ok = await associateToGroup({
+          id: created.id,
+          name: created.name,
+          slug: created.slug,
+          city: created.city ?? null,
+        });
+        if (!ok) return;
+        showToast({
+          message: `"${created.name}" creata e aggiunta al girone`,
+          severity: "success",
+        });
       }
-      const created = (await res.json()) as OpposingTeam;
-      setOpponents((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
       setOppForm({ name: "", city: "" });
+      setOppSelectedId("");
       setOppDialog(false);
-      showToast({
-        message: `Squadra "${created.name}" aggiunta all'anagrafica`,
-        severity: "success",
-      });
     } finally {
       setOppSaving(false);
     }
+  }
+
+  async function handleRemoveTeamFromGroup(teamId: string, teamName: string) {
+    if (derivedIds.has(teamId)) {
+      showToast({
+        message: "Squadra collegata a partite del girone — eliminale prima",
+        severity: "warning",
+      });
+      return;
+    }
+    openConfirm("Rimuovi squadra", `Rimuovere "${teamName}" dal girone?`, async () => {
+      const res = await fetch(`/api/groups/${group.id}/teams/${teamId}`, { method: "DELETE" });
+      if (res.ok) {
+        setExplicitTeams((prev) => prev.filter((t) => t.id !== teamId));
+        showToast({ message: "Squadra rimossa", severity: "success" });
+      } else {
+        showToast({ message: "Errore nella rimozione", severity: "error" });
+      }
+    });
   }
 
   async function handleSaveGm() {
@@ -335,154 +419,60 @@ export default function AdminGironeWorkspaceClient({
         </Box>
         {teamsInGroup.length === 0 ? (
           <Typography variant="body2" color="text.disabled">
-            Nessuna squadra ancora associata. Crea una partita nostra o un risultato esterno per
-            popolare il girone.
+            Nessuna squadra ancora associata. Clicca &quot;Aggiungi avversaria&quot; per associarne
+            una.
           </Typography>
         ) : (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-            {teamsInGroup.map((o) => (
-              <Chip
-                key={o.id}
-                label={o.name}
-                size="small"
-                component={o.slug ? Link : "div"}
-                href={o.slug ? `/avversarie/${o.slug}` : undefined}
-                clickable={!!o.slug}
-                target={o.slug ? "_blank" : undefined}
-                icon={o.slug ? <OpenInNewIcon sx={{ fontSize: 12 }} /> : undefined}
-                sx={{ fontWeight: 600 }}
-              />
-            ))}
+            {teamsInGroup.map((o) => {
+              const removable = !derivedIds.has(o.id);
+              return (
+                <Chip
+                  key={o.id}
+                  label={o.name}
+                  size="small"
+                  component={o.slug ? Link : "div"}
+                  href={o.slug ? `/avversarie/${o.slug}` : undefined}
+                  clickable={!!o.slug}
+                  target={o.slug ? "_blank" : undefined}
+                  icon={o.slug ? <OpenInNewIcon sx={{ fontSize: 12 }} /> : undefined}
+                  onDelete={removable ? () => handleRemoveTeamFromGroup(o.id, o.name) : undefined}
+                  sx={{ fontWeight: 600 }}
+                />
+              );
+            })}
           </Box>
         )}
       </Paper>
 
-      {/* Sezione Calendario nostro */}
-      <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            mb: 1.5,
-            flexWrap: "wrap",
-            gap: 1,
-          }}
-        >
-          <Typography variant="h6" fontWeight={700}>
+      {/* Calendario nostro: gestione spostata su /admin/partite */}
+      <Paper
+        elevation={0}
+        variant="outlined"
+        sx={{
+          p: 2,
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
+        <Box>
+          <Typography variant="subtitle2" fontWeight={700}>
             Calendario nostro ({ourMatches.length})
           </Typography>
-          <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={openAddMatch}>
-            Aggiungi partita
-          </Button>
-        </Box>
-        {ourMatches.length === 0 ? (
-          <Typography variant="body2" color="text.disabled">
-            Nessuna partita nostra in questo girone. Clicca &quot;Aggiungi partita&quot; per
-            iniziare a popolare il calendario.
+          <Typography variant="caption" color="text.secondary">
+            La gestione delle nostre partite (risultati, convocazioni, statistiche) è in Gestione
+            Partite.
           </Typography>
-        ) : (
-          <Table size="small" aria-label="Calendario nostro">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>
-                  Risultato
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {ourMatches.map((m) => (
-                <TableRow key={m.id} hover>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {m.matchday ?? "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body2" fontWeight={600}>
-                        {format(new Date(m.date), "d MMM yy", { locale: it })}
-                      </Typography>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.4,
-                          color: "text.disabled",
-                        }}
-                      >
-                        {m.isHome ? (
-                          <HomeIcon sx={{ fontSize: 11 }} />
-                        ) : (
-                          <FlightIcon sx={{ fontSize: 11 }} />
-                        )}
-                        <Typography variant="caption">{m.isHome ? "Casa" : "Trasferta"}</Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {m.opponent?.name ?? "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Button
-                      size="small"
-                      onClick={() => setResultMatch(m)}
-                      sx={{
-                        minWidth: 0,
-                        px: 1,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        color: m.ourScore !== null ? "text.primary" : "primary.main",
-                      }}
-                    >
-                      {m.ourScore !== null && m.theirScore !== null
-                        ? `${m.ourScore} – ${m.theirScore}`
-                        : "+ Risultato"}
-                    </Button>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Convocati">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        component={Link}
-                        href={`/admin/partite/${m.id}/convocazioni`}
-                      >
-                        <GroupsIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Statistiche">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        component={Link}
-                        href={`/admin/partite/${m.id}/statistiche`}
-                      >
-                        <LeaderboardIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Modifica">
-                      <IconButton size="small" onClick={() => openEditMatch(m)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Elimina">
-                      <IconButton size="small" color="error" onClick={() => handleDeleteMatch(m)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        </Box>
+        <Link href="/admin/partite" style={{ textDecoration: "none" }}>
+          <Button size="small" variant="outlined" startIcon={<OpenInNewIcon />}>
+            Apri Gestione Partite
+          </Button>
+        </Link>
       </Paper>
 
       {/* Sezione Risultati altre squadre */}
@@ -694,40 +684,97 @@ export default function AdminGironeWorkspaceClient({
         )}
       </Paper>
 
-      {/* Dialog: nuova avversaria */}
-      <Dialog open={oppDialog} onClose={() => setOppDialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle fontWeight={700}>Aggiungi squadra avversaria</DialogTitle>
+      {/* Dialog: aggiungi avversaria al girone */}
+      <Dialog
+        open={oppDialog}
+        onClose={() => {
+          setOppDialog(false);
+          setOppError("");
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle fontWeight={700}>Aggiungi squadra al girone</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
+            <ToggleButtonGroup
+              value={oppMode}
+              exclusive
+              size="small"
+              fullWidth
+              onChange={(_, v) => {
+                if (v) {
+                  setOppMode(v);
+                  setOppError("");
+                }
+              }}
+            >
+              <ToggleButton value="existing">Da anagrafica</ToggleButton>
+              <ToggleButton value="new">Nuova squadra</ToggleButton>
+            </ToggleButtonGroup>
             {oppError && <Alert severity="error">{oppError}</Alert>}
-            <TextField
-              label="Nome"
-              size="small"
-              value={oppForm.name}
-              onChange={(e) => setOppForm((f) => ({ ...f, name: e.target.value }))}
-              autoFocus
-              fullWidth
-            />
-            <TextField
-              label="Città (opzionale)"
-              size="small"
-              value={oppForm.city}
-              onChange={(e) => setOppForm((f) => ({ ...f, city: e.target.value }))}
-              fullWidth
-            />
-            <Divider />
-            <Typography variant="caption" color="text.disabled">
-              La squadra viene aggiunta all&apos;anagrafica generale. Per legarla al girone, crea
-              una partita nostra contro di lei oppure un risultato esterno in cui compare.
-            </Typography>
+            {oppMode === "existing" ? (
+              <>
+                <FormControl size="small" fullWidth>
+                  <InputLabel>Squadra</InputLabel>
+                  <Select
+                    value={oppSelectedId}
+                    label="Squadra"
+                    onChange={(e) => setOppSelectedId(e.target.value as string)}
+                  >
+                    {opponents
+                      .filter((o) => !opponentIdsInGroup.has(o.id))
+                      .map((o) => (
+                        <MenuItem key={o.id} value={o.id}>
+                          {o.name}
+                          {o.city ? ` — ${o.city}` : ""}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+                <Typography variant="caption" color="text.disabled">
+                  Sono nascoste le squadre già presenti nel girone.
+                </Typography>
+              </>
+            ) : (
+              <>
+                <TextField
+                  label="Nome"
+                  size="small"
+                  value={oppForm.name}
+                  onChange={(e) => setOppForm((f) => ({ ...f, name: e.target.value }))}
+                  autoFocus
+                  fullWidth
+                />
+                <TextField
+                  label="Città (opzionale)"
+                  size="small"
+                  value={oppForm.city}
+                  onChange={(e) => setOppForm((f) => ({ ...f, city: e.target.value }))}
+                  fullWidth
+                />
+                <Divider />
+                <Typography variant="caption" color="text.disabled">
+                  La squadra viene aggiunta all&apos;anagrafica generale e associata subito a questo
+                  girone.
+                </Typography>
+              </>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setOppDialog(false)}>Annulla</Button>
+          <Button
+            onClick={() => {
+              setOppDialog(false);
+              setOppError("");
+            }}
+          >
+            Annulla
+          </Button>
           <Button
             variant="contained"
-            onClick={handleCreateOpponent}
-            disabled={!oppForm.name.trim() || oppSaving}
+            onClick={handleAddOpponentToGroup}
+            disabled={oppSaving || (oppMode === "existing" ? !oppSelectedId : !oppForm.name.trim())}
           >
             Aggiungi
           </Button>
@@ -757,6 +804,8 @@ export default function AdminGironeWorkspaceClient({
           onClose={() => setResultMatch(null)}
           matchId={resultMatch.id}
           matchLabel={`${group.team.name} vs ${resultMatch.opponent?.name ?? "Avversario"} — ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
+          ourTeamName={group.team.name}
+          theirTeamName={resultMatch.opponent?.name ?? "Avversario"}
           initialOurScore={resultMatch.ourScore}
           initialTheirScore={resultMatch.theirScore}
           initialResult={resultMatch.result}

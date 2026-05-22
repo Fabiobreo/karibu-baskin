@@ -18,7 +18,6 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useToast } from "@/context/ToastContext";
@@ -137,9 +136,25 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
               {opponents.slice(page * rpp, (page + 1) * rpp).map((o) => (
                 <TableRow key={o.id} hover>
                   <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {o.name}
-                    </Typography>
+                    {o.slug ? (
+                      <Link
+                        href={`/avversarie/${o.slug}`}
+                        target="_blank"
+                        style={{ textDecoration: "none", color: "inherit" }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{ "&:hover": { color: "primary.main" } }}
+                        >
+                          {o.name}
+                        </Typography>
+                      </Link>
+                    ) : (
+                      <Typography variant="body2" fontWeight={600}>
+                        {o.name}
+                      </Typography>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary">
@@ -147,20 +162,6 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
-                    {o.slug && (
-                      <Tooltip title="Apri pagina pubblica">
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          aria-label="Apri pagina pubblica"
-                          component={Link}
-                          href={`/avversarie/${o.slug}`}
-                          target="_blank"
-                        >
-                          <OpenInNewIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    )}
                     <Tooltip title="Modifica">
                       <IconButton
                         size="small"

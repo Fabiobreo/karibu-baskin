@@ -80,6 +80,37 @@ export async function PUT(req: Request, { params }: Params) {
   const loanLookup = await buildLoanLookup(matchId, effectiveTeamId);
   if (!loanLookup) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
 
+  // Non si possono convocare giocatori che hanno marcato "non disponibile".
+  // Chi non ha risposto è considerato non disponibile (default).
+  if (userIds.length > 0 || childIds.length > 0) {
+    const availables = await prisma.matchAvailability.findMany({
+      where: {
+        matchId,
+        available: true,
+        OR: [
+          userIds.length > 0 ? { userId: { in: userIds } } : null,
+          childIds.length > 0 ? { childId: { in: childIds } } : null,
+        ].filter((x): x is NonNullable<typeof x> => x !== null),
+      },
+      select: { userId: true, childId: true },
+    });
+    const availableUserIds = new Set(
+      availables.map((a) => a.userId).filter((id): id is string => !!id)
+    );
+    const availableChildIds = new Set(
+      availables.map((a) => a.childId).filter((id): id is string => !!id)
+    );
+    const blocked: string[] = [];
+    for (const id of userIds) if (!availableUserIds.has(id)) blocked.push(id);
+    for (const id of childIds) if (!availableChildIds.has(id)) blocked.push(id);
+    if (blocked.length > 0) {
+      return NextResponse.json(
+        { error: "Non puoi convocare giocatori non disponibili" },
+        { status: 400 }
+      );
+    }
+  }
+
   // Cancella solo i callup per QUESTO lato. I record legacy (teamId NULL)
   // appartengono semanticamente a match.teamId, quindi vengono inclusi solo
   // quando si sta aggiornando match.teamId.

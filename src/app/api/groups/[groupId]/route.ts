@@ -6,6 +6,7 @@ import { computeStandings } from "@/lib/standings";
 import { GroupUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { generateGroupSlug } from "@/lib/slugUtils";
 
 type Params = { params: Promise<{ groupId: string }> };
 
@@ -61,8 +62,17 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const before = await prisma.group.findUnique({
     where: { id: groupId },
-    select: { name: true, championship: true },
+    select: { name: true, championship: true, season: true, slug: true },
   });
+
+  let slugUpdate: { slug: string } | object = {};
+  if (parsed.data.name !== undefined && before) {
+    const newName = parsed.data.name.trim();
+    if (newName !== before.name) {
+      const newSlug = await generateGroupSlug(newName, before.season);
+      if (newSlug) slugUpdate = { slug: newSlug };
+    }
+  }
 
   try {
     const group = await prisma.group.update({
@@ -72,6 +82,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         ...("championship" in parsed.data
           ? { championship: parsed.data.championship?.trim() || null }
           : {}),
+        ...slugUpdate,
       },
       include: {
         team: { select: { id: true, name: true, color: true } },
