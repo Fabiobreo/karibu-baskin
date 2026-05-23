@@ -45,8 +45,16 @@ const baseGroup = {
   name: "Girone A",
   season: "2025-26",
   championship: null,
-  teamId: "team-1",
-  team: { id: "team-1", name: "Arancioni", color: "#FF6600", season: "2025-26" },
+  competitiveTeams: [
+    {
+      competitiveTeam: {
+        id: "team-1",
+        name: "Arancioni",
+        color: "#FF6600",
+        season: "2025-26",
+      },
+    },
+  ],
   matches: [],
   groupMatches: [],
   _count: { matches: 0 },

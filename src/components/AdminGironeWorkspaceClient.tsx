@@ -67,6 +67,7 @@ type OurMatch = {
   ourScore: number | null;
   theirScore: number | null;
   result: MatchResult | null;
+  teamId: string;
   opponent: { id: string; name: string; slug: string | null } | null;
   _count: { playerStats: number };
 };
@@ -88,8 +89,7 @@ type GroupData = {
   name: string;
   season: string;
   championship: string | null;
-  teamId: string;
-  team: Team;
+  ourTeams: Team[];
 };
 
 type ExplicitTeam = { id: string; name: string; slug: string | null; city: string | null };
@@ -100,7 +100,7 @@ type Props = {
   groupMatches: GroupMatch[];
   explicitTeams: ExplicitTeam[];
   allOpponents: OpposingTeam[];
-  ourTeams: Team[];
+  ourTeamsCatalog: Team[];
   allGroups: MatchFormGroup[];
 };
 
@@ -119,7 +119,7 @@ export default function AdminGironeWorkspaceClient({
   groupMatches: initialGm,
   explicitTeams: initialExplicit,
   allOpponents: initialOpponents,
-  ourTeams,
+  ourTeamsCatalog,
   allGroups,
 }: Props) {
   const router = useRouter();
@@ -130,6 +130,14 @@ export default function AdminGironeWorkspaceClient({
   const [ourMatches, setOurMatches] = useState(initialOur);
   const [gmMatches, setGmMatches] = useState(initialGm);
   const [explicitTeams, setExplicitTeams] = useState<ExplicitTeam[]>(initialExplicit);
+  const [ourTeamsInGroup, setOurTeamsInGroup] = useState<Team[]>(group.ourTeams);
+  const [ourTeamDialog, setOurTeamDialog] = useState(false);
+  const [ourTeamSelectedId, setOurTeamSelectedId] = useState("");
+  const [ourTeamSaving, setOurTeamSaving] = useState(false);
+  const [ourTeamError, setOurTeamError] = useState("");
+
+  const ourTeamById = new Map(ourTeamsInGroup.map((t) => [t.id, t] as const));
+  const matchTeamIdsInUse = new Set(ourMatches.map((m) => m.teamId));
 
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatchData, setEditMatchData] = useState<MatchFormMatch | null>(null);
@@ -170,7 +178,7 @@ export default function AdminGironeWorkspaceClient({
   function openEditMatch(m: OurMatch) {
     setEditMatchData({
       id: m.id,
-      teamId: group.teamId,
+      teamId: m.teamId,
       opponentId: m.opponent?.id ?? null,
       opponentTeamId: null,
       date: m.date,
@@ -378,20 +386,101 @@ export default function AdminGironeWorkspaceClient({
           <Typography variant="h4" fontWeight={800}>
             {group.name}
           </Typography>
-          <Chip
-            label={group.team.name}
-            sx={{
-              bgcolor: group.team.color ?? "primary.main",
-              color: "#fff",
-              fontWeight: 700,
-            }}
-          />
+          {ourTeamsInGroup.map((t) => (
+            <Chip
+              key={t.id}
+              label={t.name}
+              sx={{
+                bgcolor: t.color ?? "primary.main",
+                color: "#fff",
+                fontWeight: 700,
+              }}
+            />
+          ))}
         </Box>
         <Typography variant="body2" color="text.secondary">
           Stagione {group.season}
           {group.championship ? ` · ${group.championship}` : ""}
         </Typography>
       </Box>
+
+      {/* Sezione Le nostre squadre */}
+      <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 1.5,
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
+          <Typography variant="h6" fontWeight={700}>
+            Le nostre squadre nel girone ({ourTeamsInGroup.length})
+          </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setOurTeamError("");
+              setOurTeamSelectedId("");
+              setOurTeamDialog(true);
+            }}
+          >
+            Aggiungi nostra squadra
+          </Button>
+        </Box>
+        {ourTeamsInGroup.length === 0 ? (
+          <Typography variant="body2" color="text.disabled">
+            Nessuna nostra squadra in questo girone. Aggiungine almeno una per inserire partite.
+          </Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            {ourTeamsInGroup.map((t) => {
+              const inUse = matchTeamIdsInUse.has(t.id);
+              return (
+                <Chip
+                  key={t.id}
+                  label={t.name}
+                  size="small"
+                  sx={{
+                    bgcolor: t.color ?? "primary.main",
+                    color: "#fff",
+                    fontWeight: 700,
+                  }}
+                  onDelete={
+                    inUse
+                      ? undefined
+                      : () => {
+                          openConfirm(
+                            "Rimuovi squadra",
+                            `Rimuovere "${t.name}" dal girone?`,
+                            async () => {
+                              const res = await fetch(
+                                `/api/groups/${group.id}/competitive-teams/${t.id}`,
+                                { method: "DELETE" }
+                              );
+                              if (res.ok) {
+                                setOurTeamsInGroup((prev) => prev.filter((x) => x.id !== t.id));
+                                showToast({ message: "Squadra rimossa", severity: "success" });
+                              } else {
+                                showToast({
+                                  message: "Errore nella rimozione",
+                                  severity: "error",
+                                });
+                              }
+                            }
+                          );
+                        }
+                  }
+                />
+              );
+            })}
+          </Box>
+        )}
+      </Paper>
 
       {/* Sezione Squadre del girone */}
       <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 3 }}>
@@ -781,12 +870,88 @@ export default function AdminGironeWorkspaceClient({
         </DialogActions>
       </Dialog>
 
+      {/* Dialog: aggiungi nostra squadra al girone */}
+      <Dialog
+        open={ourTeamDialog}
+        onClose={() => {
+          setOurTeamDialog(false);
+          setOurTeamError("");
+        }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle fontWeight={700}>Aggiungi nostra squadra al girone</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            {ourTeamError && <Alert severity="error">{ourTeamError}</Alert>}
+            <FormControl size="small" fullWidth>
+              <InputLabel>Squadra</InputLabel>
+              <Select
+                value={ourTeamSelectedId}
+                label="Squadra"
+                onChange={(e) => setOurTeamSelectedId(e.target.value as string)}
+              >
+                {ourTeamsCatalog
+                  .filter((t) => !ourTeamById.has(t.id))
+                  .map((t) => (
+                    <MenuItem key={t.id} value={t.id}>
+                      {t.name} — {t.season}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+            <Typography variant="caption" color="text.disabled">
+              Sono nascoste le squadre già associate a questo girone.
+            </Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => {
+              setOurTeamDialog(false);
+              setOurTeamError("");
+            }}
+          >
+            Annulla
+          </Button>
+          <Button
+            variant="contained"
+            disabled={!ourTeamSelectedId || ourTeamSaving}
+            onClick={async () => {
+              setOurTeamError("");
+              setOurTeamSaving(true);
+              try {
+                const res = await fetch(`/api/groups/${group.id}/competitive-teams`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ competitiveTeamId: ourTeamSelectedId }),
+                });
+                if (!res.ok) {
+                  const data = await res.json().catch(() => ({}));
+                  setOurTeamError(data.error ?? "Errore nell'associazione");
+                  return;
+                }
+                const created = (await res.json()) as Team;
+                setOurTeamsInGroup((prev) => [...prev, created]);
+                setOurTeamDialog(false);
+                setOurTeamSelectedId("");
+                showToast({ message: `"${created.name}" aggiunta al girone`, severity: "success" });
+              } finally {
+                setOurTeamSaving(false);
+              }
+            }}
+          >
+            Aggiungi
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* MatchFormDialog (riusato) */}
       <MatchFormDialog
         open={matchDialog}
         onClose={() => setMatchDialog(false)}
         editMatch={editMatchData}
-        teams={ourTeams}
+        teams={ourTeamsCatalog}
         opponents={opponents}
         groups={allGroups}
         onOpponentCreated={(opp) =>
@@ -798,20 +963,24 @@ export default function AdminGironeWorkspaceClient({
       />
 
       {/* Risultato partita nostra */}
-      {resultMatch && (
-        <MatchResultDialog
-          open={!!resultMatch}
-          onClose={() => setResultMatch(null)}
-          matchId={resultMatch.id}
-          matchLabel={`${group.team.name} vs ${resultMatch.opponent?.name ?? "Avversario"} — ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
-          ourTeamName={group.team.name}
-          theirTeamName={resultMatch.opponent?.name ?? "Avversario"}
-          initialOurScore={resultMatch.ourScore}
-          initialTheirScore={resultMatch.theirScore}
-          initialResult={resultMatch.result}
-          onSaved={handleResultSaved}
-        />
-      )}
+      {resultMatch &&
+        (() => {
+          const ourName = ourTeamById.get(resultMatch.teamId)?.name ?? "La nostra";
+          return (
+            <MatchResultDialog
+              open={!!resultMatch}
+              onClose={() => setResultMatch(null)}
+              matchId={resultMatch.id}
+              matchLabel={`${ourName} vs ${resultMatch.opponent?.name ?? "Avversario"} — ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
+              ourTeamName={ourName}
+              theirTeamName={resultMatch.opponent?.name ?? "Avversario"}
+              initialOurScore={resultMatch.ourScore}
+              initialTheirScore={resultMatch.theirScore}
+              initialResult={resultMatch.result}
+              onSaved={handleResultSaved}
+            />
+          );
+        })()}
 
       {/* CSV import */}
       <GroupCsvImportDialog

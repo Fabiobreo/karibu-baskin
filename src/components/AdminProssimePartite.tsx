@@ -123,9 +123,9 @@ export default async function AdminProssimePartite() {
                   color={chipColor}
                   icon={
                     isOk ? (
-                      <CheckCircleIcon sx={{ fontSize: 14 }} />
+                      <CheckCircleIcon style={{ fontSize: 14 }} />
                     ) : (
-                      <WarningAmberIcon sx={{ fontSize: 14 }} />
+                      <WarningAmberIcon style={{ fontSize: 14 }} />
                     )
                   }
                   label={chipLabel}

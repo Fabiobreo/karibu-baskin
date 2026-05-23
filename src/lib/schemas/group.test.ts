@@ -7,7 +7,6 @@ describe("GroupCreateSchema", () => {
   const valid = {
     name: "Girone A",
     season: "2025-26",
-    teamId: "team-1",
   };
 
   it("accetta un payload minimo valido", () => {
@@ -42,19 +41,6 @@ describe("GroupCreateSchema", () => {
 
   it("accetta stagione in formato corretto YYYY-YY", () => {
     expect(GroupCreateSchema.safeParse({ ...valid, season: "2024-25" }).success).toBe(true);
-  });
-
-  it("rifiuta teamId vuoto", () => {
-    const result = GroupCreateSchema.safeParse({ ...valid, teamId: "" });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toContain("teamId obbligatorio");
-    }
-  });
-
-  it("rifiuta teamId mancante", () => {
-    const { teamId: _, ...rest } = valid;
-    expect(GroupCreateSchema.safeParse(rest).success).toBe(false);
   });
 
   it("rifiuta championship oltre 200 caratteri", () => {

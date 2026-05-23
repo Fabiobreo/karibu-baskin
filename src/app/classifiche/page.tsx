@@ -21,7 +21,11 @@ function groupsQuery(season: string) {
   return prisma.group.findMany({
     where: { season },
     include: {
-      team: { select: { id: true, name: true, color: true, season: true } },
+      competitiveTeams: {
+        include: {
+          competitiveTeam: { select: { id: true, name: true, color: true, season: true } },
+        },
+      },
       matches: {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         select: {
@@ -33,6 +37,7 @@ function groupsQuery(season: string) {
           ourScore: true,
           theirScore: true,
           result: true,
+          teamId: true,
           opponent: { select: { id: true, name: true, slug: true } },
         },
       },
@@ -73,6 +78,7 @@ function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
       ourScore: m.ourScore,
       theirScore: m.theirScore,
       result: m.result,
+      teamId: m.teamId,
       opponent: m.opponent,
     };
     get(m.matchday).ours.push(ours);
@@ -191,16 +197,16 @@ export default async function ClassifichePage() {
 
             <Stack spacing={3}>
               {currentGroups.map((g) => {
-                const standings = computeStandings(g.team, g.matches, g.groupMatches);
+                const ourTeams = g.competitiveTeams.map((gct) => gct.competitiveTeam);
+                const standings = computeStandings(ourTeams, g.matches, g.groupMatches);
                 const matchdays = buildMatchdays(g);
                 return (
                   <GironeFullView
                     key={g.id}
                     groupName={g.name}
                     championship={g.championship}
-                    teamName={g.team.name}
-                    teamColor={g.team.color}
-                    teamSeason={g.team.season}
+                    ourTeams={ourTeams}
+                    season={g.season}
                     standings={standings}
                     matchdays={matchdays}
                   />

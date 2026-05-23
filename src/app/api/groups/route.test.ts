@@ -81,17 +81,17 @@ describe("GET /api/groups", () => {
     expect(where).toMatchObject({ season: "2025-26" });
   });
 
-  it("filtra per teamId se fornito", async () => {
-    await GET(makeGet({ teamId: "team-1" }));
+  it("filtra per competitiveTeamId se fornito", async () => {
+    await GET(makeGet({ competitiveTeamId: "team-1" }));
     const where = p.group.findMany.mock.calls[0][0].where;
-    expect(where).toMatchObject({ teamId: "team-1" });
+    expect(where).toMatchObject({ competitiveTeams: { some: { competitiveTeamId: "team-1" } } });
   });
 
   it("non filtra se i parametri sono assenti", async () => {
     await GET(makeGet());
     const where = p.group.findMany.mock.calls[0][0].where;
     expect(where).not.toHaveProperty("season");
-    expect(where).not.toHaveProperty("teamId");
+    expect(where).not.toHaveProperty("competitiveTeams");
   });
 });
 
@@ -133,30 +133,31 @@ describe("POST /api/groups", () => {
     expect(res.status).toBe(400);
   });
 
-  it("restituisce 400 se manca teamId", async () => {
+  it("crea il girone senza teamId e restituisce 201", async () => {
     mockIsCoach.mockResolvedValue(true);
     const res = await POST(makePost({ name: "Girone A", season: "2025-26" }));
-    expect(res.status).toBe(400);
-  });
-
-  it("crea il girone e restituisce 201", async () => {
-    mockIsCoach.mockResolvedValue(true);
-    const res = await POST(makePost({ name: "Girone A", season: "2025-26", teamId: "team-1" }));
     expect(res.status).toBe(201);
     const json = await res.json();
     expect(json.id).toBe("g-new");
   });
 
-  it("applica trim al nome e alla stagione", async () => {
+  it("non passa teamId a prisma.create (campo rimosso dal modello)", async () => {
     mockIsCoach.mockResolvedValue(true);
-    await POST(makePost({ name: "  Girone A  ", season: "2025-26", teamId: "team-1" }));
+    await POST(makePost({ name: "Girone A", season: "2025-26" }));
+    const data = p.group.create.mock.calls[0][0].data;
+    expect(data).not.toHaveProperty("teamId");
+  });
+
+  it("applica trim al nome", async () => {
+    mockIsCoach.mockResolvedValue(true);
+    await POST(makePost({ name: "  Girone A  ", season: "2025-26" }));
     const data = p.group.create.mock.calls[0][0].data;
     expect(data.name).toBe("Girone A");
   });
 
   it("imposta championship=null se non fornito", async () => {
     mockIsCoach.mockResolvedValue(true);
-    await POST(makePost({ name: "Girone A", season: "2025-26", teamId: "team-1" }));
+    await POST(makePost({ name: "Girone A", season: "2025-26" }));
     const data = p.group.create.mock.calls[0][0].data;
     expect(data.championship).toBeNull();
   });
@@ -167,7 +168,6 @@ describe("POST /api/groups", () => {
       makePost({
         name: "Girone A",
         season: "2025-26",
-        teamId: "team-1",
         championship: "  Reg. Veneto  ",
       })
     );

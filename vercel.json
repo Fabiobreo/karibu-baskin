@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/match-callup-reminder",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/birthday-notifications",
+      "schedule": "0 8 * * *"
     }
   ]
 }

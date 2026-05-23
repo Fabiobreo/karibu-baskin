@@ -347,7 +347,7 @@ describe("OpposingTeamUpdateSchema", () => {
 // --- GroupCreateSchema / GroupUpdateSchema / GroupMatchCreateSchema ---
 
 describe("GroupCreateSchema", () => {
-  const base = { name: "Girone A", season: "2025-26", teamId: "team-xyz" };
+  const base = { name: "Girone A", season: "2025-26" };
 
   it("accetta un payload minimo valido", () => {
     expect(GroupCreateSchema.safeParse(base).success).toBe(true);
@@ -371,14 +371,6 @@ describe("GroupCreateSchema", () => {
 
   it("rifiuta stagione in formato non corretto", () => {
     expect(GroupCreateSchema.safeParse({ ...base, season: "25-26" }).success).toBe(false);
-  });
-
-  it("rifiuta teamId vuoto", () => {
-    const result = GroupCreateSchema.safeParse({ ...base, teamId: "" });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].message).toContain("obbligatorio");
-    }
   });
 });
 

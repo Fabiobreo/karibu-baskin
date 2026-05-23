@@ -166,10 +166,11 @@ export default async function MatchDetailPage({ params }: Props) {
       : Promise.resolve([]),
     match.groupId
       ? prisma.match.findMany({
-          where: { groupId: match.groupId },
+          where: { groupId: match.groupId, teamId: match.team.id },
           select: {
             ourScore: true,
             theirScore: true,
+            teamId: true,
             opponent: { select: { id: true, name: true } },
           },
         })
@@ -200,7 +201,10 @@ export default async function MatchDetailPage({ params }: Props) {
       : Promise.resolve([]),
     isStaffEarly
       ? prisma.group.findMany({
-          where: { teamId: match.team.id, season: match.team.season },
+          where: {
+            competitiveTeams: { some: { competitiveTeamId: match.team.id } },
+            season: match.team.season,
+          },
           orderBy: { name: "asc" },
           select: { id: true, name: true, championship: true, season: true },
         })
@@ -210,7 +214,7 @@ export default async function MatchDetailPage({ params }: Props) {
   const groupStandings =
     match.groupId && ourGroupMatchesRaw.length > 0
       ? computeStandings(
-          { id: match.team.id, name: match.team.name },
+          [{ id: match.team.id, name: match.team.name }],
           ourGroupMatchesRaw,
           groupMatchesRaw
         )

@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];
 
-  const [teams, players, sessions, matches] = await Promise.all([
+  const [teams, players, sessions, matches, opposingTeams] = await Promise.all([
     prisma.competitiveTeam.findMany({
       select: { name: true, season: true, createdAt: true },
       orderBy: { createdAt: "desc" },
@@ -37,6 +37,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.match.findMany({
       select: { slug: true, id: true, date: true },
       orderBy: { date: "desc" },
+    }),
+    prisma.opposingTeam.findMany({
+      where: { slug: { not: null } },
+      select: { slug: true, createdAt: true },
     }),
   ]);
 
@@ -70,5 +74,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...teamPages, ...playerPages, ...sessionPages, ...matchPages];
+  const opposingTeamPages: MetadataRoute.Sitemap = opposingTeams
+    .filter((t) => t.slug)
+    .map((t) => ({
+      url: `${BASE}/avversarie/${t.slug}`,
+      lastModified: t.createdAt,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    }));
+
+  return [
+    ...staticPages,
+    ...teamPages,
+    ...playerPages,
+    ...sessionPages,
+    ...matchPages,
+    ...opposingTeamPages,
+  ];
 }

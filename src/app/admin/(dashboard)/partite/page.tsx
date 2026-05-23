@@ -27,12 +27,23 @@ export default async function AdminPartitePage() {
     }),
     prisma.group.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
-      include: {
-        team: { select: { id: true, name: true, color: true } },
-        _count: { select: { matches: true } },
+      select: {
+        id: true,
+        name: true,
+        season: true,
+        championship: true,
+        competitiveTeams: { select: { competitiveTeamId: true } },
       },
     }),
   ]);
+
+  const groupsForForm = groups.map((g) => ({
+    id: g.id,
+    name: g.name,
+    season: g.season,
+    championship: g.championship,
+    competitiveTeamIds: g.competitiveTeams.map((c) => c.competitiveTeamId),
+  }));
 
   // GroupMatch contestuali: tutte le partite tra terzi dei gironi in cui giochiamo
   const groupIds = Array.from(new Set(matches.map((m) => m.groupId).filter(Boolean))) as string[];
@@ -59,7 +70,7 @@ export default async function AdminPartitePage() {
       teams={teams}
       opposingTeams={opposingTeams}
       matches={matches}
-      groups={groups}
+      groups={groupsForForm}
       groupMatches={groupMatches}
     />
   );

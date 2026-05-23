@@ -4,7 +4,10 @@ export const GroupCreateSchema = z.object({
   name: z.string().min(1, "Nome obbligatorio").max(200),
   season: z.string().regex(/^\d{4}-\d{2}$/, 'Stagione in formato YYYY-YY (es. "2025-26")'),
   championship: z.string().max(200).optional(),
-  teamId: z.string().min(1, "teamId obbligatorio"),
+});
+
+export const GroupCompetitiveTeamCreateSchema = z.object({
+  competitiveTeamId: z.string().min(1, "competitiveTeamId obbligatorio"),
 });
 
 export const GroupUpdateSchema = z.object({

@@ -16,7 +16,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const group = await prisma.group.findUnique({
     where: { id: groupId },
     include: {
-      team: { select: { id: true, name: true, color: true, season: true } },
+      competitiveTeams: {
+        include: {
+          competitiveTeam: { select: { id: true, name: true, color: true, season: true } },
+        },
+      },
       matches: {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         include: {
@@ -35,7 +39,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
   if (!group) return NextResponse.json({ error: "Girone non trovato" }, { status: 404 });
 
-  const standings = computeStandings(group.team, group.matches, group.groupMatches);
+  const ourTeams = group.competitiveTeams.map((gct) => gct.competitiveTeam);
+  const standings = computeStandings(ourTeams, group.matches, group.groupMatches);
 
   return NextResponse.json({ ...group, standings });
 }
@@ -85,7 +90,11 @@ export async function PUT(req: NextRequest, { params }: Params) {
         ...slugUpdate,
       },
       include: {
-        team: { select: { id: true, name: true, color: true } },
+        competitiveTeams: {
+          include: {
+            competitiveTeam: { select: { id: true, name: true, color: true, season: true } },
+          },
+        },
         _count: { select: { matches: true } },
       },
     });

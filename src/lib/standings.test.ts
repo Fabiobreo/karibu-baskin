@@ -2,15 +2,27 @@ import { describe, it, expect } from "vitest";
 import { computeStandings } from "./standings";
 
 const us = { id: "us", name: "Kapuleti" };
+const ours = [us];
 const alpha = { id: "alpha", name: "Falchi Vicenza" };
 const beta = { id: "beta", name: "Aquile Padova" };
 const gamma = { id: "gamma", name: "Leoni Verona" };
+
+const m = (
+  ourScore: number | null,
+  theirScore: number | null,
+  opponent: { id: string; name: string }
+) => ({
+  ourScore,
+  theirScore,
+  opponent,
+  teamId: us.id,
+});
 
 // ─── Punteggio Baskin: V=2, P=1, S=0 ────────────────────────────────────────
 
 describe("computeStandings — punteggio Baskin V=2 P=1 S=0", () => {
   it("vittoria vale 2 punti", () => {
-    const result = computeStandings(us, [{ ourScore: 70, theirScore: 50, opponent: alpha }], []);
+    const result = computeStandings(ours, [m(70, 50, alpha)], []);
     const us_ = result.find((e) => e.id === "us")!;
     expect(us_.points).toBe(2);
     expect(us_.won).toBe(1);
@@ -19,21 +31,21 @@ describe("computeStandings — punteggio Baskin V=2 P=1 S=0", () => {
   });
 
   it("pareggio vale 1 punto", () => {
-    const result = computeStandings(us, [{ ourScore: 60, theirScore: 60, opponent: alpha }], []);
+    const result = computeStandings(ours, [m(60, 60, alpha)], []);
     const us_ = result.find((e) => e.id === "us")!;
     expect(us_.points).toBe(1);
     expect(us_.drawn).toBe(1);
   });
 
   it("sconfitta vale 0 punti", () => {
-    const result = computeStandings(us, [{ ourScore: 40, theirScore: 80, opponent: alpha }], []);
+    const result = computeStandings(ours, [m(40, 80, alpha)], []);
     const us_ = result.find((e) => e.id === "us")!;
     expect(us_.points).toBe(0);
     expect(us_.lost).toBe(1);
   });
 
   it("l'avversario riceve i punti speculari", () => {
-    const result = computeStandings(us, [{ ourScore: 70, theirScore: 50, opponent: alpha }], []);
+    const result = computeStandings(ours, [m(70, 50, alpha)], []);
     const opp = result.find((e) => e.id === "alpha")!;
     expect(opp.points).toBe(0);
     expect(opp.lost).toBe(1);
@@ -46,21 +58,13 @@ describe("computeStandings — punteggio Baskin V=2 P=1 S=0", () => {
 
 describe("computeStandings — partite nostre", () => {
   it("partite senza punteggio vengono ignorate", () => {
-    const result = computeStandings(
-      us,
-      [{ ourScore: null, theirScore: null, opponent: alpha }],
-      []
-    );
+    const result = computeStandings(ours, [m(null, null, alpha)], []);
     expect(result).toHaveLength(0);
   });
 
   it("accumula più partite correttamente", () => {
-    const matches = [
-      { ourScore: 70, theirScore: 50, opponent: alpha }, // W
-      { ourScore: 40, theirScore: 80, opponent: beta }, // L
-      { ourScore: 60, theirScore: 60, opponent: gamma }, // D
-    ];
-    const result = computeStandings(us, matches, []);
+    const matches = [m(70, 50, alpha), m(40, 80, beta), m(60, 60, gamma)];
+    const result = computeStandings(ours, matches, []);
     const us_ = result.find((e) => e.id === "us")!;
     expect(us_.played).toBe(3);
     expect(us_.won).toBe(1);
@@ -70,6 +74,15 @@ describe("computeStandings — partite nostre", () => {
     expect(us_.goalsFor).toBe(170);
     expect(us_.goalsAgainst).toBe(190);
   });
+
+  it("ignora le partite il cui teamId non è tra le nostre squadre", () => {
+    const result = computeStandings(
+      ours,
+      [{ ourScore: 70, theirScore: 50, opponent: alpha, teamId: "altra" }],
+      []
+    );
+    expect(result.find((e) => e.id === "us")).toBeUndefined();
+  });
 });
 
 // ─── Partite esterne (groupMatches) ──────────────────────────────────────────
@@ -77,7 +90,7 @@ describe("computeStandings — partite nostre", () => {
 describe("computeStandings — partite esterne", () => {
   it("partite esterne senza punteggio vengono ignorate", () => {
     const result = computeStandings(
-      us,
+      ours,
       [],
       [{ homeScore: null, awayScore: null, homeTeam: alpha, awayTeam: beta }]
     );
@@ -86,7 +99,7 @@ describe("computeStandings — partite esterne", () => {
 
   it("le partite esterne non aggiungono la nostra squadra", () => {
     const result = computeStandings(
-      us,
+      ours,
       [],
       [{ homeScore: 70, awayScore: 50, homeTeam: alpha, awayTeam: beta }]
     );
@@ -97,7 +110,7 @@ describe("computeStandings — partite esterne", () => {
 
   it("home e away ricevono i punti corretti", () => {
     const result = computeStandings(
-      us,
+      ours,
       [],
       [{ homeScore: 70, awayScore: 50, homeTeam: alpha, awayTeam: beta }]
     );
@@ -116,34 +129,22 @@ describe("computeStandings — partite esterne", () => {
 
 describe("computeStandings — ordinamento", () => {
   it("ordina per punti decrescenti", () => {
-    const matches = [
-      { ourScore: 70, theirScore: 50, opponent: alpha }, // us: 2pt, alpha: 0pt
-      { ourScore: 60, theirScore: 80, opponent: beta }, // us: 0pt, beta: 2pt
-    ];
-    const result = computeStandings(us, matches, []);
-    // us: 2pt (W+L), beta: 2pt (W), alpha: 0pt (L)
-    // us e beta a pari punti: tiebreaker goal-diff
-    expect(result[0].id).not.toBe("alpha"); // alpha è ultimo
+    const matches = [m(70, 50, alpha), m(60, 80, beta)];
+    const result = computeStandings(ours, matches, []);
+    expect(result[0].id).not.toBe("alpha");
     expect(result[result.length - 1].id).toBe("alpha");
   });
 
   it("tiebreaker: differenza reti poi gol fatti", () => {
-    // us: 1V (80-50 → +30, 80gf) + 1S = 2pt, gf=80, gs=50
-    // alpha: 1V (70-60 → +10, 70gf) = 2pt, gf=70, gs=60
-    // us ha diff migliore (+30 vs +10)
     const result = computeStandings(
-      us,
-      [
-        { ourScore: 80, theirScore: 50, opponent: alpha },
-        { ourScore: 40, theirScore: 50, opponent: beta },
-      ],
+      ours,
+      [m(80, 50, alpha), m(40, 50, beta)],
       [{ homeScore: 70, awayScore: 60, homeTeam: gamma, awayTeam: beta }]
     );
     const us_ = result.find((e) => e.id === "us")!;
     const gamma_ = result.find((e) => e.id === "gamma")!;
     expect(us_.points).toBe(2);
     expect(gamma_.points).toBe(2);
-    // us diff = 80-50 + 40-50 = +20; gamma diff = 70-60 = +10 → us viene prima
     expect(result.indexOf(us_)).toBeLessThan(result.indexOf(gamma_));
   });
 });
@@ -152,18 +153,18 @@ describe("computeStandings — ordinamento", () => {
 
 describe("computeStandings — flag isOurs", () => {
   it("la nostra squadra ha isOurs=true", () => {
-    const result = computeStandings(us, [{ ourScore: 70, theirScore: 50, opponent: alpha }], []);
+    const result = computeStandings(ours, [m(70, 50, alpha)], []);
     expect(result.find((e) => e.id === "us")!.isOurs).toBe(true);
   });
 
   it("gli avversari hanno isOurs=false", () => {
-    const result = computeStandings(us, [{ ourScore: 70, theirScore: 50, opponent: alpha }], []);
+    const result = computeStandings(ours, [m(70, 50, alpha)], []);
     expect(result.find((e) => e.id === "alpha")!.isOurs).toBe(false);
   });
 
   it("le squadre nelle partite esterne hanno isOurs=false", () => {
     const result = computeStandings(
-      us,
+      ours,
       [],
       [{ homeScore: 70, awayScore: 50, homeTeam: beta, awayTeam: gamma }]
     );
@@ -176,19 +177,35 @@ describe("computeStandings — flag isOurs", () => {
 
 describe("computeStandings — edge case", () => {
   it("nessuna partita → classifica vuota", () => {
-    expect(computeStandings(us, [], [])).toHaveLength(0);
+    expect(computeStandings(ours, [], [])).toHaveLength(0);
   });
 
   it("stesso avversario in più partite accumula le stats", () => {
-    const matches = [
-      { ourScore: 70, theirScore: 50, opponent: alpha },
-      { ourScore: 60, theirScore: 40, opponent: alpha },
-    ];
-    const result = computeStandings(us, matches, []);
+    const matches = [m(70, 50, alpha), m(60, 40, alpha)];
+    const result = computeStandings(ours, matches, []);
     const opp = result.find((e) => e.id === "alpha")!;
     expect(opp.played).toBe(2);
     expect(opp.lost).toBe(2);
     expect(opp.goalsFor).toBe(90);
     expect(opp.goalsAgainst).toBe(130);
+  });
+
+  it("più nostre squadre nello stesso girone compaiono entrambe in classifica", () => {
+    const usA = { id: "usA", name: "Karibu Gold" };
+    const usB = { id: "usB", name: "Karibu Silver" };
+    const result = computeStandings(
+      [usA, usB],
+      [
+        { ourScore: 80, theirScore: 50, opponent: alpha, teamId: usA.id },
+        { ourScore: 60, theirScore: 70, opponent: beta, teamId: usB.id },
+      ],
+      []
+    );
+    const a = result.find((e) => e.id === "usA")!;
+    const b = result.find((e) => e.id === "usB")!;
+    expect(a.isOurs).toBe(true);
+    expect(a.points).toBe(2);
+    expect(b.isOurs).toBe(true);
+    expect(b.points).toBe(0);
   });
 });

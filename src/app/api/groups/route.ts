@@ -8,16 +8,20 @@ import { generateGroupSlug } from "@/lib/slugUtils";
 
 export async function GET(req: NextRequest) {
   const season = req.nextUrl.searchParams.get("season");
-  const teamId = req.nextUrl.searchParams.get("teamId");
+  const competitiveTeamId = req.nextUrl.searchParams.get("competitiveTeamId");
 
   const groups = await prisma.group.findMany({
     where: {
       ...(season ? { season } : {}),
-      ...(teamId ? { teamId } : {}),
+      ...(competitiveTeamId ? { competitiveTeams: { some: { competitiveTeamId } } } : {}),
     },
     orderBy: [{ season: "desc" }, { name: "asc" }],
     include: {
-      team: { select: { id: true, name: true, color: true } },
+      competitiveTeams: {
+        include: {
+          competitiveTeam: { select: { id: true, name: true, color: true, season: true } },
+        },
+      },
       _count: { select: { matches: true } },
     },
   });
@@ -48,11 +52,14 @@ export async function POST(req: NextRequest) {
       name,
       season,
       championship: parsed.data.championship?.trim() || null,
-      teamId: parsed.data.teamId,
       slug,
     },
     include: {
-      team: { select: { id: true, name: true, color: true } },
+      competitiveTeams: {
+        include: {
+          competitiveTeam: { select: { id: true, name: true, color: true, season: true } },
+        },
+      },
       _count: { select: { matches: true } },
     },
   });
@@ -67,7 +74,6 @@ export async function POST(req: NextRequest) {
         name: group.name,
         season: group.season,
         championship: group.championship,
-        teamId: group.teamId,
       },
     }).catch((err) => console.error("[audit] create group", err));
   }

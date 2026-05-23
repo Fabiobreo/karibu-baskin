@@ -44,7 +44,7 @@ export type MatchFormGroup = {
   name: string;
   season: string;
   championship: string | null;
-  teamId: string;
+  competitiveTeamIds: string[];
 };
 export type MatchFormMatch = {
   id: string;
@@ -536,7 +536,8 @@ export default function MatchFormDialog({
           />
 
           {!isInternal &&
-            groups.filter((g) => g.teamId === watch("teamId") || !watch("teamId")).length > 0 && (
+            groups.filter((g) => !watch("teamId") || g.competitiveTeamIds.includes(watch("teamId")))
+              .length > 0 && (
               <Box sx={{ display: "flex", gap: 2 }}>
                 <Controller
                   name="groupId"
@@ -549,7 +550,10 @@ export default function MatchFormDialog({
                           <em>Nessun girone</em>
                         </MenuItem>
                         {groups
-                          .filter((g) => !watch("teamId") || g.teamId === watch("teamId"))
+                          .filter(
+                            (g) =>
+                              !watch("teamId") || g.competitiveTeamIds.includes(watch("teamId"))
+                          )
                           .map((g) => (
                             <MenuItem key={g.id} value={g.id}>
                               {g.name} {g.championship ? `(${g.championship})` : ""} — {g.season}

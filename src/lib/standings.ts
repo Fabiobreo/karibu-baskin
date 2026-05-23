@@ -17,6 +17,9 @@ export type StandingEntry = {
 type OurMatchInput = {
   ourScore: number | null;
   theirScore: number | null;
+  // teamId della nostra squadra che ha giocato la partita (per attribuire i punti
+  // alla squadra giusta in gironi che includono più nostre squadre).
+  teamId: string;
   // Le partite della classifica sono SEMPRE contro un avversario esterno
   // (le amichevoli interne non finiscono in girone). Lo schema lo rende nullable
   // a livello DB, ma in pratica per i record con groupId non null è sempre presente.
@@ -31,10 +34,11 @@ type GroupMatchInput = {
 };
 
 export function computeStandings(
-  ourTeam: { id: string; name: string },
+  ourTeams: ReadonlyArray<{ id: string; name: string }>,
   ourMatches: OurMatchInput[],
   groupMatches: GroupMatchInput[]
 ): StandingEntry[] {
+  const ourTeamById = new Map(ourTeams.map((t) => [t.id, t] as const));
   const map = new Map<string, StandingEntry>();
 
   function getOrCreate(id: string, name: string, isOurs: boolean): StandingEntry {
@@ -75,6 +79,8 @@ export function computeStandings(
   for (const m of ourMatches) {
     if (m.ourScore == null || m.theirScore == null) continue;
     if (!m.opponent) continue;
+    const ourTeam = ourTeamById.get(m.teamId);
+    if (!ourTeam) continue;
     addResult(getOrCreate(ourTeam.id, ourTeam.name, true), m.ourScore, m.theirScore);
     addResult(getOrCreate(m.opponent.id, m.opponent.name, false), m.theirScore, m.ourScore);
   }

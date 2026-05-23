@@ -849,7 +849,7 @@ async function seed() {
       name: "Girone A Ovest — Gold",
       season: SEASON,
       championship: "Gold",
-      teamId: kapuleti.id,
+      competitiveTeams: { create: [{ competitiveTeamId: kapuleti.id }] },
     },
   });
   console.log("  ✓ Girone Kapuleti (Gold)");
@@ -859,7 +859,7 @@ async function seed() {
       name: "Girone B Ovest — Silver",
       season: SEASON,
       championship: "Silver",
-      teamId: montekki.id,
+      competitiveTeams: { create: [{ competitiveTeamId: montekki.id }] },
     },
   });
   console.log("  ✓ Girone Montekki (Silver)");

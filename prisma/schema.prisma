@@ -297,7 +297,7 @@ model CompetitiveTeam {
   matches              Match[]           @relation("MatchTeam")
   opponentInMatches    Match[]           @relation("MatchOpponentTeam")
   callups              MatchCallup[]     @relation("MatchCallupTeam")
-  groups               Group[]
+  groups               GroupCompetitiveTeam[]
   trainingSessions     TrainingSession[] @relation("TrainingTeam")
   restrictedSessions   TrainingSession[] @relation("TrainingRestriction")
 
@@ -352,16 +352,30 @@ model Group {
   name         String   // es. "Girone A Ovest"
   season       String   // es. "2025-26"
   championship String?  // es. "Gold", "Silver"
-  teamId       String
   createdAt    DateTime @default(now())
 
-  team         CompetitiveTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  matches      Match[]
-  groupMatches GroupMatch[]
-  groupTeams   GroupTeam[]
+  matches          Match[]
+  groupMatches     GroupMatch[]
+  groupTeams       GroupTeam[]
+  competitiveTeams GroupCompetitiveTeam[]
 
   @@index([season])
-  @@index([teamId])
+}
+
+// ── Associazione esplicita nostra squadra ↔ girone ────────────────────────────
+// Più di una nostra squadra può essere nello stesso girone.
+model GroupCompetitiveTeam {
+  id                String   @id @default(cuid())
+  groupId           String
+  competitiveTeamId String
+  createdAt         DateTime @default(now())
+
+  group           Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  competitiveTeam CompetitiveTeam @relation(fields: [competitiveTeamId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, competitiveTeamId])
+  @@index([groupId])
+  @@index([competitiveTeamId])
 }
 
 // ── Associazione esplicita squadra avversaria ↔ girone ────────────────────────
@@ -530,6 +544,7 @@ enum AppNotificationType {
   SYSTEM
   LINK_REQUEST    // richiesta collegamento genitore-figlio
   LINK_RESPONSE   // risposta alla richiesta (accettata/rifiutata)
+  BIRTHDAY
 }
 
 enum LinkRequestStatus {

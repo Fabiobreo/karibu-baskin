@@ -8,6 +8,7 @@ import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/HeroSection";
 import LoSapeviCard from "@/components/LoSapeviCard";
 import ProssimePartiteHome from "@/components/ProssimePartiteHome";
+import BirthdayBanner from "@/components/BirthdayBanner";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -94,6 +95,7 @@ export default async function HomePage() {
   return (
     <>
       <SiteHeader />
+      {userSession?.user && userSession.user.appRole !== "GUEST" && <BirthdayBanner />}
       <HeroSection />
 
       <ProssimePartiteHome />

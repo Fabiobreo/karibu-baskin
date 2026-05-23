@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminGironiClient from "@/components/AdminGironiClient";
+import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gironi | Admin" };
@@ -13,18 +14,29 @@ export default async function AdminGironiPage() {
   if (!session?.user || !hasRole(session.user.appRole, "COACH")) {
     redirect("/admin/login");
   }
-  const [groups, teams] = await Promise.all([
+  const [groups, seasons] = await Promise.all([
     prisma.group.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
-        team: { select: { id: true, name: true, color: true } },
+        competitiveTeams: {
+          include: {
+            competitiveTeam: { select: { id: true, name: true, color: true, season: true } },
+          },
+        },
         _count: { select: { matches: true } },
       },
     }),
-    prisma.competitiveTeam.findMany({
-      orderBy: [{ season: "desc" }, { name: "asc" }],
-      select: { id: true, name: true, season: true, color: true },
-    }),
+    prisma.season.findMany({ orderBy: { label: "desc" } }),
   ]);
-  return <AdminGironiClient initialGroups={groups} teams={teams} />;
+
+  const defaultSeason =
+    seasons.find((s) => s.isCurrent)?.label ?? seasons[0]?.label ?? getCurrentSeason();
+
+  return (
+    <AdminGironiClient
+      initialGroups={groups}
+      seasons={seasons.map((s) => ({ label: s.label, isCurrent: s.isCurrent }))}
+      defaultSeason={defaultSeason}
+    />
+  );
 }

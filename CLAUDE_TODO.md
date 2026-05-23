@@ -94,9 +94,7 @@ _(Nessuno aperto al momento — la lista cresce quando emergono nuovi requisiti 
 
 #### Altri nice-to-have community
 
-- **Badge / achievement giocatore** — calcolati on-the-fly da dati esistenti: "10 partite giocate", "Primo canestro", "Tripla doppia", "100% presenze del mese", **"MVP della partita"** (ora che `MatchMvp` esiste). Nessuna tabella nuova: helper in `lib/badges.ts` + sezione nel profilo pubblico.
 - **Compleanni** — banner home + push ai compagni nel giorno del compleanno. Campo `birthDate` già presente su `User`. Cron giornaliero.
-- **Confronto testa a testa con avversaria** — sulle pagine `/avversarie/[slug]` mostrare bilancio storico (V/N/P, canestri fatti/subiti, ultime 5). Dati già in `Match`.
 - **Recap automatico post-allenamento** — cron il giorno dopo: "Eravate N, squadra X ha vinto, top scorer Y" via push + AppNotification. Dati già in `TrainingMatchResult`.
 
 #### ✅ Già implementati (per memoria)
@@ -104,6 +102,11 @@ _(Nessuno aperto al momento — la lista cresce quando emergono nuovi requisiti 
 - **MVP partita** — scelti dai coach (max 3) dalla pagina statistiche partita; visualizzati nel banner dorato su `/partite/[slug]`. Modello `MatchMvp`.
 - **Disponibilità partite** — pagina `/profilo/disponibilita` (con link in profilo + menù utente) per atleti e genitori; integrazione in pagina convocazioni admin (sezione "Non disponibili" raggruppati per ruolo, non selezionabili); default = non disponibile per chi non ha risposto; vincolo niente modifiche su partite passate (mostrate in grigetto). Modello `MatchAvailability`.
 - **Tabellino partita condivisibile** — endpoint `/api/matches/[matchId]/tabellino` (Node runtime + `next/og` `ImageResponse`) genera PNG 1080×1350 con risultato, MVP e top scorer; bottone "Condividi/Scarica tabellino" nella hero di `/partite/[slug]` quando c'è punteggio (Web Share API su mobile, download fallback).
+- **Badge / achievement giocatore** — 10 badge in 3 tier (bronze/silver/gold) calcolati on-the-fly da `matchStats` e `matchMvps`. Helper `src/lib/badges.ts` + sezione "Achievement" nel profilo pubblico `/giocatori/[slug]`.
+- **Confronto testa a testa con avversaria** — riga "Ultime N" con pallini V/N/P nel riquadro "Bilancio storico" su `/avversarie/[slug]`. Dati da `Match` già presenti.
+- **OG image dinamiche** — `opengraph-image.tsx` per `/partite/[slug]`, `/giocatori/[slug]`, `/squadre/[season]/[slug]`. Usano Prisma (Node runtime) per mostrare dati reali (punteggio, nome giocatore, colore squadra).
+- **Sitemap** — aggiunta `/avversarie/[slug]` alle pagine dinamiche (già presenti giocatori, squadre, partite, allenamenti).
+- **Storico ruolo Baskin nel profilo** — sezione "Storico ruolo Baskin" in `/giocatori/[slug]` che mostra la progressione dei ruoli con date, da `SportRoleHistory`. Visibile solo se ci sono almeno 2 cambi.
 
 ---
 
@@ -116,14 +119,6 @@ _(Nessuno aperto al momento — la lista cresce quando emergono nuovi requisiti 
 
 ---
 
-### F8. **Rifiniture SEO / social**
-
-- **Sitemap dinamica** — verificare che `sitemap.ts` includa slug di giocatori, avversarie, partite, squadre.
-- **OG image dinamico per entità** — già presente `opengraph-image.tsx` root; aggiungere varianti per `/partite/[slug]`, `/giocatori/[slug]`, `/squadre/[season]/[slug]` migliora drasticamente la condivisione social.
-- **Storico ruolo sportivo nel profilo** — `SportRoleHistory` esiste lato DB ma non è esposto. Mostrarlo al giocatore stesso e/o nel profilo pubblico.
-
----
-
 ## Note operative
 
 | Categoria              | Quando fare                                       |
@@ -131,5 +126,5 @@ _(Nessuno aperto al momento — la lista cresce quando emergono nuovi requisiti 
 | 🔴 Critico             | Prima del prossimo push in produzione             |
 | 🟡 Media (M1)          | Boy-scout rule: quando si tocca il file per altro |
 | 🟠 Must-have offline   | Gestiti fuori dall'app — non implementare         |
-| 📋 Feature (F2–F8)     | F2 → F5 (must-have tecnici) → F6 → F7 → F8        |
+| 📋 Feature (F2–F7)     | F2 → F5 (must-have tecnici) → F6 → F7             |
 | 🛠 DX / ✨ UX / 🏗 INF | Raccogliere in sprint dedicati                    |

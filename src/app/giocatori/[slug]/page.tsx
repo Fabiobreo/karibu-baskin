@@ -21,6 +21,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
+import { computeBadges } from "@/lib/badges";
 import { slugify } from "@/lib/slugUtils";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
@@ -120,8 +121,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           },
         },
       },
-      _count: { select: { registrations: true } },
+      _count: { select: { registrations: true, matchMvps: true } },
       registrations: { where: { attended: true }, select: { id: true } },
+      sportRoleHistory: {
+        orderBy: { changedAt: "asc" },
+        select: { sportRole: true, changedAt: true },
+      },
     },
   });
 
@@ -209,6 +214,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     // Ordina: stagione più recente prima, rank migliore prima
     medals.sort((a, b) => b.season.localeCompare(a.season) || a.rank - b.rank);
   }
+
+  const badges = computeBadges({
+    matchStats: user.matchStats,
+    mvpCount: user._count.matchMvps,
+    topScorerCount: medals.filter((m) => m.rank === 1).length,
+  });
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
   const seasons = Array.from(
@@ -638,6 +649,104 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             </Grid>
           </Grid>
         </Paper>
+
+        {/* Badge / achievement */}
+        {badges.length > 0 && (
+          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
+            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+              Achievement
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+              {badges.map((badge) => {
+                const tierColor =
+                  badge.tier === "gold"
+                    ? { border: "#F9A825", bg: "#FFFDE7", text: "#F57F17" }
+                    : badge.tier === "silver"
+                      ? { border: "#9E9E9E", bg: "#FAFAFA", text: "#616161" }
+                      : { border: "#BCAAA4", bg: "#EFEBE9", text: "#6D4C41" };
+                return (
+                  <Box
+                    key={badge.id}
+                    title={badge.description}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.75,
+                      px: 1.5,
+                      py: 0.75,
+                      borderRadius: 2,
+                      border: `1.5px solid ${tierColor.border}`,
+                      bgcolor: tierColor.bg,
+                      cursor: "default",
+                    }}
+                  >
+                    <Typography sx={{ fontSize: "1.1rem", lineHeight: 1 }}>
+                      {badge.emoji}
+                    </Typography>
+                    <Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 800,
+                          color: tierColor.text,
+                          display: "block",
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {badge.label}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "text.disabled", fontSize: "0.62rem", display: "block" }}
+                      >
+                        {badge.description}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Paper>
+        )}
+
+        {/* Storico ruolo sportivo */}
+        {user.sportRoleHistory.length > 1 && (
+          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
+            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+              Storico ruolo Baskin
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
+              {user.sportRoleHistory.map((entry, i) => (
+                <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box>
+                    <Chip
+                      label={
+                        ROLE_LABELS[entry.sportRole as keyof typeof ROLE_LABELS] ??
+                        `R${entry.sportRole}`
+                      }
+                      size="small"
+                      sx={{
+                        bgcolor: ROLE_COLORS[entry.sportRole],
+                        color: "#fff",
+                        fontWeight: 700,
+                      }}
+                    />
+                    <Typography
+                      variant="caption"
+                      color="text.disabled"
+                      sx={{ display: "block", textAlign: "center", mt: 0.25 }}
+                    >
+                      {format(new Date(entry.changedAt), "MMM yyyy", { locale: it })}
+                    </Typography>
+                  </Box>
+                  {i < user.sportRoleHistory.length - 1 && (
+                    <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled", mb: 2.5 }} />
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </Paper>
+        )}
 
         {/* Statistiche agonistiche */}
         {hasStats && (

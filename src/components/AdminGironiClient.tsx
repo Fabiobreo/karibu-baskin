@@ -19,6 +19,7 @@ import {
   TableCell,
   Tooltip,
   TablePagination,
+  Stack,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,26 +29,32 @@ import { useState, useTransition } from "react";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 
-type Team = { id: string; name: string; season: string; color: string | null };
+type CompetitiveTeamLite = { id: string; name: string; color: string | null; season: string };
+type GroupCompetitiveTeam = { competitiveTeam: CompetitiveTeamLite };
 type Group = {
   id: string;
   slug: string | null;
   name: string;
   season: string;
   championship: string | null;
-  teamId: string;
-  team: { id: string; name: string; color: string | null };
+  competitiveTeams: GroupCompetitiveTeam[];
   _count: { matches: number };
 };
+type SeasonOption = { label: string; isCurrent: boolean };
 
 interface Props {
   initialGroups: Group[];
-  teams: Team[];
+  seasons: SeasonOption[];
+  defaultSeason: string;
 }
 
-export default function AdminGironiClient({ initialGroups, teams }: Props) {
+export default function AdminGironiClient({ initialGroups, seasons, defaultSeason }: Props) {
   const [groups, setGroups] = useState(initialGroups);
-  const [form, setForm] = useState({ name: "", season: "", championship: "", teamId: "" });
+  const [form, setForm] = useState({
+    name: "",
+    season: defaultSeason,
+    championship: "",
+  });
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useState(25);
@@ -59,7 +66,11 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
       const res = await fetch("/api/groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name: form.name,
+          season: form.season,
+          championship: form.championship || undefined,
+        }),
       });
       if (!res.ok) {
         showToast({ message: "Errore nella creazione del girone", severity: "error" });
@@ -71,8 +82,11 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
           (a, b) => b.season.localeCompare(a.season) || a.name.localeCompare(b.name)
         )
       );
-      setForm({ name: "", season: "", championship: "", teamId: "" });
-      showToast({ message: "Girone creato", severity: "success" });
+      setForm({ name: "", season: defaultSeason, championship: "" });
+      showToast({
+        message: "Girone creato — aggiungi le squadre dalla pagina del girone",
+        severity: "success",
+      });
     });
   }
 
@@ -114,48 +128,50 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
             size="small"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            sx={{ flex: 2, minWidth: 160 }}
+            sx={{ flex: 2, minWidth: 180 }}
             placeholder="es. Girone A Ovest"
           />
-          <TextField
-            label="Stagione"
-            size="small"
-            value={form.season}
-            onChange={(e) => setForm((f) => ({ ...f, season: e.target.value }))}
-            sx={{ flex: 1, minWidth: 100 }}
-            placeholder="es. 2025-26"
-          />
+          <FormControl size="small" sx={{ flex: 1, minWidth: 140 }}>
+            <InputLabel>Stagione</InputLabel>
+            <Select
+              value={form.season}
+              label="Stagione"
+              onChange={(e) => setForm((f) => ({ ...f, season: e.target.value as string }))}
+            >
+              {seasons.length === 0 ? (
+                <MenuItem value="" disabled>
+                  Nessuna stagione configurata
+                </MenuItem>
+              ) : (
+                seasons.map((s) => (
+                  <MenuItem key={s.label} value={s.label}>
+                    {s.label}
+                    {s.isCurrent ? " · corrente" : ""}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
           <TextField
             label="Campionato"
             size="small"
             value={form.championship}
             onChange={(e) => setForm((f) => ({ ...f, championship: e.target.value }))}
-            sx={{ flex: 1, minWidth: 120 }}
+            sx={{ flex: 1, minWidth: 140 }}
             placeholder="es. Gold"
           />
-          <FormControl size="small" sx={{ flex: 2, minWidth: 160 }}>
-            <InputLabel>Squadra</InputLabel>
-            <Select
-              value={form.teamId}
-              label="Squadra"
-              onChange={(e) => setForm((f) => ({ ...f, teamId: e.target.value as string }))}
-            >
-              {teams.map((t) => (
-                <MenuItem key={t.id} value={t.id}>
-                  {t.name} — {t.season}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            disabled={!form.name.trim() || !form.season.trim() || !form.teamId || isPending}
+            disabled={!form.name.trim() || !form.season.trim() || isPending}
             onClick={handleCreate}
           >
             Crea
           </Button>
         </Box>
+        <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1.5 }}>
+          Le squadre (nostre e avversarie) si aggiungono dalla pagina del girone.
+        </Typography>
       </Paper>
 
       {groups.length === 0 ? (
@@ -170,7 +186,7 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
                 <TableCell sx={{ fontWeight: 700 }}>Girone</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Stagione</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Campionato</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Squadra</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Nostre squadre</TableCell>
                 <TableCell sx={{ fontWeight: 700 }} align="center">
                   Partite
                 </TableCell>
@@ -203,16 +219,27 @@ export default function AdminGironiClient({ initialGroups, teams }: Props) {
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      label={g.team.name}
-                      size="small"
-                      sx={{
-                        bgcolor: g.team.color ?? "primary.main",
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "0.68rem",
-                      }}
-                    />
+                    {g.competitiveTeams.length === 0 ? (
+                      <Typography variant="caption" color="text.disabled">
+                        nessuna
+                      </Typography>
+                    ) : (
+                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
+                        {g.competitiveTeams.map(({ competitiveTeam: t }) => (
+                          <Chip
+                            key={t.id}
+                            label={t.name}
+                            size="small"
+                            sx={{
+                              bgcolor: t.color ?? "primary.main",
+                              color: "#fff",
+                              fontWeight: 700,
+                              fontSize: "0.68rem",
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    )}
                   </TableCell>
                   <TableCell align="center">
                     <Typography

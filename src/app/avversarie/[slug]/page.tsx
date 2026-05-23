@@ -214,64 +214,109 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
         ) : (
           <>
             {/* Totale storico */}
-            {totals.played > 0 && (
-              <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-                <Typography
-                  variant="subtitle2"
-                  fontWeight={700}
-                  color="text.secondary"
-                  gutterBottom
-                >
-                  Bilancio storico ({totals.played} partite giocate)
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
-                  <Chip
-                    label={`${totals.wins} V`}
-                    sx={{
-                      bgcolor: RESULT_COLORS.WIN,
-                      color: "#fff",
-                      fontWeight: 700,
-                      minWidth: 60,
-                    }}
-                  />
-                  <Chip
-                    label={`${totals.draws} N`}
-                    sx={{
-                      bgcolor: RESULT_COLORS.DRAW,
-                      color: "#fff",
-                      fontWeight: 700,
-                      minWidth: 60,
-                    }}
-                  />
-                  <Chip
-                    label={`${totals.losses} P`}
-                    sx={{
-                      bgcolor: RESULT_COLORS.LOSS,
-                      color: "#fff",
-                      fontWeight: 700,
-                      minWidth: 60,
-                    }}
-                  />
-                  <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    Punti fatti: <strong style={{ color: "inherit" }}>{totals.scored}</strong>
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Punti subiti: <strong style={{ color: "inherit" }}>{totals.conceded}</strong>
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: totals.scored - totals.conceded >= 0 ? "success.dark" : "error.dark",
-                      fontWeight: 700,
-                    }}
-                  >
-                    Differenza: {totals.scored - totals.conceded >= 0 ? "+" : ""}
-                    {totals.scored - totals.conceded}
-                  </Typography>
-                </Box>
-              </Paper>
-            )}
+            {totals.played > 0 &&
+              (() => {
+                const last5 = team.matches.filter((m) => m.result !== null).slice(0, 5);
+                return (
+                  <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight={700}
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Bilancio storico ({totals.played} partite giocate)
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
+                      <Chip
+                        label={`${totals.wins} V`}
+                        sx={{
+                          bgcolor: RESULT_COLORS.WIN,
+                          color: "#fff",
+                          fontWeight: 700,
+                          minWidth: 60,
+                        }}
+                      />
+                      <Chip
+                        label={`${totals.draws} N`}
+                        sx={{
+                          bgcolor: RESULT_COLORS.DRAW,
+                          color: "#fff",
+                          fontWeight: 700,
+                          minWidth: 60,
+                        }}
+                      />
+                      <Chip
+                        label={`${totals.losses} P`}
+                        sx={{
+                          bgcolor: RESULT_COLORS.LOSS,
+                          color: "#fff",
+                          fontWeight: 700,
+                          minWidth: 60,
+                        }}
+                      />
+                      <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Punti fatti: <strong style={{ color: "inherit" }}>{totals.scored}</strong>
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Punti subiti:{" "}
+                        <strong style={{ color: "inherit" }}>{totals.conceded}</strong>
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color:
+                            totals.scored - totals.conceded >= 0 ? "success.dark" : "error.dark",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Differenza: {totals.scored - totals.conceded >= 0 ? "+" : ""}
+                        {totals.scored - totals.conceded}
+                      </Typography>
+                    </Box>
+
+                    {last5.length > 0 && (
+                      <Box
+                        sx={{
+                          mt: 2,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Typography variant="caption" color="text.disabled" fontWeight={700}>
+                          Ultime {last5.length}:
+                        </Typography>
+                        {last5.map((m) => (
+                          <Box
+                            key={m.id}
+                            title={`${format(new Date(m.date), "d MMM yyyy", { locale: it })} · ${m.ourScore}–${m.theirScore}`}
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              bgcolor: RESULT_COLORS[m.result!],
+                              color: "#fff",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.7rem",
+                              fontWeight: 800,
+                              cursor: m.slug ? "pointer" : "default",
+                            }}
+                            component={m.slug ? Link : "div"}
+                            {...(m.slug ? { href: `/partite/${m.slug}` } : {})}
+                          >
+                            {RESULT_LABELS[m.result!]}
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+                  </Paper>
+                );
+              })()}
 
             {/* Per stagione */}
             <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>

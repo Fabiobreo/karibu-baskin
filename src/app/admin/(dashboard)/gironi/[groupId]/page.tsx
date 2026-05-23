@@ -21,7 +21,11 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
   const group = await prisma.group.findFirst({
     where: { OR: [{ slug: groupId }, { id: groupId }] },
     include: {
-      team: { select: { id: true, name: true, season: true, color: true } },
+      competitiveTeams: {
+        include: {
+          competitiveTeam: { select: { id: true, name: true, season: true, color: true } },
+        },
+      },
       matches: {
         orderBy: [{ matchday: "asc" }, { date: "asc" }],
         select: {
@@ -32,6 +36,7 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
           ourScore: true,
           theirScore: true,
           result: true,
+          teamId: true,
           opponent: { select: { id: true, name: true, slug: true } },
           _count: { select: { playerStats: true } },
         },
@@ -72,7 +77,13 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
     }),
     prisma.group.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
-      select: { id: true, name: true, season: true, championship: true, teamId: true },
+      select: {
+        id: true,
+        name: true,
+        season: true,
+        championship: true,
+        competitiveTeams: { select: { competitiveTeamId: true } },
+      },
     }),
   ]);
 
@@ -83,8 +94,7 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
         name: group.name,
         season: group.season,
         championship: group.championship,
-        teamId: group.teamId,
-        team: group.team,
+        ourTeams: group.competitiveTeams.map((gct) => gct.competitiveTeam),
       }}
       ourMatches={group.matches.map((m) => ({
         ...m,
@@ -96,8 +106,14 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
       }))}
       explicitTeams={group.groupTeams.map((gt) => gt.opposingTeam)}
       allOpponents={opponents}
-      ourTeams={teams}
-      allGroups={allGroups}
+      ourTeamsCatalog={teams}
+      allGroups={allGroups.map((g) => ({
+        id: g.id,
+        name: g.name,
+        season: g.season,
+        championship: g.championship,
+        competitiveTeamIds: g.competitiveTeams.map((c) => c.competitiveTeamId),
+      }))}
     />
   );
 }

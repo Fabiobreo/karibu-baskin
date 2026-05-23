@@ -34,8 +34,11 @@ export type OurMatchData = {
   ourScore: number | null;
   theirScore: number | null;
   result: string | null;
+  teamId: string;
   opponent: { id: string; name: string; slug: string | null } | null;
 };
+
+export type GironeOurTeam = { id: string; name: string; color: string | null; season: string };
 
 export type ExternalMatchData = {
   id: string;
@@ -56,9 +59,8 @@ export type MatchdayBucket = {
 interface Props {
   groupName: string;
   championship: string | null;
-  teamName: string;
-  teamColor: string | null;
-  teamSeason: string;
+  ourTeams: GironeOurTeam[];
+  season: string;
   standings: StandingEntry[];
   matchdays: MatchdayBucket[];
 }
@@ -80,14 +82,15 @@ function bucketHasPlayed(b: MatchdayBucket): boolean {
 export default function GironeFullView({
   groupName,
   championship,
-  teamName,
-  teamColor,
-  teamSeason,
+  ourTeams,
+  season,
   standings,
   matchdays,
 }: Props) {
   const router = useRouter();
-  const seasonParam = teamSeason.replace("-", "");
+  const seasonParam = season.replace("-", "");
+  const teamById = useMemo(() => new Map(ourTeams.map((t) => [t.id, t] as const)), [ourTeams]);
+  const fallbackTeamName = ourTeams[0]?.name ?? "La nostra";
 
   const defaultIndex = useMemo(() => {
     if (matchdays.length === 0) return 0;
@@ -116,11 +119,14 @@ export default function GironeFullView({
           flexWrap: "wrap",
         }}
       >
-        <Chip
-          label={teamName}
-          size="small"
-          sx={{ bgcolor: teamColor ?? "primary.main", color: "#fff", fontWeight: 700 }}
-        />
+        {ourTeams.map((t) => (
+          <Chip
+            key={t.id}
+            label={t.name}
+            size="small"
+            sx={{ bgcolor: t.color ?? "primary.main", color: "#fff", fontWeight: 700 }}
+          />
+        ))}
         <Typography variant="subtitle2" fontWeight={700}>
           {groupName}
         </Typography>
@@ -299,8 +305,9 @@ export default function GironeFullView({
                 <TableBody>
                   {current.ours.map((m) => {
                     const opponentNameLocal = m.opponent?.name ?? "Avversario";
-                    const home = m.isHome ? teamName : opponentNameLocal;
-                    const away = m.isHome ? opponentNameLocal : teamName;
+                    const ourName = teamById.get(m.teamId)?.name ?? fallbackTeamName;
+                    const home = m.isHome ? ourName : opponentNameLocal;
+                    const away = m.isHome ? opponentNameLocal : ourName;
                     const homeScore = m.isHome ? m.ourScore : m.theirScore;
                     const awayScore = m.isHome ? m.theirScore : m.ourScore;
                     const href = `/partite/${m.slug ?? m.id}`;
