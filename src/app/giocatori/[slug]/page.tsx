@@ -97,6 +97,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       id: true,
       name: true,
       image: true,
+      customImage: true,
       sportRole: true,
       sportRoleVariant: true,
       gender: true,
@@ -304,7 +305,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               }}
             >
               <Avatar
-                src={user.image ?? undefined}
+                src={user.customImage ?? user.image ?? undefined}
                 sx={{
                   width: { xs: 110, md: 140 },
                   height: { xs: 110, md: 140 },
