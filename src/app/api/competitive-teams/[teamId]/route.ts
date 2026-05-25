@@ -5,6 +5,7 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { CompetitiveTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { deleteImage } from "@/lib/blob";
 
 type Params = { params: Promise<{ teamId: string }> };
 
@@ -62,6 +63,17 @@ export async function PUT(req: Request, { params }: Params) {
   }
   const body = parsed.data;
 
+  // Gestione immagine: elimina la vecchia se viene sostituita o rimossa
+  if (body.imageUrl !== undefined) {
+    const current = await prisma.competitiveTeam.findUnique({
+      where: { id: teamId },
+      select: { imageUrl: true },
+    });
+    if (current?.imageUrl && current.imageUrl !== body.imageUrl) {
+      deleteImage(current.imageUrl).catch((e) => console.error("[blob] delete team image", e));
+    }
+  }
+
   try {
     const team = await prisma.competitiveTeam.update({
       where: { id: teamId },
@@ -71,6 +83,7 @@ export async function PUT(req: Request, { params }: Params) {
         ...(body.championship !== undefined && { championship: body.championship?.trim() || null }),
         ...(body.color !== undefined && { color: body.color?.trim() || null }),
         ...(body.description !== undefined && { description: body.description?.trim() || null }),
+        ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
       },
     });
     if (session?.user?.id) {
@@ -98,6 +111,13 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { teamId } = await params;
+
+  // Recupera l'URL immagine prima di eliminare per fare cleanup su Blob
+  const team = await prisma.competitiveTeam.findUnique({
+    where: { id: teamId },
+    select: { imageUrl: true },
+  });
+
   try {
     await prisma.competitiveTeam.delete({ where: { id: teamId } });
   } catch (err) {
@@ -106,6 +126,9 @@ export async function DELETE(_req: Request, { params }: Params) {
     }
     throw err;
   }
+
+  deleteImage(team?.imageUrl).catch((e) => console.error("[blob] delete team image on delete", e));
+
   if (session?.user?.id) {
     logAudit({
       actorId: session.user.id,

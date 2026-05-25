@@ -70,6 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body
         className={inter.className}
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+        suppressHydrationWarning
       >
         <AppRouterCacheProvider>
           <ServiceWorkerRegistrar />

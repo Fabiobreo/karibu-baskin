@@ -33,6 +33,7 @@ import { it } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import ImageUploader from "@/components/ImageUploader";
 
 type Event = {
   id: string;
@@ -41,6 +42,7 @@ type Event = {
   endDate?: string | Date | null;
   location?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
 };
 
 const EventFormSchema = z.object({
@@ -60,6 +62,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -77,12 +80,14 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
   const openCreate = () => {
     setEditingId(null);
+    setImageUrl(null);
     reset({ title: "", date: "", endDate: "", location: "", description: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (ev: Event) => {
     setEditingId(ev.id);
+    setImageUrl(ev.imageUrl ?? null);
     reset({
       title: ev.title,
       date: format(new Date(ev.date), "yyyy-MM-dd'T'HH:mm"),
@@ -109,6 +114,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       endDate: values.endDate || null,
       location: values.location?.trim() || null,
       description: values.description?.trim() || null,
+      imageUrl: imageUrl ?? null,
     };
 
     const res = editingId
@@ -302,6 +308,26 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 rows={3}
                 placeholder="es. Torneo regionale under 18, tornata di padel a Vicenza..."
               />
+              <Box>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Immagine copertina
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mb: 1.5 }}
+                >
+                  Facoltativa — mostrata nella pagina calendario e nella card evento.
+                </Typography>
+                <ImageUploader
+                  currentUrl={imageUrl}
+                  folder="events"
+                  onUploaded={setImageUrl}
+                  onRemoved={() => setImageUrl(null)}
+                  shape="square"
+                  size={120}
+                />
+              </Box>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>

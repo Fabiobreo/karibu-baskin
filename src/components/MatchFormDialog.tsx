@@ -31,6 +31,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import type { MatchType } from "@prisma/client";
 import { seasonForDate } from "@/components/SessionRestrictionEditor";
+import ImageUploader from "@/components/ImageUploader";
 
 export type MatchFormTeam = {
   id: string;
@@ -56,6 +57,7 @@ export type MatchFormMatch = {
   venue: string | null;
   matchType: MatchType;
   notes: string | null;
+  imageUrl?: string | null;
   matchday: number | null;
   groupId: string | null;
 };
@@ -153,6 +155,7 @@ export default function MatchFormDialog({
   const [opponentInput, setOpponentInput] = useState("");
   const [opponentError, setOpponentError] = useState<string | null>(null);
   const [newCity, setNewCity] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const opponentOptions: OpponentOpt[] = [
     ...opponents.map(
@@ -197,6 +200,7 @@ export default function MatchFormDialog({
         matchday: editMatch.matchday !== null ? String(editMatch.matchday) : "",
         groupId: editMatch.groupId ?? "",
       });
+      setImageUrl(editMatch.imageUrl ?? null);
 
       if (editMatch.opponentTeamId) {
         const t = teams.find((x) => x.id === editMatch.opponentTeamId);
@@ -226,6 +230,7 @@ export default function MatchFormDialog({
     } else {
       resetMatchForm(defaultMatchValues);
       setOpponentValue(null);
+      setImageUrl(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editMatch, resetMatchForm]);
@@ -282,6 +287,7 @@ export default function MatchFormDialog({
       venue: values.venue || null,
       matchType: internal ? "FRIENDLY" : values.matchType,
       notes: values.notes || null,
+      imageUrl: imageUrl ?? null,
       matchday: values.matchday !== "" ? Number(values.matchday) : null,
       groupId: internal ? null : values.groupId || null,
     };
@@ -575,6 +581,23 @@ export default function MatchFormDialog({
             )}
 
           <TextField label="Note" {...register("notes")} fullWidth multiline rows={2} />
+
+          <Box>
+            <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+              Immagine copertina
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
+              Facoltativa — mostrata nella pagina pubblica della partita.
+            </Typography>
+            <ImageUploader
+              currentUrl={imageUrl}
+              folder="matches"
+              onUploaded={setImageUrl}
+              onRemoved={() => setImageUrl(null)}
+              shape="square"
+              size={120}
+            />
+          </Box>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>

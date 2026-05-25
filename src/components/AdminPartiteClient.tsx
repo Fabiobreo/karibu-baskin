@@ -61,6 +61,7 @@ type Match = {
   theirScore: number | null;
   result: MatchResult | null;
   notes: string | null;
+  imageUrl?: string | null;
   matchday: number | null;
   groupId: string | null;
   team: Team;

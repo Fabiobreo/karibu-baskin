@@ -1,17 +1,7 @@
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import {
-  Container,
-  Typography,
-  Box,
-  Paper,
-  Avatar,
-  Chip,
-  Divider,
-  Stack,
-  Button,
-} from "@mui/material";
+import { Container, Typography, Box, Paper, Chip, Divider, Stack, Button } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import Link from "next/link";
@@ -27,6 +17,7 @@ import ClaimAnonymousCard from "@/components/ClaimAnonymousCard";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import ProfileAvatarEditor from "@/components/ProfileAvatarEditor";
 
 export const revalidate = 0;
 
@@ -140,9 +131,10 @@ export default async function ProfiloPage() {
         {/* Card principale */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
-            <Avatar src={user.image ?? undefined} sx={{ width: 64, height: 64, fontSize: 22 }}>
-              {user.name?.[0] ?? user.email[0].toUpperCase()}
-            </Avatar>
+            <ProfileAvatarEditor
+              googleImage={user.image ?? null}
+              customImage={user.customImage ?? null}
+            />
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" fontWeight={700} noWrap>
                 {user.name ?? "—"}

@@ -40,6 +40,7 @@ import { useRouter } from "next/navigation";
 import { sportRoleLabel, ROLE_COLORS } from "@/lib/constants";
 import { slugify } from "@/lib/slugUtils";
 import Link from "next/link";
+import ImageUploader from "@/components/ImageUploader";
 
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
@@ -99,6 +100,7 @@ type Team = {
   championship: string | null;
   color: string | null;
   description: string | null;
+  imageUrl: string | null;
   _count: { memberships: number; matches: number };
 };
 
@@ -199,11 +201,18 @@ export default function AdminSquadreClient({
   // Dialog crea/modifica squadra
   const [teamDialog, setTeamDialog] = useState(false);
   const [editTeam, setEditTeam] = useState<Team | null>(null);
-  const [teamForm, setTeamForm] = useState({
+  const [teamForm, setTeamForm] = useState<{
+    name: string;
+    championship: string;
+    color: string;
+    description: string;
+    imageUrl: string | null;
+  }>({
     name: "",
     championship: "",
     color: TEAM_COLORS[0].value,
     description: "",
+    imageUrl: null,
   });
   const [teamError, setTeamError] = useState("");
 
@@ -250,7 +259,13 @@ export default function AdminSquadreClient({
   // ── Squadre ───────────────────────────────────────────────────────────────────
 
   function openCreate() {
-    setTeamForm({ name: "", championship: "", color: TEAM_COLORS[0].value, description: "" });
+    setTeamForm({
+      name: "",
+      championship: "",
+      color: TEAM_COLORS[0].value,
+      description: "",
+      imageUrl: null,
+    });
     setEditTeam(null);
     setTeamError("");
     setTeamDialog(true);
@@ -262,6 +277,7 @@ export default function AdminSquadreClient({
       championship: team.championship ?? "",
       color: team.color ?? TEAM_COLORS[0].value,
       description: team.description ?? "",
+      imageUrl: team.imageUrl ?? null,
     });
     setEditTeam(team);
     setTeamError("");
@@ -700,6 +716,26 @@ export default function AdminSquadreClient({
               rows={3}
               placeholder="Descrizione facoltativa…"
             />
+            <Box>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                Immagine copertina
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mb: 1.5 }}
+              >
+                Facoltativa — mostrata nella pagina pubblica della squadra.
+              </Typography>
+              <ImageUploader
+                currentUrl={teamForm.imageUrl}
+                folder="teams"
+                onUploaded={(url) => setTeamForm((f) => ({ ...f, imageUrl: url }))}
+                onRemoved={() => setTeamForm((f) => ({ ...f, imageUrl: null }))}
+                shape="square"
+                size={120}
+              />
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

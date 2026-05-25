@@ -6,6 +6,7 @@ declare module "next-auth" {
     user: {
       id: string;
       appRole: AppRole;
+      customImage?: string | null;
     } & DefaultSession["user"];
   }
 

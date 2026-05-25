@@ -325,6 +325,7 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 - **`NextResponse.cookies.set()` bug Turbopack:** non usarlo per impostare cookie di sessione — usare `res.headers.set("Set-Cookie", ...)` con stringa manuale
 - **`Prisma.DbNull`:** usare `Prisma.DbNull` (importato da `@prisma/client`) per settare a null campi JSON nullable — `null` TypeScript non funziona con Prisma per i Json field
 - **`router.refresh()` e stato locale:** `router.refresh()` riesegue i Server Component ma non reinizializza lo stato React locale derivato dalle props; aggiornare direttamente lo stato locale dopo le mutazioni API quando serve reattività immediata
+- **Hydration mismatch da estensioni browser:** estensioni come Grammarly iniettano attributi sul `<body>` prima che React idrati, causando warning. Fix permanente: `suppressHydrationWarning` sul tag `<body>` in `src/app/layout.tsx` (già applicato). Non rimuoverlo. Per altri mismatch legati a valori dinamici (date, `Math.random()`, `typeof window`), usare `useHasMounted` da `@/lib/useHasMounted`.
 
 ## Pattern per nuove feature
 

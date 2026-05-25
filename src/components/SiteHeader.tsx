@@ -366,7 +366,7 @@ export default function SiteHeader() {
                   sx={{ p: 0.5 }}
                 >
                   <Avatar
-                    src={user.image ?? undefined}
+                    src={user.customImage ?? user.image ?? undefined}
                     alt={user.name ?? "Utente"}
                     sx={{
                       width: 34,
@@ -376,7 +376,7 @@ export default function SiteHeader() {
                       cursor: "pointer",
                     }}
                   >
-                    {!user.image && initials}
+                    {!(user.customImage ?? user.image) && initials}
                   </Avatar>
                 </IconButton>
                 <Menu

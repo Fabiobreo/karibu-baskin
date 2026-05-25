@@ -5,6 +5,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { EventUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { deleteImage } from "@/lib/blob";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -26,6 +27,11 @@ export async function PUT(req: Request, { params }: Params) {
 
   const { eventId } = await params;
   const before = await prisma.event.findUnique({ where: { id: eventId } });
+
+  if (body.imageUrl !== undefined && before?.imageUrl && before.imageUrl !== body.imageUrl) {
+    deleteImage(before.imageUrl).catch((e) => console.error("[blob] delete event image", e));
+  }
+
   try {
     const event = await prisma.event.update({
       where: { id: eventId },
@@ -37,6 +43,7 @@ export async function PUT(req: Request, { params }: Params) {
         }),
         ...(body.location !== undefined && { location: body.location?.trim() || null }),
         ...(body.description !== undefined && { description: body.description?.trim() || null }),
+        ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
       },
     });
     if (session?.user?.id) {
@@ -79,6 +86,12 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { eventId } = await params;
+
+  const eventToDelete = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { imageUrl: true },
+  });
+
   try {
     await prisma.event.delete({ where: { id: eventId } });
   } catch (err) {
@@ -87,6 +100,11 @@ export async function DELETE(_req: Request, { params }: Params) {
     }
     throw err;
   }
+
+  deleteImage(eventToDelete?.imageUrl).catch((e) =>
+    console.error("[blob] delete event image on delete", e)
+  );
+
   if (session?.user?.id) {
     logAudit({
       actorId: session.user.id,

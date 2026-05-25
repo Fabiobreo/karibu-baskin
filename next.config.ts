@@ -12,9 +12,9 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-* richiesti da MUI/Emotion
       "style-src 'self' 'unsafe-inline'", // Emotion CSS-in-JS
-      "img-src 'self' data: blob: https://lh3.googleusercontent.com",
+      "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.public.blob.vercel-storage.com",
       "font-src 'self'",
-      "connect-src 'self' https://*.neon.tech wss:",
+      "connect-src 'self' https://*.neon.tech https://*.blob.vercel-storage.com wss:",
       "frame-src https://maps.google.com https://www.google.com",
       "frame-ancestors 'none'",
     ].join("; "),
@@ -29,6 +29,11 @@ const nextConfig: NextConfig = {
         // Foto profilo Google OAuth
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
+      },
+      {
+        // Immagini Vercel Blob
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
   },

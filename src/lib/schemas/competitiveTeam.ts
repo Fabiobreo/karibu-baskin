@@ -7,6 +7,7 @@ const CompetitiveTeamBaseSchema = z.object({
   championship: z.string().max(200).nullable().optional(),
   color: z.string().regex(colorRegex, "Colore in formato hex (#RRGGBB)").nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 // Fix: PUT senza questo schema permetteva name = "" (stringa vuota)

@@ -16,6 +16,7 @@ const MatchBaseSchema = z.object({
   notes: z.string().max(2000).nullable().optional(),
   matchday: z.number().int().min(1).nullable().optional(),
   groupId: z.string().nullable().optional(),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 export const MatchCreateSchema = MatchBaseSchema.extend({

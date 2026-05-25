@@ -8,6 +8,7 @@ import { MatchUpdateSchema, deriveResult } from "@/lib/schemas";
 import { generateMatchSlug } from "@/lib/slugUtils";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { deleteImage } from "@/lib/blob";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -64,10 +65,16 @@ export async function PUT(req: Request, { params }: Params) {
       opponentTeamId: true,
       matchType: true,
       date: true,
+      imageUrl: true,
     },
   });
   if (!previous) {
     return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
+  }
+
+  // Gestione immagine: elimina la vecchia se viene sostituita o rimossa
+  if (body.imageUrl !== undefined && previous.imageUrl && previous.imageUrl !== body.imageUrl) {
+    deleteImage(previous.imageUrl).catch((e) => console.error("[blob] delete match image", e));
   }
 
   // Validazione XOR opponentId / opponentTeamId
@@ -163,6 +170,7 @@ export async function PUT(req: Request, { params }: Params) {
       ...(body.theirScore !== undefined && { theirScore: body.theirScore }),
       result: resolvedResult,
       ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
+      ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
       // Aggiorna opponentId/opponentTeamId in modo coerente (uno solo non-null)
       ...(body.opponentId !== undefined || body.opponentTeamId !== undefined
         ? {
@@ -185,6 +193,7 @@ export async function PUT(req: Request, { params }: Params) {
       theirScore: true,
       result: true,
       notes: true,
+      imageUrl: true,
       matchday: true,
       groupId: true,
       teamId: true,
@@ -234,6 +243,12 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   const { matchId } = await params;
+
+  const matchToDelete = await prisma.match.findUnique({
+    where: { id: matchId },
+    select: { imageUrl: true },
+  });
+
   try {
     await prisma.match.delete({ where: { id: matchId } });
   } catch (err) {
@@ -242,6 +257,11 @@ export async function DELETE(_req: Request, { params }: Params) {
     }
     throw err;
   }
+
+  deleteImage(matchToDelete?.imageUrl).catch((e) =>
+    console.error("[blob] delete match image on delete", e)
+  );
+
   if (session?.user?.id) {
     logAudit({
       actorId: session.user.id,

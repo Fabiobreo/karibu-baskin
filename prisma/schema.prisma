@@ -43,6 +43,7 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  customImage   String?   // immagine caricata dall'utente (priorità su image da Google)
   createdAt     DateTime  @default(now())
 
   appRole   AppRole @default(GUEST)
@@ -291,6 +292,7 @@ model CompetitiveTeam {
   championship String?  // es. "Gold Ovest", "Silver Ovest"
   color        String?  // colore hex (es. "#E65100")
   description  String?  @db.Text
+  imageUrl     String?  // copertina squadra (Vercel Blob)
   createdAt    DateTime @default(now())
 
   memberships          TeamMembership[]
@@ -435,6 +437,7 @@ model Match {
   theirScore Int?
   result     MatchResult?
   notes      String?      @db.Text
+  imageUrl   String?      // copertina partita (Vercel Blob)
   createdAt  DateTime     @default(now())
 
   matchday Int?
@@ -644,6 +647,7 @@ model Event {
   endDate     DateTime?  // per eventi multi-giorno (es. torneo)
   location    String?
   description String?   @db.Text
+  imageUrl    String?   // copertina evento (Vercel Blob)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

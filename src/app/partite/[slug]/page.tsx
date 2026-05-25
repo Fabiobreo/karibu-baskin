@@ -258,7 +258,11 @@ export default async function MatchDetailPage({ params }: Props) {
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          background: heroBg,
+          background: match.imageUrl
+            ? `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${match.imageUrl})`
+            : heroBg,
+          backgroundSize: match.imageUrl ? "cover" : undefined,
+          backgroundPosition: match.imageUrl ? "center" : undefined,
           color: "#fff",
           pt: { xs: 4, md: 5 },
           pb: { xs: 5, md: 7 },

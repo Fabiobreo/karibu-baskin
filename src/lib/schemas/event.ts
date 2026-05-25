@@ -4,6 +4,7 @@ const EventBaseSchema = z.object({
   endDate: z.string().nullable().optional(),
   location: z.string().max(200).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 export const EventCreateSchema = EventBaseSchema.extend({

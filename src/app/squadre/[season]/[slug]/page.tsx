@@ -373,7 +373,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 35%, ${teamColor} 130%)`,
+          background: team.imageUrl
+            ? `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${team.imageUrl})`
+            : `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 35%, ${teamColor} 130%)`,
+          backgroundSize: team.imageUrl ? "cover" : undefined,
+          backgroundPosition: team.imageUrl ? "center" : undefined,
           color: "#fff",
           py: { xs: 5, md: 7 },
           px: 2,

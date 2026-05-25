@@ -106,7 +106,7 @@ export default function BottomNav() {
           icon={
             status === "authenticated" && user ? (
               <Avatar
-                src={user.image ?? undefined}
+                src={user.customImage ?? user.image ?? undefined}
                 sx={{
                   width: 24,
                   height: 24,
@@ -114,7 +114,7 @@ export default function BottomNav() {
                   bgcolor: active === "/profilo" ? "#E65100" : "rgba(255,255,255,0.2)",
                 }}
               >
-                {!user.image && initials}
+                {!(user.customImage ?? user.image) && initials}
               </Avatar>
             ) : (
               <AccountCircleIcon fontSize="small" />
