@@ -4,6 +4,151 @@ import { createTheme } from "@mui/material/styles";
 const ORANGE = "#E65100";
 const DARK = "#1A1A1A";
 
+type MatchPalette = {
+  win: string;
+  winBg: string;
+  loss: string;
+  lossBg: string;
+  draw: string;
+  drawBg: string;
+};
+
+type AdminPalette = {
+  allenamenti: string;
+  partite: string;
+  eventi: string;
+  news: string;
+  utenti: string;
+  squadre: string;
+  gironi: string;
+  avversarie: string;
+  esporta: string;
+  audit: string;
+};
+
+type StatsPalette = {
+  points: string;
+  games: string;
+  avg: string;
+  twopt: string;
+  threept: string;
+  ft: string;
+  fouls: string;
+  illegalFouls: string;
+  shotsAttempted: string;
+};
+
+type MedalPalette = {
+  gold: string;
+  silver: string;
+  bronze: string;
+};
+
+type HeroGradientPalette = {
+  dark: string;
+};
+
+declare module "@mui/material/styles" {
+  interface Palette {
+    match: MatchPalette;
+    admin: AdminPalette;
+    stats: StatsPalette;
+    medal: MedalPalette;
+    heroGradient: HeroGradientPalette;
+  }
+  interface PaletteOptions {
+    match?: MatchPalette;
+    admin?: AdminPalette;
+    stats?: StatsPalette;
+    medal?: MedalPalette;
+    heroGradient?: HeroGradientPalette;
+  }
+}
+
+const lightMatch: MatchPalette = {
+  win: "#2E7D32",
+  winBg: "#E8F5E9",
+  loss: "#C62828",
+  lossBg: "#FFEBEE",
+  draw: "#E65100",
+  drawBg: "#FFF3E0",
+};
+
+const darkMatch: MatchPalette = {
+  win: "#66BB6A",
+  winBg: "#1B3320",
+  loss: "#EF5350",
+  lossBg: "#3A1A1A",
+  draw: "#FFA726",
+  drawBg: "#3A2616",
+};
+
+const lightAdmin: AdminPalette = {
+  allenamenti: "#00897B",
+  partite: "#2E7D32",
+  eventi: "#6A1B9A",
+  news: "#0277BD",
+  utenti: "#E65100",
+  squadre: "#1565C0",
+  gironi: "#00695C",
+  avversarie: "#5D4037",
+  esporta: "#37474F",
+  audit: "#4527A0",
+};
+
+const darkAdmin: AdminPalette = {
+  allenamenti: "#4DB6AC",
+  partite: "#66BB6A",
+  eventi: "#AB47BC",
+  news: "#4FC3F7",
+  utenti: "#FFA726",
+  squadre: "#64B5F6",
+  gironi: "#4DB6AC",
+  avversarie: "#A1887F",
+  esporta: "#90A4AE",
+  audit: "#9575CD",
+};
+
+const lightStats: StatsPalette = {
+  points: "#E65100",
+  games: "#1565C0",
+  avg: "#1A1A1A",
+  twopt: "#2E7D32",
+  threept: "#7B1FA2",
+  ft: "#00838F",
+  fouls: "#C62828",
+  illegalFouls: "#B71C1C",
+  shotsAttempted: "#455A64",
+};
+
+const darkStats: StatsPalette = {
+  points: "#FFA726",
+  games: "#64B5F6",
+  avg: "#F0F0F0",
+  twopt: "#66BB6A",
+  threept: "#BA68C8",
+  ft: "#4DD0E1",
+  fouls: "#EF5350",
+  illegalFouls: "#E57373",
+  shotsAttempted: "#90A4AE",
+};
+
+const lightMedal: MedalPalette = {
+  gold: "#FFC107",
+  silver: "#BDBDBD",
+  bronze: "#CD7F32",
+};
+
+const darkMedal: MedalPalette = {
+  gold: "#FFD54F",
+  silver: "#E0E0E0",
+  bronze: "#D7A56B",
+};
+
+const heroGradient: HeroGradientPalette = {
+  dark: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+};
+
 const sharedTypography = {
   fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   h4: { fontWeight: 800, letterSpacing: "-0.5px" },
@@ -100,6 +245,11 @@ export const lightTheme = createTheme({
       primary: "#1A1A1A",
       secondary: "#666666",
     },
+    match: lightMatch,
+    admin: lightAdmin,
+    stats: lightStats,
+    medal: lightMedal,
+    heroGradient,
   },
   typography: sharedTypography,
   shape: sharedShape,
@@ -129,6 +279,11 @@ export const darkTheme = createTheme({
       primary: "#F0F0F0",
       secondary: "#AAAAAA",
     },
+    match: darkMatch,
+    admin: darkAdmin,
+    stats: darkStats,
+    medal: darkMedal,
+    heroGradient,
   },
   typography: sharedTypography,
   shape: sharedShape,

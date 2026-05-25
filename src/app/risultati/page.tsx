@@ -9,8 +9,9 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
-import type { MatchResult, MatchType } from "@prisma/client";
+import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import { MATCH_RESULT_META } from "@/lib/matchResults";
 
 export const metadata: Metadata = {
   title: "Risultati | Karibu Baskin",
@@ -22,21 +23,6 @@ export const revalidate = 3600;
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
-const RESULT_COLOR: Record<MatchResult, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
-};
-const RESULT_LABEL: Record<MatchResult, string> = {
-  WIN: "V",
-  LOSS: "S",
-  DRAW: "P",
-};
-const RESULT_FULL: Record<MatchResult, string> = {
-  WIN: "Vittoria",
-  LOSS: "Sconfitta",
-  DRAW: "Pareggio",
-};
 const MATCH_TYPE_LABEL: Record<MatchType, string> = {
   LEAGUE: "Campionato",
   TOURNAMENT: "Torneo",
@@ -147,7 +133,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       width: 10,
                       height: 10,
                       borderRadius: "50%",
-                      bgcolor: t.color ?? "#E65100",
+                      bgcolor: t.color ?? "primary.main",
                       flexShrink: 0,
                     }}
                   />
@@ -159,7 +145,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       label={`${t.wins}V`}
                       size="small"
                       sx={{
-                        bgcolor: "#2E7D32",
+                        bgcolor: "match.win",
                         color: "#fff",
                         fontWeight: 800,
                         fontSize: "0.68rem",
@@ -171,7 +157,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         label={`${t.draws}P`}
                         size="small"
                         sx={{
-                          bgcolor: "#E65100",
+                          bgcolor: "match.draw",
                           color: "#fff",
                           fontWeight: 800,
                           fontSize: "0.68rem",
@@ -183,7 +169,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       label={`${t.losses}S`}
                       size="small"
                       sx={{
-                        bgcolor: "#C62828",
+                        bgcolor: "match.loss",
                         color: "#fff",
                         fontWeight: 800,
                         fontSize: "0.68rem",
@@ -265,7 +251,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       width: 12,
                       height: 12,
                       borderRadius: "50%",
-                      bgcolor: team.color ?? "#E65100",
+                      bgcolor: team.color ?? "primary.main",
                       flexShrink: 0,
                     }}
                   />
@@ -282,8 +268,8 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       label={`${tw}V`}
                       size="small"
                       sx={{
-                        bgcolor: "#E8F5E9",
-                        color: "#2E7D32",
+                        bgcolor: "match.winBg",
+                        color: "match.win",
                         fontWeight: 800,
                         fontSize: "0.68rem",
                         height: 20,
@@ -294,8 +280,8 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         label={`${td}P`}
                         size="small"
                         sx={{
-                          bgcolor: "#FFF3E0",
-                          color: "#E65100",
+                          bgcolor: "match.drawBg",
+                          color: "match.draw",
                           fontWeight: 800,
                           fontSize: "0.68rem",
                           height: 20,
@@ -306,8 +292,8 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       label={`${tl}S`}
                       size="small"
                       sx={{
-                        bgcolor: "#FFEBEE",
-                        color: "#C62828",
+                        bgcolor: "match.lossBg",
+                        color: "match.loss",
                         fontWeight: 800,
                         fontSize: "0.68rem",
                         height: 20,
@@ -371,15 +357,7 @@ type MatchItem = Awaited<
 >[number];
 
 function MatchCard({ match: m }: { match: MatchItem }) {
-  const res = m.result
-    ? {
-        color: RESULT_COLOR[m.result],
-        label: RESULT_LABEL[m.result],
-        full: RESULT_FULL[m.result],
-        bg: m.result === "WIN" ? "#E8F5E9" : m.result === "LOSS" ? "#FFEBEE" : "#FFF3E0",
-        textColor: m.result === "WIN" ? "#2E7D32" : m.result === "LOSS" ? "#C62828" : "#E65100",
-      }
-    : null;
+  const meta = m.result ? MATCH_RESULT_META[m.result] : null;
 
   const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
   // Ordine casa/trasferta: in casa Karibu a sinistra, in trasferta Karibu a destra.
@@ -394,19 +372,20 @@ function MatchCard({ match: m }: { match: MatchItem }) {
       <Paper
         elevation={0}
         sx={{
-          border: "1px solid rgba(0,0,0,0.07)",
+          border: "1px solid",
+          borderColor: "divider",
           overflow: "hidden",
           cursor: "pointer",
           transition: "box-shadow 0.15s, border-color 0.15s",
           "&:hover": {
-            boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-            borderColor: "rgba(0,0,0,0.15)",
+            boxShadow: 2,
+            borderColor: "text.disabled",
           },
         }}
       >
         <Box sx={{ display: "flex", alignItems: "stretch" }}>
           {/* Barra colore risultato */}
-          <Box sx={{ width: 5, flexShrink: 0, bgcolor: res?.color ?? "rgba(0,0,0,0.08)" }} />
+          <Box sx={{ width: 5, flexShrink: 0, bgcolor: meta?.color ?? "action.hover" }} />
 
           <Box
             sx={{
@@ -501,13 +480,13 @@ function MatchCard({ match: m }: { match: MatchItem }) {
 
             {/* Esito */}
             <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 1 }}>
-              {res && (
+              {meta && (
                 <Chip
-                  label={res.full}
+                  label={meta.label}
                   size="small"
                   sx={{
-                    bgcolor: res.bg,
-                    color: res.textColor,
+                    bgcolor: meta.bg,
+                    color: meta.color,
                     fontWeight: 800,
                     fontSize: "0.68rem",
                     height: 22,

@@ -43,18 +43,16 @@ import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { useThemeMode } from "@/context/ThemeContext";
 import Tooltip from "@mui/material/Tooltip";
+import { alpha } from "@mui/material/styles";
 import useSWR from "swr";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { slugify } from "@/lib/slugUtils";
 
-// Voci semplici del nav
+// Voci semplici del nav (solo quelle che non hanno dropdown)
 const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
   { label: "Home", href: "/", iconOnly: true },
   { label: "Allenamenti", href: "/allenamenti" },
   { label: "Calendario", href: "/calendario" },
-  // "Partite" e "Squadre" sono dropdown — gestiti separatamente (inseriti prima di Il Baskin)
-  { label: "Il Baskin", href: "/il-baskin" },
-  { label: "Contatti", href: "/contatti" },
 ];
 
 // Voci dropdown "Partite"
@@ -63,6 +61,19 @@ const PARTITE_LINKS = [
   { label: "Risultati", href: "/risultati" },
   { label: "Classifiche", href: "/classifiche" },
   { label: "Marcatori", href: "/marcatori" },
+];
+
+// Voci dropdown "Il Baskin"
+const IL_BASKIN_LINKS: { label: string; href: string; disabled?: boolean; badge?: string }[] = [
+  { label: "Cos'è il Baskin", href: "/il-baskin" },
+  { label: "News", href: "/news" },
+  { label: "Gallery", href: "/gallery", disabled: true, badge: "Soon" },
+];
+
+// Voci dropdown "Contatti"
+const CONTATTI_LINKS = [
+  { label: "Contatti", href: "/contatti" },
+  { label: "FAQ", href: "/faq" },
 ];
 
 // Voce fissa dropdown Squadre
@@ -91,6 +102,10 @@ export default function SiteHeader() {
   const [partiteOpen, setPartiteOpen] = useState(false);
   const [squadreAnchor, setSquadreAnchor] = useState<null | HTMLElement>(null);
   const [squadreOpen, setSquadreOpen] = useState(false);
+  const [ilBaskinAnchor, setIlBaskinAnchor] = useState<null | HTMLElement>(null);
+  const [ilBaskinOpen, setIlBaskinOpen] = useState(false);
+  const [contattiAnchor, setContattiAnchor] = useState<null | HTMLElement>(null);
+  const [contattiOpen, setContattiOpen] = useState(false);
   const mounted = useHasMounted();
   const { mode: colorMode, setMode: setColorMode } = useThemeMode();
 
@@ -107,6 +122,11 @@ export default function SiteHeader() {
     (pathname?.startsWith("/partite") ?? false) ||
     (pathname?.startsWith("/gironi") ?? false);
   const squadreActive = pathname?.startsWith("/squadre") ?? false;
+  const ilBaskinActive =
+    pathname === "/il-baskin" ||
+    (pathname?.startsWith("/news") ?? false) ||
+    pathname === "/gallery";
+  const contattiActive = pathname === "/contatti" || pathname === "/faq";
 
   // Squadre della stagione corrente per i link dinamici del dropdown
   const { data: allTeams } = useSWR<{ id: string; name: string; season: string }[]>(
@@ -196,128 +216,207 @@ export default function SiteHeader() {
               alignItems: "center",
             }}
           >
+            {/* Voci semplici: Home, Allenamenti, Calendario */}
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href;
-              // Inserisci i dropdown "Partite" e "Squadre" prima di "Il Baskin"
-              const isBeforeIlBaskin = link.href === "/il-baskin";
               return (
-                <Box key={link.href} sx={{ display: "contents" }}>
-                  {isBeforeIlBaskin && (
-                    <>
-                      {/* Dropdown Partite */}
-                      <Button
-                        size="small"
-                        onClick={(e) => setPartiteAnchor(e.currentTarget)}
-                        endIcon={
-                          <KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />
-                        }
-                        sx={{
-                          color: partiteActive ? "#fff" : "rgba(255,255,255,0.6)",
-                          fontWeight: partiteActive ? 700 : 500,
-                          fontSize: "0.85rem",
-                          borderBottom: partiteActive
-                            ? "2px solid #E65100"
-                            : "2px solid transparent",
-                          borderRadius: 0,
-                          pb: "2px",
-                          "&:hover": { color: "#fff", backgroundColor: "transparent" },
-                        }}
-                      >
-                        Partite
-                      </Button>
-                      <Menu
-                        anchorEl={partiteAnchor}
-                        open={Boolean(partiteAnchor)}
-                        onClose={() => setPartiteAnchor(null)}
-                        transformOrigin={{ horizontal: "left", vertical: "top" }}
-                        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-                        PaperProps={{ sx: { mt: 0.5, minWidth: 150 } }}
-                      >
-                        {PARTITE_LINKS.map((pl) => (
-                          <MenuItem
-                            key={pl.href}
-                            component={Link}
-                            href={pl.href}
-                            selected={pathname === pl.href}
-                            onClick={() => setPartiteAnchor(null)}
-                            sx={{
-                              fontSize: "0.9rem",
-                              fontWeight: pathname === pl.href ? 700 : 400,
-                            }}
-                          >
-                            {pl.label}
-                          </MenuItem>
-                        ))}
-                      </Menu>
-
-                      {/* Dropdown Squadre */}
-                      <Button
-                        size="small"
-                        onClick={(e) => setSquadreAnchor(e.currentTarget)}
-                        endIcon={
-                          <KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />
-                        }
-                        sx={{
-                          color: squadreActive ? "#fff" : "rgba(255,255,255,0.6)",
-                          fontWeight: squadreActive ? 700 : 500,
-                          fontSize: "0.85rem",
-                          borderBottom: squadreActive
-                            ? "2px solid #E65100"
-                            : "2px solid transparent",
-                          borderRadius: 0,
-                          pb: "2px",
-                          "&:hover": { color: "#fff", backgroundColor: "transparent" },
-                        }}
-                      >
-                        Squadre
-                      </Button>
-                      <Menu
-                        anchorEl={squadreAnchor}
-                        open={Boolean(squadreAnchor)}
-                        onClose={() => setSquadreAnchor(null)}
-                        transformOrigin={{ horizontal: "left", vertical: "top" }}
-                        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-                        PaperProps={{ sx: { mt: 0.5, minWidth: 160 } }}
-                      >
-                        {squadreLinks.map((sl) => (
-                          <MenuItem
-                            key={sl.href}
-                            component={Link}
-                            href={sl.href}
-                            selected={pathname === sl.href}
-                            onClick={() => setSquadreAnchor(null)}
-                            sx={{
-                              fontSize: "0.9rem",
-                              fontWeight: pathname === sl.href ? 700 : 400,
-                            }}
-                          >
-                            {sl.label}
-                          </MenuItem>
-                        ))}
-                      </Menu>
-                    </>
-                  )}
-                  <Button
-                    component={Link}
-                    href={link.href}
-                    size="small"
-                    sx={{
-                      color: active ? "#fff" : "rgba(255,255,255,0.6)",
-                      fontWeight: active ? 700 : 500,
-                      fontSize: "0.85rem",
-                      borderBottom: active ? "2px solid #E65100" : "2px solid transparent",
-                      borderRadius: 0,
-                      pb: "2px",
-                      minWidth: link.iconOnly ? 36 : undefined,
-                      px: link.iconOnly ? 1 : undefined,
-                      "&:hover": { color: "#fff", backgroundColor: "transparent" },
-                    }}
-                  >
-                    {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
-                  </Button>
-                </Box>
+                <Button
+                  key={link.href}
+                  component={Link}
+                  href={link.href}
+                  size="small"
+                  sx={{
+                    color: active ? "#fff" : "rgba(255,255,255,0.6)",
+                    fontWeight: active ? 700 : 500,
+                    fontSize: "0.85rem",
+                    borderBottom: active ? "2px solid #E65100" : "2px solid transparent",
+                    borderRadius: 0,
+                    pb: "2px",
+                    minWidth: link.iconOnly ? 36 : undefined,
+                    px: link.iconOnly ? 1 : undefined,
+                    "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                  }}
+                >
+                  {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
+                </Button>
               );
             })}
+
+            {/* Dropdown Partite */}
+            <Button
+              size="small"
+              onClick={(e) => setPartiteAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: partiteActive ? "#fff" : "rgba(255,255,255,0.6)",
+                fontWeight: partiteActive ? 700 : 500,
+                fontSize: "0.85rem",
+                borderBottom: partiteActive ? "2px solid #E65100" : "2px solid transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+              }}
+            >
+              Partite
+            </Button>
+            <Menu
+              anchorEl={partiteAnchor}
+              open={Boolean(partiteAnchor)}
+              onClose={() => setPartiteAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 150 } }}
+            >
+              {PARTITE_LINKS.map((pl) => (
+                <MenuItem
+                  key={pl.href}
+                  component={Link}
+                  href={pl.href}
+                  selected={pathname === pl.href}
+                  onClick={() => setPartiteAnchor(null)}
+                  sx={{ fontSize: "0.9rem", fontWeight: pathname === pl.href ? 700 : 400 }}
+                >
+                  {pl.label}
+                </MenuItem>
+              ))}
+            </Menu>
+
+            {/* Dropdown Squadre */}
+            <Button
+              size="small"
+              onClick={(e) => setSquadreAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: squadreActive ? "#fff" : "rgba(255,255,255,0.6)",
+                fontWeight: squadreActive ? 700 : 500,
+                fontSize: "0.85rem",
+                borderBottom: squadreActive ? "2px solid #E65100" : "2px solid transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+              }}
+            >
+              Squadre
+            </Button>
+            <Menu
+              anchorEl={squadreAnchor}
+              open={Boolean(squadreAnchor)}
+              onClose={() => setSquadreAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 160 } }}
+            >
+              {squadreLinks.map((sl) => (
+                <MenuItem
+                  key={sl.href}
+                  component={Link}
+                  href={sl.href}
+                  selected={pathname === sl.href}
+                  onClick={() => setSquadreAnchor(null)}
+                  sx={{ fontSize: "0.9rem", fontWeight: pathname === sl.href ? 700 : 400 }}
+                >
+                  {sl.label}
+                </MenuItem>
+              ))}
+            </Menu>
+
+            {/* Dropdown Il Baskin */}
+            <Button
+              size="small"
+              onClick={(e) => setIlBaskinAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: ilBaskinActive ? "#fff" : "rgba(255,255,255,0.6)",
+                fontWeight: ilBaskinActive ? 700 : 500,
+                fontSize: "0.85rem",
+                borderBottom: ilBaskinActive ? "2px solid #E65100" : "2px solid transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+              }}
+            >
+              Il Baskin
+            </Button>
+            <Menu
+              anchorEl={ilBaskinAnchor}
+              open={Boolean(ilBaskinAnchor)}
+              onClose={() => setIlBaskinAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 170 } }}
+            >
+              {IL_BASKIN_LINKS.map((bl) => (
+                <MenuItem
+                  key={bl.href}
+                  component={bl.disabled ? "li" : Link}
+                  href={bl.disabled ? undefined : bl.href}
+                  selected={pathname === bl.href}
+                  disabled={bl.disabled}
+                  onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
+                  sx={{ fontSize: "0.9rem", fontWeight: pathname === bl.href ? 700 : 400, gap: 1 }}
+                >
+                  {bl.label}
+                  {bl.badge && (
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: "auto",
+                        fontSize: "0.65rem",
+                        px: 0.6,
+                        py: 0.1,
+                        borderRadius: 0.5,
+                        bgcolor: "action.selected",
+                        color: "text.secondary",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      {bl.badge}
+                    </Box>
+                  )}
+                </MenuItem>
+              ))}
+            </Menu>
+
+            {/* Dropdown Contatti */}
+            <Button
+              size="small"
+              onClick={(e) => setContattiAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: contattiActive ? "#fff" : "rgba(255,255,255,0.6)",
+                fontWeight: contattiActive ? 700 : 500,
+                fontSize: "0.85rem",
+                borderBottom: contattiActive ? "2px solid #E65100" : "2px solid transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+              }}
+            >
+              Contatti
+            </Button>
+            <Menu
+              anchorEl={contattiAnchor}
+              open={Boolean(contattiAnchor)}
+              onClose={() => setContattiAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 140 } }}
+            >
+              {CONTATTI_LINKS.map((cl) => (
+                <MenuItem
+                  key={cl.href}
+                  component={Link}
+                  href={cl.href}
+                  selected={pathname === cl.href}
+                  onClick={() => setContattiAnchor(null)}
+                  sx={{ fontSize: "0.9rem", fontWeight: pathname === cl.href ? 700 : 400 }}
+                >
+                  {cl.label}
+                </MenuItem>
+              ))}
+            </Menu>
           </Box>
 
           {/* Link Admin (solo COACH/ADMIN) */}
@@ -331,11 +430,15 @@ export default function SiteHeader() {
                 color: "primary.light",
                 fontWeight: 700,
                 fontSize: "0.8rem",
-                border: "1px solid rgba(230,81,0,0.4)",
+                border: "1px solid",
+                borderColor: (theme) => alpha(theme.palette.primary.main, 0.4),
                 borderRadius: 1,
                 px: 1.5,
                 ml: 1,
-                "&:hover": { backgroundColor: "rgba(230,81,0,0.12)", borderColor: "primary.main" },
+                "&:hover": {
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
+                  borderColor: "primary.main",
+                },
               }}
             >
               Admin
@@ -662,33 +765,139 @@ export default function SiteHeader() {
             </List>
           </Collapse>
 
-          {/* Voci dopo "Squadre" */}
-          {[
-            { label: "Il Baskin", href: "/il-baskin" },
-            { label: "Contatti", href: "/contatti" },
-          ].map((link) => {
-            const active = pathname === link.href;
-            return (
-              <ListItem key={link.href} disablePadding>
-                <ListItemButton
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    router.push(link.href);
-                  }}
-                  sx={{
-                    py: 1.25,
-                    color: active ? "#E65100" : "rgba(255,255,255,0.8)",
-                    borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
-                  }}
-                >
-                  <ListItemText
-                    primary={link.label}
-                    primaryTypographyProps={{ fontWeight: active ? 700 : 400, fontSize: "0.95rem" }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
+          {/* Il Baskin — voce padre espandibile */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => setIlBaskinOpen((o) => !o)}
+              sx={{
+                py: 1.25,
+                color: ilBaskinActive ? "#E65100" : "rgba(255,255,255,0.8)",
+                borderLeft: ilBaskinActive ? "3px solid #E65100" : "3px solid transparent",
+              }}
+            >
+              <ListItemText
+                primary="Il Baskin"
+                primaryTypographyProps={{
+                  fontWeight: ilBaskinActive ? 700 : 400,
+                  fontSize: "0.95rem",
+                }}
+              />
+              {ilBaskinOpen ? (
+                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              ) : (
+                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              )}
+            </ListItemButton>
+          </ListItem>
+
+          <Collapse in={ilBaskinOpen} timeout="auto" unmountOnExit>
+            <List disablePadding>
+              {IL_BASKIN_LINKS.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <ListItem key={link.href} disablePadding>
+                    <ListItemButton
+                      disabled={link.disabled}
+                      onClick={() => {
+                        if (link.disabled) return;
+                        setDrawerOpen(false);
+                        router.push(link.href);
+                      }}
+                      sx={{
+                        py: 1,
+                        pl: 4,
+                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
+                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                      }}
+                    >
+                      <ListItemText
+                        primary={link.label}
+                        primaryTypographyProps={{
+                          fontWeight: active ? 700 : 400,
+                          fontSize: "0.88rem",
+                        }}
+                      />
+                      {link.badge && (
+                        <Box
+                          component="span"
+                          sx={{
+                            fontSize: "0.6rem",
+                            px: 0.6,
+                            py: 0.1,
+                            borderRadius: 0.5,
+                            bgcolor: "rgba(255,255,255,0.1)",
+                            color: "rgba(255,255,255,0.4)",
+                            fontWeight: 600,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.04em",
+                          }}
+                        >
+                          {link.badge}
+                        </Box>
+                      )}
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Collapse>
+
+          {/* Contatti — voce padre espandibile */}
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={() => setContattiOpen((o) => !o)}
+              sx={{
+                py: 1.25,
+                color: contattiActive ? "#E65100" : "rgba(255,255,255,0.8)",
+                borderLeft: contattiActive ? "3px solid #E65100" : "3px solid transparent",
+              }}
+            >
+              <ListItemText
+                primary="Contatti"
+                primaryTypographyProps={{
+                  fontWeight: contattiActive ? 700 : 400,
+                  fontSize: "0.95rem",
+                }}
+              />
+              {contattiOpen ? (
+                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              ) : (
+                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+              )}
+            </ListItemButton>
+          </ListItem>
+
+          <Collapse in={contattiOpen} timeout="auto" unmountOnExit>
+            <List disablePadding>
+              {CONTATTI_LINKS.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <ListItem key={link.href} disablePadding>
+                    <ListItemButton
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        router.push(link.href);
+                      }}
+                      sx={{
+                        py: 1,
+                        pl: 4,
+                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
+                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                      }}
+                    >
+                      <ListItemText
+                        primary={link.label}
+                        primaryTypographyProps={{
+                          fontWeight: active ? 700 : 400,
+                          fontSize: "0.88rem",
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Collapse>
 
           {/* Admin */}
           {isStaff && (

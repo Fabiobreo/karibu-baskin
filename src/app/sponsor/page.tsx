@@ -8,6 +8,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
@@ -97,7 +98,7 @@ export default function SponsorPage() {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -109,7 +110,7 @@ export default function SponsorPage() {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.06)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -175,7 +176,8 @@ export default function SponsorPage() {
                   rel="noopener noreferrer"
                   sx={{
                     p: 2.5,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     height: "100%",
                     display: "flex",
                     flexDirection: "row",
@@ -186,7 +188,7 @@ export default function SponsorPage() {
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
                     "&:hover": {
                       borderColor: "primary.main",
-                      boxShadow: "0 2px 12px rgba(230,81,0,0.1)",
+                      boxShadow: (theme) => `0 2px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
                       transform: "translateY(-2px)",
                     },
                   }}
@@ -273,7 +275,8 @@ export default function SponsorPage() {
                   elevation={0}
                   sx={{
                     p: 2,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     display: "flex",
                     gap: 2,
                     alignItems: "flex-start",

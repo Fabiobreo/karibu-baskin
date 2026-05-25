@@ -1,0 +1,105 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { PostCreateSchema } from "@/lib/schemas/post";
+import { generatePostSlug } from "@/lib/slugUtils";
+import { sendPushToAll } from "@/lib/webpush";
+import { createAppNotification } from "@/lib/appNotifications";
+import { auth } from "@/lib/authjs";
+import DOMPurify from "isomorphic-dompurify";
+
+// GET — lista post pubblicati (pubblica)
+export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-posts", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
+  const posts = await prisma.post.findMany({
+    where: { publishedAt: { not: null } },
+    orderBy: { publishedAt: "desc" },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      publishedAt: true,
+      createdAt: true,
+      author: { select: { name: true } },
+      poll: { select: { id: true, question: true, closesAt: true, multiSelect: true } },
+    },
+  });
+
+  return NextResponse.json(posts);
+}
+
+// POST — crea nuovo post (coach+)
+export async function POST(req: NextRequest) {
+  if (!(await isCoachOrAdmin())) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+  const session = await auth();
+  const authorId = session?.user?.id;
+  if (!authorId) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+
+  const raw = await req.json().catch(() => null);
+  const parsed = PostCreateSchema.safeParse(raw);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Dati non validi" },
+      { status: 400 }
+    );
+  }
+
+  const { title, body, publish, poll } = parsed.data;
+  const sanitizedBody = DOMPurify.sanitize(body);
+  const slug = await generatePostSlug(title);
+  const publishedAt = publish ? new Date() : null;
+
+  const post = await prisma.post.create({
+    data: {
+      slug,
+      title,
+      body: sanitizedBody,
+      authorId,
+      publishedAt,
+      ...(poll
+        ? {
+            poll: {
+              create: {
+                question: poll.question,
+                multiSelect: poll.multiSelect,
+                closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
+                options: {
+                  create: poll.options.map((o) => ({ text: o.text, order: o.order })),
+                },
+              },
+            },
+          }
+        : {}),
+    },
+    include: {
+      author: { select: { name: true } },
+      poll: { include: { options: { orderBy: { order: "asc" } } } },
+    },
+  });
+
+  if (publish && publishedAt) {
+    const notifType = poll ? "NEW_POLL" : "NEW_POST";
+    const notifTitle = poll ? "Nuovo sondaggio" : "Nuova news";
+    const notifBody = title;
+
+    sendPushToAll(
+      { title: notifTitle, body: notifBody, url: `/news/${slug}`, type: notifType },
+      false,
+      "NEW_POST"
+    ).catch(console.error);
+
+    createAppNotification({
+      type: notifType,
+      title: notifTitle,
+      body: notifBody,
+      url: `/news/${slug}`,
+    }).catch(console.error);
+  }
+
+  return NextResponse.json(post, { status: 201 });
+}

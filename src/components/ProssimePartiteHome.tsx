@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Box, Container, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { prisma } from "@/lib/db";
 import ProssimePartiteCards from "./ProssimePartiteCards";
@@ -39,9 +40,9 @@ export default async function ProssimePartiteHome() {
     <Box
       sx={{
         py: { xs: 4, md: 6 },
-        background: "linear-gradient(135deg, rgba(230,81,0,0.06) 0%, rgba(230,81,0,0.02) 100%)",
-        borderTop: "1px solid rgba(230,81,0,0.12)",
-        borderBottom: "1px solid rgba(230,81,0,0.12)",
+        background: `linear-gradient(135deg, ${alpha("#E65100", 0.06)} 0%, ${alpha("#E65100", 0.02)} 100%)`,
+        borderTop: `1px solid ${alpha("#E65100", 0.12)}`,
+        borderBottom: `1px solid ${alpha("#E65100", 0.12)}`,
       }}
     >
       <Container maxWidth="md">

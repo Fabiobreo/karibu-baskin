@@ -38,8 +38,8 @@ describe("mergePrefs()", () => {
 
   it("override completo viene rispettato integralmente", () => {
     const stored: NotifPrefs = {
-      push: { NEW_TRAINING: false, TEAMS_READY: false, MATCH_RESULT: false },
-      inApp: { NEW_TRAINING: false, TEAMS_READY: true, MATCH_RESULT: false },
+      push: { NEW_TRAINING: false, TEAMS_READY: false, MATCH_RESULT: false, NEW_POST: false },
+      inApp: { NEW_TRAINING: false, TEAMS_READY: true, MATCH_RESULT: false, NEW_POST: false },
     };
     expect(mergePrefs(stored)).toEqual(stored);
   });

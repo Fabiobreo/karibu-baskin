@@ -252,7 +252,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
           rowsPerPageOptions={[10, 25, 50]}
           labelRowsPerPage="Righe:"
           labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-          sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+          sx={{ borderTop: "1px solid", borderColor: "divider" }}
         />
       </Paper>
 

@@ -22,6 +22,7 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import GroupsIcon from "@mui/icons-material/Groups";
 import StarIcon from "@mui/icons-material/Star";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -329,7 +330,7 @@ export default function ConvocazioniClient({
                         sx={{
                           height: 18,
                           fontSize: "0.7rem",
-                          bgcolor: idx === activeIndex ? "primary.main" : "rgba(0,0,0,0.06)",
+                          bgcolor: idx === activeIndex ? "primary.main" : "action.hover",
                           color: idx === activeIndex ? "#fff" : "text.secondary",
                           fontWeight: 800,
                         }}
@@ -501,7 +502,7 @@ export default function ConvocazioniClient({
           <Box sx={{ overflowX: "auto" }}>
             <Table size="small" sx={{ minWidth: 720 }}>
               <TableHead>
-                <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+                <TableRow sx={{ bgcolor: "action.hover" }}>
                   <TableCell sx={{ width: 40 }} />
                   <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Giocatore</TableCell>
                   <TableCell
@@ -546,7 +547,9 @@ export default function ConvocazioniClient({
                       onClick={() => toggle(row)}
                       sx={{
                         cursor: "pointer",
-                        bgcolor: selected ? "rgba(230,81,0,0.06)" : undefined,
+                        bgcolor: selected
+                          ? (theme) => alpha(theme.palette.primary.main, 0.06)
+                          : undefined,
                       }}
                     >
                       <TableCell>
@@ -660,7 +663,7 @@ export default function ConvocazioniClient({
                               bgcolor:
                                 row.absences >= Math.max(2, row.eligibleSessions / 2)
                                   ? "#FFEBEE"
-                                  : "rgba(0,0,0,0.04)",
+                                  : "action.hover",
                               color:
                                 row.absences >= Math.max(2, row.eligibleSessions / 2)
                                   ? "#C62828"

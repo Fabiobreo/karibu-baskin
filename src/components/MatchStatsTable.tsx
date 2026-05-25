@@ -65,7 +65,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
       <Box sx={{ overflowX: "auto" }}>
         <Table size="small" sx={{ minWidth: 620 }}>
           <TableHead>
-            <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+            <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
                 sx={{ width: 28, fontWeight: 700, fontSize: "0.72rem", color: "text.disabled" }}
               >
@@ -212,7 +212,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
         rowsPerPageOptions={[10, 25, 50]}
         labelRowsPerPage="Righe:"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-        sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+        sx={{ borderTop: "1px solid", borderColor: "divider" }}
       />
     </Paper>
   );

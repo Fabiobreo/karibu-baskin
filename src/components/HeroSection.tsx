@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { Box, Typography, Button, Container } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Link from "next/link";
 
@@ -76,7 +77,7 @@ export default function HeroSection() {
             color: "primary.main",
             letterSpacing: "-0.03em",
             mb: 3.5,
-            textShadow: "0 2px 32px rgba(230,81,0,0.5)",
+            textShadow: (theme) => `0 2px 32px ${alpha(theme.palette.primary.main, 0.5)}`,
           }}
         >
           Baskin
@@ -109,8 +110,10 @@ export default function HeroSection() {
               py: 1.4,
               fontSize: "0.95rem",
               borderRadius: 2,
-              boxShadow: "0 4px 22px rgba(230,81,0,0.55)",
-              "&:hover": { boxShadow: "0 6px 28px rgba(230,81,0,0.7)" },
+              boxShadow: (theme) => `0 4px 22px ${alpha(theme.palette.primary.main, 0.55)}`,
+              "&:hover": {
+                boxShadow: (theme) => `0 6px 28px ${alpha(theme.palette.primary.main, 0.7)}`,
+              },
             }}
           >
             Prossimi allenamenti

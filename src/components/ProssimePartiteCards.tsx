@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Box, Typography, Paper, Chip, Stack } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -61,7 +62,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 position: "relative",
                 overflow: "hidden",
                 border: highlight ? "2px solid" : "1px solid",
-                borderColor: highlight ? "primary.main" : "rgba(0,0,0,0.08)",
+                borderColor: highlight ? "primary.main" : "divider",
                 transition: "all 0.18s",
                 cursor: "pointer",
                 "&:hover": {
@@ -86,17 +87,21 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     icon={<BoltIcon sx={{ fontSize: 16 }} />}
                     label="Imminente"
                     size="small"
-                    sx={{
+                    sx={(theme) => ({
                       mb: 1,
                       fontWeight: 700,
                       bgcolor: "primary.main",
                       color: "#fff",
                       animation: "karibuPulse 1.6s ease-in-out infinite",
                       "@keyframes karibuPulse": {
-                        "0%, 100%": { boxShadow: "0 0 0 0 rgba(230,81,0,0.5)" },
-                        "50%": { boxShadow: "0 0 0 6px rgba(230,81,0,0)" },
+                        "0%, 100%": {
+                          boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0.5)}`,
+                        },
+                        "50%": {
+                          boxShadow: `0 0 0 6px ${alpha(theme.palette.primary.main, 0)}`,
+                        },
                       },
-                    }}
+                    })}
                   />
                 )}
                 <Typography

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import HomeSessionsSection from "@/components/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
@@ -114,9 +115,10 @@ export default async function HomePage() {
       {/* ── Chi siamo ───────────────────────────────────────────────────────── */}
       <Box
         sx={{
-          bgcolor: "rgba(0,0,0,0.02)",
-          borderTop: "1px solid rgba(0,0,0,0.05)",
-          borderBottom: "1px solid rgba(0,0,0,0.05)",
+          bgcolor: "action.hover",
+          borderTop: "1px solid",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           py: { xs: 6, md: 9 },
         }}
       >
@@ -143,7 +145,12 @@ export default async function HomePage() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Paper
                   elevation={0}
-                  sx={{ p: 3, border: "1px solid rgba(0,0,0,0.07)", height: "100%" }}
+                  sx={{
+                    p: 3,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    height: "100%",
+                  }}
                 >
                   <Box sx={{ color: "primary.main", mb: 1.5 }}>
                     <FavoriteIcon sx={{ fontSize: 32 }} />
@@ -161,7 +168,12 @@ export default async function HomePage() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Paper
                   elevation={0}
-                  sx={{ p: 3, border: "1px solid rgba(0,0,0,0.07)", height: "100%" }}
+                  sx={{
+                    p: 3,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    height: "100%",
+                  }}
                 >
                   <Box sx={{ color: "primary.main", mb: 1.5 }}>
                     <GroupsIcon sx={{ fontSize: 32 }} />
@@ -179,7 +191,12 @@ export default async function HomePage() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Paper
                   elevation={0}
-                  sx={{ p: 3, border: "1px solid rgba(0,0,0,0.07)", height: "100%" }}
+                  sx={{
+                    p: 3,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    height: "100%",
+                  }}
                 >
                   <Box sx={{ color: "primary.main", mb: 1.5 }}>
                     <EmojiEventsIcon sx={{ fontSize: 32 }} />
@@ -197,7 +214,12 @@ export default async function HomePage() {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Paper
                   elevation={0}
-                  sx={{ p: 3, border: "1px solid rgba(0,0,0,0.07)", height: "100%" }}
+                  sx={{
+                    p: 3,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    height: "100%",
+                  }}
                 >
                   <Box sx={{ color: "primary.main", mb: 1.5 }}>
                     <LocationOnIcon sx={{ fontSize: 32 }} />
@@ -261,7 +283,12 @@ export default async function HomePage() {
                     </Box>
                     {i < STORIA.length - 1 && (
                       <Box
-                        sx={{ width: 2, flex: 1, backgroundColor: "rgba(230,81,0,0.2)", my: 0.5 }}
+                        sx={{
+                          width: 2,
+                          flex: 1,
+                          backgroundColor: alpha("#E65100", 0.2),
+                          my: 0.5,
+                        }}
                       />
                     )}
                   </Box>

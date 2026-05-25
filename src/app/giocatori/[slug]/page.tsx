@@ -25,7 +25,7 @@ import { computeBadges } from "@/lib/badges";
 import { slugify } from "@/lib/slugUtils";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
-import type { MatchResult } from "@prisma/client";
+import { MATCH_RESULT_META } from "@/lib/matchResults";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -73,17 +73,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export const revalidate = 3600;
-
-const RESULT_COLOR: Record<MatchResult, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
-};
-const RESULT_LABEL: Record<MatchResult, string> = {
-  WIN: "Vittoria",
-  LOSS: "Sconfitta",
-  DRAW: "Pareggio",
-};
 
 export default async function PlayerProfilePage({ params, searchParams }: Props) {
   const { slug } = await params;
@@ -807,28 +796,34 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             </Box>
             <Grid container spacing={2} sx={{ mb: 5 }}>
               {[
-                { label: "Partite", value: matchesPlayed, color: "#1565C0" },
-                { label: "Punti totali", value: totalPoints, color: "#E65100" },
+                { label: "Partite", value: matchesPlayed, color: "stats.games" },
+                { label: "Punti totali", value: totalPoints, color: "stats.points" },
                 {
                   label: "Media punti",
                   value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—",
                   color: "text.primary",
                 },
-                { label: "Canestri 2pt", value: totalTwo, color: "#2E7D32" },
-                { label: "Canestri 3pt", value: totalThree, color: "#7B1FA2" },
-                { label: "Tiri liberi", value: totalFreeThrows, color: "#00838F" },
-                { label: "Falli", value: totalFouls, color: "#C62828" },
+                { label: "Canestri 2pt", value: totalTwo, color: "stats.twopt" },
+                { label: "Canestri 3pt", value: totalThree, color: "stats.threept" },
+                { label: "Tiri liberi", value: totalFreeThrows, color: "stats.ft" },
+                { label: "Falli", value: totalFouls, color: "stats.fouls" },
                 ...(totalIllegalFouls > 0
-                  ? [{ label: "Falli illegali", value: totalIllegalFouls, color: "#B71C1C" }]
+                  ? [
+                      {
+                        label: "Falli illegali",
+                        value: totalIllegalFouls,
+                        color: "stats.illegalFouls",
+                      },
+                    ]
                   : []),
                 ...(totalShots > 0
-                  ? [{ label: "Tiri tentati", value: totalShots, color: "#555" }]
+                  ? [{ label: "Tiri tentati", value: totalShots, color: "stats.shotsAttempted" }]
                   : []),
               ].map((s) => (
                 <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
                   <Paper
                     elevation={0}
-                    sx={{ p: 2, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}
+                    sx={{ p: 2, textAlign: "center", border: "1px solid", borderColor: "divider" }}
                   >
                     <Typography
                       variant="h4"
@@ -890,7 +885,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         sx={{
                           p: 2,
                           border: "1px solid",
-                          borderColor: isFirst ? medalColor : "rgba(0,0,0,0.07)",
+                          borderColor: isFirst ? medalColor : "divider",
                           boxShadow: isFirst ? `0 4px 16px ${medalColor}33` : "none",
                           display: "flex",
                           alignItems: "center",
@@ -974,7 +969,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Paper
                       elevation={0}
                       sx={{
-                        border: "1px solid rgba(0,0,0,0.07)",
+                        border: "1px solid",
+                        borderColor: "divider",
                         overflow: "hidden",
                         display: "flex",
                         alignItems: "stretch",
@@ -984,7 +980,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       }}
                     >
                       <Box
-                        sx={{ width: 6, flexShrink: 0, backgroundColor: m.team.color ?? "#E65100" }}
+                        sx={{
+                          width: 6,
+                          flexShrink: 0,
+                          backgroundColor: m.team.color ?? "primary.main",
+                        }}
                       />
                       <Box
                         sx={{
@@ -1055,7 +1055,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Paper
                       elevation={0}
                       sx={{
-                        border: "1px solid rgba(0,0,0,0.07)",
+                        border: "1px solid",
+                        borderColor: "divider",
                         overflow: "hidden",
                         cursor: "pointer",
                         transition: "box-shadow 0.12s, transform 0.12s",
@@ -1068,8 +1069,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             width: 6,
                             flexShrink: 0,
                             backgroundColor: ms.match.result
-                              ? RESULT_COLOR[ms.match.result]
-                              : "rgba(0,0,0,0.08)",
+                              ? MATCH_RESULT_META[ms.match.result].color
+                              : "action.hover",
                           }}
                         />
                         <Box sx={{ flex: 1, p: 2 }}>
@@ -1100,10 +1101,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                               {ms.match.result && (
                                 <Chip
-                                  label={RESULT_LABEL[ms.match.result]}
+                                  label={MATCH_RESULT_META[ms.match.result].label}
                                   size="small"
                                   sx={{
-                                    backgroundColor: RESULT_COLOR[ms.match.result],
+                                    backgroundColor: MATCH_RESULT_META[ms.match.result].color,
                                     color: "#fff",
                                     fontWeight: 700,
                                     fontSize: "0.7rem",

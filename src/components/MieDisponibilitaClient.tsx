@@ -329,7 +329,7 @@ function CompactMatchRow({
         py: 1.25,
         mb: 1,
         opacity: isPast ? 0.5 : 1,
-        bgcolor: isPast ? "rgba(0,0,0,0.02)" : "background.paper",
+        bgcolor: isPast ? "action.hover" : "background.paper",
       }}
     >
       {/* Header compatto su una riga */}

@@ -10,6 +10,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import HistoryIcon from "@mui/icons-material/History";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import ShieldIcon from "@mui/icons-material/Shield";
+import ArticleIcon from "@mui/icons-material/Article";
 import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
 import AdminProssimePartite from "@/components/AdminProssimePartite";
@@ -124,6 +125,12 @@ export default async function AdminPage() {
             icon={<CalendarMonthIcon />}
             label="Gestione Eventi"
             color="#6A1B9A"
+          />
+          <NavCard
+            href="/admin/news"
+            icon={<ArticleIcon />}
+            label="Gestione News"
+            color="#0277BD"
           />
         </NavSection>
 

@@ -336,7 +336,7 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
                 size="small"
                 sx={{
                   fontWeight: 700,
-                  bgcolor: mvpKeys.size > 0 ? "#FFF8E1" : "rgba(0,0,0,0.04)",
+                  bgcolor: mvpKeys.size > 0 ? "#FFF8E1" : "action.hover",
                   color: mvpKeys.size > 0 ? "#F57F17" : "text.secondary",
                 }}
               />
@@ -378,7 +378,7 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
             <Box sx={{ overflowX: "auto" }}>
               <Table size="small" sx={{ minWidth: 760 }}>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+                  <TableRow sx={{ bgcolor: "action.hover" }}>
                     <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
                     {STAT_COLS.map((col) => (
                       <TableCell
@@ -522,7 +522,7 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
                   })}
                 </TableBody>
                 <TableFooter>
-                  <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+                  <TableRow sx={{ bgcolor: "action.hover" }}>
                     <TableCell
                       sx={{ fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
                     >

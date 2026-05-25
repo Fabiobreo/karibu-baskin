@@ -15,6 +15,7 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -114,8 +115,9 @@ export default function GironeFullView({
           display: "flex",
           alignItems: "center",
           gap: 1.5,
-          bgcolor: "rgba(0,0,0,0.03)",
-          borderBottom: "1px solid rgba(0,0,0,0.07)",
+          bgcolor: "action.hover",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           flexWrap: "wrap",
         }}
       >
@@ -281,7 +283,8 @@ export default function GironeFullView({
             scrollButtons="auto"
             sx={{
               minHeight: 36,
-              borderBottom: "1px solid rgba(0,0,0,0.07)",
+              borderBottom: "1px solid",
+              borderColor: "divider",
               "& .MuiTab-root": {
                 minHeight: 36,
                 fontSize: "0.72rem",
@@ -316,7 +319,10 @@ export default function GironeFullView({
                         key={m.id}
                         hover
                         onClick={() => router.push(href)}
-                        sx={{ cursor: "pointer", bgcolor: "rgba(230,81,0,0.04)" }}
+                        sx={{
+                          cursor: "pointer",
+                          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                        }}
                       >
                         <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
                           {format(new Date(m.date), "d MMM", { locale: it })}

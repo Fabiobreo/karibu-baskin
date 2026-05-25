@@ -2,31 +2,6 @@
 
 ## 📋 FEATURES PIANIFICATE
 
-### ✅ F2. **Gestione immagini con Vercel Blob** _(completata maggio 2026)_
-
-Upload immagini da parte di admin/coach (es. foto profilo squadra, foto giocatore, ecc.).
-
-**Stack:** Vercel Blob SDK (`@vercel/blob`) — `put()` per upload, `del()` per cancellazione.
-
-**⚠️ NB — Storage limitato su piano Hobby:**
-
-- Il piano gratuito Vercel include **5 GB** di Blob storage.
-- Vercel **non invia notifiche** al raggiungimento del limite — gli upload falliscono silenziosamente.
-- Monitorare manualmente: dashboard Vercel → Storage → Usage.
-- Per upgrade: piano Pro (~$20/mese) include spending limits configurabili con alert email.
-
-**Regola implementativa obbligatoria — nessun file orfano:**
-Quando un'immagine viene sostituita, eliminare sempre la vecchia prima di salvare la nuova URL:
-
-1. Leggi URL attuale dal DB
-2. `put()` nuova immagine → ottieni nuovo URL
-3. Salva nuovo URL nel DB
-4. `del(vecchioUrl)` — **non saltare questo step**
-
-Senza il passo 4, lo storage si riempie di file orfani non referenziati.
-
----
-
 ### F3. **Gallery foto integrata con Instagram/Facebook**
 
 Sezione gallery nel sito che mostra le foto pubblicate sui social della squadra, senza dover caricare nulla manualmente.
@@ -79,6 +54,5 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 ### F7. **Nice-to-have di contenuto**
 
 - **Bacheca / news** — nuovo modello `Post` (titolo, body markdown, autore, pubblicazione) + pagina `/news` + push automatica alla pubblicazione. Storico permanente delle comunicazioni (oggi solo notifiche effimere).
-- **Pagina staff / "Chi siamo"** — `/la-squadra` esiste ma manca sezione dedicata ad allenatori e dirigenti (foto, ruolo, bio breve). Statica o derivata da `User` con flag `isStaffPublic`.
 - **FAQ** — pagina statica con domande ricorrenti. Riduce il volume di `/contatti`.
 - **Sondaggi/poll rapidi** — modello `Poll` con opzioni multiple, voto utente loggato, scadenza. Utile per scelte logistiche (cena fine stagione, orari trasferte).

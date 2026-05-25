@@ -205,11 +205,7 @@ export default function GroupCsvImportDialog({
               virgola):{" "}
               <strong>G. | Data (AAAA-MM-GG) | Casa | Pt Casa | Pt Ospiti | Ospiti</strong>
             </Alert>
-            <Paper
-              elevation={0}
-              variant="outlined"
-              sx={{ p: 1.5, mb: 2, bgcolor: "rgba(0,0,0,0.02)" }}
-            >
+            <Paper elevation={0} variant="outlined" sx={{ p: 1.5, mb: 2, bgcolor: "action.hover" }}>
               <Typography
                 variant="caption"
                 color="text.secondary"
@@ -275,7 +271,7 @@ export default function GroupCsvImportDialog({
               <Box sx={{ overflowX: "auto" }}>
                 <Table size="small">
                   <TableHead>
-                    <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+                    <TableRow sx={{ bgcolor: "action.hover" }}>
                       <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>G.</TableCell>
                       <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Data</TableCell>
                       <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Casa</TableCell>

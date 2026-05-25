@@ -12,7 +12,8 @@ export default function AllenamentiLoading() {
               display: "flex",
               gap: 2,
               p: 2,
-              border: "1px solid rgba(0,0,0,0.08)",
+              border: "1px solid",
+              borderColor: "divider",
               borderRadius: 2,
             }}
           >

@@ -13,23 +13,14 @@ import SiteHeader from "@/components/SiteHeader";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
-import type { MatchResult, MatchType } from "@prisma/client";
+import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import { MATCH_RESULT_META } from "@/lib/matchResults";
 
 export const revalidate = 60;
 
 type Params = { params: Promise<{ slug: string }> };
 
-const RESULT_LABELS: Record<MatchResult, string> = {
-  WIN: "V",
-  LOSS: "P",
-  DRAW: "N",
-};
-const RESULT_COLORS: Record<MatchResult, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
-};
 const MATCH_TYPE_LABELS: Record<MatchType, string> = {
   LEAGUE: "Campionato",
   TOURNAMENT: "Torneo",
@@ -231,7 +222,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       <Chip
                         label={`${totals.wins} V`}
                         sx={{
-                          bgcolor: RESULT_COLORS.WIN,
+                          bgcolor: "match.win",
                           color: "#fff",
                           fontWeight: 700,
                           minWidth: 60,
@@ -240,7 +231,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       <Chip
                         label={`${totals.draws} N`}
                         sx={{
-                          bgcolor: RESULT_COLORS.DRAW,
+                          bgcolor: "match.draw",
                           color: "#fff",
                           fontWeight: 700,
                           minWidth: 60,
@@ -249,7 +240,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       <Chip
                         label={`${totals.losses} P`}
                         sx={{
-                          bgcolor: RESULT_COLORS.LOSS,
+                          bgcolor: "match.loss",
                           color: "#fff",
                           fontWeight: 700,
                           minWidth: 60,
@@ -297,7 +288,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                               width: 28,
                               height: 28,
                               borderRadius: "50%",
-                              bgcolor: RESULT_COLORS[m.result!],
+                              bgcolor: MATCH_RESULT_META[m.result!].color,
                               color: "#fff",
                               display: "flex",
                               alignItems: "center",
@@ -309,7 +300,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             component={m.slug ? Link : "div"}
                             {...(m.slug ? { href: `/partite/${m.slug}` } : {})}
                           >
-                            {RESULT_LABELS[m.result!]}
+                            {MATCH_RESULT_META[m.result!].short}
                           </Box>
                         ))}
                       </Box>
@@ -343,17 +334,17 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         <Chip
                           label={`${s.wins} V`}
                           size="small"
-                          sx={{ bgcolor: RESULT_COLORS.WIN, color: "#fff", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.win", color: "#fff", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.draws} N`}
                           size="small"
-                          sx={{ bgcolor: RESULT_COLORS.DRAW, color: "#fff", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.draw", color: "#fff", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.losses} P`}
                           size="small"
-                          sx={{ bgcolor: RESULT_COLORS.LOSS, color: "#fff", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.loss", color: "#fff", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.scored}–${s.conceded}`}
@@ -389,7 +380,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             py: 0.75,
                             px: 1,
                             borderRadius: 1,
-                            "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+                            "&:hover": { bgcolor: "action.hover" },
                           }}
                         >
                           <Box sx={{ minWidth: 90 }}>
@@ -466,10 +457,10 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             )}
                             {m.result && (
                               <Chip
-                                label={RESULT_LABELS[m.result]}
+                                label={MATCH_RESULT_META[m.result].short}
                                 size="small"
                                 sx={{
-                                  bgcolor: RESULT_COLORS[m.result],
+                                  bgcolor: MATCH_RESULT_META[m.result].color,
                                   color: "#fff",
                                   fontWeight: 700,
                                   fontSize: "0.7rem",

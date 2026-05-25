@@ -12,6 +12,7 @@ import {
   Collapse,
   Divider,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import ContactForm from "@/components/ContactForm";
 import Image from "next/image";
@@ -149,7 +150,7 @@ export default function ContattiPage() {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -161,7 +162,7 @@ export default function ContattiPage() {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.06)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -196,7 +197,7 @@ export default function ContattiPage() {
                 px: 3.5,
                 py: 1.4,
                 borderRadius: 2,
-                boxShadow: "0 4px 20px rgba(230,81,0,0.4)",
+                boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
               }}
             >
               Ho una domanda
@@ -308,14 +309,15 @@ export default function ContattiPage() {
                     alignItems: "center",
                     textAlign: "center",
                     gap: 1,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     height: "100%",
                     textDecoration: "none",
                     color: "inherit",
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.15s",
                     "&:hover": {
                       borderColor: "primary.main",
-                      boxShadow: "0 2px 12px rgba(230,81,0,0.12)",
+                      boxShadow: (theme) => `0 2px 12px ${alpha(theme.palette.primary.main, 0.12)}`,
                       transform: "translateY(-2px)",
                     },
                   }}
@@ -354,7 +356,7 @@ export default function ContattiPage() {
             <Collapse in={formOpen} timeout="auto">
               <Paper
                 elevation={0}
-                sx={{ mt: 2, p: 3, border: "1px solid rgba(0,0,0,0.08)", borderRadius: 2 }}
+                sx={{ mt: 2, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
               >
                 <ContactForm />
               </Paper>
@@ -421,7 +423,8 @@ export default function ContattiPage() {
                       display: "flex",
                       alignItems: "center",
                       gap: 2,
-                      border: "1px solid rgba(0,0,0,0.07)",
+                      border: "1px solid",
+                      borderColor: "divider",
                       textDecoration: "none",
                       color: "inherit",
                       transition: "border-color 0.2s",
@@ -482,8 +485,9 @@ export default function ContattiPage() {
       <Box
         id="partner"
         sx={{
-          bgcolor: "rgba(0,0,0,0.025)",
-          borderTop: "1px solid rgba(0,0,0,0.06)",
+          bgcolor: "action.hover",
+          borderTop: "1px solid",
+          borderColor: "divider",
           pt: { xs: 4, md: 5 },
           pb: { xs: 6, md: 9 },
           scrollMarginTop: { xs: 96, sm: 104 },
@@ -534,14 +538,15 @@ export default function ContattiPage() {
                   width: { xs: "calc(33.333% - 11px)", sm: "calc(16.666% - 14px)" },
                   aspectRatio: "1",
                   bgcolor: "#fff",
-                  border: "1px solid rgba(0,0,0,0.08)",
+                  border: "1px solid",
+                  borderColor: "divider",
                   borderRadius: 2,
                   overflow: "hidden",
                   transition: "box-shadow 0.2s, transform 0.15s, border-color 0.2s",
                   "&:hover": {
-                    boxShadow: "0 4px 16px rgba(230,81,0,0.15)",
+                    boxShadow: (theme) => `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`,
                     transform: "translateY(-2px)",
-                    borderColor: "rgba(230,81,0,0.4)",
+                    borderColor: (theme) => alpha(theme.palette.primary.main, 0.4),
                   },
                 }}
               >
@@ -586,7 +591,8 @@ export default function ContattiPage() {
                   elevation={0}
                   sx={{
                     p: 2.5,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     display: "flex",
                     gap: 2,
                     alignItems: "flex-start",

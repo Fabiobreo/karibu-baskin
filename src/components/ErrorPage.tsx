@@ -1,5 +1,6 @@
 "use client";
 import { Box, Typography, Button, Stack } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -48,7 +49,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
             mt: 2,
             mb: 0,
             letterSpacing: "-4px",
-            textShadow: "0 0 60px rgba(230,81,0,0.3)",
+            textShadow: (theme) => `0 0 60px ${alpha(theme.palette.primary.main, 0.3)}`,
           }}
         >
           {code}

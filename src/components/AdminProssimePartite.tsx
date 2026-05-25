@@ -82,7 +82,7 @@ export default async function AdminProssimePartite() {
                 p: 1.25,
                 borderRadius: 1,
                 border: "1px solid",
-                borderColor: "rgba(0,0,0,0.07)",
+                borderColor: "divider",
                 bgcolor: isMissing ? "rgba(211,47,47,0.04)" : "transparent",
               }}
             >

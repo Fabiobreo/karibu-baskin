@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Box, Container, Typography, Chip } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
@@ -152,7 +153,7 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             pointerEvents: "none",
           }}
         />

@@ -7,7 +7,14 @@ export default function SquadreLoading() {
       <Grid container spacing={3}>
         {Array.from({ length: 4 }).map((_, i) => (
           <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
-            <Box sx={{ border: "1px solid rgba(0,0,0,0.08)", borderRadius: 2, overflow: "hidden" }}>
+            <Box
+              sx={{
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+                overflow: "hidden",
+              }}
+            >
               <Skeleton variant="rectangular" height={8} />
               <Box sx={{ p: 2.5 }}>
                 <Skeleton variant="text" width="70%" height={28} />

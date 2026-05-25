@@ -18,6 +18,7 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LockIcon from "@mui/icons-material/Lock";
@@ -154,7 +155,8 @@ export default function MatchDetailTabs({
       {/* Tab bar */}
       <Box
         sx={{
-          borderBottom: "1px solid rgba(0,0,0,0.08)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           bgcolor: "background.paper",
           position: "sticky",
           top: 0,
@@ -222,13 +224,12 @@ export default function MatchDetailTabs({
                       elevation={0}
                       sx={{
                         p: { xs: 1.5, sm: 2 },
-                        border: "1px solid rgba(0,0,0,0.07)",
+                        border: "1px solid",
+                        borderColor: "divider",
                         textAlign: "center",
                         position: "relative",
                         transition: "box-shadow 0.15s",
-                        ...(slug
-                          ? { "&:hover": { boxShadow: "0 2px 10px rgba(0,0,0,0.08)" } }
-                          : {}),
+                        ...(slug ? { "&:hover": { boxShadow: 2 } } : {}),
                       }}
                     >
                       {i === 0 && (
@@ -469,7 +470,7 @@ export default function MatchDetailTabs({
                             py: 0.9,
                             borderRadius: 1,
                             ...(m.slug
-                              ? { cursor: "pointer", "&:hover": { bgcolor: "rgba(0,0,0,0.03)" } }
+                              ? { cursor: "pointer", "&:hover": { bgcolor: "action.hover" } }
                               : {}),
                           }}
                         >
@@ -576,7 +577,7 @@ export default function MatchDetailTabs({
                   <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
                     <Table size="small">
                       <TableHead>
-                        <TableRow sx={{ bgcolor: "rgba(0,0,0,0.02)" }}>
+                        <TableRow sx={{ bgcolor: "action.hover" }}>
                           <TableCell
                             sx={{
                               fontWeight: 700,
@@ -625,7 +626,9 @@ export default function MatchDetailTabs({
                           <TableRow
                             key={row.id}
                             sx={{
-                              bgcolor: row.isOurs ? "rgba(230,81,0,0.05)" : undefined,
+                              bgcolor: row.isOurs
+                                ? (theme) => alpha(theme.palette.primary.main, 0.05)
+                                : undefined,
                             }}
                           >
                             <TableCell
@@ -772,7 +775,7 @@ function CallupRow({
         sx={{
           cursor: "pointer",
           transition: "background 0.12s",
-          "&:hover": { bgcolor: "rgba(0,0,0,0.02)" },
+          "&:hover": { bgcolor: "action.hover" },
         }}
       >
         {inner}

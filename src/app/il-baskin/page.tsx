@@ -8,6 +8,7 @@ import {
   Divider,
   Stack,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
@@ -129,7 +130,7 @@ export default function IlBaskinPage() {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -141,7 +142,7 @@ export default function IlBaskinPage() {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.06)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -235,7 +236,8 @@ export default function IlBaskinPage() {
                     display: "flex",
                     gap: 2,
                     alignItems: "flex-start",
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     height: "100%",
                   }}
                 >
@@ -283,7 +285,7 @@ export default function IlBaskinPage() {
               <Paper
                 key={r.role}
                 elevation={0}
-                sx={{ overflow: "hidden", border: "1px solid rgba(0,0,0,0.07)" }}
+                sx={{ overflow: "hidden", border: "1px solid", borderColor: "divider" }}
               >
                 {/* Header colorato */}
                 <Box
@@ -334,9 +336,10 @@ export default function IlBaskinPage() {
                           sx={{
                             px: 1.5,
                             py: 1,
-                            backgroundColor: "rgba(0,0,0,0.03)",
+                            backgroundColor: "action.hover",
                             borderRadius: 1,
-                            border: "1px solid rgba(0,0,0,0.06)",
+                            border: "1px solid",
+                            borderColor: "divider",
                           }}
                         >
                           <Typography

@@ -16,6 +16,7 @@ import {
   Divider,
   CircularProgress,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -212,7 +213,7 @@ export default function AllenamientoHero({
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -224,7 +225,7 @@ export default function AllenamientoHero({
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.06)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
             pointerEvents: "none",
           }}
         />

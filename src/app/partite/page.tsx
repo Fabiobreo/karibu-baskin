@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
@@ -223,7 +224,7 @@ export default async function PartitePage({ searchParams }: Props) {
                     fontWeight: 700,
                     fontSize: "0.68rem",
                     height: 20,
-                    bgcolor: "rgba(230,81,0,0.1)",
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
                     color: "primary.main",
                   }}
                 />
@@ -245,7 +246,8 @@ export default async function PartitePage({ searchParams }: Props) {
                       <Paper
                         elevation={0}
                         sx={{
-                          border: "1px solid rgba(0,0,0,0.07)",
+                          border: "1px solid",
+                          borderColor: "divider",
                           borderLeft: `4px solid ${team.color ?? "#E65100"}`,
                           overflow: "hidden",
                           cursor: "pointer",

@@ -1,5 +1,6 @@
 "use client";
 import { Avatar, Box, ListItemButton, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -54,7 +55,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
         ...(isRead
           ? {}
           : {
-              bgcolor: "rgba(230,81,0,0.08)",
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
               borderLeft: "3px solid",
               borderColor: "primary.main",
             }),

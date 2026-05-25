@@ -79,6 +79,8 @@ model User {
   targetedNotifications AppNotification[]     @relation("TargetedNotifications")
   sentLinkRequests      LinkRequest[]         @relation("SentLinkRequests")
   receivedLinkRequests  LinkRequest[]         @relation("ReceivedLinkRequests")
+  posts                 Post[]
+  pollVotes             PollVote[]
 }
 
 model Account {
@@ -548,6 +550,8 @@ enum AppNotificationType {
   LINK_REQUEST    // richiesta collegamento genitore-figlio
   LINK_RESPONSE   // risposta alla richiesta (accettata/rifiutata)
   BIRTHDAY
+  NEW_POST        // nuovo articolo pubblicato
+  NEW_POLL        // nuovo sondaggio (post con poll allegato)
 }
 
 enum LinkRequestStatus {
@@ -636,6 +640,68 @@ model AuditEvent {
   @@index([actorId])
   @@index([targetType, targetId])
   @@index([createdAt])
+}
+
+// ── News / Bacheca ────────────────────────────────────────────────────────────
+
+model Post {
+  id          String    @id @default(cuid())
+  slug        String    @unique  // es. "cena-fine-stagione-2025"
+  title       String
+  body        String    @db.Text  // HTML sanitizzato (TipTap output)
+  authorId    String
+  publishedAt DateTime?           // null = bozza
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  poll   Poll?
+
+  @@index([publishedAt])
+  @@index([authorId])
+}
+
+model Poll {
+  id          String    @id @default(cuid())
+  postId      String    @unique
+  question    String
+  multiSelect Boolean   @default(false)
+  closesAt    DateTime?  // null = aperto a tempo indeterminato
+  createdAt   DateTime  @default(now())
+
+  post    Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  options PollOption[]
+  votes   PollVote[]
+
+  @@index([postId])
+}
+
+model PollOption {
+  id     String @id @default(cuid())
+  pollId String
+  text   String
+  order  Int    @default(0)
+
+  poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@index([pollId])
+}
+
+model PollVote {
+  id       String   @id @default(cuid())
+  pollId   String
+  optionId String
+  userId   String
+  createdAt DateTime @default(now())
+
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId, optionId])
+  @@index([pollId])
+  @@index([userId])
 }
 
 // ── Eventi generici ───────────────────────────────────────────────────────────

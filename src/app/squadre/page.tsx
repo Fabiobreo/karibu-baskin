@@ -9,6 +9,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -70,7 +71,7 @@ export default async function SquadrePage() {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.1)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -82,7 +83,7 @@ export default async function SquadrePage() {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.06)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -117,7 +118,12 @@ export default async function SquadrePage() {
             <Grid key={s.label} size={{ xs: 6, md: 3 }}>
               <Paper
                 elevation={0}
-                sx={{ p: 2.5, textAlign: "center", border: "1px solid rgba(0,0,0,0.07)" }}
+                sx={{
+                  p: 2.5,
+                  textAlign: "center",
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
               >
                 <Typography
                   variant="h4"
@@ -274,7 +280,8 @@ function TeamGrid({ teams, muted = false }: { teams: Team[]; muted?: boolean }) 
               elevation={0}
               sx={{
                 overflow: "hidden",
-                border: "1px solid rgba(0,0,0,0.07)",
+                border: "1px solid",
+                borderColor: "divider",
                 height: "100%",
                 cursor: "pointer",
                 opacity: muted ? 0.7 : 1,
@@ -304,7 +311,9 @@ function TeamGrid({ teams, muted = false }: { teams: Team[]; muted?: boolean }) 
                     label={team.championship}
                     size="small"
                     sx={{
-                      backgroundColor: muted ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.2)",
+                      backgroundColor: muted
+                        ? (theme) => alpha(theme.palette.common.black, 0.08)
+                        : "rgba(255,255,255,0.2)",
                       color: muted ? "text.secondary" : "#fff",
                       fontWeight: 700,
                     }}

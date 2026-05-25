@@ -26,7 +26,8 @@ export default function MapEmbed({ height = 220 }: MapEmbedProps) {
   const containerSx = {
     borderRadius: 2,
     overflow: "hidden",
-    border: "1px solid rgba(0,0,0,0.07)",
+    border: "1px solid",
+    borderColor: "divider",
     height,
   };
 

@@ -9,6 +9,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -66,7 +67,7 @@ export default async function SquadreArchivioPage() {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: "rgba(230,81,0,0.08)",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
             pointerEvents: "none",
           }}
         />
@@ -140,7 +141,8 @@ export default async function SquadreArchivioPage() {
                             display: "flex",
                             alignItems: "center",
                             overflow: "hidden",
-                            border: "1px solid rgba(0,0,0,0.07)",
+                            border: "1px solid",
+                            borderColor: "divider",
                             opacity: 0.8,
                             transition: "opacity 0.15s, box-shadow 0.15s",
                             "&:hover": { opacity: 1, boxShadow: 3 },

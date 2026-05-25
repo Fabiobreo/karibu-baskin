@@ -164,7 +164,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         sx={{
           px: 2,
           py: 1.5,
-          borderBottom: "1px solid rgba(0,0,0,0.07)",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           display: "flex",
           gap: 1.5,
           flexWrap: "wrap",
@@ -218,7 +219,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 color: roleFilter === r ? "#fff" : "text.primary",
                 border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.23)"}`,
                 "&:hover": {
-                  bgcolor: roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.04)",
+                  bgcolor: roleFilter === r ? ROLE_COLORS[r] : "action.hover",
                 },
               }}
             />
@@ -235,7 +236,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
       <Box sx={{ overflowX: "auto" }}>
         <Table size="small" sx={{ minWidth: 720 }}>
           <TableHead>
-            <TableRow sx={{ bgcolor: "rgba(0,0,0,0.03)" }}>
+            <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
                 sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.disabled" }}
               >
@@ -411,7 +412,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         rowsPerPageOptions={[10, 25, 50]}
         labelRowsPerPage="Righe:"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-        sx={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}
+        sx={{ borderTop: "1px solid", borderColor: "divider" }}
       />
     </Paper>
   );

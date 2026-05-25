@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { Container, Typography, Box, Chip } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import MatchEditButton from "@/components/MatchEditButton";
 import SiteHeader from "@/components/SiteHeader";
 import MatchDetailTabs from "@/components/MatchDetailTabs";
@@ -20,33 +21,16 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { ROLE_COLORS } from "@/lib/constants";
+import { MATCH_RESULT_META } from "@/lib/matchResults";
 
 export const revalidate = 3600;
 
 type Props = { params: Promise<{ slug: string }> };
 
-const RESULT_META: Record<
-  "WIN" | "LOSS" | "DRAW",
-  { label: string; color: string; bg: string; gradient: string }
-> = {
-  WIN: {
-    label: "Vittoria",
-    color: "#2E7D32",
-    bg: "#E8F5E9",
-    gradient: "linear-gradient(150deg, #1A2E1A 0%, #1B3A1B 60%, #1F4A1F 100%)",
-  },
-  LOSS: {
-    label: "Sconfitta",
-    color: "#C62828",
-    bg: "#FFEBEE",
-    gradient: "linear-gradient(150deg, #2E1A1A 0%, #3A1B1B 60%, #4A1F1F 100%)",
-  },
-  DRAW: {
-    label: "Pareggio",
-    color: "#E65100",
-    bg: "#FFF3E0",
-    gradient: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-  },
+const RESULT_GRADIENT: Record<"WIN" | "LOSS" | "DRAW", string> = {
+  WIN: "linear-gradient(150deg, #1A2E1A 0%, #1B3A1B 60%, #1F4A1F 100%)",
+  LOSS: "linear-gradient(150deg, #2E1A1A 0%, #3A1B1B 60%, #4A1F1F 100%)",
+  DRAW: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
 };
 
 const MATCH_TYPE_LABEL: Record<string, string> = {
@@ -235,15 +219,15 @@ export default async function MatchDetailPage({ params }: Props) {
   const canSeeCallups = !!session?.user && session.user.appRole !== "GUEST";
   const isStaff = isStaffEarly;
 
-  const meta = match.result ? RESULT_META[match.result] : null;
+  const meta = match.result ? MATCH_RESULT_META[match.result] : null;
   const hasScore = match.ourScore !== null && match.theirScore !== null;
   // eslint-disable-next-line react-hooks/purity -- Server Component, renders once
   const now = Date.now();
   const isUpcoming = !hasScore && new Date(match.date).getTime() > now;
   const isImminent = isUpcoming && new Date(match.date).getTime() - now <= 48 * 60 * 60 * 1000;
 
-  const heroBg = meta?.gradient
-    ? meta.gradient
+  const heroBg = match.result
+    ? RESULT_GRADIENT[match.result]
     : isUpcoming
       ? "linear-gradient(150deg, #1A1A1A 0%, #4A2A0A 55%, #E65100 130%)"
       : "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)";
@@ -361,7 +345,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   label={match.team.name}
                   size="small"
                   sx={{
-                    bgcolor: match.team.color ?? "#E65100",
+                    bgcolor: match.team.color ?? "primary.main",
                     color: "#fff",
                     fontWeight: 700,
                     cursor: "pointer",
@@ -481,8 +465,12 @@ export default async function MatchDetailPage({ params }: Props) {
                         height: 26,
                         animation: "karibuMatchPulse 1.6s ease-in-out infinite",
                         "@keyframes karibuMatchPulse": {
-                          "0%, 100%": { boxShadow: "0 0 0 0 rgba(230,81,0,0.7)" },
-                          "50%": { boxShadow: "0 0 0 8px rgba(230,81,0,0)" },
+                          "0%, 100%": {
+                            boxShadow: `0 0 0 0 ${alpha("#E65100", 0.7)}`,
+                          },
+                          "50%": {
+                            boxShadow: `0 0 0 8px ${alpha("#E65100", 0)}`,
+                          },
                         },
                       }}
                     />

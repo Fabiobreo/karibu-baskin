@@ -34,6 +34,8 @@ import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
+import UpcomingMatchRow from "@/components/UpcomingMatchRow";
+import { MATCH_RESULT_META } from "@/lib/matchResults";
 
 type Props = {
   params: Promise<{ season: string; slug: string }>;
@@ -146,16 +148,6 @@ export async function generateMetadata({
 
 export const revalidate = 3600;
 
-const RESULT_COLOR: Record<MatchResult, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
-};
-const RESULT_FULL: Record<MatchResult, string> = {
-  WIN: "Vittoria",
-  LOSS: "Sconfitta",
-  DRAW: "Pareggio",
-};
 const MATCH_TYPE_LABEL = {
   LEAGUE: "Campionato",
   TOURNAMENT: "Torneo",
@@ -480,7 +472,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         display: "flex",
                         alignItems: "center",
                         gap: 0.6,
-                        bgcolor: "#2E7D32",
+                        bgcolor: "match.win",
                         px: 1.25,
                         py: 0.4,
                         borderRadius: 999,
@@ -506,7 +498,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           display: "flex",
                           alignItems: "center",
                           gap: 0.6,
-                          bgcolor: "#E65100",
+                          bgcolor: "match.draw",
                           px: 1.25,
                           py: 0.4,
                           borderRadius: 999,
@@ -532,7 +524,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         display: "flex",
                         alignItems: "center",
                         gap: 0.6,
-                        bgcolor: "#C62828",
+                        bgcolor: "match.loss",
                         px: 1.25,
                         py: 0.4,
                         borderRadius: 999,
@@ -660,7 +652,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   elevation={0}
                   sx={{
                     p: 2.5,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
@@ -669,9 +662,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                     {diff > 0 ? (
-                      <TrendingUpIcon sx={{ fontSize: 18, color: "#2E7D32" }} />
+                      <TrendingUpIcon sx={{ fontSize: 18, color: "match.win" }} />
                     ) : diff < 0 ? (
-                      <TrendingDownIcon sx={{ fontSize: 18, color: "#C62828" }} />
+                      <TrendingDownIcon sx={{ fontSize: 18, color: "match.loss" }} />
                     ) : (
                       <TrendingFlatIcon sx={{ fontSize: 18, color: "text.disabled" }} />
                     )}
@@ -691,7 +684,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     variant="h4"
                     fontWeight={900}
                     sx={{
-                      color: diff > 0 ? "#2E7D32" : diff < 0 ? "#C62828" : "text.primary",
+                      color: diff > 0 ? "match.win" : diff < 0 ? "match.loss" : "text.primary",
                       fontVariantNumeric: "tabular-nums",
                       lineHeight: 1,
                     }}
@@ -726,7 +719,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   elevation={0}
                   sx={{
                     p: 2.5,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
@@ -768,7 +762,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   elevation={0}
                   sx={{
                     p: 2.5,
-                    border: "1px solid rgba(0,0,0,0.07)",
+                    border: "1px solid",
+                    borderColor: "divider",
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
@@ -792,7 +787,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         variant="h4"
                         fontWeight={900}
                         sx={{
-                          color: RESULT_COLOR[streakResult],
+                          color: MATCH_RESULT_META[streakResult].color,
                           lineHeight: 1,
                           fontVariantNumeric: "tabular-nums",
                         }}
@@ -802,7 +797,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: RESULT_COLOR[streakResult],
+                          color: MATCH_RESULT_META[streakResult].color,
                           fontWeight: 700,
                           textTransform: "lowercase",
                         }}
@@ -1052,7 +1047,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     match={m}
                     teamName={team.name}
                     teamColor={teamColor}
-                    now={now}
                   />
                 ))}
               </Stack>
@@ -1138,8 +1132,9 @@ function NextMatchCard({
         sx={{
           borderRadius: 3,
           overflow: "hidden",
-          border: "1px solid rgba(0,0,0,0.08)",
-          boxShadow: "0 4px 18px rgba(0,0,0,0.06)",
+          border: "1px solid",
+          borderColor: "divider",
+          boxShadow: 2,
           cursor: "pointer",
           transition: "all 0.2s",
           "&:hover": {
@@ -1320,7 +1315,7 @@ function NextMatchCard({
               flexDirection: "column",
               alignItems: "center",
               gap: 0.4,
-              bgcolor: isHomeMatch ? "#2E7D32" : "#1565C0",
+              bgcolor: isHomeMatch ? "match.win" : "#1565C0",
               px: 1.5,
               py: 1,
               borderRadius: 1.5,
@@ -1452,8 +1447,9 @@ function NextMatchCard({
               alignItems: "center",
               justifyContent: "center",
               gap: 1,
-              borderLeft: "1px solid rgba(0,0,0,0.06)",
-              bgcolor: !isHomeMatch ? "rgba(0,0,0,0.025)" : "background.paper",
+              borderLeft: "1px solid",
+              borderColor: "divider",
+              bgcolor: !isHomeMatch ? "action.hover" : "background.paper",
             }}
           >
             <Box
@@ -1510,7 +1506,8 @@ function NextMatchCard({
           <Box
             sx={{
               bgcolor: "background.paper",
-              borderTop: "1px solid rgba(0,0,0,0.06)",
+              borderTop: "1px solid",
+              borderColor: "divider",
               px: { xs: 2.5, md: 3.5 },
               py: 1.5,
               display: "flex",
@@ -1550,7 +1547,7 @@ function NextMatchCard({
                     display: "flex",
                     alignItems: "center",
                     gap: 0.6,
-                    bgcolor: RESULT_COLOR[prev.result],
+                    bgcolor: MATCH_RESULT_META[prev.result].color,
                     color: "#fff",
                     px: 1,
                     py: 0.25,
@@ -1607,33 +1604,26 @@ function PlayedMatchCard({
   const leftScore = match.isHome ? match.ourScore : match.theirScore;
   const rightScore = match.isHome ? match.theirScore : match.ourScore;
   const leftIsUs = match.isHome;
-  const res = match.result
-    ? {
-        color: RESULT_COLOR[match.result],
-        bg: match.result === "WIN" ? "#E8F5E9" : match.result === "LOSS" ? "#FFEBEE" : "#FFF3E0",
-        textColor:
-          match.result === "WIN" ? "#2E7D32" : match.result === "LOSS" ? "#C62828" : "#E65100",
-        full: RESULT_FULL[match.result],
-      }
-    : null;
+  const res = match.result ? MATCH_RESULT_META[match.result] : null;
 
   return (
     <Link href={`/partite/${match.slug ?? match.id}`} style={{ textDecoration: "none" }}>
       <Paper
         elevation={0}
         sx={{
-          border: "1px solid rgba(0,0,0,0.07)",
+          border: "1px solid",
+          borderColor: "divider",
           overflow: "hidden",
           cursor: "pointer",
           transition: "box-shadow 0.15s, border-color 0.15s",
           "&:hover": {
-            boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-            borderColor: "rgba(0,0,0,0.15)",
+            boxShadow: 2,
+            borderColor: "text.disabled",
           },
         }}
       >
         <Box sx={{ display: "flex", alignItems: "stretch" }}>
-          <Box sx={{ width: 5, flexShrink: 0, bgcolor: res?.color ?? "rgba(0,0,0,0.08)" }} />
+          <Box sx={{ width: 5, flexShrink: 0, bgcolor: res?.color ?? "action.hover" }} />
           <Box
             sx={{
               flex: 1,
@@ -1722,11 +1712,11 @@ function PlayedMatchCard({
             <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 1 }}>
               {res && (
                 <Chip
-                  label={res.full}
+                  label={res.label}
                   size="small"
                   sx={{
                     bgcolor: res.bg,
-                    color: res.textColor,
+                    color: res.color,
                     fontWeight: 800,
                     fontSize: "0.68rem",
                     height: 22,
@@ -1742,96 +1732,8 @@ function PlayedMatchCard({
   );
 }
 
-function UpcomingMatchRow({
-  match,
-  teamName,
-  teamColor,
-  now,
-}: {
-  match: AnyMatch;
-  teamName: string;
-  teamColor: string;
-  now: Date;
-}) {
-  const leftName = match.isHome ? teamName : match.opponent.name;
-  const rightName = match.isHome ? match.opponent.name : teamName;
-  const leftIsUs = match.isHome;
-  return (
-    <Link href={`/partite/${match.slug ?? match.id}`} style={{ textDecoration: "none" }}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: 2,
-          border: "1px solid rgba(0,0,0,0.07)",
-          borderLeft: `4px solid ${teamColor}`,
-          display: "flex",
-          alignItems: "center",
-          gap: 2,
-          flexWrap: "wrap",
-          cursor: "pointer",
-          transition: "box-shadow 0.15s, border-color 0.15s",
-          "&:hover": {
-            boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-            borderColor: "rgba(0,0,0,0.15)",
-          },
-        }}
-      >
-        <Box sx={{ minWidth: 90, flexShrink: 0 }}>
-          <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
-            {relativeLabel(match.date, now)}
-          </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
-            {format(new Date(match.date), "d MMM · HH:mm", { locale: it })}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 180,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            justifyContent: "center",
-          }}
-        >
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: leftIsUs ? 800 : 600,
-              color: leftIsUs ? "text.primary" : "text.secondary",
-              textAlign: "right",
-              flex: "1 1 0",
-              minWidth: 0,
-            }}
-          >
-            {leftName}
-          </Typography>
-          <Typography sx={{ color: "text.disabled", fontWeight: 700, px: 0.5 }}>vs</Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: leftIsUs ? 600 : 800,
-              color: leftIsUs ? "text.secondary" : "text.primary",
-              textAlign: "left",
-              flex: "1 1 0",
-              minWidth: 0,
-            }}
-          >
-            {rightName}
-          </Typography>
-        </Box>
-        <Chip
-          icon={match.isHome ? <HomeIcon /> : <FlightIcon />}
-          label={match.isHome ? "Casa" : "Trasferta"}
-          size="small"
-          variant="outlined"
-          sx={{ fontSize: "0.65rem", height: 22 }}
-        />
-        <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
-      </Paper>
-    </Link>
-  );
-}
+// UpcomingMatchRow estratto in src/components/UpcomingMatchRow.tsx (Client Component)
+// Fix: hydration mismatch su Chip icon causato da estensioni browser.
 
 function LeaderCard({
   rank,
@@ -1866,7 +1768,7 @@ function LeaderCard({
         p: 2,
         pt: 2.5,
         border: "1px solid",
-        borderColor: isFirst ? medalColor : "rgba(0,0,0,0.07)",
+        borderColor: isFirst ? medalColor : "divider",
         boxShadow: isFirst ? `0 4px 16px ${medalColor}33` : "none",
         height: "100%",
         display: "flex",
@@ -1953,7 +1855,8 @@ function SubLeaderRow({
       elevation={0}
       sx={{
         p: 1.5,
-        border: "1px solid rgba(0,0,0,0.07)",
+        border: "1px solid",
+        borderColor: "divider",
         display: "flex",
         alignItems: "center",
         gap: 1.5,
@@ -1964,7 +1867,7 @@ function SubLeaderRow({
           width: 36,
           height: 36,
           borderRadius: "50%",
-          bgcolor: "rgba(0,0,0,0.04)",
+          bgcolor: "action.hover",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -2016,8 +1919,9 @@ function AthleteCard({
       elevation={0}
       sx={{
         p: 1.75,
-        border: "1px solid rgba(0,0,0,0.07)",
-        borderLeft: isCaptain ? `4px solid ${teamColor}` : "1px solid rgba(0,0,0,0.07)",
+        border: "1px solid",
+        borderColor: "divider",
+        borderLeft: isCaptain ? `4px solid ${teamColor}` : undefined,
         display: "flex",
         alignItems: "center",
         gap: 1.5,

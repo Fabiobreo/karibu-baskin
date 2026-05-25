@@ -92,6 +92,30 @@ export async function generateGroupSlug(name: string, season: string): Promise<s
 }
 
 /**
+ * Genera uno slug univoco per un Post a partire dal titolo.
+ */
+export async function generatePostSlug(title: string): Promise<string> {
+  const base = slugify(title);
+  if (!base) return cuid();
+
+  const existing = await prisma.post.findUnique({ where: { slug: base } });
+  if (!existing) return base;
+
+  let n = 2;
+  while (n < 1000) {
+    const candidate = `${base}-${n}`;
+    const found = await prisma.post.findUnique({ where: { slug: candidate } });
+    if (!found) return candidate;
+    n++;
+  }
+  return base;
+}
+
+function cuid(): string {
+  return `post-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
  * Genera uno slug univoco per una partita.
  * Formato: "{team-slug}-vs-{opponent-slug}-{YYYY-MM-DD}"
  * Se esiste già, aggiunge suffisso numerico: "-2", "-3", ecc.
