@@ -55,24 +55,31 @@ export default async function SquadreArchivioPage() {
         subtitle="Tutte le squadre Karibu Baskin dalle stagioni passate."
         subtitleMaxWidth={480}
         py={{ xs: 5, md: 7 }}
+        breadcrumb={
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+          >
+            <MuiLink
+              href="/squadre"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: "rgba(255,255,255,0.65)",
+                fontWeight: 500,
+                "&:hover": { color: "#fff" },
+              }}
+            >
+              Squadre
+            </MuiLink>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
+              Archivio
+            </Typography>
+          </Breadcrumbs>
+        }
       />
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 5 }}>
-          <MuiLink
-            component={Link}
-            href="/squadre"
-            underline="hover"
-            color="text.secondary"
-            variant="body2"
-          >
-            Squadre
-          </MuiLink>
-          <Typography variant="body2" color="text.primary">
-            Archivio
-          </Typography>
-        </Breadcrumbs>
-
         {seasons.length === 0 ? (
           <EmptyState
             icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}

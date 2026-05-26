@@ -229,7 +229,7 @@ export default async function MatchDetailPage({ params }: Props) {
   const heroBg = match.result
     ? RESULT_GRADIENT[match.result]
     : isUpcoming
-      ? "linear-gradient(150deg, #1A1A1A 0%, #4A2A0A 55%, #E65100 130%)"
+      ? "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #E65100 130%)"
       : "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)";
 
   const teamSeasonParam = match.team.season.replace("-", "");
@@ -239,14 +239,15 @@ export default async function MatchDetailPage({ params }: Props) {
     <>
       <SiteHeader />
 
-      {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <Box
-        sx={{
-          background: match.imageUrl
+        style={{
+          backgroundImage: match.imageUrl
             ? `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${match.imageUrl})`
             : heroBg,
           backgroundSize: match.imageUrl ? "cover" : undefined,
           backgroundPosition: match.imageUrl ? "center" : undefined,
+        }}
+        sx={{
           color: "common.white",
           pt: { xs: 4, md: 5 },
           pb: { xs: 5, md: 7 },
@@ -255,13 +256,20 @@ export default async function MatchDetailPage({ params }: Props) {
           overflow: "hidden",
         }}
       >
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1, pt: 1, pb: 0 }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 20 },
+            right: { xs: 60, md: 80 },
+            zIndex: 2,
+          }}
+        >
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ mb: 2, "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
           >
             <MuiLink
-              component={Link}
               href="/partite"
               underline="hover"
               variant="body2"
@@ -281,30 +289,32 @@ export default async function MatchDetailPage({ params }: Props) {
               {match.team.name} vs {opponentName}
             </Typography>
           </Breadcrumbs>
-        </Container>
+        </Box>
 
-        {/* sfere decorative */}
+        {/* Sfere decorative */}
         <Box
+          aria-hidden="true"
           sx={{
             position: "absolute",
             top: -60,
             right: -60,
-            width: 240,
-            height: 240,
+            width: 260,
+            height: 260,
             borderRadius: "50%",
-            bgcolor: alpha("#ffffff", 0.03),
+            backgroundColor: alpha("#E65100", 0.1),
             pointerEvents: "none",
           }}
         />
         <Box
+          aria-hidden="true"
           sx={{
             position: "absolute",
             bottom: -80,
             left: -80,
-            width: 300,
-            height: 300,
+            width: 320,
+            height: 320,
             borderRadius: "50%",
-            bgcolor: alpha("#ffffff", 0.02),
+            backgroundColor: alpha("#E65100", 0.06),
             pointerEvents: "none",
           }}
         />
@@ -650,7 +660,6 @@ export default async function MatchDetailPage({ params }: Props) {
         </Container>
       </Box>
 
-      {/* ── MVP ───────────────────────────────────────────────────────────── */}
       {match.mvps.length > 0 && (
         <Container maxWidth="md" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>
           <Box
@@ -749,7 +758,6 @@ export default async function MatchDetailPage({ params }: Props) {
         </Container>
       )}
 
-      {/* ── Body con tabs ──────────────────────────────────────────────────── */}
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <MatchDetailTabs
           notes={match.notes}

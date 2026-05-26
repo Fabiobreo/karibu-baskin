@@ -12,6 +12,7 @@ import {
   Breadcrumbs,
   Link as MuiLink,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -157,7 +158,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   const now = new Date();
   const teamColor = team.color ?? "#E65100";
 
-  // ── Unisci team.matches + opponentInMatches (specchiando le seconde) ──
+  // Unisci team.matches + opponentInMatches (specchiando le seconde)
   // Le partite in cui la squadra è opponentTeam (amichevoli interne contro un'altra
   // delle nostre squadre) sono memorizzate con punteggio dal punto di vista dell'altra.
   // Per farle apparire correttamente in questa pagina, le specchiamo:
@@ -339,14 +340,15 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
     <>
       <SiteHeader />
 
-      {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <Box
-        sx={{
-          background: team.imageUrl
+        style={{
+          backgroundImage: team.imageUrl
             ? `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${team.imageUrl})`
-            : `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 35%, ${teamColor} 130%)`,
+            : `linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, ${teamColor} 130%)`,
           backgroundSize: team.imageUrl ? "cover" : undefined,
           backgroundPosition: team.imageUrl ? "center" : undefined,
+        }}
+        sx={{
           color: "#fff",
           py: { xs: 5, md: 7 },
           px: 2,
@@ -354,16 +356,50 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           overflow: "hidden",
         }}
       >
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+        {/* Sfere decorative */}
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: alpha("#E65100", 0.1),
+            pointerEvents: "none",
+          }}
+        />
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            backgroundColor: alpha("#E65100", 0.06),
+            pointerEvents: "none",
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 20 },
+            right: { xs: 60, md: 80 },
+            zIndex: 2,
+          }}
+        >
           <Breadcrumbs
             aria-label="breadcrumb"
             sx={{
-              mb: 2,
               "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" },
             }}
           >
             <MuiLink
-              component={Link}
               href="/squadre"
               underline="hover"
               variant="body2"
@@ -379,7 +415,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               {team.name}
             </Typography>
           </Breadcrumbs>
+        </Box>
 
+        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Box
             sx={{
               display: "flex",
@@ -553,7 +591,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        {/* ── Prossima partita ───────────────────────────────────────────── */}
         {nextMatch &&
           (() => {
             // Precedente incontro tra le stesse squadre nella stessa stagione
@@ -571,7 +608,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             );
           })()}
 
-        {/* ── KPI: bilancio + diff + forma ───────────────────────────────── */}
         {playedMatches.length > 0 && (
           <Box sx={{ mb: 6, mt: nextMatch ? 4 : 0 }}>
             <Box
@@ -820,7 +856,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           </Box>
         )}
 
-        {/* ── Top scorer / Leaders ───────────────────────────────────────── */}
         {leadersByPoints.length > 0 && (
           <Box sx={{ mb: 6 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
@@ -873,7 +908,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           </Box>
         )}
 
-        {/* ── Roster raggruppato per ruolo ───────────────────────────────── */}
         {team.memberships.length > 0 && (
           <>
             <Divider sx={{ mb: 5 }} />
@@ -979,7 +1013,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           </>
         )}
 
-        {/* ── Risultati ──────────────────────────────────────────────────── */}
         {playedMatchesDesc.length > 0 && (
           <>
             <Divider sx={{ mb: 5 }} />
@@ -1010,7 +1043,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           </>
         )}
 
-        {/* ── Altre partite future (oltre alla prossima) ─────────────────── */}
         {upcomingMatches.length > 1 && (
           <>
             <Divider sx={{ mb: 5 }} />

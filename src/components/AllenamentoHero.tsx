@@ -172,8 +172,10 @@ export default function AllenamientoHero({
   return (
     <>
       <Box
+        style={{
+          backgroundImage: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+        }}
         sx={{
-          background: (theme) => theme.palette.heroGradient.dark,
           color: "common.white",
           px: { xs: 2.5, sm: 4, md: 8 },
           py: { xs: 3, sm: 4 },
@@ -233,7 +235,15 @@ export default function AllenamientoHero({
           }}
         />
 
-        <Box sx={{ position: "relative", mb: 2 }}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 20 },
+            right: { xs: 60, md: 80 },
+            zIndex: 2,
+          }}
+        >
           <Breadcrumbs
             aria-label="breadcrumb"
             sx={{

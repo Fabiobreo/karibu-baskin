@@ -378,7 +378,7 @@ export default function AdminGironeWorkspaceClient({
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
           <MuiLink
             component={Link}
             href="/admin"

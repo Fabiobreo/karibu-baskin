@@ -1,5 +1,4 @@
 import { Box, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
-import NextLink from "next/link";
 import type { ReactNode } from "react";
 
 interface BreadcrumbItem {
@@ -30,7 +29,6 @@ export default function AdminPageHeader({
             item.href ? (
               <MuiLink
                 key={item.label}
-                component={NextLink}
                 href={item.href}
                 underline="hover"
                 color="text.secondary"

@@ -163,7 +163,10 @@ export default function SiteHeader() {
         position="sticky"
         color="secondary"
         elevation={0}
-        sx={{ borderBottom: (theme) => `1px solid ${alpha(theme.palette.common.white, 0.08)}` }}
+        sx={{
+          borderBottom: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
+          boxShadow: "0 2px 16px rgba(0,0,0,0.6)",
+        }}
       >
         <Toolbar sx={{ gap: 1, minHeight: { xs: 56, sm: 60 } }}>
           {/* Logo + nome */}

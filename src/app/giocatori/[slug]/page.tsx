@@ -128,7 +128,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const currentSeason = getCurrentSeason();
   const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
 
-  // ── Medaglie: calcola se l'utente è 1°/2°/3° top scorer per ciascuna (squadra, stagione)
+  // Medaglie: calcola se l'utente è 1°/2°/3° top scorer per ciascuna (squadra, stagione)
   const teamSeasonPairs = user.teamMemberships.map((m) => ({
     teamId: m.team.id,
     teamName: m.team.name,
@@ -251,8 +251,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
       {/* Hero — design "carta giocatore" condivisibile */}
       <Box
+        style={{
+          backgroundImage: `linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, ${playerColor} 130%)`,
+        }}
         sx={{
-          background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 30%, ${playerColor} 130%)`,
           color: "common.white",
           py: { xs: 5, md: 7 },
           px: 2,
@@ -260,33 +262,48 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           overflow: "hidden",
         }}
       >
-        {/* Iniziale gigante in filigrana */}
+        {/* Sfere decorative */}
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: "absolute",
+            top: -60,
+            right: -60,
+            width: 260,
+            height: 260,
+            borderRadius: "50%",
+            backgroundColor: alpha("#E65100", 0.1),
+            pointerEvents: "none",
+          }}
+        />
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: "absolute",
+            bottom: -80,
+            left: -80,
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            backgroundColor: alpha("#E65100", 0.06),
+            pointerEvents: "none",
+          }}
+        />
+
         <Box
           sx={{
             position: "absolute",
-            top: "50%",
-            right: { xs: -40, md: -20 },
-            transform: "translateY(-50%)",
-            fontSize: { xs: "14rem", md: "20rem" },
-            fontWeight: 900,
-            color: "common.white",
-            opacity: 0.05,
-            lineHeight: 1,
-            pointerEvents: "none",
-            userSelect: "none",
-            fontFamily: "inherit",
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 20 },
+            right: { xs: 60, md: 80 },
+            zIndex: 2,
           }}
         >
-          {(user.name ?? "?")[0].toUpperCase()}
-        </Box>
-
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ mb: 3, "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
           >
             <MuiLink
-              component={Link}
               href="/squadre"
               underline="hover"
               variant="body2"
@@ -306,6 +323,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {user.name ?? "Giocatore"}
             </Typography>
           </Breadcrumbs>
+        </Box>
+
+        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           <Box
             sx={{
               display: "flex",

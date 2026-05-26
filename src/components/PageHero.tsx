@@ -1,6 +1,6 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { heroGradient } from "@/theme";
+import { heroGradient } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 
 interface PageHeroProps {
@@ -9,6 +9,7 @@ interface PageHeroProps {
   chipWhite?: boolean;
   subtitle?: string;
   subtitleMaxWidth?: number;
+  breadcrumb?: React.ReactNode;
   py?: { xs: number; md: number };
   maxWidth?: ContainerProps["maxWidth"];
   decorativeCircles?: boolean;
@@ -22,6 +23,7 @@ export default function PageHero({
   chipWhite = false,
   subtitle,
   subtitleMaxWidth = 560,
+  breadcrumb,
   py = { xs: 6, md: 9 },
   maxWidth = "md",
   decorativeCircles = true,
@@ -30,8 +32,8 @@ export default function PageHero({
 }: PageHeroProps) {
   return (
     <Box
+      style={{ backgroundImage: heroGradient.dark }}
       sx={{
-        background: heroGradient.dark,
         color: "#fff",
         py,
         px: 2,
@@ -67,6 +69,20 @@ export default function PageHero({
             }}
           />
         </>
+      )}
+      {breadcrumb && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 20 },
+            right: { xs: 60, md: 80 },
+            zIndex: 2,
+            textAlign: "left",
+          }}
+        >
+          {breadcrumb}
+        </Box>
       )}
       <Container maxWidth={maxWidth} sx={{ position: "relative", zIndex: 1 }}>
         {title ? (

@@ -1,4 +1,5 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import type { ContainerProps } from "@mui/material";
 
 interface EntityHeroProps {
@@ -6,6 +7,7 @@ interface EntityHeroProps {
   title: string;
   chip?: string;
   subtitle?: string;
+  breadcrumb?: React.ReactNode;
   py?: { xs: number; md: number };
   maxWidth?: ContainerProps["maxWidth"];
   children?: React.ReactNode;
@@ -16,14 +18,17 @@ export default function EntityHero({
   title,
   chip,
   subtitle,
+  breadcrumb,
   py = { xs: 5, md: 7 },
   maxWidth = "md",
   children,
 }: EntityHeroProps) {
   return (
     <Box
+      style={{
+        backgroundImage: `linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, ${color} 130%)`,
+      }}
       sx={{
-        background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 30%, ${color} 130%)`,
         color: "#fff",
         py,
         px: 2,
@@ -31,26 +36,47 @@ export default function EntityHero({
         overflow: "hidden",
       }}
     >
-      {/* Decorative watermark initial */}
+      {/* Sfere decorative */}
       <Box
         aria-hidden="true"
         sx={{
           position: "absolute",
-          top: "50%",
-          right: { xs: -40, md: -20 },
-          transform: "translateY(-50%)",
-          fontSize: { xs: "14rem", md: "20rem" },
-          fontWeight: 900,
-          color: "#fff",
-          opacity: 0.04,
-          lineHeight: 1,
+          top: -60,
+          right: -60,
+          width: 260,
+          height: 260,
+          borderRadius: "50%",
+          backgroundColor: alpha("#E65100", 0.1),
           pointerEvents: "none",
-          userSelect: "none",
-          fontFamily: "inherit",
         }}
-      >
-        {title[0]?.toUpperCase()}
-      </Box>
+      />
+      <Box
+        aria-hidden="true"
+        sx={{
+          position: "absolute",
+          bottom: -80,
+          left: -80,
+          width: 320,
+          height: 320,
+          borderRadius: "50%",
+          backgroundColor: alpha("#E65100", 0.06),
+          pointerEvents: "none",
+        }}
+      />
+
+      {breadcrumb && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            left: { xs: 12, md: 20 },
+            right: { xs: 60, md: 80 },
+            zIndex: 2,
+          }}
+        >
+          {breadcrumb}
+        </Box>
+      )}
 
       <Container maxWidth={maxWidth} sx={{ position: "relative", zIndex: 1 }}>
         {chip && (

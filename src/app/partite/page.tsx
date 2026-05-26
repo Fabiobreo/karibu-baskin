@@ -8,7 +8,6 @@ import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import BoltIcon from "@mui/icons-material/Bolt";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -16,6 +15,7 @@ import { it } from "date-fns/locale";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
+import MatchTimeCell from "@/components/MatchTimeCell";
 
 export const metadata: Metadata = {
   title: "Prossime partite | Karibu Baskin",
@@ -33,25 +33,10 @@ const MATCH_TYPE_LABEL: Record<MatchType, string> = {
   FRIENDLY: "Amichevole",
 };
 
-const IMMINENT_HOURS = 48;
-
-function relativeLabel(date: Date, now: Date): string {
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diffDays = Math.round((startOfDate.getTime() - startOfToday.getTime()) / 86_400_000);
-  if (diffDays === 0) return "Oggi";
-  if (diffDays === 1) return "Domani";
-  if (diffDays > 1 && diffDays <= 6) {
-    return format(date, "EEEE", { locale: it }).replace(/^./, (c) => c.toUpperCase());
-  }
-  return `Tra ${diffDays} giorni`;
-}
-
 export default async function PartitePage({ searchParams }: Props) {
   const sp = await searchParams;
   const season = sp.season ?? getCurrentSeason();
   const now = new Date();
-  const imminentLimit = new Date(now.getTime() + IMMINENT_HOURS * 60 * 60 * 1000);
 
   const allSeasons = await prisma.competitiveTeam.findMany({
     select: { season: true },
@@ -99,13 +84,12 @@ export default async function PartitePage({ searchParams }: Props) {
     <>
       <SiteHeader />
 
-      {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <PageHero py={{ xs: 5, md: 7 }} align="left" decorativeCircles={false}>
+      <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <CalendarTodayIcon sx={{ fontSize: 30, color: "#fff" }} />
+          <CalendarTodayIcon sx={{ fontSize: 30, color: "primary.main" }} />
           <Typography
             variant="overline"
-            sx={{ color: "rgba(255,255,255,0.85)", letterSpacing: "0.12em", fontWeight: 700 }}
+            sx={{ color: "primary.main", letterSpacing: "0.12em", fontWeight: 700 }}
           >
             In programma
           </Typography>
@@ -126,7 +110,6 @@ export default async function PartitePage({ searchParams }: Props) {
       </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        {/* ── Filtri stagione ──────────────────────────────────────────────── */}
         {seasons.length > 1 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
             <Typography
@@ -155,7 +138,6 @@ export default async function PartitePage({ searchParams }: Props) {
           </Box>
         )}
 
-        {/* ── Empty state ─────────────────────────────────────────────────── */}
         {teamGroups.length === 0 && (
           <EmptyState
             icon={<CalendarTodayIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
@@ -175,7 +157,6 @@ export default async function PartitePage({ searchParams }: Props) {
           />
         )}
 
-        {/* ── Sezioni per squadra ─────────────────────────────────────────── */}
         <Stack spacing={5}>
           {teamGroups.map((team) => (
             <Box key={team.id}>
@@ -222,7 +203,6 @@ export default async function PartitePage({ searchParams }: Props) {
 
               <Stack spacing={1}>
                 {team.matches.map((m) => {
-                  const isImminent = m.date <= imminentLimit;
                   const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
                   const leftName = m.isHome ? m.team.name : opponentName;
                   const rightName = m.isHome ? opponentName : m.team.name;
@@ -260,30 +240,7 @@ export default async function PartitePage({ searchParams }: Props) {
                         >
                           {/* Quando */}
                           <Box sx={{ minWidth: 110, flexShrink: 0 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                              <Typography
-                                variant="body2"
-                                fontWeight={800}
-                                sx={{ fontSize: "0.85rem" }}
-                              >
-                                {relativeLabel(m.date, now)}
-                              </Typography>
-                              {isImminent && (
-                                <Chip
-                                  icon={<BoltIcon sx={{ fontSize: 12 }} />}
-                                  label="Imminente"
-                                  size="small"
-                                  sx={{
-                                    fontWeight: 800,
-                                    fontSize: "0.6rem",
-                                    height: 18,
-                                    bgcolor: "primary.main",
-                                    color: "#fff",
-                                    "& .MuiChip-icon": { ml: "4px", mr: "-4px" },
-                                  }}
-                                />
-                              )}
-                            </Box>
+                            <MatchTimeCell dateIso={m.date.toISOString()} />
                             <Typography
                               variant="caption"
                               color="text.disabled"

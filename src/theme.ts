@@ -1,5 +1,9 @@
 "use client";
 import { createTheme } from "@mui/material/styles";
+import { heroGradient } from "@/lib/heroStyles";
+
+// Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
+export { heroGradient };
 
 const ORANGE = "#E65100";
 const DARK = "#1A1A1A";
@@ -143,10 +147,6 @@ const darkMedal: MedalPalette = {
   gold: "#FFD54F",
   silver: "#E0E0E0",
   bronze: "#D7A56B",
-};
-
-export const heroGradient: HeroGradientPalette = {
-  dark: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
 };
 
 const sharedTypography = {

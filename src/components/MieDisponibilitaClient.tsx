@@ -173,7 +173,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
 
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 3, md: 4 }, pb: drafts.size > 0 ? 12 : 4 }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <MuiLink
           component={Link}
           href="/profilo"

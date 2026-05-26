@@ -285,7 +285,7 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
           <MuiLink
             component={Link}
             href="/admin"

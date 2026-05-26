@@ -76,13 +76,7 @@ export default async function NewsSlugPage({ params }: Props) {
       <SiteHeader />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-          <MuiLink
-            component={Link}
-            href="/news"
-            underline="hover"
-            color="text.secondary"
-            variant="body2"
-          >
+          <MuiLink href="/news" underline="hover" color="text.secondary" variant="body2">
             News
           </MuiLink>
           <Typography variant="body2" color="text.primary" noWrap sx={{ maxWidth: 300 }}>

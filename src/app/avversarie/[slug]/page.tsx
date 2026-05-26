@@ -119,23 +119,38 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   return (
     <>
       <SiteHeader />
-      <EntityHero chip="Squadra avversaria" title={team.name} color="#E65100" />
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-          <MuiLink
-            component={Link}
-            href="/risultati"
-            underline="hover"
-            color="text.secondary"
-            variant="body2"
+      <EntityHero
+        chip="Squadra avversaria"
+        title={team.name}
+        color="#E65100"
+        breadcrumb={
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
           >
-            Risultati
-          </MuiLink>
-          <Typography variant="body2" color="text.primary">
-            {team.name}
-          </Typography>
-        </Breadcrumbs>
-
+            <MuiLink
+              href="/risultati"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: "rgba(255,255,255,0.65)",
+                fontWeight: 500,
+                "&:hover": { color: "#fff" },
+              }}
+            >
+              Risultati
+            </MuiLink>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
+              noWrap
+            >
+              {team.name}
+            </Typography>
+          </Breadcrumbs>
+        }
+      />
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         {/* Info aggiuntive squadra */}
         <Box sx={{ mb: 4 }}>
           <Box

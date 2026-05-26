@@ -112,7 +112,7 @@ export default async function ClassifichePage() {
       <SiteHeader />
 
       {/* Hero */}
-      <PageHero py={{ xs: 5, md: 7 }} align="left" decorativeCircles={false}>
+      <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
