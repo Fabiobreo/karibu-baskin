@@ -1,4 +1,5 @@
 import { Avatar, Box, Paper, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import Link from "next/link";
@@ -18,7 +19,6 @@ export default function LeaderCard({
   };
   teamColor: string;
 }) {
-  const medalColor = rank === 1 ? "#FFC107" : rank === 2 ? "#9E9E9E" : "#CD7F32";
   const medalGradient =
     rank === 1
       ? "linear-gradient(135deg, #FFD54F 0%, #FFA000 100%)"
@@ -35,8 +35,8 @@ export default function LeaderCard({
         p: 2,
         pt: 2.5,
         border: "1px solid",
-        borderColor: isFirst ? medalColor : "divider",
-        boxShadow: isFirst ? `0 4px 16px ${medalColor}33` : "none",
+        borderColor: isFirst ? "medal.gold" : "divider",
+        boxShadow: isFirst ? `0 4px 16px ${alpha("#FFC107", 0.2)}` : "none",
         height: "100%",
         display: "flex",
         alignItems: "center",
@@ -60,12 +60,13 @@ export default function LeaderCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#fff",
-          boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
-          border: "2px solid #fff",
+          color: "common.white",
+          boxShadow: `0 3px 10px ${alpha("#000000", 0.25)}`,
+          border: "2px solid",
+          borderColor: "common.white",
         }}
       >
-        <MedalIcon sx={{ fontSize: 18, color: "#fff" }} />
+        <MedalIcon sx={{ fontSize: 18, color: "common.white" }} />
       </Box>
       <Avatar
         src={leader.image ?? undefined}

@@ -1,4 +1,5 @@
 import { Box, Chip, Paper, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -57,7 +58,7 @@ export default function NextMatchCard({
           transition: "all 0.2s",
           "&:hover": {
             transform: "translateY(-3px)",
-            boxShadow: `0 10px 32px ${teamColor}33`,
+            boxShadow: `0 10px 32px ${alpha(teamColor, 0.2)}`,
           },
         }}
       >
@@ -65,7 +66,7 @@ export default function NextMatchCard({
         <Box
           sx={{
             background: `linear-gradient(120deg, #1A1A1A 0%, #1A1A1A 55%, ${teamColor} 135%)`,
-            color: "#fff",
+            color: "common.white",
             px: { xs: 2, md: 3 },
             py: { xs: 2, md: 2.25 },
             position: "relative",
@@ -78,18 +79,18 @@ export default function NextMatchCard({
           <Box
             sx={{
               flexShrink: 0,
-              bgcolor: "#fff",
+              bgcolor: "common.white",
               borderRadius: 1.5,
               overflow: "hidden",
               minWidth: { xs: 64, md: 74 },
               textAlign: "center",
-              boxShadow: "0 4px 14px rgba(0,0,0,0.35)",
+              boxShadow: `0 4px 14px ${alpha("#000000", 0.35)}`,
             }}
           >
             <Box
               sx={{
                 bgcolor: teamColor,
-                color: "#fff",
+                color: "common.white",
                 px: 1,
                 py: 0.4,
                 fontSize: "0.62rem",
@@ -105,7 +106,7 @@ export default function NextMatchCard({
                 sx={{
                   fontSize: { xs: "1.7rem", md: "2rem" },
                   fontWeight: 900,
-                  color: "#1A1A1A",
+                  color: "text.primary",
                   lineHeight: 1,
                   fontVariantNumeric: "tabular-nums",
                 }}
@@ -116,7 +117,7 @@ export default function NextMatchCard({
                 sx={{
                   fontSize: "0.62rem",
                   fontWeight: 800,
-                  color: "#757575",
+                  color: "text.secondary",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   mt: 0.25,
@@ -153,8 +154,8 @@ export default function NextMatchCard({
                 label={MATCH_TYPE_LABEL[match.matchType]}
                 size="small"
                 sx={{
-                  bgcolor: "#fff",
-                  color: "#1A1A1A",
+                  bgcolor: "common.white",
+                  color: "grey.900",
                   fontWeight: 800,
                   fontSize: "0.6rem",
                   height: 18,
@@ -165,7 +166,7 @@ export default function NextMatchCard({
               sx={{
                 fontSize: { xs: "1rem", md: "1.15rem" },
                 fontWeight: 800,
-                color: "#fff",
+                color: "common.white",
                 lineHeight: 1.2,
               }}
             >
@@ -186,17 +187,17 @@ export default function NextMatchCard({
                 sx={{
                   fontSize: "0.78rem",
                   fontWeight: 700,
-                  color: "#fff",
+                  color: "common.white",
                 }}
               >
                 ⏱ {format(new Date(match.date), "HH:mm")}
               </Typography>
-              <Typography sx={{ color: "#666", fontSize: "0.78rem" }}>·</Typography>
+              <Typography sx={{ color: "text.disabled", fontSize: "0.78rem" }}>·</Typography>
               <Typography
                 sx={{
                   fontSize: "0.78rem",
                   fontWeight: 700,
-                  color: isImminent ? teamColor : "#BDBDBD",
+                  color: isImminent ? teamColor : "text.disabled",
                 }}
               >
                 {days === 0 && hours === 0
@@ -209,12 +210,12 @@ export default function NextMatchCard({
               </Typography>
               {isImminent && (
                 <Chip
-                  icon={<BoltIcon sx={{ fontSize: 12, color: "#fff !important" }} />}
+                  icon={<BoltIcon sx={{ fontSize: 12, color: "common.white !important" }} />}
                   label="Imminente"
                   size="small"
                   sx={{
                     bgcolor: teamColor,
-                    color: "#fff",
+                    color: "common.white",
                     fontWeight: 800,
                     fontSize: "0.6rem",
                     height: 18,
@@ -241,15 +242,15 @@ export default function NextMatchCard({
             }}
           >
             {isHomeMatch ? (
-              <HomeIcon sx={{ fontSize: 18, color: "#fff" }} />
+              <HomeIcon sx={{ fontSize: 18, color: "common.white" }} />
             ) : (
-              <FlightIcon sx={{ fontSize: 18, color: "#fff" }} />
+              <FlightIcon sx={{ fontSize: 18, color: "common.white" }} />
             )}
             <Typography
               sx={{
                 fontSize: "0.6rem",
                 fontWeight: 800,
-                color: "#fff",
+                color: "common.white",
                 textTransform: "uppercase",
                 letterSpacing: "0.06em",
               }}
@@ -278,8 +279,8 @@ export default function NextMatchCard({
               alignItems: "center",
               justifyContent: "center",
               gap: 1,
-              borderRight: `1px solid ${teamColor}22`,
-              bgcolor: isHomeMatch ? `${teamColor}08` : "background.paper",
+              borderRight: `1px solid ${alpha(teamColor, 0.13)}`,
+              bgcolor: isHomeMatch ? alpha(teamColor, 0.031) : "background.paper",
             }}
           >
             <Box
@@ -288,13 +289,13 @@ export default function NextMatchCard({
                 height: { xs: 44, md: 54 },
                 borderRadius: "50%",
                 bgcolor: teamColor,
-                color: "#fff",
+                color: "common.white",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
                 fontSize: { xs: "1.4rem", md: "1.7rem" },
-                boxShadow: `0 3px 10px ${teamColor}55`,
+                boxShadow: `0 3px 10px ${alpha(teamColor, 0.33)}`,
               }}
             >
               {usName[0]?.toUpperCase()}
@@ -340,8 +341,8 @@ export default function NextMatchCard({
                 width: { xs: 36, md: 46 },
                 height: { xs: 36, md: 46 },
                 borderRadius: "50%",
-                bgcolor: "#1A1A1A",
-                color: "#fff",
+                bgcolor: "grey.900",
+                color: "common.white",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -349,7 +350,7 @@ export default function NextMatchCard({
                 fontSize: { xs: "0.85rem", md: "1rem" },
                 letterSpacing: "0.05em",
                 border: `3px solid ${teamColor}`,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                boxShadow: `0 2px 8px ${alpha("#000000", 0.2)}`,
               }}
             >
               VS
@@ -375,14 +376,14 @@ export default function NextMatchCard({
                 width: { xs: 44, md: 54 },
                 height: { xs: 44, md: 54 },
                 borderRadius: "50%",
-                bgcolor: "#424242",
-                color: "#fff",
+                bgcolor: "grey.800",
+                color: "common.white",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
                 fontSize: { xs: "1.4rem", md: "1.7rem" },
-                boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
+                boxShadow: `0 3px 10px ${alpha("#000000", 0.2)}`,
               }}
             >
               {themName[0]?.toUpperCase()}
@@ -466,7 +467,7 @@ export default function NextMatchCard({
                     alignItems: "center",
                     gap: 0.6,
                     bgcolor: MATCH_RESULT_META[prev.result].color,
-                    color: "#fff",
+                    color: "common.white",
                     px: 1,
                     py: 0.25,
                     borderRadius: 1,

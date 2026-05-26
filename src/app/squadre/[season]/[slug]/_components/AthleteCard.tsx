@@ -1,4 +1,5 @@
 import { Avatar, Box, Chip, Paper, Tooltip, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 
@@ -30,7 +31,7 @@ export default function AthleteCard({
         gap: 1.5,
         height: "100%",
         transition: "all 0.12s",
-        "&:hover": { borderColor: teamColor, backgroundColor: `${teamColor}08` },
+        "&:hover": { borderColor: teamColor, backgroundColor: alpha(teamColor, 0.031) },
       }}
     >
       <Avatar
@@ -53,7 +54,7 @@ export default function AthleteCard({
           </Typography>
           {isCaptain && (
             <Tooltip title="Capitano">
-              <EmojiEventsIcon sx={{ fontSize: 15, color: "#F9A825", flexShrink: 0 }} />
+              <EmojiEventsIcon sx={{ fontSize: 15, color: "medal.gold", flexShrink: 0 }} />
             </Tooltip>
           )}
         </Box>
@@ -64,7 +65,7 @@ export default function AthleteCard({
             sx={{
               mt: 0.4,
               bgcolor: ROLE_COLORS[roleNum],
-              color: "#fff",
+              color: "common.white",
               fontWeight: 700,
               fontSize: "0.65rem",
               height: 18,
