@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -98,38 +100,30 @@ export default async function PartitePage({ searchParams }: Props) {
       <SiteHeader />
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #4A2A0A 55%, #E65100 130%)",
-          color: "#fff",
-          py: { xs: 5, md: 7 },
-          px: 2,
-        }}
-      >
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-            <CalendarTodayIcon sx={{ fontSize: 30, color: "#fff" }} />
-            <Typography
-              variant="overline"
-              sx={{ color: "rgba(255,255,255,0.85)", letterSpacing: "0.12em", fontWeight: 700 }}
-            >
-              In programma
-            </Typography>
-          </Box>
+      <PageHero py={{ xs: 5, md: 7 }} align="left" decorativeCircles={false}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+          <CalendarTodayIcon sx={{ fontSize: 30, color: "#fff" }} />
           <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 1, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+            variant="overline"
+            sx={{ color: "rgba(255,255,255,0.85)", letterSpacing: "0.12em", fontWeight: 700 }}
           >
-            Prossime partite
+            In programma
           </Typography>
-          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)" }}>
-            {upcoming.length === 0
-              ? "Nessuna partita in programma."
-              : `${upcoming.length} ${upcoming.length === 1 ? "partita" : "partite"} da disputare`}
-          </Typography>
-        </Container>
-      </Box>
+        </Box>
+        <Typography
+          variant="h3"
+          component="h1"
+          fontWeight={800}
+          sx={{ mb: 1, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+        >
+          Prossime partite
+        </Typography>
+        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)" }}>
+          {upcoming.length === 0
+            ? "Nessuna partita in programma."
+            : `${upcoming.length} ${upcoming.length === 1 ? "partita" : "partite"} da disputare`}
+        </Typography>
+      </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* ── Filtri stagione ──────────────────────────────────────────────── */}
@@ -163,15 +157,11 @@ export default async function PartitePage({ searchParams }: Props) {
 
         {/* ── Empty state ─────────────────────────────────────────────────── */}
         {teamGroups.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <CalendarTodayIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessuna partita in programma
-            </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              Il calendario delle prossime partite sarà pubblicato a breve.
-            </Typography>
-            <Box sx={{ mt: 3 }}>
+          <EmptyState
+            icon={<CalendarTodayIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title="Nessuna partita in programma"
+            message="Il calendario delle prossime partite sarà pubblicato a breve."
+            action={
               <Link href="/risultati" style={{ textDecoration: "none" }}>
                 <Typography
                   variant="body2"
@@ -181,8 +171,8 @@ export default async function PartitePage({ searchParams }: Props) {
                   Vedi i risultati →
                 </Typography>
               </Link>
-            </Box>
-          </Box>
+            }
+          />
         )}
 
         {/* ── Sezioni per squadra ─────────────────────────────────────────── */}
@@ -224,7 +214,7 @@ export default async function PartitePage({ searchParams }: Props) {
                     fontWeight: 700,
                     fontSize: "0.68rem",
                     height: 20,
-                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                    bgcolor: alpha("#E65100", 0.1),
                     color: "primary.main",
                   }}
                 />
@@ -254,7 +244,7 @@ export default async function PartitePage({ searchParams }: Props) {
                           transition: "box-shadow 0.15s, border-color 0.15s",
                           "&:hover": {
                             boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-                            borderColor: "rgba(0,0,0,0.15)",
+                            borderColor: "text.disabled",
                           },
                         }}
                       >
@@ -405,7 +395,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                 fontSize: "0.6rem",
                                 height: 20,
                                 color: "text.secondary",
-                                borderColor: "rgba(0,0,0,0.12)",
+                                borderColor: "divider",
                               }}
                             />
                             <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />

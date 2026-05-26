@@ -22,6 +22,7 @@ export default function NotificationBell() {
     <>
       <IconButton
         onClick={(e) => setAnchorEl(e.currentTarget)}
+        aria-label="Notifiche"
         sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#fff" } }}
         size="small"
       >

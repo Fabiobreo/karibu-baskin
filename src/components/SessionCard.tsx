@@ -61,14 +61,14 @@ export interface SessionWithCount {
 function getStatusLabel(date: Date, endTime: Date | null): { label: string; color: string } {
   const now = new Date();
   const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
-  if (now >= date && now <= end) return { label: "In corso", color: "#2E7D32" };
-  if (now > end) return { label: "Terminato", color: "#9E9E9E" };
+  if (now >= date && now <= end) return { label: "In corso", color: "match.win" };
+  if (now > end) return { label: "Terminato", color: "text.disabled" };
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return { label: "Oggi!", color: "#E65100" };
-  if (diffDays === 1) return { label: "Domani", color: "#1565C0" };
-  return { label: `Tra ${diffDays} giorni`, color: "#1565C0" };
+  if (diffDays === 0) return { label: "Oggi!", color: "primary.main" };
+  if (diffDays === 1) return { label: "Domani", color: "info.main" };
+  return { label: `Tra ${diffDays} giorni`, color: "info.main" };
 }
 
 export default function SessionCard({
@@ -192,8 +192,8 @@ export default function SessionCard({
               muted
                 ? theme.palette.action.hover
                 : theme.palette.mode === "dark"
-                  ? "#000"
-                  : "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+                  ? theme.palette.common.black
+                  : theme.palette.heroGradient.dark,
             display: "flex",
             alignItems: hero ? "flex-start" : "center",
             justifyContent: "space-between",
@@ -209,7 +209,7 @@ export default function SessionCard({
               fontWeight={hero ? 800 : 700}
               noWrap={!hero}
               sx={{
-                color: muted ? "text.primary" : "#fff",
+                color: muted ? "text.primary" : "common.white",
                 lineHeight: 1.2,
                 ...(hero && { fontSize: { xs: "1.3rem", sm: "1.5rem" } }),
               }}
@@ -228,12 +228,16 @@ export default function SessionCard({
           >
             {showInArrivo && (
               <Chip
-                icon={<HourglassEmptyIcon sx={{ fontSize: "0.9rem !important", color: "#fff" }} />}
+                icon={
+                  <HourglassEmptyIcon
+                    sx={{ fontSize: "0.9rem !important", color: "common.white" }}
+                  />
+                }
                 label="In arrivo"
                 size="small"
                 sx={{
                   bgcolor: "#6D4C41",
-                  color: "#fff",
+                  color: "common.white",
                   fontWeight: 700,
                   fontSize: "0.68rem",
                 }}
@@ -241,12 +245,12 @@ export default function SessionCard({
             )}
             {showChiuse && (
               <Chip
-                icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "#fff" }} />}
+                icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "common.white" }} />}
                 label="Iscrizioni chiuse"
                 size="small"
                 sx={{
                   bgcolor: "#546E7A",
-                  color: "#fff",
+                  color: "common.white",
                   fontWeight: 700,
                   fontSize: "0.68rem",
                 }}
@@ -257,7 +261,7 @@ export default function SessionCard({
               size="small"
               sx={{
                 bgcolor: muted ? "action.selected" : status.color,
-                color: muted ? "text.secondary" : "#fff",
+                color: muted ? "text.secondary" : "common.white",
                 fontWeight: 700,
                 fontSize: "0.68rem",
               }}

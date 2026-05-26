@@ -1,6 +1,5 @@
 "use client";
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   IconButton,
@@ -10,6 +9,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import CloseIcon from "@mui/icons-material/Close";
 import { AlignedTeamGrid, MobileTeamTabs } from "@/components/TeamDisplay";
 import ShareTeamsButton from "@/components/ShareTeamsButton";
@@ -56,7 +56,7 @@ export default function TeamsModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle
         sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pr: 1 }}
       >
@@ -102,6 +102,6 @@ export default function TeamsModal({
           </Box>
         )}
       </DialogContent>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

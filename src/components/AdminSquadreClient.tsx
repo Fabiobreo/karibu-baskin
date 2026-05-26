@@ -25,6 +25,7 @@ import {
   Alert,
   Grid2 as Grid,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -431,25 +432,7 @@ export default function AdminSquadreClient({
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 3,
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" fontWeight={800}>
-            Gestione Squadre
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Organizza le squadre per stagione.
-          </Typography>
-        </Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
         <Button variant="outlined" startIcon={<AddIcon />} onClick={openNewSeason}>
           Nuova stagione
         </Button>
@@ -564,7 +547,7 @@ export default function AdminSquadreClient({
       ) : (
         <Grid container spacing={3}>
           {teamsInSeason.map((team) => {
-            const color = team.color ?? "#E65100";
+            const color = team.color ?? "primary.main";
             const colorName = TEAM_COLORS.find((c) => c.value === color)?.label;
             return (
               <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
@@ -762,14 +745,25 @@ export default function AdminSquadreClient({
         {rosaBase && (
           <>
             {/* Intestazione colorata */}
-            <Box sx={{ px: 3, pt: 2.5, pb: 2, backgroundColor: rosaBase.color ?? "#E65100" }}>
+            <Box
+              sx={{
+                px: 3,
+                pt: 2.5,
+                pb: 2,
+                bgcolor: rosaBase.color ?? "primary.main",
+              }}
+            >
               <Typography
                 variant="overline"
-                sx={{ color: "rgba(255,255,255,0.7)", fontWeight: 700, letterSpacing: "0.1em" }}
+                sx={{
+                  color: (theme) => alpha(theme.palette.common.white, 0.7),
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                }}
               >
                 Gestione Rosa
               </Typography>
-              <Typography variant="h6" fontWeight={800} sx={{ color: "#fff" }}>
+              <Typography variant="h6" fontWeight={800} sx={{ color: "common.white" }}>
                 {rosaName}
               </Typography>
             </Box>
@@ -837,7 +831,7 @@ export default function AdminSquadreClient({
                                   size="small"
                                   sx={{
                                     bgcolor: ROLE_COLORS[entry.sportRole],
-                                    color: "#fff",
+                                    color: "common.white",
                                     fontWeight: 700,
                                     fontSize: "0.58rem",
                                     height: 15,
@@ -887,7 +881,7 @@ export default function AdminSquadreClient({
                     if (!athlete) return null;
                     const name = athlete.name ?? "—";
                     const image = "image" in athlete ? (athlete.image ?? undefined) : undefined;
-                    const teamColor = rosaBase?.color ?? rosaTeam.color ?? "#E65100";
+                    const teamColor = rosaBase?.color ?? rosaTeam.color ?? "primary.main";
                     return (
                       <Box
                         key={m.id}
@@ -921,8 +915,8 @@ export default function AdminSquadreClient({
                                 sx={{
                                   fontSize: "0.62rem",
                                   height: 16,
-                                  bgcolor: "#F9A825",
-                                  color: "#fff",
+                                  bgcolor: "medal.gold",
+                                  color: "common.white",
                                   fontWeight: 700,
                                 }}
                               />
@@ -937,7 +931,7 @@ export default function AdminSquadreClient({
                               size="small"
                               sx={{
                                 bgcolor: ROLE_COLORS[athlete.sportRole],
-                                color: "#fff",
+                                color: "common.white",
                                 fontWeight: 700,
                                 fontSize: "0.62rem",
                                 height: 16,
@@ -950,7 +944,7 @@ export default function AdminSquadreClient({
                           <IconButton
                             size="small"
                             onClick={() => handleToggleCaptain(m.id, m.isCaptain)}
-                            sx={{ color: m.isCaptain ? "#F9A825" : "action.disabled" }}
+                            sx={{ color: m.isCaptain ? "medal.gold" : "action.disabled" }}
                           >
                             <EmojiEventsIcon fontSize="small" />
                           </IconButton>
@@ -1059,11 +1053,22 @@ function TeamCard({
         }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }} noWrap>
+          <Typography
+            variant="h6"
+            fontWeight={800}
+            sx={{ color: "common.white", lineHeight: 1.2 }}
+            noWrap
+          >
             {team.name}
           </Typography>
           {team.championship && (
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: (theme) => alpha(theme.palette.common.white, 0.75),
+                fontWeight: 500,
+              }}
+            >
               {team.championship}
             </Typography>
           )}
@@ -1078,8 +1083,11 @@ function TeamCard({
                 size="small"
                 aria-label="Vedi pagina pubblica"
                 sx={{
-                  color: "rgba(255,255,255,0.7)",
-                  "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+                  color: (theme) => alpha(theme.palette.common.white, 0.7),
+                  "&:hover": {
+                    color: "common.white",
+                    bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
+                  },
                 }}
               >
                 <VisibilityIcon sx={{ fontSize: 16 }} />
@@ -1092,8 +1100,11 @@ function TeamCard({
               onClick={onEdit}
               aria-label="Modifica squadra"
               sx={{
-                color: "rgba(255,255,255,0.7)",
-                "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+                color: (theme) => alpha(theme.palette.common.white, 0.7),
+                "&:hover": {
+                  color: "common.white",
+                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
+                },
               }}
             >
               <EditIcon sx={{ fontSize: 16 }} />
@@ -1105,8 +1116,11 @@ function TeamCard({
               onClick={onDelete}
               aria-label="Elimina squadra"
               sx={{
-                color: "rgba(255,255,255,0.7)",
-                "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+                color: (theme) => alpha(theme.palette.common.white, 0.7),
+                "&:hover": {
+                  color: "common.white",
+                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
+                },
               }}
             >
               <DeleteIcon sx={{ fontSize: 16 }} />

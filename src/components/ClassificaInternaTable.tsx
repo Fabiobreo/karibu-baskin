@@ -217,7 +217,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 fontSize: "0.72rem",
                 bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
                 color: roleFilter === r ? "#fff" : "text.primary",
-                border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.23)"}`,
+                border: "1px solid",
+                borderColor: roleFilter === r ? ROLE_COLORS[r] : "divider",
                 "&:hover": {
                   bgcolor: roleFilter === r ? ROLE_COLORS[r] : "action.hover",
                 },
@@ -232,8 +233,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         </Box>
       </Box>
 
-      {/* Table */}
-      <Box sx={{ overflowX: "auto" }}>
+      {/* Desktop table */}
+      <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
         <Table size="small" sx={{ minWidth: 720 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
@@ -396,6 +397,142 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             )}
           </TableBody>
         </Table>
+      </Box>
+
+      {/* Mobile card view */}
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
+        {paginated.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: "center" }}>
+            <Typography variant="body2" color="text.disabled">
+              Nessun giocatore con questo ruolo.
+            </Typography>
+          </Box>
+        ) : (
+          paginated.map((row, i) => {
+            const totMatches = row.matches + row.loanMatches;
+            const totPoints = row.points + row.loanPoints;
+            const avg = totMatches > 0 ? totPoints / totMatches : 0;
+            const rank = page * rowsPerPage + i + 1;
+            return (
+              <Box
+                key={row.userId}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  "&:last-child": { borderBottom: 0 },
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={700}
+                    color="text.disabled"
+                    sx={{ minWidth: 24, textAlign: "right", flexShrink: 0 }}
+                  >
+                    {rank}
+                  </Typography>
+                  <Avatar src={row.image ?? undefined} sx={{ width: 32, height: 32, fontSize: 13 }}>
+                    {(row.name ?? "?")[0]}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    {row.slug ? (
+                      <Link
+                        href={`/giocatori/${row.slug}`}
+                        style={{ textDecoration: "none", color: "inherit" }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight={700}
+                          noWrap
+                          sx={{ "&:hover": { textDecoration: "underline" } }}
+                        >
+                          {row.name}
+                        </Typography>
+                      </Link>
+                    ) : (
+                      <Typography variant="body2" fontWeight={700} noWrap>
+                        {row.name}
+                      </Typography>
+                    )}
+                    <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.25 }}>
+                      {row.sportRole && (
+                        <Chip
+                          label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
+                          size="small"
+                          sx={{
+                            bgcolor: ROLE_COLORS[row.sportRole],
+                            color: "common.white",
+                            fontWeight: 600,
+                            fontSize: "0.6rem",
+                            height: 16,
+                          }}
+                        />
+                      )}
+                      {row.teams.map((t) => (
+                        <Chip
+                          key={t.id}
+                          label={t.name}
+                          size="small"
+                          sx={{
+                            bgcolor: t.color ?? "primary.main",
+                            color: "common.white",
+                            fontWeight: 600,
+                            fontSize: "0.6rem",
+                            height: 16,
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: 0.5,
+                    mt: 1,
+                    pl: "56px",
+                  }}
+                >
+                  {[
+                    { label: "Pt", value: totPoints, primary: true },
+                    { label: "Media", value: avg.toFixed(1) },
+                    { label: "G", value: totMatches },
+                    { label: "2pt", value: row.twoPointers + row.loanTwoPointers },
+                    { label: "3pt", value: row.threePointers + row.loanThreePointers },
+                    { label: "TL", value: row.freeThrows + row.loanFreeThrows },
+                    { label: "Falli", value: row.fouls + row.loanFouls },
+                    {
+                      label: "Ill.",
+                      value: row.illegalFouls + row.loanIllegalFouls,
+                    },
+                  ].map(({ label, value, primary }) => (
+                    <Box key={label} sx={{ textAlign: "center" }}>
+                      <Typography
+                        variant="caption"
+                        color="text.disabled"
+                        display="block"
+                        sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}
+                      >
+                        {label}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight={primary ? 800 : 600}
+                        color={primary ? "primary.main" : "text.primary"}
+                        sx={{ fontSize: "0.82rem" }}
+                      >
+                        {value}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            );
+          })
+        )}
       </Box>
 
       {/* Pagination */}

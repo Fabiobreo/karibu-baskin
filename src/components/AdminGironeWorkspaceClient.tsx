@@ -8,7 +8,6 @@ import {
   TextField,
   Chip,
   IconButton,
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -27,11 +26,13 @@ import {
   Divider,
   ToggleButton,
   ToggleButtonGroup,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ScoreboardIcon from "@mui/icons-material/Scoreboard";
@@ -377,11 +378,29 @@ export default function AdminGironeWorkspaceClient({
     <Box>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Link href="/admin/gironi" style={{ textDecoration: "none" }}>
-          <Button startIcon={<ArrowBackIcon />} size="small" sx={{ mb: 1 }}>
-            Torna ai gironi
-          </Button>
-        </Link>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+          <MuiLink
+            component={Link}
+            href="/admin"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
+          >
+            Dashboard
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            href="/admin/gironi"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
+          >
+            Gironi
+          </MuiLink>
+          <Typography variant="body2" color="text.primary">
+            {group.name}
+          </Typography>
+        </Breadcrumbs>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
           <Typography variant="h4" fontWeight={800}>
             {group.name}
@@ -747,6 +766,7 @@ export default function AdminGironeWorkspaceClient({
                   <TableCell align="right">
                     <IconButton
                       size="small"
+                      aria-label="Modifica partita"
                       onClick={() => {
                         setGmForm({
                           matchday: m.matchday !== null ? String(m.matchday) : "",
@@ -762,7 +782,12 @@ export default function AdminGironeWorkspaceClient({
                     >
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={() => handleDeleteGm(m.id)}>
+                    <IconButton
+                      size="small"
+                      color="error"
+                      aria-label="Elimina partita"
+                      onClick={() => handleDeleteGm(m.id)}
+                    >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
@@ -774,7 +799,7 @@ export default function AdminGironeWorkspaceClient({
       </Paper>
 
       {/* Dialog: aggiungi avversaria al girone */}
-      <Dialog
+      <ResponsiveDialog
         open={oppDialog}
         onClose={() => {
           setOppDialog(false);
@@ -868,10 +893,10 @@ export default function AdminGironeWorkspaceClient({
             Aggiungi
           </Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
       {/* Dialog: aggiungi nostra squadra al girone */}
-      <Dialog
+      <ResponsiveDialog
         open={ourTeamDialog}
         onClose={() => {
           setOurTeamDialog(false);
@@ -944,7 +969,7 @@ export default function AdminGironeWorkspaceClient({
             Aggiungi
           </Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
       {/* MatchFormDialog (riusato) */}
       <MatchFormDialog

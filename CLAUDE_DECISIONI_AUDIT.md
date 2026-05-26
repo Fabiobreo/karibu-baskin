@@ -286,19 +286,21 @@ export default async function AdminXPage() {
 
 ## 14. Bug bloccanti (fix prioritari, indipendenti dall'audit)
 
-1. **🔴 `/news/[slug]` manca `<SiteHeader />`** — aggiungere subito.
-2. **🔴 `/notifiche`**:
-   - errori swallow (`catch {}`) → aggiungere toast
-   - "use client" + `useSession` → refactor a Server Component (con Client figlio per pagination/mark-read)
-3. **🔴 `/admin/utenti/nuovo` Alert invece di toast** — sostituire.
-4. **🟡 CLAUDE.md di src/components** firma `showToast` errata — aggiornare.
+1. **✅ `/news/[slug]` manca `<SiteHeader />`** — risolto in PR #8.
+2. **✅ `/notifiche`**:
+   - errori swallow (`catch {}`) → toast → risolto in PR #8
+   - "use client" + `useSession` → refactor a Server Component (`NotificheClient.tsx`) → risolto in PR #8
+3. **✅ `/admin/utenti/nuovo` Alert invece di toast** — risolto in PR #8.
+4. **✅ CLAUDE.md di src/components** firma `showToast` corretta — risolto in PR #8.
 5. **🟡 `/squadre/[season]/[slug]` da 1983 righe** — spezzare in `src/app/squadre/[season]/[slug]/_components/{NextMatchCard,PlayedMatchCard,LeaderCard,AthleteCard,SubLeaderRow}.tsx`.
 
 ---
 
 ## 15. Mobile friendliness (Fase 3, decisioni prese 2026-05-25)
 
-### Componente `<ResponsiveDialog>` (nuovo)
+> **Stato implementazione:** nessuna PR ancora. PR #9 = ResponsiveDialog, PR #10 = mobile alt view tabelle.
+
+### 🔲 Componente `<ResponsiveDialog>` (nuovo) — PR #9
 
 Wrapper su `<Dialog>` MUI che applica automaticamente `fullScreen` sotto `theme.breakpoints.down("sm")`. Da usare in **tutti** i Dialog (escluso `useConfirmDialog` che resta breve).
 
@@ -396,23 +398,17 @@ palette: {
 }
 ```
 
-### Migrazioni colori (priorità sequenziale)
+### Migrazioni colori (priorità sequenziale) — ✅ COMPLETATO (PR #1–#7)
 
 L'utente ha scelto piano sequenziale (no fast-track dark mode). Ordine:
 
-1. **Estensione tema** (precondizione) — aggiungere palette.match, palette.admin, palette.stats, palette.medal, palette.heroGradient in lightTheme e darkTheme.
-2. **PR low-risk globale**:
-   - `border: "1px solid rgba(0,0,0,0.0X)"` → `border: "1px solid"; borderColor: "divider"` (~30 punti)
-   - `rgba(230,81,0,X)` → `alpha(theme.palette.primary.main, X)` (decine di punti)
-   - `${color}cc` → `alpha(color, 0.8)` (puntuali)
-3. **PR matchResults**:
-   - Crea `src/lib/matchResults.ts` con `MATCH_RESULT_META`
-   - Sostituisce 5 ridefinizioni locali
-   - `#2E7D32`/`#C62828`/`#E65100` puntuali → `palette.match.*`
-4. **PR PageHero/EntityHero** — estrazione componenti (Fase 2) + uso `palette.heroGradient.dark`.
-5. **PR per pagina** — file per file, partendo dai più "leggeri" (less hardcoded counts). Concentrarsi su `text.*` e `grey.*`.
-6. **PR aria-label sweep** (vedi sotto).
-7. **Verifica dark mode** manuale pagina per pagina.
+1. ✅ **PR #1 — Estensione tema** — palette.match, palette.admin, palette.stats, palette.medal, palette.heroGradient in lightTheme e darkTheme.
+2. ✅ **PR #2 — Low-risk globale** — `border rgba(0,0,0,0.0X)` → `divider`; `rgba(230,81,0,X)` → `alpha(primary.main, X)`; hover boxShadow/borderColor.
+3. ✅ **PR #3 — matchResults lib** — `src/lib/matchResults.ts` con `MATCH_RESULT_META`; 5 ridefinizioni locali rimosse; hex win/loss/draw → `palette.match.*`.
+4. ✅ **PR #4 — PageHero/EntityHero** — componenti estratti; 12 pagine migrate; `heroGradient.dark` usato.
+5. ✅ **PR #5 — Migrazioni per pagina** — `SessionCard`, `AllenamentoHero`, `ConvocazioniClient`, `AdminSquadreClient`, `CalendarClient`, `SiteHeader`, `partite/[slug]`, `giocatori/[slug]`.
+6. ✅ **PR #6 — aria-label sweep** — `NotificationBell`, `AdminGironeWorkspaceClient`, `CalendarClient` accessibilità tastiera.
+7. ✅ **PR #7 — Verifica dark mode** — fix mirati su 11 file; bordi/sfondi/colori token-izzati.
 
 ### Contrasto subtitle hero
 
@@ -468,13 +464,31 @@ Pattern eccellente da replicare: `CalendarClient.tsx:325-340` (cella giorno cale
 9. `src/components/AllenamentoHero.tsx` — 15 + 9
 10. `src/components/ConvocazioniClient.tsx` — 15 + 10
 
-### Bug fix critici Fase 4
+### Bug fix critici Fase 4 — ✅ tutti risolti in PR #6 e PR #7
 
-1. 🔴 NotificationBell senza aria-label
-2. 🔴 AdminGironeWorkspaceClient IconButton senza aria-label
-3. 🟡 CalendarClient.tsx:839 Box onClick senza role="button"/tabIndex/onKeyDown
-4. 🟡 Subtitle hero opacity da `0.4-0.55` a `0.75-0.8`
-5. 🔴 Bordi `rgba(0,0,0,0.07)` rotti in dark mode (migrazione globale `divider`)
+1. ✅ NotificationBell — `aria-label="Notifiche"` aggiunto (PR #6)
+2. ✅ AdminGironeWorkspaceClient — IconButton mancante fixato (PR #6)
+3. ✅ CalendarClient.tsx — Box onClick con `role="button"`, `tabIndex={0}`, `onKeyDown` (PR #6)
+4. ✅ Subtitle hero opacity — portata a `0.75` in PageHero ed EntityHero (PR #4/PR #6)
+5. ✅ Bordi `rgba(0,0,0,0.07)` — migrati a `borderColor: "divider"` (PR #2 e PR #7)
+
+---
+
+## 17. Piano PR esteso (PR #8–#14)
+
+Dopo il completamento del piano colori (PR #1–#7), la sequenza continua:
+
+| PR  | Area                                      | Scope                                                                                                                                                                                    | Stato |
+| --- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| #8  | Bug fix bloccanti (sez. 14)               | SiteHeader news/[slug], notifiche refactor, Alert→toast, showToast CLAUDE.md                                                                                                             | ✅    |
+| #9  | ResponsiveDialog (sez. 15)                | `src/components/ResponsiveDialog.tsx` + migrazione ~10 Dialog con fullScreen mobile                                                                                                      | ✅    |
+| #10 | Mobile alt view tabelle (sez. 15)         | Card view per AdminUserList, AdminPartiteClient, AdminEventiClient, AdminNewsClient, ecc.                                                                                                | ✅    |
+| #11 | EmptyState + AdminPageHeader (sez. 11+13) | Estrazione componenti condivisi + migrazione pagine                                                                                                                                      | ✅    |
+| #12 | Breadcrumbs (sez. 7)                      | `<Breadcrumbs>` MUI su tutte le pagine non top-level                                                                                                                                     | ✅    |
+| #13 | Typography standardization (sez. 5)       | Uniformare variant per livello in tutte le pagine                                                                                                                                        | ✅    |
+| #14 | Mobile touch target + ClassificaTable     | `ClassificaTableClient` mobile card view; `IconButton size="medium"` in celle tabella (AdminEventiClient, AdminNewsClient, AdminPartiteClient, AdminUserList); submit CTA `size="large"` | ✅    |
+
+TODO fuori sequenza: `/squadre/[season]/[slug]` split in `_components/` (sez. 14.5).
 
 ---
 

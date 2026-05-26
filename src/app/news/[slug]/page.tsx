@@ -1,13 +1,21 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { notFound } from "next/navigation";
-import { Container, Box, Typography, Chip, Divider } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  Chip,
+  Divider,
+  Breadcrumbs,
+  Link as MuiLink,
+} from "@mui/material";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import PollWidget from "@/components/PollWidget";
+import SiteHeader from "@/components/SiteHeader";
 
 export const revalidate = 60;
 
@@ -64,95 +72,95 @@ export default async function NewsSlugPage({ params }: Props) {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-      <Box
-        component={Link}
-        href="/news"
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 0.5,
-          color: "text.secondary",
-          textDecoration: "none",
-          mb: 3,
-          fontSize: "0.875rem",
-          "&:hover": { color: "primary.main" },
-        }}
-      >
-        <ArrowBackIcon fontSize="small" />
-        Tutte le news
-      </Box>
+    <>
+      <SiteHeader />
+      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+          <MuiLink
+            component={Link}
+            href="/news"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
+          >
+            News
+          </MuiLink>
+          <Typography variant="body2" color="text.primary" noWrap sx={{ maxWidth: 300 }}>
+            {post.title}
+          </Typography>
+        </Breadcrumbs>
 
-      <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
-        {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
-        <Typography variant="h4" fontWeight={800}>
-          {post.title}
-        </Typography>
-      </Box>
+        <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
+          {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
+          <Typography variant="h4" fontWeight={800}>
+            {post.title}
+          </Typography>
+        </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-        <Typography variant="caption" color="text.secondary">
-          {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: it })}
-        </Typography>
-        {post.author.name && (
-          <>
-            <Typography variant="caption" color="text.disabled">
-              ·
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {post.author.name}
-            </Typography>
-          </>
-        )}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+          <Typography variant="caption" color="text.secondary">
+            {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: it })}
+          </Typography>
+          {post.author.name && (
+            <>
+              <Typography variant="caption" color="text.disabled">
+                ·
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {post.author.name}
+              </Typography>
+            </>
+          )}
+          {post.poll && (
+            <Chip
+              label={pollClosed ? "Sondaggio chiuso" : "Sondaggio aperto"}
+              size="small"
+              color={pollClosed ? "default" : "primary"}
+              sx={{ ml: 0.5 }}
+            />
+          )}
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Body HTML sanitizzato — sicuro poiché sanitizzato server-side al salvataggio */}
+        <Box
+          sx={{
+            "& p": { my: 1, lineHeight: 1.7 },
+            "& ul, & ol": { pl: 3, my: 1 },
+            "& li": { mb: 0.5 },
+            "& blockquote": {
+              borderLeft: "3px solid",
+              borderColor: "divider",
+              pl: 2,
+              ml: 0,
+              color: "text.secondary",
+              fontStyle: "italic",
+              my: 2,
+            },
+            "& a": { color: "primary.main" },
+            "& strong": { fontWeight: 700 },
+            fontSize: "1rem",
+            lineHeight: 1.7,
+            color: "text.primary",
+          }}
+          dangerouslySetInnerHTML={{ __html: post.body }}
+        />
+
         {post.poll && (
-          <Chip
-            label={pollClosed ? "Sondaggio chiuso" : "Sondaggio aperto"}
-            size="small"
-            color={pollClosed ? "default" : "primary"}
-            sx={{ ml: 0.5 }}
+          <PollWidget
+            pollId={post.poll.id}
+            question={post.poll.question}
+            multiSelect={post.poll.multiSelect}
+            closesAt={post.poll.closesAt?.toISOString() ?? null}
+            options={post.poll.options}
+            voteCounts={voteCounts}
+            userVoteOptionIds={userVoteOptionIds}
+            isLoggedIn={!!userId}
+            postSlug={post.slug}
           />
         )}
-      </Box>
-
-      <Divider sx={{ mb: 3 }} />
-
-      {/* Body HTML sanitizzato — sicuro poiché sanitizzato server-side al salvataggio */}
-      <Box
-        sx={{
-          "& p": { my: 1, lineHeight: 1.7 },
-          "& ul, & ol": { pl: 3, my: 1 },
-          "& li": { mb: 0.5 },
-          "& blockquote": {
-            borderLeft: "3px solid",
-            borderColor: "divider",
-            pl: 2,
-            ml: 0,
-            color: "text.secondary",
-            fontStyle: "italic",
-            my: 2,
-          },
-          "& a": { color: "primary.main" },
-          "& strong": { fontWeight: 700 },
-          fontSize: "1rem",
-          lineHeight: 1.7,
-          color: "text.primary",
-        }}
-        dangerouslySetInnerHTML={{ __html: post.body }}
-      />
-
-      {post.poll && (
-        <PollWidget
-          pollId={post.poll.id}
-          question={post.poll.question}
-          multiSelect={post.poll.multiSelect}
-          closesAt={post.poll.closesAt?.toISOString() ?? null}
-          options={post.poll.options}
-          voteCounts={voteCounts}
-          userVoteOptionIds={userVoteOptionIds}
-          isLoggedIn={!!userId}
-          postSlug={post.slug}
-        />
-      )}
-    </Container>
+      </Container>
+    </>
   );
 }

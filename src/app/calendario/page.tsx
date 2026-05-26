@@ -40,7 +40,7 @@ export default async function CalendarioPage() {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <CalendarMonthIcon color="primary" />
-            <Typography variant="h5" fontWeight={800}>
+            <Typography variant="h4" fontWeight={800}>
               Calendario
             </Typography>
           </Box>

@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminNewsClient from "@/components/AdminNewsClient";
+import AdminPageHeader from "@/components/AdminPageHeader";
 
 export const metadata = { title: "News — Admin" };
 
@@ -35,5 +36,14 @@ export default async function AdminNewsPage() {
     poll: p.poll ? { ...p.poll, closesAt: p.poll.closesAt?.toISOString() ?? null } : null,
   }));
 
-  return <AdminNewsClient initialPosts={posts} />;
+  return (
+    <>
+      <AdminPageHeader
+        title="Gestione News"
+        subtitle="Articoli, sondaggi e comunicazioni del club."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "News" }]}
+      />
+      <AdminNewsClient initialPosts={posts} />
+    </>
+  );
 }

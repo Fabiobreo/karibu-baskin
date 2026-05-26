@@ -11,7 +11,7 @@ Tutti i componenti riutilizzabili vanno qui. Nessuna sottocartella tematica (ecc
 - **Styling:** **solo** `sx` prop con token del tema (`primary.main`, `text.secondary`, ecc.). Niente `className`, niente CSS module, niente colori hardcoded. Per stili complessi/riusati: `styled()` da `@mui/material/styles`.
 - **Stato:** `useState`/`useReducer` locali. Per stato condiviso a livello di pagina, sollevarlo nel componente client di livello superiore (es. `AdminPartiteClient`).
 - **Fetch:** chiamare le API con `fetch("/api/...")`. Per dati che cambiano spesso o sono condivisi, usare SWR. Mai chiamare Prisma direttamente da qui.
-- **Toast/errori:** `useToast()` da `@/context/ToastContext` — sempre `showToast(message, "success" | "error" | "info" | "warning")`.
+- **Toast/errori:** `useToast()` da `@/context/ToastContext` — sempre `showToast({ message, severity: "success" | "error" | "info" | "warning" })`.
 - **Form admin:** pattern controlled inputs + `useState` per ogni campo, validazione client minima + affidamento allo schema Zod server-side per i messaggi d'errore reali.
 
 ## Pattern admin client (es. `AdminPartiteClient`)

@@ -7,7 +7,6 @@ import {
   Button,
   TextField,
   Stack,
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -21,6 +20,7 @@ import {
   Switch,
   Chip,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import AddIcon from "@mui/icons-material/Add";
@@ -309,7 +309,7 @@ export default function MatchFormDialog({
   });
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle fontWeight={700}>{editMatch ? "Modifica partita" : "Nuova partita"}</DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ mt: 1 }}>
@@ -604,6 +604,7 @@ export default function MatchFormDialog({
         <Button onClick={onClose}>Annulla</Button>
         <Button
           variant="contained"
+          size="large"
           onClick={handleSave}
           disabled={isMatchSubmitting}
           startIcon={isMatchSubmitting ? <CircularProgress size={16} /> : undefined}
@@ -611,6 +612,6 @@ export default function MatchFormDialog({
           {editMatch ? "Salva" : "Aggiungi partita"}
         </Button>
       </DialogActions>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

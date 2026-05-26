@@ -5,15 +5,15 @@ import {
   Typography,
   Grid2 as Grid,
   Paper,
-  Chip,
   Divider,
-  Button,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/EmptyState";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
@@ -48,74 +48,36 @@ export default async function SquadreArchivioPage() {
     <>
       <SiteHeader />
 
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 5, md: 7 },
-          px: 2,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
-            pointerEvents: "none",
-          }}
-        />
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip
-            label="Stagioni precedenti"
-            size="small"
-            sx={{
-              mb: 2,
-              fontWeight: 700,
-              backgroundColor: "rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.8)",
-            }}
-          />
-          <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 2, fontSize: { xs: "1.8rem", md: "2.4rem" } }}
-          >
-            Archivio squadre
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ color: "rgba(255,255,255,0.55)", maxWidth: 480, mx: "auto" }}
-          >
-            Tutte le squadre Karibu Baskin dalle stagioni passate.
-          </Typography>
-        </Container>
-      </Box>
+      <PageHero
+        chip="Stagioni precedenti"
+        chipWhite
+        title="Archivio squadre"
+        subtitle="Tutte le squadre Karibu Baskin dalle stagioni passate."
+        subtitleMaxWidth={480}
+        py={{ xs: 5, md: 7 }}
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        <Link href="/squadre" style={{ textDecoration: "none" }}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            size="small"
-            sx={{ mb: 5, color: "text.secondary", fontWeight: 600 }}
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 5 }}>
+          <MuiLink
+            component={Link}
+            href="/squadre"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
           >
-            Chi siamo
-          </Button>
-        </Link>
+            Squadre
+          </MuiLink>
+          <Typography variant="body2" color="text.primary">
+            Archivio
+          </Typography>
+        </Breadcrumbs>
 
         {seasons.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <GroupsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessuna stagione precedente
-            </Typography>
-          </Box>
+          <EmptyState
+            icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title="Nessuna stagione precedente"
+          />
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {seasons.map((season, i) => (

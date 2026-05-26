@@ -1,15 +1,25 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Box, Typography, Paper, Chip, Container, Divider, Alert } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Chip,
+  Container,
+  Divider,
+  Alert,
+  Breadcrumbs,
+  Link as MuiLink,
+} from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LanguageIcon from "@mui/icons-material/Language";
 import PaletteIcon from "@mui/icons-material/Palette";
 import StadiumIcon from "@mui/icons-material/Stadium";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
+import EntityHero from "@/components/EntityHero";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
@@ -109,19 +119,25 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   return (
     <>
       <SiteHeader />
+      <EntityHero chip="Squadra avversaria" title={team.name} color="#E65100" />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <EmojiEventsIcon sx={{ color: "primary.main" }} />
-            <Typography variant="overline" color="text.secondary" fontWeight={700}>
-              Squadra avversaria
-            </Typography>
-          </Box>
-          <Typography variant="h3" fontWeight={800} sx={{ lineHeight: 1.1, mb: 1.5 }}>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+          <MuiLink
+            component={Link}
+            href="/risultati"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
+          >
+            Risultati
+          </MuiLink>
+          <Typography variant="body2" color="text.primary">
             {team.name}
           </Typography>
+        </Breadcrumbs>
 
+        {/* Info aggiuntive squadra */}
+        <Box sx={{ mb: 4 }}>
           <Box
             sx={{
               display: "flex",
@@ -310,7 +326,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               })()}
 
             {/* Per stagione */}
-            <Typography variant="h5" fontWeight={800} sx={{ mb: 2 }}>
+            <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
               Per stagione
             </Typography>
             {seasons.map((s) => (

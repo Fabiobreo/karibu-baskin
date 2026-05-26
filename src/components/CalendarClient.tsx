@@ -1,5 +1,6 @@
 "use client";
 
+import { alpha } from "@mui/material/styles";
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
@@ -67,9 +68,9 @@ const RESULT_LABELS: Record<string, string> = {
   DRAW: "Pareggio",
 };
 const RESULT_COLORS: Record<string, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
+  WIN: "match.win",
+  LOSS: "match.loss",
+  DRAW: "primary.main",
 };
 const TYPE_LABELS: Record<string, string> = {
   training: "Allenamento",
@@ -352,7 +353,11 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                     borderRadius: "50%",
                     fontWeight: isCurrentDay ? 800 : 500,
                     bgcolor: isCurrentDay ? "primary.main" : "transparent",
-                    color: isCurrentDay ? "#fff" : inMonth ? "text.primary" : "text.disabled",
+                    color: isCurrentDay
+                      ? "common.white"
+                      : inMonth
+                        ? "text.primary"
+                        : "text.disabled",
                     fontSize: { xs: "0.72rem", sm: "0.8rem" },
                     mb: "3px",
                     flexShrink: 0,
@@ -413,7 +418,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                           justifyContent: "center",
                         }}
                       >
-                        <Icon sx={{ fontSize: "0.58rem", color: "#fff" }} />
+                        <Icon sx={{ fontSize: "0.58rem", color: "common.white" }} />
                       </Box>
                     );
                   })}
@@ -444,8 +449,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         return (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 3, alignItems: "center" }}>
             <LegendItem
-              color="#00897B"
-              icon={<SportsBasketballIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+              color="admin.allenamenti"
+              icon={<SportsBasketballIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
               label="Allenamento"
               active={!hiddenKeys.has("training")}
               onClick={() => toggleKey("training")}
@@ -456,8 +461,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                 return (
                   <LegendItem
                     key={t.id}
-                    color={t.color ?? "#C62828"}
-                    icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+                    color={t.color ?? "match.loss"}
+                    icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
                     label={t.name}
                     active={!hiddenKeys.has(matchKey)}
                     onClick={() => toggleKey(matchKey)}
@@ -466,8 +471,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
               })
             ) : (
               <LegendItem
-                color="#F44336"
-                icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+                color="error.main"
+                icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
                 label="Partita"
                 active={!hiddenKeys.has("match:*")}
                 onClick={() => toggleKey("match:*")}
@@ -475,7 +480,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             )}
             <LegendItem
               color="#039BE5"
-              icon={<EventNoteIcon sx={{ fontSize: "0.8rem", color: "#fff" }} />}
+              icon={<EventNoteIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
               label="Evento"
               active={!hiddenKeys.has("event")}
               onClick={() => toggleKey("event")}
@@ -552,11 +557,11 @@ function EventChip({
         transition: "filter 0.12s",
       }}
     >
-      <Icon sx={{ fontSize: "0.68rem", color: "#fff", flexShrink: 0 }} />
+      <Icon sx={{ fontSize: "0.68rem", color: "common.white", flexShrink: 0 }} />
       <Typography
         variant="caption"
         noWrap
-        sx={{ color: "#fff", fontSize: "0.65rem", fontWeight: 600, lineHeight: 1.3 }}
+        sx={{ color: "common.white", fontSize: "0.65rem", fontWeight: 600, lineHeight: 1.3 }}
       >
         {event.title}
       </Typography>
@@ -621,28 +626,28 @@ function EventDetailDialog({
             width: 40,
             height: 40,
             borderRadius: "50%",
-            bgcolor: "rgba(255,255,255,0.2)",
+            bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}
         >
-          <Icon sx={{ color: "#fff", fontSize: "1.3rem" }} />
+          <Icon sx={{ color: "common.white", fontSize: "1.3rem" }} />
         </Box>
         <Box sx={{ overflow: "hidden", flex: 1 }}>
           <Chip
             label={TYPE_LABELS[event.type]}
             size="small"
             sx={{
-              bgcolor: "rgba(255,255,255,0.25)",
-              color: "#fff",
+              bgcolor: (theme) => alpha(theme.palette.common.white, 0.25),
+              color: "common.white",
               fontWeight: 700,
               fontSize: "0.68rem",
               mb: 0.5,
             }}
           />
-          <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }}>
+          <Typography variant="h6" fontWeight={800} sx={{ color: "common.white", lineHeight: 1.2 }}>
             {event.title}
           </Typography>
         </Box>
@@ -653,8 +658,11 @@ function EventDetailDialog({
             onClick={onClose}
             size="small"
             sx={{
-              color: "rgba(255,255,255,0.85)",
-              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.15)" },
+              color: (theme) => alpha(theme.palette.common.white, 0.85),
+              "&:hover": {
+                color: "common.white",
+                bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
+              },
               flexShrink: 0,
             }}
             title="Modifica"
@@ -692,7 +700,7 @@ function EventDetailDialog({
                 size="small"
                 sx={{
                   bgcolor: RESULT_COLORS[event.result] ?? "grey.500",
-                  color: "#fff",
+                  color: "common.white",
                   fontWeight: 700,
                 }}
               />
@@ -816,7 +824,7 @@ function DayEventsDialog({
                       flexShrink: 0,
                     }}
                   >
-                    <Icon sx={{ color: "#fff", fontSize: "1rem" }} />
+                    <Icon sx={{ color: "common.white", fontSize: "1rem" }} />
                   </Box>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Typography variant="body2" fontWeight={600} noWrap>
@@ -836,7 +844,26 @@ function DayEventsDialog({
                   {inner}
                 </Box>
               ) : (
-                <Box key={ev.id} onClick={() => onSelectEvent(ev)} sx={rowSx}>
+                <Box
+                  key={ev.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectEvent(ev)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSelectEvent(ev);
+                    }
+                  }}
+                  sx={{
+                    ...rowSx,
+                    "&:focus-visible": {
+                      outline: "2px solid",
+                      outlineColor: "primary.main",
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
                   {inner}
                 </Box>
               );
@@ -1060,23 +1087,27 @@ function CreateEventDialog({
             width: 36,
             height: 36,
             borderRadius: "50%",
-            bgcolor: "rgba(255,255,255,0.2)",
+            bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}
         >
-          <AddIcon sx={{ color: "#fff", fontSize: "1.2rem" }} />
+          <AddIcon sx={{ color: "common.white", fontSize: "1.2rem" }} />
         </Box>
         <Box>
           <Typography
             variant="caption"
-            sx={{ color: "rgba(255,255,255,0.8)", fontWeight: 600, textTransform: "capitalize" }}
+            sx={{
+              color: (theme) => alpha(theme.palette.common.white, 0.8),
+              fontWeight: 600,
+              textTransform: "capitalize",
+            }}
           >
             {dateLabelFull}
           </Typography>
-          <Typography variant="h6" fontWeight={800} sx={{ color: "#fff", lineHeight: 1.2 }}>
+          <Typography variant="h6" fontWeight={800} sx={{ color: "common.white", lineHeight: 1.2 }}>
             Nuovo evento
           </Typography>
         </Box>

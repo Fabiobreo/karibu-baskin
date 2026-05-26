@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminGironiClient from "@/components/AdminGironiClient";
+import AdminPageHeader from "@/components/AdminPageHeader";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
 
@@ -33,10 +34,17 @@ export default async function AdminGironiPage() {
     seasons.find((s) => s.isCurrent)?.label ?? seasons[0]?.label ?? getCurrentSeason();
 
   return (
-    <AdminGironiClient
-      initialGroups={groups}
-      seasons={seasons.map((s) => ({ label: s.label, isCurrent: s.isCurrent }))}
-      defaultSeason={defaultSeason}
-    />
+    <>
+      <AdminPageHeader
+        title="Gironi"
+        subtitle="Gironi di campionato e risultati delle altre squadre del girone."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Gironi" }]}
+      />
+      <AdminGironiClient
+        initialGroups={groups}
+        seasons={seasons.map((s) => ({ label: s.label, isCurrent: s.isCurrent }))}
+        defaultSeason={defaultSeason}
+      />
+    </>
   );
 }

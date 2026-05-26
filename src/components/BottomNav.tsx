@@ -66,7 +66,7 @@ export default function BottomNav() {
             },
           },
           "& .Mui-selected": {
-            color: "#E65100 !important",
+            color: "primary.main !important",
           },
         }}
       >
@@ -111,7 +111,7 @@ export default function BottomNav() {
                   width: 24,
                   height: 24,
                   fontSize: "0.65rem",
-                  bgcolor: active === "/profilo" ? "#E65100" : "rgba(255,255,255,0.2)",
+                  bgcolor: active === "/profilo" ? "primary.main" : "rgba(255,255,255,0.2)",
                 }}
               >
                 {!(user.customImage ?? user.image) && initials}

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -12,6 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -54,7 +54,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ pr: 6, fontWeight: 800 }}>
         Iscriviti al calendario
         <IconButton
@@ -164,6 +164,6 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
           Chiudi
         </Button>
       </DialogActions>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

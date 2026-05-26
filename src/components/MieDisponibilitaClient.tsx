@@ -11,10 +11,11 @@ import {
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SaveIcon from "@mui/icons-material/Save";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
@@ -172,19 +173,22 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
 
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 3, md: 4 }, pb: drafts.size > 0 ? 12 : 4 }}>
-      <Box sx={{ mb: 1 }}>
-        <Link href="/profilo" style={{ textDecoration: "none" }}>
-          <Button
-            startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-            size="small"
-            sx={{ color: "text.secondary", fontSize: "0.78rem" }}
-          >
-            Profilo
-          </Button>
-        </Link>
-      </Box>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+        <MuiLink
+          component={Link}
+          href="/profilo"
+          underline="hover"
+          color="text.secondary"
+          variant="body2"
+        >
+          Profilo
+        </MuiLink>
+        <Typography variant="body2" color="text.primary">
+          Disponibilità
+        </Typography>
+      </Breadcrumbs>
 
-      <Typography variant="h5" fontWeight={800} gutterBottom>
+      <Typography variant="h4" fontWeight={800} gutterBottom>
         Le mie disponibilità
       </Typography>
       <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: "block" }}>
@@ -421,7 +425,8 @@ function CompactMatchRow({
                   fontSize: "0.7rem",
                   fontWeight: 700,
                   textTransform: "none",
-                  border: "1px solid rgba(0,0,0,0.15)",
+                  border: "1px solid",
+                  borderColor: "divider",
                 },
               }}
             >
@@ -429,9 +434,8 @@ function CompactMatchRow({
                 value={true}
                 sx={{
                   "&.Mui-selected": {
-                    bgcolor: "#2E7D32",
-                    color: "#fff",
-                    "&:hover": { bgcolor: "#1B5E20" },
+                    bgcolor: "match.win",
+                    color: "common.white",
                   },
                 }}
               >
@@ -442,9 +446,8 @@ function CompactMatchRow({
                 value={false}
                 sx={{
                   "&.Mui-selected": {
-                    bgcolor: "#C62828",
-                    color: "#fff",
-                    "&:hover": { bgcolor: "#B71C1C" },
+                    bgcolor: "match.loss",
+                    color: "common.white",
                   },
                 }}
               >

@@ -134,22 +134,18 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
               </Typography>
             </Link>
           </Box>
-          <Box sx={{ overflowX: "auto" }}>
+          {/* Desktop table */}
+          <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ pl: 0, width: 40 }} />
                   <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
-                  <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
-                    Ruolo utente
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Ruolo utente</TableCell>
                   <TableCell align="center" sx={{ fontWeight: 700 }}>
                     Ruolo Baskin
                   </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
-                  >
+                  <TableCell align="right" sx={{ fontWeight: 700 }}>
                     Iscritto il
                   </TableCell>
                 </TableRow>
@@ -181,7 +177,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           : `Figlio di ${row.parent.name ?? row.parent.email}`}
                       </Typography>
                     </TableCell>
-                    <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    <TableCell>
                       {row.kind === "user" ? (
                         <Chip
                           label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
@@ -228,7 +224,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                         </Typography>
                       )}
                     </TableCell>
-                    <TableCell align="right" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    <TableCell align="right">
                       <Typography variant="caption" color="text.secondary">
                         {format(new Date(row.createdAt), "d MMM yyyy", { locale: it })}
                       </Typography>
@@ -244,6 +240,93 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                 )}
               </TableBody>
             </Table>
+          </Box>
+
+          {/* Mobile card view */}
+          <Box sx={{ display: { xs: "block", sm: "none" } }}>
+            {recentAll.length === 0 ? (
+              <Box sx={{ py: 3, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  Nessun utente ancora iscritto
+                </Typography>
+              </Box>
+            ) : (
+              recentAll.map((row) => (
+                <Box
+                  key={`${row.kind}-${row.id}`}
+                  sx={{
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
+                    "&:last-child": { borderBottom: 0 },
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                  }}
+                >
+                  <Avatar
+                    src={row.kind === "user" ? (row.image ?? undefined) : undefined}
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      fontSize: 13,
+                      bgcolor: row.kind === "child" ? "grey.400" : undefined,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {(row.name ?? (row.kind === "user" ? row.email : "?"))?.[0]?.toUpperCase() ??
+                      "?"}
+                  </Avatar>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>
+                      {row.name ?? "—"}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap display="block">
+                      {row.kind === "user"
+                        ? row.email
+                        : `Figlio di ${row.parent.name ?? row.parent.email}`}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
+                      {row.kind === "user" ? (
+                        <Chip
+                          label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
+                          size="small"
+                          color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
+                          sx={{ fontWeight: 600, fontSize: "0.68rem" }}
+                        />
+                      ) : (
+                        <Chip
+                          label="Atleta"
+                          size="small"
+                          color="primary"
+                          sx={{ fontWeight: 600, fontSize: "0.68rem" }}
+                        />
+                      )}
+                      {row.sportRole && (
+                        <Chip
+                          label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? undefined)}
+                          size="small"
+                          sx={{
+                            bgcolor: ROLE_COLORS[row.sportRole],
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: "0.68rem",
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    color="text.disabled"
+                    sx={{ flexShrink: 0, textAlign: "right" }}
+                  >
+                    {format(new Date(row.createdAt), "d MMM", { locale: it })}
+                  </Typography>
+                </Box>
+              ))
+            )}
           </Box>
         </Box>
       )}

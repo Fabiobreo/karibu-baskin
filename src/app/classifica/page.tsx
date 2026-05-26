@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Box, Container, Typography, Chip } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import EmptyState from "@/components/EmptyState";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -134,46 +135,13 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
     <>
       <SiteHeader />
 
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 5, md: 7 },
-          px: 2,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip label="Agonismo" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 1.5, fontSize: { xs: "2rem", md: "2.8rem" } }}
-          >
-            Classifica
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 460, mx: "auto" }}
-          >
-            Statistiche aggregate per stagione.
-          </Typography>
-        </Container>
-      </Box>
+      <PageHero
+        chip="Agonismo"
+        title="Classifica"
+        subtitle="Statistiche aggregate per stagione."
+        subtitleMaxWidth={460}
+        py={{ xs: 5, md: 7 }}
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* Selector stagione */}
@@ -201,12 +169,10 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
         </Box>
 
         {rows.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 10 }}>
-            <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessuna statistica per la stagione {selectedSeason}
-            </Typography>
-          </Box>
+          <EmptyState
+            icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title={`Nessuna statistica per la stagione ${selectedSeason}`}
+          />
         ) : (
           <ClassificaTableClient rows={rows} selectedSeason={selectedSeason} />
         )}

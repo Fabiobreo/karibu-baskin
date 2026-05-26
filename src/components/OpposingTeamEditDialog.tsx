@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -12,6 +11,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useState, useEffect } from "react";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 
 export type OpposingTeamEditable = {
   id: string;
@@ -87,7 +87,7 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle fontWeight={700}>Modifica squadra avversaria</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
@@ -150,6 +150,6 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
           Salva
         </Button>
       </DialogActions>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

@@ -15,9 +15,10 @@ import {
   Alert,
   Divider,
   CircularProgress,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EditIcon from "@mui/icons-material/Edit";
@@ -25,6 +26,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import NextLink from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import ShareSection from "@/components/ShareSection";
@@ -63,16 +65,16 @@ function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
   const now = new Date();
   const end = sessionEndDate(date, endTime);
 
-  if (now >= date && now <= end) return { label: "In corso", bgcolor: "#2E7D32" };
-  if (now > end) return { label: "Terminato", bgcolor: "rgba(255,255,255,0.18)" };
+  if (now >= date && now <= end) return { label: "In corso", bgcolor: "match.win" };
+  if (now > end) return { label: "Terminato", bgcolor: "action.selected" };
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return { label: "Oggi!", bgcolor: "#E65100" };
-  if (diffDays === 1) return { label: "Domani", bgcolor: "#1565C0" };
-  return { label: `Tra ${diffDays} giorni`, bgcolor: "#1565C0" };
+  if (diffDays === 0) return { label: "Oggi!", bgcolor: "primary.main" };
+  if (diffDays === 1) return { label: "Domani", bgcolor: "info.main" };
+  return { label: `Tra ${diffDays} giorni`, bgcolor: "info.main" };
 }
 
 interface Props {
@@ -171,8 +173,8 @@ export default function AllenamientoHero({
     <>
       <Box
         sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
+          background: (theme) => theme.palette.heroGradient.dark,
+          color: "common.white",
           px: { xs: 2.5, sm: 4, md: 8 },
           py: { xs: 3, sm: 4 },
           position: "relative",
@@ -194,10 +196,11 @@ export default function AllenamientoHero({
                 size="small"
                 aria-label="Modifica allenamento"
                 sx={{
-                  color: "#fff",
-                  bgcolor: "rgba(255,255,255,0.1)",
-                  border: "1px solid rgba(255,255,255,0.2)",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                  color: "common.white",
+                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
+                  border: "1px solid",
+                  borderColor: (theme) => alpha(theme.palette.common.white, 0.2),
+                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.white, 0.2) },
                 }}
               >
                 <EditIcon sx={{ fontSize: 18 }} />
@@ -231,21 +234,35 @@ export default function AllenamientoHero({
         />
 
         <Box sx={{ position: "relative", mb: 2 }}>
-          <Button
-            href="/allenamenti"
-            startIcon={<ArrowBackIcon sx={{ fontSize: "0.95rem !important" }} />}
-            size="small"
+          <Breadcrumbs
+            aria-label="breadcrumb"
             sx={{
-              color: "rgba(255,255,255,0.55)",
-              fontSize: "0.78rem",
-              fontWeight: 500,
-              px: 0,
-              minWidth: 0,
-              "&:hover": { color: "#fff", backgroundColor: "transparent" },
+              "& .MuiBreadcrumbs-separator": {
+                color: (theme) => alpha(theme.palette.common.white, 0.4),
+              },
             }}
           >
-            Allenamenti
-          </Button>
+            <MuiLink
+              component={NextLink}
+              href="/allenamenti"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: (theme) => alpha(theme.palette.common.white, 0.6),
+                fontWeight: 500,
+                "&:hover": { color: "common.white" },
+              }}
+            >
+              Allenamenti
+            </MuiLink>
+            <Typography
+              variant="body2"
+              sx={{ color: (theme) => alpha(theme.palette.common.white, 0.9), fontWeight: 500 }}
+              noWrap
+            >
+              {session.title}
+            </Typography>
+          </Breadcrumbs>
         </Box>
 
         <Box sx={{ maxWidth: "md", mx: "auto", position: "relative", textAlign: "center" }}>
@@ -283,13 +300,15 @@ export default function AllenamientoHero({
                 return (
                   <Chip
                     icon={
-                      <HourglassEmptyIcon sx={{ fontSize: "0.85rem !important", color: "#fff" }} />
+                      <HourglassEmptyIcon
+                        sx={{ fontSize: "0.85rem !important", color: "common.white" }}
+                      />
                     }
                     label="In arrivo"
                     size="small"
                     sx={{
                       bgcolor: "#6D4C41",
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.72rem",
                       letterSpacing: 0.5,
@@ -299,12 +318,12 @@ export default function AllenamientoHero({
               }
               return (
                 <Chip
-                  icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "#fff" }} />}
+                  icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "common.white" }} />}
                   label="Iscrizioni chiuse"
                   size="small"
                   sx={{
                     bgcolor: "#546E7A",
-                    color: "#fff",
+                    color: "common.white",
                     fontWeight: 700,
                     fontSize: "0.72rem",
                     letterSpacing: 0.5,
@@ -317,7 +336,7 @@ export default function AllenamientoHero({
               size="small"
               sx={{
                 bgcolor: status.bgcolor,
-                color: "#fff",
+                color: "common.white",
                 fontWeight: 700,
                 fontSize: "0.72rem",
                 letterSpacing: 0.5,
@@ -366,8 +385,13 @@ export default function AllenamientoHero({
                 mb: 2,
               }}
             >
-              <AccessTimeIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.55)" }} />
-              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>
+              <AccessTimeIcon
+                sx={{ fontSize: 14, color: (theme) => alpha(theme.palette.common.white, 0.55) }}
+              />
+              <Typography
+                variant="body2"
+                sx={{ color: (theme) => alpha(theme.palette.common.white, 0.75), fontWeight: 500 }}
+              >
                 {countdown}
               </Typography>
             </Box>

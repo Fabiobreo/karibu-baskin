@@ -145,7 +145,7 @@ const darkMedal: MedalPalette = {
   bronze: "#D7A56B",
 };
 
-const heroGradient: HeroGradientPalette = {
+export const heroGradient: HeroGradientPalette = {
   dark: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
 };
 

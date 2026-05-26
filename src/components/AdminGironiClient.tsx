@@ -109,15 +109,6 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={800}>
-          Gironi
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Gironi di campionato e risultati delle altre squadre del girone.
-        </Typography>
-      </Box>
-
       <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>
           Crea girone

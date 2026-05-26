@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminSquadreClient from "@/components/AdminSquadreClient";
+import AdminPageHeader from "@/components/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Squadre | Admin" };
@@ -26,6 +27,13 @@ export default async function AdminSquadrePage() {
   ]);
 
   return (
-    <AdminSquadreClient teams={teams} users={users} childPlayers={children} seasons={seasons} />
+    <>
+      <AdminPageHeader
+        title="Gestione Squadre"
+        subtitle="Organizza le squadre per stagione."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Squadre" }]}
+      />
+      <AdminSquadreClient teams={teams} users={users} childPlayers={children} seasons={seasons} />
+    </>
   );
 }

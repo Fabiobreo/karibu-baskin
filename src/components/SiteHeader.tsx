@@ -163,7 +163,7 @@ export default function SiteHeader() {
         position="sticky"
         color="secondary"
         elevation={0}
-        sx={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+        sx={{ borderBottom: (theme) => `1px solid ${alpha(theme.palette.common.white, 0.08)}` }}
       >
         <Toolbar sx={{ gap: 1, minHeight: { xs: 56, sm: 60 } }}>
           {/* Logo + nome */}
@@ -188,14 +188,14 @@ export default function SiteHeader() {
               <Typography
                 variant="subtitle2"
                 fontWeight={800}
-                sx={{ color: "#fff", lineHeight: 1.1, fontSize: "0.9rem" }}
+                sx={{ color: "common.white", lineHeight: 1.1, fontSize: "0.9rem" }}
               >
                 Karibu Baskin
               </Typography>
               <Typography
                 variant="caption"
                 sx={{
-                  color: "rgba(255,255,255,0.5)",
+                  color: (theme) => alpha(theme.palette.common.white, 0.5),
                   fontSize: "0.62rem",
                   letterSpacing: "0.07em",
                   textTransform: "uppercase",
@@ -226,15 +226,18 @@ export default function SiteHeader() {
                   href={link.href}
                   size="small"
                   sx={{
-                    color: active ? "#fff" : "rgba(255,255,255,0.6)",
+                    color: active
+                      ? "common.white"
+                      : (theme) => alpha(theme.palette.common.white, 0.6),
                     fontWeight: active ? 700 : 500,
                     fontSize: "0.85rem",
-                    borderBottom: active ? "2px solid #E65100" : "2px solid transparent",
+                    borderBottom: active ? "2px solid" : "2px solid transparent",
+                    borderBottomColor: active ? "primary.main" : "transparent",
                     borderRadius: 0,
                     pb: "2px",
                     minWidth: link.iconOnly ? 36 : undefined,
                     px: link.iconOnly ? 1 : undefined,
-                    "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                    "&:hover": { color: "common.white", backgroundColor: "transparent" },
                   }}
                 >
                   {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
@@ -248,13 +251,16 @@ export default function SiteHeader() {
               onClick={(e) => setPartiteAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
-                color: partiteActive ? "#fff" : "rgba(255,255,255,0.6)",
+                color: partiteActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: partiteActive ? 700 : 500,
                 fontSize: "0.85rem",
-                borderBottom: partiteActive ? "2px solid #E65100" : "2px solid transparent",
+                borderBottom: partiteActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: partiteActive ? "primary.main" : "transparent",
                 borderRadius: 0,
                 pb: "2px",
-                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
               Partite
@@ -287,13 +293,16 @@ export default function SiteHeader() {
               onClick={(e) => setSquadreAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
-                color: squadreActive ? "#fff" : "rgba(255,255,255,0.6)",
+                color: squadreActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: squadreActive ? 700 : 500,
                 fontSize: "0.85rem",
-                borderBottom: squadreActive ? "2px solid #E65100" : "2px solid transparent",
+                borderBottom: squadreActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: squadreActive ? "primary.main" : "transparent",
                 borderRadius: 0,
                 pb: "2px",
-                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
               Squadre
@@ -326,13 +335,16 @@ export default function SiteHeader() {
               onClick={(e) => setIlBaskinAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
-                color: ilBaskinActive ? "#fff" : "rgba(255,255,255,0.6)",
+                color: ilBaskinActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: ilBaskinActive ? 700 : 500,
                 fontSize: "0.85rem",
-                borderBottom: ilBaskinActive ? "2px solid #E65100" : "2px solid transparent",
+                borderBottom: ilBaskinActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: ilBaskinActive ? "primary.main" : "transparent",
                 borderRadius: 0,
                 pb: "2px",
-                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
               Il Baskin
@@ -385,13 +397,16 @@ export default function SiteHeader() {
               onClick={(e) => setContattiAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
-                color: contattiActive ? "#fff" : "rgba(255,255,255,0.6)",
+                color: contattiActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: contattiActive ? 700 : 500,
                 fontSize: "0.85rem",
-                borderBottom: contattiActive ? "2px solid #E65100" : "2px solid transparent",
+                borderBottom: contattiActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: contattiActive ? "primary.main" : "transparent",
                 borderRadius: 0,
                 pb: "2px",
-                "&:hover": { color: "#fff", backgroundColor: "transparent" },
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
               Contatti
@@ -459,7 +474,7 @@ export default function SiteHeader() {
                 variant="circular"
                 width={34}
                 height={34}
-                sx={{ bgcolor: "rgba(255,255,255,0.1)" }}
+                sx={{ bgcolor: (theme) => alpha(theme.palette.common.white, 0.1) }}
               />
             ) : user ? (
               <>
@@ -548,10 +563,10 @@ export default function SiteHeader() {
                 size="small"
                 variant="outlined"
                 sx={{
-                  color: "#fff",
-                  borderColor: "rgba(255,255,255,0.3)",
+                  color: "common.white",
+                  borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
                   fontSize: "0.8rem",
-                  "&:hover": { borderColor: "#fff" },
+                  "&:hover": { borderColor: "common.white" },
                 }}
               >
                 Accedi
@@ -580,7 +595,7 @@ export default function SiteHeader() {
           sx: {
             width: 240,
             background: "#1A1A1A",
-            color: "#fff",
+            color: "common.white",
             display: "flex",
             flexDirection: "column",
             height: "100%",
@@ -601,7 +616,7 @@ export default function SiteHeader() {
             variant="subtitle2"
             fontWeight={700}
             sx={{
-              color: "rgba(255,255,255,0.5)",
+              color: (theme) => alpha(theme.palette.common.white, 0.5),
               textTransform: "uppercase",
               fontSize: "0.7rem",
               letterSpacing: "0.08em",
@@ -618,7 +633,7 @@ export default function SiteHeader() {
             <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
-        <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+        <Divider sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08) }} />
 
         {/* Nav mobile */}
         <List disablePadding sx={{ flex: 1 }}>
@@ -637,8 +652,11 @@ export default function SiteHeader() {
                   }}
                   sx={{
                     py: 1.25,
-                    color: active ? "#E65100" : "rgba(255,255,255,0.8)",
-                    borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                    color: active
+                      ? "primary.main"
+                      : (theme) => alpha(theme.palette.common.white, 0.8),
+                    borderLeft: active ? "3px solid" : "3px solid transparent",
+                    borderLeftColor: active ? "primary.main" : "transparent",
                   }}
                 >
                   <ListItemText
@@ -656,8 +674,11 @@ export default function SiteHeader() {
               onClick={() => setPartiteOpen((o) => !o)}
               sx={{
                 py: 1.25,
-                color: partiteActive ? "#E65100" : "rgba(255,255,255,0.8)",
-                borderLeft: partiteActive ? "3px solid #E65100" : "3px solid transparent",
+                color: partiteActive
+                  ? "primary.main"
+                  : (theme) => alpha(theme.palette.common.white, 0.8),
+                borderLeft: partiteActive ? "3px solid" : "3px solid transparent",
+                borderLeftColor: partiteActive ? "primary.main" : "transparent",
               }}
             >
               <ListItemText
@@ -668,9 +689,13 @@ export default function SiteHeader() {
                 }}
               />
               {partiteOpen ? (
-                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandLessIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               ) : (
-                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandMoreIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               )}
             </ListItemButton>
           </ListItem>
@@ -690,8 +715,11 @@ export default function SiteHeader() {
                       sx={{
                         py: 1,
                         pl: 4,
-                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
-                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                        color: active
+                          ? "primary.main"
+                          : (theme) => alpha(theme.palette.common.white, 0.55),
+                        borderLeft: active ? "3px solid" : "3px solid transparent",
+                        borderLeftColor: active ? "primary.main" : "transparent",
                       }}
                     >
                       <ListItemText
@@ -714,8 +742,11 @@ export default function SiteHeader() {
               onClick={() => setSquadreOpen((o) => !o)}
               sx={{
                 py: 1.25,
-                color: squadreActive ? "#E65100" : "rgba(255,255,255,0.8)",
-                borderLeft: squadreActive ? "3px solid #E65100" : "3px solid transparent",
+                color: squadreActive
+                  ? "primary.main"
+                  : (theme) => alpha(theme.palette.common.white, 0.8),
+                borderLeft: squadreActive ? "3px solid" : "3px solid transparent",
+                borderLeftColor: squadreActive ? "primary.main" : "transparent",
               }}
             >
               <ListItemText
@@ -726,9 +757,13 @@ export default function SiteHeader() {
                 }}
               />
               {squadreOpen ? (
-                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandLessIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               ) : (
-                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandMoreIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               )}
             </ListItemButton>
           </ListItem>
@@ -747,8 +782,11 @@ export default function SiteHeader() {
                       sx={{
                         py: 1,
                         pl: 4,
-                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
-                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                        color: active
+                          ? "primary.main"
+                          : (theme) => alpha(theme.palette.common.white, 0.55),
+                        borderLeft: active ? "3px solid" : "3px solid transparent",
+                        borderLeftColor: active ? "primary.main" : "transparent",
                       }}
                     >
                       <ListItemText
@@ -771,8 +809,11 @@ export default function SiteHeader() {
               onClick={() => setIlBaskinOpen((o) => !o)}
               sx={{
                 py: 1.25,
-                color: ilBaskinActive ? "#E65100" : "rgba(255,255,255,0.8)",
-                borderLeft: ilBaskinActive ? "3px solid #E65100" : "3px solid transparent",
+                color: ilBaskinActive
+                  ? "primary.main"
+                  : (theme) => alpha(theme.palette.common.white, 0.8),
+                borderLeft: ilBaskinActive ? "3px solid" : "3px solid transparent",
+                borderLeftColor: ilBaskinActive ? "primary.main" : "transparent",
               }}
             >
               <ListItemText
@@ -783,9 +824,13 @@ export default function SiteHeader() {
                 }}
               />
               {ilBaskinOpen ? (
-                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandLessIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               ) : (
-                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandMoreIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               )}
             </ListItemButton>
           </ListItem>
@@ -806,8 +851,11 @@ export default function SiteHeader() {
                       sx={{
                         py: 1,
                         pl: 4,
-                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
-                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                        color: active
+                          ? "primary.main"
+                          : (theme) => alpha(theme.palette.common.white, 0.55),
+                        borderLeft: active ? "3px solid" : "3px solid transparent",
+                        borderLeftColor: active ? "primary.main" : "transparent",
                       }}
                     >
                       <ListItemText
@@ -825,8 +873,8 @@ export default function SiteHeader() {
                             px: 0.6,
                             py: 0.1,
                             borderRadius: 0.5,
-                            bgcolor: "rgba(255,255,255,0.1)",
-                            color: "rgba(255,255,255,0.4)",
+                            bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
+                            color: (theme) => alpha(theme.palette.common.white, 0.4),
                             fontWeight: 600,
                             textTransform: "uppercase",
                             letterSpacing: "0.04em",
@@ -848,8 +896,11 @@ export default function SiteHeader() {
               onClick={() => setContattiOpen((o) => !o)}
               sx={{
                 py: 1.25,
-                color: contattiActive ? "#E65100" : "rgba(255,255,255,0.8)",
-                borderLeft: contattiActive ? "3px solid #E65100" : "3px solid transparent",
+                color: contattiActive
+                  ? "primary.main"
+                  : (theme) => alpha(theme.palette.common.white, 0.8),
+                borderLeft: contattiActive ? "3px solid" : "3px solid transparent",
+                borderLeftColor: contattiActive ? "primary.main" : "transparent",
               }}
             >
               <ListItemText
@@ -860,9 +911,13 @@ export default function SiteHeader() {
                 }}
               />
               {contattiOpen ? (
-                <ExpandLessIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandLessIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               ) : (
-                <ExpandMoreIcon sx={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }} />
+                <ExpandMoreIcon
+                  sx={{ fontSize: 18, color: (theme) => alpha(theme.palette.common.white, 0.4) }}
+                />
               )}
             </ListItemButton>
           </ListItem>
@@ -881,8 +936,11 @@ export default function SiteHeader() {
                       sx={{
                         py: 1,
                         pl: 4,
-                        color: active ? "#E65100" : "rgba(255,255,255,0.55)",
-                        borderLeft: active ? "3px solid #E65100" : "3px solid transparent",
+                        color: active
+                          ? "primary.main"
+                          : (theme) => alpha(theme.palette.common.white, 0.55),
+                        borderLeft: active ? "3px solid" : "3px solid transparent",
+                        borderLeftColor: active ? "primary.main" : "transparent",
                       }}
                     >
                       <ListItemText
@@ -902,14 +960,21 @@ export default function SiteHeader() {
           {/* Admin */}
           {isStaff && (
             <>
-              <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", my: 0.5 }} />
+              <Divider
+                sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08), my: 0.5 }}
+              />
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => {
                     setDrawerOpen(false);
                     router.push("/admin");
                   }}
-                  sx={{ py: 1.25, color: "#E65100", borderLeft: "3px solid #E65100" }}
+                  sx={{
+                    py: 1.25,
+                    color: "primary.main",
+                    borderLeft: "3px solid",
+                    borderLeftColor: "primary.main",
+                  }}
                 >
                   <ListItemText
                     primary="Admin"
@@ -923,12 +988,12 @@ export default function SiteHeader() {
 
         {/* Footer drawer: sezione utente */}
         <Box>
-          <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+          <Divider sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08) }} />
           {user ? (
             <>
               <ListItemButton
                 onClick={cycleColorMode}
-                sx={{ py: 1.25, color: "rgba(255,255,255,0.7)" }}
+                sx={{ py: 1.25, color: (theme) => alpha(theme.palette.common.white, 0.7) }}
               >
                 <ListItemIcon sx={{ minWidth: 34 }}>
                   <ThemeModeIcon mode={colorMode as ColorMode} />
@@ -938,16 +1003,16 @@ export default function SiteHeader() {
                   primaryTypographyProps={{ fontSize: "0.9rem" }}
                 />
               </ListItemButton>
-              <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+              <Divider sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08) }} />
               <ListItemButton
                 onClick={() => {
                   setDrawerOpen(false);
                   signOut({ callbackUrl: "/" });
                 }}
-                sx={{ py: 1.25, color: "#ef5350" }}
+                sx={{ py: 1.25, color: "error.main" }}
               >
                 <ListItemIcon sx={{ minWidth: 34 }}>
-                  <LogoutIcon fontSize="small" sx={{ color: "#ef5350" }} />
+                  <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
                 </ListItemIcon>
                 <ListItemText primary="Esci" primaryTypographyProps={{ fontSize: "0.95rem" }} />
               </ListItemButton>
@@ -955,7 +1020,7 @@ export default function SiteHeader() {
           ) : (
             <ListItemButton
               onClick={cycleColorMode}
-              sx={{ py: 1.25, color: "rgba(255,255,255,0.7)" }}
+              sx={{ py: 1.25, color: (theme) => alpha(theme.palette.common.white, 0.7) }}
             >
               <ListItemIcon sx={{ minWidth: 34 }}>
                 <ThemeModeIcon mode={colorMode as ColorMode} />
@@ -970,7 +1035,7 @@ export default function SiteHeader() {
             sx={{
               px: 2,
               py: 1,
-              borderTop: "1px solid rgba(255,255,255,0.06)",
+              borderTop: (theme) => `1px solid ${alpha(theme.palette.common.white, 0.06)}`,
             }}
           >
             <Link

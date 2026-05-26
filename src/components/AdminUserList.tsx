@@ -962,7 +962,13 @@ export default function AdminUserList({
           {/* ── Tabella utenti ── */}
           <TableContainer
             component={Box}
-            sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}
+            sx={{
+              display: { xs: "none", sm: "block" },
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              overflowX: "auto",
+            }}
           >
             <Table size="small" aria-label="Lista utenti">
               <TableHead>
@@ -1207,7 +1213,7 @@ export default function AdminUserList({
                         <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                           <Tooltip title="Modifica utente">
                             <IconButton
-                              size="small"
+                              size="medium"
                               aria-label="Modifica utente"
                               onClick={() => openEdit(row)}
                             >
@@ -1216,7 +1222,7 @@ export default function AdminUserList({
                           </Tooltip>
                           <Tooltip title="Elimina utente">
                             <IconButton
-                              size="small"
+                              size="medium"
                               aria-label="Elimina utente"
                               color="error"
                               onClick={() => setDeleteRow(row)}
@@ -1242,6 +1248,127 @@ export default function AdminUserList({
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* ── Mobile card view utenti ── */}
+          <Box
+            sx={{
+              display: { xs: "block", sm: "none" },
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+            }}
+          >
+            {paginated.length === 0 ? (
+              <Box sx={{ py: 4, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  {activeFilterCount > 0
+                    ? "Nessun risultato corrisponde ai filtri selezionati."
+                    : "Nessun utente trovato."}
+                </Typography>
+              </Box>
+            ) : (
+              paginated.map((row) => {
+                if (row.kind !== "user") return null;
+                const season = getCurrentSeason();
+                const team = row.teamMemberships.find((m) => m.team.season === season)?.team;
+                return (
+                  <Box
+                    key={`user-${row.id}`}
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
+                      "&:last-child": { borderBottom: 0 },
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                    }}
+                  >
+                    <Avatar
+                      src={row.image ?? undefined}
+                      sx={{ width: 36, height: 36, fontSize: 14, flexShrink: 0 }}
+                    >
+                      {(row.name ?? "?")[0].toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" fontWeight={700} noWrap>
+                        {row.name ?? "—"}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap display="block">
+                        {row.email}
+                      </Typography>
+                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
+                        <Chip
+                          label={ROLE_LABELS_IT[row.appRole]}
+                          size="small"
+                          color={ROLE_CHIP_COLORS[row.appRole]}
+                          sx={{ fontWeight: 600, fontSize: "0.68rem" }}
+                        />
+                        {row.sportRole ? (
+                          <Chip
+                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
+                            size="small"
+                            sx={{
+                              bgcolor: ROLE_COLORS[row.sportRole],
+                              color: "common.white",
+                              fontWeight: 700,
+                              fontSize: "0.68rem",
+                            }}
+                          />
+                        ) : row.sportRoleSuggested ? (
+                          <Chip
+                            label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              borderColor: ROLE_COLORS[row.sportRoleSuggested],
+                              color: ROLE_COLORS[row.sportRoleSuggested],
+                              fontWeight: 700,
+                              fontSize: "0.68rem",
+                            }}
+                          />
+                        ) : null}
+                        {team && (
+                          <Chip
+                            label={team.name}
+                            size="small"
+                            sx={{
+                              bgcolor: team.color ?? "primary.main",
+                              color: "common.white",
+                              fontWeight: 600,
+                              fontSize: "0.68rem",
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+                      <Tooltip title="Modifica utente">
+                        <IconButton
+                          size="medium"
+                          aria-label="Modifica utente"
+                          onClick={() => openEdit(row)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Elimina utente">
+                        <IconButton
+                          size="medium"
+                          aria-label="Elimina utente"
+                          color="error"
+                          onClick={() => setDeleteRow(row)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                );
+              })
+            )}
+          </Box>
 
           {/* ── Paginazione ── */}
           <TablePagination
@@ -1306,7 +1433,13 @@ export default function AdminUserList({
           {/* ── Tabella figli ── */}
           <TableContainer
             component={Box}
-            sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, overflowX: "auto" }}
+            sx={{
+              display: { xs: "none", sm: "block" },
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              overflowX: "auto",
+            }}
           >
             <Table size="small" aria-label="Lista figli">
               <TableHead>
@@ -1479,7 +1612,7 @@ export default function AdminUserList({
                         <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
                           <Tooltip title="Modifica figlio">
                             <IconButton
-                              size="small"
+                              size="medium"
                               aria-label="Modifica figlio"
                               onClick={() => openEdit({ ...row, kind: "child" })}
                             >
@@ -1488,7 +1621,7 @@ export default function AdminUserList({
                           </Tooltip>
                           <Tooltip title="Elimina figlio">
                             <IconButton
-                              size="small"
+                              size="medium"
                               aria-label="Elimina figlio"
                               color="error"
                               onClick={() => setDeleteRow({ ...row, kind: "child" })}
@@ -1513,6 +1646,114 @@ export default function AdminUserList({
               </TableBody>
             </Table>
           </TableContainer>
+          {/* ── Mobile card view figli ── */}
+          <Box
+            sx={{
+              display: { xs: "block", sm: "none" },
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+            }}
+          >
+            {filteredChildren
+              .slice(childPage * childRowsPerPage, (childPage + 1) * childRowsPerPage)
+              .map((row) => {
+                const season = getCurrentSeason();
+                const team = row.teamMemberships.find((m) => m.team.season === season)?.team;
+                return (
+                  <Box
+                    key={`child-${row.id}`}
+                    sx={{
+                      px: 2,
+                      py: 1.5,
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
+                      "&:last-child": { borderBottom: 0 },
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                    }}
+                  >
+                    <Avatar
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        fontSize: 14,
+                        bgcolor: "grey.400",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {row.name[0].toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" fontWeight={700} noWrap>
+                        {row.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap display="block">
+                        Figlio di {row.parent.name ?? row.parent.email}
+                      </Typography>
+                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
+                        {row.sportRole && (
+                          <Chip
+                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
+                            size="small"
+                            sx={{
+                              bgcolor: ROLE_COLORS[row.sportRole],
+                              color: "common.white",
+                              fontWeight: 700,
+                              fontSize: "0.68rem",
+                            }}
+                          />
+                        )}
+                        {team && (
+                          <Chip
+                            label={team.name}
+                            size="small"
+                            sx={{
+                              bgcolor: team.color ?? "primary.main",
+                              color: "common.white",
+                              fontWeight: 600,
+                              fontSize: "0.68rem",
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+                      <Tooltip title="Modifica figlio">
+                        <IconButton
+                          size="medium"
+                          aria-label="Modifica figlio"
+                          onClick={() => openEdit({ ...row, kind: "child" })}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Elimina figlio">
+                        <IconButton
+                          size="medium"
+                          aria-label="Elimina figlio"
+                          color="error"
+                          onClick={() => setDeleteRow({ ...row, kind: "child" })}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Box>
+                );
+              })}
+            {filteredChildren.length === 0 && (
+              <Box sx={{ py: 4, textAlign: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  {childSearch
+                    ? "Nessun risultato corrisponde alla ricerca."
+                    : "Nessun figlio senza account trovato."}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
           <TablePagination
             component="div"
             count={filteredChildren.length}
@@ -1868,7 +2109,12 @@ export default function AdminUserList({
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setEditRow(null)}>Annulla</Button>
-          <Button variant="contained" onClick={handleSaveAthleteData} disabled={saving}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleSaveAthleteData}
+            disabled={saving}
+          >
             {saving ? "Salvataggio..." : "Salva"}
           </Button>
         </DialogActions>

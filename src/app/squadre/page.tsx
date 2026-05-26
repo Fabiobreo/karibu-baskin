@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/EmptyState";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -51,65 +53,12 @@ export default async function SquadrePage() {
     <>
       <SiteHeader />
 
-      {/* Hero */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 6, md: 9 },
-          px: 2,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
-            pointerEvents: "none",
-          }}
-        />
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip label="Chi siamo" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}
-          >
-            ASD Karibu Baskin
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              color: "rgba(255,255,255,0.65)",
-              fontWeight: 400,
-              maxWidth: 540,
-              mx: "auto",
-              fontSize: { xs: "1rem", md: "1.1rem" },
-            }}
-          >
-            Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre nei campionati veneti.
-          </Typography>
-        </Container>
-      </Box>
+      <PageHero
+        chip="Chi siamo"
+        title="ASD Karibu Baskin"
+        subtitle="Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre nei campionati veneti."
+        subtitleMaxWidth={540}
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Stats */}
@@ -149,15 +98,11 @@ export default async function SquadrePage() {
 
         {/* Squadre stagione corrente */}
         {currentTeams.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <GroupsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessuna squadra registrata
-            </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              Le squadre verranno aggiunte dall&apos;amministratore.
-            </Typography>
-          </Box>
+          <EmptyState
+            icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title="Nessuna squadra registrata"
+            message="Le squadre verranno aggiunte dall'amministratore."
+          />
         ) : (
           <Box>
             {currentSeason && (
@@ -311,9 +256,7 @@ function TeamGrid({ teams, muted = false }: { teams: Team[]; muted?: boolean }) 
                     label={team.championship}
                     size="small"
                     sx={{
-                      backgroundColor: muted
-                        ? (theme) => alpha(theme.palette.common.black, 0.08)
-                        : "rgba(255,255,255,0.2)",
+                      backgroundColor: muted ? alpha("#000000", 0.08) : "rgba(255,255,255,0.2)",
                       color: muted ? "text.secondary" : "#fff",
                       fontWeight: 700,
                     }}

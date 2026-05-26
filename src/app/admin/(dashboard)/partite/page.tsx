@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminPartiteClient from "@/components/AdminPartiteClient";
+import AdminPageHeader from "@/components/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Partite | Admin" };
@@ -66,12 +67,19 @@ export default async function AdminPartitePage() {
         });
 
   return (
-    <AdminPartiteClient
-      teams={teams}
-      opposingTeams={opposingTeams}
-      matches={matches}
-      groups={groupsForForm}
-      groupMatches={groupMatches}
-    />
+    <>
+      <AdminPageHeader
+        title="Gestione Partite"
+        subtitle="Calendario delle partite ufficiali, convocazioni e statistiche."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Partite" }]}
+      />
+      <AdminPartiteClient
+        teams={teams}
+        opposingTeams={opposingTeams}
+        matches={matches}
+        groups={groupsForForm}
+        groupMatches={groupMatches}
+      />
+    </>
   );
 }

@@ -470,7 +470,8 @@ export default function RegistrationForm({
                             py: 0.5,
                             px: 1.5,
                             borderRadius: "6px !important",
-                            border: "1px solid rgba(0,0,0,0.23) !important",
+                            border: "1px solid !important",
+                            borderColor: "divider !important",
                             "&.Mui-selected": {
                               backgroundColor: ROLE_COLORS[r],
                               color: "#fff",

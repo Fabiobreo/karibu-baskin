@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
 import ContactForm from "@/components/ContactForm";
 import Image from "next/image";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -131,102 +132,53 @@ export default function ContattiPage() {
       <SiteHeader />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 7, md: 10 },
-          px: 2,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
+      <PageHero
+        chip="Siamo qui"
+        title="Come possiamo aiutarti?"
+        subtitle="Hai una domanda, vuoi venire ad allenarci, o sei interessato a supportarci?"
+        py={{ xs: 7, md: 10 }}
+        maxWidth="sm"
       >
-        <Box
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
-            pointerEvents: "none",
-          }}
-        />
-        <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip label="Siamo qui" color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-          <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 1.5, fontSize: { xs: "2rem", md: "2.8rem" } }}
-          >
-            Come possiamo aiutarti?
-          </Typography>
-          <Typography
-            variant="h6"
+        <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap", mt: 4 }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<MessageIcon />}
+            onClick={() => scrollToSection("contatti")}
             sx={{
-              color: "rgba(255,255,255,0.6)",
-              fontWeight: 400,
-              fontSize: { xs: "1rem", md: "1.1rem" },
-              mb: 4,
+              fontWeight: 700,
+              px: 3.5,
+              py: 1.4,
+              borderRadius: 2,
+              boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
             }}
           >
-            Hai una domanda, vuoi venire ad allenarci, o sei interessato a supportarci?
-          </Typography>
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<MessageIcon />}
-              onClick={() => scrollToSection("contatti")}
-              sx={{
-                fontWeight: 700,
-                px: 3.5,
-                py: 1.4,
-                borderRadius: 2,
-                boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-              }}
-            >
-              Ho una domanda
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<HandshakeIcon />}
-              onClick={() => scrollToSection("partner")}
-              sx={{
-                fontWeight: 700,
-                px: 3.5,
-                py: 1.4,
-                borderRadius: 2,
-                color: "#fff",
-                borderColor: "rgba(255,255,255,0.35)",
-                backdropFilter: "blur(4px)",
-                bgcolor: "rgba(255,255,255,0.06)",
-                "&:hover": {
-                  borderColor: "rgba(255,255,255,0.65)",
-                  bgcolor: "rgba(255,255,255,0.12)",
-                },
-              }}
-            >
-              Voglio sponsorizzare
-            </Button>
-          </Box>
-        </Container>
-      </Box>
+            Ho una domanda
+          </Button>
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<HandshakeIcon />}
+            onClick={() => scrollToSection("partner")}
+            sx={{
+              fontWeight: 700,
+              px: 3.5,
+              py: 1.4,
+              borderRadius: 2,
+              color: "#fff",
+              borderColor: "rgba(255,255,255,0.35)",
+              backdropFilter: "blur(4px)",
+              bgcolor: "rgba(255,255,255,0.06)",
+              "&:hover": {
+                borderColor: "rgba(255,255,255,0.65)",
+                bgcolor: "rgba(255,255,255,0.12)",
+              },
+            }}
+          >
+            Voglio sponsorizzare
+          </Button>
+        </Box>
+      </PageHero>
 
       {/* ── Sticky mini-nav ──────────────────────────────────────────────────── */}
       <Box

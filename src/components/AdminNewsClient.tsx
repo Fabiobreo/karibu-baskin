@@ -4,6 +4,7 @@ import {
   Box,
   Typography,
   Button,
+  Dialog,
   Table,
   TableBody,
   TableCell,
@@ -13,7 +14,6 @@ import {
   Paper,
   IconButton,
   Chip,
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -24,6 +24,7 @@ import {
   Tooltip,
   Alert,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -202,23 +203,29 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          News
-        </Typography>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openNew}>
           Nuovo post
         </Button>
       </Box>
 
-      <TableContainer component={Paper} variant="outlined">
+      {/* Desktop table */}
+      <TableContainer
+        component={Paper}
+        variant="outlined"
+        sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}
+      >
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 700 }}>Titolo</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Stato</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Autore</TableCell>
+              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+                Data
+              </TableCell>
+              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+                Autore
+              </TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -249,19 +256,19 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                     color={post.publishedAt ? "success" : "default"}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                   <Typography variant="caption" color="text.secondary">
                     {post.publishedAt
                       ? format(new Date(post.publishedAt), "d MMM yyyy", { locale: it })
                       : format(new Date(post.createdAt), "d MMM yyyy", { locale: it })}
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                   <Typography variant="caption">{post.author.name ?? "—"}</Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Tooltip title={post.publishedAt ? "Rimetti in bozza" : "Pubblica"}>
-                    <IconButton size="small" onClick={() => handleTogglePublish(post)}>
+                    <IconButton size="medium" onClick={() => handleTogglePublish(post)}>
                       {post.publishedAt ? (
                         <UnpublishedIcon fontSize="small" />
                       ) : (
@@ -270,12 +277,12 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Modifica">
-                    <IconButton size="small" onClick={() => openEdit(post)}>
+                    <IconButton size="medium" onClick={() => openEdit(post)}>
                       <EditIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Elimina">
-                    <IconButton size="small" color="error" onClick={() => setConfirmDelete(post)}>
+                    <IconButton size="medium" color="error" onClick={() => setConfirmDelete(post)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
@@ -286,8 +293,82 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
         </Table>
       </TableContainer>
 
+      {/* Mobile card view */}
+      <Paper variant="outlined" sx={{ display: { xs: "block", sm: "none" } }}>
+        {posts.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: "center" }}>
+            <Typography variant="body2" color="text.secondary">
+              Nessun post ancora
+            </Typography>
+          </Box>
+        ) : (
+          posts.map((post) => (
+            <Box
+              key={post.id}
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                "&:last-child": { borderBottom: 0 },
+              }}
+            >
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
+              >
+                <Box sx={{ flex: 1, minWidth: 0, mr: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
+                    <Typography variant="body2" fontWeight={700} sx={{ wordBreak: "break-word" }}>
+                      {post.title}
+                    </Typography>
+                    {post.poll && (
+                      <Tooltip title="Ha un sondaggio allegato">
+                        <HowToVoteIcon sx={{ fontSize: 14 }} color="primary" />
+                      </Tooltip>
+                    )}
+                  </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+                    <Chip
+                      label={post.publishedAt ? "Pubblicato" : "Bozza"}
+                      size="small"
+                      color={post.publishedAt ? "success" : "default"}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                      {post.publishedAt
+                        ? format(new Date(post.publishedAt), "d MMM yyyy", { locale: it })
+                        : format(new Date(post.createdAt), "d MMM yyyy", { locale: it })}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+                  <Tooltip title={post.publishedAt ? "Rimetti in bozza" : "Pubblica"}>
+                    <IconButton size="medium" onClick={() => handleTogglePublish(post)}>
+                      {post.publishedAt ? (
+                        <UnpublishedIcon fontSize="small" />
+                      ) : (
+                        <PublishIcon fontSize="small" />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Modifica">
+                    <IconButton size="medium" onClick={() => openEdit(post)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Elimina">
+                    <IconButton size="medium" color="error" onClick={() => setConfirmDelete(post)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+            </Box>
+          ))
+        )}
+      </Paper>
+
       {/* Dialog crea/modifica */}
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
+      <ResponsiveDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>{editPost ? "Modifica post" : "Nuovo post"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 2 }}>
           <TextField
@@ -356,11 +437,11 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
           <Button onClick={() => setOpen(false)} disabled={saving}>
             Annulla
           </Button>
-          <Button variant="contained" onClick={handleSave} disabled={saving}>
+          <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>
             {saving ? "Salvataggio..." : "Salva"}
           </Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
       {/* Dialog conferma eliminazione */}
       <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>

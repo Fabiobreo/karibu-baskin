@@ -10,7 +10,10 @@ import {
   Avatar,
   Stack,
   Divider,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
 import PlayerShareButtons from "@/components/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -250,7 +253,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       <Box
         sx={{
           background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 30%, ${playerColor} 130%)`,
-          color: "#fff",
+          color: "common.white",
           py: { xs: 5, md: 7 },
           px: 2,
           position: "relative",
@@ -266,7 +269,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             transform: "translateY(-50%)",
             fontSize: { xs: "14rem", md: "20rem" },
             fontWeight: 900,
-            color: "#fff",
+            color: "common.white",
             opacity: 0.05,
             lineHeight: 1,
             pointerEvents: "none",
@@ -278,6 +281,31 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         </Box>
 
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ mb: 3, "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+          >
+            <MuiLink
+              component={Link}
+              href="/squadre"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: "rgba(255,255,255,0.65)",
+                fontWeight: 500,
+                "&:hover": { color: "#fff" },
+              }}
+            >
+              Squadre
+            </MuiLink>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
+              noWrap
+            >
+              {user.name ?? "Giocatore"}
+            </Typography>
+          </Breadcrumbs>
           <Box
             sx={{
               display: "flex",
@@ -317,13 +345,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     height: 40,
                     borderRadius: "50%",
                     bgcolor: ROLE_COLORS[user.sportRole],
-                    color: "#fff",
+                    color: "common.white",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontWeight: 900,
                     fontSize: "1.2rem",
-                    border: "3px solid #1A1A1A",
+                    border: "3px solid",
+                    borderColor: "secondary.main",
                     boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
                   }}
                 >
@@ -375,7 +404,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     size="small"
                     sx={{
                       bgcolor: ROLE_COLORS[user.sportRole],
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 800,
                       fontSize: "0.72rem",
                     }}
@@ -394,8 +423,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     label={m.team.name}
                     size="small"
                     sx={{
-                      bgcolor: m.team.color ?? "#424242",
-                      color: "#fff",
+                      bgcolor: m.team.color ?? "text.primary",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.72rem",
                     }}
@@ -417,6 +446,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     const isFirst = m.rank === 1;
                     const isSecond = m.rank === 2;
                     const medalColor = isFirst ? "#FFC107" : isSecond ? "#BDBDBD" : "#CD7F32";
+                    const medalColorToken = isFirst
+                      ? "medal.gold"
+                      : isSecond
+                        ? "medal.silver"
+                        : "medal.bronze";
                     const medalLabel = isFirst
                       ? "Top scorer"
                       : isSecond
@@ -429,7 +463,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           display: "flex",
                           alignItems: "center",
                           gap: 0.75,
-                          bgcolor: "rgba(0,0,0,0.35)",
+                          bgcolor: alpha("#000000", 0.35),
                           border: `1.5px solid ${medalColor}`,
                           borderRadius: 999,
                           pl: 0.5,
@@ -451,14 +485,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             flexShrink: 0,
                           }}
                         >
-                          <EmojiEventsIcon sx={{ fontSize: 13, color: "#fff" }} />
+                          <EmojiEventsIcon sx={{ fontSize: 13, color: "common.white" }} />
                         </Box>
                         <Box sx={{ lineHeight: 1 }}>
                           <Typography
                             sx={{
                               fontSize: "0.62rem",
                               fontWeight: 800,
-                              color: medalColor,
+                              color: medalColorToken,
                               textTransform: "uppercase",
                               letterSpacing: "0.05em",
                               display: "block",
@@ -470,7 +504,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             sx={{
                               fontSize: "0.65rem",
                               fontWeight: 600,
-                              color: "#E0E0E0",
+                              color: "text.disabled",
                             }}
                           >
                             {m.teamName} · {m.season}
@@ -484,8 +518,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       label={`+${medals.length - 4}`}
                       size="small"
                       sx={{
-                        bgcolor: "rgba(255,255,255,0.1)",
-                        color: "#fff",
+                        bgcolor: alpha("#ffffff", 0.1),
+                        color: "common.white",
                         fontWeight: 700,
                         fontSize: "0.7rem",
                       }}
@@ -510,7 +544,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: { xs: "2.4rem", md: "3rem" },
                         fontWeight: 900,
-                        color: "#fff",
+                        color: "common.white",
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
                         textShadow: "0 2px 4px rgba(0,0,0,0.5)",
@@ -522,7 +556,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: "0.78rem",
                         fontWeight: 700,
-                        color: "#E0E0E0",
+                        color: "text.disabled",
                         textTransform: "uppercase",
                         letterSpacing: "0.08em",
                       }}
@@ -546,7 +580,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: "0.72rem",
                         fontWeight: 700,
-                        color: "#BDBDBD",
+                        color: "text.disabled",
                       }}
                     >
                       a partita
@@ -557,7 +591,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: { xs: "1.4rem", md: "1.7rem" },
                         fontWeight: 800,
-                        color: "#fff",
+                        color: "common.white",
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
                       }}
@@ -568,7 +602,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: "0.72rem",
                         fontWeight: 700,
-                        color: "#BDBDBD",
+                        color: "text.disabled",
                       }}
                     >
                       {matchesPlayed === 1 ? "partita" : "partite"}
@@ -621,7 +655,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Chip
                       label={ROLE_LABELS[user.sportRole as keyof typeof ROLE_LABELS]}
                       size="small"
-                      sx={{ bgcolor: ROLE_COLORS[user.sportRole], color: "#fff", fontWeight: 700 }}
+                      sx={{
+                        bgcolor: ROLE_COLORS[user.sportRole],
+                        color: "common.white",
+                        fontWeight: 700,
+                      }}
                     />
                   }
                 />
@@ -650,10 +688,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {badges.map((badge) => {
                 const tierColor =
                   badge.tier === "gold"
-                    ? { border: "#F9A825", bg: "#FFFDE7", text: "#F57F17" }
+                    ? { border: "medal.gold", bg: alpha("#F9A825", 0.08), text: "medal.gold" }
                     : badge.tier === "silver"
-                      ? { border: "#9E9E9E", bg: "#FAFAFA", text: "#616161" }
-                      : { border: "#BCAAA4", bg: "#EFEBE9", text: "#6D4C41" };
+                      ? { border: "medal.silver", bg: "action.hover", text: "text.secondary" }
+                      : {
+                          border: "medal.bronze",
+                          bg: alpha("#CD7F32", 0.08),
+                          text: "medal.bronze",
+                        };
                 return (
                   <Box
                     key={badge.id}
@@ -665,7 +707,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       px: 1.5,
                       py: 0.75,
                       borderRadius: 2,
-                      border: `1.5px solid ${tierColor.border}`,
+                      border: "1.5px solid",
+                      borderColor: tierColor.border,
                       bgcolor: tierColor.bg,
                       cursor: "default",
                     }}
@@ -717,7 +760,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       size="small"
                       sx={{
                         bgcolor: ROLE_COLORS[entry.sportRole],
-                        color: "#fff",
+                        color: "common.white",
                         fontWeight: 700,
                       }}
                     />
@@ -761,7 +804,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 >
                   Statistiche
                 </Typography>
-                <Typography variant="h5" fontWeight={800}>
+                <Typography variant="h4" fontWeight={800}>
                   Agonismo
                 </Typography>
               </Box>
@@ -852,7 +895,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Divider sx={{ mb: 5 }} />
             <Box sx={{ mb: 5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <EmojiEventsIcon sx={{ color: "#FFC107" }} />
+                <EmojiEventsIcon sx={{ color: "medal.gold" }} />
                 <Typography
                   variant="overline"
                   sx={{ color: "#FFC107", fontWeight: 700, letterSpacing: "0.1em" }}
@@ -860,7 +903,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   Albo
                 </Typography>
               </Box>
-              <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 Medaglie e riconoscimenti
               </Typography>
               <Grid container spacing={2}>
@@ -902,13 +945,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "#fff",
+                            color: "common.white",
                             border: "3px solid #fff",
                             boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
                             flexShrink: 0,
                           }}
                         >
-                          <EmojiEventsIcon sx={{ fontSize: 22, color: "#fff" }} />
+                          <EmojiEventsIcon sx={{ fontSize: 22, color: "common.white" }} />
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography
@@ -956,7 +999,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   Squadre
                 </Typography>
               </Box>
-              <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 Storico agonistico
               </Typography>
               <Stack spacing={1.5}>
@@ -1002,7 +1045,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                               {m.team.name}
                             </Typography>
                             {m.isCaptain && (
-                              <EmojiEventsIcon sx={{ fontSize: 14, color: "#F9A825" }} />
+                              <EmojiEventsIcon sx={{ fontSize: 14, color: "medal.gold" }} />
                             )}
                           </Box>
                           {m.team.championship && (
@@ -1042,7 +1085,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   Partite
                 </Typography>
               </Box>
-              <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 Statistiche per partita
               </Typography>
               <Stack spacing={1.5}>
@@ -1105,7 +1148,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                   size="small"
                                   sx={{
                                     backgroundColor: MATCH_RESULT_META[ms.match.result].color,
-                                    color: "#fff",
+                                    color: "common.white",
                                     fontWeight: 700,
                                     fontSize: "0.7rem",
                                   }}

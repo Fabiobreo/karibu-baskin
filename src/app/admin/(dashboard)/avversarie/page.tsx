@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminAvversarieClient from "@/components/AdminAvversarieClient";
+import AdminPageHeader from "@/components/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Squadre avversarie | Admin" };
@@ -25,5 +26,14 @@ export default async function AdminAvversariePage() {
       colors: true,
     },
   });
-  return <AdminAvversarieClient initialOpponents={opponents} />;
+  return (
+    <>
+      <AdminPageHeader
+        title="Squadre avversarie"
+        subtitle="Anagrafica delle squadre che incontriamo nei campionati e nei tornei."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Avversarie" }]}
+      />
+      <AdminAvversarieClient initialOpponents={opponents} />
+    </>
+  );
 }

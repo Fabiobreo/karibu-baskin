@@ -11,6 +11,8 @@ import {
   Stack,
   Divider,
   Tooltip,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -378,20 +380,30 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
         }}
       >
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Box sx={{ mb: 2 }}>
-            <Link href="/squadre" style={{ textDecoration: "none" }}>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#BDBDBD",
-                  fontWeight: 600,
-                  "&:hover": { color: "#fff" },
-                }}
-              >
-                ← Squadre
-              </Typography>
-            </Link>
-          </Box>
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{
+              mb: 2,
+              "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" },
+            }}
+          >
+            <MuiLink
+              component={Link}
+              href="/squadre"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: "rgba(255,255,255,0.65)",
+                fontWeight: 500,
+                "&:hover": { color: "#fff" },
+              }}
+            >
+              Squadre
+            </MuiLink>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
+              {team.name}
+            </Typography>
+          </Breadcrumbs>
 
           <Box
             sx={{
@@ -604,7 +616,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 >
                   Statistiche
                 </Typography>
-                <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5 }}>
+                <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5 }}>
                   Bilancio stagione
                 </Typography>
                 <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600 }}>
@@ -845,7 +857,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 Leader
               </Typography>
             </Box>
-            <Typography variant="h5" fontWeight={800} sx={{ mb: 2.5 }}>
+            <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
               Top scorer della stagione
             </Typography>
 
@@ -900,7 +912,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   Rosa
                 </Typography>
               </Box>
-              <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {team.memberships.length} {team.memberships.length === 1 ? "atleta" : "atleti"} in
                 squadra
               </Typography>
@@ -1006,7 +1018,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   Storico
                 </Typography>
               </Box>
-              <Typography variant="h5" fontWeight={800} sx={{ mb: 2.5 }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
                 Risultati
               </Typography>
               <Stack spacing={1}>
@@ -1037,7 +1049,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   In programma
                 </Typography>
               </Box>
-              <Typography variant="h5" fontWeight={800} sx={{ mb: 2.5 }}>
+              <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
                 Prossime partite
               </Typography>
               <Stack spacing={1}>

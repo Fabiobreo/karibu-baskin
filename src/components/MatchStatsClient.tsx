@@ -17,9 +17,10 @@ import {
   Button,
   CircularProgress,
   Alert,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -284,11 +285,29 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <Link href="/admin/partite" style={{ textDecoration: "none" }}>
-          <Button startIcon={<ArrowBackIcon />} size="small" sx={{ mb: 1 }}>
-            Torna alle partite
-          </Button>
-        </Link>
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 1 }}>
+          <MuiLink
+            component={Link}
+            href="/admin"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
+          >
+            Dashboard
+          </MuiLink>
+          <MuiLink
+            component={Link}
+            href="/admin/partite"
+            underline="hover"
+            color="text.secondary"
+            variant="body2"
+          >
+            Partite
+          </MuiLink>
+          <Typography variant="body2" color="text.primary">
+            Statistiche
+          </Typography>
+        </Breadcrumbs>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <LeaderboardIcon color="primary" />
           <Typography variant="h4" fontWeight={800}>
@@ -336,8 +355,8 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
                 size="small"
                 sx={{
                   fontWeight: 700,
-                  bgcolor: mvpKeys.size > 0 ? "#FFF8E1" : "action.hover",
-                  color: mvpKeys.size > 0 ? "#F57F17" : "text.secondary",
+                  bgcolor: mvpKeys.size > 0 ? "rgba(249,168,37,0.15)" : "action.hover",
+                  color: mvpKeys.size > 0 ? "match.draw" : "text.secondary",
                 }}
               />
             </Box>
@@ -363,7 +382,8 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
                       cursor: "pointer",
                       bgcolor: selected ? "#F9A825" : "transparent",
                       color: selected ? "#fff" : "text.primary",
-                      border: `1px solid ${selected ? "#F9A825" : "rgba(0,0,0,0.23)"}`,
+                      border: "1px solid",
+                      borderColor: selected ? "#F9A825" : "divider",
                       "&:hover": {
                         bgcolor: selected ? "#F57F17" : "rgba(249,168,37,0.08)",
                       },

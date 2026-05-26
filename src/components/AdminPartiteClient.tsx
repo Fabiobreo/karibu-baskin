@@ -101,6 +101,140 @@ const RESULT_COLORS: Record<MatchResult, string> = {
   DRAW: "#E65100",
 };
 
+function MatchMobileCard({
+  match,
+  matchday,
+  router,
+  onResult,
+  onEdit,
+  onDelete,
+}: {
+  match: Match;
+  matchday?: number | null;
+  router: RouterLike;
+  onResult: (m: Match) => void;
+  onEdit: (m: Match) => void;
+  onDelete: (id: string) => void;
+}) {
+  const m = match;
+  return (
+    <Box
+      sx={{
+        px: 2,
+        py: 1.5,
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        "&:last-child": { borderBottom: 0 },
+      }}
+    >
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap", mb: 0.25 }}
+          >
+            {matchday != null && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={700}
+                sx={{ fontSize: "0.68rem" }}
+              >
+                G.{matchday}
+              </Typography>
+            )}
+            <Typography variant="body2" fontWeight={700}>
+              {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
+            </Typography>
+            {m.opponentTeam && (
+              <Typography
+                component="span"
+                variant="caption"
+                sx={{ color: "primary.main", fontWeight: 700, fontSize: "0.68rem" }}
+              >
+                (interna)
+              </Typography>
+            )}
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+            <Typography variant="caption" color="text.secondary">
+              {format(new Date(m.date), "d MMM yyyy", { locale: it })}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              {m.isHome ? (
+                <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+              ) : (
+                <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+              )}
+              <Typography variant="caption" color="text.disabled">
+                {m.isHome ? "Casa" : "Trasferta"}
+              </Typography>
+            </Box>
+            {m.result && (
+              <Chip
+                label={RESULT_LABELS[m.result]}
+                size="small"
+                sx={{
+                  backgroundColor: RESULT_COLORS[m.result],
+                  color: "common.white",
+                  fontWeight: 700,
+                  fontSize: "0.65rem",
+                  height: 20,
+                }}
+              />
+            )}
+            <Tooltip title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}>
+              <Button
+                size="small"
+                onClick={() => onResult(m)}
+                sx={{
+                  minWidth: 0,
+                  px: 1,
+                  py: 0,
+                  textTransform: "none",
+                  color: m.ourScore !== null ? "text.primary" : "primary.main",
+                  fontWeight: 700,
+                  fontSize: "0.82rem",
+                }}
+              >
+                {m.ourScore !== null && m.theirScore !== null
+                  ? `${m.ourScore} – ${m.theirScore}`
+                  : "+ Risultato"}
+              </Button>
+            </Tooltip>
+          </Box>
+        </Box>
+        <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
+          <Tooltip title="Convocati">
+            <IconButton
+              size="medium"
+              color="primary"
+              aria-label="Convocati partita"
+              onClick={() => router.push(`/admin/partite/${m.id}/convocazioni`)}
+            >
+              <GroupsIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Modifica">
+            <IconButton size="medium" aria-label="Modifica partita" onClick={() => onEdit(m)}>
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Elimina">
+            <IconButton
+              size="medium"
+              color="error"
+              aria-label="Elimina partita"
+              onClick={() => onDelete(m.id)}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
 type TabKey = "LEAGUE" | "FRIENDLY" | "TOURNAMENT";
 
 const TAB_LABELS: Record<TabKey, string> = {
@@ -199,24 +333,7 @@ export default function AdminPartiteClient({
 
   return (
     <Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" fontWeight={800}>
-            Gestione Partite
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Calendario delle partite ufficiali, convocazioni e statistiche.
-          </Typography>
-        </Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -430,7 +547,8 @@ function LeagueView({
               </Link>
             )}
           </Box>
-          <Box sx={{ overflowX: "auto" }}>
+          {/* Desktop table */}
+          <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
@@ -477,6 +595,20 @@ function LeagueView({
                 })}
               </TableBody>
             </Table>
+          </Box>
+          {/* Mobile card view */}
+          <Box sx={{ display: { xs: "block", sm: "none" } }}>
+            {sec.rows.map((m) => (
+              <MatchMobileCard
+                key={m.id}
+                match={m}
+                matchday={m.matchday}
+                router={router}
+                onResult={onResult}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
           </Box>
         </Paper>
       ))}
@@ -679,130 +811,149 @@ function FlatView({
       </Paper>
     );
   }
+  const paginatedMatches = matches.slice(page * rpp, (page + 1) * rpp);
   return (
-    <Paper elevation={0} variant="outlined" sx={{ overflowX: "auto" }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-            <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
-              Squadra
-            </TableCell>
-            <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-            <TableCell sx={{ fontWeight: 700 }} align="center">
-              Esito
-            </TableCell>
-            <TableCell sx={{ fontWeight: 700 }} align="center">
-              Punteggio
-            </TableCell>
-            <TableCell
-              sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
-              align="center"
-            >
-              Stats
-            </TableCell>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {matches.slice(page * rpp, (page + 1) * rpp).map((m) => (
-            <TableRow key={m.id} hover>
-              <TableCell>
-                <Typography variant="body2" fontWeight={600}>
-                  {format(new Date(m.date), "d MMM yyyy", { locale: it })}
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  {m.isHome ? (
-                    <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-                  ) : (
-                    <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-                  )}
-                  <Typography variant="caption" color="text.disabled">
-                    {m.isHome ? "Casa" : "Trasferta"}
+    <Paper elevation={0} variant="outlined">
+      {/* Desktop table */}
+      <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
+              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                Squadra
+              </TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
+              <TableCell sx={{ fontWeight: 700 }} align="center">
+                Esito
+              </TableCell>
+              <TableCell sx={{ fontWeight: 700 }} align="center">
+                Punteggio
+              </TableCell>
+              <TableCell
+                sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
+                align="center"
+              >
+                Stats
+              </TableCell>
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedMatches.map((m) => (
+              <TableRow key={m.id} hover>
+                <TableCell>
+                  <Typography variant="body2" fontWeight={600}>
+                    {format(new Date(m.date), "d MMM yyyy", { locale: it })}
                   </Typography>
-                </Box>
-              </TableCell>
-              <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                <Chip
-                  label={m.team.name}
-                  size="small"
-                  sx={{
-                    backgroundColor: m.team.color ?? "primary.main",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: "0.7rem",
-                  }}
-                />
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2" fontWeight={600}>
-                  {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
-                  {m.opponentTeam && (
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
-                    >
-                      (interna)
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    {m.isHome ? (
+                      <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                    ) : (
+                      <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                    )}
+                    <Typography variant="caption" color="text.disabled">
+                      {m.isHome ? "Casa" : "Trasferta"}
                     </Typography>
-                  )}
-                </Typography>
-                {m.opponent?.city && (
-                  <Typography variant="caption" color="text.secondary">
-                    {m.opponent.city}
-                  </Typography>
-                )}
-              </TableCell>
-              <TableCell align="center">
-                {m.result && (
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                   <Chip
-                    label={RESULT_LABELS[m.result]}
+                    label={m.team.name}
                     size="small"
                     sx={{
-                      backgroundColor: RESULT_COLORS[m.result],
+                      backgroundColor: m.team.color ?? "primary.main",
                       color: "#fff",
                       fontWeight: 700,
-                      fontSize: "0.68rem",
+                      fontSize: "0.7rem",
                     }}
                   />
-                )}
-              </TableCell>
-              <TableCell align="center">
-                <Tooltip title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}>
-                  <Button
-                    size="small"
-                    onClick={() => onResult(m)}
-                    sx={{
-                      minWidth: 0,
-                      px: 1,
-                      py: 0.25,
-                      textTransform: "none",
-                      color: m.ourScore !== null ? "text.primary" : "primary.main",
-                      fontWeight: 700,
-                      fontSize: "0.85rem",
-                    }}
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" fontWeight={600}>
+                    {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
+                    {m.opponentTeam && (
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
+                      >
+                        (interna)
+                      </Typography>
+                    )}
+                  </Typography>
+                  {m.opponent?.city && (
+                    <Typography variant="caption" color="text.secondary">
+                      {m.opponent.city}
+                    </Typography>
+                  )}
+                </TableCell>
+                <TableCell align="center">
+                  {m.result && (
+                    <Chip
+                      label={RESULT_LABELS[m.result]}
+                      size="small"
+                      sx={{
+                        backgroundColor: RESULT_COLORS[m.result],
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: "0.68rem",
+                      }}
+                    />
+                  )}
+                </TableCell>
+                <TableCell align="center">
+                  <Tooltip
+                    title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}
                   >
-                    {m.ourScore !== null && m.theirScore !== null
-                      ? `${m.ourScore} – ${m.theirScore}`
-                      : "+ Risultato"}
-                  </Button>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                <Typography
-                  variant="caption"
-                  color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
-                >
-                  {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                <ActionIcons match={m} router={router} onEdit={onEdit} onDelete={onDelete} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                    <Button
+                      size="small"
+                      onClick={() => onResult(m)}
+                      sx={{
+                        minWidth: 0,
+                        px: 1,
+                        py: 0.25,
+                        textTransform: "none",
+                        color: m.ourScore !== null ? "text.primary" : "primary.main",
+                        fontWeight: 700,
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      {m.ourScore !== null && m.theirScore !== null
+                        ? `${m.ourScore} – ${m.theirScore}`
+                        : "+ Risultato"}
+                    </Button>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                  <Typography
+                    variant="caption"
+                    color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+                  >
+                    {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <ActionIcons match={m} router={router} onEdit={onEdit} onDelete={onDelete} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+      {/* Mobile card view */}
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
+        {paginatedMatches.map((m) => (
+          <MatchMobileCard
+            key={m.id}
+            match={m}
+            router={router}
+            onResult={onResult}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+      </Box>
       <TablePagination
         component="div"
         count={matches.length}
@@ -837,7 +988,7 @@ function ActionIcons({
     <>
       <Tooltip title="Convocati">
         <IconButton
-          size="small"
+          size="medium"
           color="primary"
           aria-label="Convocati partita"
           onClick={() => router.push(`/admin/partite/${match.id}/convocazioni`)}
@@ -847,7 +998,7 @@ function ActionIcons({
       </Tooltip>
       <Tooltip title="Statistiche giocatori">
         <IconButton
-          size="small"
+          size="medium"
           color="primary"
           aria-label="Statistiche giocatori"
           onClick={() => router.push(`/admin/partite/${match.id}/statistiche`)}
@@ -856,13 +1007,13 @@ function ActionIcons({
         </IconButton>
       </Tooltip>
       <Tooltip title="Modifica">
-        <IconButton size="small" aria-label="Modifica partita" onClick={() => onEdit(match)}>
+        <IconButton size="medium" aria-label="Modifica partita" onClick={() => onEdit(match)}>
           <EditIcon fontSize="small" />
         </IconButton>
       </Tooltip>
       <Tooltip title="Elimina">
         <IconButton
-          size="small"
+          size="medium"
           color="error"
           aria-label="Elimina partita"
           onClick={() => onDelete(match.id)}

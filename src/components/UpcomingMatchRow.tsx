@@ -66,7 +66,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           transition: "box-shadow 0.15s, border-color 0.15s",
           "&:hover": {
             boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-            borderColor: "rgba(0,0,0,0.15)",
+            borderColor: "text.disabled",
           },
         }}
       >

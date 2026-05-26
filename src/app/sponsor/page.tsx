@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -78,70 +79,12 @@ export default function SponsorPage() {
     <>
       <SiteHeader />
 
-      {/* Hero */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 6, md: 9 },
-          px: 2,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
-            pointerEvents: "none",
-          }}
-        />
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Chip
-            label="I nostri partner"
-            color="primary"
-            size="small"
-            sx={{ mb: 2, fontWeight: 700 }}
-          />
-          <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 2, fontSize: { xs: "2rem", md: "2.8rem" } }}
-          >
-            Sponsor
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              color: "rgba(255,255,255,0.65)",
-              fontWeight: 400,
-              maxWidth: 520,
-              mx: "auto",
-              fontSize: { xs: "1rem", md: "1.1rem" },
-            }}
-          >
-            Un ringraziamento speciale a chi ci supporta ogni giorno, in campo e fuori.
-          </Typography>
-        </Container>
-      </Box>
+      <PageHero
+        chip="I nostri partner"
+        title="Sponsor"
+        subtitle="Un ringraziamento speciale a chi ci supporta ogni giorno, in campo e fuori."
+        subtitleMaxWidth={520}
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Sponsor attuali */}
@@ -188,7 +131,7 @@ export default function SponsorPage() {
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
                     "&:hover": {
                       borderColor: "primary.main",
-                      boxShadow: (theme) => `0 2px 12px ${alpha(theme.palette.primary.main, 0.1)}`,
+                      boxShadow: `0 2px 12px ${alpha("#E65100", 0.1)}`,
                       transform: "translateY(-2px)",
                     },
                   }}

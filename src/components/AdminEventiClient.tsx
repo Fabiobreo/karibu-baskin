@@ -24,7 +24,6 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import EventNoteIcon from "@mui/icons-material/EventNote";
 import PlaceIcon from "@mui/icons-material/Place";
 import { useState, useTransition, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -147,6 +146,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     startTransition(() => router.refresh());
   };
 
+  const paginatedEvents = events.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
     if (res.ok) {
@@ -158,59 +159,131 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <EventNoteIcon color="primary" />
-          <Typography variant="h5" fontWeight={800}>
-            Gestione Eventi
-          </Typography>
-        </Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           Aggiungi evento
         </Button>
       </Box>
 
       <Paper elevation={2}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Titolo</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Data inizio</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
-                Data fine
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
-                Luogo
-              </TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {events.slice(page * rowsPerPage, (page + 1) * rowsPerPage).map((ev) => (
-              <TableRow key={ev.id} hover>
-                <TableCell sx={{ fontWeight: 600 }}>{ev.title}</TableCell>
-                <TableCell>
-                  {format(new Date(ev.date), "d MMM yyyy, HH:mm", { locale: it })}
+        {/* Desktop table */}
+        <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 700 }}>Titolo</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Data inizio</TableCell>
+                <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                  Data fine
                 </TableCell>
-                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {ev.endDate
-                    ? format(new Date(ev.endDate), "d MMM yyyy, HH:mm", { locale: it })
-                    : "—"}
+                <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+                  Luogo
                 </TableCell>
-                <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                  {ev.location ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <PlaceIcon sx={{ fontSize: 14, color: "text.secondary" }} />
-                      {ev.location}
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedEvents.map((ev) => (
+                <TableRow key={ev.id} hover>
+                  <TableCell sx={{ fontWeight: 600 }}>{ev.title}</TableCell>
+                  <TableCell>
+                    {format(new Date(ev.date), "d MMM yyyy, HH:mm", { locale: it })}
+                  </TableCell>
+                  <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                    {ev.endDate
+                      ? format(new Date(ev.endDate), "d MMM yyyy, HH:mm", { locale: it })
+                      : "—"}
+                  </TableCell>
+                  <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                    {ev.location ? (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <PlaceIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                        {ev.location}
+                      </Box>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Tooltip title="Modifica">
+                      <IconButton
+                        size="medium"
+                        aria-label="Modifica evento"
+                        onClick={() => openEdit(ev)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Elimina">
+                      <IconButton
+                        size="medium"
+                        aria-label="Elimina evento"
+                        color="error"
+                        onClick={() => setDeleteId(ev.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {events.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                    Nessun evento ancora creato
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Box>
+
+        {/* Mobile card view */}
+        <Box sx={{ display: { xs: "block", sm: "none" } }}>
+          {events.length === 0 ? (
+            <Box sx={{ py: 4, textAlign: "center" }}>
+              <Typography variant="body2" color="text.secondary">
+                Nessun evento ancora creato
+              </Typography>
+            </Box>
+          ) : (
+            paginatedEvents.map((ev) => (
+              <Box
+                key={ev.id}
+                sx={{
+                  px: 2,
+                  py: 1.5,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
+                  "&:last-child": { borderBottom: 0 },
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 1,
+                }}
+              >
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ wordBreak: "break-word" }}>
+                    {ev.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {format(new Date(ev.date), "d MMM yyyy, HH:mm", { locale: it })}
+                    {ev.endDate &&
+                      ` – ${format(new Date(ev.endDate), "d MMM yyyy, HH:mm", { locale: it })}`}
+                  </Typography>
+                  {ev.location && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
+                      <PlaceIcon sx={{ fontSize: 13, color: "text.secondary" }} />
+                      <Typography variant="caption" color="text.secondary">
+                        {ev.location}
+                      </Typography>
                     </Box>
-                  ) : (
-                    "—"
                   )}
-                </TableCell>
-                <TableCell align="right">
+                </Box>
+                <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
                   <Tooltip title="Modifica">
                     <IconButton
-                      size="small"
+                      size="medium"
                       aria-label="Modifica evento"
                       onClick={() => openEdit(ev)}
                     >
@@ -219,7 +292,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                   </Tooltip>
                   <Tooltip title="Elimina">
                     <IconButton
-                      size="small"
+                      size="medium"
                       aria-label="Elimina evento"
                       color="error"
                       onClick={() => setDeleteId(ev.id)}
@@ -227,18 +300,12 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
-            {events.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                  Nessun evento ancora creato
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                </Box>
+              </Box>
+            ))
+          )}
+        </Box>
+
         <TablePagination
           component="div"
           count={events.length}
@@ -332,7 +399,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={() => setDialogOpen(false)}>Annulla</Button>
-            <Button variant="contained" type="submit" disabled={isSubmitting}>
+            <Button variant="contained" size="large" type="submit" disabled={isSubmitting}>
               {isSubmitting ? <CircularProgress size={18} /> : editingId ? "Salva" : "Crea"}
             </Button>
           </DialogActions>

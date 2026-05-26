@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
+import EmptyState from "@/components/EmptyState";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
@@ -177,66 +179,58 @@ export default async function MarcatoriPage({ searchParams }: Props) {
       <SiteHeader />
 
       {/* Hero */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 5, md: 7 },
-          px: 2,
-        }}
-      >
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-            <LeaderboardIcon sx={{ fontSize: 32, color: "primary.main" }} />
-            <Typography
-              variant="overline"
-              color="primary.main"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.12em" }}
-            >
-              Marcatori
-            </Typography>
-          </Box>
+      <PageHero py={{ xs: 5, md: 7 }} align="left" decorativeCircles={false}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+          <LeaderboardIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+            variant="overline"
+            color="primary.main"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.12em" }}
           >
-            Classifica interna
+            Marcatori
           </Typography>
-          <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
-            <Link href="/classifiche" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<EmojiEventsIcon />}
-                sx={{
-                  color: "rgba(255,255,255,0.7)",
-                  borderColor: "rgba(255,255,255,0.3)",
-                  fontSize: "0.78rem",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-                }}
-              >
-                Classifica campionato
-              </Button>
-            </Link>
-            <Link href="/risultati" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                sx={{
-                  color: "rgba(255,255,255,0.7)",
-                  borderColor: "rgba(255,255,255,0.3)",
-                  fontSize: "0.78rem",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-                }}
-              >
-                Tutti i risultati
-              </Button>
-            </Link>
-          </Box>
-        </Container>
-      </Box>
+        </Box>
+        <Typography
+          variant="h3"
+          component="h1"
+          fontWeight={800}
+          sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+        >
+          Classifica interna
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
+          <Link href="/classifiche" style={{ textDecoration: "none" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<EmojiEventsIcon />}
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.3)",
+                fontSize: "0.78rem",
+                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+              }}
+            >
+              Classifica campionato
+            </Button>
+          </Link>
+          <Link href="/risultati" style={{ textDecoration: "none" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.3)",
+                fontSize: "0.78rem",
+                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+              }}
+            >
+              Tutti i risultati
+            </Button>
+          </Link>
+        </Box>
+      </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* Filtri stagione */}
@@ -277,21 +271,13 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             <ClassificaInternaTable rows={statRows} />
           </>
         ) : availableSeasons.length > 0 ? (
-          <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-            <Typography color="text.secondary">
-              Nessun dato disponibile per la stagione {activeSeason}.
-            </Typography>
-          </Paper>
+          <EmptyState title={`Nessun dato disponibile per la stagione ${activeSeason}.`} />
         ) : (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <LeaderboardIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessun dato disponibile
-            </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              La classifica marcatori verrà aggiornata con l&apos;avanzare della stagione.
-            </Typography>
-          </Box>
+          <EmptyState
+            icon={<LeaderboardIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title="Nessun dato disponibile"
+            message="La classifica marcatori verrà aggiornata con l'avanzare della stagione."
+          />
         )}
       </Container>
     </>

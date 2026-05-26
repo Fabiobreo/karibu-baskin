@@ -9,7 +9,9 @@
       "mcp__Claude_in_Chrome__computer",
       "mcp__Claude_in_Chrome__get_page_text",
       "PowerShell(npx tsc --noEmit 2>&1)",
-      "Bash(mkdir -p \"D:/Dev/Companies/HomeProjects/karibu-baskin/.claude\")"
+      "Bash(mkdir -p \"D:/Dev/Companies/HomeProjects/karibu-baskin/.claude\")",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__select_browser"
     ]
   }
 }

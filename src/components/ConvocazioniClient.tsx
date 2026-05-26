@@ -21,11 +21,12 @@ import {
   ToggleButtonGroup,
   Tabs,
   Tab,
+  Breadcrumbs,
+  Link as MuiLink,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import GroupsIcon from "@mui/icons-material/Groups";
 import StarIcon from "@mui/icons-material/Star";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
@@ -256,18 +257,29 @@ export default function ConvocazioniClient({
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* Back */}
-      <Box sx={{ mb: 2 }}>
-        <Link href="/admin/partite" style={{ textDecoration: "none" }}>
-          <Button
-            startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
-            size="small"
-            sx={{ color: "text.secondary", fontSize: "0.78rem" }}
-          >
-            Partite
-          </Button>
-        </Link>
-      </Box>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <MuiLink
+          component={Link}
+          href="/admin"
+          underline="hover"
+          color="text.secondary"
+          variant="body2"
+        >
+          Dashboard
+        </MuiLink>
+        <MuiLink
+          component={Link}
+          href="/admin/partite"
+          underline="hover"
+          color="text.secondary"
+          variant="body2"
+        >
+          Partite
+        </MuiLink>
+        <Typography variant="body2" color="text.primary">
+          Convocazioni
+        </Typography>
+      </Breadcrumbs>
 
       {/* Header */}
       <Box sx={{ mb: 3 }}>
@@ -320,7 +332,7 @@ export default function ConvocazioniClient({
                           width: 10,
                           height: 10,
                           borderRadius: "50%",
-                          bgcolor: t.color ?? "#E65100",
+                          bgcolor: t.color ?? "primary.main",
                         }}
                       />
                       <span>{t.name}</span>
@@ -331,7 +343,7 @@ export default function ConvocazioniClient({
                           height: 18,
                           fontSize: "0.7rem",
                           bgcolor: idx === activeIndex ? "primary.main" : "action.hover",
-                          color: idx === activeIndex ? "#fff" : "text.secondary",
+                          color: idx === activeIndex ? "common.white" : "text.secondary",
                           fontWeight: 800,
                         }}
                       />
@@ -387,10 +399,10 @@ export default function ConvocazioniClient({
                 size="small"
                 sx={{
                   bgcolor: count > 0 ? ROLE_COLORS[r] : "transparent",
-                  color: count > 0 ? "#fff" : "text.disabled",
+                  color: count > 0 ? "common.white" : "text.disabled",
                   fontWeight: 700,
                   fontSize: "0.7rem",
-                  border: `1px solid ${count > 0 ? ROLE_COLORS[r] : "rgba(0,0,0,0.15)"}`,
+                  border: `1px solid ${count > 0 ? ROLE_COLORS[r] : "transparent"}`,
                 }}
               />
             );
@@ -450,8 +462,8 @@ export default function ConvocazioniClient({
                 cursor: "pointer",
                 fontSize: "0.72rem",
                 bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
-                color: roleFilter === r ? "#fff" : "text.primary",
-                border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "rgba(0,0,0,0.23)"}`,
+                color: roleFilter === r ? "common.white" : "text.primary",
+                border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "transparent"}`,
               }}
             />
           ))}
@@ -582,15 +594,15 @@ export default function ConvocazioniClient({
                                 {row.candidate.name}
                               </Typography>
                               {row.candidate.isCaptain && (
-                                <StarIcon sx={{ fontSize: 13, color: "#F9A825" }} />
+                                <StarIcon sx={{ fontSize: 13, color: "medal.gold" }} />
                               )}
                               {row.availability === true && (
                                 <Chip
                                   label="Disponibile"
                                   size="small"
                                   sx={{
-                                    bgcolor: "#E8F5E9",
-                                    color: "#2E7D32",
+                                    bgcolor: "match.winBg",
+                                    color: "match.win",
                                     fontWeight: 700,
                                     fontSize: "0.6rem",
                                     height: 16,
@@ -604,7 +616,7 @@ export default function ConvocazioniClient({
                                 size="small"
                                 sx={{
                                   bgcolor: ROLE_COLORS[role],
-                                  color: "#fff",
+                                  color: "common.white",
                                   fontWeight: 600,
                                   fontSize: "0.58rem",
                                   height: 14,
@@ -633,9 +645,9 @@ export default function ConvocazioniClient({
                                 fontSize: "0.85rem",
                                 color:
                                   row.presences === row.eligibleSessions
-                                    ? "#2E7D32"
+                                    ? "match.win"
                                     : row.presences === 0
-                                      ? "#C62828"
+                                      ? "match.loss"
                                       : "text.primary",
                               }}
                             >
@@ -662,11 +674,11 @@ export default function ConvocazioniClient({
                             sx={{
                               bgcolor:
                                 row.absences >= Math.max(2, row.eligibleSessions / 2)
-                                  ? "#FFEBEE"
+                                  ? "match.lossBg"
                                   : "action.hover",
                               color:
                                 row.absences >= Math.max(2, row.eligibleSessions / 2)
-                                  ? "#C62828"
+                                  ? "match.loss"
                                   : "text.secondary",
                               fontWeight: 700,
                               height: 20,
@@ -699,7 +711,8 @@ export default function ConvocazioniClient({
                             sx={{
                               fontSize: "0.82rem",
                               fontWeight: row.daysSinceLastCallup >= 30 ? 700 : 500,
-                              color: row.daysSinceLastCallup >= 30 ? "#E65100" : "text.secondary",
+                              color:
+                                row.daysSinceLastCallup >= 30 ? "primary.main" : "text.secondary",
                             }}
                           >
                             {row.daysSinceLastCallup}g
@@ -740,7 +753,7 @@ export default function ConvocazioniClient({
                     size="small"
                     sx={{
                       bgcolor: ROLE_COLORS[r],
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.68rem",
                       height: 18,
@@ -756,9 +769,9 @@ export default function ConvocazioniClient({
                         fontSize: "0.72rem",
                         height: 22,
                         fontWeight: 600,
-                        bgcolor: "rgba(198,40,40,0.06)",
+                        bgcolor: (theme) => alpha(theme.palette.match.loss, 0.06),
                         color: "text.secondary",
-                        border: "1px solid rgba(198,40,40,0.25)",
+                        border: (theme) => `1px solid ${alpha(theme.palette.match.loss, 0.25)}`,
                         "& .MuiChip-label": { px: 1 },
                       }}
                     />
@@ -779,7 +792,7 @@ export default function ConvocazioniClient({
                     size="small"
                     sx={{
                       bgcolor: "grey.400",
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.68rem",
                       height: 18,
@@ -795,9 +808,9 @@ export default function ConvocazioniClient({
                         fontSize: "0.72rem",
                         height: 22,
                         fontWeight: 600,
-                        bgcolor: "rgba(198,40,40,0.06)",
+                        bgcolor: (theme) => alpha(theme.palette.match.loss, 0.06),
                         color: "text.secondary",
-                        border: "1px solid rgba(198,40,40,0.25)",
+                        border: (theme) => `1px solid ${alpha(theme.palette.match.loss, 0.25)}`,
                         "& .MuiChip-label": { px: 1 },
                       }}
                     />

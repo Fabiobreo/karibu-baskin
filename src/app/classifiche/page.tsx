@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Stack, Button } from "@mui/material";
+import EmptyState from "@/components/EmptyState";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import Link from "next/link";
@@ -110,85 +112,77 @@ export default async function ClassifichePage() {
       <SiteHeader />
 
       {/* Hero */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 5, md: 7 },
-          px: 2,
-        }}
-      >
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-            <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-            <Typography
-              variant="overline"
-              color="primary.main"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.12em" }}
-            >
-              Campionato
-            </Typography>
-          </Box>
+      <PageHero py={{ xs: 5, md: 7 }} align="left" decorativeCircles={false}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+          <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+            variant="overline"
+            color="primary.main"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.12em" }}
           >
-            Stagione {currentSeason}
+            Campionato
           </Typography>
-          <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
-            <Link href="/marcatori" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<LeaderboardIcon />}
-                sx={{
-                  color: "rgba(255,255,255,0.7)",
-                  borderColor: "rgba(255,255,255,0.3)",
-                  fontSize: "0.78rem",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-                }}
-              >
-                Classifica marcatori
-              </Button>
-            </Link>
-            <Link href="/risultati" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                sx={{
-                  color: "rgba(255,255,255,0.7)",
-                  borderColor: "rgba(255,255,255,0.3)",
-                  fontSize: "0.78rem",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-                }}
-              >
-                Tutti i risultati
-              </Button>
-            </Link>
-            <Link href="/calendario" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                sx={{
-                  color: "rgba(255,255,255,0.7)",
-                  borderColor: "rgba(255,255,255,0.3)",
-                  fontSize: "0.78rem",
-                  "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-                }}
-              >
-                Calendario
-              </Button>
-            </Link>
-          </Box>
-        </Container>
-      </Box>
+        </Box>
+        <Typography
+          variant="h3"
+          component="h1"
+          fontWeight={800}
+          sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+        >
+          Stagione {currentSeason}
+        </Typography>
+        <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
+          <Link href="/marcatori" style={{ textDecoration: "none" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<LeaderboardIcon />}
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.3)",
+                fontSize: "0.78rem",
+                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+              }}
+            >
+              Classifica marcatori
+            </Button>
+          </Link>
+          <Link href="/risultati" style={{ textDecoration: "none" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.3)",
+                fontSize: "0.78rem",
+                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+              }}
+            >
+              Tutti i risultati
+            </Button>
+          </Link>
+          <Link href="/calendario" style={{ textDecoration: "none" }}>
+            <Button
+              size="small"
+              variant="outlined"
+              sx={{
+                color: "rgba(255,255,255,0.7)",
+                borderColor: "rgba(255,255,255,0.3)",
+                fontSize: "0.78rem",
+                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+              }}
+            >
+              Calendario
+            </Button>
+          </Link>
+        </Box>
+      </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {hasCurrentGroups ? (
           <Box>
-            <Typography variant="h5" fontWeight={800} sx={{ mb: 1 }}>
+            <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
               Classifica campionato
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -215,15 +209,11 @@ export default async function ClassifichePage() {
             </Stack>
           </Box>
         ) : (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessun girone disponibile per la stagione {currentSeason}
-            </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              La classifica verrà aggiornata con l&apos;avanzare della stagione.
-            </Typography>
-          </Box>
+          <EmptyState
+            icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title={`Nessun girone disponibile per la stagione ${currentSeason}`}
+            message="La classifica verrà aggiornata con l'avanzare della stagione."
+          />
         )}
       </Container>
     </>

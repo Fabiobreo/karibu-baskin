@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { Container, Typography, Box, Chip } from "@mui/material";
+import { Container, Typography, Box, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import MatchEditButton from "@/components/MatchEditButton";
 import SiteHeader from "@/components/SiteHeader";
@@ -247,7 +247,7 @@ export default async function MatchDetailPage({ params }: Props) {
             : heroBg,
           backgroundSize: match.imageUrl ? "cover" : undefined,
           backgroundPosition: match.imageUrl ? "center" : undefined,
-          color: "#fff",
+          color: "common.white",
           pt: { xs: 4, md: 5 },
           pb: { xs: 5, md: 7 },
           px: 2,
@@ -255,6 +255,34 @@ export default async function MatchDetailPage({ params }: Props) {
           overflow: "hidden",
         }}
       >
+        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1, pt: 1, pb: 0 }}>
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ mb: 2, "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+          >
+            <MuiLink
+              component={Link}
+              href="/partite"
+              underline="hover"
+              variant="body2"
+              sx={{
+                color: "rgba(255,255,255,0.65)",
+                fontWeight: 500,
+                "&:hover": { color: "#fff" },
+              }}
+            >
+              Partite
+            </MuiLink>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
+              noWrap
+            >
+              {match.team.name} vs {opponentName}
+            </Typography>
+          </Breadcrumbs>
+        </Container>
+
         {/* sfere decorative */}
         <Box
           sx={{
@@ -264,7 +292,7 @@ export default async function MatchDetailPage({ params }: Props) {
             width: 240,
             height: 240,
             borderRadius: "50%",
-            bgcolor: "rgba(255,255,255,0.03)",
+            bgcolor: alpha("#ffffff", 0.03),
             pointerEvents: "none",
           }}
         />
@@ -276,7 +304,7 @@ export default async function MatchDetailPage({ params }: Props) {
             width: 300,
             height: 300,
             borderRadius: "50%",
-            bgcolor: "rgba(255,255,255,0.02)",
+            bgcolor: alpha("#ffffff", 0.02),
             pointerEvents: "none",
           }}
         />
@@ -346,7 +374,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   size="small"
                   sx={{
                     bgcolor: match.team.color ?? "primary.main",
-                    color: "#fff",
+                    color: "common.white",
                     fontWeight: 700,
                     cursor: "pointer",
                     "&:hover": { opacity: 0.85 },
@@ -356,7 +384,7 @@ export default async function MatchDetailPage({ params }: Props) {
               {match.group?.name && (
                 <Typography
                   variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}
+                  sx={{ color: alpha("#ffffff", 0.5), fontWeight: 600 }}
                 >
                   {match.group.name}
                 </Typography>
@@ -366,8 +394,8 @@ export default async function MatchDetailPage({ params }: Props) {
                 size="small"
                 variant="outlined"
                 sx={{
-                  color: "rgba(255,255,255,0.6)",
-                  borderColor: "rgba(255,255,255,0.2)",
+                  color: alpha("#ffffff", 0.6),
+                  borderColor: alpha("#ffffff", 0.2),
                   fontSize: "0.68rem",
                 }}
               />
@@ -397,7 +425,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             fontSize: { xs: "1.8rem", md: "2.8rem" },
                             fontWeight: 900,
                             lineHeight: 1.05,
-                            color: "#fff",
+                            color: "common.white",
                             wordBreak: "break-word",
                           }}
                         >
@@ -415,7 +443,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             fontSize: { xs: "1.8rem", md: "2.8rem" },
                             fontWeight: 900,
                             lineHeight: 1.05,
-                            color: "rgba(255,255,255,0.92)",
+                            color: alpha("#ffffff", 0.92),
                             wordBreak: "break-word",
                           }}
                         >
@@ -428,7 +456,7 @@ export default async function MatchDetailPage({ params }: Props) {
                         key="vs"
                         sx={{
                           flex: "0 0 auto",
-                          color: "rgba(255,255,255,0.35)",
+                          color: alpha("#ffffff", 0.35),
                           fontWeight: 800,
                           fontSize: { xs: "1.2rem", md: "1.6rem" },
                           letterSpacing: "0.05em",
@@ -460,7 +488,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       sx={{
                         fontWeight: 800,
                         bgcolor: "primary.main",
-                        color: "#fff",
+                        color: "common.white",
                         letterSpacing: "0.05em",
                         height: 26,
                         animation: "karibuMatchPulse 1.6s ease-in-out infinite",
@@ -495,7 +523,7 @@ export default async function MatchDetailPage({ params }: Props) {
                           fontSize: { xs: "3.5rem", md: "5rem" },
                           fontWeight: 900,
                           lineHeight: 1,
-                          color: "#fff",
+                          color: "common.white",
                         }}
                       >
                         {hasScore ? match.ourScore : "–"}
@@ -507,7 +535,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       <Typography
                         variant="caption"
                         sx={{
-                          color: "rgba(255,255,255,0.45)",
+                          color: alpha("#ffffff", 0.45),
                           textTransform: "uppercase",
                           letterSpacing: "0.08em",
                           fontWeight: 700,
@@ -522,7 +550,7 @@ export default async function MatchDetailPage({ params }: Props) {
                           fontSize: { xs: "3.5rem", md: "5rem" },
                           fontWeight: 900,
                           lineHeight: 1,
-                          color: "rgba(255,255,255,0.55)",
+                          color: alpha("#ffffff", 0.55),
                         }}
                       >
                         {hasScore ? match.theirScore : "–"}
@@ -536,7 +564,7 @@ export default async function MatchDetailPage({ params }: Props) {
                           label={meta.label}
                           sx={{
                             bgcolor: meta.color,
-                            color: "#fff",
+                            color: "common.white",
                             fontWeight: 800,
                             fontSize: "0.85rem",
                             height: 32,
@@ -546,7 +574,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       ) : (
                         <Typography
                           sx={{
-                            color: "rgba(255,255,255,0.3)",
+                            color: alpha("#ffffff", 0.3),
                             fontWeight: 700,
                             fontSize: "1.4rem",
                           }}
@@ -576,7 +604,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   display: "flex",
                   alignItems: "center",
                   gap: 0.5,
-                  color: "rgba(255,255,255,0.5)",
+                  color: alpha("#ffffff", 0.5),
                 }}
               >
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
@@ -589,7 +617,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   display: "flex",
                   alignItems: "center",
                   gap: 0.5,
-                  color: "rgba(255,255,255,0.5)",
+                  color: alpha("#ffffff", 0.5),
                 }}
               >
                 {match.isHome ? (
@@ -676,16 +704,16 @@ export default async function MatchDetailPage({ params }: Props) {
                       px: 1.5,
                       py: 0.75,
                       borderRadius: 1.5,
-                      bgcolor: "#fff",
-                      border: "1px solid rgba(245,127,23,0.3)",
+                      bgcolor: "background.paper",
+                      border: `1px solid ${alpha("#F9A825", 0.3)}`,
                       cursor: slug ? "pointer" : "default",
                       transition: "transform 0.15s",
                       "&:hover": slug ? { transform: "translateY(-2px)" } : undefined,
                     }}
                   >
-                    <EmojiEventsIcon sx={{ color: "#F9A825", fontSize: 20 }} />
+                    <EmojiEventsIcon sx={{ color: "medal.gold", fontSize: 20 }} />
                     <Box>
-                      <Typography variant="body2" fontWeight={800} sx={{ color: "#1a1a1a" }}>
+                      <Typography variant="body2" fontWeight={800} sx={{ color: "text.primary" }}>
                         {name}
                       </Typography>
                       {role && (
@@ -697,7 +725,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             py: 0.125,
                             borderRadius: 0.5,
                             bgcolor: ROLE_COLORS[role],
-                            color: "#fff",
+                            color: "common.white",
                             fontSize: "0.6rem",
                             fontWeight: 700,
                           }}

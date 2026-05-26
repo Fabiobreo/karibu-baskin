@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -20,6 +19,7 @@ import {
   CircularProgress,
   Paper,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import UploadIcon from "@mui/icons-material/Upload";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
@@ -189,7 +189,7 @@ export default function GroupCsvImportDialog({
   const errorCount = rows.filter((r) => r.error).length;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ fontWeight: 700 }}>Importa risultati — {groupName}</DialogTitle>
       <DialogContent>
         {error && (
@@ -342,6 +342,6 @@ export default function GroupCsvImportDialog({
           </Button>
         )}
       </DialogActions>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

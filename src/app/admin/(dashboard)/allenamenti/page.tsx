@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
-import { Box, Typography } from "@mui/material";
 import { parseTeamsData } from "@/lib/schemas";
 import AdminAllenamentiClient from "@/components/AdminAllenamentiClient";
+import AdminPageHeader from "@/components/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Allenamenti da gestire | Admin" };
@@ -51,14 +51,13 @@ export default async function AdminAllenamentiPage() {
   });
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
-        Allenamenti da completare
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Sessioni concluse con risultati delle partite ancora mancanti.
-      </Typography>
+    <>
+      <AdminPageHeader
+        title="Allenamenti da completare"
+        subtitle="Sessioni concluse con risultati delle partite ancora mancanti."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }]}
+      />
       <AdminAllenamentiClient sessions={sessions} />
-    </Box>
+    </>
   );
 }

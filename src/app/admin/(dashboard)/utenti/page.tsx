@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/db";
 import AdminUserList from "@/components/AdminUserList";
-import { Typography, Box, Paper, Button } from "@mui/material";
+import { Paper, Button } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
+import AdminPageHeader from "@/components/AdminPageHeader";
 import type { AppRole, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { auth } from "@/lib/authjs";
@@ -119,33 +119,18 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   ]);
 
   return (
-    <Box>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-          flexWrap: "wrap",
-          gap: 1,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Link href="/admin" style={{ textDecoration: "none" }}>
-            <Button startIcon={<ArrowBackIcon />} size="small" sx={{ fontWeight: 500 }}>
-              Dashboard
+    <>
+      <AdminPageHeader
+        title="Gestione Utenti"
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
+        action={
+          <Link href="/admin/utenti/nuovo" style={{ textDecoration: "none" }}>
+            <Button variant="contained" startIcon={<PersonAddIcon />} size="small">
+              Nuovo utente
             </Button>
           </Link>
-          <Typography variant="h5" fontWeight={700}>
-            Gestione Utenti
-          </Typography>
-        </Box>
-        <Link href="/admin/utenti/nuovo" style={{ textDecoration: "none" }}>
-          <Button variant="contained" startIcon={<PersonAddIcon />} size="small">
-            Nuovo utente
-          </Button>
-        </Link>
-      </Box>
+        }
+      />
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         <AdminUserList
           users={users}
@@ -158,6 +143,6 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           currentFilters={{ search, appRole, sportRole, gender, teamId, sortBy, sortDir, limit }}
         />
       </Paper>
-    </Box>
+    </>
   );
 }

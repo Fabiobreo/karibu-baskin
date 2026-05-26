@@ -443,7 +443,8 @@ export default function RosterByRole({
           py: 1.5,
           borderBottom: "1px solid",
           borderColor: "divider",
-          bgcolor: (theme) => (theme.palette.mode === "dark" ? "#000" : "grey.50"),
+          bgcolor: (theme) =>
+            theme.palette.mode === "dark" ? theme.palette.background.paper : theme.palette.grey[50],
         }}
       >
         <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>

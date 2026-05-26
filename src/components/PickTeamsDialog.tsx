@@ -2,12 +2,12 @@
 import {
   Button,
   Box,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 
 interface Props {
   open: boolean;
@@ -18,7 +18,7 @@ interface Props {
 
 export default function PickTeamsDialog({ open, sessionTitle, onClose, onConfirm }: Props) {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle fontWeight={700}>Quante squadre?</DialogTitle>
       <DialogContent>
         {sessionTitle && (
@@ -48,6 +48,6 @@ export default function PickTeamsDialog({ open, sessionTitle, onClose, onConfirm
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
       </DialogActions>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

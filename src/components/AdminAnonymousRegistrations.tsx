@@ -3,6 +3,7 @@
 import {
   Box,
   Typography,
+  Dialog,
   Paper,
   Avatar,
   Chip,
@@ -13,7 +14,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
@@ -26,6 +26,7 @@ import {
   InputAdornment,
   TablePagination,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import WarningIcon from "@mui/icons-material/Warning";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -221,15 +222,14 @@ export default function AdminAnonymousRegistrations({
           }}
         />
       </Box>
-      <Box sx={{ overflowX: "auto" }}>
+      {/* Desktop table */}
+      <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell sx={{ pl: 0, width: 40 }} />
               <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
-                Email
-              </TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
               <TableCell sx={{ fontWeight: 700 }}>Allenamenti</TableCell>
               <TableCell sx={{ width: 40 }} />
             </TableRow>
@@ -267,7 +267,7 @@ export default function AdminAnonymousRegistrations({
                     </Typography>
                   )}
                 </TableCell>
-                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                <TableCell>
                   <Typography
                     variant="body2"
                     color={!group.hasEmail ? "text.disabled" : "text.primary"}
@@ -323,6 +323,98 @@ export default function AdminAnonymousRegistrations({
           </TableBody>
         </Table>
       </Box>
+
+      {/* Mobile card view */}
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
+        {paginated.map((group) => (
+          <Box
+            key={group.name.toLowerCase().trim()}
+            sx={{
+              px: 2,
+              py: 1.5,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              "&:last-child": { borderBottom: 0 },
+              bgcolor: !group.hasEmail ? "warning.50" : undefined,
+            }}
+          >
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1, minWidth: 0 }}>
+                <Avatar
+                  sx={{
+                    width: 30,
+                    height: 30,
+                    fontSize: 13,
+                    bgcolor: !group.hasEmail ? "warning.light" : "grey.400",
+                    flexShrink: 0,
+                  }}
+                >
+                  {!group.hasEmail ? (
+                    <WarningIcon sx={{ fontSize: 16, color: "warning.dark" }} />
+                  ) : (
+                    group.name[0].toUpperCase()
+                  )}
+                </Avatar>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={600}>
+                    {group.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color={!group.hasEmail ? "warning.dark" : "text.secondary"}
+                    fontWeight={!group.hasEmail ? 600 : 400}
+                  >
+                    {group.emails.length > 0 ? group.emails.join(", ") : "Nessuna email"}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+                <Tooltip title="Modifica">
+                  <IconButton
+                    size="small"
+                    aria-label="Modifica iscrizione anonima"
+                    disabled={isPending}
+                    onClick={() => openEdit(group)}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Elimina">
+                  <IconButton
+                    size="small"
+                    aria-label="Elimina iscrizioni anonime"
+                    color="error"
+                    disabled={isPending}
+                    onClick={() => setConfirmGroup(group)}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+            {group.regs.length > 0 && (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 1 }}>
+                {group.regs.map((reg) => (
+                  <Link
+                    key={reg.id}
+                    href={`/allenamento/${reg.session.dateSlug ?? reg.session.id}`}
+                    style={{ textDecoration: "none" }}
+                  >
+                    <Chip
+                      label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
+                      size="small"
+                      clickable
+                      sx={{ fontSize: "0.65rem", fontWeight: 600 }}
+                    />
+                  </Link>
+                ))}
+              </Box>
+            )}
+          </Box>
+        ))}
+      </Box>
     </>
   );
 
@@ -351,7 +443,12 @@ export default function AdminAnonymousRegistrations({
         sx={{ borderTop: "1px solid", borderColor: "divider" }}
       />
 
-      <Dialog open={!!editGroup} onClose={() => setEditGroup(null)} maxWidth="xs" fullWidth>
+      <ResponsiveDialog
+        open={!!editGroup}
+        onClose={() => setEditGroup(null)}
+        maxWidth="xs"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 700 }}>Modifica — {editGroup?.name}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
@@ -477,7 +574,7 @@ export default function AdminAnonymousRegistrations({
             {saving ? "Salvataggio..." : "Salva"}
           </Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
 
       <Dialog open={!!confirmGroup} onClose={() => setConfirmGroup(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Elimina iscrizioni anonime</DialogTitle>

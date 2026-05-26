@@ -610,7 +610,8 @@ export default function TeamDisplay({
           px: 3,
           textAlign: "center",
           borderRadius: 2,
-          border: "1px dashed rgba(0,0,0,0.15)",
+          border: "1px dashed",
+          borderColor: "divider",
           backgroundColor: "background.paper",
         }}
       >

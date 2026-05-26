@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -13,6 +12,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
+import ResponsiveDialog from "@/components/ResponsiveDialog";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useState, useEffect } from "react";
 import type { MatchResult } from "@prisma/client";
@@ -119,7 +119,7 @@ export default function MatchResultDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+    <ResponsiveDialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 700 }}>
         <EmojiEventsIcon color="primary" />
         Inserisci risultato
@@ -194,6 +194,7 @@ export default function MatchResultDialog({
           </Button>
           <Button
             variant="contained"
+            size="large"
             onClick={handleSave}
             disabled={saving}
             startIcon={saving ? <CircularProgress size={16} /> : undefined}
@@ -202,6 +203,6 @@ export default function MatchResultDialog({
           </Button>
         </Box>
       </DialogActions>
-    </Dialog>
+    </ResponsiveDialog>
   );
 }

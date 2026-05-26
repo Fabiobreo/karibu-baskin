@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
 import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -94,95 +96,87 @@ export default async function RisultatiPage({ searchParams }: Props) {
       <SiteHeader />
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-          color: "#fff",
-          py: { xs: 5, md: 7 },
-          px: 2,
-        }}
-      >
-        <Container maxWidth="md">
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-            <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-            <Typography
-              variant="overline"
-              color="primary.main"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.12em" }}
-            >
-              Risultati
-            </Typography>
-          </Box>
+      <PageHero py={{ xs: 5, md: 7 }} align="left" decorativeCircles={false}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+          <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
-            variant="h3"
-            fontWeight={800}
-            sx={{ mb: 2, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+            variant="overline"
+            color="primary.main"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.12em" }}
           >
-            Partite ufficiali
+            Risultati
           </Typography>
-          {teamStats.length > 0 && (
-            <Stack spacing={1} sx={{ mt: 0.5 }}>
-              {teamStats.map((t) => (
+        </Box>
+        <Typography
+          variant="h3"
+          component="h1"
+          fontWeight={800}
+          sx={{ mb: 2, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+        >
+          Partite ufficiali
+        </Typography>
+        {teamStats.length > 0 && (
+          <Stack spacing={1} sx={{ mt: 0.5 }}>
+            {teamStats.map((t) => (
+              <Box
+                key={t.id}
+                sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
+              >
                 <Box
-                  key={t.id}
-                  sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
-                >
-                  <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    bgcolor: t.color ?? "primary.main",
+                    flexShrink: 0,
+                  }}
+                />
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "#fff", minWidth: 0 }}>
+                  {t.name}
+                </Typography>
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                  <Chip
+                    label={`${t.wins}V`}
+                    size="small"
                     sx={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      bgcolor: t.color ?? "primary.main",
-                      flexShrink: 0,
+                      bgcolor: "match.win",
+                      color: "#fff",
+                      fontWeight: 800,
+                      fontSize: "0.68rem",
+                      height: 20,
                     }}
                   />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: "#fff", minWidth: 0 }}>
-                    {t.name}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 0.5 }}>
+                  {t.draws > 0 && (
                     <Chip
-                      label={`${t.wins}V`}
+                      label={`${t.draws}P`}
                       size="small"
                       sx={{
-                        bgcolor: "match.win",
+                        bgcolor: "match.draw",
                         color: "#fff",
                         fontWeight: 800,
                         fontSize: "0.68rem",
                         height: 20,
                       }}
                     />
-                    {t.draws > 0 && (
-                      <Chip
-                        label={`${t.draws}P`}
-                        size="small"
-                        sx={{
-                          bgcolor: "match.draw",
-                          color: "#fff",
-                          fontWeight: 800,
-                          fontSize: "0.68rem",
-                          height: 20,
-                        }}
-                      />
-                    )}
-                    <Chip
-                      label={`${t.losses}S`}
-                      size="small"
-                      sx={{
-                        bgcolor: "match.loss",
-                        color: "#fff",
-                        fontWeight: 800,
-                        fontSize: "0.68rem",
-                        height: 20,
-                      }}
-                    />
-                  </Box>
+                  )}
+                  <Chip
+                    label={`${t.losses}S`}
+                    size="small"
+                    sx={{
+                      bgcolor: "match.loss",
+                      color: "#fff",
+                      fontWeight: 800,
+                      fontSize: "0.68rem",
+                      height: 20,
+                    }}
+                  />
                 </Box>
-              ))}
-            </Stack>
-          )}
-        </Container>
-      </Box>
+              </Box>
+            ))}
+          </Stack>
+        )}
+      </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* ── Filtri stagione ──────────────────────────────────────────────── */}
@@ -216,15 +210,11 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
         {/* ── Nessun dato ─────────────────────────────────────────────────── */}
         {teamGroups.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              Nessun risultato per la stagione {season}
-            </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              I risultati verranno pubblicati al termine delle partite.
-            </Typography>
-          </Box>
+          <EmptyState
+            icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title={`Nessun risultato per la stagione ${season}`}
+            message="I risultati verranno pubblicati al termine delle partite."
+          />
         )}
 
         {/* ── Sezioni per squadra ─────────────────────────────────────────── */}

@@ -77,15 +77,6 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={800}>
-          Squadre avversarie
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Anagrafica delle squadre che incontriamo nei campionati e nei tornei.
-        </Typography>
-      </Box>
-
       <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
         <Typography variant="subtitle2" fontWeight={700} gutterBottom>
           Aggiungi squadra avversaria
