@@ -304,9 +304,9 @@ export default function AdminPartiteClient({
     if (match) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditMatch(match);
-       
+
       setMatchDialog(true);
-       
+
       setTab(match.matchType as TabKey);
     }
     router.replace("/admin/partite", { scroll: false });
