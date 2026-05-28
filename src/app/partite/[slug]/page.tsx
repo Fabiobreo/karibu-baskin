@@ -411,8 +411,8 @@ export default async function MatchDetailPage({ params }: Props) {
               />
             </Box>
 
-            {/* Score block o Matchup upcoming */}
-            {isUpcoming ? (
+            {/* Score block o Matchup upcoming (anche per partite passate senza risultato) */}
+            {!hasScore ? (
               <Box sx={{ mb: 3 }}>
                 {/* Squadre come main point — in casa: noi vs loro, in trasferta: loro vs noi */}
                 <Box
@@ -479,41 +479,43 @@ export default async function MatchDetailPage({ params }: Props) {
                   })()}
                 </Box>
 
-                {/* Countdown + badge come supporto */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <MatchCountdown targetIso={new Date(match.date).toISOString()} />
-                  {isImminent && (
-                    <Chip
-                      icon={<BoltIcon sx={{ fontSize: 14 }} />}
-                      label="Imminente"
-                      size="small"
-                      sx={{
-                        fontWeight: 800,
-                        bgcolor: "primary.main",
-                        color: "common.white",
-                        letterSpacing: "0.05em",
-                        height: 26,
-                        animation: "karibuMatchPulse 1.6s ease-in-out infinite",
-                        "@keyframes karibuMatchPulse": {
-                          "0%, 100%": {
-                            boxShadow: `0 0 0 0 ${alpha("#E65100", 0.7)}`,
+                {/* Countdown + badge come supporto (solo se la partita è ancora futura) */}
+                {isUpcoming && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 1,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <MatchCountdown targetIso={new Date(match.date).toISOString()} />
+                    {isImminent && (
+                      <Chip
+                        icon={<BoltIcon sx={{ fontSize: 14 }} />}
+                        label="Imminente"
+                        size="small"
+                        sx={{
+                          fontWeight: 800,
+                          bgcolor: "primary.main",
+                          color: "common.white",
+                          letterSpacing: "0.05em",
+                          height: 26,
+                          animation: "karibuMatchPulse 1.6s ease-in-out infinite",
+                          "@keyframes karibuMatchPulse": {
+                            "0%, 100%": {
+                              boxShadow: `0 0 0 0 ${alpha("#E65100", 0.7)}`,
+                            },
+                            "50%": {
+                              boxShadow: `0 0 0 8px ${alpha("#E65100", 0)}`,
+                            },
                           },
-                          "50%": {
-                            boxShadow: `0 0 0 8px ${alpha("#E65100", 0)}`,
-                          },
-                        },
-                      }}
-                    />
-                  )}
-                </Box>
+                        }}
+                      />
+                    )}
+                  </Box>
+                )}
               </Box>
             ) : (
               <Box
@@ -770,6 +772,8 @@ export default async function MatchDetailPage({ params }: Props) {
           ourTeamId={match.team.id}
           groupName={match.group?.name ?? null}
           opponentName={opponentName}
+          matchId={match.id}
+          isStaff={isStaff}
         />
       </Container>
     </>

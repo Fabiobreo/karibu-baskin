@@ -370,7 +370,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
       {/* Dialog crea/modifica */}
       <ResponsiveDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>{editPost ? "Modifica post" : "Nuovo post"}</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 2 }}>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 4 }}>
           <TextField
             label="Titolo"
             value={title}
@@ -378,6 +378,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
             fullWidth
             required
             inputProps={{ maxLength: 200 }}
+            sx={{ mt: 1.5 }}
           />
 
           <Box>

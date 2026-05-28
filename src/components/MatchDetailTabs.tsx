@@ -25,6 +25,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import StarIcon from "@mui/icons-material/Star";
+import EditIcon from "@mui/icons-material/Edit";
 import Link from "next/link";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import MatchStatsTable from "@/components/MatchStatsTable";
@@ -74,6 +75,8 @@ interface Props {
   ourTeamId: string;
   groupName: string | null;
   opponentName: string;
+  matchId: string;
+  isStaff: boolean;
 }
 
 const RESULT_META: Record<string, { label: string; color: string }> = {
@@ -92,6 +95,8 @@ export default function MatchDetailTabs({
   groupStandings,
   groupName,
   opponentName,
+  matchId,
+  isStaff,
 }: Props) {
   const [tab, setTab] = useState(0);
   const hasStats = stats.length > 0;
@@ -188,6 +193,23 @@ export default function MatchDetailTabs({
       {/* ── Tab 0 — Convocati ──────────────────────────────────────────────── */}
       {tab === 0 && (
         <Box sx={{ pt: 3 }}>
+          {isStaff && (
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+              <Link
+                href={`/admin/partite/${matchId}/convocazioni`}
+                style={{ textDecoration: "none" }}
+              >
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                  sx={{ fontWeight: 700 }}
+                >
+                  Gestisci convocati
+                </Button>
+              </Link>
+            </Box>
+          )}
           {/* Top 3 marcatori — visibili a tutti se la partita è giocata */}
           {hasScore && top3.length > 0 && (
             <Box sx={{ mb: 4 }}>
@@ -689,6 +711,23 @@ export default function MatchDetailTabs({
       {/* ── Tab 1 — Statistiche ─────────────────────────────────────────────── */}
       {tab === 1 && (
         <Box sx={{ pt: 3 }}>
+          {isStaff && (
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+              <Link
+                href={`/admin/partite/${matchId}/statistiche`}
+                style={{ textDecoration: "none" }}
+              >
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+                  sx={{ fontWeight: 700 }}
+                >
+                  {hasStats ? "Modifica statistiche" : "Aggiungi statistiche"}
+                </Button>
+              </Link>
+            </Box>
+          )}
           {!hasStats ? (
             <Box sx={{ textAlign: "center", py: 8 }}>
               <LeaderboardIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />

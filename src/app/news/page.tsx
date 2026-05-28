@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/db";
-import { Box, Typography, Container, Chip, Paper } from "@mui/material";
+import { auth } from "@/lib/authjs";
+import { hasRole } from "@/lib/authRoles";
+import { Box, Typography, Container, Chip, Paper, Button } from "@mui/material";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
+import AddIcon from "@mui/icons-material/Add";
 import SiteHeader from "@/components/SiteHeader";
 import PageHero from "@/components/PageHero";
 import EmptyState from "@/components/EmptyState";
@@ -13,6 +16,8 @@ export const metadata = { title: "News — Karibu Baskin" };
 export const revalidate = 60;
 
 export default async function NewsPage() {
+  const session = await auth();
+  const isStaff = !!session?.user && hasRole(session.user.appRole, "COACH");
   const posts = await prisma.post.findMany({
     where: { publishedAt: { not: null } },
     orderBy: { publishedAt: "desc" },
@@ -39,6 +44,20 @@ export default async function NewsPage() {
       />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        {isStaff && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+            <Link href="/admin/news" style={{ textDecoration: "none" }}>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<AddIcon />}
+                sx={{ fontWeight: 700 }}
+              >
+                Crea news
+              </Button>
+            </Link>
+          </Box>
+        )}
         {posts.length === 0 && (
           <EmptyState
             icon={<ArticleIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
