@@ -104,14 +104,14 @@ export default function PollWidget({
     <Box
       sx={{
         mt: 4,
-        p: 2.5,
+        p: { xs: 2, sm: 2.5 },
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 2,
         bgcolor: "action.hover",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, flexWrap: "wrap" }}>
         <HowToVoteIcon sx={{ color: "primary.main" }} fontSize="small" />
         <Typography variant="subtitle1" fontWeight={700}>
           Sondaggio
@@ -165,16 +165,24 @@ export default function PollWidget({
               const voted = userVoteOptionIds.includes(opt.id);
               return (
                 <Box key={opt.id}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 0.5 }}>
                     <Typography
                       variant="body2"
                       fontWeight={voted ? 700 : 400}
-                      sx={{ color: voted ? "primary.main" : "text.primary" }}
+                      sx={{
+                        color: voted ? "primary.main" : "text.primary",
+                        wordBreak: "break-word",
+                        minWidth: 0,
+                      }}
                     >
                       {opt.text}
                       {voted && " ✓"}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ flexShrink: 0, whiteSpace: "nowrap" }}
+                    >
                       {pct}% ({count})
                     </Typography>
                   </Box>
@@ -186,7 +194,7 @@ export default function PollWidget({
                       borderRadius: 4,
                       bgcolor: "action.selected",
                       "& .MuiLinearProgress-bar": {
-                        bgcolor: voted ? "primary.main" : "text.secondary",
+                        bgcolor: voted ? "primary.main" : "action.disabled",
                       },
                     }}
                   />
@@ -232,7 +240,6 @@ export default function PollWidget({
                         checked={selected.includes(opt.id)}
                         onChange={() => toggleOption(opt.id)}
                         disabled={!isLoggedIn || saving}
-                        size="small"
                       />
                     }
                     label={opt.text}
@@ -245,7 +252,7 @@ export default function PollWidget({
                   <FormControlLabel
                     key={opt.id}
                     value={opt.id}
-                    control={<Radio size="small" disabled={!isLoggedIn || saving} />}
+                    control={<Radio disabled={!isLoggedIn || saving} />}
                     label={opt.text}
                   />
                 ))}
@@ -255,7 +262,7 @@ export default function PollWidget({
             <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
               <Button
                 variant="contained"
-                size="small"
+                size="large"
                 onClick={handleVote}
                 disabled={saving || (!isLoggedIn ? false : selected.length === 0)}
                 startIcon={<HowToVoteIcon />}
