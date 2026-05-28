@@ -11,6 +11,12 @@ import {
   Paper,
   ToggleButton,
   ToggleButtonGroup,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
 } from "@mui/material";
 import FormatBoldIcon from "@mui/icons-material/FormatBold";
 import FormatItalicIcon from "@mui/icons-material/FormatItalic";
@@ -50,7 +56,6 @@ export default function PostEditor({
     },
   });
 
-  // Sincronizza quando il valore esterno cambia (es. caricamento bozza)
   const [initialized, setInitialized] = useState(false);
   useEffect(() => {
     if (editor && !initialized && value) {
@@ -59,10 +64,23 @@ export default function PostEditor({
     }
   }, [editor, value, initialized]);
 
-  function addLink() {
-    const url = window.prompt("URL del link:");
-    if (!url) return;
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+
+  function openLinkDialog() {
+    const current = (editor?.getAttributes("link")?.href as string | undefined) ?? "";
+    setLinkUrl(current);
+    setLinkDialogOpen(true);
+  }
+
+  function confirmLink() {
+    const url = linkUrl.trim();
+    if (!url) {
+      setLinkDialogOpen(false);
+      return;
+    }
     editor?.chain().focus().setLink({ href: url }).run();
+    setLinkDialogOpen(false);
   }
 
   if (!editor) return null;
@@ -82,7 +100,7 @@ export default function PostEditor({
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 0.5,
+          gap: { xs: 0.75, sm: 0.5 },
           px: 1,
           py: 0.5,
           borderBottom: "1px solid",
@@ -93,7 +111,8 @@ export default function PostEditor({
       >
         <Tooltip title="Grassetto">
           <IconButton
-            size="small"
+            size="medium"
+            aria-label="Grassetto"
             onClick={() => editor.chain().focus().toggleBold().run()}
             color={editor.isActive("bold") ? "primary" : "default"}
           >
@@ -102,7 +121,8 @@ export default function PostEditor({
         </Tooltip>
         <Tooltip title="Corsivo">
           <IconButton
-            size="small"
+            size="medium"
+            aria-label="Corsivo"
             onClick={() => editor.chain().focus().toggleItalic().run()}
             color={editor.isActive("italic") ? "primary" : "default"}
           >
@@ -110,12 +130,17 @@ export default function PostEditor({
           </IconButton>
         </Tooltip>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 0.5, display: { xs: "none", sm: "block" } }}
+        />
 
-        <ToggleButtonGroup size="small" exclusive>
+        <ToggleButtonGroup size="medium">
           <Tooltip title="Lista puntata">
             <ToggleButton
               value="bullet"
+              aria-label="Lista puntata"
               selected={editor.isActive("bulletList")}
               onClick={() => editor.chain().focus().toggleBulletList().run()}
             >
@@ -125,6 +150,7 @@ export default function PostEditor({
           <Tooltip title="Lista numerata">
             <ToggleButton
               value="ordered"
+              aria-label="Lista numerata"
               selected={editor.isActive("orderedList")}
               onClick={() => editor.chain().focus().toggleOrderedList().run()}
             >
@@ -133,11 +159,16 @@ export default function PostEditor({
           </Tooltip>
         </ToggleButtonGroup>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 0.5, display: { xs: "none", sm: "block" } }}
+        />
 
         <Tooltip title="Citazione">
           <IconButton
-            size="small"
+            size="medium"
+            aria-label="Citazione"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             color={editor.isActive("blockquote") ? "primary" : "default"}
           >
@@ -145,25 +176,33 @@ export default function PostEditor({
           </IconButton>
         </Tooltip>
 
-        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+        <Divider
+          orientation="vertical"
+          flexItem
+          sx={{ mx: 0.5, display: { xs: "none", sm: "block" } }}
+        />
 
         <Tooltip title="Aggiungi link">
           <IconButton
-            size="small"
-            onClick={addLink}
+            size="medium"
+            aria-label="Aggiungi link"
+            onClick={openLinkDialog}
             color={editor.isActive("link") ? "primary" : "default"}
           >
             <LinkIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         <Tooltip title="Rimuovi link">
-          <IconButton
-            size="small"
-            onClick={() => editor.chain().focus().unsetLink().run()}
-            disabled={!editor.isActive("link")}
-          >
-            <LinkOffIcon fontSize="small" />
-          </IconButton>
+          <span>
+            <IconButton
+              size="medium"
+              aria-label="Rimuovi link"
+              onClick={() => editor.chain().focus().unsetLink().run()}
+              disabled={!editor.isActive("link")}
+            >
+              <LinkOffIcon fontSize="small" />
+            </IconButton>
+          </span>
         </Tooltip>
       </Box>
 
@@ -175,7 +214,7 @@ export default function PostEditor({
             px: 1.5,
             py: 1.5,
             outline: "none",
-            fontSize: "0.95rem",
+            fontSize: "1rem",
             lineHeight: 1.6,
             color: "text.primary",
             "& p": { my: 0.5 },
@@ -199,6 +238,40 @@ export default function PostEditor({
       >
         <EditorContent editor={editor} />
       </Box>
+
+      <Dialog
+        open={linkDialogOpen}
+        onClose={() => setLinkDialogOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        aria-labelledby="link-dialog-title"
+      >
+        <DialogTitle id="link-dialog-title">Inserisci link</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="URL"
+            type="url"
+            fullWidth
+            placeholder="https://..."
+            value={linkUrl}
+            onChange={(e) => setLinkUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                confirmLink();
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLinkDialogOpen(false)}>Annulla</Button>
+          <Button variant="contained" onClick={confirmLink} disabled={!linkUrl.trim()}>
+            Conferma
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }
