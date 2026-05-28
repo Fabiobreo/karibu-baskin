@@ -7,6 +7,7 @@ import type { SessionWithCount } from "@/components/SessionCard";
 import SiteHeader from "@/components/SiteHeader";
 import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/HeroSection";
+import LatestNewsHero from "@/components/LatestNewsHero";
 import LoSapeviCard from "@/components/LoSapeviCard";
 import ProssimePartiteHome from "@/components/ProssimePartiteHome";
 import BirthdayBanner from "@/components/BirthdayBanner";
@@ -98,6 +99,8 @@ export default async function HomePage() {
       <SiteHeader />
       {userSession?.user && userSession.user.appRole !== "GUEST" && <BirthdayBanner />}
       <HeroSection />
+
+      <LatestNewsHero />
 
       <ProssimePartiteHome />
 

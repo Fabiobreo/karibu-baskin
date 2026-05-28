@@ -84,7 +84,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     );
   }
 
-  const { title, body, publish, unpublish, poll } = parsed.data;
+  const { title, body, imageUrl, publish, unpublish, poll } = parsed.data;
   const wasPublished = !!existing.publishedAt;
   const willPublish = publish && !wasPublished;
 
@@ -99,6 +99,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       data: {
         ...(title ? { title } : {}),
         ...(body ? { body: DOMPurify.sanitize(body) } : {}),
+        ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
         publishedAt,
       },
       include: {

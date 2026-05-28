@@ -32,7 +32,7 @@ interface PollWidgetProps {
   multiSelect: boolean;
   closesAt: string | null;
   options: PollOption[];
-  voteCounts: Record<string, number> | null; // non-null solo se poll chiuso
+  voteCounts: Record<string, number> | null; // popolato se poll chiuso, oppure per staff (anteprima)
   userVoteOptionIds: string[]; // voti attuali dell'utente loggato
   isLoggedIn: boolean;
   postSlug: string;
@@ -57,7 +57,8 @@ export default function PollWidget({
 
   const now = new Date();
   const isClosed = closesAt ? new Date(closesAt) <= now : false;
-  const showResults = isClosed && voteCounts !== null;
+  const showResults = voteCounts !== null;
+  const isStaffPreview = showResults && !isClosed;
 
   const totalVotes = showResults ? Object.values(voteCounts ?? {}).reduce((a, b) => a + b, 0) : 0;
 
@@ -90,6 +91,8 @@ export default function PollWidget({
       if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
       setHasVoted(true);
       showToast({ message: "Voto registrato", severity: "success" });
+      // Aggiorna i risultati lato server (anteprima staff o sondaggio chiuso)
+      router.refresh();
     } catch (err) {
       showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
     } finally {
@@ -133,104 +136,158 @@ export default function PollWidget({
         {question}
       </Typography>
 
-      {/* Risultati (poll chiuso) */}
-      {showResults ? (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          {options.map((opt) => {
-            const count = voteCounts?.[opt.id] ?? 0;
-            const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-            const voted = userVoteOptionIds.includes(opt.id);
-            return (
-              <Box key={opt.id}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
-                  <Typography
-                    variant="body2"
-                    fontWeight={voted ? 700 : 400}
-                    sx={{ color: voted ? "primary.main" : "text.primary" }}
-                  >
-                    {opt.text}
-                    {voted && " ✓"}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {pct}% ({count})
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={pct}
-                  sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    bgcolor: "action.selected",
-                    "& .MuiLinearProgress-bar": {
-                      bgcolor: voted ? "primary.main" : "text.secondary",
-                    },
-                  }}
-                />
-              </Box>
-            );
-          })}
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-            {totalVotes} {totalVotes === 1 ? "voto" : "voti"} totali
-          </Typography>
-        </Box>
-      ) : (
-        /* Form di voto (poll aperto) */
-        <Box>
-          {!isLoggedIn && (
-            <Alert severity="info" sx={{ mb: 1.5 }}>
-              Fai login per partecipare al sondaggio.
-            </Alert>
-          )}
+      {isStaffPreview && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Anteprima riservata allo staff — il sondaggio è ancora aperto, i risultati non sono
+          visibili agli altri utenti.
+        </Alert>
+      )}
 
-          {multiSelect ? (
-            <FormGroup>
-              {options.map((opt) => (
-                <FormControlLabel
-                  key={opt.id}
-                  control={
-                    <Checkbox
-                      checked={selected.includes(opt.id)}
-                      onChange={() => toggleOption(opt.id)}
-                      disabled={!isLoggedIn || saving}
-                      size="small"
-                    />
-                  }
-                  label={opt.text}
-                />
-              ))}
-            </FormGroup>
-          ) : (
-            <RadioGroup value={selected[0] ?? ""} onChange={(e) => setSelected([e.target.value])}>
-              {options.map((opt) => (
-                <FormControlLabel
-                  key={opt.id}
-                  value={opt.id}
-                  control={<Radio size="small" disabled={!isLoggedIn || saving} />}
-                  label={opt.text}
-                />
-              ))}
-            </RadioGroup>
-          )}
-
-          <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2 }}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleVote}
-              disabled={saving || (!isLoggedIn ? false : selected.length === 0)}
-              startIcon={<HowToVoteIcon />}
-            >
-              {!isLoggedIn ? "Accedi per votare" : hasVoted ? "Aggiorna voto" : "Vota"}
-            </Button>
-            {hasVoted && !isClosed && (
-              <Typography variant="caption" color="text.secondary">
-                Puoi modificare il tuo voto fino alla chiusura.
+      {(() => {
+        const resultsBlock = (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {isStaffPreview && (
+              <Typography
+                variant="caption"
+                fontWeight={700}
+                sx={{
+                  color: "text.secondary",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                Risultati attuali
               </Typography>
             )}
+            {options.map((opt) => {
+              const count = voteCounts?.[opt.id] ?? 0;
+              const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+              const voted = userVoteOptionIds.includes(opt.id);
+              return (
+                <Box key={opt.id}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={voted ? 700 : 400}
+                      sx={{ color: voted ? "primary.main" : "text.primary" }}
+                    >
+                      {opt.text}
+                      {voted && " ✓"}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {pct}% ({count})
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={pct}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: "action.selected",
+                      "& .MuiLinearProgress-bar": {
+                        bgcolor: voted ? "primary.main" : "text.secondary",
+                      },
+                    }}
+                  />
+                </Box>
+              );
+            })}
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+              {totalVotes} {totalVotes === 1 ? "voto" : "voti"} totali
+            </Typography>
           </Box>
-        </Box>
-      )}
+        );
+
+        const voteForm = (
+          <Box>
+            {isStaffPreview && (
+              <Typography
+                variant="caption"
+                fontWeight={700}
+                sx={{
+                  color: "text.secondary",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  display: "block",
+                  mb: 1,
+                }}
+              >
+                Il tuo voto
+              </Typography>
+            )}
+            {!isLoggedIn && (
+              <Alert severity="info" sx={{ mb: 1.5 }}>
+                Fai login per partecipare al sondaggio.
+              </Alert>
+            )}
+
+            {multiSelect ? (
+              <FormGroup>
+                {options.map((opt) => (
+                  <FormControlLabel
+                    key={opt.id}
+                    control={
+                      <Checkbox
+                        checked={selected.includes(opt.id)}
+                        onChange={() => toggleOption(opt.id)}
+                        disabled={!isLoggedIn || saving}
+                        size="small"
+                      />
+                    }
+                    label={opt.text}
+                  />
+                ))}
+              </FormGroup>
+            ) : (
+              <RadioGroup value={selected[0] ?? ""} onChange={(e) => setSelected([e.target.value])}>
+                {options.map((opt) => (
+                  <FormControlLabel
+                    key={opt.id}
+                    value={opt.id}
+                    control={<Radio size="small" disabled={!isLoggedIn || saving} />}
+                    label={opt.text}
+                  />
+                ))}
+              </RadioGroup>
+            )}
+
+            <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleVote}
+                disabled={saving || (!isLoggedIn ? false : selected.length === 0)}
+                startIcon={<HowToVoteIcon />}
+              >
+                {!isLoggedIn ? "Accedi per votare" : hasVoted ? "Aggiorna voto" : "Vota"}
+              </Button>
+              {hasVoted && !isClosed && (
+                <Typography variant="caption" color="text.secondary">
+                  Puoi modificare il tuo voto fino alla chiusura.
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        );
+
+        if (isStaffPreview) {
+          return (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                gap: { xs: 3, md: 4 },
+                alignItems: "flex-start",
+              }}
+            >
+              {voteForm}
+              {resultsBlock}
+            </Box>
+          );
+        }
+        return showResults ? resultsBlock : voteForm;
+      })()}
     </Box>
   );
 }

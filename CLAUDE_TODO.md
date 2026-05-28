@@ -49,10 +49,3 @@ Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile so
 #### 🚧 Da progettare
 
 - **Alert copertura ruoli sulle partite** — quando in una partita la somma dei _disponibili_ per ruolo è sotto soglia minima, mostrare warning al coach (banner nella pagina admin partita + eventuale push). Definire soglie per-ruolo (es. almeno 2 giocatori di ruolo 1, ecc.) — magari configurabili nelle impostazioni partita o globali per stagione. Modello `MatchAvailability` già disponibile; ricordare che il **default è "non disponibile"** (chi non risponde è considerato assente).
-- **Reminder push per chi non ha risposto alla disponibilità** — cron a T-N giorni dalla partita che invia push ai membri di squadra senza record `MatchAvailability` per quel match. Ridurrebbe il numero di "non disponibili per default" che in realtà sono solo distratti.
-
-### F7. **Nice-to-have di contenuto**
-
-- **Bacheca / news** — nuovo modello `Post` (titolo, body markdown, autore, pubblicazione) + pagina `/news` + push automatica alla pubblicazione. Storico permanente delle comunicazioni (oggi solo notifiche effimere).
-- **FAQ** — pagina statica con domande ricorrenti. Riduce il volume di `/contatti`.
-- **Sondaggi/poll rapidi** — modello `Poll` con opzioni multiple, voto utente loggato, scadenza. Utile per scelte logistiche (cena fine stagione, orari trasferte).

@@ -649,6 +649,7 @@ model Post {
   slug        String    @unique  // es. "cena-fine-stagione-2025"
   title       String
   body        String    @db.Text  // HTML sanitizzato (TipTap output)
+  imageUrl    String?             // banner/copertina post (Vercel Blob)
   authorId    String
   publishedAt DateTime?           // null = bozza
   createdAt   DateTime  @default(now())

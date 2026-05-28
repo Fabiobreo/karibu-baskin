@@ -26,6 +26,7 @@ export default async function NewsPage() {
       slug: true,
       title: true,
       body: true,
+      imageUrl: true,
       publishedAt: true,
       author: { select: { name: true } },
       poll: { select: { id: true, question: true, closesAt: true } },
@@ -87,54 +88,68 @@ export default async function NewsPage() {
                 <Paper
                   variant="outlined"
                   sx={{
-                    p: { xs: 2, sm: 3 },
+                    overflow: "hidden",
                     textDecoration: "none",
                     display: "block",
                     transition: "border-color 0.15s",
                     "&:hover": { borderColor: "primary.main" },
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 1 }}>
-                    {post.poll ? (
-                      <HowToVoteIcon fontSize="small" sx={{ color: "primary.main", mt: 0.3 }} />
-                    ) : (
-                      <ArticleIcon fontSize="small" sx={{ color: "text.secondary", mt: 0.3 }} />
-                    )}
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="h6" fontWeight={700} sx={{ color: "text.primary" }}>
-                        {post.title}
-                      </Typography>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: it })}
+                  {post.imageUrl && (
+                    <Box
+                      sx={{
+                        position: "relative",
+                        width: "100%",
+                        aspectRatio: "16 / 7",
+                        backgroundImage: `url(${post.imageUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    />
+                  )}
+                  <Box sx={{ p: { xs: 2, sm: 3 } }}>
+                    <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 1 }}>
+                      {post.poll ? (
+                        <HowToVoteIcon fontSize="small" sx={{ color: "primary.main", mt: 0.3 }} />
+                      ) : (
+                        <ArticleIcon fontSize="small" sx={{ color: "text.secondary", mt: 0.3 }} />
+                      )}
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" fontWeight={700} sx={{ color: "text.primary" }}>
+                          {post.title}
                         </Typography>
-                        {post.author.name && (
-                          <>
-                            <Typography variant="caption" color="text.disabled">
-                              ·
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {post.author.name}
-                            </Typography>
-                          </>
-                        )}
-                        {post.poll && (
-                          <Chip
-                            label={isClosed ? "Sondaggio chiuso" : "Sondaggio aperto"}
-                            size="small"
-                            color={isClosed ? "default" : "primary"}
-                            sx={{ ml: 0.5 }}
-                          />
-                        )}
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: it })}
+                          </Typography>
+                          {post.author.name && (
+                            <>
+                              <Typography variant="caption" color="text.disabled">
+                                ·
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {post.author.name}
+                              </Typography>
+                            </>
+                          )}
+                          {post.poll && (
+                            <Chip
+                              label={isClosed ? "Sondaggio chiuso" : "Sondaggio aperto"}
+                              size="small"
+                              color={isClosed ? "default" : "primary"}
+                              sx={{ ml: 0.5 }}
+                            />
+                          )}
+                        </Box>
                       </Box>
                     </Box>
+                    {teaser && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {teaser}
+                        {post.body.replace(/<[^>]+>/g, "").trim().length > 180 ? "…" : ""}
+                      </Typography>
+                    )}
                   </Box>
-                  {teaser && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      {teaser}
-                      {post.body.replace(/<[^>]+>/g, "").trim().length > 180 ? "…" : ""}
-                    </Typography>
-                  )}
                 </Paper>
               </Link>
             );

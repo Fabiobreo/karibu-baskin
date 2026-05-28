@@ -18,6 +18,7 @@ export const PostCreateSchema = z.object({
     .min(3, "Il titolo è obbligatorio")
     .max(200, "Titolo troppo lungo (max 200 caratteri)"),
   body: z.string().min(1, "Il contenuto è obbligatorio").max(50000, "Contenuto troppo lungo"),
+  imageUrl: z.string().url().nullable().optional(),
   publish: z.boolean().default(false),
   poll: PollSchema.nullable().optional(),
 });
@@ -25,6 +26,7 @@ export const PostCreateSchema = z.object({
 export const PostUpdateSchema = z.object({
   title: z.string().min(3).max(200).optional(),
   body: z.string().min(1).max(50000).optional(),
+  imageUrl: z.string().url().nullable().optional(),
   publish: z.boolean().optional(),
   unpublish: z.boolean().optional(),
   poll: PollSchema.nullable().optional(),

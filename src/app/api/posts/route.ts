@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       id: true,
       slug: true,
       title: true,
+      imageUrl: true,
       publishedAt: true,
       createdAt: true,
       author: { select: { name: true } },
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { title, body, publish, poll } = parsed.data;
+  const { title, body, imageUrl, publish, poll } = parsed.data;
   const sanitizedBody = DOMPurify.sanitize(body);
   const slug = await generatePostSlug(title);
   const publishedAt = publish ? new Date() : null;
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
       slug,
       title,
       body: sanitizedBody,
+      imageUrl: imageUrl ?? null,
       authorId,
       publishedAt,
       ...(poll

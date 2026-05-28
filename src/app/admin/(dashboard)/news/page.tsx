@@ -19,6 +19,7 @@ export default async function AdminNewsPage() {
       id: true,
       slug: true,
       title: true,
+      imageUrl: true,
       publishedAt: true,
       createdAt: true,
       updatedAt: true,

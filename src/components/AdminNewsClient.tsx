@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
   Typography,
@@ -36,6 +38,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import PollEditor, { type PollDraft } from "@/components/PollEditor";
+import ImageUploader from "@/components/ImageUploader";
 
 const PostEditor = dynamic(() => import("@/components/PostEditor"), { ssr: false });
 
@@ -43,6 +46,7 @@ interface PostSummary {
   id: string;
   slug: string;
   title: string;
+  imageUrl: string | null;
   publishedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -65,11 +69,14 @@ const EMPTY_POLL: PollDraft = {
 };
 
 export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [posts, setPosts] = useState(initialPosts);
   const [open, setOpen] = useState(false);
   const [editPost, setEditPost] = useState<PostSummary | null>(null);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [publish, setPublish] = useState(false);
   const [hasPoll, setHasPoll] = useState(false);
   const [poll, setPoll] = useState<PollDraft>(EMPTY_POLL);
@@ -81,34 +88,67 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
     setEditPost(null);
     setTitle("");
     setBody("");
+    setImageUrl(null);
     setPublish(false);
     setHasPoll(false);
     setPoll(EMPTY_POLL);
     setOpen(true);
   }
 
-  function openEdit(post: PostSummary) {
+  async function openEdit(post: PostSummary) {
     setEditPost(post);
     setTitle(post.title);
     setBody("");
+    setImageUrl(post.imageUrl ?? null);
     setPublish(!!post.publishedAt);
-    if (post.poll) {
-      setHasPoll(true);
-      setPoll({
-        question: post.poll.question,
-        multiSelect: post.poll.multiSelect,
-        closesAt: post.poll.closesAt ?? null,
-        options: [
-          { text: "", order: 0 },
-          { text: "", order: 1 },
-        ],
-      });
-    } else {
-      setHasPoll(false);
-      setPoll(EMPTY_POLL);
-    }
+    setHasPoll(!!post.poll);
+    setPoll(EMPTY_POLL);
     setOpen(true);
+
+    // Carica il contenuto completo (body + opzioni del sondaggio)
+    try {
+      const res = await fetch(`/api/posts/${post.id}`);
+      if (!res.ok) throw new Error("Errore nel caricamento del post");
+      const full = await res.json();
+      setBody(full.body ?? "");
+      setImageUrl(full.imageUrl ?? null);
+      if (full.poll) {
+        setHasPoll(true);
+        setPoll({
+          question: full.poll.question,
+          multiSelect: full.poll.multiSelect,
+          closesAt: full.poll.closesAt ?? null,
+          options:
+            Array.isArray(full.poll.options) && full.poll.options.length >= 2
+              ? full.poll.options.map((o: { text: string; order: number }, i: number) => ({
+                  text: o.text,
+                  order: typeof o.order === "number" ? o.order : i,
+                }))
+              : [
+                  { text: "", order: 0 },
+                  { text: "", order: 1 },
+                ],
+        });
+      } else {
+        setHasPoll(false);
+        setPoll(EMPTY_POLL);
+      }
+    } catch (err) {
+      showToast({
+        message: err instanceof Error ? err.message : "Errore nel caricamento",
+        severity: "error",
+      });
+    }
   }
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId) return;
+    const post = initialPosts.find((p) => p.id === editId);
+    if (post) openEdit(post);
+    router.replace("/admin/news", { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSave() {
     if (!title.trim()) {
@@ -135,6 +175,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
       const payload = {
         title,
         body,
+        imageUrl,
         publish,
         poll: hasPoll ? poll : null,
       };
@@ -241,7 +282,21 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
               <TableRow key={post.id} hover>
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {post.title}
+                    <Link
+                      href={`/news/${post.slug}`}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight={600}
+                        sx={{
+                          color: "text.primary",
+                          "&:hover": { color: "primary.main", textDecoration: "underline" },
+                        }}
+                      >
+                        {post.title}
+                      </Typography>
+                    </Link>
                     {post.poll && (
                       <Tooltip title="Ha un sondaggio allegato">
                         <HowToVoteIcon fontSize="small" color="primary" />
@@ -318,9 +373,22 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
               >
                 <Box sx={{ flex: 1, minWidth: 0, mr: 1 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
-                    <Typography variant="body2" fontWeight={700} sx={{ wordBreak: "break-word" }}>
-                      {post.title}
-                    </Typography>
+                    <Link
+                      href={`/news/${post.slug}`}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight={700}
+                        sx={{
+                          wordBreak: "break-word",
+                          color: "text.primary",
+                          "&:hover": { color: "primary.main", textDecoration: "underline" },
+                        }}
+                      >
+                        {post.title}
+                      </Typography>
+                    </Link>
                     {post.poll && (
                       <Tooltip title="Ha un sondaggio allegato">
                         <HowToVoteIcon sx={{ fontSize: 14 }} color="primary" />
@@ -383,17 +451,27 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
 
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Immagine di copertina
+            </Typography>
+            <Typography variant="caption" color="text.disabled" sx={{ display: "block", mb: 1 }}>
+              Facoltativa — mostrata come banner nella pagina news e nell&apos;anteprima in lista.
+            </Typography>
+            <ImageUploader
+              currentUrl={imageUrl}
+              folder="posts"
+              onUploaded={setImageUrl}
+              onRemoved={() => setImageUrl(null)}
+              shape="square"
+              size={140}
+            />
+          </Box>
+
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
               Contenuto
             </Typography>
             <PostEditor value={body} onChange={setBody} minHeight={180} />
           </Box>
-
-          {editPost && (
-            <Alert severity="info" sx={{ py: 0.5 }}>
-              Per modificare il contenuto esistente, il testo apparirà vuoto — scrivi il nuovo
-              contenuto completo nel box sopra.
-            </Alert>
-          )}
 
           <Divider />
 

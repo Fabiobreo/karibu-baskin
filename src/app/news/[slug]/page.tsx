@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { hasRole } from "@/lib/authRoles";
 import { notFound } from "next/navigation";
 import {
   Container,
@@ -8,12 +9,15 @@ import {
   Chip,
   Divider,
   Breadcrumbs,
+  IconButton,
+  Tooltip,
   Link as MuiLink,
 } from "@mui/material";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import Link from "next/link";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
+import EditIcon from "@mui/icons-material/Edit";
 import PollWidget from "@/components/PollWidget";
 import SiteHeader from "@/components/SiteHeader";
 
@@ -34,6 +38,7 @@ export default async function NewsSlugPage({ params }: Props) {
   const { slug } = await params;
   const session = await auth();
   const userId = session?.user?.id ?? null;
+  const isStaff = !!session?.user && hasRole(session.user.appRole, "COACH");
 
   const post = await prisma.post.findFirst({
     where: { slug, publishedAt: { not: null } },
@@ -50,9 +55,9 @@ export default async function NewsSlugPage({ params }: Props) {
   const now = new Date();
   const pollClosed = post.poll?.closesAt ? post.poll.closesAt <= now : false;
 
-  // Conteggi voti (solo se poll chiuso)
+  // Conteggi voti: visibili a tutti se poll chiuso, oppure sempre per lo staff (anteprima)
   let voteCounts: Record<string, number> | null = null;
-  if (post.poll && pollClosed) {
+  if (post.poll && (pollClosed || isStaff)) {
     const counts = await prisma.pollVote.groupBy({
       by: ["optionId"],
       where: { pollId: post.poll.id },
@@ -74,6 +79,18 @@ export default async function NewsSlugPage({ params }: Props) {
   return (
     <>
       <SiteHeader />
+      {post.imageUrl && (
+        <Box
+          sx={{
+            width: "100%",
+            aspectRatio: { xs: "16 / 9", md: "21 / 8" },
+            maxHeight: 420,
+            backgroundImage: `url(${post.imageUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+      )}
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
           <MuiLink href="/news" underline="hover" color="text.secondary" variant="body2">
@@ -86,9 +103,18 @@ export default async function NewsSlugPage({ params }: Props) {
 
         <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
           {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
-          <Typography variant="h4" fontWeight={800}>
+          <Typography variant="h4" fontWeight={800} sx={{ flex: 1, minWidth: 0 }}>
             {post.title}
           </Typography>
+          {isStaff && (
+            <Link href={`/admin/news?edit=${post.id}`} style={{ textDecoration: "none" }}>
+              <Tooltip title="Modifica news">
+                <IconButton component="span" size="small" sx={{ color: "primary.main" }}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Link>
+          )}
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>

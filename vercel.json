@@ -13,6 +13,10 @@
       "schedule": "0 9 * * *"
     },
     {
+      "path": "/api/cron/match-availability-reminder",
+      "schedule": "0 9 * * *"
+    },
+    {
       "path": "/api/cron/birthday-notifications",
       "schedule": "0 8 * * *"
     }

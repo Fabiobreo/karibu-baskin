@@ -14,6 +14,7 @@ export async function GET() {
       id: true,
       slug: true,
       title: true,
+      imageUrl: true,
       publishedAt: true,
       createdAt: true,
       updatedAt: true,
