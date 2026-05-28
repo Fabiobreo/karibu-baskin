@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Alert,
+  AlertTitle,
   Box,
   Typography,
   Paper,
@@ -27,6 +29,8 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import type { MatchCoverage } from "@/lib/matchCoverage";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -88,6 +92,8 @@ type Props = {
   matches: Match[];
   groups: Group[];
   groupMatches: GroupMatch[];
+  /** Mappa matchId → copertura ruoli (solo partite future) */
+  coverages: Record<string, MatchCoverage>;
 };
 
 const RESULT_LABELS: Record<MatchResult, string> = {
@@ -104,6 +110,7 @@ const RESULT_COLORS: Record<MatchResult, string> = {
 function MatchMobileCard({
   match,
   matchday,
+  coverage,
   router,
   onResult,
   onEdit,
@@ -111,6 +118,7 @@ function MatchMobileCard({
 }: {
   match: Match;
   matchday?: number | null;
+  coverage?: MatchCoverage;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
@@ -145,6 +153,7 @@ function MatchMobileCard({
             <Typography variant="body2" fontWeight={700}>
               {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
             </Typography>
+            <CoverageWarningIcon coverage={coverage} />
             {m.opponentTeam && (
               <Typography
                 component="span"
@@ -243,12 +252,36 @@ const TAB_LABELS: Record<TabKey, string> = {
   TOURNAMENT: "Tornei",
 };
 
+function CoverageWarningIcon({ coverage }: { coverage: MatchCoverage | undefined }) {
+  if (!coverage || !coverage.hasShortfall) return null;
+  const shortfalls = coverage.perGroup.filter((r) => r.shortfall > 0);
+  return (
+    <Tooltip
+      title={
+        <Box>
+          <Typography variant="caption" sx={{ fontWeight: 700, display: "block", mb: 0.5 }}>
+            Copertura ruoli insufficiente
+          </Typography>
+          {shortfalls.map((r) => (
+            <Typography key={r.groupKey} variant="caption" sx={{ display: "block" }}>
+              {r.label}: {r.available}/{r.required} disponibili
+            </Typography>
+          ))}
+        </Box>
+      }
+    >
+      <WarningAmberIcon sx={{ fontSize: 16, color: "warning.main", ml: 0.5 }} />
+    </Tooltip>
+  );
+}
+
 export default function AdminPartiteClient({
   teams,
   opposingTeams: initialOpponents,
   matches: initialMatches,
   groups,
   groupMatches: initialGroupMatches,
+  coverages,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -269,8 +302,11 @@ export default function AdminPartiteClient({
     if (!editId) return;
     const match = initialMatches.find((m) => m.id === editId);
     if (match) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditMatch(match);
+       
       setMatchDialog(true);
+       
       setTab(match.matchType as TabKey);
     }
     router.replace("/admin/partite", { scroll: false });
@@ -331,8 +367,45 @@ export default function AdminPartiteClient({
     setGroupMatches((prev) => prev.map((g) => (g.id === gmId ? { ...g, ...fields } : g)));
   }
 
+  const matchesWithShortfall = useMemo(
+    () =>
+      matches
+        .filter((m) => coverages[m.id]?.hasShortfall)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    [matches, coverages]
+  );
+
   return (
     <Box>
+      {matchesWithShortfall.length > 0 && (
+        <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
+          <AlertTitle sx={{ fontWeight: 700 }}>
+            Copertura ruoli insufficiente — {matchesWithShortfall.length} partit
+            {matchesWithShortfall.length === 1 ? "a" : "e"}
+          </AlertTitle>
+          <Stack spacing={0.5} sx={{ mt: 0.5 }}>
+            {matchesWithShortfall.slice(0, 5).map((m) => {
+              const cov = coverages[m.id]!;
+              const detail = cov.perGroup
+                .filter((r) => r.shortfall > 0)
+                .map((r) => `${r.label}: ${r.available}/${r.required}`)
+                .join(" · ");
+              return (
+                <Typography key={m.id} variant="body2">
+                  <strong>{format(new Date(m.date), "d MMM", { locale: it })}</strong> vs{" "}
+                  {m.opponent?.name ?? m.opponentTeam?.name ?? "—"} — {detail}
+                </Typography>
+              );
+            })}
+            {matchesWithShortfall.length > 5 && (
+              <Typography variant="caption" color="text.secondary">
+                + altre {matchesWithShortfall.length - 5}
+              </Typography>
+            )}
+          </Stack>
+        </Alert>
+      )}
+
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button
           variant="contained"
@@ -367,6 +440,7 @@ export default function AdminPartiteClient({
         <LeagueView
           matches={filteredMatches}
           groupMatches={groupMatches}
+          coverages={coverages}
           router={router}
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
@@ -376,6 +450,7 @@ export default function AdminPartiteClient({
       ) : (
         <FlatView
           matches={filteredMatches}
+          coverages={coverages}
           page={page}
           rpp={rpp}
           setPage={setPage}
@@ -455,6 +530,7 @@ type RouterLike = ReturnType<typeof useRouter>;
 function LeagueView({
   matches,
   groupMatches,
+  coverages,
   router,
   onResult,
   onEdit,
@@ -463,6 +539,7 @@ function LeagueView({
 }: {
   matches: Match[];
   groupMatches: GroupMatch[];
+  coverages: Record<string, MatchCoverage>;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
@@ -585,6 +662,7 @@ function LeagueView({
                       key={m.id}
                       match={m}
                       others={others}
+                      coverage={coverages[m.id]}
                       router={router}
                       onResult={onResult}
                       onEdit={onEdit}
@@ -603,6 +681,7 @@ function LeagueView({
                 key={m.id}
                 match={m}
                 matchday={m.matchday}
+                coverage={coverages[m.id]}
                 router={router}
                 onResult={onResult}
                 onEdit={onEdit}
@@ -619,6 +698,7 @@ function LeagueView({
 function MatchRowAndContext({
   match,
   others,
+  coverage,
   router,
   onResult,
   onEdit,
@@ -627,6 +707,7 @@ function MatchRowAndContext({
 }: {
   match: Match;
   others: GroupMatch[];
+  coverage: MatchCoverage | undefined;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
@@ -673,9 +754,12 @@ function MatchRowAndContext({
           />
         </TableCell>
         <TableCell>
-          <Typography variant="body2" fontWeight={600}>
-            {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="body2" fontWeight={600}>
+              {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
+            </Typography>
+            <CoverageWarningIcon coverage={coverage} />
+          </Box>
           {m.opponent?.city && (
             <Typography variant="caption" color="text.secondary">
               {m.opponent.city}
@@ -783,6 +867,7 @@ function MatchRowAndContext({
 
 function FlatView({
   matches,
+  coverages,
   page,
   rpp,
   setPage,
@@ -793,6 +878,7 @@ function FlatView({
   onDelete,
 }: {
   matches: Match[];
+  coverages: Record<string, MatchCoverage>;
   page: number;
   rpp: number;
   setPage: (n: number) => void;
@@ -870,18 +956,21 @@ function FlatView({
                   />
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
-                    {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
-                    {m.opponentTeam && (
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
-                      >
-                        (interna)
-                      </Typography>
-                    )}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
+                      {m.opponentTeam && (
+                        <Typography
+                          component="span"
+                          variant="caption"
+                          sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
+                        >
+                          (interna)
+                        </Typography>
+                      )}
+                    </Typography>
+                    <CoverageWarningIcon coverage={coverages[m.id]} />
+                  </Box>
                   {m.opponent?.city && (
                     <Typography variant="caption" color="text.secondary">
                       {m.opponent.city}
@@ -947,6 +1036,7 @@ function FlatView({
           <MatchMobileCard
             key={m.id}
             match={m}
+            coverage={coverages[m.id]}
             router={router}
             onResult={onResult}
             onEdit={onEdit}

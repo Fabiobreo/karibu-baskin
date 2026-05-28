@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import AdminPartiteClient from "@/components/AdminPartiteClient";
 import AdminPageHeader from "@/components/AdminPageHeader";
+import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matchCoverage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Partite | Admin" };
@@ -66,6 +67,13 @@ export default async function AdminPartitePage() {
           },
         });
 
+  // Copertura ruoli per partite future: alert se sotto soglia
+  const now = new Date();
+  const futureMatchIds = matches.filter((m) => m.date > now).map((m) => m.id);
+  const coverageMap = await computeMatchCoverageBatch(futureMatchIds);
+  const coverages: Record<string, MatchCoverage> = {};
+  for (const [id, cov] of coverageMap) coverages[id] = cov;
+
   return (
     <>
       <AdminPageHeader
@@ -79,6 +87,7 @@ export default async function AdminPartitePage() {
         matches={matches}
         groups={groupsForForm}
         groupMatches={groupMatches}
+        coverages={coverages}
       />
     </>
   );

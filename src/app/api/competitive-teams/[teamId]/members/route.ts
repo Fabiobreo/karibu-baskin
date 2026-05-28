@@ -25,6 +25,32 @@ export async function POST(req: Request, { params }: Params) {
   }
   const body = parsed.data;
 
+  // Blocco: un atleta può essere in una sola squadra per stagione
+  const targetTeam = await prisma.competitiveTeam.findUnique({
+    where: { id: teamId },
+    select: { season: true },
+  });
+  if (!targetTeam) {
+    return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
+  }
+  const existing = await prisma.teamMembership.findFirst({
+    where: {
+      team: { season: targetTeam.season },
+      teamId: { not: teamId },
+      ...(body.userId ? { userId: body.userId } : {}),
+      ...(body.childId ? { childId: body.childId } : {}),
+    },
+    include: { team: { select: { name: true } } },
+  });
+  if (existing) {
+    return NextResponse.json(
+      {
+        error: `Già in rosa con "${existing.team.name}" nella stessa stagione (${targetTeam.season})`,
+      },
+      { status: 409 }
+    );
+  }
+
   const membership = await prisma.teamMembership.create({
     data: {
       teamId,

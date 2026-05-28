@@ -8,7 +8,6 @@ import {
   TextField,
   Stack,
   Chip,
-  Avatar,
   IconButton,
   Dialog,
   DialogTitle,
@@ -21,7 +20,6 @@ import {
   InputLabel,
   Tooltip,
   CircularProgress,
-  Divider,
   Alert,
   Grid2 as Grid,
 } from "@mui/material";
@@ -29,16 +27,13 @@ import { alpha } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import PeopleIcon from "@mui/icons-material/People";
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { sportRoleLabel, ROLE_COLORS } from "@/lib/constants";
 import { slugify } from "@/lib/slugUtils";
 import Link from "next/link";
 import ImageUploader from "@/components/ImageUploader";
@@ -72,28 +67,6 @@ function seasonLabel(startYear: number): string {
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
-type User = {
-  id: string;
-  name: string | null;
-  image: string | null;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-};
-
-type Membership = {
-  id: string;
-  isCaptain: boolean;
-  userId: string | null;
-  childId: string | null;
-  user: User | null;
-  child: {
-    id: string;
-    name: string;
-    sportRole: number | null;
-    sportRoleVariant: string | null;
-  } | null;
-};
-
 type Team = {
   id: string;
   name: string;
@@ -105,35 +78,13 @@ type Team = {
   _count: { memberships: number; matches: number };
 };
 
-type TeamWithRoster = Team & { memberships: Membership[] };
-
-type Child = {
-  id: string;
-  name: string;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-};
-
-// Valore nel Select: "u:{id}" per utenti, "c:{id}" per figli
-type SelectableEntry = {
-  selectKey: string;
-  id: string;
-  kind: "user" | "child";
-  name: string | null;
-  image?: string | null;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-};
-
 type SeasonRecord = { label: string; isCurrent: boolean };
-type Props = { teams: Team[]; users: User[]; childPlayers: Child[]; seasons: SeasonRecord[] };
+type Props = { teams: Team[]; seasons: SeasonRecord[] };
 
 // ── Componente principale ─────────────────────────────────────────────────────
 
 export default function AdminSquadreClient({
   teams: initialTeams,
-  users,
-  childPlayers,
   seasons: initialSeasons,
 }: Props) {
   const router = useRouter();
@@ -152,9 +103,6 @@ export default function AdminSquadreClient({
   const [activeSeason, setActiveSeason] = useState<string>(
     initialSeasons.find((s) => s.isCurrent)?.label ?? existingSeasons[0] ?? ""
   );
-  const [rosaBase, setRosaBase] = useState<Team | null>(null);
-  const [rosaTeam, setRosaTeam] = useState<TeamWithRoster | null>(null);
-  const [rosaLoading, setRosaLoading] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -236,10 +184,6 @@ export default function AdminSquadreClient({
     setConfirmDialog((prev) => ({ ...prev, open: false }));
   }
 
-  // Dialog rosa
-  const [addingMember, setAddingMember] = useState(false);
-  const [selectedKey, setSelectedKey] = useState("");
-
   // ── Stagioni ─────────────────────────────────────────────────────────────────
 
   function openNewSeason() {
@@ -320,113 +264,9 @@ export default function AdminSquadreClient({
     );
   }
 
-  // ── Rosa ─────────────────────────────────────────────────────────────────────
-
-  async function openRosa(team: Team) {
-    setRosaBase(team);
-    setRosaTeam(null);
-    setRosaLoading(true);
-    const res = await fetch(`/api/competitive-teams/${team.id}`);
-    if (res.ok) setRosaTeam(await res.json());
-    setRosaLoading(false);
-  }
-
-  async function reloadRosa(teamId: string) {
-    const res = await fetch(`/api/competitive-teams/${teamId}`);
-    if (res.ok) setRosaTeam(await res.json());
-  }
-
-  function closeRosa() {
-    setRosaBase(null);
-    setRosaTeam(null);
-    setRosaLoading(false);
-    setAddingMember(false);
-    setSelectedKey("");
-  }
-
-  async function handleAddMember() {
-    if (!rosaBase || !selectedKey) return;
-    const [kind, id] = selectedKey.split(":");
-    startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaBase.id}/members`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(kind === "c" ? { childId: id } : { userId: id }),
-      });
-      setSelectedKey("");
-      setAddingMember(false);
-      setTeams((prev) =>
-        prev.map((t) =>
-          t.id === rosaBase.id
-            ? { ...t, _count: { ...t._count, memberships: t._count.memberships + 1 } }
-            : t
-        )
-      );
-      await reloadRosa(rosaBase.id);
-    });
-  }
-
-  async function handleRemoveMember(membershipId: string) {
-    if (!rosaBase) return;
-    startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaBase.id}/members/${membershipId}`, {
-        method: "DELETE",
-      });
-      setTeams((prev) =>
-        prev.map((t) =>
-          t.id === rosaBase.id
-            ? { ...t, _count: { ...t._count, memberships: t._count.memberships - 1 } }
-            : t
-        )
-      );
-      await reloadRosa(rosaBase.id);
-    });
-  }
-
-  async function handleToggleCaptain(membershipId: string, current: boolean) {
-    if (!rosaBase) return;
-    startTransition(async () => {
-      await fetch(`/api/competitive-teams/${rosaBase.id}/members/${membershipId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isCaptain: !current }),
-      });
-      await reloadRosa(rosaBase.id);
-    });
-  }
-
   // ── Computed ──────────────────────────────────────────────────────────────────
 
   const teamsInSeason = teams.filter((t) => t.season === activeSeason);
-
-  const rosaAvailable: SelectableEntry[] = rosaTeam
-    ? [
-        ...users
-          .filter((u) => !rosaTeam.memberships.some((m) => m.userId === u.id))
-          .map((u) => ({
-            selectKey: `u:${u.id}`,
-            id: u.id,
-            kind: "user" as const,
-            name: u.name,
-            image: u.image,
-            sportRole: u.sportRole,
-            sportRoleVariant: u.sportRoleVariant,
-          })),
-        ...childPlayers
-          .filter((c) => !rosaTeam.memberships.some((m) => m.childId === c.id))
-          .map((c) => ({
-            selectKey: `c:${c.id}`,
-            id: c.id,
-            kind: "child" as const,
-            name: c.name,
-            image: null,
-            sportRole: c.sportRole,
-            sportRoleVariant: c.sportRoleVariant,
-          })),
-      ].sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-    : [];
-
-  const rosaName = rosaBase?.name ?? rosaTeam?.name ?? "";
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
@@ -557,7 +397,6 @@ export default function AdminSquadreClient({
                   colorName={colorName}
                   onEdit={() => openEdit(team)}
                   onDelete={() => handleDeleteTeam(team.id, team.name)}
-                  onRosa={() => openRosa(team)}
                 />
               </Grid>
             );
@@ -734,252 +573,6 @@ export default function AdminSquadreClient({
         </DialogActions>
       </Dialog>
 
-      {/* ── Dialog: gestione rosa ──────────────────────────────────────────────── */}
-      <Dialog
-        open={!!rosaBase}
-        onClose={closeRosa}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { maxHeight: "85vh" } }}
-      >
-        {rosaBase && (
-          <>
-            {/* Intestazione colorata */}
-            <Box
-              sx={{
-                px: 3,
-                pt: 2.5,
-                pb: 2,
-                bgcolor: rosaBase.color ?? "primary.main",
-              }}
-            >
-              <Typography
-                variant="overline"
-                sx={{
-                  color: (theme) => alpha(theme.palette.common.white, 0.7),
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                }}
-              >
-                Gestione Rosa
-              </Typography>
-              <Typography variant="h6" fontWeight={800} sx={{ color: "common.white" }}>
-                {rosaName}
-              </Typography>
-            </Box>
-
-            <DialogContent sx={{ pt: 2 }}>
-              {rosaLoading && (
-                <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                  <CircularProgress size={32} />
-                </Box>
-              )}
-              {/* Aggiungi atleta */}
-              {!rosaLoading && !addingMember && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={() => setAddingMember(true)}
-                  disabled={rosaAvailable.length === 0}
-                  sx={{ mb: 2 }}
-                >
-                  Aggiungi atleta
-                </Button>
-              )}
-              {!rosaLoading && addingMember && (
-                <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2, borderStyle: "dashed" }}>
-                  <Typography
-                    variant="caption"
-                    fontWeight={700}
-                    color="text.secondary"
-                    sx={{ display: "block", mb: 1.5 }}
-                  >
-                    Seleziona un atleta da aggiungere
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                    <FormControl size="small" sx={{ flex: 1, minWidth: 180 }}>
-                      <InputLabel>Atleta</InputLabel>
-                      <Select
-                        value={selectedKey}
-                        label="Atleta"
-                        onChange={(e) => setSelectedKey(e.target.value as string)}
-                      >
-                        {rosaAvailable.map((entry) => (
-                          <MenuItem key={entry.selectKey} value={entry.selectKey}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <Avatar
-                                src={entry.image ?? undefined}
-                                sx={{ width: 22, height: 22, fontSize: 10 }}
-                              >
-                                {(entry.name ?? "?")[0].toUpperCase()}
-                              </Avatar>
-                              {entry.name ?? entry.id}
-                              {entry.kind === "child" && (
-                                <Chip
-                                  label="Figlio"
-                                  size="small"
-                                  sx={{ height: 15, fontSize: "0.58rem", fontWeight: 700 }}
-                                />
-                              )}
-                              {entry.sportRole && (
-                                <Chip
-                                  label={sportRoleLabel(
-                                    entry.sportRole,
-                                    entry.sportRoleVariant ?? null
-                                  )}
-                                  size="small"
-                                  sx={{
-                                    bgcolor: ROLE_COLORS[entry.sportRole],
-                                    color: "common.white",
-                                    fontWeight: 700,
-                                    fontSize: "0.58rem",
-                                    height: 15,
-                                    ml: 0.5,
-                                  }}
-                                />
-                              )}
-                            </Box>
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      disabled={!selectedKey || isPending}
-                      onClick={handleAddMember}
-                    >
-                      Aggiungi
-                    </Button>
-                    <Button
-                      size="small"
-                      onClick={() => {
-                        setAddingMember(false);
-                        setSelectedKey("");
-                      }}
-                    >
-                      Annulla
-                    </Button>
-                  </Box>
-                </Paper>
-              )}
-
-              {/* Lista atleti */}
-              {!rosaLoading && rosaTeam?.memberships.length === 0 && (
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <PeopleIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    La rosa è vuota. Aggiungi atleti tramite il pulsante sopra.
-                  </Typography>
-                </Box>
-              )}
-              {!rosaLoading && rosaTeam && rosaTeam.memberships.length > 0 && (
-                <Stack spacing={0.75}>
-                  {rosaTeam.memberships.map((m) => {
-                    const athlete = m.user ?? m.child;
-                    if (!athlete) return null;
-                    const name = athlete.name ?? "—";
-                    const image = "image" in athlete ? (athlete.image ?? undefined) : undefined;
-                    const teamColor = rosaBase?.color ?? rosaTeam.color ?? "primary.main";
-                    return (
-                      <Box
-                        key={m.id}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1.5,
-                          p: 1.25,
-                          borderRadius: 1.5,
-                          border: "1px solid",
-                          borderColor: m.isCaptain ? `${teamColor}44` : "divider",
-                          backgroundColor: m.isCaptain ? `${teamColor}08` : "transparent",
-                          transition: "all 0.1s",
-                        }}
-                      >
-                        <Avatar
-                          src={image}
-                          sx={{ width: 34, height: 34, fontSize: 13, bgcolor: teamColor }}
-                        >
-                          {name[0].toUpperCase()}
-                        </Avatar>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                            <Typography variant="body2" fontWeight={600} noWrap>
-                              {name}
-                            </Typography>
-                            {m.isCaptain && (
-                              <Chip
-                                label="Cap."
-                                size="small"
-                                sx={{
-                                  fontSize: "0.62rem",
-                                  height: 16,
-                                  bgcolor: "medal.gold",
-                                  color: "common.white",
-                                  fontWeight: 700,
-                                }}
-                              />
-                            )}
-                          </Box>
-                          {athlete.sportRole && (
-                            <Chip
-                              label={sportRoleLabel(
-                                athlete.sportRole,
-                                athlete.sportRoleVariant ?? null
-                              )}
-                              size="small"
-                              sx={{
-                                bgcolor: ROLE_COLORS[athlete.sportRole],
-                                color: "common.white",
-                                fontWeight: 700,
-                                fontSize: "0.62rem",
-                                height: 16,
-                                mt: 0.25,
-                              }}
-                            />
-                          )}
-                        </Box>
-                        <Tooltip title={m.isCaptain ? "Rimuovi capitano" : "Nomina capitano"}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleToggleCaptain(m.id, m.isCaptain)}
-                            sx={{ color: m.isCaptain ? "medal.gold" : "action.disabled" }}
-                          >
-                            <EmojiEventsIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Rimuovi dalla rosa">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleRemoveMember(m.id)}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    );
-                  })}
-                </Stack>
-              )}
-            </DialogContent>
-
-            <Divider />
-            <DialogActions sx={{ px: 3, py: 1.5 }}>
-              <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
-                {rosaTeam
-                  ? `${rosaTeam.memberships.length} ${rosaTeam.memberships.length === 1 ? "atleta" : "atleti"} in rosa`
-                  : rosaLoading
-                    ? "Caricamento…"
-                    : "—"}
-              </Typography>
-              <Button onClick={closeRosa}>Chiudi</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
-
       {/* ── Dialog conferma eliminazione ── */}
       <Dialog
         open={confirmDialog.open}
@@ -1019,24 +612,29 @@ function TeamCard({
   colorName,
   onEdit,
   onDelete,
-  onRosa,
 }: {
   team: Team;
   color: string;
   colorName: string | undefined;
   onEdit: () => void;
   onDelete: () => void;
-  onRosa: () => void;
 }) {
+  const router = useRouter();
+  const publicHref = `/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`;
+  const rosaHref = `/admin/squadre/${team.id}/rosa`;
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+
   return (
     <Paper
       elevation={0}
       variant="outlined"
+      onClick={() => router.push(publicHref)}
       sx={{
         overflow: "hidden",
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        cursor: "pointer",
         transition: "box-shadow 0.15s",
         "&:hover": { boxShadow: 3 },
       }}
@@ -1074,30 +672,13 @@ function TeamCard({
           )}
         </Box>
         <Box sx={{ display: "flex", gap: 0.25, ml: 1, flexShrink: 0 }}>
-          <Link
-            href={`/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`}
-            style={{ textDecoration: "none" }}
-          >
-            <Tooltip title="Vedi pagina pubblica">
-              <IconButton
-                size="small"
-                aria-label="Vedi pagina pubblica"
-                sx={{
-                  color: (theme) => alpha(theme.palette.common.white, 0.7),
-                  "&:hover": {
-                    color: "common.white",
-                    bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
-                  },
-                }}
-              >
-                <VisibilityIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            </Tooltip>
-          </Link>
           <Tooltip title="Modifica squadra">
             <IconButton
               size="small"
-              onClick={onEdit}
+              onClick={(e) => {
+                stop(e);
+                onEdit();
+              }}
               aria-label="Modifica squadra"
               sx={{
                 color: (theme) => alpha(theme.palette.common.white, 0.7),
@@ -1113,7 +694,10 @@ function TeamCard({
           <Tooltip title="Elimina squadra">
             <IconButton
               size="small"
-              onClick={onDelete}
+              onClick={(e) => {
+                stop(e);
+                onDelete();
+              }}
               aria-label="Elimina squadra"
               sx={{
                 color: (theme) => alpha(theme.palette.common.white, 0.7),
@@ -1166,11 +750,13 @@ function TeamCard({
         {/* Bottone gestione rosa */}
         <Box sx={{ mt: "auto" }}>
           <Button
+            component={Link}
+            href={rosaHref}
             variant="outlined"
             size="small"
             fullWidth
             startIcon={<PeopleIcon />}
-            onClick={onRosa}
+            onClick={stop}
             sx={{
               borderColor: color,
               color,

@@ -7,21 +7,12 @@ export const metadata: Metadata = { title: "Gestione Squadre | Admin" };
 export const revalidate = 60;
 
 export default async function AdminSquadrePage() {
-  const [teams, users, children, seasons] = await Promise.all([
+  const [teams, seasons] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
         _count: { select: { memberships: true, matches: true } },
       },
-    }),
-    prisma.user.findMany({
-      where: { appRole: { in: ["ATHLETE", "COACH", "ADMIN"] } },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true },
-    }),
-    prisma.child.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, sportRole: true, sportRoleVariant: true },
     }),
     prisma.season.findMany(),
   ]);
@@ -33,7 +24,7 @@ export default async function AdminSquadrePage() {
         subtitle="Organizza le squadre per stagione."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Squadre" }]}
       />
-      <AdminSquadreClient teams={teams} users={users} childPlayers={children} seasons={seasons} />
+      <AdminSquadreClient teams={teams} seasons={seasons} />
     </>
   );
 }

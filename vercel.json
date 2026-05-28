@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/birthday-notifications",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/match-coverage-alert",
+      "schedule": "0 9 * * *"
     }
   ]
 }

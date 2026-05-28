@@ -44,6 +44,28 @@ export type Role = (typeof ROLES)[number];
 /** Numero minimo di convocati per disputare una partita di Baskin. */
 export const MIN_CALLUPS = 6;
 
+/**
+ * Gruppi di ruoli per il calcolo della copertura.
+ * I ruoli 1 e 2 sono unificati perché interscambiabili a livello tattico
+ * (non è detto che una squadra abbia atleti di ruolo 1).
+ * `roles` è la lista dei sportRole inclusi nel gruppo.
+ */
+export const ROLE_GROUPS = [
+  { key: "1-2", label: "Ruolo 1-2", roles: [1, 2] as number[], min: 3 },
+  { key: "3", label: "Ruolo 3", roles: [3] as number[], min: 2 },
+  { key: "4", label: "Ruolo 4", roles: [4] as number[], min: 1 },
+  { key: "5", label: "Ruolo 5", roles: [5] as number[], min: 1 },
+] as const;
+
+export type RoleGroupKey = (typeof ROLE_GROUPS)[number]["key"];
+
+/** Risale al gruppo di un dato sportRole (1-5). */
+export function roleGroupOf(role: number | null | undefined): RoleGroupKey | null {
+  if (role == null) return null;
+  const g = ROLE_GROUPS.find((g) => g.roles.includes(role));
+  return g ? g.key : null;
+}
+
 export const TEAM_META = [
   { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
   { key: "teamB" as const, name: "Neri", color: "#1A1A1A" },
