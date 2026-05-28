@@ -5,6 +5,10 @@ vi.mock("@/lib/db", () => ({
   prisma: {
     teamMembership: {
       create: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    competitiveTeam: {
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -31,7 +35,10 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { createAppNotification } from "@/lib/appNotifications";
 
-type PrismaMock = { teamMembership: { create: Mock } };
+type PrismaMock = {
+  teamMembership: { create: Mock; findFirst: Mock };
+  competitiveTeam: { findUnique: Mock };
+};
 const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
 const mockAuth = auth as Mock;
@@ -66,6 +73,8 @@ describe("POST /api/competitive-teams/[teamId]/members", () => {
     mockIsAdmin.mockResolvedValue(true);
     mockAuth.mockResolvedValue(authedSession);
     p.teamMembership.create.mockResolvedValue(baseMembership);
+    p.teamMembership.findFirst.mockResolvedValue(null);
+    p.competitiveTeam.findUnique.mockResolvedValue({ season: "2025-26" });
   });
 
   it("returns 403 when not admin", async () => {
@@ -139,5 +148,34 @@ describe("POST /api/competitive-teams/[teamId]/members", () => {
         data: expect.objectContaining({ isCaptain: true }),
       })
     );
+  });
+
+  it("returns 404 when team does not exist", async () => {
+    p.competitiveTeam.findUnique.mockResolvedValue(null);
+    const res = await POST(makeReq({ userId: "u-1" }), { params });
+    expect(res.status).toBe(404);
+    expect(p.teamMembership.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 when user is already in another team of same season", async () => {
+    p.teamMembership.findFirst.mockResolvedValue({
+      id: "m-other",
+      team: { name: "Karibu B" },
+    });
+    const res = await POST(makeReq({ userId: "u-1" }), { params });
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { error: string };
+    expect(body.error).toContain("Karibu B");
+    expect(p.teamMembership.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 when child is already in another team of same season", async () => {
+    p.teamMembership.findFirst.mockResolvedValue({
+      id: "m-other",
+      team: { name: "Karibu B" },
+    });
+    const res = await POST(makeReq({ childId: "c-1" }), { params });
+    expect(res.status).toBe(409);
+    expect(p.teamMembership.create).not.toHaveBeenCalled();
   });
 });
