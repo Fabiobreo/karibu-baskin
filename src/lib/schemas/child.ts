@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { Gender } from "@prisma/client";
+import { AthleteStatus, Gender } from "@prisma/client";
 
 const GenderEnum = z.nativeEnum(Gender).nullable().optional();
 const SportRoleField = z.number().int().min(1).max(5).nullable().optional();
+const AthleteStatusField = z.nativeEnum(AthleteStatus).nullable().optional();
 
 export const ChildCreateSchema = z.object({
   name: z.string().min(1, "Il nome è obbligatorio").max(60),
@@ -22,6 +23,7 @@ export const ChildPatchSchema = z.object({
   sportRoleVariant: z.string().max(50).nullable().optional(),
   gender: GenderEnum,
   birthDate: z.string().nullable().optional(),
+  athleteStatus: AthleteStatusField, // solo staff (gating server-side)
   linkEmail: z.string().email("Email non valida").optional(),
   linkUserId: z.string().min(1).optional(),
   unlinkAccount: z.boolean().optional(),

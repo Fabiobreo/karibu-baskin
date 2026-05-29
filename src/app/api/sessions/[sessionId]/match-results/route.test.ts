@@ -7,6 +7,7 @@ vi.mock("@/lib/db", () => ({
     $transaction: vi.fn(),
     trainingSession: { findUnique: vi.fn() },
     trainingMatchResult: { findMany: vi.fn(), create: vi.fn() },
+    match: { findMany: vi.fn() },
     registration: { findMany: vi.fn() },
     sportRoleHistory: { findMany: vi.fn() },
     user: { update: vi.fn() },
@@ -35,6 +36,7 @@ type PrismaMock = {
   $transaction: Mock;
   trainingSession: { findUnique: Mock };
   trainingMatchResult: { findMany: Mock; create: Mock };
+  match: { findMany: Mock };
   registration: { findMany: Mock };
   sportRoleHistory: { findMany: Mock };
   user: { update: Mock };
@@ -89,6 +91,7 @@ describe("POST /api/sessions/[sessionId]/match-results", () => {
     // Default per il ricalcolo TrueSkill (recomputeRatings): nessun dato
     p.registration.findMany.mockResolvedValue([]);
     p.trainingMatchResult.findMany.mockResolvedValue([]);
+    p.match.findMany.mockResolvedValue([]);
     p.sportRoleHistory.findMany.mockResolvedValue([]);
     p.ratingUpdate.deleteMany.mockResolvedValue({ count: 0 });
     p.ratingUpdate.createMany.mockResolvedValue({ count: 0 });

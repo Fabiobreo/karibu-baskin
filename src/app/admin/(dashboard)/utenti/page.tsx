@@ -4,7 +4,7 @@ import { Paper, Button } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Link from "next/link";
 import AdminPageHeader from "@/components/AdminPageHeader";
-import type { AppRole, Gender, Prisma } from "@prisma/client";
+import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { auth } from "@/lib/authjs";
 
@@ -12,6 +12,7 @@ export const revalidate = 60;
 
 const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
+const VALID_ATHLETE_STATUSES: AthleteStatus[] = ["INACTIVE_SEASON", "FORMER"];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -22,6 +23,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const sportRole = sp.sportRole as string | undefined;
   const gender = sp.gender as string | undefined;
   const teamId = sp.teamId as string | undefined;
+  const athleteStatus = sp.athleteStatus as string | undefined;
   const sortBy = (sp.sortBy as string | undefined) ?? "createdAt";
   const sortDir = ((sp.sortDir as string | undefined) ?? "desc") as "asc" | "desc";
   const page = Math.max(1, parseInt((sp.page as string | undefined) ?? "1", 10));
@@ -43,8 +45,11 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   if (gender === "none") where.gender = null;
   else if (gender && VALID_GENDERS.includes(gender as Gender)) where.gender = gender as Gender;
   if (teamId) where.teamMemberships = { some: { teamId } };
+  if (athleteStatus === "active") where.athleteStatus = null;
+  else if (athleteStatus && VALID_ATHLETE_STATUSES.includes(athleteStatus as AthleteStatus))
+    where.athleteStatus = athleteStatus as AthleteStatus;
 
-  const orderBy: Prisma.UserOrderByWithRelationInput =
+  const chosenOrderBy: Prisma.UserOrderByWithRelationInput =
     sortBy === "name"
       ? { name: sortDir }
       : sortBy === "sportRole"
@@ -52,6 +57,13 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         : sortBy === "appRole"
           ? { appRole: sortDir }
           : { createdAt: sortDir };
+
+  // Attivi (athleteStatus null) sempre in cima; "In pausa" prima di "Ex"
+  // (ordine enum). Dentro ogni gruppo si applica il sort scelto dall'utente.
+  const orderBy: Prisma.UserOrderByWithRelationInput[] = [
+    { athleteStatus: { sort: "asc", nulls: "first" } },
+    chosenOrderBy,
+  ];
 
   const select = {
     id: true,
@@ -65,6 +77,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     sportRoleSuggestedVariant: true,
     gender: true,
     birthDate: true,
+    athleteStatus: true,
     ratingMu: true,
     ratingSigma: true,
     createdAt: true,
@@ -92,7 +105,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     prisma.user.count({ where }),
     prisma.child.findMany({
       where: { userId: null },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ athleteStatus: { sort: "asc", nulls: "first" } }, { createdAt: "asc" }],
       select: {
         id: true,
         name: true,
@@ -100,6 +113,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         sportRoleVariant: true,
         gender: true,
         birthDate: true,
+        athleteStatus: true,
         ratingMu: true,
         ratingSigma: true,
         createdAt: true,
@@ -144,7 +158,17 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           serverTotal={total}
           serverPage={page}
           serverLimit={limit}
-          currentFilters={{ search, appRole, sportRole, gender, teamId, sortBy, sortDir, limit }}
+          currentFilters={{
+            search,
+            appRole,
+            sportRole,
+            gender,
+            teamId,
+            athleteStatus,
+            sortBy,
+            sortDir,
+            limit,
+          }}
         />
       </Paper>
     </>

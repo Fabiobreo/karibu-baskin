@@ -11,6 +11,7 @@ vi.mock("@/lib/db", () => ({
       delete: vi.fn(),
       findMany: vi.fn(),
     },
+    match: { findMany: vi.fn() },
     sportRoleHistory: { findMany: vi.fn() },
     user: { update: vi.fn() },
     child: { update: vi.fn() },
@@ -29,6 +30,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 type PrismaMock = {
   $transaction: Mock;
   trainingMatchResult: { findUnique: Mock; update: Mock; delete: Mock; findMany: Mock };
+  match: { findMany: Mock };
   sportRoleHistory: { findMany: Mock };
   user: { update: Mock };
   child: { update: Mock };
@@ -43,6 +45,7 @@ const CTX = (resultId: string) => ({ params: Promise.resolve({ sessionId: "s1", 
 function setupRecomputeMocks() {
   p.$transaction.mockImplementation(async (cb: (tx: PrismaMock) => unknown) => cb(p));
   p.trainingMatchResult.findMany.mockResolvedValue([]);
+  p.match.findMany.mockResolvedValue([]);
   p.sportRoleHistory.findMany.mockResolvedValue([]);
   p.ratingUpdate.deleteMany.mockResolvedValue({ count: 0 });
   p.ratingUpdate.createMany.mockResolvedValue({ count: 0 });

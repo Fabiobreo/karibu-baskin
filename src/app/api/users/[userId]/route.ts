@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import type { AppRole, Gender } from "@prisma/client";
+import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import { isAdminUser, isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { sendPushToUser } from "@/lib/webpush";
@@ -11,6 +11,7 @@ import { logAudit } from "@/lib/audit";
 import { recomputeRatings } from "@/lib/ratingEngine";
 import {
   VALID_APP_ROLES,
+  VALID_ATHLETE_STATUSES,
   VALID_GENDERS,
   VALID_SPORT_ROLES,
   VALID_SPORT_ROLE_VARIANTS,
@@ -33,6 +34,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
     name?: string;
     email?: string;
     clearRoleSuggestion?: boolean;
+    athleteStatus?: AthleteStatus | null;
   };
 
   const data: Record<string, unknown> = {};
@@ -56,6 +58,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
 
   if (body.birthDate !== undefined) {
     data.birthDate = body.birthDate ? new Date(body.birthDate) : null;
+  }
+
+  if (body.athleteStatus !== undefined) {
+    if (body.athleteStatus !== null && !VALID_ATHLETE_STATUSES.includes(body.athleteStatus)) {
+      return NextResponse.json({ error: "Stato atleta non valido" }, { status: 400 });
+    }
+    data.athleteStatus = body.athleteStatus ?? null;
   }
 
   if (body.name !== undefined && isAdmin) {
@@ -131,6 +140,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
         sportRoleSuggestedVariant: true,
         gender: true,
         birthDate: true,
+        athleteStatus: true,
       },
     });
   } catch (err: unknown) {

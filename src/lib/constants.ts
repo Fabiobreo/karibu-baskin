@@ -1,4 +1,4 @@
-import type { AppRole, Gender } from "@prisma/client";
+import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 
 export const ROLE_LABELS_IT: Record<AppRole, string> = {
   GUEST: "Ospite",
@@ -21,6 +21,17 @@ export const ROLE_CHIP_COLORS: Record<
 
 export const GENDER_LABELS: Record<Gender, string> = { MALE: "Maschio", FEMALE: "Femmina" };
 export const GENDER_LABELS_SHORT: Record<Gender, string> = { MALE: "M", FEMALE: "F" };
+
+// Stato di attività atleta. null (attivo) non ha chip; solo i due stati non-attivi.
+export const ATHLETE_STATUS_LABELS: Record<AthleteStatus, string> = {
+  INACTIVE_SEASON: "In pausa",
+  FORMER: "Ex atleta",
+};
+
+export const ATHLETE_STATUS_CHIP_COLORS: Record<AthleteStatus, "warning" | "default"> = {
+  INACTIVE_SEASON: "warning", // pausa temporanea
+  FORMER: "default", // ex atleta (grigio)
+};
 
 export const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",

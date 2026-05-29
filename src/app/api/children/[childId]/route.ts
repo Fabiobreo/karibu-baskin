@@ -45,6 +45,7 @@ export async function PATCH(
     sportRoleVariant,
     gender,
     birthDate,
+    athleteStatus,
     linkEmail,
     linkUserId,
     unlinkAccount,
@@ -215,6 +216,8 @@ export async function PATCH(
       ...(sportRoleVariant !== undefined && { sportRoleVariant: sportRoleVariant ?? null }),
       ...(gender !== undefined && { gender: gender ?? null }),
       ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
+      // Stato atleta: modificabile solo dallo staff
+      ...(athleteStatus !== undefined && isStaff && { athleteStatus: athleteStatus ?? null }),
     },
   });
 

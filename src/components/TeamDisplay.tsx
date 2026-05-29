@@ -94,9 +94,13 @@ export function MobileTeamTabs({
   defaultTab?: number;
 }) {
   const [tab, setTab] = useState(defaultTab);
-  const meta = TEAM_META.slice(0, teams.numTeams);
-  const allTeams = [teams.teamA, teams.teamB, ...(teams.teamC ? [teams.teamC] : [])];
-  const activeColor = meta[tab].color;
+  // allTeams è l'unica fonte di verità: include teamC solo se esiste davvero.
+  // meta viene derivato dalla sua lunghezza così non possono mai divergere
+  // (dati legacy senza numTeams facevano slice(0, undefined) = array intero → crash).
+  const allTeams: TeamAthlete[][] = [teams.teamA ?? [], teams.teamB ?? []];
+  if (teams.teamC) allTeams.push(teams.teamC);
+  const meta = TEAM_META.slice(0, allTeams.length);
+  const activeColor = meta[tab]?.color ?? "primary.main";
 
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden" }}>
@@ -190,9 +194,10 @@ export function AlignedTeamGrid({
   teams: TeamsData;
   slugMap?: Record<string, string>;
 }) {
-  const allTeams = [teams.teamA, teams.teamB, ...(teams.teamC ? [teams.teamC] : [])];
-  const meta = TEAM_META.slice(0, teams.numTeams);
-  const cols = teams.numTeams;
+  const allTeams: TeamAthlete[][] = [teams.teamA ?? [], teams.teamB ?? []];
+  if (teams.teamC) allTeams.push(teams.teamC);
+  const meta = TEAM_META.slice(0, allTeams.length);
+  const cols = allTeams.length;
 
   const cells: React.ReactNode[] = [];
 
@@ -311,7 +316,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
 
   const teamKeys: TeamKey[] =
     localTeams.numTeams === 3 ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
-  const meta = TEAM_META.slice(0, localTeams.numTeams);
+  const meta = TEAM_META.slice(0, teamKeys.length);
 
   async function moveTo(toKey: TeamKey) {
     if (!selected || saving) return;
@@ -658,7 +663,7 @@ export default function TeamDisplay({
           onTeamsUpdated={(t) => onTeamsGenerated(t)}
           onDone={() => onExitEditMode?.()}
         />
-      ) : isDesktop && teams.numTeams === 2 ? (
+      ) : isDesktop && !teams.teamC?.length ? (
         <AlignedTeamGrid teams={teams} slugMap={slugMap} />
       ) : (
         <MobileTeamTabs teams={teams} slugMap={slugMap} defaultTab={currentUserTeamIndex} />

@@ -41,13 +41,15 @@ import HistoryIcon from "@mui/icons-material/History";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import type { AppRole, Gender } from "@prisma/client";
+import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS, ROLE_HIERARCHY } from "@/lib/authRoles";
 import {
   ROLE_COLORS,
   SPORT_ROLE_VARIANT_LABELS,
   sportRoleLabel,
   GENDER_LABELS_SHORT,
+  ATHLETE_STATUS_LABELS,
+  ATHLETE_STATUS_CHIP_COLORS,
 } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import RatingBadge from "@/components/RatingBadge";
@@ -90,6 +92,7 @@ interface UserEntry {
   sportRoleSuggestedVariant: string | null;
   gender: Gender | null;
   birthDate: Date | string | null;
+  athleteStatus: AthleteStatus | null;
   ratingMu: number | null;
   ratingSigma: number | null;
   createdAt: Date | string;
@@ -105,6 +108,7 @@ interface ChildEntry {
   sportRoleVariant: string | null;
   gender: Gender | null;
   birthDate: Date | string | null;
+  athleteStatus: AthleteStatus | null;
   ratingMu: number | null;
   ratingSigma: number | null;
   createdAt: Date | string;
@@ -123,6 +127,21 @@ interface EditState {
   sportRoleVariant: string;
   gender: string;
   birthDate: string;
+  athleteStatus: string; // "" = attivo
+}
+
+// Chip per lo stato atleta. Non renderizza nulla se attivo (status null).
+function AthleteStatusChip({ status }: { status: AthleteStatus | null }) {
+  if (!status) return null;
+  return (
+    <Chip
+      label={ATHLETE_STATUS_LABELS[status]}
+      size="small"
+      color={ATHLETE_STATUS_CHIP_COLORS[status]}
+      variant="outlined"
+      sx={{ height: 18, fontSize: "0.62rem", fontWeight: 700 }}
+    />
+  );
 }
 
 // ── Componente ───────────────────────────────────────────────────────────────
@@ -133,6 +152,7 @@ interface CurrentFilters {
   sportRole?: string;
   gender?: string;
   teamId?: string;
+  athleteStatus?: string;
   sortBy?: string;
   sortDir?: string;
   limit?: number;
@@ -171,6 +191,9 @@ export default function AdminUserList({
   );
   const [filterGender, setFilterGender] = useState(currentFilters.gender ?? "");
   const [filterTeamId, setFilterTeamId] = useState(currentFilters.teamId ?? "");
+  const [filterAthleteStatus, setFilterAthleteStatus] = useState(
+    currentFilters.athleteStatus ?? ""
+  );
 
   const [sortBy, setSortBy] = useState<SortColumn>(
     (currentFilters.sortBy as SortColumn) ?? "createdAt"
@@ -193,6 +216,7 @@ export default function AdminUserList({
         sportRole: filterSportRoles[0] ?? "",
         gender: filterGender,
         teamId: filterTeamId,
+        athleteStatus: filterAthleteStatus,
         sortBy,
         sortDir,
         page: serverPage,
@@ -204,6 +228,7 @@ export default function AdminUserList({
       if (merged.sportRole) params.set("sportRole", merged.sportRole);
       if (merged.gender) params.set("gender", merged.gender);
       if (merged.teamId) params.set("teamId", merged.teamId);
+      if (merged.athleteStatus) params.set("athleteStatus", merged.athleteStatus);
       if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
       if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
       if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
@@ -216,6 +241,7 @@ export default function AdminUserList({
       filterSportRoles,
       filterGender,
       filterTeamId,
+      filterAthleteStatus,
       sortBy,
       sortDir,
       serverPage,
@@ -264,6 +290,7 @@ export default function AdminUserList({
     sportRoleVariant: "",
     gender: "",
     birthDate: "",
+    athleteStatus: "",
   });
   const [editTeamId, setEditTeamId] = useState("");
   const [availableTeams, setAvailableTeams] = useState<TeamInfo[]>(initialTeams);
@@ -291,6 +318,7 @@ export default function AdminUserList({
     (filterSportRoles.length > 0 ? 1 : 0) +
     (filterGender ? 1 : 0) +
     (filterTeamId ? 1 : 0) +
+    (filterAthleteStatus ? 1 : 0) +
     (search ? 1 : 0);
 
   // Tab 0 — utenti: filtra/ordina solo le righe utente
@@ -416,6 +444,7 @@ export default function AdminUserList({
     setFilterSportRoles([]);
     setFilterGender("");
     setFilterTeamId("");
+    setFilterAthleteStatus("");
     setPage(0);
     if (serverDriven) startTransition(() => router.push(pathname));
   }
@@ -578,6 +607,7 @@ export default function AdminUserList({
       sportRoleVariant: row.sportRoleVariant ?? "",
       gender: row.gender ?? "",
       birthDate: row.birthDate ? new Date(row.birthDate).toISOString().slice(0, 10) : "",
+      athleteStatus: row.athleteStatus ?? "",
     });
     const season = getCurrentSeason();
     const membership = row.teamMemberships.find((m) => m.team.season === season);
@@ -592,6 +622,7 @@ export default function AdminUserList({
       sportRoleVariant: editState.sportRoleVariant || null,
       gender: editState.gender || null,
       birthDate: editState.birthDate || null,
+      athleteStatus: editState.athleteStatus || null,
     };
     if (editState.name.trim()) payload.name = editState.name.trim();
     if (editRow.kind === "user" && editState.appRole) {
@@ -681,6 +712,7 @@ export default function AdminUserList({
             sportRoleVariant: updated.sportRoleVariant,
             gender: updated.gender,
             birthDate: updated.birthDate,
+            athleteStatus: updated.athleteStatus ?? null,
             sportRoleHistory:
               updated.sportRole !== editRow.sportRole && updated.sportRole !== null
                 ? [
@@ -697,6 +729,7 @@ export default function AdminUserList({
           sportRoleVariant: updated.sportRoleVariant,
           gender: updated.gender,
           birthDate: updated.birthDate,
+          athleteStatus: updated.athleteStatus ?? null,
         };
       })
     );
@@ -907,6 +940,42 @@ export default function AdminUserList({
               </ToggleButtonGroup>
             </Box>
 
+            {/* Stato atleta */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                sx={{ minWidth: 90 }}
+              >
+                Stato
+              </Typography>
+              <ToggleButtonGroup
+                value={filterAthleteStatus}
+                exclusive
+                size="small"
+                onChange={(_e, val) => {
+                  const v = val ?? "";
+                  setFilterAthleteStatus(v);
+                  setPage(0);
+                  if (serverDriven) pushFilters({ athleteStatus: v, page: 1 });
+                }}
+              >
+                <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  Tutti
+                </ToggleButton>
+                <ToggleButton value="active" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  Attivi
+                </ToggleButton>
+                <ToggleButton value="INACTIVE_SEASON" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  In pausa
+                </ToggleButton>
+                <ToggleButton value="FORMER" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+                  Ex
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+
             {/* Squadra */}
             {availableTeams.length > 0 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
@@ -1030,9 +1099,12 @@ export default function AdminUserList({
                           >
                             {(row.name ?? "?")[0].toUpperCase()}
                           </Avatar>
-                          <Typography variant="body2" fontWeight={600} noWrap>
-                            {row.name ?? "—"}
-                          </Typography>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="body2" fontWeight={600} noWrap>
+                              {row.name ?? "—"}
+                            </Typography>
+                            <AthleteStatusChip status={row.athleteStatus} />
+                          </Box>
                         </Box>
                       </TableCell>
 
@@ -1318,6 +1390,7 @@ export default function AdminUserList({
                           color={ROLE_CHIP_COLORS[row.appRole]}
                           sx={{ fontWeight: 600, fontSize: "0.68rem" }}
                         />
+                        <AthleteStatusChip status={row.athleteStatus} />
                         {row.sportRole ? (
                           <Chip
                             label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
@@ -1507,9 +1580,12 @@ export default function AdminUserList({
                           <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: "grey.400" }}>
                             {row.name[0].toUpperCase()}
                           </Avatar>
-                          <Typography variant="body2" fontWeight={600} noWrap>
-                            {row.name}
-                          </Typography>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography variant="body2" fontWeight={600} noWrap>
+                              {row.name}
+                            </Typography>
+                            <AthleteStatusChip status={row.athleteStatus} />
+                          </Box>
                         </Box>
                       </TableCell>
 
@@ -1724,6 +1800,7 @@ export default function AdminUserList({
                         Figlio di {row.parent.name ?? row.parent.email}
                       </Typography>
                       <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
+                        <AthleteStatusChip status={row.athleteStatus} />
                         {row.sportRole && (
                           <Chip
                             label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
@@ -1939,6 +2016,32 @@ export default function AdminUserList({
                 onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
                 slotProps={{ inputLabel: { shrink: true } }}
               />
+            </Box>
+
+            {/* Stato atleta */}
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={600}
+                display="block"
+                gutterBottom
+              >
+                Stato atleta
+              </Typography>
+              <Select
+                fullWidth
+                size="small"
+                displayEmpty
+                value={editState.athleteStatus}
+                onChange={(e) => setEditState((s) => ({ ...s, athleteStatus: e.target.value }))}
+              >
+                <MenuItem value="">
+                  <em>Attivo</em>
+                </MenuItem>
+                <MenuItem value="INACTIVE_SEASON">{ATHLETE_STATUS_LABELS.INACTIVE_SEASON}</MenuItem>
+                <MenuItem value="FORMER">{ATHLETE_STATUS_LABELS.FORMER}</MenuItem>
+              </Select>
             </Box>
 
             <Divider />

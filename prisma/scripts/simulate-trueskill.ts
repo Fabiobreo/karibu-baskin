@@ -445,6 +445,7 @@ async function runSession(
     teamA: mapTeam(teams.teamA),
     teamB: mapTeam(teams.teamB),
     ...(teams.teamC ? { teamC: mapTeam(teams.teamC) } : {}),
+    numTeams,
     coaches: [],
     generated: true,
   };
