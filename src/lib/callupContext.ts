@@ -79,9 +79,22 @@ export async function buildTeamCallupContext({
             image: true,
             sportRole: true,
             sportRoleVariant: true,
+            ratingMu: true,
+            gender: true,
+            height: true,
           },
         },
-        child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+        child: {
+          select: {
+            id: true,
+            name: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            ratingMu: true,
+            gender: true,
+            height: true,
+          },
+        },
       },
     }),
     prisma.trainingSession.findMany({
@@ -153,6 +166,9 @@ export async function buildTeamCallupContext({
           sportRoleVariant: m.user.sportRoleVariant,
           isCaptain: m.isCaptain,
           teamIds: teamIdsByUserId.get(m.userId) ?? [teamId],
+          ratingMu: m.user.ratingMu,
+          gender: m.user.gender,
+          height: m.user.height,
         };
       }
       if (m.childId && m.child) {
@@ -165,6 +181,9 @@ export async function buildTeamCallupContext({
           sportRoleVariant: m.child.sportRoleVariant,
           isCaptain: m.isCaptain,
           teamIds: teamIdsByChildId.get(m.childId) ?? [teamId],
+          ratingMu: m.child.ratingMu,
+          gender: m.child.gender,
+          height: m.child.height,
         };
       }
       return null;

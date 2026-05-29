@@ -34,6 +34,8 @@ export interface TrackedAthlete {
   series: number[];
   /** Numero di partitelle che hanno contribuito al rating. */
   games: number;
+  /** Numero di partite ufficiali (segnale secondario W/L campionato). */
+  officialGames: number;
 }
 
 const TREND_COLOR_TOKEN: Record<TrendLabel, string> = {
@@ -129,7 +131,7 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
               <TableCell align="center">Andamento</TableCell>
               <TableCell align="center">Trend</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                Partite
+                Partite (train. / uff.)
               </TableCell>
             </TableRow>
           </TableHead>
@@ -166,6 +168,17 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
                 <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
                   <Typography variant="body2" color="text.secondary">
                     {r.games}
+                    {r.officialGames > 0 && (
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        color="primary.main"
+                        sx={{ ml: 0.5 }}
+                        title={`+ ${r.officialGames} partite ufficiali`}
+                      >
+                        +{r.officialGames} uff.
+                      </Typography>
+                    )}
                   </Typography>
                 </TableCell>
               </TableRow>

@@ -30,6 +30,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import type { MatchCoverage } from "@/lib/matchCoverage";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
@@ -47,9 +48,11 @@ import MatchFormDialog, {
 } from "@/components/MatchFormDialog";
 import MatchResultDialog, { type MatchResultSavedFields } from "@/components/MatchResultDialog";
 import GroupMatchInlineScore from "@/components/GroupMatchInlineScore";
+import OpponentProfileDialog from "@/components/OpponentProfileDialog";
+import type { OpponentProfile } from "@/lib/schemas/match";
 
 type Team = MatchFormTeam;
-type OpposingTeam = MatchFormOpposingTeam;
+type OpposingTeam = MatchFormOpposingTeam & { ratingMu?: number | null };
 type Group = MatchFormGroup;
 
 type Match = {
@@ -73,6 +76,7 @@ type Match = {
   opponentTeam?: { id: string; name: string; color: string | null } | null;
   group: { id: string; name: string } | null;
   _count: { playerStats: number };
+  opponentProfile?: unknown; // Prisma.JsonValue — castato a OpponentProfile dove serve
 };
 
 type GroupMatch = {
@@ -115,6 +119,7 @@ function MatchMobileCard({
   onResult,
   onEdit,
   onDelete,
+  onProfile,
 }: {
   match: Match;
   matchday?: number | null;
@@ -123,6 +128,7 @@ function MatchMobileCard({
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
 }) {
   const m = match;
   return (
@@ -223,6 +229,20 @@ function MatchMobileCard({
               <GroupsIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+          {m.result && m.opponentId && (
+            <Tooltip
+              title={m.opponentProfile ? "Modifica profilo avversario" : "Profila avversario"}
+            >
+              <IconButton
+                size="medium"
+                color={m.opponentProfile ? "primary" : "default"}
+                aria-label="Profila avversario"
+                onClick={() => onProfile(m)}
+              >
+                <SportsMartialArtsIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Modifica">
             <IconButton size="medium" aria-label="Modifica partita" onClick={() => onEdit(m)}>
               <EditIcon fontSize="small" />
@@ -291,6 +311,7 @@ export default function AdminPartiteClient({
   const [matchDialog, setMatchDialog] = useState(false);
   const [editMatch, setEditMatch] = useState<Match | null>(null);
   const [resultMatch, setResultMatch] = useState<Match | null>(null);
+  const [profileMatch, setProfileMatch] = useState<Match | null>(null);
   const [tab, setTab] = useState<TabKey>("LEAGUE");
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useState(25);
@@ -365,6 +386,21 @@ export default function AdminPartiteClient({
     fields: { homeScore: number | null; awayScore: number | null }
   ) {
     setGroupMatches((prev) => prev.map((g) => (g.id === gmId ? { ...g, ...fields } : g)));
+  }
+
+  function handleProfileSaved(profile: OpponentProfile, newOpponentMu: number | null) {
+    if (!profileMatch) return;
+    setMatches((prev) =>
+      prev.map((m) =>
+        m.id === profileMatch.id
+          ? {
+              ...m,
+              opponentProfile: profile,
+              opponent: m.opponent ? { ...m.opponent, ratingMu: newOpponentMu } : null,
+            }
+          : m
+      )
+    );
   }
 
   const matchesWithShortfall = useMemo(
@@ -445,6 +481,7 @@ export default function AdminPartiteClient({
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
           onDelete={handleDeleteMatch}
+          onProfile={(m) => setProfileMatch(m)}
           onGroupMatchSaved={handleGroupMatchSaved}
         />
       ) : (
@@ -459,6 +496,7 @@ export default function AdminPartiteClient({
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
           onDelete={handleDeleteMatch}
+          onProfile={(m) => setProfileMatch(m)}
         />
       )}
 
@@ -491,6 +529,19 @@ export default function AdminPartiteClient({
         }
         onSaved={(saved, isEdit) => handleSaved(saved as Match, isEdit)}
       />
+
+      {profileMatch && profileMatch.opponentId && (
+        <OpponentProfileDialog
+          open={!!profileMatch}
+          onClose={() => setProfileMatch(null)}
+          matchId={profileMatch.id}
+          opponentId={profileMatch.opponentId}
+          opponentName={profileMatch.opponent?.name ?? "Avversario"}
+          opponentRatingMu={profileMatch.opponent?.ratingMu ?? null}
+          currentProfile={(profileMatch.opponentProfile as OpponentProfile) ?? null}
+          onSaved={handleProfileSaved}
+        />
+      )}
 
       {ConfirmDialog}
     </Box>
@@ -535,6 +586,7 @@ function LeagueView({
   onResult,
   onEdit,
   onDelete,
+  onProfile,
   onGroupMatchSaved,
 }: {
   matches: Match[];
@@ -544,6 +596,7 @@ function LeagueView({
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
   onGroupMatchSaved: (
     id: string,
     fields: { homeScore: number | null; awayScore: number | null }
@@ -667,6 +720,7 @@ function LeagueView({
                       onResult={onResult}
                       onEdit={onEdit}
                       onDelete={onDelete}
+                      onProfile={onProfile}
                       onGroupMatchSaved={onGroupMatchSaved}
                     />
                   );
@@ -686,6 +740,7 @@ function LeagueView({
                 onResult={onResult}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onProfile={onProfile}
               />
             ))}
           </Box>
@@ -703,6 +758,7 @@ function MatchRowAndContext({
   onResult,
   onEdit,
   onDelete,
+  onProfile,
   onGroupMatchSaved,
 }: {
   match: Match;
@@ -712,6 +768,7 @@ function MatchRowAndContext({
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
   onGroupMatchSaved: (
     id: string,
     fields: { homeScore: number | null; awayScore: number | null }
@@ -810,7 +867,13 @@ function MatchRowAndContext({
           </Typography>
         </TableCell>
         <TableCell align="right">
-          <ActionIcons match={m} router={router} onEdit={onEdit} onDelete={onDelete} />
+          <ActionIcons
+            match={m}
+            router={router}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onProfile={onProfile}
+          />
         </TableCell>
       </TableRow>
       {others.length > 0 && (
@@ -876,6 +939,7 @@ function FlatView({
   onResult,
   onEdit,
   onDelete,
+  onProfile,
 }: {
   matches: Match[];
   coverages: Record<string, MatchCoverage>;
@@ -887,6 +951,7 @@ function FlatView({
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
 }) {
   if (matches.length === 0) {
     return (
@@ -1023,7 +1088,13 @@ function FlatView({
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <ActionIcons match={m} router={router} onEdit={onEdit} onDelete={onDelete} />
+                  <ActionIcons
+                    match={m}
+                    router={router}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onProfile={onProfile}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -1041,6 +1112,7 @@ function FlatView({
             onResult={onResult}
             onEdit={onEdit}
             onDelete={onDelete}
+            onProfile={onProfile}
           />
         ))}
       </Box>
@@ -1068,11 +1140,13 @@ function ActionIcons({
   router,
   onEdit,
   onDelete,
+  onProfile,
 }: {
   match: Match;
   router: RouterLike;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
 }) {
   return (
     <>
@@ -1096,6 +1170,20 @@ function ActionIcons({
           <LeaderboardIcon fontSize="small" />
         </IconButton>
       </Tooltip>
+      {match.result && match.opponentId && (
+        <Tooltip
+          title={match.opponentProfile ? "Modifica profilo avversario" : "Profila avversario"}
+        >
+          <IconButton
+            size="medium"
+            color={match.opponentProfile ? "primary" : "default"}
+            aria-label="Profila avversario"
+            onClick={() => onProfile(match)}
+          >
+            <SportsMartialArtsIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      )}
       <Tooltip title="Modifica">
         <IconButton size="medium" aria-label="Modifica partita" onClick={() => onEdit(match)}>
           <EditIcon fontSize="small" />

@@ -367,6 +367,12 @@ model OpposingTeam {
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
+  // Stima TrueSkill della squadra avversaria (per-giocatore, come i nostri atleti).
+  // null = sconosciuto → si assume MU default (giocatore medio).
+  // Impostato manualmente dal coach tramite il profilo avversario.
+  ratingMu    Float?
+  ratingSigma Float?
+
   matches          Match[]
   homeGroupMatches GroupMatch[] @relation("GroupMatchHome")
   awayGroupMatches GroupMatch[] @relation("GroupMatchAway")
@@ -474,6 +480,10 @@ model Match {
   // Timestamp dell'invio del reminder push "convocazioni mancanti" (T-3 giorni
   // con < roster minimo). Usato per garantire idempotenza del cron.
   callupReminderSentAt DateTime?
+
+  // Profilo avversario (Fase 3): valutazione post-partita per categoria.
+  // Struttura: { categories: { "1": { strength: "WEAK"|"MEDIUM"|"STRONG", physicality: "LOW"|"MEDIUM"|"HIGH" }, ... }, notes?: string }
+  opponentProfile Json?
 
   team           CompetitiveTeam     @relation("MatchTeam", fields: [teamId], references: [id], onDelete: Cascade)
   opponent       OpposingTeam?       @relation(fields: [opponentId], references: [id])

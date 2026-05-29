@@ -21,11 +21,12 @@ export default async function AdminPartitePage() {
       orderBy: { date: "desc" },
       include: {
         team: { select: { id: true, name: true, season: true, color: true } },
-        opponent: { select: { id: true, name: true, city: true } },
+        opponent: { select: { id: true, name: true, city: true, ratingMu: true } },
         opponentTeam: { select: { id: true, name: true, color: true } },
         group: { select: { id: true, name: true } },
         _count: { select: { playerStats: true } },
       },
+      // opponentProfile è incluso automaticamente (non è una relazione, è un campo Json)
     }),
     prisma.group.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],

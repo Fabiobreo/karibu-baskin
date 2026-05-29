@@ -17,6 +17,9 @@ export interface CandidateInput {
   sportRoleVariant: string | null;
   isCaptain: boolean;
   teamIds: string[]; // squadre di cui fa parte (per gestire restrictTeamId)
+  ratingMu: number | null;
+  gender: "MALE" | "FEMALE" | null;
+  height: number | null;
 }
 
 export interface SessionEligibilityInput {

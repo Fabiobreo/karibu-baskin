@@ -1,18 +1,19 @@
-// ── Rating engine (orchestratore TrueSkill per le partitelle) ────────────────
+// ── Rating engine (orchestratore TrueSkill per partitelle + campionato) ──────
 //
-// Trasforma i risultati delle partitelle (TrainingMatchResult) in aggiornamenti
-// dei rating μ/σ dei giocatori. La libreria `trueskill.ts` resta pura: qui vive
-// la logica applicativa (margin of victory, snapshot dei roster, replay).
+// Trasforma i risultati delle partitelle (TrainingMatchResult) e delle partite
+// ufficiali (Match con result != null) in aggiornamenti dei rating μ/σ dei
+// giocatori. La libreria `trueskill.ts` resta pura: qui vive la logica
+// applicativa (margin of victory, snapshot dei roster, replay).
 //
 // Modello di consistenza: il rating di un giocatore è funzione PURA del log
-// ordinato delle partitelle a cui ha partecipato. Per restare sempre coerenti
-// dopo create / modifica / cancellazione di un risultato, ricalcoliamo (replay)
-// dall'inizio. Le partitelle sono poche (qualche decina a stagione), quindi il
-// replay è banale e si elimina ogni rischio di update "fuori ordine".
+// ordinato di tutti gli eventi (partitelle + partite ufficiali + cambi ruolo).
+// Ricalcoliamo (replay) dall'inizio dopo ogni modifica. Idempotente.
 //
-// NB Fase 1: il replay considera SOLO le partitelle. Il segnale secondario del
-// campionato (W/L ufficiali) e gli eventi ROLE_CHANGE verranno fusi nello stesso
-// log cronologico in una fase successiva.
+// Segnali:
+//   TRAINING_MATCH  — partitella (primario; peso 0.5–1.0 per margin of victory)
+//   OFFICIAL_MATCH  — W/L campionato (secondario; peso fisso 0.3, β maggiore
+//                     perché il segnale individuale è più debole)
+//   ROLE_CHANGE     — cambio categoria → σ rigonfiato, μ invariato
 
 import { Prisma, type PrismaClient, type RatingUpdateReason } from "@prisma/client";
 import { defaultRating, rate2Draw, rate2Win, type Rating, TRUESKILL } from "./trueskill";
@@ -45,6 +46,12 @@ export interface RostersSnapshot {
 const MOV_FULL_MARGIN = 24;
 /** Peso minimo di una vittoria combattuta (~1 punto). Tunable. */
 const MOV_BASE_WEIGHT = 0.5;
+/**
+ * Peso fisso per le partite ufficiali (segnale secondario). Inferiore al peso
+ * minimo delle partitelle perché il W/L di squadra è meno informativo sulla
+ * skill individuale rispetto agli scontri diretti in allenamento.
+ */
+const OFFICIAL_MATCH_WEIGHT = 0.3;
 
 /**
  * Peso dell'update in [MOV_BASE_WEIGHT, 1] in funzione del margine.
@@ -167,7 +174,22 @@ export interface RoleChangeEvent {
 export interface MatchEvent extends ReplayEvent {
   kind: "match";
 }
-export type TimelineEvent = MatchEvent | RoleChangeEvent;
+/**
+ * Evento "partita ufficiale" (W/L campionato).
+ * L'avversario è rappresentato come un virtual player team-level; il segnale è
+ * più debole (OFFICIAL_MATCH_WEIGHT) rispetto alle partitelle.
+ * `opponentMu` è la stima per-giocatore dell'avversario (scala come i nostri μ).
+ * Null → si usa il valore di default (MU = giocatore medio).
+ */
+export interface OfficialMatchEvent {
+  kind: "official_match";
+  matchId: string;
+  at: Date;
+  ourPlayers: PlayerRef[];
+  opponentMu: number | null;
+  result: "WIN" | "LOSS" | "DRAW";
+}
+export type TimelineEvent = MatchEvent | RoleChangeEvent | OfficialMatchEvent;
 
 /**
  * Replay puro di una timeline ordinata di eventi (partitelle + cambi categoria).
@@ -203,6 +225,50 @@ export function replayTimeline(events: TimelineEvent[]): ReplayResult {
         sigmaAfter: newSigma,
       });
       ratings.set(ev.key, { mu: r.mu, sigma: newSigma });
+      continue;
+    }
+
+    // Partita ufficiale (segnale secondario, peso fisso 0.3)
+    if (ev.kind === "official_match") {
+      const playerKeys = ev.ourPlayers.map(keyOf).filter((k): k is PlayerKey => k !== null);
+      if (playerKeys.length === 0) continue;
+
+      const N = playerKeys.length;
+      const playersBefore = playerKeys.map(get);
+
+      // Virtual opponent: un singolo "team player" con μ scalata al livello squadra
+      // (μ_per_player × N) e σ corrispondente (σ₀ × √N).
+      const oppMuPerPlayer = ev.opponentMu ?? TRUESKILL.MU;
+      const opponentVirtual: Rating = {
+        mu: oppMuPerPlayer * N,
+        sigma: TRUESKILL.SIGMA * Math.sqrt(N),
+      };
+
+      let playersAfter: Rating[];
+      if (ev.result === "DRAW") {
+        const res = rate2Draw(playersBefore, [opponentVirtual], { weight: OFFICIAL_MATCH_WEIGHT });
+        playersAfter = res.teamA;
+      } else if (ev.result === "WIN") {
+        const res = rate2Win(playersBefore, [opponentVirtual], { weight: OFFICIAL_MATCH_WEIGHT });
+        playersAfter = res.winners;
+      } else {
+        const res = rate2Win([opponentVirtual], playersBefore, { weight: OFFICIAL_MATCH_WEIGHT });
+        playersAfter = res.losers;
+      }
+
+      playerKeys.forEach((k, i) => {
+        log.push({
+          key: k,
+          reason: "OFFICIAL_MATCH",
+          sourceId: ev.matchId,
+          at: ev.at,
+          muBefore: playersBefore[i].mu,
+          sigmaBefore: playersBefore[i].sigma,
+          muAfter: playersAfter[i].mu,
+          sigmaAfter: playersAfter[i].sigma,
+        });
+        ratings.set(k, playersAfter[i]);
+      });
       continue;
     }
 
@@ -273,7 +339,7 @@ function parseSnapshot(value: Prisma.JsonValue | null): RostersSnapshot | null {
 }
 
 /** Reason gestiti dal replay (riscritti ad ogni ricalcolo). */
-const REPLAY_REASONS: RatingUpdateReason[] = ["TRAINING_MATCH", "ROLE_CHANGE"];
+const REPLAY_REASONS: RatingUpdateReason[] = ["TRAINING_MATCH", "OFFICIAL_MATCH", "ROLE_CHANGE"];
 
 /**
  * Ricalcola da zero i rating di tutti i giocatori replayando la timeline
@@ -289,7 +355,7 @@ const REPLAY_REASONS: RatingUpdateReason[] = ["TRAINING_MATCH", "ROLE_CHANGE"];
 export async function recomputeRatings(db: Db): Promise<void> {
   // Json nullable non supporta un filtro "NOT null" diretto: prendiamo tutti i
   // risultati e scartiamo quelli senza snapshot via parseSnapshot (null → skip).
-  const [results, roleHistory] = await Promise.all([
+  const [results, roleHistory, officialMatches] = await Promise.all([
     db.trainingMatchResult.findMany({
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       select: { id: true, scoreA: true, scoreB: true, rostersSnapshot: true, createdAt: true },
@@ -297,6 +363,27 @@ export async function recomputeRatings(db: Db): Promise<void> {
     db.sportRoleHistory.findMany({
       orderBy: [{ changedAt: "asc" }, { id: "asc" }],
       select: { id: true, userId: true, childId: true, changedAt: true },
+    }),
+    // Partite ufficiali vs avversari esterni con risultato registrato e statistiche.
+    // Le amichevoli interne (opponentTeamId) non producono aggiornamenti TrueSkill
+    // individuali: non c'è un "avversario" esterno su cui tarare il segnale.
+    db.match.findMany({
+      where: { result: { not: null }, opponentId: { not: null } },
+      orderBy: [{ date: "asc" }, { id: "asc" }],
+      select: {
+        id: true,
+        date: true,
+        result: true,
+        opponent: { select: { ratingMu: true } },
+        playerStats: {
+          select: {
+            userId: true,
+            childId: true,
+            user: { select: { name: true } },
+            child: { select: { name: true } },
+          },
+        },
+      },
     }),
   ]);
 
@@ -318,14 +405,34 @@ export async function recomputeRatings(db: Db): Promise<void> {
     const key: PlayerKey | null = h.userId ? `u:${h.userId}` : h.childId ? `c:${h.childId}` : null;
     if (key) timeline.push({ kind: "role", key, sourceId: h.id, at: h.changedAt });
   }
+  for (const m of officialMatches) {
+    if (!m.result) continue;
+    const ourPlayers: PlayerRef[] = m.playerStats
+      .filter((ps) => ps.userId || ps.childId)
+      .map((ps) => ({
+        userId: ps.userId,
+        childId: ps.childId,
+        name: ps.user?.name ?? ps.child?.name ?? "?",
+      }));
+    if (ourPlayers.length === 0) continue; // nessuna statistica inserita → skip
+    timeline.push({
+      kind: "official_match",
+      matchId: m.id,
+      at: m.date,
+      ourPlayers,
+      opponentMu: m.opponent?.ratingMu ?? null,
+      result: m.result,
+    });
+  }
 
-  // Ordine cronologico; a parità di istante la partitella precede il cambio ruolo
-  // (così un cambio nello stesso momento agisce sul rating già aggiornato).
+  // Ordine cronologico; a parità di istante i match (training + ufficiali) precedono
+  // i cambi ruolo (così un cambio nello stesso momento agisce sul rating già aggiornato).
   timeline.sort((a, b) => {
     const ta = a.at?.getTime() ?? 0;
     const tb = b.at?.getTime() ?? 0;
     if (ta !== tb) return ta - tb;
-    return (a.kind === "match" ? 0 : 1) - (b.kind === "match" ? 0 : 1);
+    const rankKind = (k: string) => (k === "role" ? 1 : 0);
+    return rankKind(a.kind) - rankKind(b.kind);
   });
 
   const { ratings, log } = replayTimeline(timeline);

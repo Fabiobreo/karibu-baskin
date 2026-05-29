@@ -8,6 +8,33 @@ export function deriveResult(ourScore: number, theirScore: number): MatchResult 
   return "DRAW";
 }
 
+/** Valori ammessi per la forza avversaria in una categoria. */
+export const OPPONENT_STRENGTH_VALUES = ["WEAK", "MEDIUM", "STRONG"] as const;
+export type OpponentStrength = (typeof OPPONENT_STRENGTH_VALUES)[number];
+
+/** Valori ammessi per la fisicità avversaria in una categoria. */
+export const OPPONENT_PHYSICALITY_VALUES = ["LOW", "MEDIUM", "HIGH"] as const;
+export type OpponentPhysicality = (typeof OPPONENT_PHYSICALITY_VALUES)[number];
+
+/** Schema di una singola valutazione per categoria avversaria. */
+export const CategoryAssessmentSchema = z.object({
+  strength: z.enum(OPPONENT_STRENGTH_VALUES),
+  physicality: z.enum(OPPONENT_PHYSICALITY_VALUES),
+});
+export type CategoryAssessment = z.infer<typeof CategoryAssessmentSchema>;
+
+/**
+ * Profilo dell'avversario compilato post-partita ("3 click per categoria").
+ * Chiavi del dict = ruolo Baskin come stringa ("1"…"5").
+ */
+export const OpponentProfileSchema = z
+  .object({
+    categories: z.record(z.string().regex(/^[1-5]$/), CategoryAssessmentSchema),
+    notes: z.string().max(500).optional(),
+  })
+  .nullable();
+export type OpponentProfile = z.infer<typeof OpponentProfileSchema>;
+
 const MatchBaseSchema = z.object({
   isHome: z.boolean().optional(),
   venue: z.string().max(200).nullable().optional(),
@@ -47,6 +74,7 @@ export const MatchUpdateSchema = MatchBaseSchema.extend({
   opponentTeamId: z.string().min(1).nullable().optional(),
   ourScore: z.number().int().min(0).nullable().optional(),
   theirScore: z.number().int().min(0).nullable().optional(),
+  opponentProfile: OpponentProfileSchema.optional(),
 });
 
 export const PlayerStatsEntrySchema = z

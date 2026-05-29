@@ -44,13 +44,14 @@ export default async function SviluppoPage() {
   ]);
 
   // Costruisci la serie cronologica di μ per ogni giocatore.
-  const seriesByKey = new Map<string, { series: number[]; games: number }>();
+  const seriesByKey = new Map<string, { series: number[]; games: number; officialGames: number }>();
   for (const u of updates) {
     const key = u.userId ? `u:${u.userId}` : u.childId ? `c:${u.childId}` : null;
     if (!key) continue;
-    const entry = seriesByKey.get(key) ?? { series: [], games: 0 };
+    const entry = seriesByKey.get(key) ?? { series: [], games: 0, officialGames: 0 };
     entry.series.push(u.muAfter);
     if (u.reason === "TRAINING_MATCH") entry.games++;
+    if (u.reason === "OFFICIAL_MATCH") entry.officialGames++;
     seriesByKey.set(key, entry);
   }
 
@@ -69,6 +70,7 @@ export default async function SviluppoPage() {
       sigma: a.ratingSigma!,
       series: entry?.series ?? [],
       games: entry?.games ?? 0,
+      officialGames: entry?.officialGames ?? 0,
     };
   });
 
