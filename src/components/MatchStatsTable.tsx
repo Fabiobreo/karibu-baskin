@@ -38,6 +38,7 @@ export interface MatchStatRow {
   child: {
     id: string;
     name: string;
+    slug: string | null;
     sportRole: number | null;
     sportRoleVariant: string | null;
   } | null;
@@ -94,7 +95,8 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
               const name = athlete?.name ?? "—";
               const role = athlete?.sportRole ?? null;
               const variant = athlete?.sportRoleVariant ?? null;
-              const slug = stat.user?.slug ?? null;
+              const slug =
+                stat.user?.slug ?? stat.user?.id ?? stat.child?.slug ?? stat.child?.id ?? null;
               const image = stat.user?.image ?? null;
 
               return (

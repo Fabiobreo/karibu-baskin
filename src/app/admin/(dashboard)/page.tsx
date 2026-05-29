@@ -11,6 +11,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import ShieldIcon from "@mui/icons-material/Shield";
 import ArticleIcon from "@mui/icons-material/Article";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
 import AdminProssimePartite from "@/components/AdminProssimePartite";
@@ -159,6 +160,12 @@ export default async function AdminPage() {
         </NavSection>
 
         <NavSection title="Strumenti">
+          <NavCard
+            href="/admin/sviluppo"
+            icon={<TrendingUpIcon />}
+            label="Sviluppo giocatori"
+            color="#2E7D32"
+          />
           <NavCard
             href="/admin/esporta"
             icon={<DownloadIcon />}

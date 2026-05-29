@@ -3,6 +3,8 @@ export interface Athlete {
   name: string;
   role: number;
   gender?: string | null;
+  /** μ TrueSkill (skill attesa). Assente/undefined = giocatore non valutato. */
+  rating?: number | null;
 }
 
 export interface Teams {
@@ -137,10 +139,88 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
     buckets[to].push(buckets[from].pop()!);
   }
 
+  // Passo 5: layer skill (TrueSkill). Bilancia il totale di μ tra le squadre
+  // SENZA toccare struttura ruoli e genere — scambia solo coppie con stesso
+  // ruolo e stesso genere su squadre diverse. No-op se nessuno è valutato.
+  balanceSkill(buckets, stringToSeed(`${sessionId}-skill`));
+
   return {
     teamA: buckets[0],
     teamB: buckets[1],
     ...(numTeams === 3 ? { teamC: buckets[2] } : {}),
     numTeams,
   };
+}
+
+const DEFAULT_RATING = 25; // μ₀ TrueSkill — usato per gli atleti non valutati
+
+function ratingOf(a: Athlete): number {
+  return a.rating ?? DEFAULT_RATING;
+}
+
+/**
+ * Riduce lo sbilanciamento di skill (Σμ) tra le squadre con scambi greedy
+ * deterministici. Vincoli preservati: ogni scambio coinvolge due atleti con
+ * lo **stesso ruolo** e lo **stesso genere** su squadre diverse → la
+ * distribuzione strutturale e di genere non cambia. Se nessun atleta è
+ * valutato, è un no-op (tutti hanno lo stesso rating di default).
+ */
+function balanceSkill(buckets: Athlete[][], seed: number): void {
+  const hasRatings = buckets.some((b) => b.some((a) => a.rating != null));
+  if (!hasRatings) return;
+
+  const teamSkill = (i: number): number => buckets[i].reduce((s, a) => s + ratingOf(a), 0);
+  const spread = (): number => {
+    const totals = buckets.map((_, i) => teamSkill(i));
+    return Math.max(...totals) - Math.min(...totals);
+  };
+
+  const MAX_ITERATIONS = 100;
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    const current = spread();
+    let best: { ti: number; ai: number; tj: number; aj: number; result: number } | null = null;
+
+    // Cerca lo scambio (stesso ruolo + genere) che riduce di più lo spread.
+    for (let ti = 0; ti < buckets.length; ti++) {
+      for (let tj = ti + 1; tj < buckets.length; tj++) {
+        for (let ai = 0; ai < buckets[ti].length; ai++) {
+          for (let aj = 0; aj < buckets[tj].length; aj++) {
+            const x = buckets[ti][ai];
+            const y = buckets[tj][aj];
+            if (x.role !== y.role || (x.gender ?? null) !== (y.gender ?? null)) continue;
+            const delta = ratingOf(x) - ratingOf(y);
+            if (delta === 0) continue;
+
+            const totals = buckets.map((_, i) => teamSkill(i));
+            totals[ti] -= delta;
+            totals[tj] += delta;
+            const result = Math.max(...totals) - Math.min(...totals);
+
+            // Tie-break deterministico: a parità, scegli gli id minori.
+            if (
+              result < current - 1e-9 &&
+              (best === null ||
+                result < best.result - 1e-9 ||
+                (Math.abs(result - best.result) < 1e-9 &&
+                  pairKey(x, y, seed) <
+                    pairKey(buckets[best.ti][best.ai], buckets[best.tj][best.aj], seed)))
+            ) {
+              best = { ti, ai, tj, aj, result };
+            }
+          }
+        }
+      }
+    }
+
+    if (!best) break; // nessun miglioramento possibile
+    const tmp = buckets[best.ti][best.ai];
+    buckets[best.ti][best.ai] = buckets[best.tj][best.aj];
+    buckets[best.tj][best.aj] = tmp;
+  }
+}
+
+/** Chiave di ordinamento deterministica per un tie-break tra scambi equivalenti. */
+function pairKey(x: Athlete, y: Athlete, seed: number): string {
+  const ids = [x.id, y.id].sort();
+  return `${seed}:${ids[0]}:${ids[1]}`;
 }

@@ -45,8 +45,8 @@ export async function POST(
     where: { sessionId },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
     include: {
-      user: { select: { gender: true } },
-      child: { select: { gender: true } },
+      user: { select: { gender: true, ratingMu: true } },
+      child: { select: { gender: true, ratingMu: true } },
     },
   });
 
@@ -61,6 +61,8 @@ export async function POST(
       name: r.name,
       role: r.role,
       gender: r.user?.gender ?? r.child?.gender ?? null,
+      // μ TrueSkill per il bilanciamento skill; null = non valutato (anonimo o mai giocato)
+      rating: r.user?.ratingMu ?? r.child?.ratingMu ?? null,
     }));
   const coaches = registrations
     .filter((r) => r.registeredAsCoach)

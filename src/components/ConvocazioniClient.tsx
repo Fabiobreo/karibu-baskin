@@ -35,6 +35,7 @@ import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import type { CandidateInput } from "@/lib/callupStats";
 import type { TeamCallupContext } from "@/lib/callupContext";
+import LineupOptimizerSection from "@/components/LineupOptimizerSection";
 
 interface StatRow {
   candidate: CandidateInput;
@@ -52,6 +53,7 @@ interface Props {
   matchDateISO: string;
   windowEligibleSessions: number;
   teams: TeamCallupContext[];
+  opponentMu?: number | null;
 }
 
 type SortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
@@ -68,6 +70,7 @@ export default function ConvocazioniClient({
   matchLabel,
   windowEligibleSessions,
   teams,
+  opponentMu = null,
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -205,6 +208,12 @@ export default function ConvocazioniClient({
       map.set(r, (map.get(r) ?? 0) + 1);
     }
     return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTeam.stats, selectionByTeam, activeIndex]);
+
+  // Candidati selezionati nella squadra attiva — passati all'optimizer
+  const selectedCandidates = useMemo<CandidateInput[]>(() => {
+    return activeTeam.stats.filter((s) => isSelected(s)).map((s) => s.candidate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTeam.stats, selectionByTeam, activeIndex]);
 
@@ -821,6 +830,9 @@ export default function ConvocazioniClient({
           </Stack>
         </Box>
       )}
+
+      {/* Analisi formazione — solo per partite vs avversario esterno (opponentMu disponibile) o comunque sempre */}
+      <LineupOptimizerSection selectedCandidates={selectedCandidates} opponentMu={opponentMu} />
     </Container>
   );
 }

@@ -44,6 +44,7 @@ export async function PUT(req: Request, { params }: Params) {
       ...(body.website !== undefined && { website: body.website?.trim() || null }),
       ...(body.colors !== undefined && { colors: body.colors?.trim() || null }),
       ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
+      ...("ratingMu" in body && { ratingMu: body.ratingMu ?? null }),
     },
   });
   if (authSession?.user?.id) {

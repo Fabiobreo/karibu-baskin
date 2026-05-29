@@ -19,4 +19,6 @@ export const OpposingTeamCreateSchema = OpposingTeamBaseSchema.extend({
 
 export const OpposingTeamUpdateSchema = OpposingTeamBaseSchema.extend({
   name: z.string().min(1, "Il nome non può essere vuoto").max(200).optional(),
+  /** Stima TrueSkill per-giocatore (μ medio). null = azzera la stima. */
+  ratingMu: z.number().min(0).max(100).nullable().optional(),
 });

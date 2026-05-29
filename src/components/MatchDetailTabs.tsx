@@ -49,6 +49,7 @@ interface CallupEntry {
   child: {
     id: string;
     name: string;
+    slug: string | null;
     sportRole: number | null;
     sportRoleVariant: string | null;
   } | null;
@@ -239,7 +240,7 @@ export default function MatchDetailTabs({
                   const name = athlete?.name ?? "—";
                   const role = athlete?.sportRole ?? null;
                   const image = s.user?.image ?? null;
-                  const slug = s.user?.slug ?? null;
+                  const slug = s.user?.slug ?? s.user?.id ?? s.child?.slug ?? s.child?.id ?? null;
 
                   const card = (
                     <Paper
@@ -764,6 +765,7 @@ function CallupRow({
     child: {
       id: string;
       name: string;
+      slug: string | null;
       sportRole: number | null;
       sportRoleVariant: string | null;
     } | null;
@@ -776,7 +778,7 @@ function CallupRow({
   const name = person.name ?? "—";
   const variant = person.sportRoleVariant ?? null;
   const image = c.user?.image ?? null;
-  const slug = c.user?.slug ?? null;
+  const slug = c.user?.slug ?? c.user?.id ?? c.child?.slug ?? c.child?.id ?? null;
 
   const inner = (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25 }}>

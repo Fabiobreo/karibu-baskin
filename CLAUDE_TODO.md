@@ -2,7 +2,7 @@
 
 ## 📋 FEATURES PIANIFICATE
 
-### F3. **Gallery foto integrata con Instagram/Facebook**
+### F1. **Gallery foto integrata con Instagram/Facebook**
 
 Sezione gallery nel sito che mostra le foto pubblicate sui social della squadra, senza dover caricare nulla manualmente.
 
@@ -20,32 +20,3 @@ Usare un widget embed di terze parti (es. Elfsight, Behold.so) — zero codice m
 - Decidere quale social è più aggiornato (IG o FB)
 - Creare app Meta su developers.facebook.com
 - Ottenere token con permesso `instagram_basic` o `pages_read_engagement`
-
----
-
-### F4. **Sistema TrueSkill per-ruolo** _(futuro — già in memory)_
-
-Rating nascosto su User/Child per bilanciare squadre in allenamento. Visibile solo COACH/ADMIN.
-
-**Decisione di design (maggio 2026):** usare **TrueSkill** (non ELO) perché:
-
-- ELO converge troppo lentamente con pochi dati per giocatore
-- TrueSkill modella l'incertezza (μ + σ) e converge più velocemente
-- Progettato nativamente per sport di squadra
-
-**Rating per-ruolo:** un rating separato per ogni ruolo sportivo (1-5) — i ruoli Baskin non sono comparabili tra loro.
-
-**Bilanciamento in due livelli:**
-
-1. Strutturale: distribuzione equa dei ruoli tra le squadre
-2. Skill: a parità di ruoli, bilanciare per rating TrueSkill
-
-**Prerequisito:** aggiungere UI semplice per registrare vincitori/perdenti di ogni partitella a fine allenamento — senza questo dato TrueSkill non si aggiorna.
-
----
-
-### F6. **Nice-to-have ad alto impatto community**
-
-#### 🚧 Da progettare
-
-- **Alert copertura ruoli sulle partite** — quando in una partita la somma dei _disponibili_ per ruolo è sotto soglia minima, mostrare warning al coach (banner nella pagina admin partita + eventuale push). Definire soglie per-ruolo (es. almeno 2 giocatori di ruolo 1, ecc.) — magari configurabili nelle impostazioni partita o globali per stagione. Modello `MatchAvailability` già disponibile; ricordare che il **default è "non disponibile"** (chi non risponde è considerato assente).

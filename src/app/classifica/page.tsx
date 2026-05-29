@@ -66,7 +66,7 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
     childIds.length > 0
       ? prisma.child.findMany({
           where: { id: { in: childIds } },
-          select: { id: true, name: true, sportRole: true, sportRoleVariant: true },
+          select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
         })
       : [],
   ]);
@@ -115,7 +115,7 @@ export default async function ClassificaPage({ searchParams }: { searchParams: S
           image: null,
           sportRole: c.sportRole,
           sportRoleVariant: c.sportRoleVariant,
-          slug: null,
+          slug: c.slug,
           kind: "child",
           matches,
           points,

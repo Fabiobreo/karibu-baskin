@@ -9,6 +9,7 @@ import { generateMatchSlug } from "@/lib/slugUtils";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
+import { recomputeRatings } from "@/lib/ratingEngine";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -181,6 +182,13 @@ export async function PUT(req: Request, { params }: Params) {
       ...("matchday" in body && { matchday: body.matchday ?? null }),
       // Le amichevoli interne non hanno gironi
       ...("groupId" in body && { groupId: finalOpponentTeamId ? null : (body.groupId ?? null) }),
+      // Profilo avversario post-partita (Fase 3)
+      ...(body.opponentProfile !== undefined && {
+        opponentProfile:
+          body.opponentProfile !== null
+            ? (body.opponentProfile as Prisma.InputJsonValue)
+            : Prisma.DbNull,
+      }),
     },
     select: {
       id: true,
@@ -199,6 +207,7 @@ export async function PUT(req: Request, { params }: Params) {
       teamId: true,
       opponentId: true,
       opponentTeamId: true,
+      opponentProfile: true,
       createdAt: true,
       team: { select: { id: true, name: true, season: true, color: true, championship: true } },
       opponent: { select: { id: true, name: true, city: true } },
@@ -206,6 +215,15 @@ export async function PUT(req: Request, { params }: Params) {
       group: { select: { id: true, name: true } },
     },
   });
+
+  // Ricalcola i rating TrueSkill quando il risultato viene impostato o modificato
+  // (segnale secondario W/L campionato). Fire-and-forget: non blocca la risposta.
+  const resultChanged = resolvedResult !== previous?.result;
+  if (resultChanged) {
+    recomputeRatings(prisma).catch((err) =>
+      console.error("[rating] recompute after match result", err)
+    );
+  }
 
   // Invia notifica solo quando il risultato viene impostato per la prima volta
   if (resolvedResult && !previous?.result && match.ourScore !== null && match.theirScore !== null) {
@@ -246,7 +264,7 @@ export async function DELETE(_req: Request, { params }: Params) {
 
   const matchToDelete = await prisma.match.findUnique({
     where: { id: matchId },
-    select: { imageUrl: true },
+    select: { imageUrl: true, result: true },
   });
 
   try {
@@ -261,6 +279,13 @@ export async function DELETE(_req: Request, { params }: Params) {
   deleteImage(matchToDelete?.imageUrl).catch((e) =>
     console.error("[blob] delete match image on delete", e)
   );
+
+  // Se la partita aveva un risultato, rimuovere quel segnale TrueSkill
+  if (matchToDelete?.result) {
+    recomputeRatings(prisma).catch((err) =>
+      console.error("[rating] recompute after match delete", err)
+    );
+  }
 
   if (session?.user?.id) {
     logAudit({

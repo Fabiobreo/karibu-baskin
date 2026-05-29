@@ -50,6 +50,7 @@ import {
   GENDER_LABELS_SHORT,
 } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import RatingBadge from "@/components/RatingBadge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 
@@ -89,6 +90,8 @@ interface UserEntry {
   sportRoleSuggestedVariant: string | null;
   gender: Gender | null;
   birthDate: Date | string | null;
+  ratingMu: number | null;
+  ratingSigma: number | null;
   createdAt: Date | string;
   _count: { registrations: number };
   sportRoleHistory: RoleHistoryEntry[];
@@ -102,6 +105,8 @@ interface ChildEntry {
   sportRoleVariant: string | null;
   gender: Gender | null;
   birthDate: Date | string | null;
+  ratingMu: number | null;
+  ratingSigma: number | null;
   createdAt: Date | string;
   parent: { name: string | null; email: string };
   _count: { registrations: number };
@@ -1002,6 +1007,9 @@ export default function AdminUserList({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell align="center">Squadra</TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
+                    Skill
+                  </TableCell>
                   <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                     Genere
                   </TableCell>
@@ -1197,6 +1205,11 @@ export default function AdminUserList({
                         </Select>
                       </TableCell>
 
+                      {/* Skill (TrueSkill) — solo COACH/ADMIN */}
+                      <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
+                        <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
+                      </TableCell>
+
                       {/* Genere */}
                       <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                         {row.gender ? (
@@ -1238,7 +1251,7 @@ export default function AdminUserList({
 
                 {paginated.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                    <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
                       {activeFilterCount > 0
                         ? "Nessun risultato corrisponde ai filtri selezionati."
                         : "Nessun utente trovato."}
@@ -1339,6 +1352,16 @@ export default function AdminUserList({
                               fontWeight: 600,
                               fontSize: "0.68rem",
                             }}
+                          />
+                        )}
+                        {row.ratingMu != null && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={
+                              <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />
+                            }
+                            sx={{ fontSize: "0.68rem" }}
                           />
                         )}
                       </Box>
@@ -1464,6 +1487,9 @@ export default function AdminUserList({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell align="center">Squadra</TableCell>
+                  <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
+                    Skill
+                  </TableCell>
                   <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                     Genere
                   </TableCell>
@@ -1596,6 +1622,11 @@ export default function AdminUserList({
                         </Select>
                       </TableCell>
 
+                      {/* Skill (TrueSkill) — solo COACH/ADMIN */}
+                      <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
+                        <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
+                      </TableCell>
+
                       {/* Genere */}
                       <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                         {row.gender ? (
@@ -1636,7 +1667,7 @@ export default function AdminUserList({
 
                 {filteredChildren.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
                       {childSearch
                         ? "Nessun risultato corrisponde alla ricerca."
                         : "Nessun figlio senza account trovato."}
@@ -1715,6 +1746,16 @@ export default function AdminUserList({
                               fontWeight: 600,
                               fontSize: "0.68rem",
                             }}
+                          />
+                        )}
+                        {row.ratingMu != null && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={
+                              <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />
+                            }
+                            sx={{ fontSize: "0.68rem" }}
                           />
                         )}
                       </Box>

@@ -4,7 +4,17 @@ import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
-    trainingMatchResult: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
+    $transaction: vi.fn(),
+    trainingMatchResult: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      findMany: vi.fn(),
+    },
+    sportRoleHistory: { findMany: vi.fn() },
+    user: { update: vi.fn() },
+    child: { update: vi.fn() },
+    ratingUpdate: { deleteMany: vi.fn(), createMany: vi.fn() },
   },
 }));
 
@@ -17,17 +27,32 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
-  trainingMatchResult: { findUnique: Mock; update: Mock; delete: Mock };
+  $transaction: Mock;
+  trainingMatchResult: { findUnique: Mock; update: Mock; delete: Mock; findMany: Mock };
+  sportRoleHistory: { findMany: Mock };
+  user: { update: Mock };
+  child: { update: Mock };
+  ratingUpdate: { deleteMany: Mock; createMany: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
 
 const CTX = (resultId: string) => ({ params: Promise.resolve({ sessionId: "s1", resultId }) });
 
+/** Configura i mock comuni al ricalcolo TrueSkill (recomputeRatings). */
+function setupRecomputeMocks() {
+  p.$transaction.mockImplementation(async (cb: (tx: PrismaMock) => unknown) => cb(p));
+  p.trainingMatchResult.findMany.mockResolvedValue([]);
+  p.sportRoleHistory.findMany.mockResolvedValue([]);
+  p.ratingUpdate.deleteMany.mockResolvedValue({ count: 0 });
+  p.ratingUpdate.createMany.mockResolvedValue({ count: 0 });
+}
+
 describe("PUT /api/sessions/[sessionId]/match-results/[resultId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(true);
+    setupRecomputeMocks();
   });
 
   it("restituisce 403 se non staff", async () => {
@@ -98,6 +123,7 @@ describe("DELETE /api/sessions/[sessionId]/match-results/[resultId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(true);
+    setupRecomputeMocks();
   });
 
   it("restituisce 403 se non staff", async () => {

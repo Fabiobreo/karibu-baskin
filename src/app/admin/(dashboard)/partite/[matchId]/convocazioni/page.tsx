@@ -4,6 +4,8 @@ import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import { buildTeamCallupContext, WINDOW_DAYS_FOR_PRESENCES } from "@/lib/callupContext";
 import ConvocazioniClient from "@/components/ConvocazioniClient";
+import MatchQualitySection from "@/components/MatchQualitySection";
+import { computeMatchQuality } from "@/lib/matchQuality";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Convocazioni | Admin" };
@@ -22,11 +24,28 @@ export default async function ConvocazioniPage({ params }: Params) {
     where: { id: matchId },
     include: {
       team: { select: { id: true, name: true, season: true, color: true } },
-      opponent: { select: { id: true, name: true } },
+      opponent: { select: { id: true, name: true, ratingMu: true } },
       opponentTeam: { select: { id: true, name: true, season: true, color: true } },
+      callups: {
+        select: {
+          userId: true,
+          childId: true,
+          user: { select: { ratingMu: true } },
+          child: { select: { ratingMu: true } },
+        },
+      },
     },
   });
   if (!match) notFound();
+
+  // Calcola qualità del match (solo per partite vs avversari esterni con rating)
+  const callupMus = match.callups
+    .map((c) => c.user?.ratingMu ?? c.child?.ratingMu)
+    .filter((mu): mu is number => mu !== null && mu !== undefined);
+  const matchQuality =
+    match.opponentId && match.opponent?.ratingMu != null
+      ? computeMatchQuality(callupMus, match.opponent.ratingMu)
+      : null;
 
   const now = new Date();
   const windowStart = new Date(now.getTime() - WINDOW_DAYS_FOR_PRESENCES * 24 * 60 * 60 * 1000);
@@ -63,12 +82,22 @@ export default async function ConvocazioniPage({ params }: Params) {
   const opponentLabel = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
 
   return (
-    <ConvocazioniClient
-      matchId={matchId}
-      matchLabel={`${match.team.name} vs ${opponentLabel}`}
-      matchDateISO={match.date.toISOString()}
-      windowEligibleSessions={windowEligibleSessions}
-      teams={awayContext ? [homeContext, awayContext] : [homeContext]}
-    />
+    <>
+      {matchQuality && match.opponent?.name && (
+        <MatchQualitySection
+          quality={matchQuality}
+          opponentName={match.opponent.name}
+          callupsWithRatingCount={callupMus.length}
+        />
+      )}
+      <ConvocazioniClient
+        matchId={matchId}
+        matchLabel={`${match.team.name} vs ${opponentLabel}`}
+        matchDateISO={match.date.toISOString()}
+        windowEligibleSessions={windowEligibleSessions}
+        teams={awayContext ? [homeContext, awayContext] : [homeContext]}
+        opponentMu={match.opponent?.ratingMu ?? null}
+      />
+    </>
   );
 }

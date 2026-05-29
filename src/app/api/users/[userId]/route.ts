@@ -8,6 +8,7 @@ import { sendPushToUser } from "@/lib/webpush";
 import { createAppNotification } from "@/lib/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
+import { recomputeRatings } from "@/lib/ratingEngine";
 import {
   VALID_APP_ROLES,
   VALID_GENDERS,
@@ -189,6 +190,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
     createAppNotification({ type: "SYSTEM", targetUserId: userId, ...notifPayload }).catch((err) =>
       console.error("[notification] sport role update", err)
     );
+  }
+
+  // 3.5 — cambio di CATEGORIA (non prima assegnazione): rigonfia σ del rating
+  // TrueSkill mantenendo μ. Il replay legge SportRoleHistory, quindi basta
+  // ricalcolare; fire-and-forget perché la risposta non dipende dal rating.
+  if (roleConfirmed && prevSportRole !== null) {
+    recomputeRatings(prisma).catch((err) => console.error("[rating] role change recompute", err));
   }
 
   return NextResponse.json(user);

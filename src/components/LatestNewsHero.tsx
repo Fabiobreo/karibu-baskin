@@ -6,6 +6,7 @@ import { it } from "date-fns/locale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
+import PollChip from "@/components/PollChip";
 
 const FEATURED_TEASER_LEN = 160;
 const SIDE_TEASER_LEN = 70;
@@ -105,20 +106,6 @@ type PostItem = {
   poll: { id: string; closesAt: Date | null } | null;
 };
 
-function PollChip({ poll }: { poll: PostItem["poll"] }) {
-  if (!poll) return null;
-  const closed = poll.closesAt ? new Date(poll.closesAt) <= new Date() : false;
-  return (
-    <Chip
-      icon={<HowToVoteIcon sx={{ fontSize: 16 }} />}
-      label={closed ? "Sondaggio chiuso" : "Sondaggio"}
-      size="small"
-      color={closed ? "default" : "primary"}
-      sx={{ fontWeight: 700 }}
-    />
-  );
-}
-
 function FeaturedCard({ post }: { post: PostItem }) {
   const teaser = stripHtml(post.body, FEATURED_TEASER_LEN);
 
@@ -211,7 +198,7 @@ function FeaturedCard({ post }: { post: PostItem }) {
                 "& .MuiChip-icon": { color: "#fff" },
               }}
             />
-            <PollChip poll={post.poll} />
+            {post.poll && <PollChip closesAt={post.poll.closesAt} />}
           </Stack>
 
           <Typography
@@ -304,9 +291,7 @@ function SideCard({ post }: { post: PostItem }) {
 
         <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           {post.poll && (
-            <Box sx={{ mb: 0.5 }}>
-              <PollChip poll={post.poll} />
-            </Box>
+            <Box sx={{ mb: 0.5 }}>{post.poll && <PollChip closesAt={post.poll.closesAt} />}</Box>
           )}
           <Typography
             variant="subtitle2"
