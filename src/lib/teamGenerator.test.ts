@@ -156,3 +156,62 @@ describe("generateTeams — edge case", () => {
     expect(new Set(all.map((a) => a.id)).size).toBe(3);
   });
 });
+
+describe("generateTeams — layer skill (TrueSkill)", () => {
+  const sumRating = (team: Athlete[]) => team.reduce((s, a) => s + (a.rating ?? 25), 0);
+
+  it("avvicina il totale μ delle due squadre rispetto a una distribuzione sbilanciata", () => {
+    // Due forti e due deboli per ruolo: senza skill layer potrebbero finire insieme.
+    const rated: Athlete[] = [
+      { id: "s1", name: "S1", role: 3, gender: "MALE", rating: 40 },
+      { id: "w1", name: "W1", role: 3, gender: "MALE", rating: 10 },
+      { id: "s2", name: "S2", role: 3, gender: "MALE", rating: 38 },
+      { id: "w2", name: "W2", role: 3, gender: "MALE", rating: 12 },
+      { id: "s3", name: "S3", role: 5, gender: "MALE", rating: 35 },
+      { id: "w3", name: "W3", role: 5, gender: "MALE", rating: 15 },
+      { id: "s4", name: "S4", role: 5, gender: "MALE", rating: 33 },
+      { id: "w4", name: "W4", role: 5, gender: "MALE", rating: 17 },
+    ];
+    const result = generateTeams(rated, "skill-1", 2);
+    const diff = Math.abs(sumRating(result.teamA) - sumRating(result.teamB));
+    // Con scambi stesso-ruolo lo sbilanciamento di skill resta contenuto.
+    expect(diff).toBeLessThanOrEqual(10);
+  });
+
+  it("preserva la distribuzione strutturale per ruolo", () => {
+    const rated: Athlete[] = Array.from({ length: 8 }, (_, i) => ({
+      id: `p${i}`,
+      name: `P${i}`,
+      role: i < 4 ? 3 : 5,
+      gender: "MALE",
+      rating: 10 + i * 5,
+    }));
+    const result = generateTeams(rated, "skill-2", 2);
+    const r3A = result.teamA.filter((a) => a.role === 3).length;
+    const r3B = result.teamB.filter((a) => a.role === 3).length;
+    expect(Math.abs(r3A - r3B)).toBeLessThanOrEqual(1);
+  });
+
+  it("è deterministico anche con i rating", () => {
+    const rated: Athlete[] = [
+      { id: "a", name: "A", role: 3, gender: "MALE", rating: 30 },
+      { id: "b", name: "B", role: 3, gender: "MALE", rating: 20 },
+      { id: "c", name: "C", role: 3, gender: "MALE", rating: 28 },
+      { id: "d", name: "D", role: 3, gender: "MALE", rating: 22 },
+    ];
+    const r1 = generateTeams(rated, "skill-det", 2);
+    const r2 = generateTeams(rated, "skill-det", 2);
+    expect(r1.teamA.map((a) => a.id)).toEqual(r2.teamA.map((a) => a.id));
+  });
+
+  it("nessun atleta valutato → comportamento invariato (no-op)", () => {
+    const plain: Athlete[] = [
+      { id: "a1", name: "A", role: 3 },
+      { id: "a2", name: "B", role: 3 },
+      { id: "a3", name: "C", role: 5 },
+      { id: "a4", name: "D", role: 5 },
+    ];
+    const withLayer = generateTeams(plain, "noop", 2);
+    expect(withLayer.teamA.length + withLayer.teamB.length).toBe(4);
+  });
+});

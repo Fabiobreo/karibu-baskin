@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const registrations = await prisma.registration.findMany({
     where: { sessionId },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
-    include: { user: { select: { slug: true } } },
+    include: { user: { select: { slug: true } }, child: { select: { slug: true } } },
   });
 
   // note e anonymousEmail sono dati sensibili: visibili solo allo staff.
@@ -26,9 +26,10 @@ export async function GET(req: NextRequest) {
   const isStaff = !!appRole && (appRole === "COACH" || appRole === "ADMIN");
 
   return NextResponse.json(
-    registrations.map(({ user, note, anonymousEmail, ...r }) => ({
+    registrations.map(({ user, child, note, anonymousEmail, ...r }) => ({
       ...r,
-      userSlug: user?.slug ?? null,
+      // Slug del profilo pubblico (utente o figlio), con fallback su id; null = anonimo.
+      userSlug: user?.slug ?? r.userId ?? child?.slug ?? r.childId ?? null,
       ...(isStaff && { note, anonymousEmail }),
     }))
   );

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import {
+  buildRostersSnapshot,
+  recomputeRatings,
+  type RegistrationRefMap,
+} from "@/lib/ratingEngine";
 
 const MatchResultSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),
@@ -38,7 +44,7 @@ export async function POST(
 
   const session = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
-    select: { id: true },
+    select: { id: true, teams: true },
   });
   if (!session) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
@@ -53,15 +59,25 @@ export async function POST(
     );
   }
 
-  const result = await prisma.trainingMatchResult.create({
-    data: {
-      sessionId,
-      matchup: parsed.data.matchup ?? null,
-      scoreA: parsed.data.scoreA,
-      scoreB: parsed.data.scoreB,
-      scoreC: parsed.data.scoreC ?? null,
-      notes: parsed.data.notes?.trim() || null,
-    },
+  // Congela il roster delle due squadre coinvolte (fonte di verità per il
+  // TrueSkill): risolve gli atleti a userId/childId via le iscrizioni correnti.
+  const snapshot = await buildSnapshotForSession(sessionId, session.teams, parsed.data.matchup);
+
+  // Crea il risultato e ricalcola i rating in un'unica transazione.
+  const result = await prisma.$transaction(async (tx) => {
+    const created = await tx.trainingMatchResult.create({
+      data: {
+        sessionId,
+        matchup: parsed.data.matchup ?? null,
+        scoreA: parsed.data.scoreA,
+        scoreB: parsed.data.scoreB,
+        scoreC: parsed.data.scoreC ?? null,
+        notes: parsed.data.notes?.trim() || null,
+        rostersSnapshot: snapshot as unknown as Prisma.InputJsonValue,
+      },
+    });
+    await recomputeRatings(tx);
+    return created;
   });
 
   if (authSession?.user?.id) {
@@ -80,4 +96,25 @@ export async function POST(
   }
 
   return NextResponse.json(result, { status: 201 });
+}
+
+/**
+ * Costruisce lo snapshot dei roster delle due squadre coinvolte nel matchup,
+ * risolvendo gli atleti (Registration.id nel JSON `teams`) a userId/childId.
+ * Esportato implicitamente solo per uso interno alla route.
+ */
+async function buildSnapshotForSession(
+  sessionId: string,
+  teamsJson: unknown,
+  matchup: string | null | undefined
+) {
+  const registrations = await prisma.registration.findMany({
+    where: { sessionId },
+    select: { id: true, userId: true, childId: true },
+  });
+  const refs: RegistrationRefMap = new Map(
+    registrations.map((r) => [r.id, { userId: r.userId, childId: r.childId }])
+  );
+  const teams = (teamsJson ?? {}) as { teamA?: { id: string; name: string }[] };
+  return buildRostersSnapshot(teams, matchup, refs);
 }

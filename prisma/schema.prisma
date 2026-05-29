@@ -24,9 +24,9 @@ enum Gender {
 }
 
 enum MatchType {
-  LEAGUE      // campionato
-  TOURNAMENT  // torneo
-  FRIENDLY    // amichevole
+  LEAGUE // campionato
+  TOURNAMENT // torneo
+  FRIENDLY // amichevole
 }
 
 enum MatchResult {
@@ -43,21 +43,27 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
-  customImage   String?   // immagine caricata dall'utente (priorità su image da Google)
+  customImage   String? // immagine caricata dall'utente (priorità su image da Google)
   createdAt     DateTime  @default(now())
 
-  appRole   AppRole @default(GUEST)
-  slug      String? @unique  // es. "mario-rossi" — URL slug leggibile, generato dal nome
+  appRole AppRole @default(GUEST)
+  slug    String? @unique // es. "mario-rossi" — URL slug leggibile, generato dal nome
 
   // Campi atleta
   sportRole        Int?
-  sportRoleVariant String?   // "S", "T", "P", "R" — null per variante standard
+  sportRoleVariant String? // "S", "T", "P", "R" — null per variante standard
   gender           Gender?
   birthDate        DateTime?
+  height           Int? // altezza in cm — solo annotazione matchup (NON entra nel TrueSkill); nullable
 
   // Ruolo suggerito dall'autovalutazione (in attesa di conferma admin)
   sportRoleSuggested        Int?
   sportRoleSuggestedVariant String?
+
+  // Rating TrueSkill (nascosto, solo COACH/ADMIN). null = unrated (mai aggiornato).
+  // La skill è singola per giocatore: la categoria è un vincolo, non un asse di rating.
+  ratingMu    Float?
+  ratingSigma Float?
 
   // Preferenze notifiche: { push: { NEW_TRAINING: bool, ... }, inApp: { ... } }
   // null = tutto abilitato (default)
@@ -81,6 +87,7 @@ model User {
   receivedLinkRequests  LinkRequest[]         @relation("ReceivedLinkRequests")
   posts                 Post[]
   pollVotes             PollVote[]
+  ratingUpdates         RatingUpdate[]
 }
 
 model Account {
@@ -136,13 +143,17 @@ model PushSubscription {
 
 model SportRoleHistory {
   id        String   @id @default(cuid())
-  userId    String
+  // Soggetto: esattamente uno tra userId / childId (storico polimorfico)
+  userId    String?
+  childId   String?
   sportRole Int
   changedAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
 
   @@index([userId, changedAt])
+  @@index([childId, changedAt])
 }
 
 // ── Figli gestiti da un genitore (senza account proprio) ─────────────────────
@@ -151,11 +162,17 @@ model Child {
   id               String    @id @default(cuid())
   parentId         String
   name             String
+  slug             String?   @unique // URL leggibile profilo pubblico (noindex)
   sportRole        Int?
   sportRoleVariant String?
   gender           Gender?
   birthDate        DateTime?
+  height           Int? // altezza in cm — solo annotazione matchup (NON entra nel TrueSkill); nullable
   createdAt        DateTime  @default(now())
+
+  // Rating TrueSkill (nascosto, solo COACH/ADMIN). null = unrated (mai aggiornato).
+  ratingMu    Float?
+  ratingSigma Float?
 
   // Consenso del genitore/tutore al trattamento dei dati del minore (GDPR art. 8 + D.Lgs. 196/2003)
   // null = consenso non ancora registrato (record creati prima dell'introduzione del flag)
@@ -164,15 +181,17 @@ model Child {
   // Collegamento opzionale a un account User (se il figlio si registra in futuro)
   userId String? @unique
 
-  parent          User             @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  user            User?            @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
-  registrations   Registration[]
-  teamMemberships TeamMembership[]
-  matchStats      PlayerMatchStats[]
-  callups         MatchCallup[]
-  matchMvps       MatchMvp[]
+  parent              User                @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  user                User?               @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
+  registrations       Registration[]
+  teamMemberships     TeamMembership[]
+  matchStats          PlayerMatchStats[]
+  callups             MatchCallup[]
+  matchMvps           MatchMvp[]
   matchAvailabilities MatchAvailability[]
-  linkRequests    LinkRequest[]
+  linkRequests        LinkRequest[]
+  ratingUpdates       RatingUpdate[]
+  sportRoleHistory    SportRoleHistory[]
 
   @@index([parentId])
 }
@@ -184,7 +203,7 @@ model LinkRequest {
   targetUserId String
   status       LinkRequestStatus @default(PENDING)
   createdAt    DateTime          @default(now())
-  expiresAt    DateTime?         // null = non scade; PENDING scadute vengono ignorate
+  expiresAt    DateTime? // null = non scade; PENDING scadute vengono ignorate
 
   child      Child @relation(fields: [childId], references: [id], onDelete: Cascade)
   parent     User  @relation("SentLinkRequests", fields: [parentId], references: [id], onDelete: Cascade)
@@ -199,13 +218,13 @@ model LinkRequest {
 // Rinominato in Prisma per evitare conflitti con AuthSession,
 // ma la tabella resta "Session" grazie a @@map
 model TrainingSession {
-  id            String          @id @default(cuid())
+  id            String                @id @default(cuid())
   title         String
-  date          DateTime        // orario di inizio
-  endTime       DateTime?       // orario di fine (nullable per retrocompatibilità)
-  createdAt     DateTime        @default(now())
+  date          DateTime // orario di inizio
+  endTime       DateTime? // orario di fine (nullable per retrocompatibilità)
+  createdAt     DateTime              @default(now())
   teams         Json?
-  dateSlug      String?         @unique  // es. "2025-03-15T18:00" — URL slug leggibile
+  dateSlug      String?               @unique // es. "2025-03-15T18:00" — URL slug leggibile
   registrations Registration[]
   matchResults  TrainingMatchResult[]
 
@@ -214,18 +233,18 @@ model TrainingSession {
   team   CompetitiveTeam? @relation("TrainingTeam", fields: [teamId], references: [id], onDelete: SetNull)
 
   // Restrizioni iscrizione
-  allowedRoles   Int[]            @default([])  // vuoto = tutti i ruoli ammessi
-  restrictTeamId String?                        // null = nessuna restrizione per squadra
-  openRoles      Int[]            @default([])  // ruoli esenti dalla restrizione di squadra
+  allowedRoles   Int[]            @default([]) // vuoto = tutti i ruoli ammessi
+  restrictTeamId String? // null = nessuna restrizione per squadra
+  openRoles      Int[]            @default([]) // ruoli esenti dalla restrizione di squadra
   restrictTeam   CompetitiveTeam? @relation("TrainingRestriction", fields: [restrictTeamId], references: [id], onDelete: SetNull)
 
   // Apertura/chiusura iscrizioni
-  registrationOpen      Boolean   @default(false)  // false = "in arrivo" (mai aperto) o "iscrizioni chiuse" (chiuso manualmente)
-  registrationOpenedAt  DateTime?                  // timestamp prima apertura — distingue "mai aperto" da "chiuso manualmente"
-  openReminderSentAt    DateTime?                  // ultima notifica reminder agli admin per allenamento non ancora aperto
+  registrationOpen     Boolean   @default(false) // false = "in arrivo" (mai aperto) o "iscrizioni chiuse" (chiuso manualmente)
+  registrationOpenedAt DateTime? // timestamp prima apertura — distingue "mai aperto" da "chiuso manualmente"
+  openReminderSentAt   DateTime? // ultima notifica reminder agli admin per allenamento non ancora aperto
 
   // Gestione admin
-  managedAt      DateTime?                      // impostato quando lo staff conclude la gestione post-allenamento
+  managedAt DateTime? // impostato quando lo staff conclude la gestione post-allenamento
 
   @@index([date])
   @@index([teamId])
@@ -234,15 +253,15 @@ model TrainingSession {
 }
 
 model Registration {
-  id        String   @id @default(cuid())
-  sessionId String
-  name      String
-  role      Int
-  note               String?  // comunicazione libera dell'atleta (es. "Devo uscire prima")
-  anonymousEmail     String?  // email opzionale per iscrizioni anonime (per riconoscimento futuro)
-  registeredAsCoach  Boolean  @default(false) // coach che partecipa come allenatore (non atleta)
-  attended           Boolean? // null = non marcato, true = presente, false = assente (solo staff)
-  createdAt DateTime @default(now())
+  id                String   @id @default(cuid())
+  sessionId         String
+  name              String
+  role              Int
+  note              String? // comunicazione libera dell'atleta (es. "Devo uscire prima")
+  anonymousEmail    String? // email opzionale per iscrizioni anonime (per riconoscimento futuro)
+  registeredAsCoach Boolean  @default(false) // coach che partecipa come allenatore (non atleta)
+  attended          Boolean? // null = non marcato, true = presente, false = assente (solo staff)
+  createdAt         DateTime @default(now())
 
   // Chi è iscritto (al più uno non-null):
   // userId  → utente con account che si iscrive da solo
@@ -265,14 +284,20 @@ model Registration {
 // ── Risultati partitelle di allenamento ──────────────────────────────────────
 
 model TrainingMatchResult {
-  id        String          @id @default(cuid())
-  sessionId String
-  matchup   String?                      // "AB" | "AC" | "BC" — identifica le due squadre che si scontrano
-  scoreA    Int             @default(0)  // punteggio della prima squadra del matchup
-  scoreB    Int             @default(0)  // punteggio della seconda squadra del matchup
-  scoreC    Int?                         // non più usato (legacy)
-  notes     String?         @db.Text
-  createdAt DateTime        @default(now())
+  id              String   @id @default(cuid())
+  sessionId       String
+  matchup         String? // "AB" | "AC" | "BC" — identifica le due squadre che si scontrano
+  scoreA          Int      @default(0) // punteggio della prima squadra del matchup
+  scoreB          Int      @default(0) // punteggio della seconda squadra del matchup
+  scoreC          Int? // non più usato (legacy)
+  notes           String?  @db.Text
+  // Roster CONGELATO al momento in cui si segna il risultato — fonte di verità
+  // per l'update TrueSkill (NON si rilegge mai TrainingSession.teams, che può
+  // cambiare se si rigenerano le squadre). Per cambiare le squadre si cancella
+  // il risultato. Shape: { teamA: PlayerRef[], teamB: PlayerRef[] } dove
+  // PlayerRef = { userId?, childId?, name }. Gli iscritti anonimi sono esclusi.
+  rostersSnapshot Json?
+  createdAt       DateTime @default(now())
 
   session TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
@@ -282,7 +307,7 @@ model TrainingMatchResult {
 // ── Squadre agonistiche ───────────────────────────────────────────────────────
 
 model Season {
-  label     String   @id          // es. "2025-26"
+  label     String   @id // es. "2025-26"
   isCurrent Boolean  @default(false)
   createdAt DateTime @default(now())
 }
@@ -290,20 +315,20 @@ model Season {
 model CompetitiveTeam {
   id           String   @id @default(cuid())
   name         String
-  season       String   // es. "2024-25", "2025-26"
-  championship String?  // es. "Gold Ovest", "Silver Ovest"
-  color        String?  // colore hex (es. "#E65100")
+  season       String // es. "2024-25", "2025-26"
+  championship String? // es. "Gold Ovest", "Silver Ovest"
+  color        String? // colore hex (es. "#E65100")
   description  String?  @db.Text
-  imageUrl     String?  // copertina squadra (Vercel Blob)
+  imageUrl     String? // copertina squadra (Vercel Blob)
   createdAt    DateTime @default(now())
 
-  memberships          TeamMembership[]
-  matches              Match[]           @relation("MatchTeam")
-  opponentInMatches    Match[]           @relation("MatchOpponentTeam")
-  callups              MatchCallup[]     @relation("MatchCallupTeam")
-  groups               GroupCompetitiveTeam[]
-  trainingSessions     TrainingSession[] @relation("TrainingTeam")
-  restrictedSessions   TrainingSession[] @relation("TrainingRestriction")
+  memberships        TeamMembership[]
+  matches            Match[]                @relation("MatchTeam")
+  opponentInMatches  Match[]                @relation("MatchOpponentTeam")
+  callups            MatchCallup[]          @relation("MatchCallupTeam")
+  groups             GroupCompetitiveTeam[]
+  trainingSessions   TrainingSession[]      @relation("TrainingTeam")
+  restrictedSessions TrainingSession[]      @relation("TrainingRestriction")
 
   @@index([season])
 }
@@ -342,7 +367,7 @@ model OpposingTeam {
   notes     String?  @db.Text
   createdAt DateTime @default(now())
 
-  matches        Match[]
+  matches          Match[]
   homeGroupMatches GroupMatch[] @relation("GroupMatchHome")
   awayGroupMatches GroupMatch[] @relation("GroupMatchAway")
   groupTeams       GroupTeam[]
@@ -353,9 +378,9 @@ model OpposingTeam {
 model Group {
   id           String   @id @default(cuid())
   slug         String?  @unique // es. "2025-26-girone-a-ovest"
-  name         String   // es. "Girone A Ovest"
-  season       String   // es. "2025-26"
-  championship String?  // es. "Gold", "Silver"
+  name         String // es. "Girone A Ovest"
+  season       String // es. "2025-26"
+  championship String? // es. "Gold", "Silver"
   createdAt    DateTime @default(now())
 
   matches          Match[]
@@ -423,24 +448,24 @@ model GroupMatch {
 // ── Partite ufficiali ─────────────────────────────────────────────────────────
 
 model Match {
-  id         String       @id @default(cuid())
-  slug       String?      @unique  // es. "kapuleti-vs-roma-baskin-2025-10-12"
-  teamId     String
+  id             String       @id @default(cuid())
+  slug           String?      @unique // es. "kapuleti-vs-roma-baskin-2025-10-12"
+  teamId         String
   // Esattamente uno tra opponentId e opponentTeamId dev'essere valorizzato:
   // - opponentId: avversaria esterna (OpposingTeam) — per partite ufficiali e amichevoli vs esterni
   // - opponentTeamId: amichevole interna tra due nostre squadre (CompetitiveTeam)
-  opponentId       String?
-  opponentTeamId   String?
-  date       DateTime
-  isHome     Boolean      @default(true)
-  venue      String?
-  matchType  MatchType    @default(LEAGUE)
-  ourScore   Int?
-  theirScore Int?
-  result     MatchResult?
-  notes      String?      @db.Text
-  imageUrl   String?      // copertina partita (Vercel Blob)
-  createdAt  DateTime     @default(now())
+  opponentId     String?
+  opponentTeamId String?
+  date           DateTime
+  isHome         Boolean      @default(true)
+  venue          String?
+  matchType      MatchType    @default(LEAGUE)
+  ourScore       Int?
+  theirScore     Int?
+  result         MatchResult?
+  notes          String?      @db.Text
+  imageUrl       String? // copertina partita (Vercel Blob)
+  createdAt      DateTime     @default(now())
 
   matchday Int?
   groupId  String?
@@ -450,12 +475,12 @@ model Match {
   // con < roster minimo). Usato per garantire idempotenza del cron.
   callupReminderSentAt DateTime?
 
-  team          CompetitiveTeam    @relation("MatchTeam", fields: [teamId], references: [id], onDelete: Cascade)
-  opponent      OpposingTeam?      @relation(fields: [opponentId], references: [id])
-  opponentTeam  CompetitiveTeam?   @relation("MatchOpponentTeam", fields: [opponentTeamId], references: [id])
-  playerStats   PlayerMatchStats[]
-  callups       MatchCallup[]
-  mvps          MatchMvp[]
+  team           CompetitiveTeam     @relation("MatchTeam", fields: [teamId], references: [id], onDelete: Cascade)
+  opponent       OpposingTeam?       @relation(fields: [opponentId], references: [id])
+  opponentTeam   CompetitiveTeam?    @relation("MatchOpponentTeam", fields: [opponentTeamId], references: [id])
+  playerStats    PlayerMatchStats[]
+  callups        MatchCallup[]
+  mvps           MatchMvp[]
   availabilities MatchAvailability[]
 
   @@index([teamId, date])
@@ -475,7 +500,7 @@ model MatchCallup {
   // con i record creati prima dell'introduzione delle amichevoli interne; il
   // codice tratta null come "match.teamId" (la squadra principale della partita).
   // Per le amichevoli interne può essere match.teamId OPPURE match.opponentTeamId.
-  teamId  String?
+  teamId String?
 
   userId  String?
   childId String?
@@ -547,11 +572,11 @@ enum AppNotificationType {
   TEAMS_READY
   MATCH_RESULT
   SYSTEM
-  LINK_REQUEST    // richiesta collegamento genitore-figlio
-  LINK_RESPONSE   // risposta alla richiesta (accettata/rifiutata)
+  LINK_REQUEST // richiesta collegamento genitore-figlio
+  LINK_RESPONSE // risposta alla richiesta (accettata/rifiutata)
   BIRTHDAY
-  NEW_POST        // nuovo articolo pubblicato
-  NEW_POLL        // nuovo sondaggio (post con poll allegato)
+  NEW_POST // nuovo articolo pubblicato
+  NEW_POLL // nuovo sondaggio (post con poll allegato)
 }
 
 enum LinkRequestStatus {
@@ -594,16 +619,16 @@ model AppNotificationRead {
 // ── Statistiche giocatore per partita ────────────────────────────────────────
 
 model PlayerMatchStats {
-  id              String @id @default(cuid())
-  matchId         String
-  points          Int    @default(0) // = 2*twoPointers + 3*threePointers + freeThrows (calcolato server-side)
-  twoPointers     Int    @default(0) // canestri da 2 punti
-  threePointers   Int    @default(0) // canestri da 3 punti
-  freeThrows      Int    @default(0) // tiri liberi (1 punto)
-  fouls           Int    @default(0) // falli normali
-  illegalFouls    Int    @default(0) // falli illegali (solo R4/R5)
-  shotsAttempted  Int    @default(0) // tiri tentati (solo R5)
-  notes           String? @db.Text
+  id             String  @id @default(cuid())
+  matchId        String
+  points         Int     @default(0) // = 2*twoPointers + 3*threePointers + freeThrows (calcolato server-side)
+  twoPointers    Int     @default(0) // canestri da 2 punti
+  threePointers  Int     @default(0) // canestri da 3 punti
+  freeThrows     Int     @default(0) // tiri liberi (1 punto)
+  fouls          Int     @default(0) // falli normali
+  illegalFouls   Int     @default(0) // falli illegali (solo R4/R5)
+  shotsAttempted Int     @default(0) // tiri tentati (solo R5)
+  notes          String? @db.Text
 
   // true se il giocatore NON è membro della squadra che ha disputato la partita
   // per quella stagione (ha giocato "in prestito"). Calcolato automaticamente
@@ -630,11 +655,11 @@ model PlayerMatchStats {
 model AuditEvent {
   id         String   @id @default(cuid())
   actorId    String
-  action     String   // es. "UPDATE_ROLE", "DELETE_USER", "ADD_MEMBER", "REMOVE_MEMBER"
-  targetType String   // es. "User", "Child", "TeamMembership"
+  action     String // es. "UPDATE_ROLE", "DELETE_USER", "ADD_MEMBER", "REMOVE_MEMBER"
+  targetType String // es. "User", "Child", "TeamMembership"
   targetId   String
-  before     Json?    // snapshot prima della modifica
-  after      Json?    // snapshot dopo la modifica
+  before     Json? // snapshot prima della modifica
+  after      Json? // snapshot dopo la modifica
   createdAt  DateTime @default(now())
 
   @@index([actorId])
@@ -646,12 +671,12 @@ model AuditEvent {
 
 model Post {
   id          String    @id @default(cuid())
-  slug        String    @unique  // es. "cena-fine-stagione-2025"
+  slug        String    @unique // es. "cena-fine-stagione-2025"
   title       String
-  body        String    @db.Text  // HTML sanitizzato (TipTap output)
-  imageUrl    String?             // banner/copertina post (Vercel Blob)
+  body        String    @db.Text // HTML sanitizzato (TipTap output)
+  imageUrl    String? // banner/copertina post (Vercel Blob)
   authorId    String
-  publishedAt DateTime?           // null = bozza
+  publishedAt DateTime? // null = bozza
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -667,7 +692,7 @@ model Poll {
   postId      String    @unique
   question    String
   multiSelect Boolean   @default(false)
-  closesAt    DateTime?  // null = aperto a tempo indeterminato
+  closesAt    DateTime? // null = aperto a tempo indeterminato
   createdAt   DateTime  @default(now())
 
   post    Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -690,10 +715,10 @@ model PollOption {
 }
 
 model PollVote {
-  id       String   @id @default(cuid())
-  pollId   String
-  optionId String
-  userId   String
+  id        String   @id @default(cuid())
+  pollId    String
+  optionId  String
+  userId    String
   createdAt DateTime @default(now())
 
   poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
@@ -711,12 +736,51 @@ model Event {
   id          String    @id @default(cuid())
   title       String
   date        DateTime
-  endDate     DateTime?  // per eventi multi-giorno (es. torneo)
+  endDate     DateTime? // per eventi multi-giorno (es. torneo)
   location    String?
   description String?   @db.Text
-  imageUrl    String?   // copertina evento (Vercel Blob)
+  imageUrl    String? // copertina evento (Vercel Blob)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([date])
+}
+
+// ── Storico rating TrueSkill (append-only) ───────────────────────────────────
+// Una riga per ogni variazione di μ/σ di un giocatore. Abilita il Player
+// Development Tracker (curve nel tempo) e l'annullamento degli update quando si
+// cancella il risultato di una partitella. Soggetto: esattamente uno tra
+// userId / childId. I riferimenti alla fonte sono ID denormalizzati (no FK) per
+// non accoppiare questo log append-only al ciclo di vita di partite/partitelle.
+
+enum RatingUpdateReason {
+  TRAINING_MATCH // partitella (segnale primario)
+  OFFICIAL_MATCH // campionato W/L (segnale secondario)
+  ROLE_CHANGE // cambio categoria → μ invariato, σ rigonfiato
+  MANUAL // aggiustamento manuale admin
+  INIT // prima inizializzazione del rating
+}
+
+model RatingUpdate {
+  id      String  @id @default(cuid())
+  userId  String?
+  childId String?
+
+  reason      RatingUpdateReason
+  muBefore    Float
+  sigmaBefore Float
+  muAfter     Float
+  sigmaAfter  Float
+
+  // Riferimento opzionale alla fonte (ID denormalizzato, nessuna FK)
+  sourceId String? // es. TrainingMatchResult.id o Match.id
+
+  createdAt DateTime @default(now())
+
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([childId, createdAt])
+  @@index([sourceId])
 }

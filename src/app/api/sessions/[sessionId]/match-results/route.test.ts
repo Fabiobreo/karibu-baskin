@@ -4,8 +4,14 @@ import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
+    $transaction: vi.fn(),
     trainingSession: { findUnique: vi.fn() },
     trainingMatchResult: { findMany: vi.fn(), create: vi.fn() },
+    registration: { findMany: vi.fn() },
+    sportRoleHistory: { findMany: vi.fn() },
+    user: { update: vi.fn() },
+    child: { update: vi.fn() },
+    ratingUpdate: { deleteMany: vi.fn(), createMany: vi.fn() },
   },
 }));
 
@@ -26,8 +32,14 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
+  $transaction: Mock;
   trainingSession: { findUnique: Mock };
   trainingMatchResult: { findMany: Mock; create: Mock };
+  registration: { findMany: Mock };
+  sportRoleHistory: { findMany: Mock };
+  user: { update: Mock };
+  child: { update: Mock };
+  ratingUpdate: { deleteMany: Mock; createMany: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoach = isCoachOrAdmin as Mock;
@@ -72,6 +84,14 @@ describe("POST /api/sessions/[sessionId]/match-results", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoach.mockResolvedValue(true);
+    // $transaction esegue il callback con lo stesso mock (tx = prisma mock)
+    p.$transaction.mockImplementation(async (cb: (tx: PrismaMock) => unknown) => cb(p));
+    // Default per il ricalcolo TrueSkill (recomputeRatings): nessun dato
+    p.registration.findMany.mockResolvedValue([]);
+    p.trainingMatchResult.findMany.mockResolvedValue([]);
+    p.sportRoleHistory.findMany.mockResolvedValue([]);
+    p.ratingUpdate.deleteMany.mockResolvedValue({ count: 0 });
+    p.ratingUpdate.createMany.mockResolvedValue({ count: 0 });
   });
 
   it("restituisce 403 se non staff", async () => {

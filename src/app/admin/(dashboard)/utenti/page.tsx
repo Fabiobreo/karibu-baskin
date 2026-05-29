@@ -65,6 +65,8 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     sportRoleSuggestedVariant: true,
     gender: true,
     birthDate: true,
+    ratingMu: true,
+    ratingSigma: true,
     createdAt: true,
     _count: { select: { registrations: true } },
     sportRoleHistory: {
@@ -98,6 +100,8 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         sportRoleVariant: true,
         gender: true,
         birthDate: true,
+        ratingMu: true,
+        ratingSigma: true,
         createdAt: true,
         parent: { select: { name: true, email: true } },
         _count: { select: { registrations: true } },

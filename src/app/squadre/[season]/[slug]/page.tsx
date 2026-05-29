@@ -69,6 +69,7 @@ async function getTeam(season: string, slug: string) {
             select: {
               id: true,
               name: true,
+              slug: true,
               sportRole: true,
               sportRoleVariant: true,
               gender: true,
@@ -91,7 +92,7 @@ async function getTeam(season: string, slug: string) {
               fouls: true,
               isLoan: true,
               user: { select: { id: true, name: true, image: true, slug: true } },
-              child: { select: { id: true, name: true } },
+              child: { select: { id: true, name: true, slug: true } },
             },
           },
         },
@@ -114,7 +115,7 @@ async function getTeam(season: string, slug: string) {
               fouls: true,
               isLoan: true,
               user: { select: { id: true, name: true, image: true, slug: true } },
-              child: { select: { id: true, name: true } },
+              child: { select: { id: true, name: true, slug: true } },
             },
           },
         },
@@ -302,7 +303,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
       if (!playerId || !memberIds.has(playerId)) continue;
       const name = ps.user?.name ?? ps.child?.name ?? "—";
       const image = ps.user?.image ?? null;
-      const linkSlug = ps.user?.slug ?? ps.user?.id ?? null;
+      const linkSlug = ps.user?.slug ?? ps.user?.id ?? ps.child?.slug ?? ps.child?.id ?? null;
       const existing = leaderMap.get(playerId);
       if (existing) {
         existing.points += ps.points;
@@ -993,13 +994,18 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                                   />
                                 </Link>
                               ) : (
-                                <AthleteCard
-                                  name={athlete.name ?? "—"}
-                                  roleNum={athlete.sportRole}
-                                  roleVariant={athlete.sportRoleVariant}
-                                  isCaptain={m.isCaptain}
-                                  teamColor={teamColor}
-                                />
+                                <Link
+                                  href={`/giocatori/${m.child!.slug ?? m.child!.id}`}
+                                  style={{ textDecoration: "none" }}
+                                >
+                                  <AthleteCard
+                                    name={athlete.name ?? "—"}
+                                    roleNum={athlete.sportRole}
+                                    roleVariant={athlete.sportRoleVariant}
+                                    isCaptain={m.isCaptain}
+                                    teamColor={teamColor}
+                                  />
+                                </Link>
                               )}
                             </Grid>
                           );

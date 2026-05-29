@@ -55,10 +55,11 @@ export default function ClassificaTableClient({
   const getMedal = (rank: number) =>
     rank === 0 ? "#F9A825" : rank === 1 ? "#9E9E9E" : rank === 2 ? "#A1662F" : null;
 
-  const getPlayerHref = (row: ClassificaRow) =>
-    row.kind === "user" && row.slug
-      ? `/giocatori/${row.slug}?season=${encodeURIComponent(selectedSeason)}`
-      : null;
+  const getPlayerHref = (row: ClassificaRow) => {
+    // Sia utenti sia figli hanno un profilo pubblico; fallback su id se manca lo slug.
+    const target = row.slug ?? row.id;
+    return target ? `/giocatori/${target}?season=${encodeURIComponent(selectedSeason)}` : null;
+  };
 
   const pagination = (
     <TablePagination

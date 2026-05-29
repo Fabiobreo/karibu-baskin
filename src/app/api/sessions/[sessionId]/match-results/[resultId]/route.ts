@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { recomputeRatings } from "@/lib/ratingEngine";
 
 const MatchResultUpdateSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),
@@ -42,9 +43,12 @@ export async function PUT(
   if ("scoreC" in parsed.data) data.scoreC = parsed.data.scoreC ?? null;
   if ("notes" in parsed.data) data.notes = parsed.data.notes?.trim() || null;
 
-  const updated = await prisma.trainingMatchResult.update({
-    where: { id: resultId },
-    data,
+  // Lo snapshot del roster resta congelato (per cambiare le squadre si cancella
+  // il risultato). Un cambio di punteggio però altera l'esito: ricalcola.
+  const updated = await prisma.$transaction(async (tx) => {
+    const u = await tx.trainingMatchResult.update({ where: { id: resultId }, data });
+    await recomputeRatings(tx);
+    return u;
   });
 
   return NextResponse.json(updated);
@@ -68,6 +72,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Risultato non trovato" }, { status: 404 });
   }
 
-  await prisma.trainingMatchResult.delete({ where: { id: resultId } });
+  // Cancellare il risultato "scongela" il roster e annulla il suo effetto sui
+  // rating: il replay ricalcola tutto senza questa partitella.
+  await prisma.$transaction(async (tx) => {
+    await tx.trainingMatchResult.delete({ where: { id: resultId } });
+    await recomputeRatings(tx);
+  });
   return new NextResponse(null, { status: 204 });
 }

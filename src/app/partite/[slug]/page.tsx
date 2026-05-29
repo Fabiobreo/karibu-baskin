@@ -60,7 +60,9 @@ async function getMatch(slug: string) {
               sportRoleVariant: true,
             },
           },
-          child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+          child: {
+            select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
+          },
         },
         orderBy: { points: "desc" },
       },
@@ -76,7 +78,9 @@ async function getMatch(slug: string) {
               sportRoleVariant: true,
             },
           },
-          child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+          child: {
+            select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
+          },
         },
         orderBy: { id: "asc" },
       },
@@ -85,7 +89,7 @@ async function getMatch(slug: string) {
           user: {
             select: { id: true, name: true, image: true, slug: true, sportRole: true },
           },
-          child: { select: { id: true, name: true, sportRole: true } },
+          child: { select: { id: true, name: true, slug: true, sportRole: true } },
         },
         orderBy: { createdAt: "asc" },
       },
@@ -705,7 +709,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 if (!person) return null;
                 const role = person.sportRole;
                 const name = person.name ?? "—";
-                const slug = m.user?.slug ?? null;
+                const slug = m.user?.slug ?? m.user?.id ?? m.child?.slug ?? m.child?.id ?? null;
                 const content = (
                   <Box
                     sx={{

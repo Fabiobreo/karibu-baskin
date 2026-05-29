@@ -41,6 +41,27 @@ export async function generateUserSlug(name: string): Promise<string> {
 }
 
 /**
+ * Genera uno slug univoco per un figlio a partire dal nome (modello Child).
+ * Se "mario-rossi" esiste già, prova "mario-rossi-2", ecc.
+ */
+export async function generateChildSlug(name: string): Promise<string> {
+  const base = slugify(name);
+  if (!base) return "";
+
+  const existing = await prisma.child.findUnique({ where: { slug: base } });
+  if (!existing) return base;
+
+  let n = 2;
+  while (n < 1000) {
+    const candidate = `${base}-${n}`;
+    const found = await prisma.child.findUnique({ where: { slug: candidate } });
+    if (!found) return candidate;
+    n++;
+  }
+  return "";
+}
+
+/**
  * Genera il dateSlug per una TrainingSession a partire dai valori locali del form.
  * es. date="2025-03-15", time="18:00" → "2025-03-15T18:00"
  */

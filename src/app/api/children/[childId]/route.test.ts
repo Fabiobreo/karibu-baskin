@@ -7,7 +7,10 @@ vi.mock("@/lib/db", () => ({
     child: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
     registration: { findMany: vi.fn(), deleteMany: vi.fn() },
     trainingSession: { updateMany: vi.fn() },
-    user: { findUnique: vi.fn() },
+    trainingMatchResult: { findMany: vi.fn() },
+    user: { findUnique: vi.fn(), update: vi.fn() },
+    sportRoleHistory: { create: vi.fn(), findMany: vi.fn() },
+    ratingUpdate: { deleteMany: vi.fn(), createMany: vi.fn() },
     linkRequest: { findFirst: vi.fn(), create: vi.fn(), count: vi.fn() },
     appNotification: { create: vi.fn() },
     $transaction: vi.fn(),
@@ -36,7 +39,10 @@ type PrismaMock = {
   child: { findUnique: Mock; update: Mock; delete: Mock };
   registration: { findMany: Mock; deleteMany: Mock };
   trainingSession: { updateMany: Mock };
-  user: { findUnique: Mock };
+  trainingMatchResult: { findMany: Mock };
+  user: { findUnique: Mock; update: Mock };
+  sportRoleHistory: { create: Mock; findMany: Mock };
+  ratingUpdate: { deleteMany: Mock; createMany: Mock };
   linkRequest: { findFirst: Mock; create: Mock; count: Mock };
   appNotification: { create: Mock };
   $transaction: Mock;
@@ -85,8 +91,12 @@ describe("PATCH /api/children/[childId]", () => {
     vi.resetAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "parent-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
-    p.child.findUnique.mockResolvedValue(baseChild);
+    // Lookup per id → il child; lookup per slug (generateChildSlug) → null (libero)
+    p.child.findUnique.mockImplementation((args: { where?: { id?: string; slug?: string } }) =>
+      Promise.resolve(args?.where?.id ? baseChild : null)
+    );
     p.child.update.mockResolvedValue(baseChild);
+    p.sportRoleHistory.create.mockResolvedValue({ id: "srh-1" });
     p.linkRequest.count.mockResolvedValue(0);
     // $transaction callback: esegue il callback con i mock esistenti come tx
     p.$transaction.mockImplementation((fn: (tx: unknown) => Promise<unknown>) =>

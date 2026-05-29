@@ -39,9 +39,9 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     // Player stats per la stagione, separati per "prestito" vs principale
     // così possiamo mostrare la breakdown X (+Y) in tabella.
     prisma.playerMatchStats.groupBy({
-      by: ["userId", "isLoan"],
+      by: ["userId", "childId", "isLoan"],
       where: {
-        userId: { not: null },
+        OR: [{ userId: { not: null } }, { childId: { not: null } }],
         match: { team: { season: activeSeason } },
       },
       _sum: {
@@ -57,8 +57,18 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     }),
   ]);
 
-  const userIds = Array.from(new Set(allStats.map((s) => s.userId!).filter(Boolean)));
-  const [users, memberships] = await Promise.all([
+  // Chiave giocatore unica per User/Child ("u:id" | "c:id").
+  const keyOf = (s: { userId: string | null; childId: string | null }): string | null =>
+    s.userId ? `u:${s.userId}` : s.childId ? `c:${s.childId}` : null;
+
+  const userIds = Array.from(
+    new Set(allStats.map((s) => s.userId).filter((x): x is string => !!x))
+  );
+  const childIds = Array.from(
+    new Set(allStats.map((s) => s.childId).filter((x): x is string => !!x))
+  );
+
+  const [users, children, memberships] = await Promise.all([
     userIds.length > 0
       ? prisma.user.findMany({
           where: { id: { in: userIds } },
@@ -71,38 +81,50 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             sportRoleVariant: true,
           },
         })
-      : Promise.resolve(
-          [] as {
-            id: string;
-            name: string | null;
-            image: string | null;
-            slug: string | null;
-            sportRole: number | null;
-            sportRoleVariant: string | null;
-          }[]
-        ),
-    userIds.length > 0
-      ? prisma.teamMembership.findMany({
-          where: { userId: { in: userIds }, team: { season: activeSeason } },
-          select: {
-            userId: true,
-            team: { select: { id: true, name: true, color: true } },
-          },
+      : [],
+    childIds.length > 0
+      ? prisma.child.findMany({
+          where: { id: { in: childIds } },
+          select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
         })
-      : Promise.resolve(
-          [] as {
-            userId: string | null;
-            team: { id: string; name: string; color: string | null };
-          }[]
-        ),
+      : [],
+    prisma.teamMembership.findMany({
+      where: {
+        team: { season: activeSeason },
+        OR: [
+          ...(userIds.length > 0 ? [{ userId: { in: userIds } }] : []),
+          ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
+        ],
+      },
+      select: {
+        userId: true,
+        childId: true,
+        team: { select: { id: true, name: true, color: true } },
+      },
+    }),
   ]);
-  const userMap = Object.fromEntries(users.map((u) => [u.id, u]));
-  const teamsByUser = new Map<string, { id: string; name: string; color: string | null }[]>();
+
+  // Mappa playerKey → dati anagrafici (i figli non hanno immagine).
+  type PlayerInfo = {
+    id: string;
+    kind: "user" | "child";
+    name: string | null;
+    image: string | null;
+    slug: string | null;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+  };
+  const playerMap = new Map<string, PlayerInfo>();
+  for (const u of users) playerMap.set(`u:${u.id}`, { ...u, kind: "user" });
+  for (const c of children) playerMap.set(`c:${c.id}`, { ...c, kind: "child", image: null });
+
+  const teamsByPlayer = new Map<string, { id: string; name: string; color: string | null }[]>();
   for (const m of memberships) {
-    if (!m.userId) continue;
-    const arr = teamsByUser.get(m.userId) ?? [];
+    const k = m.userId ? `u:${m.userId}` : m.childId ? `c:${m.childId}` : null;
+    if (!k) continue;
+    const arr = teamsByPlayer.get(k) ?? [];
     arr.push(m.team);
-    teamsByUser.set(m.userId, arr);
+    teamsByPlayer.set(k, arr);
   }
 
   // Aggrega per utente combinando le due righe (isLoan = false / true) in
@@ -127,10 +149,11 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     illegalFouls: 0,
     shotsAttempted: 0,
   };
-  const byUser = new Map<string, { primary: Bucket; loan: Bucket }>();
+  const byPlayer = new Map<string, { primary: Bucket; loan: Bucket }>();
   for (const s of allStats) {
-    if (!s.userId) continue;
-    const entry = byUser.get(s.userId) ?? { primary: { ...emptyBucket }, loan: { ...emptyBucket } };
+    const k = keyOf(s);
+    if (!k) continue;
+    const entry = byPlayer.get(k) ?? { primary: { ...emptyBucket }, loan: { ...emptyBucket } };
     const target = s.isLoan ? entry.loan : entry.primary;
     target.matches += s._count.matchId;
     target.points += s._sum.points ?? 0;
@@ -140,36 +163,40 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     target.fouls += s._sum.fouls ?? 0;
     target.illegalFouls += s._sum.illegalFouls ?? 0;
     target.shotsAttempted += s._sum.shotsAttempted ?? 0;
-    byUser.set(s.userId, entry);
+    byPlayer.set(k, entry);
   }
 
-  const statRows: PlayerStatRow[] = Array.from(byUser.entries())
-    .filter(([userId]) => userMap[userId])
-    .map(([userId, { primary, loan }]) => ({
-      userId,
-      name: userMap[userId].name,
-      image: userMap[userId].image,
-      slug: userMap[userId].slug,
-      sportRole: userMap[userId].sportRole,
-      sportRoleVariant: userMap[userId].sportRoleVariant,
-      matches: primary.matches,
-      points: primary.points,
-      twoPointers: primary.twoPointers,
-      threePointers: primary.threePointers,
-      freeThrows: primary.freeThrows,
-      fouls: primary.fouls,
-      illegalFouls: primary.illegalFouls,
-      shotsAttempted: primary.shotsAttempted,
-      teams: teamsByUser.get(userId) ?? [],
-      loanMatches: loan.matches,
-      loanPoints: loan.points,
-      loanTwoPointers: loan.twoPointers,
-      loanThreePointers: loan.threePointers,
-      loanFreeThrows: loan.freeThrows,
-      loanFouls: loan.fouls,
-      loanIllegalFouls: loan.illegalFouls,
-      loanShotsAttempted: loan.shotsAttempted,
-    }));
+  const statRows: PlayerStatRow[] = Array.from(byPlayer.entries())
+    .filter(([k]) => playerMap.has(k))
+    .map(([k, { primary, loan }]) => {
+      const p = playerMap.get(k)!;
+      return {
+        id: p.id,
+        kind: p.kind,
+        name: p.name,
+        image: p.image,
+        slug: p.slug,
+        sportRole: p.sportRole,
+        sportRoleVariant: p.sportRoleVariant,
+        matches: primary.matches,
+        points: primary.points,
+        twoPointers: primary.twoPointers,
+        threePointers: primary.threePointers,
+        freeThrows: primary.freeThrows,
+        fouls: primary.fouls,
+        illegalFouls: primary.illegalFouls,
+        shotsAttempted: primary.shotsAttempted,
+        teams: teamsByPlayer.get(k) ?? [],
+        loanMatches: loan.matches,
+        loanPoints: loan.points,
+        loanTwoPointers: loan.twoPointers,
+        loanThreePointers: loan.threePointers,
+        loanFreeThrows: loan.freeThrows,
+        loanFouls: loan.fouls,
+        loanIllegalFouls: loan.illegalFouls,
+        loanShotsAttempted: loan.shotsAttempted,
+      };
+    });
 
   const availableSeasons = statSeasons.map((s) => s.season);
   const hasStats = statRows.length > 0;

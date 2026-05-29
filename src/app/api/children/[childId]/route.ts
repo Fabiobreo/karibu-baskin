@@ -6,6 +6,8 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUser } from "@/lib/webpush";
 import { ChildPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { generateChildSlug } from "@/lib/slugUtils";
+import { recomputeRatings } from "@/lib/ratingEngine";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(
@@ -192,16 +194,39 @@ export async function PATCH(
     return NextResponse.json({ error: "Il nome non può essere vuoto" }, { status: 400 });
   }
 
+  // Genera lo slug pubblico: alla prima impostazione, o quando il nome cambia.
+  let slugToSet: string | undefined;
+  if ((trimmedName !== undefined && trimmedName !== child.name) || !child.slug) {
+    const generated = await generateChildSlug(trimmedName ?? child.name);
+    if (generated) slugToSet = generated;
+  }
+
+  // Cambio di CATEGORIA: registra lo storico e segna se serve rigonfiare σ.
+  const roleChangedToNew =
+    sportRole !== undefined && sportRole !== null && sportRole !== child.sportRole;
+  const isCategoryChange = roleChangedToNew && child.sportRole !== null;
+
   const updated = await prisma.child.update({
     where: { id: childId },
     data: {
       ...(trimmedName !== undefined && { name: trimmedName }),
+      ...(slugToSet !== undefined && { slug: slugToSet }),
       ...(sportRole !== undefined && { sportRole: sportRole ?? null }),
       ...(sportRoleVariant !== undefined && { sportRoleVariant: sportRoleVariant ?? null }),
       ...(gender !== undefined && { gender: gender ?? null }),
       ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
     },
   });
+
+  if (roleChangedToNew) {
+    await prisma.sportRoleHistory.create({ data: { childId, sportRole: sportRole! } });
+    // Cambio categoria (non prima assegnazione) → rigonfia σ del rating TrueSkill.
+    if (isCategoryChange) {
+      recomputeRatings(prisma).catch((err) =>
+        console.error("[rating] child role change recompute", err)
+      );
+    }
+  }
 
   return NextResponse.json(updated);
 }

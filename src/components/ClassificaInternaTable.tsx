@@ -22,7 +22,9 @@ import Link from "next/link";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 
 export interface PlayerStatRow {
-  userId: string;
+  /** Id del giocatore (User o Child). */
+  id: string;
+  kind: "user" | "child";
   name: string | null;
   image: string | null;
   slug: string | null;
@@ -283,7 +285,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               </TableRow>
             ) : (
               paginated.map((row, i) => (
-                <TableRow key={row.userId} hover>
+                <TableRow key={row.id} hover>
                   <TableCell sx={{ color: "text.disabled", fontWeight: 700, fontSize: "0.8rem" }}>
                     {page * rowsPerPage + i + 1}
                   </TableCell>
@@ -296,9 +298,9 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         {(row.name ?? "?")[0]}
                       </Avatar>
                       <Box>
-                        {row.slug ? (
+                        {(row.slug ?? row.id) ? (
                           <Link
-                            href={`/giocatori/${row.slug}`}
+                            href={`/giocatori/${row.slug ?? row.id}`}
                             style={{ textDecoration: "none", color: "inherit" }}
                           >
                             <Typography
@@ -415,7 +417,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             const rank = page * rowsPerPage + i + 1;
             return (
               <Box
-                key={row.userId}
+                key={row.id}
                 sx={{
                   px: 2,
                   py: 1.5,
@@ -437,9 +439,9 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                     {(row.name ?? "?")[0]}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    {row.slug ? (
+                    {(row.slug ?? row.id) ? (
                       <Link
-                        href={`/giocatori/${row.slug}`}
+                        href={`/giocatori/${row.slug ?? row.id}`}
                         style={{ textDecoration: "none", color: "inherit" }}
                       >
                         <Typography

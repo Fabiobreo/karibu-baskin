@@ -37,24 +37,29 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  // Cerca per slug, poi per ID (retrocompatibilità)
-  const user = await prisma.user.findFirst({
+  const metaSelect = {
+    name: true,
+    sportRole: true,
+    sportRoleVariant: true,
+    matchStats: { select: { points: true } },
+  };
+  // Cerca prima tra gli utenti, poi tra i figli (per slug, fallback su ID).
+  const userRow = await prisma.user.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
-    select: {
-      name: true,
-      sportRole: true,
-      sportRoleVariant: true,
-      matchStats: { select: { points: true } },
-    },
+    select: metaSelect,
   });
-  if (!user) return { title: "Giocatore non trovato" };
-  const totalPoints = user.matchStats.reduce((s, m) => s + m.points, 0);
-  const matchesPlayed = user.matchStats.length;
+  const childRow = userRow
+    ? null
+    : await prisma.child.findFirst({ where: { OR: [{ slug }, { id: slug }] }, select: metaSelect });
+  const p = userRow ?? childRow;
+  if (!p) return { title: "Giocatore non trovato" };
+
+  const isChild = !userRow;
+  const totalPoints = p.matchStats.reduce((s, m) => s + m.points, 0);
+  const matchesPlayed = p.matchStats.length;
   const avgPoints = matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : null;
-  const roleLabel = user.sportRole
-    ? sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)
-    : null;
-  const title = `${user.name ?? "Giocatore"} · Karibu Baskin`;
+  const roleLabel = p.sportRole ? sportRoleLabel(p.sportRole, p.sportRoleVariant ?? null) : null;
+  const title = `${p.name ?? "Giocatore"} · Karibu Baskin`;
   const descParts: string[] = [];
   if (roleLabel) descParts.push(roleLabel);
   if (matchesPlayed > 0) {
@@ -65,13 +70,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     descParts.length > 0
       ? `${descParts.join(" · ")} — Karibu Baskin, Montecchio Maggiore`
-      : `Profilo di ${user.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore.`;
+      : `Profilo di ${p.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore.`;
   const url = `https://karibu-baskin.vercel.app/giocatori/${slug}`;
   return {
     title,
     description,
     openGraph: { title, description, url, type: "profile" },
     twitter: { card: "summary", title, description },
+    // I profili dei figli (potenzialmente minori) non vengono indicizzati.
+    ...(isChild ? { robots: { index: false, follow: false } } : {}),
   };
 }
 
@@ -82,8 +89,36 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null; // es. "2025-26"
 
+  // Relazioni comuni a User e Child (stesse `include` → stessa forma dei dati).
+  const relationSelect = {
+    teamMemberships: {
+      orderBy: { createdAt: "desc" as const },
+      include: {
+        team: { select: { id: true, name: true, season: true, color: true, championship: true } },
+      },
+    },
+    matchStats: {
+      orderBy: { match: { date: "desc" as const } },
+      include: {
+        match: {
+          include: {
+            team: { select: { id: true, name: true, color: true, season: true } },
+            opponent: { select: { id: true, name: true, city: true } },
+            opponentTeam: { select: { id: true, name: true } },
+          },
+        },
+      },
+    },
+    _count: { select: { registrations: true, matchMvps: true } },
+    registrations: { where: { attended: true }, select: { id: true } },
+    sportRoleHistory: {
+      orderBy: { changedAt: "asc" as const },
+      select: { sportRole: true, changedAt: true },
+    },
+  };
+
   // Cerca per slug (es. "mario-rossi"), con fallback su ID (per link esistenti)
-  const user = await prisma.user.findFirst({
+  const userRow = await prisma.user.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
     select: {
       id: true,
@@ -94,42 +129,70 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       sportRoleVariant: true,
       gender: true,
       birthDate: true,
-      createdAt: true,
       appRole: true,
-      teamMemberships: {
-        orderBy: { createdAt: "desc" },
-        include: {
-          team: { select: { id: true, name: true, season: true, color: true, championship: true } },
-        },
-      },
-      matchStats: {
-        orderBy: { match: { date: "desc" } },
-        include: {
-          match: {
-            include: {
-              team: { select: { id: true, name: true, color: true, season: true } },
-              opponent: { select: { id: true, name: true, city: true } },
-              opponentTeam: { select: { id: true, name: true } },
-            },
-          },
-        },
-      },
-      _count: { select: { registrations: true, matchMvps: true } },
-      registrations: { where: { attended: true }, select: { id: true } },
-      sportRoleHistory: {
-        orderBy: { changedAt: "asc" },
-        select: { sportRole: true, changedAt: true },
-      },
+      ...relationSelect,
     },
   });
 
-  if (!user || user.appRole === "GUEST") notFound();
+  // Se non è un utente (o è un GUEST), prova tra i figli senza account.
+  const childRow =
+    userRow && userRow.appRole !== "GUEST"
+      ? null
+      : await prisma.child.findFirst({
+          where: { OR: [{ slug }, { id: slug }] },
+          select: {
+            id: true,
+            name: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            gender: true,
+            birthDate: true,
+            ...relationSelect,
+          },
+        });
+
+  if ((!userRow || userRow.appRole === "GUEST") && !childRow) notFound();
+
+  // Vista unificata: stesso shape per User e Child (i figli non hanno immagine).
+  const player = childRow
+    ? {
+        playerKey: `c:${childRow.id}`,
+        id: childRow.id,
+        name: childRow.name,
+        image: null as string | null,
+        customImage: null as string | null,
+        sportRole: childRow.sportRole,
+        sportRoleVariant: childRow.sportRoleVariant,
+        gender: childRow.gender,
+        birthDate: childRow.birthDate,
+        teamMemberships: childRow.teamMemberships,
+        matchStats: childRow.matchStats,
+        _count: childRow._count,
+        registrations: childRow.registrations,
+        sportRoleHistory: childRow.sportRoleHistory,
+      }
+    : {
+        playerKey: `u:${userRow!.id}`,
+        id: userRow!.id,
+        name: userRow!.name,
+        image: userRow!.image,
+        customImage: userRow!.customImage,
+        sportRole: userRow!.sportRole,
+        sportRoleVariant: userRow!.sportRoleVariant,
+        gender: userRow!.gender,
+        birthDate: userRow!.birthDate,
+        teamMemberships: userRow!.teamMemberships,
+        matchStats: userRow!.matchStats,
+        _count: userRow!._count,
+        registrations: userRow!.registrations,
+        sportRoleHistory: userRow!.sportRoleHistory,
+      };
 
   const currentSeason = getCurrentSeason();
-  const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
+  const currentTeams = player.teamMemberships.filter((m) => m.team.season === currentSeason);
 
   // Medaglie: calcola se l'utente è 1°/2°/3° top scorer per ciascuna (squadra, stagione)
-  const teamSeasonPairs = user.teamMemberships.map((m) => ({
+  const teamSeasonPairs = player.teamMemberships.map((m) => ({
     teamId: m.team.id,
     teamName: m.team.name,
     teamColor: m.team.color,
@@ -186,7 +249,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       arr.push(agg);
       byTeamSeason.set(k, arr);
     }
-    const userKey = `u:${user.id}`;
+    const userKey = player.playerKey;
     for (const pair of teamSeasonPairs) {
       const arr = byTeamSeason.get(`${pair.teamId}::${pair.season}`);
       if (!arr || arr.length === 0) continue;
@@ -209,16 +272,16 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   }
 
   const badges = computeBadges({
-    matchStats: user.matchStats,
-    mvpCount: user._count.matchMvps,
+    matchStats: player.matchStats,
+    mvpCount: player._count.matchMvps,
     topScorerCount: medals.filter((m) => m.rank === 1).length,
   });
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
   const seasons = Array.from(
     new Set([
-      ...user.matchStats.map((ms) => ms.match.team.season),
-      ...user.teamMemberships.map((m) => m.team.season),
+      ...player.matchStats.map((ms) => ms.match.team.season),
+      ...player.teamMemberships.map((m) => m.team.season),
     ])
   )
     .sort()
@@ -226,8 +289,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   // Filtro stagione per le statistiche
   const filteredStats = seasonFilter
-    ? user.matchStats.filter((ms) => ms.match.team.season === seasonFilter)
-    : user.matchStats;
+    ? player.matchStats.filter((ms) => ms.match.team.season === seasonFilter)
+    : player.matchStats;
 
   // Aggregazioni statistiche
   const totalPoints = filteredStats.reduce((s, ms) => s + ms.points, 0);
@@ -320,7 +383,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
               noWrap
             >
-              {user.name ?? "Giocatore"}
+              {player.name ?? "Giocatore"}
             </Typography>
           </Breadcrumbs>
         </Box>
@@ -342,7 +405,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               }}
             >
               <Avatar
-                src={user.customImage ?? user.image ?? undefined}
+                src={player.customImage ?? player.image ?? undefined}
                 sx={{
                   width: { xs: 110, md: 140 },
                   height: { xs: 110, md: 140 },
@@ -353,9 +416,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   boxShadow: `0 8px 28px ${playerColor}66, 0 0 0 6px rgba(0,0,0,0.25)`,
                 }}
               >
-                {(user.name ?? "?")[0].toUpperCase()}
+                {(player.name ?? "?")[0].toUpperCase()}
               </Avatar>
-              {user.sportRole && (
+              {player.sportRole && (
                 <Box
                   sx={{
                     position: "absolute",
@@ -364,7 +427,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    bgcolor: ROLE_COLORS[user.sportRole],
+                    bgcolor: ROLE_COLORS[player.sportRole],
                     color: "common.white",
                     display: "flex",
                     alignItems: "center",
@@ -376,7 +439,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
                   }}
                 >
-                  {user.sportRole}
+                  {player.sportRole}
                 </Box>
               )}
             </Box>
@@ -405,7 +468,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   textShadow: "0 2px 6px rgba(0,0,0,0.4)",
                 }}
               >
-                {user.name ?? "—"}
+                {player.name ?? "—"}
               </Typography>
 
               {/* Ruolo + squadra corrente */}
@@ -418,12 +481,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   alignItems: "center",
                 }}
               >
-                {user.sportRole && (
+                {player.sportRole && (
                   <Chip
-                    label={sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)}
+                    label={sportRoleLabel(player.sportRole, player.sportRoleVariant ?? null)}
                     size="small"
                     sx={{
-                      bgcolor: ROLE_COLORS[user.sportRole],
+                      bgcolor: ROLE_COLORS[player.sportRole],
                       color: "common.white",
                       fontWeight: 800,
                       fontSize: "0.72rem",
@@ -634,7 +697,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {/* Share section */}
               <Box sx={{ mt: 2.5 }}>
                 <PlayerShareButtons
-                  playerName={user.name ?? "Giocatore"}
+                  playerName={player.name ?? "Giocatore"}
                   totalPoints={totalPoints}
                   matchesPlayed={matchesPlayed}
                   medalsCount={medals.length}
@@ -654,29 +717,29 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             Dati atleta
           </Typography>
           <Grid container spacing={2}>
-            {user.gender && (
+            {player.gender && (
               <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow label="Genere" value={GENDER_LABELS[user.gender]} />
+                <InfoRow label="Genere" value={GENDER_LABELS[player.gender]} />
               </Grid>
             )}
-            {user.birthDate && (
+            {player.birthDate && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow
                   label="Data di nascita"
-                  value={format(new Date(user.birthDate), "d MMMM yyyy", { locale: it })}
+                  value={format(new Date(player.birthDate), "d MMMM yyyy", { locale: it })}
                 />
               </Grid>
             )}
-            {user.sportRole && (
+            {player.sportRole && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow
                   label="Ruolo Baskin"
                   value={
                     <Chip
-                      label={ROLE_LABELS[user.sportRole as keyof typeof ROLE_LABELS]}
+                      label={ROLE_LABELS[player.sportRole as keyof typeof ROLE_LABELS]}
                       size="small"
                       sx={{
-                        bgcolor: ROLE_COLORS[user.sportRole],
+                        bgcolor: ROLE_COLORS[player.sportRole],
                         color: "common.white",
                         fontWeight: 700,
                       }}
@@ -689,9 +752,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               <InfoRow
                 label="Allenamenti"
                 value={
-                  user.registrations.length > 0
-                    ? `${user._count.registrations} iscrizioni · ${user.registrations.length} presenze`
-                    : `${user._count.registrations}`
+                  player.registrations.length > 0
+                    ? `${player._count.registrations} iscrizioni · ${player.registrations.length} presenze`
+                    : `${player._count.registrations}`
                 }
               />
             </Grid>
@@ -763,13 +826,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         )}
 
         {/* Storico ruolo sportivo */}
-        {user.sportRoleHistory.length > 1 && (
+        {player.sportRoleHistory.length > 1 && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
               Storico ruolo Baskin
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
-              {user.sportRoleHistory.map((entry, i) => (
+              {player.sportRoleHistory.map((entry, i) => (
                 <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Box>
                     <Chip
@@ -792,7 +855,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       {format(new Date(entry.changedAt), "MMM yyyy", { locale: it })}
                     </Typography>
                   </Box>
-                  {i < user.sportRoleHistory.length - 1 && (
+                  {i < player.sportRoleHistory.length - 1 && (
                     <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled", mb: 2.5 }} />
                   )}
                 </Box>
@@ -1004,7 +1067,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         )}
 
         {/* Squadre */}
-        {user.teamMemberships.length > 0 && (
+        {player.teamMemberships.length > 0 && (
           <>
             <Divider sx={{ mb: 5 }} />
             <Box sx={{ mb: 5 }}>
@@ -1023,7 +1086,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 Storico agonistico
               </Typography>
               <Stack spacing={1.5}>
-                {user.teamMemberships.map((m) => (
+                {player.teamMemberships.map((m) => (
                   <Link
                     key={m.id}
                     href={`/squadre/${m.team.season}/${slugify(m.team.name)}`}
@@ -1211,7 +1274,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           </>
         )}
 
-        {user.teamMemberships.length === 0 && !hasStats && (
+        {player.teamMemberships.length === 0 && !hasStats && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <SportsSoccerIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
