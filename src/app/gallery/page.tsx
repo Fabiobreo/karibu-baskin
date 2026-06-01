@@ -1,0 +1,93 @@
+import { prisma } from "@/lib/db";
+import { Box, Container, Button, Divider } from "@mui/material";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import CollectionsIcon from "@mui/icons-material/Collections";
+import SiteHeader from "@/components/SiteHeader";
+import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/EmptyState";
+import GalleryGrid from "@/components/GalleryGrid";
+import YouTubeSection from "@/components/YouTubeSection";
+import { getChannelVideos } from "@/lib/youtube";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Gallery | Karibu Baskin",
+  description:
+    "Foto e video del Karibu Baskin di Montecchio Maggiore: allenamenti, partite e momenti della squadra.",
+};
+
+// I post sono aggiornati dal cron; rivalido la pagina ogni 30 minuti.
+export const revalidate = 1800;
+
+const INSTAGRAM_URL = "https://www.instagram.com/karibubaskin";
+
+export default async function GalleryPage() {
+  const [posts, videos] = await Promise.all([
+    prisma.instagramPost.findMany({
+      where: { hidden: false },
+      orderBy: { timestamp: "desc" },
+      select: { id: true, caption: true, mediaType: true, permalink: true, blobUrls: true },
+    }),
+    getChannelVideos(9),
+  ]);
+
+  const hasContent = posts.length > 0 || videos.length > 0;
+
+  return (
+    <>
+      <SiteHeader />
+
+      <PageHero
+        chip="Karibu Baskin"
+        title="Gallery"
+        subtitle="Foto e video della nostra squadra: allenamenti, partite e momenti insieme."
+      />
+
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        {!hasContent ? (
+          <EmptyState
+            icon={<CollectionsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title="Ancora nessun contenuto"
+            message="Le foto e i video arriveranno presto. Nel frattempo seguici su Instagram!"
+            action={
+              <Button
+                component="a"
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="contained"
+                startIcon={<InstagramIcon />}
+              >
+                Vai su Instagram
+              </Button>
+            }
+          />
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {posts.length > 0 && (
+              <Box>
+                <GalleryGrid posts={posts} />
+                <Box sx={{ textAlign: "center", mt: 4 }}>
+                  <Button
+                    component="a"
+                    href={INSTAGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variant="outlined"
+                    startIcon={<InstagramIcon />}
+                  >
+                    Seguici su Instagram
+                  </Button>
+                </Box>
+              </Box>
+            )}
+
+            {posts.length > 0 && videos.length > 0 && <Divider />}
+
+            {videos.length > 0 && <YouTubeSection videos={videos} />}
+          </Box>
+        )}
+      </Container>
+    </>
+  );
+}

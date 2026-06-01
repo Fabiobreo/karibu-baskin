@@ -5,21 +5,24 @@ App web per la squadra di Baskin di Montecchio Maggiore (VI). Gestione allenamen
 ## Stack
 
 - **Framework:** Next.js 16.2.1, App Router, Turbopack, `src/` directory
-- **UI:** Material-UI v6 (MUI) con tema custom arancione/nero, Emotion CSS-in-JS
+- **UI:** Material-UI v6 (MUI) con tema custom arancione/nero, Emotion CSS-in-JS. **Tema chiaro/scuro:** `src/theme.ts` esporta `lightTheme` e `darkTheme`; lo switch è gestito da `ThemeContext` (persistito in `localStorage`, default "system")
 - **Font:** Inter (via Next.js font)
 - **Database:** PostgreSQL via [Neon](https://neon.tech) + Prisma ORM v6
 - **Auth:** Auth.js v5 (`next-auth@beta`) con Google OAuth + PrismaAdapter
 - **Deployment:** Vercel (branch `develop`)
 - **PWA:** manifest.json + service worker (`public/sw.js`) con offline support
 - **Push notifications:** Web Push API + `web-push` npm package (VAPID)
+- **Upload immagini:** Vercel Blob (`@vercel/blob`) + `sharp` per resize/ottimizzazione — vedi `src/lib/blob.ts` (cartelle: avatars, teams, matches, events, posts) e `POST /api/upload`
+- **Rating giocatori:** sistema TrueSkill custom (`src/lib/trueskill.ts`, `ratingEngine.ts`, `ratingTrend.ts`) + ottimizzatore formazioni (`lineupOptimizer.ts`) + badge (`badges.ts`)
 - **Analytics:** Vercel Analytics
 - **Validazione input:** Zod v4 (schemi in `src/lib/schemas/`)
 - **Data fetching client:** SWR per fetch lato client; `fetch` diretto nei Server Component
 - **Email transazionali:** Resend + React Email (template in `src/emails/`)
+- **Storybook:** v10 (`.storybook/`, file `*.stories.tsx` accanto al componente) — `npm run storybook`
 - **Linter / Formatter:** ESLint (eslint-config-next) + Prettier (`.prettierrc`: semi, double quotes, 2 spazi, printWidth 100, trailingComma es5, LF)
 - **Testing:** Vitest (file `*.test.ts` accanto al sorgente — es. `src/lib/schemas/session.test.ts`, `src/app/api/sessions/route.test.ts`)
 - **Date:** `date-fns` v4 con locale `it`
-- **State management:** nessuna libreria globale — solo `useState`/`useReducer` locali + Context (`ToastContext`, `NotificationContext`) + SWR cache
+- **State management:** nessuna libreria globale — solo `useState`/`useReducer` locali + Context (`ToastContext`, `NotificationContext`, `ThemeContext`) + SWR cache
 
 ## Comandi principali
 
@@ -50,21 +53,29 @@ src/
 │   ├── api/
 │   │   ├── auth/[...nextauth]/            # Auth.js handler
 │   │   ├── admin/export/                  # Export dati allenamenti (admin-only)
-│   │   ├── sessions/                      # CRUD allenamenti + conclude/ + match-results/
+│   │   ├── admin/audit/                   # Lettura audit log (admin-only)
+│   │   ├── sessions/                      # CRUD allenamenti + conclude/ + close/open-registrations/ + match-results/
 │   │   ├── registrations/                 # CRUD iscrizioni + claim/ + attendance/
 │   │   ├── teams/[sessionId]/             # Generazione squadre
-│   │   ├── users/                         # Gestione utenti + me/ + me/children + lookup + notif-prefs/
+│   │   ├── users/                         # Gestione utenti + me/ (children, availabilities, notif-prefs, export) + lookup + season-stats
 │   │   ├── children/[childId]/            # Modifica/elimina figlio + season-stats/
-│   │   ├── competitive-teams/             # CRUD squadre agonistiche + seasons/current
-│   │   ├── matches/                       # CRUD partite ufficiali + [matchId]/stats + callups/
-│   │   ├── groups/[groupId]/              # Gironi + matches/
+│   │   ├── competitive-teams/             # CRUD squadre agonistiche + members/ + seasons/current
+│   │   ├── matches/                       # CRUD partite ufficiali + [matchId]/stats + callups/ + availability/ + mvps/
+│   │   ├── groups/[groupId]/              # Gironi + matches/ + teams/ + competitive-teams/
 │   │   ├── opposing-teams/                # CRUD squadre avversarie
 │   │   ├── events/                        # CRUD eventi generici
+│   │   ├── posts/                         # CRUD news/post (+ admin/) — bacheca
+│   │   ├── polls/[id]/vote/              # Voto sondaggi (poll abbinati ai post)
+│   │   ├── gallery/                       # Moderazione Gallery: sync/ (trigger), [id]/ (hide/delete)
+│   │   ├── upload/                        # Upload immagini su Vercel Blob (+ sharp)
 │   │   ├── calendar/                      # GET calendario + export.ics/
 │   │   ├── link-requests/                 # Richieste collegamento genitore-figlio + respond/
 │   │   ├── notifications/                 # Notifiche in-app (read, read-all, unread-count)
 │   │   ├── push/                          # Web Push (subscribe, notify, vapid-public-key)
-│   │   ├── cron/cleanup-notifications/    # Cron domenicale (CRON_SECRET)
+│   │   ├── cron/                          # Cron Vercel (CRON_SECRET): cleanup-notifications,
+│   │   │                                  #   birthday-notifications, training-open-reminder,
+│   │   │                                  #   match-availability-reminder, match-callup-reminder,
+│   │   │                                  #   match-coverage-alert, instagram-sync
 │   │   └── test-login/                    # Login fittizio per test (solo ENABLE_TEST_LOGIN=true)
 │   ├── actions/
 │   │   └── contact.ts                     # Server action form contatti (Resend)
@@ -73,66 +84,97 @@ src/
 │   │   └── (dashboard)/                   # Route group protette (COACH o superiore)
 │   │       ├── page.tsx                   # Dashboard admin
 │   │       ├── allenamenti/               # Gestione allenamenti
-│   │       ├── partite/                   # Gestione partite ufficiali
+│   │       ├── partite/                   # Gestione partite ufficiali (+ [matchId]/convocazioni, /statistiche)
 │   │       ├── eventi/                    # Gestione eventi generici
-│   │       ├── squadre/                   # Gestione squadre agonistiche
+│   │       ├── squadre/                   # Gestione squadre agonistiche (+ [teamId]/rosa)
+│   │       ├── gironi/                    # Gestione gironi (+ [groupId])
+│   │       ├── avversarie/                # Gestione squadre avversarie
+│   │       ├── news/                      # Gestione news/post + sondaggi
+│   │       ├── gallery/                   # Gestione Gallery (sync IG + moderazione)
+│   │       ├── esporta/                   # Export dati
+│   │       ├── audit/                     # Audit log azioni admin
+│   │       ├── sviluppo/                  # Tracker sviluppo giocatori (rating)
 │   │       └── utenti/                    # Gestione utenti + /nuovo + /[userId]
 │   ├── allenamento/[session]/             # Pagina allenamento pubblico
 │   ├── allenamenti/                       # Lista allenamenti pubblica
 │   ├── calendario/                        # Calendario (allenamenti + partite + eventi)
-│   ├── classifica/                        # Classifica interna (per ruolo/squadra)
-│   ├── classifiche/                       # Classifiche ufficiali stagione
-│   ├── gironi/[groupId]/                  # Dettaglio girone + partite
+│   ├── classifiche/                       # Classifiche ufficiali stagione (gironi, inline)
+│   ├── marcatori/                         # Classifica marcatori interna (statistiche giocatore)
 │   ├── giocatori/[slug]/                  # Profilo pubblico giocatore
 │   ├── partite/[slug]/                    # Dettaglio partita pubblica
+│   ├── partite/                           # Prossime partite
 │   ├── risultati/                         # Risultati partite
+│   ├── avversarie/[slug]/                 # Profilo pubblico squadra avversaria
 │   ├── squadre/                           # Lista squadre agonistiche
 │   ├── squadre/[season]/[slug]/           # Profilo squadra
+│   ├── squadre/archivio/                  # Archivio squadre stagioni passate
+│   ├── news/                              # Bacheca news (+ [slug] dettaglio)
+│   ├── gallery/                           # Gallery: feed Instagram mirrorato + video YouTube
+│   ├── faq/                               # FAQ
 │   ├── notifiche/                         # Centro notifiche utente
 │   ├── il-baskin/                         # Regole del Baskin
-│   ├── la-squadra/                        # Info squadra
+│   ├── la-squadra/                        # Redirect → /squadre (legacy)
 │   ├── contatti/                          # Contatti + mappa
 │   ├── sponsor/                           # Sponsor
+│   ├── privacy/                           # Informativa privacy
 │   ├── login/                             # Login utente Google
-│   ├── profilo/                           # Profilo utente + dati atleta + notifiche + figli
+│   ├── profilo/                           # Profilo utente + dati atleta + notifiche + figli (+ /disponibilita)
 │   ├── error.tsx                          # Pagina errore runtime (500)
 │   ├── global-error.tsx                   # Errore critico root layout
 │   └── not-found.tsx                      # Pagina 404
-├── components/                            # Componenti riutilizzabili (tutti PascalCase)
+├── components/                            # Componenti riutilizzabili (tutti PascalCase; sottocartella notifications/)
 ├── context/
 │   ├── ToastContext.tsx                   # Toast globali
-│   └── NotificationContext.tsx            # Notifiche in-app (unread count, mark read)
+│   ├── NotificationContext.tsx            # Notifiche in-app (unread count, mark read)
+│   └── ThemeContext.tsx                   # Tema chiaro/scuro/system (persistito in localStorage)
 ├── emails/                                # Template React Email
 │   ├── ContactConfirmationEmail.tsx       # Conferma all'utente
 │   └── ContactNotificationEmail.tsx       # Notifica all'admin
 ├── hooks/
-│   └── useRegistrationForm.ts             # Hook logica form iscrizione
+│   ├── useRegistrationForm.ts             # Hook logica form iscrizione
+│   ├── useConfirmDialog.tsx               # Dialog di conferma riutilizzabile
+│   └── useCookieConsent.ts                # Stato consenso cookie
 ├── lib/
 │   ├── apiAuth.ts                         # Helper auth per API route (isCoachOrAdmin, isAdminUser)
 │   ├── appNotifications.ts                # Creazione notifiche in-app
 │   ├── audit.ts                           # Audit logging (AuditEvent)
 │   ├── authjs.ts                          # Config Auth.js v5
 │   ├── authRoles.ts                       # Gerarchia ruoli + helper hasRole()
+│   ├── badges.ts                          # Calcolo badge giocatore
+│   ├── blob.ts                            # Upload/ottimizzazione immagini (Vercel Blob + sharp)
+│   ├── callupContext.ts / callupStats.ts  # Logica convocazioni partita
 │   ├── constants.ts                       # ROLE_LABELS, ROLE_COLORS, ROLES
 │   ├── dateUtils.ts                       # Helpers date (formattazione, confronto)
 │   ├── db.ts                              # Prisma singleton
+│   ├── faqs.ts                            # Contenuti FAQ
+│   ├── heroStyles.ts                      # Stili condivisi hero/PageHero
+│   ├── instagram.ts                       # Gallery: client Graph API + mirror su Blob + upsert
+│   ├── youtube.ts                         # Gallery: lista video dal feed RSS del canale
+│   ├── lineupOptimizer.ts                 # Ottimizzatore formazioni (rating TrueSkill)
+│   ├── loanDetection.ts                   # Rilevamento prestiti tra squadre
 │   ├── loSapevi.ts                        # Fatti "Lo sapevi?" per la home
+│   ├── matchCoverage.ts                   # Copertura ruoli/convocazioni partita
+│   ├── matchQuality.ts                    # Qualità/bilanciamento partita
+│   ├── matchResults.ts                    # Helpers risultati partite
 │   ├── notifPrefs.ts                      # Preferenze notifiche per tipo evento
 │   ├── rateLimit.ts                       # Rate limiting per API route
+│   ├── ratingEngine.ts / ratingTrend.ts   # Motore rating TrueSkill + andamento
 │   ├── registrationRestrictions.ts        # Logica restrizioni iscrizioni (shared server+client)
 │   ├── seasonUtils.ts                     # Calcolo stagione corrente (YYYY-YY)
+│   ├── sessionNotify.ts                   # Notifiche legate agli allenamenti
 │   ├── slugUtils.ts                       # Generazione slug URL
 │   ├── standings.ts                       # Calcolo classifiche gironi
 │   ├── teamGenerator.ts                   # Mulberry32 PRNG seeded shuffle
+│   ├── trueskill.ts                       # Implementazione TrueSkill
 │   ├── useHasMounted.ts                   # Hook anti-SSR hydration mismatch
 │   ├── validators.ts                      # Validatori generici
-│   ├── webpush.ts                         # Invio notifiche push (sendPushToAll)
+│   ├── webpush.ts                         # Invio notifiche push (sendPushToAll/Team/Filter)
 │   └── schemas/                           # Schemi Zod per validazione input API
-│       ├── child.ts, competitiveTeam.ts, event.ts, group.ts
+│       ├── child.ts, competitiveTeam.ts, event.ts, group.ts, post.ts
 │       ├── match.ts, opposingTeam.ts, registration.ts, session.ts
 │       └── entities.ts                    # Tipi condivisi tra schemi
 ├── proxy.ts                               # Middleware pass-through (matcher vuoto — auth nei layout/API)
-├── theme.ts                               # MUI theme arancione/nero
+├── theme.ts                               # MUI theme arancione/nero (lightTheme + darkTheme)
 └── types/
     └── next-auth.d.ts                     # Augmentazione tipi sessione
 ```
@@ -152,31 +194,42 @@ src/
 
 ## Modelli Prisma principali
 
-| Modello Prisma        | Tabella DB            | Scopo                                               |
-| --------------------- | --------------------- | --------------------------------------------------- |
-| `TrainingSession`     | `TrainingSession`     | Allenamenti                                         |
-| `Registration`        | `Registration`        | Iscrizioni (userId o childId o anonimo)             |
-| `User`                | `User`                | Utenti Auth.js + dati atleta                        |
-| `Session`             | `Session`             | Sessioni OAuth (Auth.js)                            |
-| `Account`             | `Account`             | Provider OAuth (Google)                             |
-| `Child`               | `Child`               | Figli senza account, gestiti dal genitore           |
-| `LinkRequest`         | `LinkRequest`         | Richiesta collegamento genitore-figlio              |
-| `SportRoleHistory`    | `SportRoleHistory`    | Storico cambi ruolo sportivo                        |
-| `PushSubscription`    | `PushSubscription`    | Subscription Web Push                               |
-| `Season`              | `Season`              | Stagioni sportive (es. "2025-26")                   |
-| `CompetitiveTeam`     | `CompetitiveTeam`     | Squadre agonistiche per stagione                    |
-| `TeamMembership`      | `TeamMembership`      | Appartenenza giocatore (User o Child) a una squadra |
-| `Match`               | `OfficialMatch`       | Partite ufficiali                                   |
-| `OpposingTeam`        | `OpposingTeam`        | Squadre avversarie                                  |
-| `PlayerMatchStats`    | `PlayerMatchStats`    | Statistiche giocatore per partita                   |
-| `Event`               | `Event`               | Eventi generici (tornei, trasferte…)                |
-| `AppNotification`     | `AppNotification`     | Notifiche in-app                                    |
-| `AppNotificationRead` | `AppNotificationRead` | Tracking lettura notifiche per utente               |
-| `Group`               | `Group`               | Gironi di campionato                                |
-| `GroupMatch`          | `GroupMatch`          | Partite di girone                                   |
-| `MatchCallup`         | `MatchCallup`         | Convocazioni giocatore per partita                  |
-| `TrainingMatchResult` | `TrainingMatchResult` | Risultati partitelle a fine allenamento             |
-| `AuditEvent`          | `AuditEvent`          | Log azioni admin (audit trail)                      |
+| Modello Prisma         | Tabella DB             | Scopo                                               |
+| ---------------------- | ---------------------- | --------------------------------------------------- |
+| `TrainingSession`      | `TrainingSession`      | Allenamenti                                         |
+| `Registration`         | `Registration`         | Iscrizioni (userId o childId o anonimo)             |
+| `User`                 | `User`                 | Utenti Auth.js + dati atleta                        |
+| `Session`              | `Session`              | Sessioni OAuth (Auth.js)                            |
+| `Account`              | `Account`              | Provider OAuth (Google)                             |
+| `Child`                | `Child`                | Figli senza account, gestiti dal genitore           |
+| `LinkRequest`          | `LinkRequest`          | Richiesta collegamento genitore-figlio              |
+| `SportRoleHistory`     | `SportRoleHistory`     | Storico cambi ruolo sportivo                        |
+| `PushSubscription`     | `PushSubscription`     | Subscription Web Push                               |
+| `Season`               | `Season`               | Stagioni sportive (es. "2025-26")                   |
+| `CompetitiveTeam`      | `CompetitiveTeam`      | Squadre agonistiche per stagione                    |
+| `TeamMembership`       | `TeamMembership`       | Appartenenza giocatore (User o Child) a una squadra |
+| `Match`                | `OfficialMatch`        | Partite ufficiali                                   |
+| `OpposingTeam`         | `OpposingTeam`         | Squadre avversarie                                  |
+| `PlayerMatchStats`     | `PlayerMatchStats`     | Statistiche giocatore per partita                   |
+| `Event`                | `Event`                | Eventi generici (tornei, trasferte…)                |
+| `AppNotification`      | `AppNotification`      | Notifiche in-app                                    |
+| `AppNotificationRead`  | `AppNotificationRead`  | Tracking lettura notifiche per utente               |
+| `Group`                | `Group`                | Gironi di campionato                                |
+| `GroupCompetitiveTeam` | `GroupCompetitiveTeam` | Nostre squadre iscritte a un girone                 |
+| `GroupTeam`            | `GroupTeam`            | Squadre avversarie iscritte a un girone             |
+| `GroupMatch`           | `GroupMatch`           | Partite di girone                                   |
+| `MatchCallup`          | `MatchCallup`          | Convocazioni giocatore per partita                  |
+| `MatchAvailability`    | `MatchAvailability`    | Disponibilità giocatore a una partita               |
+| `MatchMvp`             | `MatchMvp`             | MVP votati per partita                              |
+| `RatingUpdate`         | `RatingUpdate`         | Storico aggiornamenti rating TrueSkill              |
+| `Post`                 | `Post`                 | News/post della bacheca                             |
+| `Poll`                 | `Poll`                 | Sondaggi abbinati ai post                           |
+| `PollOption`           | `PollOption`           | Opzioni di un sondaggio                             |
+| `PollVote`             | `PollVote`             | Voti dei sondaggi                                   |
+| `TrainingMatchResult`  | `TrainingMatchResult`  | Risultati partitelle a fine allenamento             |
+| `AuditEvent`           | `AuditEvent`           | Log azioni admin (audit trail)                      |
+| `InstagramPost`        | `InstagramPost`        | Post Instagram mirrorati per la Gallery             |
+| `VerificationToken`    | `VerificationToken`    | Token verifica Auth.js                              |
 
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
@@ -228,9 +281,26 @@ Comportamento `checkRegistrationAllowed()`:
 
 - **Library:** `web-push` npm package
 - **VAPID keys:** generate con `node -e "require('web-push').generateVAPIDKeys()..."`
-- **Invio:** `sendPushToAll(payload, adminOnly?)` da `@/lib/webpush.ts`
-- **Trigger automatici:** nuovo allenamento (tutti), squadre generate (tutti), nuovo utente GUEST (solo admin)
-- **Subscribe UI:** `PushNotificationToggle` component nella pagina profilo
+- **Invio:** `sendPushToAll(payload, adminOnly?, type?)` / `sendPushToTeam(teamId, ...)` / `sendPushToFilter({ sportRoles, gender }, ...)` da `@/lib/webpush.ts`
+- **Trigger automatici:** nuovo allenamento (tutti), squadre generate (tutti), nuovo utente GUEST (solo admin); inoltre i cron giornalieri (vedi sotto) inviano promemoria
+- **Subscribe UI:** `NotificationPrefsPanel` nella pagina profilo
+- **Cron Vercel** (autorizzati via `CRON_SECRET`, in `src/app/api/cron/`):
+  - `cleanup-notifications` — pulizia notifiche vecchie (domenicale)
+  - `birthday-notifications` — auguri di compleanno
+  - `training-open-reminder` — promemoria apertura iscrizioni allenamento
+  - `match-availability-reminder` — promemoria conferma disponibilità partita
+  - `match-callup-reminder` — promemoria convocazioni
+  - `match-coverage-alert` — alert copertura ruoli insufficiente
+  - `instagram-sync` — sincronizza il feed Instagram nella Gallery (ogni 6h)
+
+## Sottosistemi recenti
+
+- **Rating / TrueSkill:** `src/lib/trueskill.ts` (implementazione), `ratingEngine.ts` (applicazione ai risultati), `ratingTrend.ts` (andamento), `RatingUpdate` (storico). Usato da `lineupOptimizer.ts` per suggerire formazioni bilanciate (UI: `LineupOptimizerSection`) e dal tracker sviluppo (`/admin/sviluppo`, `DevelopmentTracker`). Badge derivati in `badges.ts`.
+- **News / bacheca:** modelli `Post` + `Poll`/`PollOption`/`PollVote`. API `posts/` (+ `posts/admin/`) e `polls/[id]/vote`. Admin: `/admin/news` (`AdminNewsClient`, `PostEditor`, `PollEditor`). Pubblico: `/news` e `/news/[slug]`. Widget: `PollWidget`, `LatestNewsHero`.
+- **Disponibilità & convocazioni:** `MatchAvailability` (l'atleta dichiara la disponibilità per una partita) e `MatchCallup` (lo staff convoca). API `matches/[matchId]/availability` e `/callups`, più `users/me/availabilities`. UI utente: `/profilo/disponibilita` (`MieDisponibilitaClient`); UI staff: `/admin/partite/[matchId]/convocazioni` (`ConvocazioniClient`). Logica: `callupContext.ts`, `callupStats.ts`, `matchCoverage.ts`.
+- **MVP partita:** `MatchMvp` + `matches/[matchId]/mvps`.
+- **Tema chiaro/scuro:** `ThemeContext` + `lightTheme`/`darkTheme` in `theme.ts`. Lo switch è nel menu utente (header) e nel drawer mobile. Usare sempre token semantici del tema (`text.primary`, `background.paper`, …): i colori hardcoded rompono il dark mode.
+- **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (ogni 6h, `vercel.json`) chiama `syncInstagram()` (`src/lib/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
 
 ## Variabili d'ambiente richieste
 
@@ -246,7 +316,11 @@ VAPID_PRIVATE_KEY=                # Chiave privata VAPID
 VAPID_EMAIL=                      # Email contatto per Web Push (es. admin@karibubaskin.it)
 RESEND_API_KEY=                   # API key Resend per email transazionali
 CONTACT_EMAIL=                    # Destinatario notifiche form contatti
-CRON_SECRET=                      # Secret per autorizzare il cron job Vercel
+BLOB_READ_WRITE_TOKEN=            # Token Vercel Blob per upload immagini (auto su Vercel)
+CRON_SECRET=                      # Secret per autorizzare i cron job Vercel
+IG_ACCESS_TOKEN=                  # Gallery: token long-lived Instagram Graph API
+IG_BUSINESS_ACCOUNT_ID=          # Gallery: ID account Instagram Business
+YOUTUBE_CHANNEL_ID=               # Gallery: ID canale YouTube (feed RSS, sezione video)
 ENABLE_TEST_LOGIN=                # "true" per abilitare login fittizio (solo dev)
 TEST_PASSWORD=                    # Password per il login di test (default: karibu-test)
 ```

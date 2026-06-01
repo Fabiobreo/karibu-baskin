@@ -807,3 +807,23 @@ model RatingUpdate {
   @@index([childId, createdAt])
   @@index([sourceId])
 }
+
+// ── Gallery: post Instagram mirrorati ─────────────────────────────────────────
+// Popolato dal cron `instagram-sync`: le immagini vengono ri-caricate su Vercel
+// Blob (gli URL CDN di IG scadono) e i metadati salvati qui. La pagina /gallery
+// legge da qui, quindi resta veloce e disponibile offline.
+model InstagramPost {
+  id           String   @id // ID del media Instagram (idempotenza upsert)
+  caption      String?  @db.Text
+  mediaType    String // IMAGE | VIDEO | CAROUSEL_ALBUM
+  permalink    String // link al post originale su Instagram
+  timestamp    DateTime // data di pubblicazione su Instagram
+  blobUrls     String[] // immagini mirrorate su Blob (1 o più per carosello)
+  thumbnailUrl String? // copertina per i video
+  hidden       Boolean  @default(false) // moderazione: nascondi senza eliminare
+  createdAt    DateTime @default(now())
+  syncedAt     DateTime @default(now()) @updatedAt
+
+  @@index([timestamp])
+  @@index([hidden, timestamp])
+}

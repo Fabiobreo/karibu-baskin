@@ -67,13 +67,14 @@ const PARTITE_LINKS = [
 const IL_BASKIN_LINKS: { label: string; href: string; disabled?: boolean; badge?: string }[] = [
   { label: "Cos'è il Baskin", href: "/il-baskin" },
   { label: "News", href: "/news" },
-  { label: "Gallery", href: "/gallery", disabled: true, badge: "Soon" },
+  { label: "Gallery", href: "/gallery" },
 ];
 
 // Voci dropdown "Contatti"
 const CONTATTI_LINKS = [
   { label: "Contatti", href: "/contatti" },
   { label: "FAQ", href: "/faq" },
+  { label: "Sponsor", href: "/sponsor" },
 ];
 
 // Voce fissa dropdown Squadre
@@ -119,14 +120,13 @@ export default function SiteHeader() {
     pathname === "/risultati" ||
     pathname === "/classifiche" ||
     pathname === "/marcatori" ||
-    (pathname?.startsWith("/partite") ?? false) ||
-    (pathname?.startsWith("/gironi") ?? false);
+    (pathname?.startsWith("/partite") ?? false);
   const squadreActive = pathname?.startsWith("/squadre") ?? false;
   const ilBaskinActive =
     pathname === "/il-baskin" ||
     (pathname?.startsWith("/news") ?? false) ||
     pathname === "/gallery";
-  const contattiActive = pathname === "/contatti" || pathname === "/faq";
+  const contattiActive = pathname === "/contatti" || pathname === "/faq" || pathname === "/sponsor";
 
   // Squadre della stagione corrente per i link dinamici del dropdown
   const { data: allTeams } = useSWR<{ id: string; name: string; season: string }[]>(

@@ -12,6 +12,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import ShieldIcon from "@mui/icons-material/Shield";
 import ArticleIcon from "@mui/icons-material/Article";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import CollectionsIcon from "@mui/icons-material/Collections";
 import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
 import AdminProssimePartite from "@/components/AdminProssimePartite";
@@ -132,6 +133,12 @@ export default async function AdminPage() {
             icon={<ArticleIcon />}
             label="Gestione News"
             color="#0277BD"
+          />
+          <NavCard
+            href="/admin/gallery"
+            icon={<CollectionsIcon />}
+            label="Gestione Gallery"
+            color="#AD1457"
           />
         </NavSection>
 

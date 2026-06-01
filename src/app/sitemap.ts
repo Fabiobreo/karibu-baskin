@@ -14,7 +14,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/classifiche`, priority: 0.75, changeFrequency: "weekly" },
     { url: `${BASE}/marcatori`, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/il-baskin`, priority: 0.6, changeFrequency: "monthly" },
-    { url: `${BASE}/la-squadra`, priority: 0.6, changeFrequency: "monthly" },
+    { url: `${BASE}/news`, priority: 0.6, changeFrequency: "weekly" },
+    { url: `${BASE}/gallery`, priority: 0.55, changeFrequency: "weekly" },
+    { url: `${BASE}/faq`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/contatti`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];

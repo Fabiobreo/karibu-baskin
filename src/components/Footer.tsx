@@ -68,7 +68,7 @@ export default function Footer() {
             </IconButton>
             <IconButton
               component="a"
-              href="https://www.facebook.com/karibu.baskin"
+              href="https://www.facebook.com/karibubaskin"
               target="_blank"
               rel="noopener noreferrer"
               sx={{ color: "rgba(255,255,255,0.6)", "&:hover": { color: "#1877F2" }, p: 0.75 }}
@@ -93,16 +93,28 @@ export default function Footer() {
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
             © {year} Karibu Baskin Montecchio Maggiore
           </Typography>
-          <Link
-            href="/privacy"
-            style={{
-              fontSize: "0.72rem",
-              color: "rgba(255,255,255,0.45)",
-              textDecorationColor: "rgba(255,255,255,0.2)",
-            }}
-          >
-            Informativa privacy
-          </Link>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Link
+              href="/sponsor"
+              style={{
+                fontSize: "0.72rem",
+                color: "rgba(255,255,255,0.45)",
+                textDecorationColor: "rgba(255,255,255,0.2)",
+              }}
+            >
+              Sponsor
+            </Link>
+            <Link
+              href="/privacy"
+              style={{
+                fontSize: "0.72rem",
+                color: "rgba(255,255,255,0.45)",
+                textDecorationColor: "rgba(255,255,255,0.2)",
+              }}
+            >
+              Informativa privacy
+            </Link>
+          </Box>
         </Box>
       </Box>
 
@@ -140,7 +152,7 @@ export default function Footer() {
             </IconButton>
             <IconButton
               component="a"
-              href="https://www.facebook.com/karibu.baskin"
+              href="https://www.facebook.com/karibubaskin"
               target="_blank"
               rel="noopener noreferrer"
               sx={{ color: "rgba(255,255,255,0.5)", "&:hover": { color: "#1877F2" }, p: 0.5 }}
@@ -173,18 +185,32 @@ export default function Footer() {
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
             © {year} Karibu Baskin
           </Typography>
-          <Link
-            href="/privacy"
-            style={{
-              fontSize: "0.8rem",
-              color: "rgba(255,255,255,0.75)",
-              textDecoration: "underline",
-              textDecorationColor: "rgba(255,255,255,0.35)",
-              padding: "4px 0",
-            }}
-          >
-            Informativa privacy
-          </Link>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Link
+              href="/sponsor"
+              style={{
+                fontSize: "0.8rem",
+                color: "rgba(255,255,255,0.75)",
+                textDecoration: "underline",
+                textDecorationColor: "rgba(255,255,255,0.35)",
+                padding: "4px 0",
+              }}
+            >
+              Sponsor
+            </Link>
+            <Link
+              href="/privacy"
+              style={{
+                fontSize: "0.8rem",
+                color: "rgba(255,255,255,0.75)",
+                textDecoration: "underline",
+                textDecorationColor: "rgba(255,255,255,0.35)",
+                padding: "4px 0",
+              }}
+            >
+              Informativa privacy
+            </Link>
+          </Box>
         </Box>
       </Box>
     </Box>

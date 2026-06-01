@@ -24,7 +24,7 @@ interface Props {
   onRemoveTeams: () => void;
 }
 
-export default function AllenamientoEndedView({
+export default function AllenamentoEndedView({
   teams,
   sessionId,
   sessionTitle,
