@@ -13,9 +13,11 @@ import {
   Divider,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { useSession } from "next-auth/react";
 import SiteHeader from "@/components/SiteHeader";
 import PageHero from "@/components/PageHero";
 import ContactForm from "@/components/ContactForm";
+import SuggestionForm from "@/components/SuggestionForm";
 import Image from "next/image";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
@@ -25,6 +27,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import MessageIcon from "@mui/icons-material/Message";
+import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -101,7 +104,9 @@ const PERKS = [
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function ContattiPage() {
+  const { status } = useSession();
   const [formOpen, setFormOpen] = useState(false);
+  const [suggestionOpen, setSuggestionOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<"contatti" | "partner">("contatti");
 
   // Segue la sezione attiva mentre si scrolla
@@ -314,6 +319,45 @@ export default function ContattiPage() {
               </Paper>
             </Collapse>
           </Box>
+
+          {/* Suggerimenti — solo utenti loggati */}
+          {status === "authenticated" && (
+            <Box
+              sx={{
+                mb: 5,
+                p: { xs: 2.5, md: 3 },
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 2,
+                bgcolor: "action.hover",
+              }}
+            >
+              <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
+                <LightbulbIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    Hai un&apos;idea per migliorare?
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Inviaci un suggerimento anonimo: lo staff lo leggerà nel pannello dedicato.
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant={suggestionOpen ? "outlined" : "contained"}
+                startIcon={suggestionOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                onClick={() => setSuggestionOpen((o) => !o)}
+                sx={{ mt: 2, fontWeight: 700, borderRadius: 2 }}
+              >
+                {suggestionOpen ? "Chiudi" : "Invia un suggerimento"}
+              </Button>
+              <Collapse in={suggestionOpen} timeout="auto">
+                <Box sx={{ mt: 2 }}>
+                  <SuggestionForm />
+                </Box>
+              </Collapse>
+            </Box>
+          )}
 
           <Divider sx={{ mb: 5 }} />
 

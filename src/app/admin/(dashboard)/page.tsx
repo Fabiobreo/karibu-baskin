@@ -13,6 +13,7 @@ import ShieldIcon from "@mui/icons-material/Shield";
 import ArticleIcon from "@mui/icons-material/Article";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CollectionsIcon from "@mui/icons-material/Collections";
+import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import AdminDashboardTabs from "@/components/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/AdminNotificationSender";
 import AdminProssimePartite from "@/components/AdminProssimePartite";
@@ -33,6 +34,7 @@ export default async function AdminPage() {
     pendingRoleCount,
     recentAnonymous,
     sessionsIncomplete,
+    newSuggestionsCount,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.findMany({
@@ -89,6 +91,8 @@ export default async function AdminPage() {
         registrations: { some: {} },
       },
     }),
+    // Suggerimenti nuovi (non ancora letti)
+    prisma.suggestion.count({ where: { status: "NUOVO" } }),
   ]);
 
   // Unisce utenti e figli, ordina per data e prende i 5 più recenti
@@ -178,6 +182,14 @@ export default async function AdminPage() {
             icon={<DownloadIcon />}
             label="Esporta CSV"
             color="#37474F"
+          />
+          <NavCard
+            href="/admin/suggerimenti"
+            icon={<LightbulbIcon />}
+            label="Suggerimenti"
+            badge={newSuggestionsCount}
+            badgeLabel="nuovi"
+            color="#F9A825"
           />
           <NavCard
             href="/admin/audit"

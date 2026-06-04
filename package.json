@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "email:dev": "react-email dev --dir src/emails --port 3333",
+    "email:dev": "email dev --dir src/emails --port 3333",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

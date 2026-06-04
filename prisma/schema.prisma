@@ -98,6 +98,8 @@ model User {
   posts                 Post[]
   pollVotes             PollVote[]
   ratingUpdates         RatingUpdate[]
+  suggestions           Suggestion[]
+  suggestionNotes       SuggestionNote[]
 }
 
 model Account {
@@ -826,4 +828,49 @@ model InstagramPost {
 
   @@index([timestamp])
   @@index([hidden, timestamp])
+}
+
+// ── Suggerimenti utenti ───────────────────────────────────────────────────────
+
+enum SuggestionCategory {
+  APP // app/sito web
+  ALLENAMENTI
+  PARTITE_EVENTI // partite ed eventi
+  ALTRO
+}
+
+enum SuggestionStatus {
+  NUOVO
+  LETTO
+  ARCHIVIATO
+}
+
+// Suggerimento "anonimo per finta": userId viene salvato ma NON deve mai essere
+// esposto nelle API o nella UI admin — recuperabile solo via query DB diretta.
+model Suggestion {
+  id        String             @id @default(cuid())
+  category  SuggestionCategory
+  message   String             @db.Text
+  status    SuggestionStatus   @default(NUOVO)
+  userId    String? // autore — MAI esposto in UI
+  user      User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  notes     SuggestionNote[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// Nota/risposta interna dello staff su un suggerimento. A differenza del
+// suggerimento, l'autore della nota (membro dello staff) È visibile.
+model SuggestionNote {
+  id           String     @id @default(cuid())
+  suggestionId String
+  suggestion   Suggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body         String     @db.Text
+  createdAt    DateTime   @default(now())
+
+  @@index([suggestionId, createdAt])
 }
