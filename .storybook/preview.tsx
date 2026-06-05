@@ -2,9 +2,11 @@ import type { Preview, Decorator } from "@storybook/nextjs-vite";
 import React from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NextIntlClientProvider } from "next-intl";
 import { fn } from "storybook/test";
 import { lightTheme, darkTheme } from "../src/theme";
 import { ToastContext } from "../src/context/ToastContext";
+import messages from "../src/i18n/messages/it.json";
 
 const toastValue = { showToast: fn() };
 
@@ -14,14 +16,16 @@ const withProviders: Decorator = (Story, context) => {
   const theme = isDark ? darkTheme : lightTheme;
 
   return (
-    <QueryClientProvider client={qc}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <ToastContext.Provider value={toastValue}>
-          <Story />
-        </ToastContext.Provider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <NextIntlClientProvider locale="it" messages={messages}>
+      <QueryClientProvider client={qc}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <ToastContext.Provider value={toastValue}>
+            <Story />
+          </ToastContext.Provider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </NextIntlClientProvider>
   );
 };
 
