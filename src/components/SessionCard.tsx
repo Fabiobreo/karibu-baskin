@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Box,
   Typography,
@@ -26,7 +27,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import TeamsModal from "@/components/TeamsModal";
 import { TEAM_META } from "@/lib/constants";
 
@@ -58,17 +59,22 @@ export interface SessionWithCount {
   _count: { registrations: number };
 }
 
-function getStatusLabel(date: Date, endTime: Date | null): { label: string; color: string } {
+type StatusKey = "live" | "ended" | "todayBang" | "tomorrow" | "daysAway";
+
+function getStatusData(
+  date: Date,
+  endTime: Date | null
+): { key: StatusKey; diffDays?: number; color: string } {
   const now = new Date();
   const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
-  if (now >= date && now <= end) return { label: "In corso", color: "match.win" };
-  if (now > end) return { label: "Terminato", color: "text.disabled" };
+  if (now >= date && now <= end) return { key: "live", color: "match.win" };
+  if (now > end) return { key: "ended", color: "text.disabled" };
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return { label: "Oggi!", color: "primary.main" };
-  if (diffDays === 1) return { label: "Domani", color: "info.main" };
-  return { label: `Tra ${diffDays} giorni`, color: "info.main" };
+  if (diffDays === 0) return { key: "todayBang", color: "primary.main" };
+  if (diffDays === 1) return { key: "tomorrow", color: "info.main" };
+  return { key: "daysAway", diffDays, color: "info.main" };
 }
 
 export default function SessionCard({
@@ -110,6 +116,10 @@ export default function SessionCard({
 }) {
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const dateLocale = useActiveDateLocale();
+  const t = useTranslations("trainings");
+  const tCommon = useTranslations("common");
+  const tRoles = useTranslations("roles");
 
   const date = new Date(s.date);
   const endTime = s.endTime ? new Date(s.endTime) : null;
@@ -117,9 +127,16 @@ export default function SessionCard({
   const hasTeams = !!s.teams;
   const myTeam =
     myRegistrationId && s.teams
-      ? (TEAM_META.find((t) => s.teams![t.key]?.some((a) => a.id === myRegistrationId)) ?? null)
+      ? (TEAM_META.find((tm) => s.teams![tm.key]?.some((a) => a.id === myRegistrationId)) ?? null)
       : null;
-  const status = getStatusLabel(date, endTime);
+  const statusData = getStatusData(date, endTime);
+  const statusLabel =
+    statusData.key === "daysAway"
+      ? tCommon("daysAway", { count: statusData.diffDays! })
+      : statusData.key === "tomorrow"
+        ? tCommon("tomorrow")
+        : t(statusData.key);
+  const status = { label: statusLabel, color: statusData.color };
   const now = new Date();
   const sessEnd = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
   const isPast = now > sessEnd;
@@ -233,7 +250,7 @@ export default function SessionCard({
                     sx={{ fontSize: "0.9rem !important", color: "common.white" }}
                   />
                 }
-                label="In arrivo"
+                label={t("comingSoon")}
                 size="small"
                 sx={{
                   bgcolor: "#6D4C41",
@@ -246,7 +263,7 @@ export default function SessionCard({
             {showChiuse && (
               <Chip
                 icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "common.white" }} />}
-                label="Iscrizioni chiuse"
+                label={t("registrationsClosed")}
                 size="small"
                 sx={{
                   bgcolor: "#546E7A",
@@ -342,7 +359,7 @@ export default function SessionCard({
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                  {format(date, dateFormat, { locale: it })}
+                  {format(date, dateFormat, { locale: dateLocale })}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
@@ -358,13 +375,13 @@ export default function SessionCard({
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <GroupsIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
-                  {s._count.registrations} {s._count.registrations === 1 ? "iscritto" : "iscritti"}
+                  {t("registeredCount", { count: s._count.registrations })}
                 </Typography>
               </Box>
               {isRegistered && !myTeam && (
                 <Chip
                   icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
-                  label="Iscritto"
+                  label={t("registeredBadge")}
                   size="small"
                   color="success"
                   sx={{ fontWeight: 600, fontSize: chipFontSize }}
@@ -378,8 +395,8 @@ export default function SessionCard({
                   icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
                   label={
                     s.restrictTeam
-                      ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                      : s.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")
+                      ? `${t("onlyTeam", { team: s.restrictTeam.name })}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}` : ""}`
+                      : s.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
                   }
                   size="small"
                   sx={{
@@ -392,7 +409,7 @@ export default function SessionCard({
                 {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
                   <Chip
                     icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
-                    label={`Aperto a tutti i ${s.openRoles.map((r) => `${r}`).join(", ")}`}
+                    label={t("openToAllRoles", { roles: s.openRoles.join(", ") })}
                     size="small"
                     sx={{
                       fontSize: chipFontSize,
@@ -425,7 +442,7 @@ export default function SessionCard({
                   size="small"
                   sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4 }}
                 >
-                  Iscriviti →
+                  {t("signUp")}
                 </Button>
               )}
               {isStaff && !isRegOpen && !isPast && onOpenRegistrations && (
@@ -482,7 +499,7 @@ export default function SessionCard({
                   onClick={() => setTeamsOpen(true)}
                   sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
                 >
-                  Vedi squadre
+                  {t("viewTeamsBtn")}
                 </Button>
               )}
               {isStaff && hasTeams && (

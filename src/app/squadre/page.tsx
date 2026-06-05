@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
 import {
   Box,
   Container,
@@ -28,14 +29,14 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-const STATS = [
-  { value: "2015", label: "Anno di fondazione" },
-  { value: "80+", label: "Atleti tesserati" },
-  { value: "2", label: "Squadre in campo" },
-  { value: "1°", label: "Titolo regionale 2018" },
-];
-
 export default async function SquadrePage() {
+  const t = await getTranslations("teams");
+  const STATS = [
+    { value: "2015", label: t("foundingYear") },
+    { value: "80+", label: t("registeredAthletes") },
+    { value: "2", label: t("teamsInField") },
+    { value: "1°", label: t("regionalTitle") },
+  ];
   const [teams, seasonRecords] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
@@ -54,9 +55,9 @@ export default async function SquadrePage() {
       <SiteHeader />
 
       <PageHero
-        chip="Chi siamo"
-        title="ASD Karibu Baskin"
-        subtitle="Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre nei campionati veneti."
+        chip={t("heroChip")}
+        title={t("heroTitle")}
+        subtitle={t("heroSubtitle")}
         subtitleMaxWidth={540}
       />
 
@@ -100,15 +101,15 @@ export default async function SquadrePage() {
         {currentTeams.length === 0 ? (
           <EmptyState
             icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title="Nessuna squadra registrata"
-            message="Le squadre verranno aggiunte dall'amministratore."
+            title={t("noTeams")}
+            message={t("noTeamsDesc")}
           />
         ) : (
           <Box>
             {currentSeason && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
                 <Chip
-                  label="In corso"
+                  label={t("currentSeasonChip")}
                   size="small"
                   icon={<StarIcon />}
                   color="warning"
@@ -120,7 +121,7 @@ export default async function SquadrePage() {
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
-                  Stagione {currentSeason}
+                  {t("seasonLabel")} {currentSeason}
                 </Typography>
               </Box>
             )}
@@ -129,9 +130,9 @@ export default async function SquadrePage() {
               fontWeight={800}
               sx={{ mb: 3, fontSize: { xs: "1.7rem", md: "2.1rem" } }}
             >
-              Le nostre squadre
+              {t("ourTeams")}
             </Typography>
-            <TeamGrid teams={currentTeams} />
+            <TeamGrid teams={currentTeams} t={t} />
           </Box>
         )}
 
@@ -155,16 +156,16 @@ export default async function SquadrePage() {
               <HistoryIcon sx={{ color: "text.secondary" }} />
               <Box>
                 <Typography variant="subtitle1" fontWeight={700}>
-                  Stagioni precedenti
+                  {t("previousSeasons")}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Consulta le squadre delle stagioni passate.
+                  {t("previousSeasonsDesc")}
                 </Typography>
               </Box>
             </Box>
             <Link href="/squadre/archivio" style={{ textDecoration: "none" }}>
               <Button variant="outlined" size="small">
-                Vai all&apos;archivio
+                {t("goToArchive")}
               </Button>
             </Link>
           </Box>
@@ -188,10 +189,10 @@ export default async function SquadrePage() {
           >
             <EmojiEventsIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
             <Typography variant="h5" fontWeight={800}>
-              Vuoi giocare con noi?
+              {t("joinUs")}
             </Typography>
             <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 420 }}>
-              Partecipa agli allenamenti e fatti notare dai coach.
+              {t("joinUsDesc")}
             </Typography>
           </Box>
         )}
@@ -212,7 +213,16 @@ type Team = {
   _count: { memberships: number; matches: number };
 };
 
-function TeamGrid({ teams, muted = false }: { teams: Team[]; muted?: boolean }) {
+function TeamGrid({
+  teams,
+  muted = false,
+  t,
+}: {
+  teams: Team[];
+  muted?: boolean;
+   
+  t: (key: string, values?: Record<string, any>) => string;
+}) {
   return (
     <Grid container spacing={3}>
       {teams.map((team) => (
@@ -277,13 +287,13 @@ function TeamGrid({ teams, muted = false }: { teams: Team[]; muted?: boolean }) 
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                     <GroupsIcon sx={{ fontSize: 16, color: "text.disabled" }} />
                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      {team._count.memberships} atleti
+                      {t("athleteCount", { count: team._count.memberships })}
                     </Typography>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                     <SportsSoccerIcon sx={{ fontSize: 16, color: "text.disabled" }} />
                     <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      {team._count.matches} partite
+                      {t("matchCount", { count: team._count.matches })}
                     </Typography>
                   </Box>
                 </Box>

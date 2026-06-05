@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { SportRoleResult } from "@/components/SportRoleQuestionnaire";
 
@@ -178,6 +179,7 @@ export function useRegistrationForm({
   const [note, setNote] = useState("");
   const [optimisticSubjects, setOptimisticSubjects] = useState<Set<string>>(new Set());
   const { showToast } = useToast();
+  const t = useTranslations("trainings");
 
   // Rimuovi dall'ottimistico i soggetti che il server non considera più iscritti
   useEffect(() => {
@@ -246,7 +248,7 @@ export function useRegistrationForm({
       });
     },
     onSuccess: (_, { displayName }) => {
-      showToast({ message: `${displayName} iscritto/a con successo!`, severity: "success" });
+      showToast({ message: t("registeredSuccess", { name: displayName }), severity: "success" });
       setAnonymousName("");
       setNote("");
       if (hasConfirmedRole) {
@@ -266,7 +268,7 @@ export function useRegistrationForm({
     const isAnon = !currentUser;
     const name = isAnon ? anonymousName.trim() : null;
     if (isAnon && !name) {
-      showToast({ message: "Inserisci il tuo nome", severity: "warning" });
+      showToast({ message: t("enterName"), severity: "warning" });
       return;
     }
 

@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { Collapse, Box, Typography } from "@mui/material";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
 import WifiIcon from "@mui/icons-material/Wifi";
+import { useTranslations } from "next-intl";
 
 export default function OfflineBanner() {
+  const t = useTranslations("offline");
   const [offline, setOffline] = useState(false);
   const [justReconnected, setJustReconnected] = useState(false);
 
@@ -50,7 +52,7 @@ export default function OfflineBanner() {
       >
         {offline ? <WifiOffIcon sx={{ fontSize: 16 }} /> : <WifiIcon sx={{ fontSize: 16 }} />}
         <Typography variant="caption" fontWeight={600}>
-          {offline ? "Sei offline — stai visualizzando dati in cache" : "Connessione ripristinata"}
+          {offline ? t("banner") : t("reconnected")}
         </Typography>
       </Box>
     </Collapse>

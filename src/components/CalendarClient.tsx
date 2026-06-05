@@ -2,6 +2,8 @@
 
 import { alpha } from "@mui/material/styles";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslations } from "next-intl";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import {
   Box,
   Typography,
@@ -60,8 +62,6 @@ import SessionRestrictionEditor, {
   type RestrictionValue,
 } from "@/components/SessionRestrictionEditor";
 
-const DAY_LABELS = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"];
-
 const RESULT_LABELS: Record<string, string> = {
   WIN: "Vittoria",
   LOSS: "Sconfitta",
@@ -72,12 +72,6 @@ const RESULT_COLORS: Record<string, string> = {
   LOSS: "match.loss",
   DRAW: "primary.main",
 };
-const TYPE_LABELS: Record<string, string> = {
-  training: "Allenamento",
-  match: "Partita",
-  event: "Evento",
-};
-
 interface TeamInfo {
   id: string;
   name: string;
@@ -99,6 +93,13 @@ function isVisible(ev: CalendarEvent, hidden: Set<string>): boolean {
 }
 
 export default function CalendarClient({ isStaff = false, isAdmin = false, teams = [] }: Props) {
+  const t = useTranslations("calendar");
+  const tCommon = useTranslations("common");
+  const dateLocale = useActiveDateLocale();
+  // Compute short day names starting from Monday (2024-01-01 is a Monday)
+  const DAY_LABELS = Array.from({ length: 7 }, (_, i) =>
+    format(new Date(2024, 0, 1 + i), "EEE", { locale: dateLocale })
+  );
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -212,7 +213,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     <Box>
       {/* Intestazione mese */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <IconButton onClick={prevMonth} size="small" aria-label="Mese precedente">
+        <IconButton onClick={prevMonth} size="small" aria-label={t("prevMonth")}>
           <ChevronLeftIcon />
         </IconButton>
         <Typography
@@ -225,9 +226,9 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             fontSize: { xs: "1.05rem", sm: "1.5rem" },
           }}
         >
-          {format(new Date(year, month), "MMMM yyyy", { locale: it })}
+          {format(new Date(year, month), "MMMM yyyy", { locale: dateLocale })}
         </Typography>
-        <IconButton onClick={nextMonth} size="small" aria-label="Mese successivo">
+        <IconButton onClick={nextMonth} size="small" aria-label={t("nextMonth")}>
           <ChevronRightIcon />
         </IconButton>
         <Typography
@@ -242,7 +243,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             fontSize: { xs: "0.75rem", sm: "0.875rem" },
           }}
         >
-          Oggi
+          {t("todayBtn")}
         </Typography>
       </Box>
 
@@ -451,7 +452,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             <LegendItem
               color="admin.allenamenti"
               icon={<SportsBasketballIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
-              label="Allenamento"
+              label={t("typeTraining")}
               active={!hiddenKeys.has("training")}
               onClick={() => toggleKey("training")}
             />
@@ -473,7 +474,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
               <LegendItem
                 color="error.main"
                 icon={<EmojiEventsIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
-                label="Partita"
+                label={t("typeMatch")}
                 active={!hiddenKeys.has("match:*")}
                 onClick={() => toggleKey("match:*")}
               />
@@ -481,7 +482,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             <LegendItem
               color="#039BE5"
               icon={<EventNoteIcon sx={{ fontSize: "0.8rem", color: "common.white" }} />}
-              label="Evento"
+              label={t("typeEvent")}
               active={!hiddenKeys.has("event")}
               onClick={() => toggleKey("event")}
             />
@@ -580,6 +581,8 @@ function EventDetailDialog({
   onClose: () => void;
   isStaff: boolean;
 }) {
+  const t = useTranslations("calendar");
+  const tCommon = useTranslations("common");
   if (!event) return null;
 
   const Icon =
@@ -637,7 +640,13 @@ function EventDetailDialog({
         </Box>
         <Box sx={{ overflow: "hidden", flex: 1 }}>
           <Chip
-            label={TYPE_LABELS[event.type]}
+            label={
+              event.type === "training"
+                ? t("typeTraining")
+                : event.type === "match"
+                  ? t("typeMatch")
+                  : t("typeEvent")
+            }
             size="small"
             sx={{
               bgcolor: (theme) => alpha(theme.palette.common.white, 0.25),
@@ -716,7 +725,7 @@ function EventDetailDialog({
 
       <DialogActions sx={{ px: 2.5, py: 1.5, gap: 1 }}>
         <Button onClick={onClose} color="inherit" size="small">
-          Chiudi
+          {tCommon("close")}
         </Button>
         {event.href && (
           <Button
@@ -727,7 +736,7 @@ function EventDetailDialog({
             onClick={onClose}
             size="small"
           >
-            Vai alla pagina
+            {t("viewPage")}
           </Button>
         )}
       </DialogActions>
@@ -752,6 +761,8 @@ function DayEventsDialog({
   onSelectEvent: (ev: CalendarEvent) => void;
   onAddEvent: () => void;
 }) {
+  const t = useTranslations("calendar");
+  const tCommon = useTranslations("common");
   if (!day) return null;
 
   const sorted = [...events].sort(
@@ -783,7 +794,7 @@ function DayEventsDialog({
       <DialogContent sx={{ pt: 0.5, pb: 1 }}>
         {sorted.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
-            Nessun evento in questo giorno.
+            {t("noEvents")}
           </Typography>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -873,7 +884,7 @@ function DayEventsDialog({
       </DialogContent>
       <DialogActions sx={{ px: 2.5, py: 1.5 }}>
         <Button onClick={onClose} color="inherit" size="small">
-          Chiudi
+          {tCommon("close")}
         </Button>
       </DialogActions>
     </Dialog>

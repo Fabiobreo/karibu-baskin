@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Box,
   Typography,
@@ -61,20 +62,25 @@ interface StatusBadge {
   bgcolor: string;
 }
 
-function getSessionStatus(date: Date, endTime: Date | null): StatusBadge {
+function getSessionStatus(
+  date: Date,
+  endTime: Date | null,
+  t: ReturnType<typeof useTranslations>,
+  tCommon: ReturnType<typeof useTranslations>
+): StatusBadge {
   const now = new Date();
   const end = sessionEndDate(date, endTime);
 
-  if (now >= date && now <= end) return { label: "In corso", bgcolor: "match.win" };
-  if (now > end) return { label: "Terminato", bgcolor: "action.selected" };
+  if (now >= date && now <= end) return { label: t("live"), bgcolor: "match.win" };
+  if (now > end) return { label: t("ended"), bgcolor: "action.selected" };
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return { label: "Oggi!", bgcolor: "primary.main" };
-  if (diffDays === 1) return { label: "Domani", bgcolor: "info.main" };
-  return { label: `Tra ${diffDays} giorni`, bgcolor: "info.main" };
+  if (diffDays === 0) return { label: t("todayBang"), bgcolor: "primary.main" };
+  if (diffDays === 1) return { label: tCommon("tomorrow"), bgcolor: "info.main" };
+  return { label: tCommon("daysAway", { count: diffDays }), bgcolor: "info.main" };
 }
 
 interface Props {
@@ -94,7 +100,11 @@ export default function AllenamientoHero({
   countdown,
   onSessionSaved,
 }: Props) {
-  const status = getSessionStatus(sessionDate, sessionEnd);
+  const tNav = useTranslations("nav");
+  const t = useTranslations("trainings");
+  const tCommon = useTranslations("common");
+  const tRoles = useTranslations("roles");
+  const status = getSessionStatus(sessionDate, sessionEnd, t, tCommon);
 
   const [sessionUrl] = useState(() => (typeof window !== "undefined" ? window.location.href : ""));
 
@@ -263,7 +273,7 @@ export default function AllenamientoHero({
                 "&:hover": { color: "common.white" },
               }}
             >
-              Allenamenti
+              {tNav("trainings")}
             </MuiLink>
             <Typography
               variant="body2"
@@ -314,7 +324,7 @@ export default function AllenamientoHero({
                         sx={{ fontSize: "0.85rem !important", color: "common.white" }}
                       />
                     }
-                    label="In arrivo"
+                    label={t("comingSoon")}
                     size="small"
                     sx={{
                       bgcolor: "#6D4C41",
@@ -329,7 +339,7 @@ export default function AllenamientoHero({
               return (
                 <Chip
                   icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "common.white" }} />}
-                  label="Iscrizioni chiuse"
+                  label={t("registrationsClosed")}
                   size="small"
                   sx={{
                     bgcolor: "#546E7A",
@@ -358,8 +368,8 @@ export default function AllenamientoHero({
                 icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
                 label={
                   session.restrictTeam
-                    ? `Solo ${session.restrictTeam.name}${session.allowedRoles?.length ? ` · ${session.allowedRoles.map((r) => `Ruolo ${r}`).join(", ")}` : ""}`
-                    : session.allowedRoles!.map((r) => `Ruolo ${r}`).join(", ")
+                    ? `${t("onlyTeam", { team: session.restrictTeam.name })}${session.allowedRoles?.length ? ` · ${session.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}` : ""}`
+                    : session.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
                 }
                 size="small"
                 sx={{
@@ -373,7 +383,7 @@ export default function AllenamientoHero({
             {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
               <Chip
                 icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
-                label={`Aperto a tutti i ${session.openRoles.map((r) => `${r}`).join(", ")}`}
+                label={t("openToAllRoles", { roles: session.openRoles.join(", ") })}
                 size="small"
                 sx={{
                   bgcolor: "success.light",

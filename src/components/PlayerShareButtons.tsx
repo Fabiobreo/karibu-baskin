@@ -5,6 +5,7 @@ import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 
 interface Props {
@@ -25,6 +26,7 @@ export default function PlayerShareButtons({
   playerColor,
 }: Props) {
   const { showToast } = useToast();
+  const t = useTranslations("share");
   const [busy, setBusy] = useState(false);
 
   function buildMessage(): { title: string; text: string; url: string } {
@@ -57,7 +59,7 @@ export default function PlayerShareButtons({
       } else if (nav?.clipboard) {
         // Fallback: copia negli appunti
         await nav.clipboard.writeText(msg.text);
-        showToast({ message: "Profilo copiato negli appunti", severity: "success" });
+        showToast({ message: t("shareProfile"), severity: "success" });
       }
     } finally {
       setBusy(false);
@@ -68,9 +70,9 @@ export default function PlayerShareButtons({
     try {
       const msg = buildMessage();
       await navigator.clipboard.writeText(msg.text);
-      showToast({ message: "Profilo copiato negli appunti", severity: "success" });
+      showToast({ message: t("shareProfile"), severity: "success" });
     } catch {
-      showToast({ message: "Impossibile copiare", severity: "error" });
+      showToast({ message: t("copyFailed"), severity: "error" });
     }
   }
 
@@ -99,9 +101,9 @@ export default function PlayerShareButtons({
           "&:hover": { bgcolor: playerColor, opacity: 0.9 },
         }}
       >
-        Condividi
+        {t("share")}
       </Button>
-      <Tooltip title="WhatsApp">
+      <Tooltip title={t("whatsapp")}>
         <IconButton
           size="small"
           onClick={handleWhatsApp}
@@ -111,12 +113,12 @@ export default function PlayerShareButtons({
             border: "1px solid rgba(255,255,255,0.15)",
             "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
           }}
-          aria-label="Condividi su WhatsApp"
+          aria-label={t("shareWhatsapp")}
         >
           <WhatsAppIcon sx={{ fontSize: 16 }} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Copia link">
+      <Tooltip title={t("copyLink")}>
         <IconButton
           size="small"
           onClick={handleCopy}
@@ -126,7 +128,7 @@ export default function PlayerShareButtons({
             border: "1px solid rgba(255,255,255,0.15)",
             "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
           }}
-          aria-label="Copia link profilo"
+          aria-label={t("copyProfileLink")}
         >
           <ContentCopyIcon sx={{ fontSize: 14 }} />
         </IconButton>

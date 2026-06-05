@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -7,7 +8,8 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
-import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS } from "@/lib/constants";
+import { ROLE_COLORS } from "@/lib/constants";
+import { getEntityLabels } from "@/lib/entityLabels";
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
 import NotificationPrefsPanel from "@/components/NotificationPrefsPanel";
@@ -33,6 +35,9 @@ const APP_ROLE_CHIP_COLOR: Record<
 };
 
 export default async function ProfiloPage() {
+  const t = await getTranslations("profile");
+  const tPlayers = await getTranslations("players");
+  const { roleLabel, genderLabel } = await getEntityLabels();
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -115,7 +120,7 @@ export default async function ProfiloPage() {
       <SiteHeader />
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
         <Typography variant="h4" fontWeight={800} gutterBottom>
-          Il mio profilo
+          {t("title")}
         </Typography>
 
         {anonymousMatches.length > 0 && (
@@ -153,7 +158,9 @@ export default async function ProfiloPage() {
               sx={{ fontWeight: 600 }}
             />
             <Chip
-              label={`${user._count.registrations + (user.childAccount?._count?.registrations ?? 0)} allenamenti`}
+              label={t("trainingsCount", {
+                count: user._count.registrations + (user.childAccount?._count?.registrations ?? 0),
+              })}
               size="small"
               variant="outlined"
               sx={{ fontWeight: 600 }}
@@ -177,7 +184,7 @@ export default async function ProfiloPage() {
                   startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
                   sx={{ fontSize: "0.78rem", fontWeight: 600 }}
                 >
-                  Vedi il tuo profilo pubblico
+                  {t("publicProfile")}
                 </Button>
               </Link>
             )}
@@ -188,7 +195,7 @@ export default async function ProfiloPage() {
                 startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
                 sx={{ fontSize: "0.78rem", fontWeight: 600 }}
               >
-                Le mie disponibilità
+                {t("myAvailabilities")}
               </Button>
             </Link>
           </Stack>
@@ -204,15 +211,15 @@ export default async function ProfiloPage() {
         {isAthlete && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              Dati atleta
+              {tPlayers("athleteInfo")}
             </Typography>
 
             {hasAthleteData ? (
               <Stack spacing={2}>
                 {user.sportRole && (
-                  <Row label="Ruolo Baskin">
+                  <Row label={tPlayers("baskinRole")}>
                     <Chip
-                      label={ROLE_LABELS[user.sportRole as keyof typeof ROLE_LABELS]}
+                      label={roleLabel(user.sportRole)}
                       size="small"
                       sx={{
                         bgcolor: ROLE_COLORS[user.sportRole],
@@ -223,12 +230,12 @@ export default async function ProfiloPage() {
                   </Row>
                 )}
                 {user.gender && (
-                  <Row label="Genere">
-                    <Typography variant="body2">{GENDER_LABELS[user.gender]}</Typography>
+                  <Row label={tPlayers("gender")}>
+                    <Typography variant="body2">{genderLabel(user.gender)}</Typography>
                   </Row>
                 )}
                 {user.birthDate && (
-                  <Row label="Data di nascita">
+                  <Row label={tPlayers("birthDate")}>
                     <Typography variant="body2">
                       {format(new Date(user.birthDate), "d MMMM yyyy", { locale: it })}
                     </Typography>
@@ -247,7 +254,7 @@ export default async function ProfiloPage() {
                         display="block"
                         gutterBottom
                       >
-                        Storico ruolo sportivo
+                        {tPlayers("roleHistory")}
                       </Typography>
                       <Stack spacing={0.5}>
                         {user.sportRoleHistory.map((h, i) => (
@@ -256,7 +263,7 @@ export default async function ProfiloPage() {
                               component="span"
                               sx={{ color: ROLE_COLORS[h.sportRole], fontWeight: 700 }}
                             >
-                              {ROLE_LABELS[h.sportRole as keyof typeof ROLE_LABELS]}
+                              {roleLabel(h.sportRole)}
                             </Box>
                             {" · "}
                             {format(new Date(h.changedAt), "d MMM yyyy", { locale: it })}
@@ -269,8 +276,7 @@ export default async function ProfiloPage() {
               </Stack>
             ) : (
               <Typography variant="body2" color="text.disabled">
-                Nessun dato atleta disponibile. L&apos;admin può impostare ruolo, genere e data di
-                nascita.
+                {t("noAthleteData")}
               </Typography>
             )}
           </Paper>
@@ -280,7 +286,7 @@ export default async function ProfiloPage() {
         {attendanceSeasons.length > 1 && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              Presenze agli allenamenti
+              {t("trainingAttendance")}
             </Typography>
             <Stack spacing={1}>
               {attendanceSeasons.map(([season, count]) => (
@@ -313,10 +319,10 @@ export default async function ProfiloPage() {
         {isParent && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              I miei figli
+              {t("myChildren")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Collega il profilo di tuo figlio/a per iscriverlo agli allenamenti.
+              {t("linkChildDesc")}
             </Typography>
             <ParentChildLinker initialChildren={user.children as ChildData[]} />
           </Paper>
@@ -330,7 +336,7 @@ export default async function ProfiloPage() {
           </Typography>
           <a href="/api/users/me/export" download style={{ textDecoration: "none" }}>
             <Button size="small" variant="outlined" sx={{ fontSize: "0.78rem" }}>
-              Scarica i miei dati
+              {t("downloadData")}
             </Button>
           </a>
         </Box>
@@ -345,7 +351,7 @@ export default async function ProfiloPage() {
             href={`mailto:asdkaribubaskin@gmail.com?subject=${encodeURIComponent("Richiesta eliminazione account GDPR")}&body=${encodeURIComponent(`Salve,\n\nrichiedo l'eliminazione del mio account e di tutti i dati personali associati.\n\nEmail account: ${user.email}\n\nGrazie.`)}`}
           >
             <Button size="small" color="error" variant="outlined" sx={{ fontSize: "0.78rem" }}>
-              Richiedi eliminazione account
+              {t("deleteAccount")}
             </Button>
           </Link>
         </Box>

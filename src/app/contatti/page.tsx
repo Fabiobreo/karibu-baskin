@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   Box,
   Container,
@@ -91,19 +92,11 @@ const SPONSORS = [
   { name: "CGRD", url: "https://www.cgrd.it/it/", logo: "/sponsors/cgrd.png" },
 ];
 
-const PERKS = [
-  { title: "Logo sul sito", desc: "Il tuo brand visibile su tutte le pagine del sito ufficiale" },
-  { title: "Visibilità sui social", desc: "Menzioni su Instagram, Facebook e YouTube" },
-  { title: "Logo sulla maglia", desc: "Il tuo logo sulle divise di gara delle nostre squadre" },
-  {
-    title: "Presenza agli eventi",
-    desc: "Visibilità durante tornei, allenamenti aperti e iniziative",
-  },
-];
-
 // ── Componente ────────────────────────────────────────────────────────────────
 
 export default function ContattiPage() {
+  const t = useTranslations("pages");
+  const PERKS = t.raw("contatti.perks") as { title: string; desc: string }[];
   const { status } = useSession();
   const [formOpen, setFormOpen] = useState(false);
   const [suggestionOpen, setSuggestionOpen] = useState(false);
@@ -138,9 +131,9 @@ export default function ContattiPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <PageHero
-        chip="Siamo qui"
-        title="Come possiamo aiutarti?"
-        subtitle="Hai una domanda, vuoi venire ad allenarci, o sei interessato a supportarci?"
+        chip={t("contatti.heroChip")}
+        title={t("contatti.heroTitle")}
+        subtitle={t("contatti.heroSubtitle")}
         py={{ xs: 7, md: 10 }}
         maxWidth="sm"
       >
@@ -158,7 +151,7 @@ export default function ContattiPage() {
               boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
             }}
           >
-            Ho una domanda
+            {t("contatti.heroHaveQuestion")}
           </Button>
           <Button
             variant="outlined"
@@ -180,7 +173,7 @@ export default function ContattiPage() {
               },
             }}
           >
-            Voglio sponsorizzare
+            {t("contatti.heroSponsor")}
           </Button>
         </Box>
       </PageHero>
@@ -199,7 +192,10 @@ export default function ContattiPage() {
         <Container maxWidth="md" disableGutters>
           <Box sx={{ display: "flex" }}>
             {(["contatti", "partner"] as const).map((id) => {
-              const labels = { contatti: "Contatti", partner: "Partner" };
+              const labels = {
+                contatti: t("contatti.tabContatti"),
+                partner: t("contatti.tabPartner"),
+              };
               const active = activeSection === id;
               return (
                 <Button
@@ -241,14 +237,14 @@ export default function ContattiPage() {
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
-            Parliamoci
+            {t("contatti.letsTalk")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 4, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
-            Contattaci
+            {t("contatti.contactUs")}
           </Typography>
 
           {/* 3 card contatto in fila */}
@@ -308,7 +304,7 @@ export default function ContattiPage() {
               onClick={() => setFormOpen((o) => !o)}
               sx={{ fontWeight: 700, borderRadius: 2 }}
             >
-              {formOpen ? "Chiudi il form" : "Scrivi un messaggio"}
+              {formOpen ? t("contatti.closeForm") : t("contatti.openForm")}
             </Button>
             <Collapse in={formOpen} timeout="auto">
               <Paper
@@ -336,10 +332,10 @@ export default function ContattiPage() {
                 <LightbulbIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="subtitle1" fontWeight={700}>
-                    Hai un&apos;idea per migliorare?
+                    {t("contatti.haveIdea")}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Inviaci un suggerimento anonimo: lo staff lo leggerà nel pannello dedicato.
+                    {t("contatti.suggestionDesc")}
                   </Typography>
                 </Box>
               </Box>
@@ -349,7 +345,7 @@ export default function ContattiPage() {
                 onClick={() => setSuggestionOpen((o) => !o)}
                 sx={{ mt: 2, fontWeight: 700, borderRadius: 2 }}
               >
-                {suggestionOpen ? "Chiudi" : "Invia un suggerimento"}
+                {suggestionOpen ? t("contatti.closeSuggestion") : t("contatti.openSuggestion")}
               </Button>
               <Collapse in={suggestionOpen} timeout="auto">
                 <Box sx={{ mt: 2 }}>
@@ -371,10 +367,10 @@ export default function ContattiPage() {
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >
-                Vieni a trovarci
+                {t("contatti.visitUs")}
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
-                La nostra sede
+                {t("contatti.ourVenue")}
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <MapEmbed height={220} />
@@ -400,10 +396,10 @@ export default function ContattiPage() {
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >
-                Seguici
+                {t("contatti.followUs")}
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
-                Social
+                {t("contatti.social")}
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 4 }}>
                 {SOCIAL.map((s) => (
@@ -463,7 +459,7 @@ export default function ContattiPage() {
                   mb: 1,
                 }}
               >
-                Dati associazione
+                {t("contatti.legalData")}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.9 }}>
                 ASD Karibu Baskin Montecchio Maggiore
@@ -497,18 +493,17 @@ export default function ContattiPage() {
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
-            Grazie a
+            {t("contatti.thanksTo")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
-            I nostri partner
+            {t("contatti.ourPartners")}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti
-            la nostra missione di inclusione.
+            {t("contatti.partnersDesc")}
           </Typography>
 
           <Box
@@ -566,18 +561,17 @@ export default function ContattiPage() {
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
-            Unisciti a noi
+            {t("contatti.joinUs")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
-            Diventa sponsor
+            {t("contatti.becomeSponsor")}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 620 }}>
-            Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità
-            vera e in un progetto che dal 2015 porta valore al territorio vicentino.
+            {t("contatti.becomeSponsorDesc")}
           </Typography>
 
           <Grid container spacing={2} sx={{ mb: 4 }}>
@@ -626,10 +620,10 @@ export default function ContattiPage() {
           >
             <Box>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
-                Interessato a sponsorizzarci?
+                {t("contatti.interestedSponsor")}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                Scrivici, ti risponderemo il prima possibile.
+                {t("contatti.writeUsDesc")}
               </Typography>
             </Box>
             <Button
@@ -640,7 +634,7 @@ export default function ContattiPage() {
               size="large"
               sx={{ fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}
             >
-              Scrivici
+              {t("contatti.writeUs")}
             </Button>
           </Box>
         </Container>

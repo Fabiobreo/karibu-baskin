@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Box,
   Typography,
@@ -54,6 +55,7 @@ export default function PollWidget({
   const [hasVoted, setHasVoted] = useState(userVoteOptionIds.length > 0);
   const { showToast } = useToast();
   const router = useRouter();
+  const t = useTranslations("poll");
 
   const now = new Date();
   const isClosed = closesAt ? new Date(closesAt) <= now : false;
@@ -78,7 +80,7 @@ export default function PollWidget({
       return;
     }
     if (selected.length === 0) {
-      showToast({ message: "Seleziona almeno un'opzione", severity: "warning" });
+      showToast({ message: t("selectOption"), severity: "warning" });
       return;
     }
     setSaving(true);
@@ -90,7 +92,7 @@ export default function PollWidget({
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
       setHasVoted(true);
-      showToast({ message: "Voto registrato", severity: "success" });
+      showToast({ message: t("voteRecorded"), severity: "success" });
       // Aggiorna i risultati lato server (anteprima staff o sondaggio chiuso)
       router.refresh();
     } catch (err) {
@@ -114,12 +116,12 @@ export default function PollWidget({
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, flexWrap: "wrap" }}>
         <HowToVoteIcon sx={{ color: "primary.main" }} fontSize="small" />
         <Typography variant="subtitle1" fontWeight={700}>
-          Sondaggio
+          {t("badge")}
         </Typography>
         {isClosed && (
           <Chip
             icon={<LockIcon />}
-            label="Chiuso"
+            label={t("closed")}
             size="small"
             color="default"
             sx={{ ml: "auto" }}
@@ -127,7 +129,7 @@ export default function PollWidget({
         )}
         {!isClosed && closesAt && (
           <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
-            Chiude {formatDistanceToNow(new Date(closesAt), { addSuffix: true, locale: it })}
+            {t("closes")} {formatDistanceToNow(new Date(closesAt), { addSuffix: true, locale: it })}
           </Typography>
         )}
       </Box>
@@ -138,8 +140,7 @@ export default function PollWidget({
 
       {isStaffPreview && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Anteprima riservata allo staff — il sondaggio è ancora aperto, i risultati non sono
-          visibili agli altri utenti.
+          {t("staffPreview")}
         </Alert>
       )}
 
@@ -156,7 +157,7 @@ export default function PollWidget({
                   letterSpacing: "0.06em",
                 }}
               >
-                Risultati attuali
+                {t("currentResults")}
               </Typography>
             )}
             {options.map((opt) => {
@@ -202,7 +203,7 @@ export default function PollWidget({
               );
             })}
             <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
-              {totalVotes} {totalVotes === 1 ? "voto" : "voti"} totali
+              {t("voteCount", { count: totalVotes })}
             </Typography>
           </Box>
         );
@@ -221,12 +222,12 @@ export default function PollWidget({
                   mb: 1,
                 }}
               >
-                Il tuo voto
+                {t("yourVote")}
               </Typography>
             )}
             {!isLoggedIn && (
               <Alert severity="info" sx={{ mb: 1.5 }}>
-                Fai login per partecipare al sondaggio.
+                {t("loginToParticipate")}
               </Alert>
             )}
 
@@ -267,11 +268,11 @@ export default function PollWidget({
                 disabled={saving || (!isLoggedIn ? false : selected.length === 0)}
                 startIcon={<HowToVoteIcon />}
               >
-                {!isLoggedIn ? "Accedi per votare" : hasVoted ? "Aggiorna voto" : "Vota"}
+                {!isLoggedIn ? t("loginBtn") : hasVoted ? t("updateVote") : t("vote")}
               </Button>
               {hasVoted && !isClosed && (
                 <Typography variant="caption" color="text.secondary">
-                  Puoi modificare il tuo voto fino alla chiusura.
+                  {t("changeNote")}
                 </Typography>
               )}
             </Box>

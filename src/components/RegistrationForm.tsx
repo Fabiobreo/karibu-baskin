@@ -16,13 +16,15 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import LockIcon from "@mui/icons-material/Lock";
-import { ROLE_COLORS, ROLE_LABELS, ROLES, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS, ROLES } from "@/lib/constants";
 import SportRoleQuestionnaire from "@/components/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { signIn } from "next-auth/react";
 import { useRegistrationForm } from "@/hooks/useRegistrationForm";
 import RegistrationSubjectSelector from "@/components/RegistrationSubjectSelector";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 // Re-export types for backwards compatibility with existing imports
 export type {
@@ -57,6 +59,8 @@ export default function RegistrationForm({
   parentChildren = [],
   restrictions,
 }: Props) {
+  const t = useTranslations("trainings");
+  const { roleLabel, sportRoleLabel } = useEntityLabels();
   const {
     coachMode,
     setCoachMode,
@@ -117,8 +121,8 @@ export default function RegistrationForm({
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
         <Typography variant="body1" fontWeight={600}>
           {parentChildren.length === 1
-            ? `Tu e ${parentChildren[0].name} siete già iscritti`
-            : "Tutti siete già iscritti"}
+            ? t("alreadyRegisteredParentAndChild", { name: parentChildren[0].name })
+            : t("alreadyRegisteredFamilyAll")}
         </Typography>
       </Box>
     );
@@ -130,7 +134,7 @@ export default function RegistrationForm({
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
         <Typography variant="body1" fontWeight={600}>
-          Sei già iscritto a questo allenamento
+          {t("alreadyRegistered")}
         </Typography>
       </Box>
     );
@@ -155,7 +159,9 @@ export default function RegistrationForm({
       roleToCheck !== null &&
       !restrictions.allowedRoles.includes(roleToCheck)
     ) {
-      return `Questo allenamento è riservato ai ruoli ${restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ")}`;
+      return t("restrictionRoles", {
+        roles: restrictions.allowedRoles.map((r) => roleLabel(r)).join(", "),
+      });
     }
     if (restrictions.restrictTeamId !== null && appRole !== null && appRole !== "GUEST") {
       if (roleToCheck !== null) {
@@ -168,7 +174,7 @@ export default function RegistrationForm({
           const teamName = restrictions.restrictTeamName
             ? `"${restrictions.restrictTeamName}"`
             : "una squadra specifica";
-          return `Questo allenamento è riservato ai membri di ${teamName}`;
+          return t("restrictionTeam", { team: teamName });
         }
       }
     }
@@ -179,20 +185,23 @@ export default function RegistrationForm({
     if (!restrictions || !hasRestrictions(restrictions)) return null;
     const parts: string[] = [];
     if (restrictions.allowedRoles.length > 0) {
-      const roleNames = restrictions.allowedRoles.map((r) => ROLE_LABELS[r]).join(", ");
+      const roleNames = restrictions.allowedRoles.map((r) => roleLabel(r)).join(", ");
+      const teamName = restrictions.restrictTeamName ?? "una squadra specifica";
       parts.push(
         restrictions.restrictTeamId
-          ? `Riservato ai ${roleNames} dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`
-          : `Riservato ai ${roleNames}`
+          ? t("restrictionInfoRolesTeam", { roles: roleNames, team: teamName })
+          : t("restrictionInfoRoles", { roles: roleNames })
       );
     } else if (restrictions.restrictTeamId) {
       parts.push(
-        `Riservato ai membri dei ${restrictions.restrictTeamName ?? "una squadra specifica"}`
+        t("restrictionInfoTeam", { team: restrictions.restrictTeamName ?? "una squadra specifica" })
       );
     }
     if (restrictions.openRoles.length > 0) {
       parts.push(
-        `Aperto ai ${restrictions.openRoles.map((r) => ROLE_LABELS[r]).join(", ")} di tutte le squadre`
+        t("restrictionInfoOpen", {
+          roles: restrictions.openRoles.map((r) => roleLabel(r)).join(", "),
+        })
       );
     }
     return parts.join("\n");
@@ -203,7 +212,7 @@ export default function RegistrationForm({
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Iscriviti all&apos;allenamento
+        {t("register")}
       </Typography>
 
       {/* Toggle Atleta / Allenatore (solo per COACH) */}
@@ -216,7 +225,7 @@ export default function RegistrationForm({
             display="block"
             sx={{ mb: 0.75 }}
           >
-            Come ti iscrivi?
+            {t("registerAs")}
           </Typography>
           <ToggleButtonGroup
             exclusive
@@ -227,10 +236,10 @@ export default function RegistrationForm({
             size="small"
           >
             <ToggleButton value="athlete" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
-              Atleta
+              {t("athlete")}
             </ToggleButton>
             <ToggleButton value="coach" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
-              Allenatore
+              {t("coachRole")}
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
@@ -250,7 +259,7 @@ export default function RegistrationForm({
       {/* ── Selettore soggetto (solo genitori) ── */}
       {isParent && (
         <RegistrationSubjectSelector
-          selfName={currentUser?.name ?? "Io stesso"}
+          selfName={currentUser?.name ?? t("registerSelf")}
           selfRegistered={selfRegistered}
           parentChildren={parentChildren}
           subject={subject}
@@ -264,8 +273,8 @@ export default function RegistrationForm({
         <>
           <Divider sx={{ mb: 2 }} />
           <TextField
-            label="Comunicazioni (opzionale)"
-            placeholder="es. Devo andare via alle 11:30"
+            label={t("notes")}
+            placeholder={t("notesPlaceholder")}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             fullWidth
@@ -274,9 +283,7 @@ export default function RegistrationForm({
             minRows={2}
             slotProps={{ htmlInput: { maxLength: 300 } }}
             disabled={loading}
-            helperText={
-              note.length > 0 ? `${note.length}/300` : "Lascia vuoto se non hai comunicazioni"
-            }
+            helperText={note.length > 0 ? `${note.length}/300` : t("notesEmpty")}
             sx={{ mb: 1.5 }}
           />
           <Button
@@ -286,7 +293,7 @@ export default function RegistrationForm({
             disabled={loading}
             startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
           >
-            {loading ? "Iscrizione in corso..." : "Iscriviti come allenatore"}
+            {loading ? t("registering") : t("registerAsCoach")}
           </Button>
         </>
       )}
@@ -298,8 +305,8 @@ export default function RegistrationForm({
             <CheckCircleIcon color="success" sx={{ fontSize: 32, mb: 0.5 }} />
             <Typography variant="body2" fontWeight={600}>
               {subject === "self"
-                ? "Sei già iscritto a questo allenamento"
-                : `${selectedChild?.name} è già iscritto/a`}
+                ? t("alreadyRegistered")
+                : t("alreadyRegisteredChild", { name: selectedChild?.name ?? "" })}
             </Typography>
           </Box>
         ) : (
@@ -317,12 +324,12 @@ export default function RegistrationForm({
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
                     <Typography variant="caption" color="text.secondary">
                       {currentUser.appRole === "GUEST"
-                        ? "Ospite"
+                        ? t("roleGuest")
                         : currentUser.appRole === "PARENT"
-                          ? "Genitore"
+                          ? t("roleParent")
                           : currentUser.appRole === "COACH"
-                            ? "Allenatore"
-                            : "Atleta"}
+                            ? t("coachRole")
+                            : t("athlete")}
                     </Typography>
                     {currentUser.teamMemberships
                       .filter((m) => m.teamSeason === getCurrentSeason())
@@ -385,7 +392,7 @@ export default function RegistrationForm({
             {!currentUser && (
               <>
                 <TextField
-                  label="Nome e cognome"
+                  label={t("fullName")}
                   value={anonymousName}
                   onChange={(e) => setAnonymousName(e.target.value)}
                   fullWidth
@@ -394,10 +401,10 @@ export default function RegistrationForm({
                   sx={{ mb: 1.5 }}
                   disabled={loading}
                   error={isDuplicateName}
-                  helperText={isDuplicateName ? "Questo nome è già iscritto" : ""}
+                  helperText={isDuplicateName ? t("duplicateName") : ""}
                 />
                 <TextField
-                  label="Email (opzionale)"
+                  label={t("emailOptional")}
                   type="email"
                   value={anonymousEmail}
                   onChange={(e) => setAnonymousEmail(e.target.value)}
@@ -411,7 +418,7 @@ export default function RegistrationForm({
                       component="span"
                       sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}
                     >
-                      <span>Hai un account Google?</span>
+                      <span>{t("hasGoogle")}</span>
                       <Box
                         component="button"
                         type="button"
@@ -429,7 +436,7 @@ export default function RegistrationForm({
                           "&:hover": { textDecoration: "underline" },
                         }}
                       >
-                        Accedi per registrarti più facilmente.
+                        {t("loginEasier")}
                       </Box>
                     </Box>
                   }
@@ -445,8 +452,8 @@ export default function RegistrationForm({
                   <Box>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                       {subject !== "self"
-                        ? `Ruolo di ${selectedChild?.name}:`
-                        : "Seleziona il tuo ruolo:"}
+                        ? t("staffRolePromptChild", { name: selectedChild?.name ?? "" })
+                        : t("staffRolePromptSelf")}
                     </Typography>
                     <ToggleButtonGroup
                       exclusive
@@ -480,7 +487,7 @@ export default function RegistrationForm({
                             },
                           }}
                         >
-                          {ROLE_LABELS[r]}
+                          {roleLabel(r)}
                         </ToggleButton>
                       ))}
                     </ToggleButtonGroup>
@@ -489,8 +496,8 @@ export default function RegistrationForm({
                   <>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                       {subject !== "self"
-                        ? `Rispondi a qualche domanda per determinare il ruolo di ${selectedChild?.name}:`
-                        : "Rispondi a qualche domanda per determinare il tuo ruolo nel Baskin:"}
+                        ? t("questionnairePromptChild", { name: selectedChild?.name ?? "" })
+                        : t("questionnairePromptSelf")}
                     </Typography>
                     <SportRoleQuestionnaire
                       onResult={handleQuestionnaireResult}
@@ -515,7 +522,7 @@ export default function RegistrationForm({
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
                   <SportsSoccerIcon color="action" fontSize="small" />
                   <Typography variant="body2" color="text.secondary">
-                    {hasConfirmedRole ? "Ruolo:" : "Ruolo suggerito:"}
+                    {hasConfirmedRole ? t("roleLabel") : t("roleSuggested")}
                   </Typography>
                   <Chip
                     label={sportRoleLabel(chosenRole.role, chosenRole.variant)}
@@ -540,7 +547,7 @@ export default function RegistrationForm({
                       }}
                       sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}
                     >
-                      ↩ Rifai il questionario
+                      {t("redoQuestionnaire")}
                     </Button>
                     <Typography
                       variant="caption"
@@ -548,7 +555,7 @@ export default function RegistrationForm({
                       display="block"
                       sx={{ mt: 0.5 }}
                     >
-                      Il ruolo sarà confermato dall&apos;allenatore dopo il primo allenamento.
+                      {t("roleConfirmNote")}
                     </Typography>
                   </Box>
                 )}
@@ -563,7 +570,7 @@ export default function RegistrationForm({
                       }}
                       sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}
                     >
-                      ↩ Cambia ruolo
+                      {t("changeRole")}
                     </Button>
                   </Box>
                 )}
@@ -572,14 +579,14 @@ export default function RegistrationForm({
                   <Box sx={{ textAlign: "center", py: 1 }}>
                     <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
                     <Typography variant="body2" color="error.main" fontWeight={600}>
-                      Non puoi iscriverti a questo allenamento
+                      {t("cannotRegister")}
                     </Typography>
                   </Box>
                 ) : (
                   <>
                     <TextField
-                      label="Comunicazioni (opzionale)"
-                      placeholder="es. Devo andare via alle 11:30"
+                      label={t("notes")}
+                      placeholder={t("notesPlaceholder")}
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                       fullWidth
@@ -588,11 +595,7 @@ export default function RegistrationForm({
                       minRows={2}
                       slotProps={{ htmlInput: { maxLength: 300 } }}
                       disabled={loading}
-                      helperText={
-                        note.length > 0
-                          ? `${note.length}/300`
-                          : "Lascia vuoto se non hai comunicazioni"
-                      }
+                      helperText={note.length > 0 ? `${note.length}/300` : t("notesEmpty")}
                       sx={{ mb: 1.5 }}
                     />
                     <Button
@@ -605,10 +608,10 @@ export default function RegistrationForm({
                       startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
                     >
                       {loading
-                        ? "Iscrizione in corso..."
+                        ? t("registering")
                         : subject !== "self"
-                          ? `Iscrivi ${selectedChild?.name}`
-                          : "Iscriviti"}
+                          ? t("registerChild", { name: selectedChild?.name ?? "" })
+                          : t("registerSelf")}
                     </Button>
                   </>
                 )}

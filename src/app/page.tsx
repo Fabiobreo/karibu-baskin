@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import HomeSessionsSection from "@/components/HomeSessionsSection";
@@ -19,34 +20,14 @@ import StarIcon from "@mui/icons-material/Star";
 
 export const revalidate = 0;
 
-const STORIA = [
-  {
-    anno: "2015",
-    titolo: "La fondazione",
-    testo:
-      "Il Karibu nasce da un progetto di inclusione del Comune di Montecchio Maggiore, spinto dalla passione di 4 giovani donne che amavano lo sport e credevano nel potere dello sport per abbattere le barriere.",
-  },
-  {
-    anno: "2018",
-    titolo: "Campioni regionali",
-    testo:
-      "Tre anni dopo la fondazione, il Karibu conquista il titolo di campione regionale. Una vittoria che premia il lavoro di tutto il gruppo e consolida la squadra come realtà di riferimento nel Veneto.",
-  },
-  {
-    anno: "2020",
-    titolo: "La pandemia",
-    testo:
-      "Come tante realtà sportive, anche noi ci siamo fermati. Ma non ci siamo arresi: gli allenamenti sono diventati videochiamate su Zoom, mantenendo vivo lo spirito di squadra in attesa di tornare in campo.",
-  },
-  {
-    anno: "2025",
-    titolo: "10 anni e due squadre",
-    testo:
-      'Raggiungiamo i 10 anni di attività con oltre 80 iscritti e organizziamo la "Karibu Ten League", un torneo celebrativo con 6 squadre partecipanti. Un traguardo che celebra la crescita dell\'associazione e apre una nuova era: quella dei Montekki e dei Kapuleti.',
-  },
-];
+type StoriaItem = { anno: string; titolo: string; testo: string };
+type ValueItem = { title: string; body: string };
 
 export default async function HomePage() {
+  const t = await getTranslations("home");
+  const storia = t.raw("storia") as StoriaItem[];
+  const values = t.raw("values") as ValueItem[];
+
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
@@ -134,108 +115,34 @@ export default async function HomePage() {
               fontWeight={700}
               sx={{ letterSpacing: "0.1em" }}
             >
-              Chi siamo
+              {t("whoWeAre")}
             </Typography>
             <Typography
               variant="h4"
               fontWeight={800}
               sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
             >
-              Quello in cui crediamo
+              {t("whatWeBelieve")}
             </Typography>
             <Grid container spacing={2}>
-              {/* Inclusione */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                  }}
-                >
-                  <Box sx={{ color: "primary.main", mb: 1.5 }}>
-                    <FavoriteIcon sx={{ fontSize: 32 }} />
-                  </Box>
-                  <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                    Inclusione
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                    Il nome &ldquo;Karibu&rdquo; in Swahili significa benvenuto. Chiunque voglia
-                    giocare, qualunque sia la sua abilità, è il benvenuto sul nostro campo.
-                  </Typography>
-                </Paper>
-              </Grid>
-              {/* Comunità */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                  }}
-                >
-                  <Box sx={{ color: "primary.main", mb: 1.5 }}>
-                    <GroupsIcon sx={{ fontSize: 32 }} />
-                  </Box>
-                  <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                    Comunità
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                    Siamo una famiglia di oltre 80 persone. Ogni allenamento è un momento di
-                    crescita condivisa, dentro e fuori dal campo.
-                  </Typography>
-                </Paper>
-              </Grid>
-              {/* Impegno */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                  }}
-                >
-                  <Box sx={{ color: "primary.main", mb: 1.5 }}>
-                    <EmojiEventsIcon sx={{ fontSize: 32 }} />
-                  </Box>
-                  <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                    Impegno
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                    Campioni regionali nel 2018, con due squadre nei campionati Veneto 2025/2026.
-                    Puntiamo sempre al miglioramento.
-                  </Typography>
-                </Paper>
-              </Grid>
-              {/* Territorio */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                  }}
-                >
-                  <Box sx={{ color: "primary.main", mb: 1.5 }}>
-                    <LocationOnIcon sx={{ fontSize: 32 }} />
-                  </Box>
-                  <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                    Territorio
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                    Nati da un progetto di inclusione del Comune di Montecchio Maggiore, siamo un
-                    punto di riferimento per tutto il Vicentino.
-                  </Typography>
-                </Paper>
-              </Grid>
+              {[FavoriteIcon, GroupsIcon, EmojiEventsIcon, LocationOnIcon].map((Icon, i) => (
+                <Grid key={i} size={{ xs: 12, sm: 6 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{ p: 3, border: "1px solid", borderColor: "divider", height: "100%" }}
+                  >
+                    <Box sx={{ color: "primary.main", mb: 1.5 }}>
+                      <Icon sx={{ fontSize: 32 }} />
+                    </Box>
+                    <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+                      {values[i]?.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                      {values[i]?.body}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              ))}
             </Grid>
           </Box>
 
@@ -249,17 +156,17 @@ export default async function HomePage() {
               fontWeight={700}
               sx={{ letterSpacing: "0.1em" }}
             >
-              La nostra storia
+              {t("ourHistory")}
             </Typography>
             <Typography
               variant="h4"
               fontWeight={800}
               sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
             >
-              10 anni di Karibu
+              {t("tenYears")}
             </Typography>
             <Stack spacing={0}>
-              {STORIA.map((item, i) => (
+              {storia.map((item, i) => (
                 <Box key={item.anno} sx={{ display: "flex", gap: 3 }}>
                   {/* Timeline line */}
                   <Box
@@ -284,7 +191,7 @@ export default async function HomePage() {
                     >
                       <StarIcon sx={{ color: "#fff", fontSize: 18 }} />
                     </Box>
-                    {i < STORIA.length - 1 && (
+                    {i < storia.length - 1 && (
                       <Box
                         sx={{
                           width: 2,
@@ -296,7 +203,7 @@ export default async function HomePage() {
                     )}
                   </Box>
                   {/* Content */}
-                  <Box sx={{ pb: i < STORIA.length - 1 ? 4 : 0 }}>
+                  <Box sx={{ pb: i < storia.length - 1 ? 4 : 0 }}>
                     <Typography
                       variant="caption"
                       color="primary"

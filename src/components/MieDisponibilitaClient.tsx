@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Container,
   Typography,
@@ -60,10 +61,10 @@ function entityKey(matchId: string, entity: AvailabilityEntity) {
   return `${matchId}:${entity.kind}:${entity.id}`;
 }
 
-function formatShortDate(iso: string): string {
+function formatShortDate(iso: string, tCommon: ReturnType<typeof useTranslations>): string {
   const d = new Date(iso);
-  if (isToday(d)) return `Oggi · ${format(d, "HH:mm")}`;
-  if (isTomorrow(d)) return `Domani · ${format(d, "HH:mm")}`;
+  if (isToday(d)) return `${tCommon("today")} · ${format(d, "HH:mm")}`;
+  if (isTomorrow(d)) return `${tCommon("tomorrow")} · ${format(d, "HH:mm")}`;
   return format(d, "EEE d MMM · HH:mm", { locale: it });
 }
 
@@ -88,6 +89,8 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
   const [savedOverrides, setSavedOverrides] = useState<Map<string, boolean>>(new Map());
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
+  const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
 
   function effectiveValue(matchId: string, entity: AvailabilityEntity): boolean | null {
     const k = entityKey(matchId, entity);
@@ -184,30 +187,27 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
           Profilo
         </MuiLink>
         <Typography variant="body2" color="text.primary">
-          Disponibilità
+          {t("availabilitiesTitle")}
         </Typography>
       </Breadcrumbs>
 
       <Typography variant="h4" fontWeight={800} gutterBottom>
-        Le mie disponibilità
+        {t("myAvailabilities")}
       </Typography>
       <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: "block" }}>
-        Tocca &quot;Sì&quot; o &quot;No&quot; per ogni partita, poi salva in fondo. Se non rispondi,
-        il coach ti vede come <b>non disponibile</b>.
+        {t("availabilitiesDesc")}
       </Typography>
 
       {initialMatches.length === 0 ? (
         <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-          <Typography color="text.secondary">
-            Nessuna partita trovata per le tue squadre.
-          </Typography>
+          <Typography color="text.secondary">{t("noMatchesForTeams")}</Typography>
         </Paper>
       ) : (
         <>
           {futureMatches.length === 0 ? (
             <Paper elevation={0} variant="outlined" sx={{ p: 2.5, textAlign: "center", mb: 3 }}>
               <Typography variant="body2" color="text.secondary">
-                Nessuna partita futura programmata.
+                {t("noUpcomingMatches")}
               </Typography>
             </Paper>
           ) : (
@@ -218,7 +218,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                 color="primary"
                 sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
               >
-                Prossime ({futureMatches.length})
+                {t("upcoming")} ({futureMatches.length})
               </Typography>
               {futureMatches.map((m) => (
                 <CompactMatchRow
@@ -241,7 +241,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                 color="text.disabled"
                 sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
               >
-                Passate ({pastMatches.length})
+                {t("past")} ({pastMatches.length})
               </Typography>
               {pastMatches.map((m) => (
                 <CompactMatchRow
@@ -279,7 +279,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
           }}
         >
           <Typography variant="body2" fontWeight={700}>
-            {drafts.size} {drafts.size === 1 ? "modifica" : "modifiche"} da salvare
+            {t("pendingChanges", { count: drafts.size })}
           </Typography>
           <Box sx={{ display: "flex", gap: 0.75 }}>
             <Button
@@ -288,7 +288,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
               disabled={saving}
               sx={{ fontSize: "0.78rem" }}
             >
-              Annulla
+              {tCommon("cancel")}
             </Button>
             <Button
               size="small"
@@ -300,7 +300,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
               disabled={saving}
               sx={{ fontSize: "0.78rem" }}
             >
-              Salva
+              {tCommon("save")}
             </Button>
           </Box>
         </Paper>
@@ -324,6 +324,7 @@ function CompactMatchRow({
   hasDraft,
   onChange,
 }: CompactMatchRowProps) {
+  const tCommon = useTranslations("common");
   return (
     <Paper
       elevation={0}
@@ -356,7 +357,7 @@ function CompactMatchRow({
           color="text.secondary"
           sx={{ ml: "auto", fontWeight: 600, fontSize: "0.72rem" }}
         >
-          {formatShortDate(m.date)}
+          {formatShortDate(m.date, tCommon)}
         </Typography>
       </Box>
 
@@ -440,7 +441,7 @@ function CompactMatchRow({
                 }}
               >
                 <EventAvailableIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                Sì
+                {tCommon("yes")}
               </ToggleButton>
               <ToggleButton
                 value={false}
@@ -452,7 +453,7 @@ function CompactMatchRow({
                 }}
               >
                 <EventBusyIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                No
+                {tCommon("no")}
               </ToggleButton>
             </ToggleButtonGroup>
           </Box>

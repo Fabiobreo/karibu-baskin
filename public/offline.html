@@ -22,10 +22,7 @@
     img { width: 72px; height: 72px; object-fit: contain; opacity: 0.9; }
     h1 { font-size: 1.5rem; font-weight: 800; color: #E65100; }
     p { font-size: 0.95rem; color: rgba(255,255,255,0.6); max-width: 320px; line-height: 1.6; }
-    .icon {
-      font-size: 3rem;
-      margin-bottom: -8px;
-    }
+    .icon { font-size: 3rem; margin-bottom: -8px; }
     button {
       margin-top: 8px;
       background: #E65100;
@@ -44,11 +41,20 @@
 <body>
   <span class="icon">📡</span>
   <img src="/logo.png" alt="Karibu Baskin" />
-  <h1>Sei offline</h1>
-  <p>Controlla la connessione. Alcune pagine visitate di recente sono comunque disponibili.</p>
-  <button onclick="location.reload()">Riprova</button>
+  <h1 id="title">Sei offline</h1>
+  <p id="desc">Controlla la connessione. Alcune pagine visitate di recente sono comunque disponibili.</p>
+  <button id="btn" onclick="location.reload()">Riprova</button>
   <script>
-    window.addEventListener("online", () => location.reload());
+    var lang = (document.cookie.match(/karibu-locale=([^;]+)/) || [])[1]
+      || navigator.language.slice(0, 2);
+    if (lang === "en") {
+      document.documentElement.lang = "en";
+      document.getElementById("title").textContent = "You are offline";
+      document.getElementById("desc").textContent =
+        "Check your connection. Some recently visited pages are still available.";
+      document.getElementById("btn").textContent = "Try again";
+    }
+    window.addEventListener("online", function() { location.reload(); });
   </script>
 </body>
 </html>

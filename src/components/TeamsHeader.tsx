@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 import { Box, Typography, Tooltip, IconButton, CircularProgress } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
@@ -28,10 +29,11 @@ export default function TeamsHeader({
   onRemoveTeams: () => void;
   onEditTeams?: () => void;
 }) {
+  const t = useTranslations("nav");
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
       <Typography variant="h6" fontWeight={700}>
-        Squadre
+        {t("teams")}
       </Typography>
       {teams && (
         <Box sx={{ display: "flex", gap: 0.5, alignItems: "center" }}>

@@ -8,30 +8,34 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
+import { getTranslations, getLocale } from "next-intl/server";
 import SiteHeader from "@/components/SiteHeader";
 import PageHero from "@/components/PageHero";
-import { FAQS } from "@/lib/faqs";
+import { getFaqs } from "@/lib/faqs";
 
 export const metadata = { title: "FAQ — Karibu Baskin" };
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const [t, locale] = await Promise.all([getTranslations("pages"), getLocale()]);
+  const FAQS = getFaqs(locale);
+
   return (
     <>
       <SiteHeader />
 
       <PageHero
-        chip="Hai una domanda?"
-        title="Domande frequenti"
-        subtitle="Le risposte alle domande più comuni su Karibu Baskin, allenamenti e iscrizioni."
+        chip={t("faq.heroChip")}
+        title={t("faq.heroTitle")}
+        subtitle={t("faq.heroSubtitle")}
         subtitleMaxWidth={520}
       />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Non trovi la risposta che cerchi?{" "}
+          {t("faq.noAnswer")}{" "}
           <Link href="/contatti" style={{ color: "inherit" }}>
             <Box component="span" sx={{ color: "primary.main", fontWeight: 600 }}>
-              Scrivici
+              {t("faq.contactUs")}
             </Box>
           </Link>
           .

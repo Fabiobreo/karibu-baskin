@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import ErrorPage from "@/components/ErrorPage";
+import { useTranslations } from "next-intl";
 
 export default function Error({
   error,
@@ -9,6 +10,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("errors");
+
   useEffect(() => {
     console.error("[error boundary]", {
       name: error.name,
@@ -20,8 +23,8 @@ export default function Error({
   return (
     <ErrorPage
       code="500"
-      title="Qualcosa è andato storto"
-      description="Si è verificato un errore imprevisto. Puoi riprovare oppure tornare alla pagina principale."
+      title={t("serverError")}
+      description={t("serverErrorDesc")}
       showReset
       onReset={reset}
       digest={error.digest}

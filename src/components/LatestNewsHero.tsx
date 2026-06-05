@@ -2,7 +2,9 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { Box, Container, Typography, Chip, Grid2 as Grid, Stack } from "@mui/material";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
@@ -20,20 +22,25 @@ function stripHtml(html: string, len: number): string {
 }
 
 export default async function LatestNewsHero() {
-  const posts = await prisma.post.findMany({
-    where: { publishedAt: { not: null } },
-    orderBy: { publishedAt: "desc" },
-    take: 4,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      body: true,
-      imageUrl: true,
-      publishedAt: true,
-      poll: { select: { id: true, closesAt: true } },
-    },
-  });
+  const [posts, locale] = await Promise.all([
+    prisma.post.findMany({
+      where: { publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      take: 4,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        body: true,
+        imageUrl: true,
+        publishedAt: true,
+        poll: { select: { id: true, closesAt: true } },
+      },
+    }),
+    getLocale(),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
+  const [t, tm] = await Promise.all([getTranslations("home"), getTranslations("matches")]);
 
   if (posts.length === 0) return null;
 
@@ -52,28 +59,28 @@ export default async function LatestNewsHero() {
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
             >
-              Aggiornamenti
+              {t("updates")}
             </Typography>
             <Typography
               variant="h5"
               fontWeight={800}
               sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
             >
-              Ultime news
+              {t("latestNews")}
             </Typography>
           </Box>
         </Box>
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: side.length > 0 ? 7 : 12 }}>
-            <FeaturedCard post={featured} />
+            <FeaturedCard post={featured} dateLocale={dateLocale} featuredLabel={t("featured")} />
           </Grid>
 
           {side.length > 0 && (
             <Grid size={{ xs: 12, md: 5 }}>
               <Stack spacing={2} sx={{ height: "100%" }}>
                 {side.map((p) => (
-                  <SideCard key={p.id} post={p} />
+                  <SideCard key={p.id} post={p} dateLocale={dateLocale} />
                 ))}
               </Stack>
             </Grid>
@@ -87,7 +94,7 @@ export default async function LatestNewsHero() {
               color="primary"
               sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
             >
-              Vedi tutte →
+              {tm("homeSeeAll")}
             </Typography>
           </Link>
         </Box>
@@ -106,7 +113,15 @@ type PostItem = {
   poll: { id: string; closesAt: Date | null } | null;
 };
 
-function FeaturedCard({ post }: { post: PostItem }) {
+function FeaturedCard({
+  post,
+  dateLocale,
+  featuredLabel,
+}: {
+  post: PostItem;
+  dateLocale: Locale;
+  featuredLabel: string;
+}) {
   const teaser = stripHtml(post.body, FEATURED_TEASER_LEN);
 
   return (
@@ -188,8 +203,8 @@ function FeaturedCard({ post }: { post: PostItem }) {
         >
           <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
             <Chip
-              icon={<ArticleIcon sx={{ fontSize: 16, color: "inherit !important" }} />}
-              label="In evidenza"
+              icon={<ArticleIcon sx={{ fontSize: 16 }} />}
+              label={featuredLabel}
               size="small"
               sx={{
                 bgcolor: "primary.main",
@@ -235,7 +250,7 @@ function FeaturedCard({ post }: { post: PostItem }) {
 
           {post.publishedAt && (
             <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>
-              {format(new Date(post.publishedAt), "d MMMM yyyy", { locale: it })}
+              {format(new Date(post.publishedAt), "d MMMM yyyy", { locale: dateLocale })}
             </Typography>
           )}
         </Box>
@@ -244,7 +259,7 @@ function FeaturedCard({ post }: { post: PostItem }) {
   );
 }
 
-function SideCard({ post }: { post: PostItem }) {
+function SideCard({ post, dateLocale }: { post: PostItem; dateLocale: Locale }) {
   const teaser = stripHtml(post.body, SIDE_TEASER_LEN);
 
   return (
@@ -324,7 +339,7 @@ function SideCard({ post }: { post: PostItem }) {
           )}
           {post.publishedAt && (
             <Typography variant="caption" color="text.disabled" sx={{ mt: "auto", pt: 0.5 }}>
-              {format(new Date(post.publishedAt), "d MMM yyyy", { locale: it })}
+              {format(new Date(post.publishedAt), "d MMM yyyy", { locale: dateLocale })}
             </Typography>
           )}
         </Box>

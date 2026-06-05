@@ -4,12 +4,14 @@ import { Box, Typography, Button, Container } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 function scrollToAllenamenti() {
   document.getElementById("allenamenti")?.scrollIntoView({ behavior: "smooth" });
 }
 
 export default function HeroSection() {
+  const t = useTranslations("home");
   return (
     <Box
       sx={{
@@ -95,7 +97,7 @@ export default function HeroSection() {
             textShadow: "0 1px 8px rgba(0,0,0,0.4)",
           }}
         >
-          Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.
+          {t("heroSubtitle")}
         </Typography>
 
         {/* CTA */}
@@ -116,7 +118,7 @@ export default function HeroSection() {
               },
             }}
           >
-            Prossimi allenamenti
+            {t("upcomingTrainings")}
           </Button>
           <Link href="/il-baskin" style={{ textDecoration: "none" }}>
             <Button
@@ -138,7 +140,7 @@ export default function HeroSection() {
                 },
               }}
             >
-              Cos&apos;è il Baskin?
+              {t("whatIsBaskin")}
             </Button>
           </Link>
         </Box>
@@ -170,7 +172,7 @@ export default function HeroSection() {
         <Typography
           sx={{ letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.58rem" }}
         >
-          Scorri
+          {t("scroll")}
         </Typography>
         <KeyboardArrowDownIcon fontSize="small" />
       </Box>

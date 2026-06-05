@@ -13,10 +13,9 @@ import {
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationsOffIcon from "@mui/icons-material/NotificationsOff";
+import { useTranslations } from "next-intl";
 import {
   CONTROLLABLE_TYPES,
-  NOTIF_TYPE_LABELS,
-  NOTIF_TYPE_DESC,
   mergePrefs,
   type NotifPrefs,
   type ControllableNotifType,
@@ -34,6 +33,10 @@ interface Props {
 }
 
 export default function NotificationPrefsPanel({ initialPrefs }: Props) {
+  const t = useTranslations("notifPanel");
+  const tNav = useTranslations("nav");
+  const tTypes = useTranslations("notifTypes");
+
   // ── Push subscription state ───────────────────────────────────────────────
   const [pushStatus, setPushStatus] = useState<
     "loading" | "unsupported" | "granted" | "denied" | "default"
@@ -64,7 +67,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
     setPushError("");
     try {
       const keyRes = await fetch("/api/push/vapid-public-key");
-      if (!keyRes.ok) throw new Error("VAPID non configurato");
+      if (!keyRes.ok) throw new Error(t("vapidError"));
       const { key } = await keyRes.json();
 
       const permission = await Notification.requestPermission();
@@ -83,7 +86,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       });
       setSubscribed(true);
     } catch (e) {
-      setPushError((e as Error).message ?? "Errore durante l'attivazione");
+      setPushError((e as Error).message ?? t("activationError"));
     } finally {
       setPushSaving(false);
     }
@@ -140,24 +143,23 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
     <Box>
       {/* ── Sezione push ────────────────────────────────────────────────────── */}
       <Typography variant="body2" fontWeight={700} sx={{ mb: 1.5 }}>
-        Notifiche push
+        {t("pushTitle")}
       </Typography>
 
       {pushStatus === "unsupported" ? (
         <Typography variant="caption" color="text.disabled">
-          Le notifiche push non sono supportate da questo browser.
+          {t("unsupported")}
         </Typography>
       ) : pushStatus === "denied" ? (
         <Alert severity="warning" sx={{ fontSize: "0.8rem" }}>
-          Le notifiche sono bloccate dal browser. Abilitale dalle impostazioni del sito.
+          {t("denied")}
         </Alert>
       ) : (
         <Box>
           <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
-            Riceverai notifiche su nuovi allenamenti e partite. Puoi disattivare in qualsiasi
-            momento.{" "}
+            {t("pushDesc")}{" "}
             <a href="/privacy" style={{ color: "inherit" }}>
-              Informativa privacy
+              {tNav("privacyPolicy")}
             </a>
             .
           </Typography>
@@ -170,11 +172,11 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
               onClick={subscribed ? unsubscribe : subscribe}
               disabled={pushSaving}
             >
-              {pushSaving ? "..." : subscribed ? "Disattiva" : "Attiva notifiche push"}
+              {pushSaving ? "..." : subscribed ? t("deactivate") : t("activate")}
             </Button>
             {subscribed && (
               <Typography variant="caption" color="success.main" fontWeight={600}>
-                ✓ Attive su questo dispositivo
+                {t("activeOnDevice")}
               </Typography>
             )}
           </Box>
@@ -193,10 +195,10 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
                 >
                   <Box sx={{ flex: 1, pr: 1 }}>
                     <Typography variant="body2" sx={{ lineHeight: 1.3 }}>
-                      {NOTIF_TYPE_LABELS[type]}
+                      {tTypes(type)}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-                      {NOTIF_TYPE_DESC[type]}
+                      {tTypes(`${type}_desc`)}
                     </Typography>
                   </Box>
                   {prefSaving === type ? (
@@ -226,10 +228,10 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
 
       {/* ── Sezione notifiche in-app ─────────────────────────────────────────── */}
       <Typography variant="body2" fontWeight={700} sx={{ mb: 1.5 }}>
-        Notifiche nell&apos;app
+        {t("inAppTitle")}
       </Typography>
       <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>
-        Controlla quali tipi di notifiche appaiono nel centro notifiche.
+        {t("inAppDesc")}
       </Typography>
 
       <Box sx={{ pl: 1 }}>
@@ -249,9 +251,9 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
             }
             label={
               <Box>
-                <Typography variant="body2">{NOTIF_TYPE_LABELS[type]}</Typography>
+                <Typography variant="body2">{tTypes(type)}</Typography>
                 <Typography variant="caption" color="text.secondary" display="block">
-                  {NOTIF_TYPE_DESC[type]}
+                  {tTypes(`${type}_desc`)}
                 </Typography>
               </Box>
             }

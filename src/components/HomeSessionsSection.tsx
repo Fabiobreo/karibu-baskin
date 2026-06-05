@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
+import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import SessionHeroCard from "@/components/SessionHeroCard";
@@ -19,6 +20,7 @@ export default function HomeSessionsSection({
   registrationIdBySession: Record<string, string>;
   isStaff: boolean;
 }) {
+  const t = useTranslations("trainings");
   const router = useRouter();
   const { showToast } = useToast();
 
@@ -105,7 +107,7 @@ export default function HomeSessionsSection({
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}
             >
-              In corso
+              {t("live")}
             </Typography>
           </Box>
           <Grid container spacing={2}>
@@ -141,14 +143,14 @@ export default function HomeSessionsSection({
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
               >
-                Palestra
+                {t("gym")}
               </Typography>
               <Typography
                 variant="h5"
                 fontWeight={800}
                 sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
               >
-                Prossimi allenamenti
+                {t("next")}
               </Typography>
             </Box>
           </Box>

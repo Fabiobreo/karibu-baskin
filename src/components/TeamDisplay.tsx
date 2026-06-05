@@ -24,8 +24,10 @@ import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLE_LABELS, ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
+import { ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 export interface TeamAthlete {
   id: string;
@@ -59,7 +61,17 @@ interface Props {
 
 // ── Badge ruolo (riutilizzato in entrambi i layout) ───────────────────────────
 
-function RoleBadge({ role, count }: { role: number; count: number }) {
+function RoleBadge({
+  role,
+  count,
+  playerLabel,
+  label,
+}: {
+  role: number;
+  count: number;
+  playerLabel: string;
+  label: string;
+}) {
   return (
     <Box
       sx={{
@@ -74,9 +86,9 @@ function RoleBadge({ role, count }: { role: number; count: number }) {
         opacity: count === 0 ? 0.28 : 1,
       }}
     >
-      <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>{ROLE_LABELS[role]}</Box>
+      <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>{label}</Box>
       <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
-        {count} giocator{count !== 1 ? "i" : "e"}
+        {playerLabel}
       </Box>
     </Box>
   );
@@ -93,6 +105,8 @@ export function MobileTeamTabs({
   slugMap?: Record<string, string>;
   defaultTab?: number;
 }) {
+  const t = useTranslations("trainings");
+  const { roleLabel, teamColorLabel } = useEntityLabels();
   const [tab, setTab] = useState(defaultTab);
   // allTeams è l'unica fonte di verità: include teamC solo se esiste davvero.
   // meta viene derivato dalla sua lunghezza così non possono mai divergere
@@ -116,7 +130,7 @@ export function MobileTeamTabs({
       >
         {meta.map((m, i) => (
           <Tab
-            key={m.name}
+            key={m.key}
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <Box
@@ -128,7 +142,7 @@ export function MobileTeamTabs({
                     flexShrink: 0,
                   }}
                 />
-                <span>{m.name}</span>
+                <span>{teamColorLabel(m.key)}</span>
                 <Chip
                   label={allTeams[i].length}
                   size="small"
@@ -152,7 +166,12 @@ export function MobileTeamTabs({
           return (
             <Box key={role} sx={{ pb: 0.5 }}>
               <Box sx={{ px: 2, pt: 1 }}>
-                <RoleBadge role={role} count={group.length} />
+                <RoleBadge
+                  role={role}
+                  count={group.length}
+                  playerLabel={t("playerCount", { count: group.length })}
+                  label={roleLabel(role)}
+                />
               </Box>
               <List dense disablePadding>
                 {group.map((a) => {
@@ -194,6 +213,8 @@ export function AlignedTeamGrid({
   teams: TeamsData;
   slugMap?: Record<string, string>;
 }) {
+  const t = useTranslations("trainings");
+  const { roleLabel, teamColorLabel } = useEntityLabels();
   const allTeams: TeamAthlete[][] = [teams.teamA ?? [], teams.teamB ?? []];
   if (teams.teamC) allTeams.push(teams.teamC);
   const meta = TEAM_META.slice(0, allTeams.length);
@@ -216,10 +237,10 @@ export function AlignedTeamGrid({
         }}
       >
         <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
-          {m.name}
+          {teamColorLabel(m.key)}
         </Typography>
         <Chip
-          label={`${allTeams[i].length} atlet${allTeams[i].length !== 1 ? "i" : "a"}`}
+          label={t("athletes", { count: allTeams[i].length })}
           size="small"
           sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "#fff" }}
         />
@@ -244,7 +265,12 @@ export function AlignedTeamGrid({
             pb: 0.5,
           }}
         >
-          <RoleBadge role={role} count={group.length} />
+          <RoleBadge
+            role={role}
+            count={group.length}
+            playerLabel={t("playerCount", { count: group.length })}
+            label={roleLabel(role)}
+          />
         </Box>
       );
     });
@@ -309,6 +335,8 @@ interface TeamEditorProps {
 }
 
 function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: TeamEditorProps) {
+  const t = useTranslations("trainings");
+  const { teamColorLabel } = useEntityLabels();
   const [localTeams, setLocalTeams] = useState<TeamsData>(initialTeams);
   const [selected, setSelected] = useState<{ id: string; fromKey: TeamKey } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -363,7 +391,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
   return (
     <Box>
       <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: "block" }}>
-        {selected ? "Seleziona la squadra di destinazione" : "Tocca un giocatore per spostarlo"}
+        {selected ? t("editorMoveTarget") : t("editorMoveHint")}
       </Typography>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -388,7 +416,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography variant="subtitle2" sx={{ color: "#fff", fontWeight: 700 }}>
-                    {m.name}
+                    {teamColorLabel(m.key)}
                   </Typography>
                   <Chip
                     label={teamList.length}
@@ -418,7 +446,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                       "&:hover": { bgcolor: "rgba(255,255,255,0.88)" },
                     }}
                   >
-                    {saving ? <CircularProgress size={14} color="inherit" /> : "Sposta qui"}
+                    {saving ? <CircularProgress size={14} color="inherit" /> : t("editorMoveTo")}
                   </Button>
                 )}
               </Box>
@@ -455,7 +483,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                 )}
                 {teamList.length === 0 && (
                   <Typography variant="caption" color="text.disabled" sx={{ px: 0.5 }}>
-                    Nessun giocatore
+                    {t("editorNoPlayers")}
                   </Typography>
                 )}
               </Box>
@@ -466,7 +494,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
 
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
         <Button variant="outlined" size="small" onClick={onDone} disabled={saving}>
-          Fatto
+          {t("editorDone")}
         </Button>
       </Box>
     </Box>
@@ -488,6 +516,7 @@ export default function TeamDisplay({
   teamsLoading,
   onTeamsGenerated,
 }: Props) {
+  const t = useTranslations("trainings");
   const [generating, setGenerating] = useState(false);
   const [numTeams, setNumTeams] = useState<2 | 3>(teams?.numTeams ?? 2);
   const { showToast } = useToast();
@@ -562,12 +591,12 @@ export default function TeamDisplay({
       >
         <GroupsIcon sx={{ fontSize: 36, color: "primary.main", mb: 1 }} />
         <Typography variant="body1" fontWeight={600} gutterBottom>
-          Crea le squadre
+          {t("teamsCreate")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
           {registrationIds?.length
-            ? `${registrationIds.length} atleti iscritti — scegli quante squadre formare.`
-            : "Scegli quante squadre formare."}
+            ? t("teamsAthleteCount", { count: registrationIds.length })
+            : t("teamsChooseCount")}
         </Typography>
 
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
@@ -580,10 +609,10 @@ export default function TeamDisplay({
             }}
           >
             <ToggleButton value={2} sx={{ px: 3, fontWeight: 600 }}>
-              2 squadre
+              {t("teams2")}
             </ToggleButton>
             <ToggleButton value={3} sx={{ px: 3, fontWeight: 600 }}>
-              3 squadre
+              {t("teams3")}
             </ToggleButton>
           </ToggleButtonGroup>
 
@@ -593,12 +622,12 @@ export default function TeamDisplay({
             disabled={generating || !registrationIds?.length}
             startIcon={generating ? <CircularProgress size={16} color="inherit" /> : <GroupsIcon />}
           >
-            {generating ? "Creazione..." : "Crea squadre"}
+            {generating ? t("teamsCreating") : t("teamsCreateBtn")}
           </Button>
 
           {!registrationIds?.length && (
             <Typography variant="caption" color="text.disabled">
-              Nessun atleta iscritto — impossibile creare le squadre.
+              {t("teamsNoAthletes")}
             </Typography>
           )}
         </Box>
@@ -622,10 +651,10 @@ export default function TeamDisplay({
       >
         <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
         <Typography variant="body1" color="text.secondary" fontWeight={500}>
-          Squadre non ancora pubblicate
+          {t("teamsNotPublished")}
         </Typography>
         <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-          Le squadre verranno pubblicate dall&apos;amministratore prima dell&apos;allenamento.
+          {t("teamsNotPublishedDesc")}
         </Typography>
       </Box>
     );
@@ -648,11 +677,11 @@ export default function TeamDisplay({
               disabled={generating}
               startIcon={generating ? <CircularProgress size={14} color="inherit" /> : undefined}
             >
-              {generating ? "..." : "Ricrea"}
+              {generating ? "..." : t("teamsRecreate")}
             </Button>
           }
         >
-          Ci sono stati cambiamenti nelle iscrizioni.
+          {t("teamsChanged")}
         </Alert>
       )}
 
@@ -678,7 +707,7 @@ export default function TeamDisplay({
             fontWeight={700}
             sx={{ whiteSpace: "nowrap" }}
           >
-            Allenatori:
+            {t("teamCoaches")}
           </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
             {coaches.map((c) => {

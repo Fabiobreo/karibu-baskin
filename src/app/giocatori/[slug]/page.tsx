@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import {
   Box,
@@ -22,8 +24,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
-import { ROLE_LABELS, ROLE_COLORS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS, sportRoleLabel as sportRoleLabelRaw } from "@/lib/constants";
+import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadges } from "@/lib/badges";
 import { slugify } from "@/lib/slugUtils";
 import { getCurrentSeason } from "@/lib/seasonUtils";
@@ -58,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const totalPoints = p.matchStats.reduce((s, m) => s + m.points, 0);
   const matchesPlayed = p.matchStats.length;
   const avgPoints = matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : null;
-  const roleLabel = p.sportRole ? sportRoleLabel(p.sportRole, p.sportRoleVariant ?? null) : null;
+  const roleLabel = p.sportRole ? sportRoleLabelRaw(p.sportRole, p.sportRoleVariant ?? null) : null;
   const title = `${p.name ?? "Giocatore"} · Karibu Baskin`;
   const descParts: string[] = [];
   if (roleLabel) descParts.push(roleLabel);
@@ -88,6 +90,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const { slug } = await params;
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null; // es. "2025-26"
+
+  const [t, tTeams, locale] = await Promise.all([
+    getTranslations("players"),
+    getTranslations("teams"),
+    getLocale(),
+  ]);
+  const { roleLabel, sportRoleLabel, genderLabel, matchResultLabel } = await getEntityLabels();
+  const dateLocale = getDateFnsLocale(locale);
 
   // Relazioni comuni a User e Child (stesse `include` → stessa forma dei dati).
   const relationSelect = {
@@ -376,7 +386,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 "&:hover": { color: "#fff" },
               }}
             >
-              Squadre
+              {tTeams("teamBreadcrumb")}
             </MuiLink>
             <Typography
               variant="body2"
@@ -644,7 +654,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         letterSpacing: "0.08em",
                       }}
                     >
-                      Punti totali
+                      {t("totalPoints")}
                     </Typography>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
@@ -666,7 +676,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         color: "text.disabled",
                       }}
                     >
-                      a partita
+                      {t("perGame")}
                     </Typography>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
@@ -714,29 +724,29 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {/* Info atleta */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
           <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-            Dati atleta
+            {t("athleteInfo")}
           </Typography>
           <Grid container spacing={2}>
             {player.gender && (
               <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow label="Genere" value={GENDER_LABELS[player.gender]} />
+                <InfoRow label={t("gender")} value={genderLabel(player.gender)} />
               </Grid>
             )}
             {player.birthDate && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow
-                  label="Data di nascita"
-                  value={format(new Date(player.birthDate), "d MMMM yyyy", { locale: it })}
+                  label={t("birthDate")}
+                  value={format(new Date(player.birthDate), "d MMMM yyyy", { locale: dateLocale })}
                 />
               </Grid>
             )}
             {player.sportRole && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow
-                  label="Ruolo Baskin"
+                  label={t("baskinRole")}
                   value={
                     <Chip
-                      label={ROLE_LABELS[player.sportRole as keyof typeof ROLE_LABELS]}
+                      label={roleLabel(player.sportRole)}
                       size="small"
                       sx={{
                         bgcolor: ROLE_COLORS[player.sportRole],
@@ -750,7 +760,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             )}
             <Grid size={{ xs: 12, sm: 6 }}>
               <InfoRow
-                label="Allenamenti"
+                label={t("trainingsLabel")}
                 value={
                   player.registrations.length > 0
                     ? `${player._count.registrations} iscrizioni · ${player.registrations.length} presenze`
@@ -765,7 +775,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {badges.length > 0 && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              Achievement
+              {t("achievements")}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
               {badges.map((badge) => {
@@ -829,17 +839,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {player.sportRoleHistory.length > 1 && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
             <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              Storico ruolo Baskin
+              {t("roleHistory")}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
               {player.sportRoleHistory.map((entry, i) => (
                 <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Box>
                     <Chip
-                      label={
-                        ROLE_LABELS[entry.sportRole as keyof typeof ROLE_LABELS] ??
-                        `R${entry.sportRole}`
-                      }
+                      label={roleLabel(entry.sportRole)}
                       size="small"
                       sx={{
                         bgcolor: ROLE_COLORS[entry.sportRole],
@@ -852,7 +859,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       color="text.disabled"
                       sx={{ display: "block", textAlign: "center", mt: 0.25 }}
                     >
-                      {format(new Date(entry.changedAt), "MMM yyyy", { locale: it })}
+                      {format(new Date(entry.changedAt), "MMM yyyy", { locale: dateLocale })}
                     </Typography>
                   </Box>
                   {i < player.sportRoleHistory.length - 1 && (
@@ -885,17 +892,17 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
-                  Statistiche
+                  {t("statistics")}
                 </Typography>
                 <Typography variant="h4" fontWeight={800}>
-                  Agonismo
+                  {t("competitive")}
                 </Typography>
               </Box>
               {seasons.length > 1 && (
                 <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                   <Link href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
                     <Chip
-                      label="Tutto"
+                      label={t("all")}
                       size="small"
                       variant={!seasonFilter ? "filled" : "outlined"}
                       color={!seasonFilter ? "primary" : "default"}
@@ -922,28 +929,34 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             </Box>
             <Grid container spacing={2} sx={{ mb: 5 }}>
               {[
-                { label: "Partite", value: matchesPlayed, color: "stats.games" },
-                { label: "Punti totali", value: totalPoints, color: "stats.points" },
+                { label: t("matches"), value: matchesPlayed, color: "stats.games" },
+                { label: t("totalPoints"), value: totalPoints, color: "stats.points" },
                 {
-                  label: "Media punti",
+                  label: t("avgPoints"),
                   value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—",
                   color: "text.primary",
                 },
-                { label: "Canestri 2pt", value: totalTwo, color: "stats.twopt" },
-                { label: "Canestri 3pt", value: totalThree, color: "stats.threept" },
-                { label: "Tiri liberi", value: totalFreeThrows, color: "stats.ft" },
-                { label: "Falli", value: totalFouls, color: "stats.fouls" },
+                { label: t("twoPointers"), value: totalTwo, color: "stats.twopt" },
+                { label: t("threePointers"), value: totalThree, color: "stats.threept" },
+                { label: t("freeThrows"), value: totalFreeThrows, color: "stats.ft" },
+                { label: t("fouls"), value: totalFouls, color: "stats.fouls" },
                 ...(totalIllegalFouls > 0
                   ? [
                       {
-                        label: "Falli illegali",
+                        label: t("illegalFouls"),
                         value: totalIllegalFouls,
                         color: "stats.illegalFouls",
                       },
                     ]
                   : []),
                 ...(totalShots > 0
-                  ? [{ label: "Tiri tentati", value: totalShots, color: "stats.shotsAttempted" }]
+                  ? [
+                      {
+                        label: t("shotsAttempted"),
+                        value: totalShots,
+                        color: "stats.shotsAttempted",
+                      },
+                    ]
                   : []),
               ].map((s) => (
                 <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
@@ -983,11 +996,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   variant="overline"
                   sx={{ color: "#FFC107", fontWeight: 700, letterSpacing: "0.1em" }}
                 >
-                  Albo
+                  {t("honors")}
                 </Typography>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
-                Medaglie e riconoscimenti
+                {t("medals")}
               </Typography>
               <Grid container spacing={2}>
                 {medals.map((m, i) => {
@@ -1079,11 +1092,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
-                  Squadre
+                  {t("teamsSection")}
                 </Typography>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
-                Storico agonistico
+                {t("competitiveHistory")}
               </Typography>
               <Stack spacing={1.5}>
                 {player.teamMemberships.map((m) => (
@@ -1165,11 +1178,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
-                  Partite
+                  {t("matches")}
                 </Typography>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
-                Statistiche per partita
+                {t("matchStats")}
               </Typography>
               <Stack spacing={1.5}>
                 {filteredStats.map((ms) => (
@@ -1218,7 +1231,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                   "Avversario"}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {format(new Date(ms.match.date), "d MMMM yyyy", { locale: it })}
+                                {format(new Date(ms.match.date), "d MMMM yyyy", {
+                                  locale: dateLocale,
+                                })}
                                 {ms.match.ourScore !== null && ms.match.theirScore !== null
                                   ? `  ·  ${ms.match.ourScore} – ${ms.match.theirScore}`
                                   : ""}
@@ -1227,7 +1242,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                               {ms.match.result && (
                                 <Chip
-                                  label={MATCH_RESULT_META[ms.match.result].label}
+                                  label={matchResultLabel(ms.match.result)}
                                   size="small"
                                   sx={{
                                     backgroundColor: MATCH_RESULT_META[ms.match.result].color,
@@ -1278,10 +1293,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           <Box sx={{ textAlign: "center", py: 8 }}>
             <SportsSoccerIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
-              Nessuna statistica disponibile
+              {t("noStats")}
             </Typography>
             <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              Le statistiche agonistiche verranno pubblicate al termine delle partite.
+              {t("noStatsDesc")}
             </Typography>
           </Box>
         )}

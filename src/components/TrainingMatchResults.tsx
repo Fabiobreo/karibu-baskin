@@ -18,6 +18,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CheckIcon from "@mui/icons-material/Check";
 import { TEAM_META } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { useTranslations } from "next-intl";
 import type { TeamsData } from "@/components/TeamDisplay";
 
 type MatchupKey = "AB" | "AC" | "BC";
@@ -72,6 +74,11 @@ function MatchupSlot({
 }) {
   const team1 = TEAM_META[def.team1Idx];
   const team2 = TEAM_META[def.team2Idx];
+  const { teamColorLabel } = useEntityLabels();
+  const t = useTranslations("trainings");
+  const tm = useTranslations("matches");
+  const team1Name = teamColorLabel(team1.key);
+  const team2Name = teamColorLabel(team2.key);
   const [editing, setEditing] = useState(false);
   const [score1, setScore1] = useState("");
   const [score2, setScore2] = useState("");
@@ -146,7 +153,7 @@ function MatchupSlot({
       color="text.secondary"
       sx={{ display: "block", mb: 1.25 }}
     >
-      {team1.name} — {team2.name}
+      {team1Name} — {team2Name}
     </Typography>
   );
 
@@ -175,7 +182,7 @@ function MatchupSlot({
               }}
             />
             <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>
-              {team1.name}
+              {team1Name}
             </Typography>
             <TextField
               size="small"
@@ -210,7 +217,7 @@ function MatchupSlot({
               }}
             />
             <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>
-              {team2.name}
+              {team2Name}
             </Typography>
             <TextField
               size="small"
@@ -279,7 +286,7 @@ function MatchupSlot({
         {result ? (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
             <Chip
-              label={`${team1.name}  ${s1}`}
+              label={`${team1Name}  ${s1}`}
               size="small"
               sx={{
                 bgcolor: winner === 1 ? team1.color : `${team1.color}22`,
@@ -294,7 +301,7 @@ function MatchupSlot({
               vs
             </Typography>
             <Chip
-              label={`${team2.name}  ${s2}`}
+              label={`${team2Name}  ${s2}`}
               size="small"
               sx={{
                 bgcolor: winner === 2 ? team2.color : `${team2.color}22`,
@@ -307,13 +314,13 @@ function MatchupSlot({
             />
             {winner === 0 && (
               <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                Pareggio
+                {tm("resultDraw")}
               </Typography>
             )}
           </Box>
         ) : (
           <Typography variant="caption" color="text.disabled">
-            Non ancora registrato
+            {t("matchNotRecorded")}
           </Typography>
         )}
       </Box>
@@ -355,6 +362,7 @@ function MatchupSlot({
 // ── Componente principale ─────────────────────────────────────────────────────
 
 export default function TrainingMatchResults({ sessionId, isStaff, teams, onResultsCount }: Props) {
+  const t = useTranslations("trainings");
   const { data: results = [], mutate } = useSWR<MatchResult[]>(
     `/api/sessions/${sessionId}/match-results`,
     fetcher,
@@ -387,7 +395,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
       >
         <SportsBasketballIcon sx={{ fontSize: 18, color: "primary.main" }} />
         <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
-          Risultati partite
+          {t("matchResultsTitle")}
         </Typography>
         {savedCount > 0 && (
           <Chip

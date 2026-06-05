@@ -15,7 +15,9 @@ import {
   Typography,
 } from "@mui/material";
 import Link from "next/link";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { ROLE_COLORS } from "@/lib/constants";
 
 export interface MatchStatRow {
   id: string;
@@ -44,19 +46,22 @@ export interface MatchStatRow {
   } | null;
 }
 
-const COLS: { key: keyof MatchStatRow; label: string; title: string; primary?: boolean }[] = [
-  { key: "points", label: "Punti", title: "Punti", primary: true },
-  { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
-  { key: "twoPointers", label: "2pt", title: "Canestri da 2" },
-  { key: "threePointers", label: "3pt", title: "Canestri da 3" },
-  { key: "shotsAttempted", label: "Tiri", title: "Tiri tentati" },
-  { key: "fouls", label: "F", title: "Falli" },
-  { key: "illegalFouls", label: "Illegali", title: "Falli illegali" },
-];
-
 export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
+  const t = useTranslations("matches");
+  const tCommon = useTranslations("common");
+  const { sportRoleLabel } = useEntityLabels();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const COLS: { key: keyof MatchStatRow; label: string; title: string; primary?: boolean }[] = [
+    { key: "points", label: t("statPoints"), title: t("statPointsTitle"), primary: true },
+    { key: "freeThrows", label: t("statFt"), title: t("statFtTitle") },
+    { key: "twoPointers", label: t("stat2pt"), title: t("stat2ptTitle") },
+    { key: "threePointers", label: t("stat3pt"), title: t("stat3ptTitle") },
+    { key: "shotsAttempted", label: t("statShots"), title: t("statShotsTitle") },
+    { key: "fouls", label: t("statFouls"), title: t("statFoulsTitle") },
+    { key: "illegalFouls", label: t("statIllegal"), title: t("statIllegalTitle") },
+  ];
 
   const paginated = stats.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const globalOffset = page * rowsPerPage;
@@ -72,7 +77,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Giocatore</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>{t("statPlayer")}</TableCell>
               {COLS.map((col) => (
                 <TableCell
                   key={col.key as string}
@@ -212,8 +217,8 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
           setPage(0);
         }}
         rowsPerPageOptions={[10, 25, 50]}
-        labelRowsPerPage="Righe:"
-        labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+        labelRowsPerPage={tCommon("rowsPerPage")}
+        labelDisplayedRows={({ from, to, count }) => tCommon("paginationRows", { from, to, count })}
         sx={{ borderTop: "1px solid", borderColor: "divider" }}
       />
     </Paper>

@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { IconButton, CircularProgress, Tooltip } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
+import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 
 interface Props {
@@ -25,12 +26,14 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
     getCanShareServerSnapshot
   );
   const { showToast } = useToast();
+  const t = useTranslations("share");
+  const tCommon = useTranslations("common");
 
   async function handleClick() {
     setLoading(true);
     try {
       const res = await fetch(`/api/matches/${matchId}/tabellino`);
-      if (!res.ok) throw new Error("Errore generazione tabellino");
+      if (!res.ok) throw new Error(t("tabellinoError"));
       const blob = await res.blob();
       const file = new File([blob], filename, { type: "image/png" });
 
@@ -60,10 +63,10 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast({ message: "Tabellino scaricato", severity: "success" });
+      showToast({ message: t("tabellinoDownloaded"), severity: "success" });
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore di rete",
+        message: err instanceof Error ? err.message : tCommon("networkError"),
         severity: "error",
       });
     } finally {
@@ -71,7 +74,7 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
     }
   }
 
-  const label = canShare ? "Condividi tabellino" : "Scarica tabellino";
+  const label = canShare ? t("shareTabellino") : t("downloadTabellino");
 
   return (
     <Tooltip title={label}>

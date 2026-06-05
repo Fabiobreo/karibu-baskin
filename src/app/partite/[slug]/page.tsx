@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import { Container, Typography, Box, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import MatchEditButton from "@/components/MatchEditButton";
@@ -9,7 +11,6 @@ import MatchCountdown from "@/components/MatchCountdown";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
 import { computeStandings } from "@/lib/standings";
@@ -22,6 +23,7 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { ROLE_COLORS } from "@/lib/constants";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { getEntityLabels } from "@/lib/entityLabels";
 
 export const revalidate = 3600;
 
@@ -31,12 +33,6 @@ const RESULT_GRADIENT: Record<"WIN" | "LOSS" | "DRAW", string> = {
   WIN: "linear-gradient(150deg, #1A2E1A 0%, #1B3A1B 60%, #1F4A1F 100%)",
   LOSS: "linear-gradient(150deg, #2E1A1A 0%, #3A1B1B 60%, #4A1F1F 100%)",
   DRAW: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-};
-
-const MATCH_TYPE_LABEL: Record<string, string> = {
-  LEAGUE: "Campionato",
-  TOURNAMENT: "Torneo",
-  FRIENDLY: "Amichevole",
 };
 
 async function getMatch(slug: string) {
@@ -101,23 +97,36 @@ async function getMatch(slug: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const match = await getMatch(slug);
+  const [match, locale] = await Promise.all([getMatch(slug), getLocale()]);
+  const dateLocale = getDateFnsLocale(locale);
   if (!match) return { title: "Partita non trovata" };
   const score = match.ourScore !== null ? `${match.ourScore}–${match.theirScore}` : "vs";
   const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
   return {
     title: `${match.team.name} ${score} ${opponentName} | Karibu Baskin`,
-    description: `Dettaglio partita ${match.team.name} vs ${opponentName} — ${format(new Date(match.date), "d MMMM yyyy", { locale: it })}`,
+    description: `Dettaglio partita ${match.team.name} vs ${opponentName} — ${format(new Date(match.date), "d MMMM yyyy", { locale: dateLocale })}`,
   };
 }
 
 export default async function MatchDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [match, session] = await Promise.all([getMatch(slug), auth()]);
+  const [match, session, t, locale, { matchResultLabel }] = await Promise.all([
+    getMatch(slug),
+    auth(),
+    getTranslations("matches"),
+    getLocale(),
+    getEntityLabels(),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
   if (!match) notFound();
 
+  const matchTypeLabel = (type: string) =>
+    ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
+      type
+    ] ?? type;
+
   // Nome avversario normalizzato (esterno o squadra interna)
-  const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
+  const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? t("opponent");
 
   const isStaffEarly = session?.user?.appRole === "COACH" || session?.user?.appRole === "ADMIN";
 
@@ -283,7 +292,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 "&:hover": { color: "#fff" },
               }}
             >
-              Partite
+              {t("breadcrumb")}
             </MuiLink>
             <Typography
               variant="body2"
@@ -404,7 +413,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 </Typography>
               )}
               <Chip
-                label={MATCH_TYPE_LABEL[match.matchType]}
+                label={matchTypeLabel(match.matchType)}
                 size="small"
                 variant="outlined"
                 sx={{
@@ -498,7 +507,7 @@ export default async function MatchDetailPage({ params }: Props) {
                     {isImminent && (
                       <Chip
                         icon={<BoltIcon sx={{ fontSize: 14 }} />}
-                        label="Imminente"
+                        label={t("imminent")}
                         size="small"
                         sx={{
                           fontWeight: 800,
@@ -575,9 +584,9 @@ export default async function MatchDetailPage({ params }: Props) {
                   );
                   const middle = (
                     <Box key="middle" sx={{ textAlign: "center", flex: "0 0 auto" }}>
-                      {meta ? (
+                      {meta && match.result ? (
                         <Chip
-                          label={meta.label}
+                          label={matchResultLabel(match.result)}
                           sx={{
                             bgcolor: meta.color,
                             color: "common.white",
@@ -625,7 +634,7 @@ export default async function MatchDetailPage({ params }: Props) {
               >
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
                 <Typography variant="caption" fontWeight={600}>
-                  {format(new Date(match.date), "EEEE d MMMM yyyy · HH:mm", { locale: it })}
+                  {format(new Date(match.date), "EEEE d MMMM yyyy · HH:mm", { locale: dateLocale })}
                 </Typography>
               </Box>
               <Box
@@ -642,7 +651,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   <FlightIcon sx={{ fontSize: 14 }} />
                 )}
                 <Typography variant="caption" fontWeight={600}>
-                  {match.isHome ? "Casa" : "Trasferta"}
+                  {match.isHome ? t("home") : t("away")}
                 </Typography>
               </Box>
               {match.venue && (
@@ -692,7 +701,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 fontWeight={800}
                 sx={{ color: "#F57F17", letterSpacing: "0.12em" }}
               >
-                MVP della partita
+                {t("mvp")}
               </Typography>
               <EmojiEventsIcon sx={{ color: "#F57F17" }} />
             </Box>

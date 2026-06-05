@@ -3,20 +3,24 @@
 import { useState, useEffect } from "react";
 import { Box, Container, Typography } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
-import { LO_SAPEVI } from "@/lib/loSapevi";
+import { getLoSapevi } from "@/lib/loSapevi";
+import { useTranslations, useLocale } from "next-intl";
 
 /**
  * Mostra un fatto casuale al mount — cambia ad ogni refresh di pagina.
  * Da inserire nella homepage tra due sezioni.
  */
 export default function LoSapeviCard() {
+  const t = useTranslations("home");
+  const locale = useLocale();
   const [item, setItem] = useState<{ titolo: string; testo: string } | null>(null);
 
   useEffect(() => {
-    const idx = Math.floor(Math.random() * LO_SAPEVI.length);
+    const facts = getLoSapevi(locale);
+    const idx = Math.floor(Math.random() * facts.length);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setItem(LO_SAPEVI[idx]);
-  }, []);
+    setItem(facts[idx]);
+  }, [locale]);
 
   // Non renderizza nulla durante l'SSR / prima del mount
   if (!item) return null;
@@ -67,7 +71,7 @@ export default function LoSapeviCard() {
                 fontSize: "0.7rem",
               }}
             >
-              Lo sapevi?
+              {t("didYouKnow")}
             </Typography>
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 0.5, lineHeight: 1.3 }}>
               {item.titolo}

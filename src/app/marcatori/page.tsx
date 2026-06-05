@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
 import EmptyState from "@/components/EmptyState";
 import SiteHeader from "@/components/SiteHeader";
@@ -22,6 +23,7 @@ export const revalidate = 3600;
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function MarcatoriPage({ searchParams }: Props) {
+  const t = await getTranslations("scorers");
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null;
 
@@ -215,7 +217,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             fontWeight={700}
             sx={{ letterSpacing: "0.12em" }}
           >
-            Marcatori
+            {t("heroChip")}
           </Typography>
         </Box>
         <Typography
@@ -224,7 +226,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
           fontWeight={800}
           sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
         >
-          Classifica interna
+          {t("pageTitle")}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
           <Link href="/classifiche" style={{ textDecoration: "none" }}>
@@ -239,7 +241,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
                 "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
               }}
             >
-              Classifica campionato
+              {t("linkStandings")}
             </Button>
           </Link>
           <Link href="/risultati" style={{ textDecoration: "none" }}>
@@ -253,7 +255,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
                 "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
               }}
             >
-              Tutti i risultati
+              {t("linkResults")}
             </Button>
           </Link>
         </Box>
@@ -269,7 +271,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
               fontWeight={700}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
-              Stagione:
+              {t("seasonLabel")}
             </Typography>
             {availableSeasons.map((s) => (
               <Link
@@ -292,18 +294,20 @@ export default async function MarcatoriPage({ searchParams }: Props) {
         {hasStats ? (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Dati relativi alla stagione <strong>{activeSeason}</strong>. Filtra per ruolo o clicca
-              sull&apos;intestazione per ordinare.
+              {t.rich("helpText", {
+                season: activeSeason,
+                b: (chunks) => <strong>{chunks}</strong>,
+              })}
             </Typography>
             <ClassificaInternaTable rows={statRows} />
           </>
         ) : availableSeasons.length > 0 ? (
-          <EmptyState title={`Nessun dato disponibile per la stagione ${activeSeason}.`} />
+          <EmptyState title={t("empty", { season: activeSeason })} />
         ) : (
           <EmptyState
             icon={<LeaderboardIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title="Nessun dato disponibile"
-            message="La classifica marcatori verrà aggiornata con l'avanzare della stagione."
+            title={t("emptyGeneric")}
+            message={t("emptyDesc")}
           />
         )}
       </Container>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Box, Typography } from "@mui/material";
+import { useTranslations } from "next-intl";
 import ImageUploader from "@/components/ImageUploader";
 import { useToast } from "@/context/ToastContext";
 
@@ -16,6 +17,7 @@ export default function ProfileAvatarEditor({
 }: ProfileAvatarEditorProps) {
   const [customImage, setCustomImage] = useState<string | null>(initialCustomImage);
   const { showToast } = useToast();
+  const t = useTranslations("childLinker");
 
   const displayImage = customImage ?? googleImage;
 
@@ -26,7 +28,7 @@ export default function ProfileAvatarEditor({
       body: JSON.stringify({ customImage: url }),
     });
     if (!res.ok) {
-      showToast({ message: "Errore nel salvataggio dell'immagine", severity: "error" });
+      showToast({ message: t("avatarSaveError"), severity: "error" });
       return;
     }
     setCustomImage(url);
@@ -39,11 +41,11 @@ export default function ProfileAvatarEditor({
       body: JSON.stringify({ customImage: null }),
     });
     if (!res.ok) {
-      showToast({ message: "Errore nella rimozione dell'immagine", severity: "error" });
+      showToast({ message: t("avatarRemoveError"), severity: "error" });
       return;
     }
     setCustomImage(null);
-    showToast({ message: "Immagine rimossa", severity: "success" });
+    showToast({ message: t("avatarRemoved"), severity: "success" });
   }
 
   return (
@@ -58,7 +60,7 @@ export default function ProfileAvatarEditor({
       />
       {!customImage && googleImage && (
         <Typography variant="caption" color="text.secondary" sx={{ textAlign: "center" }}>
-          Foto da Google
+          {t("googlePhoto")}
         </Typography>
       )}
     </Box>

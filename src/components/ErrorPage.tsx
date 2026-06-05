@@ -1,5 +1,6 @@
 "use client";
 import { Box, Typography, Button, Stack } from "@mui/material";
+import { useTranslations } from "next-intl";
 import { alpha } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function ErrorPage({ code, title, description, showReset, onReset, digest }: Props) {
+  const t = useTranslations("errors");
   return (
     <Box
       sx={{
@@ -102,7 +104,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
             onClick={onReset}
             sx={{ borderRadius: 3, px: 4, fontWeight: 700 }}
           >
-            Riprova
+            {t("retry")}
           </Button>
         )}
         <Link href="/" style={{ textDecoration: "none" }}>
@@ -120,7 +122,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
               }),
             }}
           >
-            Torna agli allenamenti
+            {t("backHome")}
           </Button>
         </Link>
       </Stack>

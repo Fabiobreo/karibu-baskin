@@ -19,7 +19,9 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS } from "@/lib/constants";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 export interface PlayerStatRow {
   /** Id del giocatore (User o Child). */
@@ -62,20 +64,22 @@ type SortKey =
   | "shotsAttempted"
   | "avgPoints";
 
-const COLS: { key: SortKey; label: string; title?: string }[] = [
-  { key: "matches", label: "Giocate", title: "Partite giocate" },
-  { key: "points", label: "Punti", title: "Punti totali" },
-  { key: "avgPoints", label: "Media", title: "Media punti a partita" },
-  { key: "freeThrows", label: "1pt", title: "Tiri liberi" },
-  { key: "twoPointers", label: "2pt", title: "Canestri da 2" },
-  { key: "threePointers", label: "3pt", title: "Canestri da 3" },
-  { key: "fouls", label: "Falli", title: "Falli" },
-  { key: "illegalFouls", label: "Illegali", title: "Falli illegali" },
-];
-
 const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
 
 export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[] }) {
+  const t = useTranslations("scorers");
+  const tCommon = useTranslations("common");
+  const { sportRoleLabel } = useEntityLabels();
+  const COLS: { key: SortKey; label: string; title?: string }[] = [
+    { key: "matches", label: t("colMatches"), title: t("titleMatches") },
+    { key: "points", label: t("colPoints"), title: t("titlePoints") },
+    { key: "avgPoints", label: t("colAvg"), title: t("titleAvg") },
+    { key: "freeThrows", label: t("col1pt"), title: t("titleFreeThrows") },
+    { key: "twoPointers", label: t("col2pt"), title: t("title2pt") },
+    { key: "threePointers", label: t("col3pt"), title: t("title3pt") },
+    { key: "fouls", label: t("colFouls"), title: t("colFouls") },
+    { key: "illegalFouls", label: t("colIllegal"), title: t("titleIllegal") },
+  ];
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
@@ -176,7 +180,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
       >
         <TextField
           size="small"
-          placeholder="Cerca giocatore…"
+          placeholder={t("searchPlayer")}
           value={nameSearch}
           onChange={(e) => handleNameSearch(e.target.value)}
           slotProps={{
@@ -200,7 +204,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             Ruolo:
           </Typography>
           <Chip
-            label="Tutti"
+            label={t("all")}
             size="small"
             variant={roleFilter === null ? "filled" : "outlined"}
             color={roleFilter === null ? "primary" : "default"}
@@ -229,7 +233,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           ))}
           {filtered.length !== rows.length && (
             <Typography variant="caption" color="text.disabled" sx={{ ml: "auto" }}>
-              {filtered.length} giocatori
+              {t("playerCount", { count: filtered.length })}
             </Typography>
           )}
         </Box>
@@ -246,7 +250,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 #
               </TableCell>
               <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 200 }}>
-                Giocatore
+                {t("colPlayer")}
               </TableCell>
               {COLS.map((col) => (
                 <TableCell
@@ -280,7 +284,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   align="center"
                   sx={{ py: 4, color: "text.disabled" }}
                 >
-                  Nessun giocatore con questo ruolo.
+                  {t("noPlayersRole")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -549,8 +553,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           setPage(0);
         }}
         rowsPerPageOptions={[10, 25, 50]}
-        labelRowsPerPage="Righe:"
-        labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+        labelRowsPerPage={t("rowsPerPage")}
+        labelDisplayedRows={({ from, to, count }) => tCommon("paginationRows", { from, to, count })}
         sx={{ borderTop: "1px solid", borderColor: "divider" }}
       />
     </Paper>

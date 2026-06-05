@@ -1,6 +1,7 @@
 "use client";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { BottomNavigation, BottomNavigationAction, Badge, Avatar, Box, Paper } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -11,6 +12,7 @@ import { useSession } from "next-auth/react";
 import { useNotifications } from "@/context/NotificationContext";
 
 export default function BottomNav() {
+  const t = useTranslations("nav");
   const router = useRouter();
   const pathnameRaw = usePathname();
   const { data: session, status } = useSession();
@@ -70,20 +72,20 @@ export default function BottomNav() {
           },
         }}
       >
-        <BottomNavigationAction label="Home" value="/" icon={<HomeIcon fontSize="small" />} />
+        <BottomNavigationAction label={t("home")} value="/" icon={<HomeIcon fontSize="small" />} />
         <BottomNavigationAction
-          label="Allenamenti"
+          label={t("trainings")}
           value="/allenamenti"
           icon={<SportsBasketballIcon fontSize="small" />}
         />
         <BottomNavigationAction
-          label="Calendario"
+          label={t("calendar")}
           value="/calendario"
           icon={<CalendarMonthIcon fontSize="small" />}
         />
         {status === "authenticated" && (
           <BottomNavigationAction
-            label="Notifiche"
+            label={t("notifications")}
             value="/notifiche"
             icon={
               <Badge
@@ -98,7 +100,9 @@ export default function BottomNav() {
           />
         )}
         <BottomNavigationAction
-          label={status === "authenticated" ? (user?.name?.split(" ")[0] ?? "Profilo") : "Accedi"}
+          label={
+            status === "authenticated" ? (user?.name?.split(" ")[0] ?? t("profile")) : t("login")
+          }
           value="/profilo"
           onClick={() => {
             if (status === "unauthenticated") router.push("/login");

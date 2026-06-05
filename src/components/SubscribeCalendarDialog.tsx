@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useTranslations } from "next-intl";
 import ResponsiveDialog from "@/components/ResponsiveDialog";
 import CloseIcon from "@mui/icons-material/Close";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
@@ -27,6 +28,8 @@ const ICS_PATH = "/api/calendar/export.ics";
 
 export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCalendarDialogProps) {
   const { showToast } = useToast();
+  const t = useTranslations("calendarSub");
+  const tCommon = useTranslations("common");
   const [origin, setOrigin] = useState("");
 
   useEffect(() => {
@@ -47,34 +50,33 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(httpsUrl);
-      showToast({ message: "URL copiato", severity: "success" });
+      showToast({ message: t("urlCopied"), severity: "success" });
     } catch {
-      showToast({ message: "Impossibile copiare l'URL", severity: "error" });
+      showToast({ message: t("urlCopyFailed"), severity: "error" });
     }
   }
 
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ pr: 6, fontWeight: 800 }}>
-        Iscriviti al calendario
+        {t("title")}
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", right: 8, top: 8, color: "text.secondary" }}
-          aria-label="Chiudi"
+          aria-label={tCommon("close")}
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>
         <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-          Aggiungi allenamenti, partite ed eventi al tuo calendario. Le modifiche e i nuovi eventi
-          appariranno automaticamente (Google aggiorna ogni 8-24 ore, Apple più spesso).
+          {t("intro")}
         </Typography>
 
         <Stack spacing={2}>
           <Box>
             <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
-              URL del calendario
+              {t("urlLabel")}
             </Typography>
             <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
               <TextField
@@ -90,14 +92,14 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 startIcon={<ContentCopyIcon />}
                 sx={{ fontWeight: 600, flexShrink: 0 }}
               >
-                Copia
+                {tCommon("copy")}
               </Button>
             </Box>
           </Box>
 
           <Box>
             <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
-              Scorciatoie
+              {t("shortcuts")}
             </Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 0.5 }}>
               <Button
@@ -130,7 +132,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 startIcon={<DownloadIcon />}
                 sx={{ fontWeight: 600 }}
               >
-                Scarica .ics
+                {t("downloadIcs")}
               </Button>
             </Stack>
           </Box>
@@ -146,22 +148,20 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
               variant="caption"
               sx={{ color: "text.secondary", fontWeight: 700, display: "block", mb: 0.5 }}
             >
-              Istruzioni Google Calendar
+              {t("instructionsTitle")}
             </Typography>
-            <Typography variant="caption" sx={{ color: "text.secondary", display: "block" }}>
-              1. Clicca su &quot;Google Calendar&quot; qui sopra (o da computer: Altri calendari →
-              Aggiungi → Da URL).
-              <br />
-              2. Incolla l&apos;URL del calendario e conferma.
-              <br />
-              3. Gli eventi appaiono dopo qualche minuto. Gli aggiornamenti arrivano entro 24 ore.
+            <Typography
+              variant="caption"
+              sx={{ color: "text.secondary", display: "block", whiteSpace: "pre-line" }}
+            >
+              {t("instructionsBody")}
             </Typography>
           </Box>
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} sx={{ fontWeight: 600 }}>
-          Chiudi
+          {tCommon("close")}
         </Button>
       </DialogActions>
     </ResponsiveDialog>

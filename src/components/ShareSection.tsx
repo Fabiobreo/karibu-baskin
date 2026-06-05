@@ -15,6 +15,7 @@ import QrCode2Icon from "@mui/icons-material/QrCode2";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CloseIcon from "@mui/icons-material/Close";
 import { QRCodeSVG } from "qrcode.react";
+import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 
 interface Props {
@@ -26,6 +27,8 @@ interface Props {
 export default function ShareSection({ sessionTitle, sessionUrl, dark = false }: Props) {
   const [qrOpen, setQrOpen] = useState(false);
   const { showToast } = useToast();
+  const t = useTranslations("share");
+  const tCommon = useTranslations("common");
 
   const waText = `Iscriviti all'allenamento "${sessionTitle}" di Karibu Baskin 🦊\n${sessionUrl}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
@@ -33,9 +36,9 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(sessionUrl);
-      showToast({ message: "Link copiato negli appunti!", severity: "success", duration: 2000 });
+      showToast({ message: t("linkCopied"), severity: "success", duration: 2000 });
     } catch {
-      showToast({ message: "Impossibile copiare il link", severity: "error" });
+      showToast({ message: t("linkCopyFailed"), severity: "error" });
     }
   }
 
@@ -67,25 +70,25 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
                 }
           }
         >
-          WhatsApp
+          {t("whatsapp")}
         </Button>
 
-        <Tooltip title="Copia link">
+        <Tooltip title={t("copyLink")}>
           <IconButton
             size="small"
             onClick={handleCopy}
-            aria-label="Copia link"
+            aria-label={t("copyLink")}
             sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
           >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
         </Tooltip>
 
-        <Tooltip title="Mostra QR Code">
+        <Tooltip title={t("showQr")}>
           <IconButton
             size="small"
             onClick={() => setQrOpen(true)}
-            aria-label="Mostra QR Code"
+            aria-label={t("showQr")}
             sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
           >
             <QrCode2Icon fontSize="small" />
@@ -98,7 +101,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
           QR Code — {sessionTitle}
           <IconButton
             onClick={() => setQrOpen(false)}
-            aria-label="Chiudi"
+            aria-label={tCommon("close")}
             sx={{ position: "absolute", right: 8, top: 8 }}
           >
             <CloseIcon />
@@ -118,7 +121,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
             <QRCodeSVG value={sessionUrl} size={200} />
           </Box>
           <Typography variant="body2" color="text.secondary">
-            Inquadra il QR code per iscriverti all&apos;allenamento
+            {t("qrHint")}
           </Typography>
         </DialogContent>
       </Dialog>

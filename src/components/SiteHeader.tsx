@@ -34,6 +34,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
+import LanguageIcon from "@mui/icons-material/Language";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -43,51 +45,42 @@ import Image from "next/image";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import { useThemeMode } from "@/context/ThemeContext";
 import Tooltip from "@mui/material/Tooltip";
+import { useTranslations } from "next-intl";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { alpha } from "@mui/material/styles";
 import useSWR from "swr";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { slugify } from "@/lib/slugUtils";
 
-// Voci semplici del nav (solo quelle che non hanno dropdown)
-const NAV_LINKS: { label: string; href: string; iconOnly?: boolean }[] = [
-  { label: "Home", href: "/", iconOnly: true },
-  { label: "Allenamenti", href: "/allenamenti" },
-  { label: "Calendario", href: "/calendario" },
+// href-only — le label vengono da t() dentro il componente
+const NAV_HREFS = [
+  { key: "home" as const, href: "/", iconOnly: true },
+  { key: "trainings" as const, href: "/allenamenti" },
+  { key: "calendar" as const, href: "/calendario" },
 ];
 
-// Voci dropdown "Partite"
-const PARTITE_LINKS = [
-  { label: "Prossime partite", href: "/partite" },
-  { label: "Risultati", href: "/risultati" },
-  { label: "Classifiche", href: "/classifiche" },
-  { label: "Marcatori", href: "/marcatori" },
+const PARTITE_HREFS = [
+  { key: "nextMatches" as const, href: "/partite" },
+  { key: "results" as const, href: "/risultati" },
+  { key: "standings" as const, href: "/classifiche" },
+  { key: "scorers" as const, href: "/marcatori" },
 ];
 
-// Voci dropdown "Il Baskin"
-const IL_BASKIN_LINKS: { label: string; href: string; disabled?: boolean; badge?: string }[] = [
-  { label: "Cos'è il Baskin", href: "/il-baskin" },
-  { label: "News", href: "/news" },
-  { label: "Gallery", href: "/gallery" },
+const IL_BASKIN_HREFS: { key: string; href: string; disabled?: boolean; badge?: string }[] = [
+  { key: "whatIsBaskin", href: "/il-baskin" },
+  { key: "news", href: "/news" },
+  { key: "gallery", href: "/gallery" },
 ];
 
-// Voci dropdown "Contatti"
-const CONTATTI_LINKS = [
-  { label: "Contatti", href: "/contatti" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Sponsor", href: "/sponsor" },
+const CONTATTI_HREFS = [
+  { key: "contacts" as const, href: "/contatti" },
+  { key: "faq" as const, href: "/faq" },
+  { key: "sponsor" as const, href: "/sponsor" },
 ];
-
-// Voce fissa dropdown Squadre
-const SQUADRE_BASE_LINK = { label: "Chi siamo", href: "/squadre" };
 
 const COLOR_MODE_ORDER = ["light", "dark", "system"] as const;
 type ColorMode = (typeof COLOR_MODE_ORDER)[number];
-
-const MODE_LABELS: Record<ColorMode, string> = {
-  light: "Tema chiaro",
-  dark: "Tema scuro",
-  system: "Segui sistema",
-};
 
 function ThemeModeIcon({ mode }: { mode: ColorMode }) {
   if (mode === "light") return <LightModeIcon fontSize="small" />;
@@ -96,6 +89,7 @@ function ThemeModeIcon({ mode }: { mode: ColorMode }) {
 }
 
 export default function SiteHeader() {
+  const t = useTranslations("nav");
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -136,12 +130,12 @@ export default function SiteHeader() {
   const currentSeason = getCurrentSeason();
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
   const squadreLinks = [
-    SQUADRE_BASE_LINK,
-    ...currentTeams.map((t) => ({
-      label: t.name,
-      href: `/squadre/${currentSeason.replace("-", "")}/${slugify(t.name)}`,
+    { label: t("whoWeAre"), href: "/squadre" },
+    ...currentTeams.map((team) => ({
+      label: team.name,
+      href: `/squadre/${currentSeason.replace("-", "")}/${slugify(team.name)}`,
     })),
-    { label: "Archivio", href: "/squadre/archivio" },
+    { label: t("archive"), href: "/squadre/archivio" },
   ];
 
   const { data: session, status } = useSession();
@@ -220,7 +214,7 @@ export default function SiteHeader() {
             }}
           >
             {/* Voci semplici: Home, Allenamenti, Calendario */}
-            {NAV_LINKS.map((link) => {
+            {NAV_HREFS.map((link) => {
               const active = pathname === link.href;
               return (
                 <Button
@@ -243,7 +237,7 @@ export default function SiteHeader() {
                     "&:hover": { color: "common.white", backgroundColor: "transparent" },
                   }}
                 >
-                  {link.iconOnly ? <HomeIcon fontSize="small" /> : link.label}
+                  {link.iconOnly ? <HomeIcon fontSize="small" /> : t(link.key)}
                 </Button>
               );
             })}
@@ -266,7 +260,7 @@ export default function SiteHeader() {
                 "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
-              Partite
+              {t("matches")}
             </Button>
             <Menu
               anchorEl={partiteAnchor}
@@ -276,7 +270,7 @@ export default function SiteHeader() {
               anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
               PaperProps={{ sx: { mt: 0.5, minWidth: 150 } }}
             >
-              {PARTITE_LINKS.map((pl) => (
+              {PARTITE_HREFS.map((pl) => (
                 <MenuItem
                   key={pl.href}
                   component={Link}
@@ -285,7 +279,7 @@ export default function SiteHeader() {
                   onClick={() => setPartiteAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === pl.href ? 700 : 400 }}
                 >
-                  {pl.label}
+                  {t(pl.key)}
                 </MenuItem>
               ))}
             </Menu>
@@ -308,7 +302,7 @@ export default function SiteHeader() {
                 "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
-              Squadre
+              {t("teams")}
             </Button>
             <Menu
               anchorEl={squadreAnchor}
@@ -350,7 +344,7 @@ export default function SiteHeader() {
                 "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
-              Il Baskin
+              {t("baskin")}
             </Button>
             <Menu
               anchorEl={ilBaskinAnchor}
@@ -360,7 +354,7 @@ export default function SiteHeader() {
               anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
               PaperProps={{ sx: { mt: 0.5, minWidth: 170 } }}
             >
-              {IL_BASKIN_LINKS.map((bl) => (
+              {IL_BASKIN_HREFS.map((bl) => (
                 <MenuItem
                   key={bl.href}
                   component={bl.disabled ? "li" : Link}
@@ -370,7 +364,7 @@ export default function SiteHeader() {
                   onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === bl.href ? 700 : 400, gap: 1 }}
                 >
-                  {bl.label}
+                  {t(bl.key)}
                   {bl.badge && (
                     <Box
                       component="span"
@@ -412,7 +406,7 @@ export default function SiteHeader() {
                 "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
-              Contatti
+              {t("contacts")}
             </Button>
             <Menu
               anchorEl={contattiAnchor}
@@ -422,7 +416,7 @@ export default function SiteHeader() {
               anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
               PaperProps={{ sx: { mt: 0.5, minWidth: 140 } }}
             >
-              {CONTATTI_LINKS.map((cl) => (
+              {CONTATTI_HREFS.map((cl) => (
                 <MenuItem
                   key={cl.href}
                   component={Link}
@@ -431,39 +425,19 @@ export default function SiteHeader() {
                   onClick={() => setContattiAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === cl.href ? 700 : 400 }}
                 >
-                  {cl.label}
+                  {t(cl.key)}
                 </MenuItem>
               ))}
             </Menu>
           </Box>
 
-          {/* Link Admin (solo COACH/ADMIN) */}
-          {status !== "loading" && isStaff && (
-            <Button
-              component={Link}
-              href="/admin"
-              size="small"
-              sx={{
-                display: { xs: "none", md: "inline-flex" },
-                color: "primary.light",
-                fontWeight: 700,
-                fontSize: "0.8rem",
-                border: "1px solid",
-                borderColor: (theme) => alpha(theme.palette.primary.main, 0.4),
-                borderRadius: 1,
-                px: 1.5,
-                ml: 1,
-                "&:hover": {
-                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.12),
-                  borderColor: "primary.main",
-                },
-              }}
-            >
-              Admin
-            </Button>
-          )}
-
           <Box sx={{ flex: { xs: 1, md: 0 } }} />
+
+          {/* Selettore tema + lingua (desktop) — visibili a tutti, loggati e non */}
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, mr: 0.5 }}>
+            <ThemeSwitcher />
+            <LanguageSwitcher onDark />
+          </Box>
 
           {/* Campanellino notifiche (desktop) */}
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
@@ -526,7 +500,7 @@ export default function SiteHeader() {
                     <ListItemIcon>
                       <AccountCircleIcon fontSize="small" />
                     </ListItemIcon>
-                    Il mio profilo
+                    {t("myProfile")}
                   </MenuItem>
                   <MenuItem
                     onClick={() => {
@@ -537,14 +511,22 @@ export default function SiteHeader() {
                     <ListItemIcon>
                       <EventAvailableIcon fontSize="small" />
                     </ListItemIcon>
-                    Le mie disponibilità
+                    {t("myAvailabilities")}
                   </MenuItem>
-                  <MenuItem onClick={cycleColorMode}>
-                    <ListItemIcon>
-                      <ThemeModeIcon mode={colorMode as ColorMode} />
-                    </ListItemIcon>
-                    {MODE_LABELS[colorMode as ColorMode]}
-                  </MenuItem>
+                  {isStaff && (
+                    <MenuItem
+                      onClick={() => {
+                        setMenuAnchor(null);
+                        router.push("/admin");
+                      }}
+                      sx={{ color: "primary.main", fontWeight: 700 }}
+                    >
+                      <ListItemIcon>
+                        <AdminPanelSettingsIcon fontSize="small" sx={{ color: "primary.main" }} />
+                      </ListItemIcon>
+                      {t("admin")}
+                    </MenuItem>
+                  )}
                   <Divider />
                   <MenuItem
                     onClick={() => {
@@ -556,24 +538,26 @@ export default function SiteHeader() {
                     <ListItemIcon>
                       <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
                     </ListItemIcon>
-                    Esci
+                    {t("logout")}
                   </MenuItem>
                 </Menu>
               </>
             ) : (
-              <Button
-                onClick={() => router.push("/login")}
-                size="small"
-                variant="outlined"
-                sx={{
-                  color: "common.white",
-                  borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
-                  fontSize: "0.8rem",
-                  "&:hover": { borderColor: "common.white" },
-                }}
-              >
-                Accedi
-              </Button>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Button
+                  onClick={() => router.push("/login")}
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    color: "common.white",
+                    borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
+                    fontSize: "0.8rem",
+                    "&:hover": { borderColor: "common.white" },
+                  }}
+                >
+                  {t("login")}
+                </Button>
+              </Box>
             )}
           </Box>
 
@@ -581,7 +565,7 @@ export default function SiteHeader() {
           <IconButton
             color="inherit"
             onClick={() => setDrawerOpen(true)}
-            aria-label="Apri menu di navigazione"
+            aria-label={t("openMenu")}
             sx={{ display: { md: "none" } }}
           >
             <MenuIcon />
@@ -625,13 +609,13 @@ export default function SiteHeader() {
               letterSpacing: "0.08em",
             }}
           >
-            Esplora
+            {t("explore")}
           </Typography>
           <IconButton
             color="inherit"
             onClick={() => setDrawerOpen(false)}
             size="small"
-            aria-label="Chiudi menu"
+            aria-label={t("closeMenu")}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -642,8 +626,8 @@ export default function SiteHeader() {
         <List disablePadding sx={{ flex: 1 }}>
           {/* Voci semplici prima di "Partite" */}
           {[
-            { label: "Allenamenti", href: "/allenamenti" },
-            { label: "Calendario", href: "/calendario" },
+            { key: "trainings" as const, href: "/allenamenti" },
+            { key: "calendar" as const, href: "/calendario" },
           ].map((link) => {
             const active = pathname === link.href;
             return (
@@ -663,7 +647,7 @@ export default function SiteHeader() {
                   }}
                 >
                   <ListItemText
-                    primary={link.label}
+                    primary={t(link.key)}
                     primaryTypographyProps={{ fontWeight: active ? 700 : 400, fontSize: "0.95rem" }}
                   />
                 </ListItemButton>
@@ -685,7 +669,7 @@ export default function SiteHeader() {
               }}
             >
               <ListItemText
-                primary="Partite"
+                primary={t("matches")}
                 primaryTypographyProps={{
                   fontWeight: partiteActive ? 700 : 400,
                   fontSize: "0.95rem",
@@ -706,7 +690,7 @@ export default function SiteHeader() {
           {/* Voci figlio: Risultati + Classifiche */}
           <Collapse in={partiteOpen} timeout="auto" unmountOnExit>
             <List disablePadding>
-              {PARTITE_LINKS.map((link) => {
+              {PARTITE_HREFS.map((link) => {
                 const active = pathname === link.href;
                 return (
                   <ListItem key={link.href} disablePadding>
@@ -726,7 +710,7 @@ export default function SiteHeader() {
                       }}
                     >
                       <ListItemText
-                        primary={link.label}
+                        primary={t(link.key)}
                         primaryTypographyProps={{
                           fontWeight: active ? 700 : 400,
                           fontSize: "0.88rem",
@@ -753,7 +737,7 @@ export default function SiteHeader() {
               }}
             >
               <ListItemText
-                primary="Squadre"
+                primary={t("teams")}
                 primaryTypographyProps={{
                   fontWeight: squadreActive ? 700 : 400,
                   fontSize: "0.95rem",
@@ -820,7 +804,7 @@ export default function SiteHeader() {
               }}
             >
               <ListItemText
-                primary="Il Baskin"
+                primary={t("baskin")}
                 primaryTypographyProps={{
                   fontWeight: ilBaskinActive ? 700 : 400,
                   fontSize: "0.95rem",
@@ -840,7 +824,7 @@ export default function SiteHeader() {
 
           <Collapse in={ilBaskinOpen} timeout="auto" unmountOnExit>
             <List disablePadding>
-              {IL_BASKIN_LINKS.map((link) => {
+              {IL_BASKIN_HREFS.map((link) => {
                 const active = pathname === link.href;
                 return (
                   <ListItem key={link.href} disablePadding>
@@ -862,7 +846,7 @@ export default function SiteHeader() {
                       }}
                     >
                       <ListItemText
-                        primary={link.label}
+                        primary={t(link.key)}
                         primaryTypographyProps={{
                           fontWeight: active ? 700 : 400,
                           fontSize: "0.88rem",
@@ -907,7 +891,7 @@ export default function SiteHeader() {
               }}
             >
               <ListItemText
-                primary="Contatti"
+                primary={t("contacts")}
                 primaryTypographyProps={{
                   fontWeight: contattiActive ? 700 : 400,
                   fontSize: "0.95rem",
@@ -927,7 +911,7 @@ export default function SiteHeader() {
 
           <Collapse in={contattiOpen} timeout="auto" unmountOnExit>
             <List disablePadding>
-              {CONTATTI_LINKS.map((link) => {
+              {CONTATTI_HREFS.map((link) => {
                 const active = pathname === link.href;
                 return (
                   <ListItem key={link.href} disablePadding>
@@ -947,7 +931,7 @@ export default function SiteHeader() {
                       }}
                     >
                       <ListItemText
-                        primary={link.label}
+                        primary={t(link.key)}
                         primaryTypographyProps={{
                           fontWeight: active ? 700 : 400,
                           fontSize: "0.88rem",
@@ -980,7 +964,7 @@ export default function SiteHeader() {
                   }}
                 >
                   <ListItemText
-                    primary="Admin"
+                    primary={t("admin")}
                     primaryTypographyProps={{ fontWeight: 700, fontSize: "0.95rem" }}
                   />
                 </ListItemButton>
@@ -992,20 +976,52 @@ export default function SiteHeader() {
         {/* Footer drawer: sezione utente */}
         <Box>
           <Divider sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08) }} />
-          {user ? (
+          {/* Tema — riga dedicata */}
+          <ListItemButton
+            onClick={cycleColorMode}
+            sx={{ py: 1.25, color: (theme) => alpha(theme.palette.common.white, 0.7) }}
+          >
+            <ListItemIcon sx={{ minWidth: 34 }}>
+              <ThemeModeIcon mode={colorMode as ColorMode} />
+            </ListItemIcon>
+            <ListItemText
+              primary={t(
+                `theme${colorMode.charAt(0).toUpperCase()}${colorMode.slice(1)}` as
+                  | "themeLight"
+                  | "themeDark"
+                  | "themeSystem"
+              )}
+              primaryTypographyProps={{ fontSize: "0.9rem" }}
+            />
+          </ListItemButton>
+
+          {/* Lingua — riga dedicata, leggibile su drawer scuro, accanto al tema */}
+          <Box
+            sx={{
+              px: 2,
+              py: 1.25,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                color: (theme) => alpha(theme.palette.common.white, 0.7),
+              }}
+            >
+              <LanguageIcon fontSize="small" />
+              <Typography sx={{ fontSize: "0.9rem" }}>{t("language")}</Typography>
+            </Box>
+            <LanguageSwitcher onDark />
+          </Box>
+
+          {/* Logout (solo loggati) — sotto tema e lingua */}
+          {user && (
             <>
-              <ListItemButton
-                onClick={cycleColorMode}
-                sx={{ py: 1.25, color: (theme) => alpha(theme.palette.common.white, 0.7) }}
-              >
-                <ListItemIcon sx={{ minWidth: 34 }}>
-                  <ThemeModeIcon mode={colorMode as ColorMode} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={MODE_LABELS[colorMode as ColorMode]}
-                  primaryTypographyProps={{ fontSize: "0.9rem" }}
-                />
-              </ListItemButton>
               <Divider sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08) }} />
               <ListItemButton
                 onClick={() => {
@@ -1017,27 +1033,20 @@ export default function SiteHeader() {
                 <ListItemIcon sx={{ minWidth: 34 }}>
                   <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
                 </ListItemIcon>
-                <ListItemText primary="Esci" primaryTypographyProps={{ fontSize: "0.95rem" }} />
+                <ListItemText
+                  primary={t("logout")}
+                  primaryTypographyProps={{ fontSize: "0.95rem" }}
+                />
               </ListItemButton>
             </>
-          ) : (
-            <ListItemButton
-              onClick={cycleColorMode}
-              sx={{ py: 1.25, color: (theme) => alpha(theme.palette.common.white, 0.7) }}
-            >
-              <ListItemIcon sx={{ minWidth: 34 }}>
-                <ThemeModeIcon mode={colorMode as ColorMode} />
-              </ListItemIcon>
-              <ListItemText
-                primary={MODE_LABELS[colorMode as ColorMode]}
-                primaryTypographyProps={{ fontSize: "0.9rem" }}
-              />
-            </ListItemButton>
           )}
+
           <Box
             sx={{
               px: 2,
               py: 1,
+              display: "flex",
+              alignItems: "center",
               borderTop: (theme) => `1px solid ${alpha(theme.palette.common.white, 0.06)}`,
             }}
           >
@@ -1051,7 +1060,7 @@ export default function SiteHeader() {
                 textDecorationColor: "rgba(255,255,255,0.15)",
               }}
             >
-              Informativa privacy
+              {t("privacyPolicy")}
             </Link>
           </Box>
         </Box>

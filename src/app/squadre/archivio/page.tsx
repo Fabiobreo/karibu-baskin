@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
 import {
   Box,
   Container,
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function SquadreArchivioPage() {
+  const t = await getTranslations("teams");
   const [teams, seasonRecords] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
@@ -49,10 +51,10 @@ export default async function SquadreArchivioPage() {
       <SiteHeader />
 
       <PageHero
-        chip="Stagioni precedenti"
+        chip={t("archiveHeroChip")}
         chipWhite
-        title="Archivio squadre"
-        subtitle="Tutte le squadre Karibu Baskin dalle stagioni passate."
+        title={t("archiveTitle")}
+        subtitle={t("archiveSubtitle")}
         subtitleMaxWidth={480}
         py={{ xs: 5, md: 7 }}
         breadcrumb={
@@ -70,10 +72,10 @@ export default async function SquadreArchivioPage() {
                 "&:hover": { color: "#fff" },
               }}
             >
-              Squadre
+              {t("teamBreadcrumb")}
             </MuiLink>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
-              Archivio
+              {t("archiveTitle")}
             </Typography>
           </Breadcrumbs>
         }
@@ -83,7 +85,7 @@ export default async function SquadreArchivioPage() {
         {seasons.length === 0 ? (
           <EmptyState
             icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title="Nessuna stagione precedente"
+            title={t("archiveEmpty")}
           />
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -95,7 +97,7 @@ export default async function SquadreArchivioPage() {
                   fontWeight={700}
                   sx={{ color: "text.disabled", letterSpacing: "0.1em", display: "block", mb: 1.5 }}
                 >
-                  Stagione {season}
+                  {t("seasonLabel")} {season}
                 </Typography>
                 <Grid container spacing={2}>
                   {bySeason[season].map((team) => (
@@ -143,13 +145,13 @@ export default async function SquadreArchivioPage() {
                               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
                                 <GroupsIcon sx={{ fontSize: 13, color: "text.disabled" }} />
                                 <Typography variant="caption" color="text.disabled">
-                                  {team._count.memberships} atleti
+                                  {t("athleteCount", { count: team._count.memberships })}
                                 </Typography>
                               </Box>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
                                 <SportsSoccerIcon sx={{ fontSize: 13, color: "text.disabled" }} />
                                 <Typography variant="caption" color="text.disabled">
-                                  {team._count.matches} partite
+                                  {t("matchCount", { count: team._count.matches })}
                                 </Typography>
                               </Box>
                             </Box>

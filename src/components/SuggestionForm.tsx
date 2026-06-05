@@ -14,18 +14,20 @@ import {
 import LockIcon from "@mui/icons-material/Lock";
 import SendIcon from "@mui/icons-material/Send";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { SUGGESTION_CATEGORIES } from "@/lib/schemas/suggestion";
 
-const CATEGORY_LABELS: Record<(typeof SUGGESTION_CATEGORIES)[number], string> = {
-  APP: "App / sito web",
-  ALLENAMENTI: "Allenamenti",
-  PARTITE_EVENTI: "Partite ed eventi",
-  ALTRO: "Altro",
-};
-
 export default function SuggestionForm() {
   const { showToast } = useToast();
+  const t = useTranslations("suggestion");
+  const tCommon = useTranslations("common");
+  const CATEGORY_LABELS: Record<(typeof SUGGESTION_CATEGORIES)[number], string> = {
+    APP: t("catApp"),
+    ALLENAMENTI: t("catTrainings"),
+    PARTITE_EVENTI: t("catMatches"),
+    ALTRO: t("catOther"),
+  };
   const [category, setCategory] = useState<string>("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,14 +45,14 @@ export default function SuggestionForm() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? "Errore nell'invio");
+        throw new Error(data?.error ?? t("sendError"));
       }
       setSent(true);
       setCategory("");
       setMessage("");
     } catch (err) {
       showToast({
-        message: err instanceof Error ? err.message : "Errore nell'invio",
+        message: err instanceof Error ? err.message : t("sendError"),
         severity: "error",
       });
     } finally {
@@ -72,13 +74,13 @@ export default function SuggestionForm() {
       >
         <CheckCircleIcon sx={{ fontSize: 48, color: "success.main" }} />
         <Typography variant="h6" fontWeight={700}>
-          Grazie per il tuo suggerimento!
+          {t("thankYou")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Lo staff lo leggerà al più presto.
+          {t("thankYouDesc")}
         </Typography>
         <Button variant="outlined" size="small" onClick={() => setSent(false)} sx={{ mt: 1 }}>
-          Invia un altro suggerimento
+          {t("sendAnother")}
         </Button>
       </Box>
     );
@@ -93,18 +95,16 @@ export default function SuggestionForm() {
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
         <LockIcon sx={{ fontSize: 18 }} />
-        <Typography variant="caption">
-          Il tuo suggerimento è anonimo: lo staff non vedrà chi l&apos;ha inviato.
-        </Typography>
+        <Typography variant="caption">{t("anonymous")}</Typography>
       </Box>
 
       <FormControl size="small" fullWidth required>
         <InputLabel id="suggestion-category-label" shrink>
-          Categoria
+          {t("category")}
         </InputLabel>
         <Select
           labelId="suggestion-category-label"
-          label="Categoria"
+          label={t("category")}
           value={category}
           displayEmpty
           notched
@@ -114,7 +114,7 @@ export default function SuggestionForm() {
               CATEGORY_LABELS[val as keyof typeof CATEGORY_LABELS]
             ) : (
               <Typography component="span" color="text.disabled">
-                Seleziona una categoria
+                {t("selectCategory")}
               </Typography>
             )
           }
@@ -128,7 +128,7 @@ export default function SuggestionForm() {
       </FormControl>
 
       <TextField
-        label="Il tuo suggerimento"
+        label={t("yourSuggestion")}
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         required
@@ -147,7 +147,7 @@ export default function SuggestionForm() {
         startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
         sx={{ alignSelf: "flex-start", fontWeight: 700, borderRadius: 2 }}
       >
-        {loading ? "Invio in corso..." : "Invia suggerimento"}
+        {loading ? tCommon("sending") : t("submit")}
       </Button>
     </Box>
   );

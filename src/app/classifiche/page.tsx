@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Stack, Button } from "@mui/material";
 import EmptyState from "@/components/EmptyState";
 import SiteHeader from "@/components/SiteHeader";
@@ -103,6 +104,7 @@ function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
 }
 
 export default async function ClassifichePage() {
+  const t = await getTranslations("standings");
   const currentSeason = getCurrentSeason();
   const currentGroups = await groupsQuery(currentSeason);
   const hasCurrentGroups = currentGroups.length > 0;
@@ -121,7 +123,7 @@ export default async function ClassifichePage() {
             fontWeight={700}
             sx={{ letterSpacing: "0.12em" }}
           >
-            Campionato
+            {t("leagueChip")}
           </Typography>
         </Box>
         <Typography
@@ -130,7 +132,7 @@ export default async function ClassifichePage() {
           fontWeight={800}
           sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
         >
-          Stagione {currentSeason}
+          {t("seasonValue", { season: currentSeason })}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
           <Link href="/marcatori" style={{ textDecoration: "none" }}>
@@ -145,7 +147,7 @@ export default async function ClassifichePage() {
                 "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
               }}
             >
-              Classifica marcatori
+              {t("linkScorers")}
             </Button>
           </Link>
           <Link href="/risultati" style={{ textDecoration: "none" }}>
@@ -159,7 +161,7 @@ export default async function ClassifichePage() {
                 "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
               }}
             >
-              Tutti i risultati
+              {t("linkResults")}
             </Button>
           </Link>
           <Link href="/calendario" style={{ textDecoration: "none" }}>
@@ -173,7 +175,7 @@ export default async function ClassifichePage() {
                 "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
               }}
             >
-              Calendario
+              {t("linkCalendar")}
             </Button>
           </Link>
         </Box>
@@ -183,10 +185,10 @@ export default async function ClassifichePage() {
         {hasCurrentGroups ? (
           <Box>
             <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
-              Classifica campionato
+              {t("standingsTitle")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Stagione {currentSeason} — classifica e calendario per giornata
+              {t("standingsDesc", { season: currentSeason })}
             </Typography>
 
             <Stack spacing={3}>
@@ -211,8 +213,8 @@ export default async function ClassifichePage() {
         ) : (
           <EmptyState
             icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={`Nessun girone disponibile per la stagione ${currentSeason}`}
-            message="La classifica verrà aggiornata con l'avanzare della stagione."
+            title={t("noGroups", { season: currentSeason })}
+            message={t("noGroupsDesc")}
           />
         )}
       </Container>

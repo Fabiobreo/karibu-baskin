@@ -11,11 +11,11 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import type { Metadata } from "next";
-import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import MatchTimeCell from "@/components/MatchTimeCell";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 
 export const metadata: Metadata = {
   title: "Prossime partite | Karibu Baskin",
@@ -27,15 +27,15 @@ export const revalidate = 3600;
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
-const MATCH_TYPE_LABEL: Record<MatchType, string> = {
-  LEAGUE: "Campionato",
-  TOURNAMENT: "Torneo",
-  FRIENDLY: "Amichevole",
-};
-
 export default async function PartitePage({ searchParams }: Props) {
   const sp = await searchParams;
   const season = sp.season ?? getCurrentSeason();
+  const [t, locale] = await Promise.all([getTranslations("matches"), getLocale()]);
+  const dateLocale = getDateFnsLocale(locale);
+  const matchTypeLabel = (type: string) =>
+    ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
+      type
+    ] ?? type;
   const now = new Date();
 
   const allSeasons = await prisma.competitiveTeam.findMany({
@@ -91,7 +91,7 @@ export default async function PartitePage({ searchParams }: Props) {
             variant="overline"
             sx={{ color: "primary.main", letterSpacing: "0.12em", fontWeight: 700 }}
           >
-            In programma
+            {t("upcomingHeroChip")}
           </Typography>
         </Box>
         <Typography
@@ -100,12 +100,12 @@ export default async function PartitePage({ searchParams }: Props) {
           fontWeight={800}
           sx={{ mb: 1, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
         >
-          Prossime partite
+          {t("upcomingTitle")}
         </Typography>
         <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)" }}>
           {upcoming.length === 0
-            ? "Nessuna partita in programma."
-            : `${upcoming.length} ${upcoming.length === 1 ? "partita" : "partite"} da disputare`}
+            ? t("upcomingEmpty")
+            : t("upcomingCount", { count: upcoming.length })}
         </Typography>
       </PageHero>
 
@@ -118,7 +118,7 @@ export default async function PartitePage({ searchParams }: Props) {
               fontWeight={700}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
-              Stagione:
+              {t("seasonLabel")}
             </Typography>
             {seasons.map((s) => (
               <Link
@@ -141,8 +141,8 @@ export default async function PartitePage({ searchParams }: Props) {
         {teamGroups.length === 0 && (
           <EmptyState
             icon={<CalendarTodayIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title="Nessuna partita in programma"
-            message="Il calendario delle prossime partite sarà pubblicato a breve."
+            title={t("upcomingEmpty")}
+            message={t("upcomingEmptyDesc")}
             action={
               <Link href="/risultati" style={{ textDecoration: "none" }}>
                 <Typography
@@ -150,7 +150,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   color="primary"
                   sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
                 >
-                  Vedi i risultati →
+                  {t("seeResults")}
                 </Typography>
               </Link>
             }
@@ -188,7 +188,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   </Typography>
                 )}
                 <Chip
-                  label={`${team.matches.length} ${team.matches.length === 1 ? "partita" : "partite"}`}
+                  label={t("matchCount", { count: team.matches.length })}
                   size="small"
                   sx={{
                     ml: "auto",
@@ -203,7 +203,7 @@ export default async function PartitePage({ searchParams }: Props) {
 
               <Stack spacing={1}>
                 {team.matches.map((m) => {
-                  const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
+                  const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? t("opponent");
                   const leftName = m.isHome ? m.team.name : opponentName;
                   const rightName = m.isHome ? opponentName : m.team.name;
                   const leftIsUs = m.isHome;
@@ -246,7 +246,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               color="text.disabled"
                               sx={{ fontSize: "0.68rem", display: "block" }}
                             >
-                              {format(new Date(m.date), "d MMM · HH:mm", { locale: it })}
+                              {format(new Date(m.date), "d MMM · HH:mm", { locale: dateLocale })}
                             </Typography>
                           </Box>
 
@@ -315,7 +315,7 @@ export default async function PartitePage({ searchParams }: Props) {
                           >
                             <Chip
                               icon={m.isHome ? <HomeIcon /> : <FlightIcon />}
-                              label={m.isHome ? "Casa" : "Trasferta"}
+                              label={m.isHome ? t("home") : t("away")}
                               size="small"
                               variant="outlined"
                               sx={{ fontSize: "0.65rem", height: 22 }}
@@ -345,7 +345,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               </Box>
                             )}
                             <Chip
-                              label={MATCH_TYPE_LABEL[m.matchType]}
+                              label={matchTypeLabel(m.matchType)}
                               size="small"
                               variant="outlined"
                               sx={{
@@ -376,7 +376,7 @@ export default async function PartitePage({ searchParams }: Props) {
                 color="primary"
                 sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
               >
-                Vedi i risultati →
+                {t("seeResults")}
               </Typography>
             </Link>
           </Box>

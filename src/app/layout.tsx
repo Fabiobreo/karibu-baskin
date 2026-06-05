@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Analytics } from "@vercel/analytics/react";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { ToastProvider } from "@/context/ToastContext";
 import Providers from "@/components/Providers";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
@@ -64,29 +66,33 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  const locale = await getLocale();
+  const messages = await getMessages();
 
   return (
-    <html lang="it" className={inter.variable}>
+    <html lang={locale} className={inter.variable}>
       <body
         className={inter.className}
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
         suppressHydrationWarning
       >
         <AppRouterCacheProvider>
-          <ServiceWorkerRegistrar />
-          <Providers session={session}>
-            <ToastProvider>
-              <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
-                <OfflineBanner />
-                {children}
-              </Box>
-              <SponsorBanner />
-              <Footer />
-              <BottomNav />
-              <SwUpdateToast />
-              <CookieBanner />
-            </ToastProvider>
-          </Providers>
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            <ServiceWorkerRegistrar />
+            <Providers session={session}>
+              <ToastProvider>
+                <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
+                  <OfflineBanner />
+                  {children}
+                </Box>
+                <SponsorBanner />
+                <Footer />
+                <BottomNav />
+                <SwUpdateToast />
+                <CookieBanner />
+              </ToastProvider>
+            </Providers>
+          </NextIntlClientProvider>
         </AppRouterCacheProvider>
         <Analytics />
       </body>

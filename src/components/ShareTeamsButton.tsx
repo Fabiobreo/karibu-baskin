@@ -3,9 +3,12 @@ import { useRef, useState } from "react";
 import { IconButton, Tooltip, CircularProgress } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { useTranslations } from "next-intl";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { TeamsData } from "./TeamDisplay";
-import { ROLE_LABELS, ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
+import { ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
 
 interface Props {
   teams: TeamsData;
@@ -15,9 +18,13 @@ interface Props {
   sessionEndTime?: string | Date | null;
 }
 
-function formatDateLine(date: string | Date, endTime?: string | Date | null): string {
+function formatDateLine(
+  date: string | Date,
+  dateLocale: Locale,
+  endTime?: string | Date | null
+): string {
   const d = new Date(date);
-  const datePart = format(d, "EEEE d MMMM yyyy", { locale: it });
+  const datePart = format(d, "EEEE d MMMM yyyy", { locale: dateLocale });
   const startTime = format(d, "HH:mm");
   if (endTime) {
     const endPart = format(new Date(endTime), "HH:mm");
@@ -44,6 +51,10 @@ export default function ShareTeamsButton({
 }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+  const t = useTranslations("trainings");
+  const tShare = useTranslations("share");
+  const dateLocale = useActiveDateLocale();
+  const { roleLabel, teamColorLabel } = useEntityLabels();
 
   async function handleShare() {
     if (!cardRef.current || loading) return;
@@ -61,7 +72,10 @@ export default function ShareTeamsButton({
       );
       const file = new File([blob], "squadre.png", { type: "image/png" });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `Squadre — ${sessionTitle}` });
+        await navigator.share({
+          files: [file],
+          title: tShare("teamsSubject", { title: sessionTitle }),
+        });
       } else {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -136,7 +150,7 @@ export default function ShareTeamsButton({
                   textTransform: "capitalize",
                 }}
               >
-                {formatDateLine(sessionDate, sessionEndTime)}
+                {formatDateLine(sessionDate, dateLocale, sessionEndTime)}
               </div>
             )}
           </div>
@@ -183,11 +197,11 @@ export default function ShareTeamsButton({
                       <span
                         style={{ fontWeight: 800, fontSize: 13, color: "#111", letterSpacing: 0.3 }}
                       >
-                        {m.name.toUpperCase()}
+                        {teamColorLabel(m.key).toUpperCase()}
                       </span>
                     </div>
                     <div style={{ fontSize: 11, color: "#666", marginTop: 2, paddingLeft: 17 }}>
-                      {teamList.length} {teamList.length === 1 ? "atleta" : "atleti"}
+                      {t("athletes", { count: teamList.length })}
                     </div>
                   </div>
 
@@ -210,7 +224,7 @@ export default function ShareTeamsButton({
                             marginBottom: 5,
                           }}
                         >
-                          {ROLE_LABELS[role]}
+                          {roleLabel(role)}
                         </div>
                         {/* Nomi */}
                         {players.map((p) => (
@@ -231,7 +245,7 @@ export default function ShareTeamsButton({
                     ))}
                     {roleGroups.length === 0 && (
                       <div style={{ fontSize: 11, color: "#bbb", fontStyle: "italic" }}>
-                        Nessun atleta
+                        {t("noAthletesEmpty")}
                       </div>
                     )}
                   </div>
@@ -262,7 +276,7 @@ export default function ShareTeamsButton({
                   letterSpacing: 1,
                 }}
               >
-                Allenatori
+                {t("coachesLabel")}
               </span>
               {coaches.map((c) => (
                 <span key={c.id} style={{ fontSize: 12, fontWeight: 600, color: "#444" }}>
@@ -310,13 +324,13 @@ export default function ShareTeamsButton({
         </div>
       </div>
 
-      <Tooltip title={loading ? "Generando immagine..." : "Condividi squadre"}>
+      <Tooltip title={loading ? tShare("teamsGenerating") : tShare("teamsTooltip")}>
         <span>
           <IconButton
             size="small"
             onClick={handleShare}
             disabled={loading}
-            aria-label="Condividi squadre"
+            aria-label={tShare("teamsTooltip")}
             sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
           >
             {loading ? <CircularProgress size={16} /> : <ShareIcon fontSize="small" />}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Box,
   Tabs,
@@ -27,11 +28,12 @@ import FlightIcon from "@mui/icons-material/Flight";
 import StarIcon from "@mui/icons-material/Star";
 import EditIcon from "@mui/icons-material/Edit";
 import Link from "next/link";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS } from "@/lib/constants";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import MatchStatsTable from "@/components/MatchStatsTable";
 import type { MatchStatRow } from "@/components/MatchStatsTable";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { StandingEntry } from "@/lib/standings";
 
 interface CallupEntry {
@@ -80,12 +82,6 @@ interface Props {
   isStaff: boolean;
 }
 
-const RESULT_META: Record<string, { label: string; color: string }> = {
-  WIN: { label: "Vittoria", color: "#2E7D32" },
-  LOSS: { label: "Sconfitta", color: "#C62828" },
-  DRAW: { label: "Pareggio", color: "#E65100" },
-};
-
 export default function MatchDetailTabs({
   notes,
   stats,
@@ -99,6 +95,16 @@ export default function MatchDetailTabs({
   matchId,
   isStaff,
 }: Props) {
+  const t = useTranslations("matches");
+  const tNav = useTranslations("nav");
+  const tStandings = useTranslations("standings");
+  const { sportRoleLabel } = useEntityLabels();
+  const dateLocale = useActiveDateLocale();
+  const RESULT_META: Record<string, { label: string; color: string }> = {
+    WIN: { label: t("resultWin"), color: "#2E7D32" },
+    LOSS: { label: t("resultLoss"), color: "#C62828" },
+    DRAW: { label: t("resultDraw"), color: "#E65100" },
+  };
   const [tab, setTab] = useState(0);
   const hasStats = stats.length > 0;
 
@@ -179,13 +185,13 @@ export default function MatchDetailTabs({
           <Tab
             icon={<GroupsIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
-            label={`Convocati${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`}
+            label={`${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`}
             sx={{ minHeight: 48, fontSize: "0.82rem", fontWeight: 600 }}
           />
           <Tab
             icon={<LeaderboardIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
-            label={`Statistiche${hasStats ? ` (${stats.length})` : ""}`}
+            label={`${t("tabStats")}${hasStats ? ` (${stats.length})` : ""}`}
             sx={{ minHeight: 48, fontSize: "0.82rem", fontWeight: 600 }}
           />
         </Tabs>
@@ -206,7 +212,7 @@ export default function MatchDetailTabs({
                   startIcon={<EditIcon sx={{ fontSize: 16 }} />}
                   sx={{ fontWeight: 700 }}
                 >
-                  Gestisci convocati
+                  {t("manageCallups")}
                 </Button>
               </Link>
             </Box>
@@ -226,7 +232,7 @@ export default function MatchDetailTabs({
                   fontSize: "0.62rem",
                 }}
               >
-                Top marcatori
+                {t("topScorers")}
               </Typography>
               <Box
                 sx={{
@@ -311,7 +317,7 @@ export default function MatchDetailTabs({
                         fontWeight={600}
                         sx={{ fontSize: "0.62rem" }}
                       >
-                        punti
+                        {t("pointsUnit")}
                       </Typography>
                     </Paper>
                   );
@@ -340,12 +346,11 @@ export default function MatchDetailTabs({
                 color="text.disabled"
                 sx={{ mt: 0.5, mb: 2.5, maxWidth: 360, mx: "auto" }}
               >
-                La lista dei convocati è visibile solo agli atleti, ai genitori e allo staff.
-                Effettua l&apos;accesso per visualizzarla.
+                {t("callupsRestricted")}
               </Typography>
               <Link href="/login" style={{ textDecoration: "none" }}>
                 <Button variant="contained" color="primary" sx={{ fontWeight: 700 }}>
-                  Accedi
+                  {tNav("login")}
                 </Button>
               </Link>
             </Box>
@@ -353,10 +358,10 @@ export default function MatchDetailTabs({
             <Box sx={{ textAlign: "center", py: 8 }}>
               <GroupsIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />
               <Typography variant="h6" color="text.secondary" fontWeight={700}>
-                Nessun convocato
+                {t("noCallups")}
               </Typography>
               <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-                La lista convocati non è ancora disponibile per questa partita.
+                {t("callupsUnavailable")}
               </Typography>
             </Box>
           ) : (
@@ -385,7 +390,7 @@ export default function MatchDetailTabs({
                           color: "text.secondary",
                         }}
                       >
-                        {`Ruolo ${role} · ${list.length} ${list.length === 1 ? "giocatore" : "giocatori"}`}
+                        {t("roleWithCount", { role, count: list.length })}
                       </Typography>
                     </Box>
                     <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
@@ -476,7 +481,7 @@ export default function MatchDetailTabs({
                       fontSize: "0.62rem",
                     }}
                   >
-                    Scontri diretti con {opponentName}
+                    {t("headToHead", { opponentName })}
                   </Typography>
                   <Stack spacing={0.25}>
                     {prevMatches.map((m) => {
@@ -502,7 +507,7 @@ export default function MatchDetailTabs({
                             color="text.disabled"
                             sx={{ minWidth: 88, fontWeight: 600, fontSize: "0.72rem" }}
                           >
-                            {format(new Date(m.date), "d MMM yyyy", { locale: it })}
+                            {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
                           </Typography>
                           <Typography
                             variant="body2"
@@ -539,7 +544,7 @@ export default function MatchDetailTabs({
                               <FlightIcon sx={{ fontSize: 13 }} />
                             )}
                             <Typography variant="caption" sx={{ fontSize: "0.68rem" }}>
-                              {m.isHome ? "Casa" : "Trasferta"}
+                              {m.isHome ? t("home") : t("away")}
                             </Typography>
                           </Box>
                         </Box>
@@ -581,7 +586,8 @@ export default function MatchDetailTabs({
                         fontSize: "0.62rem",
                       }}
                     >
-                      Classifica girone{groupName ? ` — ${groupName}` : ""}
+                      {t("groupStandings")}
+                      {groupName ? ` — ${groupName}` : ""}
                     </Typography>
                     <Link href="/classifiche" style={{ textDecoration: "none" }}>
                       <Typography
@@ -593,7 +599,7 @@ export default function MatchDetailTabs({
                           "&:hover": { textDecoration: "underline" },
                         }}
                       >
-                        Vedi tutto
+                        {t("seeAll")}
                       </Typography>
                     </Link>
                   </Box>
@@ -613,9 +619,14 @@ export default function MatchDetailTabs({
                             #
                           </TableCell>
                           <TableCell sx={{ fontWeight: 700, fontSize: "0.65rem", py: 0.75 }}>
-                            Squadra
+                            {tStandings("colTeam")}
                           </TableCell>
-                          {["G", "V", "P", "S"].map((h) => (
+                          {[
+                            tStandings("colPlayed"),
+                            tStandings("colWins"),
+                            tStandings("colDraws"),
+                            tStandings("colLosses"),
+                          ].map((h) => (
                             <TableCell
                               key={h}
                               align="center"
@@ -640,7 +651,7 @@ export default function MatchDetailTabs({
                               width: 36,
                             }}
                           >
-                            Pt
+                            {tStandings("colPoints")}
                           </TableCell>
                         </TableRow>
                       </TableHead>
@@ -724,7 +735,7 @@ export default function MatchDetailTabs({
                   startIcon={<EditIcon sx={{ fontSize: 16 }} />}
                   sx={{ fontWeight: 700 }}
                 >
-                  {hasStats ? "Modifica statistiche" : "Aggiungi statistiche"}
+                  {hasStats ? t("editStats") : t("addStats")}
                 </Button>
               </Link>
             </Box>
@@ -733,10 +744,10 @@ export default function MatchDetailTabs({
             <Box sx={{ textAlign: "center", py: 8 }}>
               <LeaderboardIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />
               <Typography variant="h6" color="text.secondary" fontWeight={700}>
-                Nessuna statistica
+                {t("noStats")}
               </Typography>
               <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-                Le statistiche non sono ancora disponibili per questa partita.
+                {t("statsUnavailable")}
               </Typography>
             </Box>
           ) : (

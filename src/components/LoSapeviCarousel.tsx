@@ -5,11 +5,15 @@ import { Box, Typography, IconButton } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { LO_SAPEVI } from "@/lib/loSapevi";
+import { getLoSapevi } from "@/lib/loSapevi";
+import { useTranslations, useLocale } from "next-intl";
 
 const INTERVAL_MS = 7000;
 
 export default function LoSapeviCarousel() {
+  const t = useTranslations("home");
+  const locale = useLocale();
+  const LO_SAPEVI = getLoSapevi(locale);
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [animKey, setAnimKey] = useState(0);
@@ -135,7 +139,7 @@ export default function LoSapeviCarousel() {
                 mb: 0.25,
               }}
             >
-              Lo sapevi?
+              {t("didYouKnow")}
             </Typography>
             <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 0.75, lineHeight: 1.3 }}>
               {item.titolo}
@@ -183,7 +187,7 @@ export default function LoSapeviCarousel() {
           <IconButton
             size="small"
             onClick={goPrev}
-            aria-label="Fatto precedente"
+            aria-label={t("prevFact")}
             sx={{
               color: "rgba(255,255,255,0.4)",
               "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
@@ -194,7 +198,7 @@ export default function LoSapeviCarousel() {
           <IconButton
             size="small"
             onClick={goNext}
-            aria-label="Fatto successivo"
+            aria-label={t("nextFact")}
             sx={{
               color: "rgba(255,255,255,0.4)",
               "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },

@@ -25,9 +25,7 @@ import {
   Avatar,
   Checkbox,
   FormControlLabel,
-  Link as MuiLink,
 } from "@mui/material";
-import NextLink from "next/link";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -39,7 +37,9 @@ import BadgeIcon from "@mui/icons-material/Badge";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useToast } from "@/context/ToastContext";
-import { ROLE_COLORS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS } from "@/lib/constants";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { Gender } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { format } from "date-fns";
@@ -121,6 +121,9 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   const [linking, setLinking] = useState(false);
 
   const { showToast } = useToast();
+  const t = useTranslations("childLinker");
+  const tCommon = useTranslations("common");
+  const { sportRoleLabel, genderLabel } = useEntityLabels();
 
   // ── Add flow ───────────────────────────────────────────────────────────────
 
@@ -154,10 +157,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         setConfirmName(user.name ?? "");
         setAddStep("confirm");
       } else {
-        setEmailError("Nessun utente trovato con questa email.");
+        setEmailError(t("noUserFound"));
       }
     } catch {
-      setEmailError("Errore di rete, riprova.");
+      setEmailError(tCommon("networkError"));
     } finally {
       setSearching(false);
     }
@@ -176,7 +179,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         setNameResults(results);
       }
     } catch {
-      showToast({ message: "Errore di ricerca", severity: "error" });
+      showToast({ message: t("searchError"), severity: "error" });
     } finally {
       setSearching(false);
       setNameSearched(true);
@@ -196,7 +199,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       });
       const newChild = await createRes.json();
       if (!createRes.ok) {
-        showToast({ message: newChild.error ?? "Errore nella creazione", severity: "error" });
+        showToast({ message: newChild.error ?? t("createError"), severity: "error" });
         return;
       }
 
@@ -208,7 +211,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       });
       const linkData = await linkRes.json();
       if (!linkRes.ok) {
-        showToast({ message: linkData.error ?? "Errore nell'invio richiesta", severity: "error" });
+        showToast({ message: linkData.error ?? t("linkError"), severity: "error" });
         return;
       }
 
@@ -218,7 +221,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       ]);
       setAddStep("sent");
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setCreating(false);
     }
@@ -240,14 +243,14 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       });
       const data = await res.json();
       if (!res.ok) {
-        showToast({ message: data.error ?? "Errore nell'aggiunta", severity: "error" });
+        showToast({ message: data.error ?? t("addError"), severity: "error" });
         return;
       }
       setChildren((prev) => [...prev, data]);
-      showToast({ message: `${data.name} aggiunto!`, severity: "success" });
+      showToast({ message: t("childAdded", { name: data.name }), severity: "success" });
       closeAdd();
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setCreating(false);
     }
@@ -284,14 +287,14 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       });
       const data = await res.json();
       if (!res.ok) {
-        showToast({ message: data.error ?? "Errore nel salvataggio", severity: "error" });
+        showToast({ message: data.error ?? tCommon("saveError"), severity: "error" });
         return;
       }
       setChildren((prev) => prev.map((c) => (c.id === editTarget.id ? data : c)));
-      showToast({ message: `${data.name} aggiornato`, severity: "success" });
+      showToast({ message: t("childUpdated", { name: data.name }), severity: "success" });
       closeEdit();
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setSaving(false);
     }
@@ -311,7 +314,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       });
       const data = await res.json();
       if (!res.ok) {
-        setLinkEmailError(data.error ?? "Errore nel collegamento");
+        setLinkEmailError(data.error ?? t("linkError"));
         return;
       }
       if (data.pending) {
@@ -321,18 +324,21 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
             c.id === linkTarget.id ? { ...c, pendingRequestId: data.requestId ?? null } : c
           )
         );
-        showToast({ message: `Richiesta inviata a ${linkTarget.name}`, severity: "info" });
+        showToast({ message: t("requestSentTo", { name: linkTarget.name }), severity: "info" });
       } else {
         setChildren((prev) =>
           prev.map((c) => (c.id === linkTarget.id ? { ...c, userId: data.userId } : c))
         );
-        showToast({ message: `Account collegato a ${linkTarget.name}`, severity: "success" });
+        showToast({
+          message: t("accountLinkedTo", { name: linkTarget.name }),
+          severity: "success",
+        });
       }
       setLinkTarget(null);
       setLinkEmail("");
       setLinkEmailError(null);
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setLinking(false);
     }
@@ -346,13 +352,13 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         body: JSON.stringify({ unlinkAccount: true }),
       });
       if (!res.ok) {
-        showToast({ message: "Errore nello scollegamento", severity: "error" });
+        showToast({ message: t("unlinkError"), severity: "error" });
         return;
       }
       setChildren((prev) => prev.map((c) => (c.id === child.id ? { ...c, userId: null } : c)));
-      showToast({ message: `Account scollegato da ${child.name}`, severity: "info" });
+      showToast({ message: t("accountUnlinkedFrom", { name: child.name }), severity: "info" });
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     }
   }
 
@@ -361,9 +367,9 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
     try {
       await fetch(`/api/children/${child.id}`, { method: "DELETE" });
       setChildren((prev) => prev.filter((c) => c.id !== child.id));
-      showToast({ message: `${child.name} rimosso`, severity: "info" });
+      showToast({ message: t("childRemoved", { name: child.name }), severity: "info" });
     } catch {
-      showToast({ message: "Errore durante la rimozione", severity: "error" });
+      showToast({ message: t("removeError"), severity: "error" });
     } finally {
       setDeletingId(null);
     }
@@ -372,12 +378,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   // ── Titoli dialog add ─────────────────────────────────────────────────────
 
   const ADD_TITLES: Record<AddStep, string> = {
-    choice: "Aggiungi figlio/a",
-    email: "Cerca per email",
-    name: "Cerca per nome",
-    confirm: "Conferma",
-    sent: "Richiesta inviata",
-    create: "Crea manualmente",
+    choice: t("titleChoice"),
+    email: t("titleEmail"),
+    name: t("titleName"),
+    confirm: t("titleConfirm"),
+    sent: t("titleSent"),
+    create: t("titleCreate"),
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -410,7 +416,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   </Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
                     <Chip
-                      label="Atleta"
+                      label={t("athlete")}
                       size="small"
                       color="primary"
                       sx={{ fontSize: "0.7rem", fontWeight: 600 }}
@@ -444,7 +450,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       ))}
                     {child.gender && (
                       <Chip
-                        label={GENDER_LABELS[child.gender]}
+                        label={genderLabel(child.gender)}
                         size="small"
                         variant="outlined"
                         sx={{ fontSize: "0.7rem" }}
@@ -452,7 +458,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     )}
                     {child.userId ? (
                       <Chip
-                        label="Account collegato"
+                        label={t("accountLinked")}
                         size="small"
                         color="success"
                         variant="outlined"
@@ -460,7 +466,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       />
                     ) : child.pendingRequestId ? (
                       <Chip
-                        label="In attesa di conferma"
+                        label={t("pendingConfirm")}
                         size="small"
                         color="warning"
                         variant="outlined"
@@ -468,7 +474,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       />
                     ) : (
                       <Chip
-                        label="Senza account"
+                        label={t("noAccount")}
                         size="small"
                         variant="outlined"
                         sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }}
@@ -481,12 +487,13 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       color="text.secondary"
                       sx={{ display: "block", mt: 0.5 }}
                     >
-                      Nato/a il{" "}
-                      {formatBirthDate(
-                        typeof child.birthDate === "string"
-                          ? child.birthDate
-                          : (child.birthDate as Date).toISOString()
-                      )}
+                      {t("bornOn", {
+                        date: formatBirthDate(
+                          typeof child.birthDate === "string"
+                            ? child.birthDate
+                            : (child.birthDate as Date).toISOString()
+                        ),
+                      })}
                     </Typography>
                   )}
                   {child.userId && child.user?.email && (
@@ -504,8 +511,8 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     <IconButton
                       size="small"
                       onClick={() => handleUnlink(child)}
-                      title="Scollega account"
-                      aria-label="Scollega account"
+                      title={t("unlinkAccount")}
+                      aria-label={t("unlinkAccount")}
                     >
                       <LinkOffIcon fontSize="small" />
                     </IconButton>
@@ -524,7 +531,11 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       <LinkIcon fontSize="small" />
                     </IconButton>
                   )}
-                  <IconButton size="small" onClick={() => openEdit(child)} aria-label="Modifica">
+                  <IconButton
+                    size="small"
+                    onClick={() => openEdit(child)}
+                    aria-label={tCommon("edit")}
+                  >
                     <EditIcon fontSize="small" />
                   </IconButton>
                   <IconButton
@@ -532,7 +543,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     color="error"
                     onClick={() => handleDelete(child)}
                     disabled={deletingId === child.id}
-                    aria-label="Elimina figlio"
+                    aria-label={tCommon("delete")}
                   >
                     {deletingId === child.id ? (
                       <CircularProgress size={16} />
@@ -547,12 +558,12 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         </Stack>
       ) : (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Nessun figlio aggiunto.
+          {t("noChildren")}
         </Typography>
       )}
 
       <Button variant="outlined" startIcon={<PersonAddIcon />} onClick={openAdd} size="small">
-        Aggiungi figlio/a
+        {t("addChild")}
       </Button>
 
       {/* ── Dialog collega account ── */}
@@ -566,14 +577,15 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Collega account — {linkTarget?.name}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {t("linkAccount", { name: linkTarget?.name ?? "" })}
+        </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Inserisci l&apos;email dell&apos;account Google con cui {linkTarget?.name} si logga
-            nell&apos;app. Riceverà una notifica per confermare il collegamento.
+            {t("linkAccountDesc", { name: linkTarget?.name ?? "" })}
           </Typography>
           <TextField
-            label="Email account"
+            label={t("accountEmail")}
             type="email"
             value={linkEmail}
             onChange={(e) => {
@@ -592,7 +604,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
             </Alert>
           )}
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
-            Una volta accettato, il genitore può iscrivere il figlio agli allenamenti e viceversa.
+            {t("linkHint")}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -604,7 +616,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
             }}
             disabled={linking}
           >
-            Annulla
+            {tCommon("cancel")}
           </Button>
           <Button
             variant="contained"
@@ -612,18 +624,20 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
             disabled={linking || !linkEmail.trim()}
             startIcon={linking ? <CircularProgress size={14} color="inherit" /> : <LinkIcon />}
           >
-            {linking ? "Invio richiesta..." : "Invia richiesta"}
+            {linking ? t("sendingRequest") : t("sendRequest")}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* ── Dialog modifica figlio ── */}
       <Dialog open={!!editTarget} onClose={closeEdit} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Modifica — {editTarget?.name}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {t("editChild", { name: editTarget?.name ?? "" })}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
-              label="Nome e cognome *"
+              label={t("fullNameReq")}
               value={editForm.name}
               onChange={(e) => setEditForm((s) => ({ ...s, name: e.target.value }))}
               fullWidth
@@ -638,7 +652,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 display="block"
                 gutterBottom
               >
-                Genere
+                {t("gender")}
               </Typography>
               <Select
                 fullWidth
@@ -648,10 +662,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 onChange={(e) => setEditForm((s) => ({ ...s, gender: e.target.value }))}
               >
                 <MenuItem value="">
-                  <em>Non specificato</em>
+                  <em>{t("notSpecified")}</em>
                 </MenuItem>
-                <MenuItem value="MALE">Maschio</MenuItem>
-                <MenuItem value="FEMALE">Femmina</MenuItem>
+                <MenuItem value="MALE">{t("male")}</MenuItem>
+                <MenuItem value="FEMALE">{t("female")}</MenuItem>
               </Select>
             </Box>
             <Box>
@@ -662,7 +676,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 display="block"
                 gutterBottom
               >
-                Data di nascita
+                {t("birthDate")}
               </Typography>
               <TextField
                 fullWidth
@@ -677,14 +691,14 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={closeEdit} disabled={saving}>
-            Annulla
+            {tCommon("cancel")}
           </Button>
           <Button
             variant="contained"
             onClick={handleSaveEdit}
             disabled={saving || !editForm.name.trim()}
           >
-            {saving ? "Salvataggio..." : "Salva modifiche"}
+            {saving ? tCommon("saving") : t("saveChanges")}
           </Button>
         </DialogActions>
       </Dialog>
@@ -698,8 +712,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "choice" && (
             <Stack spacing={1.5} sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Il tuo figlio/a è già registrato/a nell&apos;app? Cercalo, altrimenti crealo
-                manualmente.
+                {t("choiceIntro")}
               </Typography>
               <Button
                 variant="outlined"
@@ -715,10 +728,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               >
                 <Box sx={{ textAlign: "left" }}>
                   <Typography variant="body2" fontWeight={600}>
-                    Cerca per email
+                    {t("searchByEmail")}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Inserisci l&apos;email del suo account
+                    {t("searchByEmailDesc")}
                   </Typography>
                 </Box>
               </Button>
@@ -737,10 +750,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               >
                 <Box sx={{ textAlign: "left" }}>
                   <Typography variant="body2" fontWeight={600}>
-                    Cerca per nome e cognome
+                    {t("searchByName")}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Cerca tra gli utenti già registrati
+                    {t("searchByNameDesc")}
                   </Typography>
                 </Box>
               </Button>
@@ -757,10 +770,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               >
                 <Box sx={{ textAlign: "left" }}>
                   <Typography variant="body2" fontWeight={600}>
-                    Crea manualmente
+                    {t("createManually")}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Non è ancora registrato/a nell&apos;app
+                    {t("createManuallyDesc")}
                   </Typography>
                 </Box>
               </Button>
@@ -771,11 +784,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "email" && (
             <Stack spacing={2} sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Cerca prima se il tuo figlio/a è già registrato/a nell&apos;app tramite la sua
-                email.
+                {t("emailStepDesc")}
               </Typography>
               <TextField
-                label="Email"
+                label={t("email")}
                 type="email"
                 value={emailInput}
                 onChange={(e) => {
@@ -800,11 +812,11 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "name" && (
             <Stack spacing={2} sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Inserisci nome e cognome del tuo figlio/a.
+                {t("nameStepDesc")}
               </Typography>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <TextField
-                  label="Nome e cognome"
+                  label={t("fullName")}
                   value={nameInput}
                   onChange={(e) => {
                     setNameInput(e.target.value);
@@ -850,7 +862,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                         <ListItemText
                           primary={u.name ?? "—"}
                           secondary={[
-                            u.gender ? GENDER_LABELS[u.gender as Gender] : null,
+                            u.gender ? genderLabel(u.gender as Gender) : null,
                             u.birthDate ? formatBirthDate(u.birthDate) : null,
                           ]
                             .filter(Boolean)
@@ -864,7 +876,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
               {nameSearched && nameResults.length === 0 && (
                 <>
                   <Alert severity="info" sx={{ py: 0.5 }}>
-                    Nessun risultato trovato.
+                    {t("noResults")}
                   </Alert>
                   <Button
                     variant="outlined"
@@ -875,7 +887,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                       setAddStep("create");
                     }}
                   >
-                    Crea manualmente
+                    {t("createManually")}
                   </Button>
                 </>
               )}
@@ -886,7 +898,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "confirm" && foundUser && (
             <Stack spacing={2} sx={{ mt: 1 }}>
               <Typography variant="body2" color="text.secondary" textAlign="center">
-                Sei il genitore di questa persona?
+                {t("areYouParent")}
               </Typography>
               <Paper variant="outlined" sx={{ p: 2.5 }}>
                 <Box
@@ -906,26 +918,24 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     {foundUser.gender && (
                       <Typography variant="caption" color="text.secondary">
-                        {GENDER_LABELS[foundUser.gender as Gender]}
+                        {genderLabel(foundUser.gender as Gender)}
                       </Typography>
                     )}
                     {foundUser.birthDate && (
                       <Typography variant="caption" color="text.secondary" display="block">
-                        Nato/a il {formatBirthDate(foundUser.birthDate)}
+                        {t("bornOn", { date: formatBirthDate(foundUser.birthDate) })}
                       </Typography>
                     )}
                   </Box>
                 </Box>
                 <TextField
-                  label="Nome e cognome nel tuo profilo *"
+                  label={t("nameInProfile")}
                   value={confirmName}
                   onChange={(e) => setConfirmName(e.target.value)}
                   fullWidth
                   size="small"
                   inputProps={{ maxLength: 60 }}
-                  helperText={
-                    !foundUser.name ? "Questo utente non ha un nome — inseriscilo tu." : undefined
-                  }
+                  helperText={!foundUser.name ? t("noNameHint") : undefined}
                   error={!foundUser.name && !confirmName.trim()}
                 />
               </Paper>
@@ -938,11 +948,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
             <Stack spacing={2} sx={{ mt: 1, alignItems: "center", textAlign: "center", py: 1 }}>
               <CheckCircleOutlineIcon color="success" sx={{ fontSize: 56 }} />
               <Typography variant="body1" fontWeight={700}>
-                Richiesta inviata!
+                {t("requestSent")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                La richiesta di collegamento è stata inviata. Ti avviseremo quando{" "}
-                <strong>{confirmName || foundUser?.name}</strong> la confermerà.
+                {t("requestSentDesc", { name: confirmName || foundUser?.name || "" })}
               </Typography>
             </Stack>
           )}
@@ -951,7 +960,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
           {addStep === "create" && (
             <Stack spacing={2.5} sx={{ mt: 1 }}>
               <TextField
-                label="Nome e cognome *"
+                label={t("fullNameReq")}
                 value={createForm.name}
                 onChange={(e) => setCreateForm((s) => ({ ...s, name: e.target.value }))}
                 fullWidth
@@ -967,7 +976,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   display="block"
                   gutterBottom
                 >
-                  Genere
+                  {t("gender")}
                 </Typography>
                 <Select
                   fullWidth
@@ -977,10 +986,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   onChange={(e) => setCreateForm((s) => ({ ...s, gender: e.target.value }))}
                 >
                   <MenuItem value="">
-                    <em>Non specificato</em>
+                    <em>{t("notSpecified")}</em>
                   </MenuItem>
-                  <MenuItem value="MALE">Maschio</MenuItem>
-                  <MenuItem value="FEMALE">Femmina</MenuItem>
+                  <MenuItem value="MALE">{t("male")}</MenuItem>
+                  <MenuItem value="FEMALE">{t("female")}</MenuItem>
                 </Select>
               </Box>
               <Box>
@@ -991,7 +1000,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   display="block"
                   gutterBottom
                 >
-                  Data di nascita
+                  {t("birthDate")}
                 </Typography>
                 <TextField
                   fullWidth
@@ -1003,7 +1012,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 />
               </Box>
               <Typography variant="caption" color="text.secondary">
-                Il ruolo Baskin verrà assegnato dall&apos;allenatore.
+                {t("roleAssignedByCoach")}
               </Typography>
               <ParentalConsentBox checked={parentalConsent} onChange={setParentalConsent} />
             </Stack>
@@ -1011,10 +1020,10 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
         </DialogContent>
 
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          {addStep === "choice" && <Button onClick={closeAdd}>Annulla</Button>}
+          {addStep === "choice" && <Button onClick={closeAdd}>{tCommon("cancel")}</Button>}
           {addStep === "email" && (
             <>
-              <Button onClick={() => setAddStep("choice")}>Indietro</Button>
+              <Button onClick={() => setAddStep("choice")}>{t("back")}</Button>
               <Button
                 variant="contained"
                 onClick={handleSearchEmail}
@@ -1023,15 +1032,15 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                   searching ? <CircularProgress size={14} color="inherit" /> : <SearchIcon />
                 }
               >
-                {searching ? "Ricerca..." : "Cerca"}
+                {searching ? tCommon("searching") : tCommon("search")}
               </Button>
             </>
           )}
-          {addStep === "name" && <Button onClick={() => setAddStep("choice")}>Indietro</Button>}
+          {addStep === "name" && <Button onClick={() => setAddStep("choice")}>{t("back")}</Button>}
           {addStep === "confirm" && (
             <>
               <Button onClick={() => setAddStep("choice")} disabled={creating}>
-                No, riprova
+                {t("noRetry")}
               </Button>
               <Button
                 variant="contained"
@@ -1039,24 +1048,24 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                 disabled={creating || !confirmName.trim() || !parentalConsent}
                 startIcon={creating ? <CircularProgress size={14} color="inherit" /> : undefined}
               >
-                {creating ? "Invio richiesta..." : "Sì, è mio figlio/a"}
+                {creating ? t("sendingRequest") : t("yesMyChild")}
               </Button>
             </>
           )}
           {addStep === "sent" && (
             <Button variant="contained" onClick={closeAdd}>
-              Chiudi
+              {tCommon("close")}
             </Button>
           )}
           {addStep === "create" && (
             <>
-              <Button onClick={() => setAddStep("choice")}>Indietro</Button>
+              <Button onClick={() => setAddStep("choice")}>{t("back")}</Button>
               <Button
                 variant="contained"
                 onClick={handleCreateManually}
                 disabled={creating || !createForm.name.trim() || !parentalConsent}
               >
-                {creating ? "Salvataggio..." : "Aggiungi"}
+                {creating ? tCommon("saving") : tCommon("add")}
               </Button>
             </>
           )}
@@ -1073,6 +1082,7 @@ function ParentalConsentBox({
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
+  const t = useTranslations("childLinker");
   return (
     <Paper variant="outlined" sx={{ p: 1.5, bgcolor: "action.hover" }}>
       <FormControlLabel
@@ -1087,12 +1097,7 @@ function ParentalConsentBox({
         sx={{ alignItems: "flex-start", m: 0 }}
         label={
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.55 }}>
-            Confermo di essere il <strong>genitore o tutore legale</strong> del minore e presto il
-            consenso al trattamento dei suoi dati personali per le finalità descritte nell&apos;
-            <MuiLink component={NextLink} href="/privacy" target="_blank" rel="noopener">
-              informativa privacy
-            </MuiLink>
-            .
+            {t("consent")}
           </Typography>
         }
       />

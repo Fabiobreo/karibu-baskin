@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/db";
 import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export default async function BirthdayBanner() {
+  const t = await getTranslations("home");
   const now = new Date();
   const todayMonth = now.getMonth() + 1;
   const todayDay = now.getDate();
@@ -41,23 +43,46 @@ export default async function BirthdayBanner() {
         >
           <Typography sx={{ fontSize: "1.4rem", lineHeight: 1 }}>🎂</Typography>
           <Typography variant="body2" fontWeight={700}>
-            {celebrants.length === 1 ? "Oggi compie gli anni" : "Oggi festeggiano"}{" "}
-            {celebrants.map((c, i) => (
-              <span key={c.slug}>
-                {i > 0 && (i === celebrants.length - 1 ? " e " : ", ")}
-                {c.slug ? (
+            {celebrants.length === 1 ? (
+              <>
+                {celebrants[0].slug ? (
                   <Link
-                    href={`/giocatori/${c.slug}`}
+                    href={`/giocatori/${celebrants[0].slug}`}
                     style={{ color: "#fff", textDecoration: "underline", textUnderlineOffset: 3 }}
                   >
-                    {c.name}
+                    {celebrants[0].name}
                   </Link>
                 ) : (
-                  c.name
-                )}
-              </span>
-            ))}
-            {"! Fai gli auguri 🎉"}
+                  celebrants[0].name
+                )}{" "}
+                {t("birthdaySingular", { name: "" }).replace(/^\s*/, "")}
+              </>
+            ) : (
+              <>
+                {t("birthdayPlural")}{" "}
+                {celebrants.map((c, i) => (
+                  <span key={c.slug}>
+                    {i > 0 && (i === celebrants.length - 1 ? " e " : ", ")}
+                    {c.slug ? (
+                      <Link
+                        href={`/giocatori/${c.slug}`}
+                        style={{
+                          color: "#fff",
+                          textDecoration: "underline",
+                          textUnderlineOffset: 3,
+                        }}
+                      >
+                        {c.name}
+                      </Link>
+                    ) : (
+                      c.name
+                    )}
+                  </span>
+                ))}
+              </>
+            )}
+            {"! "}
+            {t("birthdayWish")} 🎉
           </Typography>
         </Box>
       </Container>

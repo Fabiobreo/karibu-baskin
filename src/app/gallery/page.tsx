@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { Box, Container, Button, Divider } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CollectionsIcon from "@mui/icons-material/Collections";
+import { getTranslations } from "next-intl/server";
 import SiteHeader from "@/components/SiteHeader";
 import PageHero from "@/components/PageHero";
 import EmptyState from "@/components/EmptyState";
@@ -22,6 +23,8 @@ export const revalidate = 1800;
 const INSTAGRAM_URL = "https://www.instagram.com/karibubaskin";
 
 export default async function GalleryPage() {
+  const t = await getTranslations("pages");
+
   const [posts, videos] = await Promise.all([
     prisma.instagramPost.findMany({
       where: { hidden: false },
@@ -37,18 +40,14 @@ export default async function GalleryPage() {
     <>
       <SiteHeader />
 
-      <PageHero
-        chip="Karibu Baskin"
-        title="Gallery"
-        subtitle="Foto e video della nostra squadra: allenamenti, partite e momenti insieme."
-      />
+      <PageHero chip={t("gallery.heroChip")} title="Gallery" subtitle={t("gallery.heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {!hasContent ? (
           <EmptyState
             icon={<CollectionsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title="Ancora nessun contenuto"
-            message="Le foto e i video arriveranno presto. Nel frattempo seguici su Instagram!"
+            title={t("gallery.empty")}
+            message={t("gallery.emptyDesc")}
             action={
               <Button
                 component="a"
@@ -58,7 +57,7 @@ export default async function GalleryPage() {
                 variant="contained"
                 startIcon={<InstagramIcon />}
               >
-                Vai su Instagram
+                {t("gallery.goInstagram")}
               </Button>
             }
           />
@@ -76,7 +75,7 @@ export default async function GalleryPage() {
                     variant="outlined"
                     startIcon={<InstagramIcon />}
                   >
-                    Seguici su Instagram
+                    {t("gallery.followInstagram")}
                   </Button>
                 </Box>
               </Box>

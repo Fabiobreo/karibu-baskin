@@ -4,8 +4,10 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import Image from "next/image";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
-export default function Footer() {
+export default async function Footer() {
+  const t = await getTranslations("nav");
   const year = new Date().getFullYear();
 
   return (
@@ -112,7 +114,7 @@ export default function Footer() {
                 textDecorationColor: "rgba(255,255,255,0.2)",
               }}
             >
-              Informativa privacy
+              {t("privacyPolicy")}
             </Link>
           </Box>
         </Box>
@@ -208,7 +210,7 @@ export default function Footer() {
                 padding: "4px 0",
               }}
             >
-              Informativa privacy
+              {t("privacyPolicy")}
             </Link>
           </Box>
         </Box>

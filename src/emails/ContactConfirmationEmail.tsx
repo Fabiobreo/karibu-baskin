@@ -13,6 +13,7 @@ import {
 interface Props {
   senderName: string;
   message: string;
+  locale?: string;
 }
 
 const ORANGE = "#E65100";
@@ -21,11 +22,34 @@ const CARD_BG = "#ffffff";
 const TEXT_MAIN = "#1a1a1a";
 const TEXT_MUTED = "#6b7280";
 
-export default function ContactConfirmationEmail({ senderName, message }: Props) {
+const COPY = {
+  it: {
+    preview: "Abbiamo ricevuto il tuo messaggio — ti risponderemo presto!",
+    greeting: (name: string) => `Ciao ${name}! 👋`,
+    received: "Abbiamo ricevuto il tuo messaggio e ti risponderemo il prima possibile.",
+    direct:
+      "Nel frattempo, se hai bisogno di contattarci direttamente puoi scriverci a asdkaribubaskin@gmail.com oppure chiamare Elisa al 349 297 2703.",
+    msgLabel: "Il tuo messaggio",
+    footer: "Hai ricevuto questa email perché hai compilato il form su karibubaskin.it",
+  },
+  en: {
+    preview: "We received your message — we'll get back to you soon!",
+    greeting: (name: string) => `Hi ${name}! 👋`,
+    received: "We have received your message and will get back to you as soon as possible.",
+    direct:
+      "In the meantime, you can reach us directly at asdkaribubaskin@gmail.com or call Elisa at 349 297 2703.",
+    msgLabel: "Your message",
+    footer: "You received this email because you filled in the contact form on karibubaskin.it",
+  },
+};
+
+export default function ContactConfirmationEmail({ senderName, message, locale = "it" }: Props) {
+  const c = locale === "en" ? COPY.en : COPY.it;
+
   return (
-    <Html lang="it">
+    <Html lang={locale}>
       <Head />
-      <Preview>Abbiamo ricevuto il tuo messaggio — ti risponderemo presto!</Preview>
+      <Preview>{c.preview}</Preview>
       <Body
         style={{
           backgroundColor: BG,
@@ -81,20 +105,17 @@ export default function ContactConfirmationEmail({ senderName, message }: Props)
               as="h2"
               style={{ color: TEXT_MAIN, fontSize: 20, fontWeight: 700, margin: "0 0 16px" }}
             >
-              Ciao {senderName}! 👋
+              {c.greeting(senderName)}
             </Heading>
             <Text style={{ color: TEXT_MAIN, fontSize: 15, lineHeight: 1.7, margin: "0 0 8px" }}>
-              Abbiamo ricevuto il tuo messaggio e ti risponderemo il prima possibile.
+              {c.received}
             </Text>
             <Text style={{ color: TEXT_MUTED, fontSize: 14, lineHeight: 1.6, margin: "0 0 24px" }}>
-              Nel frattempo, se hai bisogno di contattarci direttamente puoi scriverci a{" "}
-              <span style={{ color: ORANGE, fontWeight: 600 }}>asdkaribubaskin@gmail.com</span>{" "}
-              oppure chiamare Elisa al <span style={{ fontWeight: 600 }}>349 297 2703</span>.
+              {c.direct}
             </Text>
 
             <Hr style={{ borderColor: "#e5e7eb", margin: "0 0 24px" }} />
 
-            {/* Riepilogo messaggio */}
             <Text
               style={{
                 color: TEXT_MUTED,
@@ -105,7 +126,7 @@ export default function ContactConfirmationEmail({ senderName, message }: Props)
                 margin: "0 0 8px",
               }}
             >
-              Il tuo messaggio
+              {c.msgLabel}
             </Text>
             <Section
               style={{
@@ -143,9 +164,7 @@ export default function ContactConfirmationEmail({ senderName, message }: Props)
             <Text style={{ color: TEXT_MUTED, fontSize: 12, margin: "0 0 4px" }}>
               ASD Karibu Baskin Montecchio Maggiore · C.F. 04301440246
             </Text>
-            <Text style={{ color: "#9ca3af", fontSize: 11, margin: 0 }}>
-              Hai ricevuto questa email perché hai compilato il form su karibubaskin.it
-            </Text>
+            <Text style={{ color: "#9ca3af", fontSize: 11, margin: 0 }}>{c.footer}</Text>
           </Section>
         </Container>
       </Body>

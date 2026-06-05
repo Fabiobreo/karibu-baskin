@@ -4,8 +4,11 @@ import NextLink from "next/link";
 import CookieIcon from "@mui/icons-material/Cookie";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
 import { useHasMounted } from "@/lib/useHasMounted";
+import { useTranslations } from "next-intl";
 
 export default function CookieBanner() {
+  const t = useTranslations("cookie");
+  const tNav = useTranslations("nav");
   const mounted = useHasMounted();
   const { decided, accept, reject } = useCookieConsent();
 
@@ -31,13 +34,12 @@ export default function CookieBanner() {
         <CookieIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
         <Box>
           <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-            Questo sito usa cookie di terze parti
+            {t("title")}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-            La pagina Contatti incorpora una mappa Google Maps che installa cookie di profilazione.
-            Accetta per caricare la mappa, oppure rifiuta per visualizzare solo un link esterno.{" "}
+            {t("body")}{" "}
             <MuiLink component={NextLink} href="/privacy" sx={{ fontSize: "inherit" }}>
-              Informativa privacy
+              {tNav("privacyPolicy")}
             </MuiLink>
             .
           </Typography>
@@ -45,10 +47,10 @@ export default function CookieBanner() {
       </Box>
       <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", flexWrap: "wrap" }}>
         <Button size="small" variant="outlined" onClick={reject} sx={{ fontWeight: 600 }}>
-          Solo necessari
+          {t("necessaryOnly")}
         </Button>
         <Button size="small" variant="contained" onClick={accept} sx={{ fontWeight: 700 }}>
-          Accetta tutto
+          {t("acceptAll")}
         </Button>
       </Box>
     </Paper>

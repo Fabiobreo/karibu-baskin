@@ -18,6 +18,8 @@ import SectionErrorBoundary from "@/components/SectionErrorBoundary";
 import { TEAM_META } from "@/lib/constants";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { useToast } from "@/context/ToastContext";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 interface Session {
   id: string;
@@ -49,6 +51,8 @@ interface Registration {
 }
 
 export default function SessionPage() {
+  const t = useTranslations("trainings");
+  const { teamColorLabel } = useEntityLabels();
   const { session: sessionParam } = useParams<{ session: string }>();
   const router = useRouter();
   const { showToast } = useToast();
@@ -168,10 +172,10 @@ export default function SessionPage() {
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         setCountdown(
           diff < 2 * 60 * 1000
-            ? "Sta per iniziare!"
+            ? t("countdownStartsSoon")
             : h > 0
-              ? `Inizia fra ${h}h ${m}min`
-              : `Inizia fra ${m} minuti`
+              ? t("countdownStartsHours", { h, m })
+              : t("countdownStartsMinutes", { m })
         );
       } else if (now <= se) {
         const diff = se.getTime() - now.getTime();
@@ -179,10 +183,10 @@ export default function SessionPage() {
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         setCountdown(
           diff < 60 * 1000
-            ? "Sta per finire"
+            ? t("countdownEndsSoon")
             : h > 0
-              ? `Finisce fra ${h}h ${m}min`
-              : `Finisce fra ${m} minuti`
+              ? t("countdownEndsHours", { h, m })
+              : t("countdownEndsMinutes", { m })
         );
       } else {
         setCountdown(null);
@@ -338,10 +342,10 @@ export default function SessionPage() {
                       textTransform: "uppercase",
                     }}
                   >
-                    La tua squadra
+                    {t("myTeam")}
                   </Typography>
                   <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1.2 }}>
-                    {myTeam.name}
+                    {teamColorLabel(myTeam.key as "teamA" | "teamB" | "teamC")}
                   </Typography>
                 </Box>
               </Paper>
@@ -440,12 +444,14 @@ export default function SessionPage() {
                       {session.registrationOpen === false && !isStaff ? (
                         <Box sx={{ textAlign: "center", py: 2 }}>
                           <Typography variant="h6" fontWeight={700} gutterBottom>
-                            {session.registrationOpenedAt ? "Iscrizioni chiuse" : "In arrivo"}
+                            {session.registrationOpenedAt
+                              ? t("registrationsClosed")
+                              : t("comingSoon")}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             {session.registrationOpenedAt
-                              ? "Le iscrizioni per questo allenamento sono state chiuse."
-                              : "Le iscrizioni per questo allenamento non sono ancora aperte. Riceverai una notifica appena saranno disponibili."}
+                              ? t("registrationsClosedDesc")
+                              : t("registrationsNotOpenDesc")}
                           </Typography>
                         </Box>
                       ) : (
@@ -478,7 +484,7 @@ export default function SessionPage() {
             )}
           </Box>
         ) : (
-          <Typography color="error">Allenamento non trovato.</Typography>
+          <Typography color="error">{t("notFound")}</Typography>
         )}
       </Container>
     </>

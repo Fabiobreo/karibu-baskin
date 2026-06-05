@@ -9,11 +9,12 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import type { Metadata } from "next";
-import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { getEntityLabels } from "@/lib/entityLabels";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 
 export const metadata: Metadata = {
   title: "Risultati | Karibu Baskin",
@@ -25,15 +26,22 @@ export const revalidate = 3600;
 
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
-const MATCH_TYPE_LABEL: Record<MatchType, string> = {
-  LEAGUE: "Campionato",
-  TOURNAMENT: "Torneo",
-  FRIENDLY: "Amichevole",
-};
-
 export default async function RisultatiPage({ searchParams }: Props) {
   const sp = await searchParams;
   const season = sp.season ?? getCurrentSeason();
+  const [t, locale, { matchResultLabel }] = await Promise.all([
+    getTranslations("matches"),
+    getLocale(),
+    getEntityLabels(),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
+  const winShort = t("resultWinShort");
+  const drawShort = t("resultDrawShort");
+  const lossShort = t("resultLossShort");
+  const matchTypeLabel = (type: string) =>
+    ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
+      type
+    ] ?? type;
 
   // Stagioni disponibili (per i chip filtro)
   const allSeasons = await prisma.competitiveTeam.findMany({
@@ -105,7 +113,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
             fontWeight={700}
             sx={{ letterSpacing: "0.12em" }}
           >
-            Risultati
+            {t("resultsHeroChip")}
           </Typography>
         </Box>
         <Typography
@@ -114,7 +122,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
           fontWeight={800}
           sx={{ mb: 2, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
         >
-          Partite ufficiali
+          {t("resultsTitle")}
         </Typography>
         {teamStats.length > 0 && (
           <Stack spacing={1} sx={{ mt: 0.5 }}>
@@ -137,7 +145,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
                   <Chip
-                    label={`${t.wins}V`}
+                    label={`${t.wins}${winShort}`}
                     size="small"
                     sx={{
                       bgcolor: "match.win",
@@ -149,7 +157,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   />
                   {t.draws > 0 && (
                     <Chip
-                      label={`${t.draws}P`}
+                      label={`${t.draws}${drawShort}`}
                       size="small"
                       sx={{
                         bgcolor: "match.draw",
@@ -161,7 +169,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     />
                   )}
                   <Chip
-                    label={`${t.losses}S`}
+                    label={`${t.losses}${lossShort}`}
                     size="small"
                     sx={{
                       bgcolor: "match.loss",
@@ -188,7 +196,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
               fontWeight={700}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
-              Stagione:
+              {t("seasonLabel")}
             </Typography>
             {seasons.map((s) => (
               <Link
@@ -212,8 +220,8 @@ export default async function RisultatiPage({ searchParams }: Props) {
         {teamGroups.length === 0 && (
           <EmptyState
             icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={`Nessun risultato per la stagione ${season}`}
-            message="I risultati verranno pubblicati al termine delle partite."
+            title={`${t("resultsEmpty")} ${season}`}
+            message={t("resultsEmptyDesc")}
           />
         )}
 
@@ -255,7 +263,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   )}
                   <Box sx={{ ml: "auto", display: "flex", gap: 0.75 }}>
                     <Chip
-                      label={`${tw}V`}
+                      label={`${tw}${winShort}`}
                       size="small"
                       sx={{
                         bgcolor: "match.winBg",
@@ -267,7 +275,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     />
                     {td > 0 && (
                       <Chip
-                        label={`${td}P`}
+                        label={`${td}${drawShort}`}
                         size="small"
                         sx={{
                           bgcolor: "match.drawBg",
@@ -279,7 +287,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       />
                     )}
                     <Chip
-                      label={`${tl}S`}
+                      label={`${tl}${lossShort}`}
                       size="small"
                       sx={{
                         bgcolor: "match.lossBg",
@@ -295,7 +303,13 @@ export default async function RisultatiPage({ searchParams }: Props) {
                 {/* Match cards */}
                 <Stack spacing={1}>
                   {team.matches.map((m) => (
-                    <MatchCard key={m.id} match={m} />
+                    <MatchCard
+                      key={m.id}
+                      match={m}
+                      tFn={t}
+                      dateLocale={dateLocale}
+                      matchResultLabel={matchResultLabel}
+                    />
                   ))}
                 </Stack>
               </Box>
@@ -312,7 +326,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                 color="primary"
                 sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
               >
-                Vedi le prossime partite →
+                {t("seeMatches")}
               </Typography>
             </Link>
           </Box>
@@ -346,10 +360,20 @@ type MatchItem = Awaited<
   >
 >[number];
 
-function MatchCard({ match: m }: { match: MatchItem }) {
+function MatchCard({
+  match: m,
+  tFn,
+  dateLocale,
+  matchResultLabel,
+}: {
+  match: MatchItem;
+  tFn: (key: string) => string;
+  dateLocale: import("date-fns").Locale;
+  matchResultLabel: (r: "WIN" | "LOSS" | "DRAW") => string;
+}) {
   const meta = m.result ? MATCH_RESULT_META[m.result] : null;
 
-  const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
+  const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? tFn("opponent");
   // Ordine casa/trasferta: in casa Karibu a sinistra, in trasferta Karibu a destra.
   const leftName = m.isHome ? m.team.name : opponentName;
   const rightName = m.isHome ? opponentName : m.team.name;
@@ -391,7 +415,7 @@ function MatchCard({ match: m }: { match: MatchItem }) {
             {/* Data */}
             <Box sx={{ minWidth: 90, flexShrink: 0 }}>
               <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.82rem" }}>
-                {format(new Date(m.date), "d MMM yyyy", { locale: it })}
+                {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4, mt: 0.2 }}>
                 {m.isHome ? (
@@ -400,7 +424,14 @@ function MatchCard({ match: m }: { match: MatchItem }) {
                   <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
                 )}
                 <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
-                  {m.isHome ? "Casa" : "Trasferta"} · {MATCH_TYPE_LABEL[m.matchType]}
+                  {m.isHome ? tFn("home") : tFn("away")} ·{" "}
+                  {(
+                    {
+                      LEAGUE: tFn("typeLeague"),
+                      TOURNAMENT: tFn("typeTournament"),
+                      FRIENDLY: tFn("typeFriendly"),
+                    } as Record<string, string>
+                  )[m.matchType] ?? m.matchType}
                 </Typography>
               </Box>
             </Box>
@@ -470,9 +501,9 @@ function MatchCard({ match: m }: { match: MatchItem }) {
 
             {/* Esito */}
             <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 1 }}>
-              {meta && (
+              {meta && m.result && (
                 <Chip
-                  label={meta.label}
+                  label={matchResultLabel(m.result)}
                   size="small"
                   sx={{
                     bgcolor: meta.bg,

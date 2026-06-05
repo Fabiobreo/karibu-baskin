@@ -9,6 +9,7 @@ import {
   Button,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { getTranslations } from "next-intl/server";
 import SiteHeader from "@/components/SiteHeader";
 import PageHero from "@/components/PageHero";
 import HandshakeIcon from "@mui/icons-material/Handshake";
@@ -20,69 +21,52 @@ import Link from "next/link";
 const SPONSORS = [
   {
     name: "Denis M. Photographer",
-    category: "Fotografia",
-    description:
-      "Fotografo ufficiale della squadra. Immortala i momenti più belli in campo e fuori.",
     url: "https://www.facebook.com/Denis.M.photographer",
     logo: "/sponsors/denis.jpg",
   },
   {
     name: "Villani and Partners",
-    category: "Servizi professionali",
-    description: "Supporto professionale alle attività amministrative e legali dell'associazione.",
     url: "https://villaniandpartners.eu/",
     logo: "/sponsors/villani.png",
   },
   {
     name: "LLP",
-    category: "Partner",
-    description: "Partner storico del Karibu Baskin, al nostro fianco fin dai primi anni.",
     url: "https://www.llp.it/",
     logo: "/sponsors/LLP.png",
   },
   {
     name: "Tetti Tecchio",
-    category: "Edilizia",
-    description: "Sostegno concreto alle nostre iniziative e attività sportive sul territorio.",
     url: "https://www.tettitecchio.it/",
     logo: "/sponsors/tettitecchio.png",
   },
   {
     name: "Saby Sport",
-    category: "Abbigliamento sportivo",
-    description:
-      "Fornitore ufficiale di abbigliamento e attrezzatura sportiva per le nostre squadre.",
     url: "https://www.sabysport.com/",
     logo: "/sponsors/sabysport.png",
   },
   {
     name: "CGRD",
-    category: "Partner",
-    description: "Partner che condivide i nostri valori di inclusione e sport per tutti.",
     url: "https://www.cgrd.it/it/",
     logo: "/sponsors/cgrd.png",
   },
 ];
 
-const PERKS = [
-  { title: "Logo sul sito", desc: "Il tuo brand visibile su tutte le pagine del sito ufficiale" },
-  { title: "Visibilità sui social", desc: "Menzioni su Instagram, Facebook e YouTube" },
-  { title: "Logo sulla maglia", desc: "Il tuo logo sulle divise di gara delle nostre squadre" },
-  {
-    title: "Presenza agli eventi",
-    desc: "Visibilità durante tornei, allenamenti aperti e iniziative",
-  },
-];
+export default async function SponsorPage() {
+  const t = await getTranslations("pages");
+  const sponsorsContent = t.raw("sponsor.sponsorsData") as {
+    category: string;
+    description: string;
+  }[];
+  const PERKS = t.raw("sponsor.perks") as { title: string; desc: string }[];
 
-export default function SponsorPage() {
   return (
     <>
       <SiteHeader />
 
       <PageHero
-        chip="I nostri partner"
-        title="Sponsor"
-        subtitle="Un ringraziamento speciale a chi ci supporta ogni giorno, in campo e fuori."
+        chip={t("sponsor.heroChip")}
+        title={t("sponsor.heroTitle")}
+        subtitle={t("sponsor.heroSubtitle")}
         subtitleMaxWidth={520}
       />
 
@@ -95,21 +79,20 @@ export default function SponsorPage() {
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
-            Grazie a
+            {t("sponsor.thanksTo")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
-            I nostri sponsor
+            {t("sponsor.ourSponsors")}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Il loro contributo ci permette di allenarci, partecipare ai campionati e portare avanti
-            la nostra missione di inclusione.
+            {t("sponsor.partnersDesc")}
           </Typography>
           <Grid container spacing={2}>
-            {SPONSORS.map((s) => (
+            {SPONSORS.map((s, i) => (
               <Grid key={s.name} size={{ xs: 12, sm: 6 }}>
                 <Paper
                   elevation={0}
@@ -164,7 +147,7 @@ export default function SponsorPage() {
                   {/* Testo */}
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Chip
-                      label={s.category}
+                      label={sponsorsContent[i].category}
                       size="small"
                       sx={{ mb: 1, fontWeight: 600, fontSize: "0.68rem" }}
                     />
@@ -177,7 +160,7 @@ export default function SponsorPage() {
                       />
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      {s.description}
+                      {sponsorsContent[i].description}
                     </Typography>
                   </Box>
                 </Paper>
@@ -196,19 +179,17 @@ export default function SponsorPage() {
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
-            Unisciti a noi
+            {t("sponsor.joinUs")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
-            Diventa sponsor
+            {t("sponsor.becomeSponsor")}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Supportare il Karibu Baskin significa investire in uno sport inclusivo, in una comunità
-            vera e in un progetto che dal 2015 porta valore al territorio vicentino. In cambio
-            offriamo visibilità e un legame autentico con i nostri 80 atleti e le loro famiglie.
+            {t("sponsor.becomeSponsorDesc")}
           </Typography>
 
           <Grid container spacing={2} sx={{ mb: 4 }}>
@@ -255,10 +236,10 @@ export default function SponsorPage() {
           >
             <Box>
               <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
-                Interessato a sponsorizzarci?
+                {t("sponsor.interestedSponsor")}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
-                Scrivici, ti risponderemo il prima possibile.
+                {t("sponsor.writeUsDesc")}
               </Typography>
             </Box>
             <Link href="mailto:asdkaribubaskin@gmail.com" style={{ textDecoration: "none" }}>
@@ -269,7 +250,7 @@ export default function SponsorPage() {
                 size="large"
                 sx={{ whiteSpace: "nowrap" }}
               >
-                Contattaci
+                {t("sponsor.contactUs")}
               </Button>
             </Link>
           </Box>

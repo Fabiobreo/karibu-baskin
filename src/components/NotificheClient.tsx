@@ -10,6 +10,7 @@ import {
   Paper,
   List,
 } from "@mui/material";
+import { useTranslations } from "next-intl";
 import NotificationItem from "@/components/notifications/NotificationItem";
 import EmptyState from "@/components/EmptyState";
 import { useNotifications } from "@/context/NotificationContext";
@@ -35,6 +36,7 @@ export default function NotificheClient({
   initialNotifications,
   initialHasMore,
 }: NotificheClientProps) {
+  const t = useTranslations("pages");
   const { markAllRead, refreshCount } = useNotifications();
   const { showToast } = useToast();
 
@@ -47,19 +49,19 @@ export default function NotificheClient({
     async (p: number) => {
       try {
         const res = await fetch(`/api/notifications?limit=20&page=${p}`);
-        if (!res.ok) throw new Error("Errore nel caricamento delle notifiche");
+        if (!res.ok) throw new Error(t("notifiche.loadError"));
         const data = (await res.json()) as { notifications?: NotifItem[]; hasMore?: boolean };
         const items = data.notifications ?? [];
         setNotifications((prev) => [...prev, ...items]);
         setHasMore(data.hasMore ?? false);
       } catch (err) {
         showToast({
-          message: err instanceof Error ? err.message : "Errore nel caricamento",
+          message: err instanceof Error ? err.message : t("notifiche.loadError"),
           severity: "error",
         });
       }
     },
-    [showToast]
+    [showToast, t]
   );
 
   // Auto-mark as read dopo 1.5s dall'apertura della pagina
@@ -106,7 +108,7 @@ export default function NotificheClient({
       {notifications.length === 0 ? (
         <EmptyState
           icon={<NotificationsNoneIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-          title="Nessuna notifica"
+          title={t("notifiche.empty")}
         />
       ) : (
         <Paper variant="outlined" sx={{ overflow: "hidden" }}>
@@ -129,7 +131,7 @@ export default function NotificheClient({
             disabled={loadingMore}
             startIcon={loadingMore ? <CircularProgress size={16} color="inherit" /> : undefined}
           >
-            {loadingMore ? "Caricamento..." : "Carica precedenti"}
+            {loadingMore ? t("notifiche.loading") : t("notifiche.loadMore")}
           </Button>
         </Box>
       )}

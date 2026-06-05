@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { Snackbar, Button } from "@mui/material";
 import SystemUpdateAltIcon from "@mui/icons-material/SystemUpdateAlt";
+import { useTranslations } from "next-intl";
 
 export default function SwUpdateToast() {
+  const t = useTranslations("sw");
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function SwUpdateToast() {
   return (
     <Snackbar
       open={show}
-      message="Nuova versione disponibile"
+      message={t("updateAvailable")}
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       action={
         <Button
@@ -34,7 +36,7 @@ export default function SwUpdateToast() {
           onClick={handleReload}
           sx={{ fontWeight: 700 }}
         >
-          Aggiorna
+          {t("update")}
         </Button>
       }
     />

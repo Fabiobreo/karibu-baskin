@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Paper,
   Box,
@@ -22,7 +23,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { slugify } from "@/lib/slugUtils";
 import type { StandingEntry } from "@/lib/standings";
 
@@ -71,7 +72,6 @@ const RESULT_COLORS: Record<string, string> = {
   LOSS: "#C62828",
   DRAW: "#E65100",
 };
-const RESULT_LABELS: Record<string, string> = { WIN: "V", LOSS: "S", DRAW: "P" };
 
 function bucketHasPlayed(b: MatchdayBucket): boolean {
   return (
@@ -88,10 +88,18 @@ export default function GironeFullView({
   standings,
   matchdays,
 }: Props) {
+  const t = useTranslations("standings");
+  const tMatches = useTranslations("matches");
+  const dateLocale = useActiveDateLocale();
+  const RESULT_LABELS: Record<string, string> = {
+    WIN: tMatches("resultWinShort"),
+    LOSS: tMatches("resultLossShort"),
+    DRAW: tMatches("resultDrawShort"),
+  };
   const router = useRouter();
   const seasonParam = season.replace("-", "");
-  const teamById = useMemo(() => new Map(ourTeams.map((t) => [t.id, t] as const)), [ourTeams]);
-  const fallbackTeamName = ourTeams[0]?.name ?? "La nostra";
+  const teamById = useMemo(() => new Map(ourTeams.map((tm) => [tm.id, tm] as const)), [ourTeams]);
+  const fallbackTeamName = ourTeams[0]?.name ?? t("ourTeam");
 
   const defaultIndex = useMemo(() => {
     if (matchdays.length === 0) return 0;
@@ -146,12 +154,12 @@ export default function GironeFullView({
           fontWeight={700}
           sx={{ letterSpacing: "0.08em", fontSize: "0.7rem" }}
         >
-          Classifica
+          {t("classification")}
         </Typography>
       </Box>
       {standings.length === 0 ? (
         <Typography variant="body2" color="text.disabled" sx={{ px: 2, pb: 2 }}>
-          Nessuna partita con risultato disponibile.
+          {t("noResults")}
         </Typography>
       ) : (
         <Box sx={{ overflowX: "auto" }}>
@@ -169,19 +177,19 @@ export default function GironeFullView({
                 }}
               >
                 <TableCell sx={{ pl: 2, width: 28 }}>#</TableCell>
-                <TableCell>Squadra</TableCell>
-                <TableCell align="center">G</TableCell>
-                <TableCell align="center">V</TableCell>
-                <TableCell align="center">P</TableCell>
-                <TableCell align="center">S</TableCell>
+                <TableCell>{t("colTeam")}</TableCell>
+                <TableCell align="center">{t("colPlayed")}</TableCell>
+                <TableCell align="center">{t("colWins")}</TableCell>
+                <TableCell align="center">{t("colDraws")}</TableCell>
+                <TableCell align="center">{t("colLosses")}</TableCell>
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  PF
+                  {t("colPointsFor")}
                 </TableCell>
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  PS
+                  {t("colPointsAgainst")}
                 </TableCell>
                 <TableCell align="center" sx={{ color: "primary.main !important" }}>
-                  Pt
+                  {t("colPoints")}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -266,13 +274,13 @@ export default function GironeFullView({
           fontWeight={700}
           sx={{ letterSpacing: "0.08em", fontSize: "0.7rem" }}
         >
-          Calendario
+          {t("calendarSection")}
         </Typography>
       </Box>
 
       {matchdays.length === 0 ? (
         <Typography variant="body2" color="text.disabled" sx={{ px: 2, pb: 2 }}>
-          Nessuna partita inserita.
+          {t("noMatches")}
         </Typography>
       ) : (
         <>
@@ -297,7 +305,7 @@ export default function GironeFullView({
             {matchdays.map((b, i) => (
               <Tab
                 key={`${b.matchday ?? "none"}-${i}`}
-                label={b.matchday != null ? `G${b.matchday}` : "—"}
+                label={b.matchday != null ? t("matchdayShort", { n: b.matchday }) : "—"}
               />
             ))}
           </Tabs>
@@ -307,7 +315,7 @@ export default function GironeFullView({
               <Table size="small">
                 <TableBody>
                   {current.ours.map((m) => {
-                    const opponentNameLocal = m.opponent?.name ?? "Avversario";
+                    const opponentNameLocal = m.opponent?.name ?? t("opponent");
                     const ourName = teamById.get(m.teamId)?.name ?? fallbackTeamName;
                     const home = m.isHome ? ourName : opponentNameLocal;
                     const away = m.isHome ? opponentNameLocal : ourName;
@@ -325,7 +333,7 @@ export default function GironeFullView({
                         }}
                       >
                         <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
-                          {format(new Date(m.date), "d MMM", { locale: it })}
+                          {format(new Date(m.date), "d MMM", { locale: dateLocale })}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700, fontSize: "0.8rem" }}>{home}</TableCell>
                         <TableCell
@@ -369,7 +377,7 @@ export default function GironeFullView({
                   {current.external.map((gm) => (
                     <TableRow key={gm.id}>
                       <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
-                        {gm.date ? format(new Date(gm.date), "d MMM", { locale: it }) : "—"}
+                        {gm.date ? format(new Date(gm.date), "d MMM", { locale: dateLocale }) : "—"}
                       </TableCell>
                       <TableCell sx={{ fontSize: "0.8rem" }}>{gm.homeTeam.name}</TableCell>
                       <TableCell

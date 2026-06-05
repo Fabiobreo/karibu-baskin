@@ -2,6 +2,7 @@
 
 import { Chip } from "@mui/material";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
+import { useTranslations } from "next-intl";
 import { useHasMounted } from "@/lib/useHasMounted";
 
 interface PollChipProps {
@@ -21,12 +22,13 @@ interface PollChipProps {
  */
 export default function PollChip({ closesAt }: PollChipProps) {
   const mounted = useHasMounted();
+  const t = useTranslations("poll");
   const closed = mounted && closesAt ? new Date(closesAt) <= new Date() : false;
 
   return (
     <Chip
       icon={<HowToVoteIcon sx={{ fontSize: 16 }} />}
-      label={closed ? "Sondaggio chiuso" : "Sondaggio"}
+      label={closed ? t("closedBadge") : t("badge")}
       size="small"
       color={closed ? "default" : "primary"}
       sx={{ fontWeight: 700 }}

@@ -1,9 +1,10 @@
 import { Avatar, Box, Chip, Paper, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { ROLE_COLORS } from "@/lib/constants";
+import { getEntityLabels } from "@/lib/entityLabels";
 
-export default function AthleteCard({
+export default async function AthleteCard({
   name,
   image,
   roleNum,
@@ -18,6 +19,7 @@ export default function AthleteCard({
   isCaptain: boolean;
   teamColor: string;
 }) {
+  const { sportRoleLabel } = await getEntityLabels();
   return (
     <Paper
       elevation={0}

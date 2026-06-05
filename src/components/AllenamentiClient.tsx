@@ -45,7 +45,8 @@ import LockIcon from "@mui/icons-material/Lock";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import SessionCard, { type SessionWithCount } from "@/components/SessionCard";
 import PickTeamsDialog from "@/components/PickTeamsDialog";
 import SessionHeroCard from "@/components/SessionHeroCard";
@@ -57,6 +58,8 @@ import SessionRestrictionEditor, {
 import AdminSessionForm from "@/components/AdminSessionForm";
 
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { TEAM_META } from "@/lib/constants";
 const DEFAULT_RESTRICTIONS: RestrictionValue = {
   allowedRoles: [],
@@ -76,10 +79,13 @@ function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | n
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function groupByMonth(sessions: SessionWithCount[]): [string, SessionWithCount[]][] {
+function groupByMonth(
+  sessions: SessionWithCount[],
+  dateLocale: Locale
+): [string, SessionWithCount[]][] {
   const map = new Map<string, SessionWithCount[]>();
   for (const s of sessions) {
-    const key = format(new Date(s.date), "MMMM yyyy", { locale: it });
+    const key = format(new Date(s.date), "MMMM yyyy", { locale: dateLocale });
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(s);
   }
@@ -131,6 +137,9 @@ function SessionRow({
   onOpenRegistrations?: () => void;
   onCloseRegistrations?: () => void;
 }) {
+  const t = useTranslations("trainings");
+  const dateLocale = useActiveDateLocale();
+  const { teamColorLabel } = useEntityLabels();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [teamsOpen, setTeamsOpen] = useState(false);
   const date = new Date(s.date);
@@ -199,7 +208,7 @@ function SessionRow({
               letterSpacing: "0.05em",
             }}
           >
-            {format(date, "EEE", { locale: it })}
+            {format(date, "EEE", { locale: dateLocale })}
           </Typography>
           <Typography
             fontWeight={800}
@@ -219,7 +228,7 @@ function SessionRow({
               letterSpacing: "0.05em",
             }}
           >
-            {format(date, "MMM", { locale: it })}
+            {format(date, "MMM", { locale: dateLocale })}
           </Typography>
         </Box>
 
@@ -232,7 +241,7 @@ function SessionRow({
             {showInArrivo && (
               <Chip
                 icon={<HourglassEmptyIcon sx={{ fontSize: "0.75rem !important", color: "#fff" }} />}
-                label="In arrivo"
+                label={t("comingSoon")}
                 size="small"
                 sx={{
                   bgcolor: "#6D4C41",
@@ -247,7 +256,7 @@ function SessionRow({
             {showChiuse && (
               <Chip
                 icon={<LockIcon sx={{ fontSize: "0.7rem !important", color: "#fff" }} />}
-                label="Iscrizioni chiuse"
+                label={t("registrationsClosed")}
                 size="small"
                 sx={{
                   bgcolor: "#546E7A",
@@ -276,7 +285,7 @@ function SessionRow({
                 <LockIcon sx={{ fontSize: 10, color: "text.disabled" }} />
                 <Typography variant="caption" color="text.disabled">
                   {s.restrictTeam
-                    ? `Solo ${s.restrictTeam.name}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
+                    ? `${t("onlyTeam", { team: s.restrictTeam.name })}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
                     : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
                 </Typography>
               </Box>
@@ -285,7 +294,7 @@ function SessionRow({
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
                 <LockOpenIcon sx={{ fontSize: 10, color: "text.disabled" }} />
                 <Typography variant="caption" color="text.disabled">
-                  {s.openRoles.map((r) => `R${r}`).join(", ")} aperti
+                  {t("rolesOpenShort", { roles: s.openRoles.map((r) => `R${r}`).join(", ") })}
                 </Typography>
               </Box>
             )}
@@ -305,7 +314,7 @@ function SessionRow({
         >
           {isRegistered && myTeam ? (
             <Chip
-              label={myTeam.name}
+              label={teamColorLabel(myTeam.key)}
               size="small"
               sx={{
                 bgcolor: myTeam.color,
@@ -542,6 +551,8 @@ export default function AllenamentiClient({
   isLoggedIn: boolean;
   isStaff?: boolean;
 }) {
+  const t = useTranslations("trainings");
+  const dateLocale = useActiveDateLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
@@ -560,7 +571,7 @@ export default function AllenamentiClient({
   }
 
   const [openMonths, setOpenMonths] = useState<Set<string>>(
-    () => new Set([format(new Date(), "MMMM yyyy", { locale: it })])
+    () => new Set([format(new Date(), "MMMM yyyy", { locale: dateLocale })])
   );
 
   function toggleMonth(month: string) {
@@ -860,7 +871,7 @@ export default function AllenamentiClient({
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}
             >
-              In corso
+              {t("live")}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -897,7 +908,7 @@ export default function AllenamentiClient({
               fontWeight={700}
               sx={{ color: "text.disabled", letterSpacing: "0.1em" }}
             >
-              Prossimi allenamenti
+              {t("next")}
             </Typography>
           </Box>
           <Box
@@ -939,11 +950,15 @@ export default function AllenamentiClient({
           sx={{ borderBottom: 1, borderColor: "divider", mb: 2.5 }}
         >
           <Tab
-            label={restUpcoming.length > 0 ? `Futuri (${restUpcoming.length})` : "Futuri"}
+            label={
+              restUpcoming.length > 0
+                ? t("upcomingCount", { count: restUpcoming.length })
+                : t("upcoming")
+            }
             sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.875rem" }}
           />
           <Tab
-            label={past.length > 0 ? `Passati (${past.length})` : "Passati"}
+            label={past.length > 0 ? t("pastCount", { count: past.length }) : t("past")}
             sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.875rem" }}
           />
         </Tabs>
@@ -957,11 +972,11 @@ export default function AllenamentiClient({
                 variant="outlined"
                 sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}
               >
-                <Typography color="text.secondary">Nessun allenamento programmato.</Typography>
+                <Typography color="text.secondary">{t("none")}</Typography>
               </Paper>
             ) : restUpcoming.length === 0 ? (
               <Typography variant="body2" color="text.disabled" sx={{ py: 2 }}>
-                Nessun altro allenamento programmato.
+                {t("noneMore")}
               </Typography>
             ) : (
               futureYearGroups.map(([year, yearSessions]) => {
@@ -998,12 +1013,11 @@ export default function AllenamentiClient({
                         color="text.disabled"
                         sx={{ whiteSpace: "nowrap" }}
                       >
-                        {yearSessions.length}{" "}
-                        {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
+                        {t("sessionCount", { count: yearSessions.length })}
                       </Typography>
                       <IconButton
                         size="small"
-                        aria-label={isYearOpen ? "Comprimi anno" : "Espandi anno"}
+                        aria-label={isYearOpen ? t("collapseYear") : t("expandYear")}
                         sx={{ color: "text.disabled", p: 0.25 }}
                       >
                         {isYearOpen ? (
@@ -1016,7 +1030,7 @@ export default function AllenamentiClient({
 
                     <Collapse in={isYearOpen}>
                       <Box sx={{ pl: { xs: 0, sm: 2 } }}>
-                        {groupByMonth(yearSessions).map(([month, monthSessions]) => {
+                        {groupByMonth(yearSessions, dateLocale).map(([month, monthSessions]) => {
                           const isOpen = openMonths.has(month);
                           return (
                             <Box key={month} sx={{ mb: 1.5 }}>
@@ -1052,12 +1066,11 @@ export default function AllenamentiClient({
                                   color="text.disabled"
                                   sx={{ whiteSpace: "nowrap" }}
                                 >
-                                  {monthSessions.length}{" "}
-                                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
+                                  {t("sessionCount", { count: monthSessions.length })}
                                 </Typography>
                                 <IconButton
                                   size="small"
-                                  aria-label={isOpen ? "Comprimi mese" : "Espandi mese"}
+                                  aria-label={isOpen ? t("collapseMonth") : t("expandMonth")}
                                   sx={{ color: "text.disabled", p: 0.25 }}
                                 >
                                   {isOpen ? (
@@ -1117,7 +1130,7 @@ export default function AllenamentiClient({
                 variant="outlined"
                 sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}
               >
-                <Typography color="text.secondary">Nessun allenamento passato.</Typography>
+                <Typography color="text.secondary">{t("nonePast")}</Typography>
               </Paper>
             ) : (
               pastYearGroups.map(([year, yearSessions]) => {
@@ -1155,12 +1168,11 @@ export default function AllenamentiClient({
                         color="text.disabled"
                         sx={{ whiteSpace: "nowrap" }}
                       >
-                        {yearSessions.length}{" "}
-                        {yearSessions.length === 1 ? "allenamento" : "allenamenti"}
+                        {t("sessionCount", { count: yearSessions.length })}
                       </Typography>
                       <IconButton
                         size="small"
-                        aria-label={isYearOpen ? "Comprimi anno" : "Espandi anno"}
+                        aria-label={isYearOpen ? t("collapseYear") : t("expandYear")}
                         sx={{ color: "text.disabled", p: 0.25 }}
                       >
                         {isYearOpen ? (
@@ -1173,7 +1185,7 @@ export default function AllenamentiClient({
 
                     <Collapse in={isYearOpen}>
                       <Box sx={{ pl: { xs: 0, sm: 2 } }}>
-                        {groupByMonth(yearSessions).map(([month, monthSessions]) => {
+                        {groupByMonth(yearSessions, dateLocale).map(([month, monthSessions]) => {
                           const isOpen = openMonths.has(month);
                           return (
                             <Box key={month} sx={{ mb: 1.5 }}>
@@ -1209,12 +1221,11 @@ export default function AllenamentiClient({
                                   color="text.disabled"
                                   sx={{ whiteSpace: "nowrap" }}
                                 >
-                                  {monthSessions.length}{" "}
-                                  {monthSessions.length === 1 ? "allenamento" : "allenamenti"}
+                                  {t("sessionCount", { count: monthSessions.length })}
                                 </Typography>
                                 <IconButton
                                   size="small"
-                                  aria-label={isOpen ? "Comprimi mese" : "Espandi mese"}
+                                  aria-label={isOpen ? t("collapseMonth") : t("expandMonth")}
                                   sx={{ color: "text.disabled", p: 0.25 }}
                                 >
                                   {isOpen ? (

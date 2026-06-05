@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SessionProvider } from "next-auth/react";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { ThemeContextProvider, useThemeMode } from "@/context/ThemeContext";
+import { LocaleContextProvider } from "@/context/LocaleContext";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -42,11 +43,13 @@ export default function Providers({
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
-        <ThemeContextProvider>
-          <ThemedContent>
-            <NotificationProvider>{children}</NotificationProvider>
-          </ThemedContent>
-        </ThemeContextProvider>
+        <LocaleContextProvider>
+          <ThemeContextProvider>
+            <ThemedContent>
+              <NotificationProvider>{children}</NotificationProvider>
+            </ThemedContent>
+          </ThemeContextProvider>
+        </LocaleContextProvider>
       </SessionProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

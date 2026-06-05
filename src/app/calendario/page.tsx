@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Box, Container, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import SiteHeader from "@/components/SiteHeader";
@@ -12,6 +13,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Calendario | Karibu Baskin" };
 
 export default async function CalendarioPage() {
+  const t = await getTranslations("nav");
   const [session, teams] = await Promise.all([
     auth(),
     prisma.competitiveTeam.findMany({
@@ -41,7 +43,7 @@ export default async function CalendarioPage() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <CalendarMonthIcon color="primary" />
             <Typography variant="h4" fontWeight={800}>
-              Calendario
+              {t("calendar")}
             </Typography>
           </Box>
           <SubscribeCalendarButton />

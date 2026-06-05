@@ -4,11 +4,13 @@ import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { prisma } from "@/lib/db";
 import ProssimePartiteCards from "./ProssimePartiteCards";
+import { getTranslations } from "next-intl/server";
 
 const DAYS_AHEAD = 14;
 const IMMINENT_HOURS = 48;
 
 export default async function ProssimePartiteHome() {
+  const t = await getTranslations("matches");
   const now = new Date();
   const limit = new Date(now.getTime() + DAYS_AHEAD * 24 * 60 * 60 * 1000);
   const imminentLimit = new Date(now.getTime() + IMMINENT_HOURS * 60 * 60 * 1000);
@@ -55,14 +57,14 @@ export default async function ProssimePartiteHome() {
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
             >
-              Campionato
+              {t("homeChip")}
             </Typography>
             <Typography
               variant="h5"
               fontWeight={800}
               sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
             >
-              Prossime partite
+              {t("homeUpcoming")}
             </Typography>
           </Box>
         </Box>
@@ -76,7 +78,7 @@ export default async function ProssimePartiteHome() {
               color="primary"
               sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
             >
-              Vedi tutte →
+              {t("homeSeeAll")}
             </Typography>
           </Link>
         </Box>

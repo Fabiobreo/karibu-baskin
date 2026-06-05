@@ -14,7 +14,9 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import { useToast } from "@/context/ToastContext";
-import { GENDER_LABELS, sportRoleLabel, ROLE_COLORS } from "@/lib/constants";
+import { ROLE_COLORS } from "@/lib/constants";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Gender } from "@prisma/client";
@@ -52,6 +54,9 @@ export default function LinkRequestsSection() {
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
   const { showToast } = useToast();
+  const t = useTranslations("linkRequests");
+  const tCommon = useTranslations("common");
+  const { sportRoleLabel, genderLabel } = useEntityLabels();
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -76,16 +81,16 @@ export default function LinkRequestsSection() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        showToast({ message: data.error ?? "Errore nella risposta", severity: "error" });
+        showToast({ message: data.error ?? t("responseError"), severity: "error" });
         return;
       }
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
       showToast({
-        message: accept ? "Collegamento accettato!" : "Richiesta rifiutata",
+        message: accept ? t("linkAccepted") : t("requestRejected"),
         severity: accept ? "success" : "info",
       });
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setResponding(null);
     }
@@ -104,12 +109,12 @@ export default function LinkRequestsSection() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         <FamilyRestroomIcon color="warning" fontSize="small" />
         <Typography variant="subtitle1" fontWeight={700}>
-          Richieste di collegamento
+          {t("title")}
         </Typography>
         <Chip label={requests.length} size="small" color="warning" sx={{ fontWeight: 700 }} />
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Un genitore ha richiesto di collegare il proprio account al tuo profilo.
+        {t("desc")}
       </Typography>
       <Stack spacing={2}>
         {requests.map((req) => (
@@ -134,13 +139,13 @@ export default function LinkRequestsSection() {
                   display="block"
                   sx={{ mt: 0.5 }}
                 >
-                  Vuole collegarsi al profilo: <strong>{req.child.name}</strong>
+                  {t("wantsToLink")} <strong>{req.child.name}</strong>
                   {req.child.sportRole
                     ? ` · ${sportRoleLabel(req.child.sportRole, req.child.sportRoleVariant)}`
                     : ""}
-                  {req.child.gender ? ` · ${GENDER_LABELS[req.child.gender]}` : ""}
+                  {req.child.gender ? ` · ${genderLabel(req.child.gender)}` : ""}
                   {req.child.birthDate
-                    ? ` · nato/a il ${formatBirthDate(req.child.birthDate)}`
+                    ? ` · ${t("bornOn", { date: formatBirthDate(req.child.birthDate) })}`
                     : ""}
                 </Typography>
                 {req.child.sportRole && (
@@ -173,7 +178,7 @@ export default function LinkRequestsSection() {
                 disabled={responding === req.id}
                 onClick={() => respond(req.id, false)}
               >
-                Rifiuta
+                {t("reject")}
               </Button>
               <Button
                 size="small"
@@ -189,7 +194,7 @@ export default function LinkRequestsSection() {
                 disabled={responding === req.id}
                 onClick={() => respond(req.id, true)}
               >
-                Accetta
+                {t("accept")}
               </Button>
             </Box>
           </Paper>

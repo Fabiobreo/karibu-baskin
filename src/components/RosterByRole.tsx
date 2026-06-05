@@ -18,8 +18,10 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
-import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLE_COLORS, ROLES } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 interface Registration {
   id: string;
@@ -61,11 +63,7 @@ function nextAttended(current: boolean | null | undefined): boolean | null {
   return null;
 }
 
-function attendedLabel(attended: boolean | null | undefined): string {
-  if (attended === true) return "Presente — clicca per segnare assente";
-  if (attended === false) return "Assente — clicca per resettare";
-  return "Non marcato — clicca per segnare presente";
-}
+// attendedLabel is defined inside the component to access t()
 
 // ── Pill atleta ───────────────────────────────────────────────────────────────
 
@@ -81,6 +79,8 @@ interface PillProps {
   isToggling: boolean;
   onDelete: () => void;
   onToggleAttended: () => void;
+  attendedLabel: (attended: boolean | null | undefined) => string;
+  removeLabel: string;
 }
 
 function AthletePill({
@@ -95,6 +95,8 @@ function AthletePill({
   isToggling,
   onDelete,
   onToggleAttended,
+  attendedLabel,
+  removeLabel,
 }: PillProps) {
   const initial = reg.name[0]?.toUpperCase() ?? "?";
   const hasNote = !!reg.note;
@@ -187,7 +189,7 @@ function AthletePill({
         <IconButton
           size="small"
           onClick={onDelete}
-          aria-label="Rimuovi iscrizione"
+          aria-label={removeLabel}
           sx={{
             p: "3px",
             mr: 0.5,
@@ -251,6 +253,15 @@ export default function RosterByRole({
   onUnregistered,
   onAttendanceChanged,
 }: Props) {
+  const t = useTranslations("trainings");
+  const { roleLabel } = useEntityLabels();
+
+  function attendedLabel(attended: boolean | null | undefined): string {
+    if (attended === true) return t("attendancePresent");
+    if (attended === false) return t("attendanceAbsent");
+    return t("attendanceUnmarked");
+  }
+
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -448,16 +459,16 @@ export default function RosterByRole({
         }}
       >
         <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
-          Iscritti
+          {t("roster")}
         </Typography>
         <Chip
-          label={`${athleteRegs.length} atlet${athleteRegs.length !== 1 ? "i" : "a"}`}
+          label={t("athletes", { count: athleteRegs.length })}
           size="small"
           sx={{ fontWeight: 600 }}
         />
         {coachRegs.length > 0 && (
           <Chip
-            label={`${coachRegs.length} allenator${coachRegs.length !== 1 ? "i" : "e"}`}
+            label={t("coachCount", { count: coachRegs.length })}
             size="small"
             variant="outlined"
             sx={{ fontWeight: 600 }}
@@ -466,7 +477,7 @@ export default function RosterByRole({
         {showAttendance && presentCount !== null && (
           <Chip
             icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
-            label={`${presentCount} present${presentCount !== 1 ? "i" : "e"}`}
+            label={t("presentCount", { count: presentCount })}
             size="small"
             color="success"
             variant="outlined"
@@ -478,7 +489,7 @@ export default function RosterByRole({
       {/* Body */}
       {registrations.length === 0 ? (
         <Typography color="text.secondary" sx={{ px: 2, py: 2.5 }}>
-          Nessun atleta iscritto ancora.
+          {t("noAthletes")}
         </Typography>
       ) : (
         <Box sx={{ px: 2, pt: 2, pb: 1.5 }}>
@@ -502,7 +513,7 @@ export default function RosterByRole({
                     fontWeight={700}
                     sx={{ color: ROLE_COLORS[role], letterSpacing: "0.08em", lineHeight: 1 }}
                   >
-                    {ROLE_LABELS[role]}
+                    {roleLabel(role)}
                   </Typography>
                   <Typography variant="caption" color="text.disabled" fontWeight={600}>
                     {group.length}
@@ -541,6 +552,8 @@ export default function RosterByRole({
                         isToggling={togglingId === reg.id}
                         onDelete={() => handleUnregister(reg)}
                         onToggleAttended={() => handleToggleAttended(reg)}
+                        attendedLabel={attendedLabel}
+                        removeLabel={t("removeRegistration")}
                       />
                     );
                   })}
@@ -559,7 +572,7 @@ export default function RosterByRole({
                 display="block"
                 sx={{ mb: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}
               >
-                Allenatori presenti
+                {t("coachesPresent")}
               </Typography>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
                 {coachRegs.map((reg) => {
@@ -612,7 +625,7 @@ export default function RosterByRole({
                         <IconButton
                           size="small"
                           onClick={() => handleUnregister(reg)}
-                          aria-label="Rimuovi iscrizione"
+                          aria-label={t("removeRegistration")}
                           sx={{
                             p: "3px",
                             mr: 0.5,

@@ -4,12 +4,13 @@ import FlightIcon from "@mui/icons-material/Flight";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
+import { getEntityLabels } from "@/lib/entityLabels";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
 import type { AnyMatch } from "./types";
-import { MATCH_TYPE_LABEL } from "./utils";
 
-export default function PlayedMatchCard({
+export default async function PlayedMatchCard({
   match,
   teamName,
   teamColor: _teamColor,
@@ -18,6 +19,17 @@ export default function PlayedMatchCard({
   teamName: string;
   teamColor: string;
 }) {
+  const [t, locale, { matchResultLabel }] = await Promise.all([
+    getTranslations("matches"),
+    getLocale(),
+    getEntityLabels(),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
+  const matchTypeLabel = (ty: string) =>
+    ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
+      ty
+    ] ?? ty;
+
   const leftName = match.isHome ? teamName : match.opponent.name;
   const rightName = match.isHome ? match.opponent.name : teamName;
   const leftScore = match.isHome ? match.ourScore : match.theirScore;
@@ -56,7 +68,7 @@ export default function PlayedMatchCard({
           >
             <Box sx={{ minWidth: 90, flexShrink: 0 }}>
               <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.82rem" }}>
-                {format(new Date(match.date), "d MMM yyyy", { locale: it })}
+                {format(new Date(match.date), "d MMM yyyy", { locale: dateLocale })}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4, mt: 0.2 }}>
                 {match.isHome ? (
@@ -65,7 +77,7 @@ export default function PlayedMatchCard({
                   <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
                 )}
                 <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
-                  {match.isHome ? "Casa" : "Trasferta"} · {MATCH_TYPE_LABEL[match.matchType]}
+                  {match.isHome ? t("home") : t("away")} · {matchTypeLabel(match.matchType)}
                 </Typography>
               </Box>
             </Box>
@@ -131,7 +143,7 @@ export default function PlayedMatchCard({
             <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 1 }}>
               {res && (
                 <Chip
-                  label={res.label}
+                  label={matchResultLabel(match.result!)}
                   size="small"
                   sx={{
                     bgcolor: res.bg,

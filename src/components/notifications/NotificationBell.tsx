@@ -6,9 +6,11 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import { useSession } from "next-auth/react";
 import { useNotifications } from "@/context/NotificationContext";
+import { useTranslations } from "next-intl";
 import NotificationDropdown from "./NotificationDropdown";
 
 export default function NotificationBell() {
+  const t = useTranslations("nav");
   const { status } = useSession();
   const { unreadCount } = useNotifications();
   const mounted = useHasMounted();
@@ -22,7 +24,7 @@ export default function NotificationBell() {
     <>
       <IconButton
         onClick={(e) => setAnchorEl(e.currentTarget)}
-        aria-label="Notifiche"
+        aria-label={t("notifications")}
         sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#fff" } }}
         size="small"
       >

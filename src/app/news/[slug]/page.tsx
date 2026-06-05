@@ -14,7 +14,8 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import Link from "next/link";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
@@ -35,6 +36,8 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function NewsSlugPage({ params }: Props) {
+  const [t, locale] = await Promise.all([getTranslations("pages"), getLocale()]);
+  const dateLocale = getDateFnsLocale(locale);
   const { slug } = await params;
   const session = await auth();
   const userId = session?.user?.id ?? null;
@@ -108,7 +111,7 @@ export default async function NewsSlugPage({ params }: Props) {
           </Typography>
           {isStaff && (
             <Link href={`/admin/news?edit=${post.id}`} style={{ textDecoration: "none" }}>
-              <Tooltip title="Modifica news">
+              <Tooltip title={t("news.editNews")}>
                 <IconButton component="span" size="small" sx={{ color: "primary.main" }}>
                   <EditIcon fontSize="small" />
                 </IconButton>
@@ -119,7 +122,7 @@ export default async function NewsSlugPage({ params }: Props) {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
           <Typography variant="caption" color="text.secondary">
-            {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: it })}
+            {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: dateLocale })}
           </Typography>
           {post.author.name && (
             <>
@@ -133,7 +136,7 @@ export default async function NewsSlugPage({ params }: Props) {
           )}
           {post.poll && (
             <Chip
-              label={pollClosed ? "Sondaggio chiuso" : "Sondaggio aperto"}
+              label={pollClosed ? t("news.pollClosed") : t("news.pollOpen")}
               size="small"
               color={pollClosed ? "default" : "primary"}
               sx={{ ml: 0.5 }}

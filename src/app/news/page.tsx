@@ -4,7 +4,8 @@ import { hasRole } from "@/lib/authRoles";
 import { Box, Typography, Container, Chip, Paper, Button } from "@mui/material";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
 import AddIcon from "@mui/icons-material/Add";
@@ -16,6 +17,8 @@ export const metadata = { title: "News — Karibu Baskin" };
 export const revalidate = 60;
 
 export default async function NewsPage() {
+  const [t, locale] = await Promise.all([getTranslations("pages"), getLocale()]);
+  const dateLocale = getDateFnsLocale(locale);
   const session = await auth();
   const isStaff = !!session?.user && hasRole(session.user.appRole, "COACH");
   const posts = await prisma.post.findMany({
@@ -38,9 +41,9 @@ export default async function NewsPage() {
       <SiteHeader />
 
       <PageHero
-        chip="Aggiornamenti"
+        chip={t("news.heroChip")}
         title="News"
-        subtitle="Comunicazioni, aggiornamenti e sondaggi dalla squadra."
+        subtitle={t("news.heroSubtitle")}
         subtitleMaxWidth={520}
       />
 
@@ -62,7 +65,7 @@ export default async function NewsPage() {
         {posts.length === 0 && (
           <EmptyState
             icon={<ArticleIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title="Nessun articolo pubblicato ancora."
+            title={t("news.empty")}
           />
         )}
 
@@ -120,7 +123,9 @@ export default async function NewsPage() {
                         </Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
                           <Typography variant="caption" color="text.secondary">
-                            {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: it })}
+                            {format(new Date(post.publishedAt!), "d MMMM yyyy", {
+                              locale: dateLocale,
+                            })}
                           </Typography>
                           {post.author.name && (
                             <>
@@ -134,7 +139,7 @@ export default async function NewsPage() {
                           )}
                           {post.poll && (
                             <Chip
-                              label={isClosed ? "Sondaggio chiuso" : "Sondaggio aperto"}
+                              label={isClosed ? t("news.pollClosed") : t("news.pollOpen")}
                               size="small"
                               color={isClosed ? "default" : "primary"}
                               sx={{ ml: 0.5 }}

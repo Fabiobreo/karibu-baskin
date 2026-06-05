@@ -8,7 +8,7 @@ export interface FaqCategory {
   items: FaqItem[];
 }
 
-export const FAQS: FaqCategory[] = [
+const FAQS_IT: FaqCategory[] = [
   {
     category: "Il Baskin",
     items: [
@@ -61,3 +61,64 @@ export const FAQS: FaqCategory[] = [
     ],
   },
 ];
+
+const FAQS_EN: FaqCategory[] = [
+  {
+    category: "Baskin",
+    items: [
+      {
+        q: "What is Baskin?",
+        a: "Baskin (Inclusive Basketball) is a team sport born in Italy in 2001 that lets people with and without disabilities play together on the same team, with equal dignity. Each player has a specific role suited to their abilities.",
+      },
+      {
+        q: "Who can play Baskin?",
+        a: "Everyone! Baskin is designed to be inclusive: players with physical or cognitive disabilities and able-bodied players share the court on the same team. No prior sports experience is required.",
+      },
+      {
+        q: "How do the roles work?",
+        a: "Players are divided into 5 roles (R1–R5) based on their motor and cognitive abilities. Each role has specific rules that ensure everyone takes an active part in the game. The role is assigned by the coaches after a period of observation.",
+      },
+    ],
+  },
+  {
+    category: "Taking part",
+    items: [
+      {
+        q: "How can I join the team?",
+        a: "You can come and try a training session with no commitment! Write to us from the Contacts page or just show up at the gym. We'll explain everything on the spot.",
+      },
+      {
+        q: "Where and when do you train?",
+        a: "Trainings take place in Montecchio Maggiore (VI). You can check the calendar on the website for up-to-date dates and times.",
+      },
+      {
+        q: "Do I need a diagnosis to take part?",
+        a: "No. Baskin welcomes everyone. No medical certification is required to take part in training sessions. For official competitive matches specific documents may be needed — our staff will guide you.",
+      },
+    ],
+  },
+  {
+    category: "Registration & app",
+    items: [
+      {
+        q: "How do I register for a training?",
+        a: "Log in with your Google account, go to the training page and click 'Register'. You can also register your children from the Profile section.",
+      },
+      {
+        q: "Can I cancel a registration?",
+        a: "Yes, you can cancel your registration from the training page up until the start time.",
+      },
+      {
+        q: "I can't log in with Google, what do I do?",
+        a: "Make sure you're using the same Google account you registered with before. If the problem persists, write to us from the Contacts page.",
+      },
+    ],
+  },
+];
+
+export function getFaqs(locale: string): FaqCategory[] {
+  return locale === "en" ? FAQS_EN : FAQS_IT;
+}
+
+/** @deprecated usare getFaqs(locale) — mantenuto per retrocompatibilità */
+export const FAQS = FAQS_IT;

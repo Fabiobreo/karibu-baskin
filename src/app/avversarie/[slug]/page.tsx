@@ -21,21 +21,17 @@ import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import EntityHero from "@/components/EntityHero";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { getEntityLabels } from "@/lib/entityLabels";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 
 export const revalidate = 60;
 
 type Params = { params: Promise<{ slug: string }> };
-
-const MATCH_TYPE_LABELS: Record<MatchType, string> = {
-  LEAGUE: "Campionato",
-  TOURNAMENT: "Torneo",
-  FRIENDLY: "Amichevole",
-};
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
@@ -46,6 +42,19 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function OpposingTeamPublicPage({ params }: Params) {
   const { slug } = await params;
+  const [t, tMatches, locale, { matchResultShort }] = await Promise.all([
+    getTranslations("teams"),
+    getTranslations("matches"),
+    getLocale(),
+    getEntityLabels(),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
+  const matchTypeLabel = (type: string) =>
+    ({
+      LEAGUE: tMatches("typeLeague"),
+      TOURNAMENT: tMatches("typeTournament"),
+      FRIENDLY: tMatches("typeFriendly"),
+    })[type] ?? type;
   const team = await prisma.opposingTeam.findUnique({
     where: { slug },
     include: {
@@ -120,7 +129,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
     <>
       <SiteHeader />
       <EntityHero
-        chip="Squadra avversaria"
+        chip={t("opposingChip")}
         title={team.name}
         color="#E65100"
         breadcrumb={
@@ -138,7 +147,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                 "&:hover": { color: "#fff" },
               }}
             >
-              Risultati
+              {tMatches("resultsHeroChip")}
             </MuiLink>
             <Typography
               variant="body2"
@@ -204,7 +213,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
           {seasonsPlayed.length > 0 && (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, alignItems: "center" }}>
               <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ mr: 0.5 }}>
-                Affrontata nelle stagioni:
+                {t("facedInSeasons")}
               </Typography>
               {seasonsPlayed.map((s) => (
                 <Chip
@@ -221,17 +230,14 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
 
           {seasonsPlayed.length > 0 && !playedInCurrentSeason && lastSeason && (
             <Alert severity="info" sx={{ mt: 2 }}>
-              Ultima volta affrontata nella stagione <strong>{lastSeason}</strong>. Nessuna partita
-              registrata nella stagione corrente ({currentSeason}).
+              {t("lastFacedAlert", { season: lastSeason, current: currentSeason })}
             </Alert>
           )}
         </Box>
 
         {team.matches.length === 0 ? (
           <Paper elevation={0} variant="outlined" sx={{ p: 6, textAlign: "center" }}>
-            <Typography color="text.secondary">
-              Non abbiamo ancora giocato partite contro questa squadra.
-            </Typography>
+            <Typography color="text.secondary">{t("noMatchesAgainst")}</Typography>
           </Paper>
         ) : (
           <>
@@ -247,7 +253,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       color="text.secondary"
                       gutterBottom
                     >
-                      Bilancio storico ({totals.played} partite giocate)
+                      {t("historicalBalance", { count: totals.played })}
                     </Typography>
                     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
                       <Chip
@@ -279,10 +285,11 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       />
                       <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
                       <Typography variant="body2" color="text.secondary">
-                        Punti fatti: <strong style={{ color: "inherit" }}>{totals.scored}</strong>
+                        {t("pointsScored")}{" "}
+                        <strong style={{ color: "inherit" }}>{totals.scored}</strong>
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Punti subiti:{" "}
+                        {t("pointsConceded")}{" "}
                         <strong style={{ color: "inherit" }}>{totals.conceded}</strong>
                       </Typography>
                       <Typography
@@ -293,7 +300,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                           fontWeight: 700,
                         }}
                       >
-                        Differenza: {totals.scored - totals.conceded >= 0 ? "+" : ""}
+                        {t("pointsDiff")} {totals.scored - totals.conceded >= 0 ? "+" : ""}
                         {totals.scored - totals.conceded}
                       </Typography>
                     </Box>
@@ -309,12 +316,12 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         }}
                       >
                         <Typography variant="caption" color="text.disabled" fontWeight={700}>
-                          Ultime {last5.length}:
+                          {t("lastMatches", { count: last5.length })}
                         </Typography>
                         {last5.map((m) => (
                           <Box
                             key={m.id}
-                            title={`${format(new Date(m.date), "d MMM yyyy", { locale: it })} · ${m.ourScore}–${m.theirScore}`}
+                            title={`${format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })} · ${m.ourScore}–${m.theirScore}`}
                             sx={{
                               width: 28,
                               height: 28,
@@ -331,7 +338,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             component={m.slug ? Link : "div"}
                             {...(m.slug ? { href: `/partite/${m.slug}` } : {})}
                           >
-                            {MATCH_RESULT_META[m.result!].short}
+                            {matchResultShort(m.result!)}
                           </Box>
                         ))}
                       </Box>
@@ -342,7 +349,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
 
             {/* Per stagione */}
             <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
-              Per stagione
+              {t("bySeason")}
             </Typography>
             {seasons.map((s) => (
               <Paper key={s.season} elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
@@ -357,7 +364,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   }}
                 >
                   <Typography variant="h6" fontWeight={800}>
-                    Stagione {s.season}
+                    {t("seasonLabel")} {s.season}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                     {s.played > 0 && (
@@ -387,7 +394,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                     )}
                     {s.pending > 0 && (
                       <Chip
-                        label={`${s.pending} da giocare`}
+                        label={`${s.pending} ${t("toPlay")}`}
                         size="small"
                         variant="outlined"
                         color="primary"
@@ -416,7 +423,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         >
                           <Box sx={{ minWidth: 90 }}>
                             <Typography variant="body2" fontWeight={700}>
-                              {format(new Date(m.date), "d MMM yy", { locale: it })}
+                              {format(new Date(m.date), "d MMM yy", { locale: dateLocale })}
                             </Typography>
                             <Box
                               sx={{
@@ -432,7 +439,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 <FlightIcon sx={{ fontSize: 11 }} />
                               )}
                               <Typography variant="caption">
-                                {m.isHome ? "Casa" : "Trasferta"}
+                                {m.isHome ? tMatches("home") : tMatches("away")}
                               </Typography>
                             </Box>
                           </Box>
@@ -462,7 +469,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 color="text.disabled"
                                 sx={{ fontSize: "0.68rem" }}
                               >
-                                {MATCH_TYPE_LABELS[m.matchType]}
+                                {matchTypeLabel(m.matchType)}
                                 {m.matchday ? ` · G${m.matchday}` : ""}
                               </Typography>
                             </Box>
@@ -483,12 +490,12 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                               </Typography>
                             ) : (
                               <Typography variant="body2" color="text.disabled">
-                                da giocare
+                                {t("toPlay")}
                               </Typography>
                             )}
                             {m.result && (
                               <Chip
-                                label={MATCH_RESULT_META[m.result].short}
+                                label={matchResultShort(m.result)}
                                 size="small"
                                 sx={{
                                   bgcolor: MATCH_RESULT_META[m.result].color,

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 import {
   DialogTitle,
   DialogContent,
@@ -43,6 +44,8 @@ export default function TeamsModal({
   teamC,
   coaches,
 }: Props) {
+  const tCommon = useTranslations("common");
+  const t = useTranslations("trainings");
   const numTeams = teamC ? 3 : 2;
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
@@ -69,7 +72,7 @@ export default function TeamsModal({
             sessionDate={sessionDate}
             sessionEndTime={sessionEndTime}
           />
-          <IconButton onClick={onClose} size="small" aria-label="Chiudi">
+          <IconButton onClick={onClose} size="small" aria-label={tCommon("close")}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -86,7 +89,7 @@ export default function TeamsModal({
               fontWeight={700}
               sx={{ whiteSpace: "nowrap" }}
             >
-              Allenatori:
+              {t("teamCoaches")}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
               {coaches.map((c) => (

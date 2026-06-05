@@ -1,5 +1,6 @@
 "use client";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { submitContactForm, type ContactFormState } from "@/app/actions/contact";
 import {
   Box,
@@ -17,6 +18,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 const initialState: ContactFormState = {};
 
 export default function ContactForm() {
+  const t = useTranslations("pages.contatti");
+  const tNav = useTranslations("nav");
+  const tCommon = useTranslations("common");
   const [state, action, pending] = useActionState(submitContactForm, initialState);
 
   if (state.success) {
@@ -33,10 +37,10 @@ export default function ContactForm() {
       >
         <CheckCircleIcon sx={{ fontSize: 48, color: "success.main" }} />
         <Typography variant="h6" fontWeight={700}>
-          Messaggio inviato!
+          {t("formSent")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Ti risponderemo il prima possibile all&apos;indirizzo fornito.
+          {t("formSentDesc")}
         </Typography>
       </Box>
     );
@@ -50,7 +54,7 @@ export default function ContactForm() {
       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
       <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-        Scrivici un messaggio
+        {t("formTitle")}
       </Typography>
       {state.error && (
         <Alert severity="error" sx={{ py: 0.5 }}>
@@ -59,7 +63,7 @@ export default function ContactForm() {
       )}
       <TextField
         name="name"
-        label="Nome"
+        label={t("formName")}
         required
         size="small"
         fullWidth
@@ -68,7 +72,7 @@ export default function ContactForm() {
       />
       <TextField
         name="email"
-        label="Email"
+        label={t("formEmail")}
         type="email"
         required
         size="small"
@@ -78,7 +82,7 @@ export default function ContactForm() {
       />
       <TextField
         name="message"
-        label="Messaggio"
+        label={t("formMessage")}
         required
         size="small"
         fullWidth
@@ -93,15 +97,13 @@ export default function ContactForm() {
         startIcon={pending ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
         sx={{ alignSelf: "flex-start" }}
       >
-        {pending ? "Invio in corso..." : "Invia messaggio"}
+        {pending ? tCommon("sending") : t("formSubmit")}
       </Button>
       <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-        Inviando il messaggio acconsenti al trattamento dei dati per rispondere alla tua richiesta.
-        Maggiori informazioni nell&apos;
+        {t("formPrivacy")}{" "}
         <MuiLink component={NextLink} href="/privacy">
-          informativa privacy
+          {tNav("privacyPolicy")}
         </MuiLink>
-        .
       </Typography>
     </Box>
   );

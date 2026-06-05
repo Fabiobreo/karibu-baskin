@@ -6,12 +6,12 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
 import type { AnyMatch } from "./types";
-import { MATCH_TYPE_LABEL } from "./utils";
 
-export default function NextMatchCard({
+export default async function NextMatchCard({
   match,
   teamName,
   teamColor,
@@ -24,6 +24,17 @@ export default function NextMatchCard({
   now: Date;
   previousMeeting: AnyMatch | null;
 }) {
+  const [t, tCommon, locale] = await Promise.all([
+    getTranslations("matches"),
+    getTranslations("common"),
+    getLocale(),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
+  const matchTypeLabel = (ty: string) =>
+    ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
+      ty
+    ] ?? ty;
+
   const imminentLimit = new Date(now.getTime() + 48 * 60 * 60 * 1000);
   const isImminent = match.date <= imminentLimit;
 
@@ -99,7 +110,7 @@ export default function NextMatchCard({
                 textTransform: "uppercase",
               }}
             >
-              {format(new Date(match.date), "EEE", { locale: it })}
+              {format(new Date(match.date), "EEE", { locale: dateLocale })}
             </Box>
             <Box sx={{ px: 1, py: 0.75 }}>
               <Typography
@@ -123,7 +134,7 @@ export default function NextMatchCard({
                   mt: 0.25,
                 }}
               >
-                {format(new Date(match.date), "MMM", { locale: it })}
+                {format(new Date(match.date), "MMM", { locale: dateLocale })}
               </Typography>
             </Box>
           </Box>
@@ -148,10 +159,10 @@ export default function NextMatchCard({
                   lineHeight: 1,
                 }}
               >
-                ★ Prossima partita
+                {`★ ${t("nextMatch")}`}
               </Typography>
               <Chip
-                label={MATCH_TYPE_LABEL[match.matchType]}
+                label={matchTypeLabel(match.matchType)}
                 size="small"
                 sx={{
                   bgcolor: "common.white",
@@ -170,8 +181,9 @@ export default function NextMatchCard({
                 lineHeight: 1.2,
               }}
             >
-              {format(new Date(match.date), "EEEE d MMMM", { locale: it }).replace(/^./, (c) =>
-                c.toUpperCase()
+              {format(new Date(match.date), "EEEE d MMMM", { locale: dateLocale }).replace(
+                /^./,
+                (c) => c.toUpperCase()
               )}
             </Typography>
             <Box
@@ -201,17 +213,17 @@ export default function NextMatchCard({
                 }}
               >
                 {days === 0 && hours === 0
-                  ? "In corso!"
+                  ? t("inProgressNow")
                   : days === 0
-                    ? `Mancano ${hours} ${hours === 1 ? "ora" : "ore"}`
+                    ? t("hoursLeft", { count: hours })
                     : days === 1
-                      ? `Domani${hours > 0 ? ` · ${hours}h` : ""}`
-                      : `Mancano ${days} giorni`}
+                      ? `${tCommon("tomorrow")}${hours > 0 ? ` · ${hours}h` : ""}`
+                      : t("daysLeft", { count: days })}
               </Typography>
               {isImminent && (
                 <Chip
                   icon={<BoltIcon sx={{ fontSize: 12, color: "common.white !important" }} />}
-                  label="Imminente"
+                  label={t("imminent")}
                   size="small"
                   sx={{
                     bgcolor: teamColor,
@@ -255,7 +267,7 @@ export default function NextMatchCard({
                 letterSpacing: "0.06em",
               }}
             >
-              {isHomeMatch ? "Casa" : "Trasferta"}
+              {isHomeMatch ? t("home") : t("away")}
             </Typography>
           </Box>
         </Box>
@@ -398,7 +410,7 @@ export default function NextMatchCard({
                 fontSize: "0.6rem",
               }}
             >
-              Avversario
+              {t("opponent")}
             </Typography>
             <Typography
               sx={{
@@ -459,7 +471,7 @@ export default function NextMatchCard({
                     fontSize: "0.62rem",
                   }}
                 >
-                  Andata:
+                  {t("firstLeg")}
                 </Typography>
                 <Box
                   sx={{
@@ -484,7 +496,11 @@ export default function NextMatchCard({
                       opacity: 0.95,
                     }}
                   >
-                    {prev.result === "WIN" ? "Vinta" : prev.result === "LOSS" ? "Persa" : "Pari"}
+                    {prev.result === "WIN"
+                      ? t("wonShort")
+                      : prev.result === "LOSS"
+                        ? t("lostShort")
+                        : t("drawShort")}
                   </Box>
                   <Box component="span" sx={{ opacity: 0.5, fontSize: "0.62rem" }}>
                     ·
@@ -498,7 +514,7 @@ export default function NextMatchCard({
                   </Box>
                 </Box>
                 <Typography variant="caption" sx={{ color: "text.disabled", fontWeight: 600 }}>
-                  {format(new Date(prev.date), "d MMM", { locale: it })}
+                  {format(new Date(prev.date), "d MMM", { locale: dateLocale })}
                 </Typography>
               </Box>
             )}

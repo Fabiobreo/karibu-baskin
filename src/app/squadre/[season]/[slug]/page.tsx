@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import {
   Box,
@@ -155,6 +156,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   const season = parseSeasonParam(seasonParam);
   const team = await getTeam(season, slug);
   if (!team) notFound();
+
+  const t = await getTranslations("teams");
 
   const now = new Date();
   const teamColor = team.color ?? "#E65100";
@@ -410,7 +413,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 "&:hover": { color: "#fff" },
               }}
             >
-              Squadre
+              {t("teamBreadcrumb")}
             </MuiLink>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
               {team.name}
@@ -576,7 +579,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <GroupsIcon sx={{ fontSize: 16, color: "#fff" }} />
                   <Typography variant="body2" sx={{ color: "#fff", fontWeight: 600 }}>
-                    {team.memberships.length} {team.memberships.length === 1 ? "atleta" : "atleti"}
+                    {t("athleteCount", { count: team.memberships.length })}
                   </Typography>
                 </Box>
               </Box>
@@ -629,12 +632,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   Statistiche
                 </Typography>
                 <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5 }}>
-                  Bilancio stagione
+                  {t("seasonBalance")}
                 </Typography>
                 <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600 }}>
-                  {includeFriendlies
-                    ? "Tutte le partite (incluse amichevoli)"
-                    : "Solo partite ufficiali"}
+                  {includeFriendlies ? t("filterAll") : t("filterOfficial")}
                 </Typography>
               </Box>
               {hasFriendlies && (
@@ -645,7 +646,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     scroll={false}
                   >
                     <Chip
-                      label="Solo ufficiali"
+                      label={t("filterOfficialShort")}
                       size="small"
                       variant={!includeFriendlies ? "filled" : "outlined"}
                       color={!includeFriendlies ? "primary" : "default"}
@@ -658,7 +659,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     scroll={false}
                   >
                     <Chip
-                      label="Tutte"
+                      label={t("filterAllShort")}
                       size="small"
                       variant={includeFriendlies ? "filled" : "outlined"}
                       color={includeFriendlies ? "primary" : "default"}
@@ -701,7 +702,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         fontWeight: 700,
                       }}
                     >
-                      Differenza canestri
+                      {t("statDiff")}
                     </Typography>
                   </Box>
                   <Typography
@@ -719,7 +720,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   <Box sx={{ display: "flex", gap: 2, mt: "auto" }}>
                     <Box>
                       <Typography variant="caption" color="text.disabled">
-                        Fatti
+                        {t("statScored")}
                       </Typography>
                       <Typography fontWeight={700} sx={{ fontVariantNumeric: "tabular-nums" }}>
                         {pointsFor}
@@ -727,7 +728,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     </Box>
                     <Box>
                       <Typography variant="caption" color="text.disabled">
-                        Subiti
+                        {t("statConceded")}
                       </Typography>
                       <Typography fontWeight={700} sx={{ fontVariantNumeric: "tabular-nums" }}>
                         {pointsAgainst}
@@ -760,7 +761,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       fontWeight: 700,
                     }}
                   >
-                    Media a partita
+                    {t("statAvg")}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
                     <Typography
@@ -775,7 +776,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     </Typography>
                   </Box>
                   <Typography variant="caption" color="text.disabled" sx={{ mt: "auto" }}>
-                    su {playedMatches.length} partite
+                    {t("statMatches", { count: playedMatches.length })}
                   </Typography>
                 </Paper>
               </Grid>
@@ -803,7 +804,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       fontWeight: 700,
                     }}
                   >
-                    Striscia attuale
+                    {t("statStreak")}
                   </Typography>
                   {streakResult ? (
                     <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
@@ -827,16 +828,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         }}
                       >
                         {streakResult === "WIN"
-                          ? streakCount === 1
-                            ? "vittoria"
-                            : "vittorie"
+                          ? t("streakWins", { count: streakCount })
                           : streakResult === "LOSS"
-                            ? streakCount === 1
-                              ? "sconfitta"
-                              : "sconfitte"
-                            : streakCount === 1
-                              ? "pareggio"
-                              : "pareggi"}
+                            ? t("streakLosses", { count: streakCount })
+                            : t("streakDraws", { count: streakCount })}
                       </Typography>
                     </Box>
                   ) : (
@@ -846,10 +841,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   )}
                   <Typography variant="caption" color="text.disabled" sx={{ mt: "auto" }}>
                     {bestWinStreak > 1
-                      ? `Miglior serie: ${bestWinStreak} vittorie di fila`
+                      ? t("statBestStreak", { count: bestWinStreak })
                       : streakResult
-                        ? "Consecutive"
-                        : "Nessuna partita giocata"}
+                        ? t("consecutive")
+                        : t("noMatchesPlayed")}
                   </Typography>
                 </Paper>
               </Grid>
@@ -865,11 +860,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 variant="overline"
                 sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
               >
-                Leader
+                {t("leaders")}
               </Typography>
             </Box>
             <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
-              Top scorer della stagione
+              {t("topScorer")}
             </Typography>
 
             <Grid container spacing={2}>
@@ -886,10 +881,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <SubLeaderRow
                       icon={<SportsBasketballIcon sx={{ fontSize: 20, color: teamColor }} />}
-                      label="Più triple"
+                      label={t("mostThrees")}
                       leader={leaderByThrees}
                       value={leaderByThrees.threePointers}
-                      suffix="da 3"
+                      suffix={t("threeUnit")}
                     />
                   </Grid>
                 )}
@@ -897,10 +892,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <SubLeaderRow
                       icon={<SportsBasketballIcon sx={{ fontSize: 20, color: teamColor }} />}
-                      label="Più tiri liberi"
+                      label={t("mostFreeThrows")}
                       leader={leaderByFreeThrows}
                       value={leaderByFreeThrows.freeThrows}
-                      suffix="liberi"
+                      suffix={t("freeThrowUnit")}
                     />
                   </Grid>
                 )}
@@ -919,12 +914,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   variant="overline"
                   sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
                 >
-                  Rosa
+                  {t("rosterSection")}
                 </Typography>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
-                {team.memberships.length} {team.memberships.length === 1 ? "atleta" : "atleti"} in
-                squadra
+                {t("rosterCount", { count: team.memberships.length })}
               </Typography>
 
               <Stack spacing={3}>
@@ -960,7 +954,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           fontWeight={800}
                           sx={{ color: "text.primary" }}
                         >
-                          {isUnassigned ? "Senza ruolo" : `Ruolo ${roleNum}`}
+                          {isUnassigned ? t("noRole") : `Ruolo ${roleNum}`}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -1029,7 +1023,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   variant="overline"
                   sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
                 >
-                  Storico
+                  {t("historySection")}
                 </Typography>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
@@ -1059,11 +1053,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   variant="overline"
                   sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
                 >
-                  In programma
+                  {t("upcomingSection")}
                 </Typography>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
-                Prossime partite
+                {t("upcomingMatches")}
               </Typography>
               <Stack spacing={1}>
                 {upcomingMatches.slice(1).map((m) => (
@@ -1084,10 +1078,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           <Box sx={{ textAlign: "center", py: 8 }}>
             <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
             <Typography variant="h6" color="text.secondary">
-              Stagione in preparazione
+              {t("seasonPreparing")}
             </Typography>
             <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-              Rosa e calendario verranno pubblicati a breve.
+              {t("seasonPreparingDesc")}
             </Typography>
           </Box>
         )}

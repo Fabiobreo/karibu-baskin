@@ -6,7 +6,9 @@ import HomeIcon from "@mui/icons-material/Home";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import BoltIcon from "@mui/icons-material/Bolt";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { useTranslations } from "next-intl";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 
 export interface MatchCardData {
   id: string;
@@ -20,16 +22,21 @@ export interface MatchCardData {
   opponentTeam: { id: string; name: string } | null;
 }
 
-function relativeLabel(date: Date, now: Date): string {
+function relativeLabel(
+  date: Date,
+  now: Date,
+  tCommon: ReturnType<typeof useTranslations>,
+  dateLocale: Locale
+): string {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((startOfDate.getTime() - startOfToday.getTime()) / 86_400_000);
-  if (diffDays === 0) return "Oggi";
-  if (diffDays === 1) return "Domani";
+  if (diffDays === 0) return tCommon("today");
+  if (diffDays === 1) return tCommon("tomorrow");
   if (diffDays > 1 && diffDays <= 6) {
-    return format(date, "EEEE", { locale: it }).replace(/^./, (c) => c.toUpperCase());
+    return format(date, "EEEE", { locale: dateLocale }).replace(/^./, (c) => c.toUpperCase());
   }
-  return `Tra ${diffDays} giorni`;
+  return tCommon("daysAway", { count: diffDays });
 }
 
 interface ProssimePartiteCardsProps {
@@ -38,6 +45,9 @@ interface ProssimePartiteCardsProps {
 
 export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsProps) {
   const now = new Date();
+  const tCommon = useTranslations("common");
+  const tMatches = useTranslations("matches");
+  const dateLocale = useActiveDateLocale();
 
   return (
     <Stack
@@ -85,7 +95,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 {m.isImminent && (
                   <Chip
                     icon={<BoltIcon sx={{ fontSize: 16 }} />}
-                    label="Imminente"
+                    label={tMatches("imminent")}
                     size="small"
                     sx={(theme) => ({
                       mb: 1,
@@ -113,14 +123,14 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     fontSize: { xs: "1.05rem", md: "1.15rem" },
                   }}
                 >
-                  {relativeLabel(m.date, now)}
+                  {relativeLabel(m.date, now, tCommon, dateLocale)}
                 </Typography>
                 <Typography
                   variant="caption"
                   color="text.secondary"
                   sx={{ display: "block", mb: 1.5 }}
                 >
-                  {format(m.date, "d MMM · HH:mm", { locale: it })}
+                  {format(m.date, "d MMM · HH:mm", { locale: dateLocale })}
                 </Typography>
 
                 <Typography
@@ -169,7 +179,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     <FlightTakeoffIcon sx={{ fontSize: 16 }} />
                   )}
                   <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                    {m.isHome ? "Casa" : "Trasferta"}
+                    {m.isHome ? tMatches("home") : tMatches("away")}
                     {m.venue ? ` · ${m.venue}` : ""}
                   </Typography>
                 </Box>

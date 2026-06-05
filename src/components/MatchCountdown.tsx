@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import { useTranslations } from "next-intl";
 
 interface Props {
   /** ISO date (timestamp), inviata dal server per evitare mismatch */
@@ -20,6 +21,7 @@ function computeParts(target: Date) {
 }
 
 export default function MatchCountdown({ targetIso }: Props) {
+  const t = useTranslations("matches");
   const target = new Date(targetIso);
   const [parts, setParts] = useState(() => computeParts(target));
 
@@ -31,14 +33,15 @@ export default function MatchCountdown({ targetIso }: Props) {
 
   if (!parts) {
     return (
-      <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "0.95rem" }}>In corso</Typography>
+      <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "0.95rem" }}>
+        {t("countdownInProgress")}
+      </Typography>
     );
   }
 
   const segments: string[] = [];
-  if (parts.days > 0) segments.push(`${parts.days} ${parts.days === 1 ? "giorno" : "giorni"}`);
-  if (parts.hours > 0 || parts.days > 0)
-    segments.push(`${parts.hours} ${parts.hours === 1 ? "ora" : "ore"}`);
+  if (parts.days > 0) segments.push(t("countdownDays", { count: parts.days }));
+  if (parts.hours > 0 || parts.days > 0) segments.push(t("countdownHours", { count: parts.hours }));
   if (parts.days === 0) segments.push(`${parts.minutes} min`);
 
   return (

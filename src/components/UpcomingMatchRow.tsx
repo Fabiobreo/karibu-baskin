@@ -5,9 +5,11 @@ import FlightIcon from "@mui/icons-material/Flight";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
 import { useHasMounted } from "@/lib/useHasMounted";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { MatchResult } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 export type AnyMatchProp = {
   id: string;
@@ -23,17 +25,22 @@ export type AnyMatchProp = {
   isMirrored?: boolean;
 };
 
-function relativeLabel(date: Date, now: Date): string {
+function relativeLabel(
+  date: Date,
+  now: Date,
+  tCommon: ReturnType<typeof useTranslations>,
+  dateLocale: Locale
+): string {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((startOfDate.getTime() - startOfToday.getTime()) / 86_400_000);
-  if (diffDays === 0) return "Oggi";
-  if (diffDays === 1) return "Domani";
+  if (diffDays === 0) return tCommon("today");
+  if (diffDays === 1) return tCommon("tomorrow");
   if (diffDays > 1 && diffDays <= 6)
-    return format(date, "EEEE", { locale: it }).replace(/^./, (c) => c.toUpperCase());
+    return format(date, "EEEE", { locale: dateLocale }).replace(/^./, (c) => c.toUpperCase());
   if (diffDays < 0 && diffDays >= -6)
-    return format(date, "EEEE", { locale: it }).replace(/^./, (c) => c.toUpperCase());
-  return format(date, "d MMM", { locale: it });
+    return format(date, "EEEE", { locale: dateLocale }).replace(/^./, (c) => c.toUpperCase());
+  return format(date, "d MMM", { locale: dateLocale });
 }
 
 interface UpcomingMatchRowProps {
@@ -44,6 +51,9 @@ interface UpcomingMatchRowProps {
 
 export default function UpcomingMatchRow({ match, teamName, teamColor }: UpcomingMatchRowProps) {
   const hasMounted = useHasMounted();
+  const tCommon = useTranslations("common");
+  const tMatches = useTranslations("matches");
+  const dateLocale = useActiveDateLocale();
   const now = new Date();
   const leftName = match.isHome ? teamName : match.opponent.name;
   const rightName = match.isHome ? match.opponent.name : teamName;
@@ -72,10 +82,10 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
       >
         <Box sx={{ minWidth: 90, flexShrink: 0 }}>
           <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
-            {relativeLabel(match.date, now)}
+            {relativeLabel(match.date, now, tCommon, dateLocale)}
           </Typography>
           <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
-            {format(new Date(match.date), "d MMM · HH:mm", { locale: it })}
+            {format(new Date(match.date), "d MMM · HH:mm", { locale: dateLocale })}
           </Typography>
         </Box>
         <Box
@@ -122,7 +132,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
          */}
         <Chip
           icon={hasMounted ? match.isHome ? <HomeIcon /> : <FlightIcon /> : undefined}
-          label={match.isHome ? "Casa" : "Trasferta"}
+          label={match.isHome ? tMatches("home") : tMatches("away")}
           size="small"
           variant="outlined"
           sx={{ fontSize: "0.65rem", height: 22 }}
