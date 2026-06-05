@@ -220,7 +220,7 @@ function TeamGrid({
 }: {
   teams: Team[];
   muted?: boolean;
-   
+
   t: (key: string, values?: Record<string, any>) => string;
 }) {
   return (
