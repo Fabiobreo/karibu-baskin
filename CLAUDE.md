@@ -322,7 +322,7 @@ Comportamento `checkRegistrationAllowed()`:
   - `match-availability-reminder` — promemoria conferma disponibilità partita
   - `match-callup-reminder` — promemoria convocazioni
   - `match-coverage-alert` — alert copertura ruoli insufficiente
-  - `instagram-sync` — sincronizza il feed Instagram nella Gallery (ogni 6h)
+  - `instagram-sync` — sincronizza il feed Instagram nella Gallery (giornaliero, 06:00 — il piano Vercel Hobby consente cron al massimo 1 volta/giorno)
 
 ## Sottosistemi recenti
 
@@ -331,7 +331,7 @@ Comportamento `checkRegistrationAllowed()`:
 - **Disponibilità & convocazioni:** `MatchAvailability` (l'atleta dichiara la disponibilità per una partita) e `MatchCallup` (lo staff convoca). API `matches/[matchId]/availability` e `/callups`, più `users/me/availabilities`. UI utente: `/profilo/disponibilita` (`MieDisponibilitaClient`); UI staff: `/admin/partite/[matchId]/convocazioni` (`ConvocazioniClient`). Logica: `callupContext.ts`, `callupStats.ts`, `matchCoverage.ts`.
 - **MVP partita:** `MatchMvp` + `matches/[matchId]/mvps`.
 - **Tema chiaro/scuro:** `ThemeContext` + `lightTheme`/`darkTheme` in `theme.ts`. Lo switch è nel menu utente (header) e nel drawer mobile. Usare sempre token semantici del tema (`text.primary`, `background.paper`, …): i colori hardcoded rompono il dark mode.
-- **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (ogni 6h, `vercel.json`) chiama `syncInstagram()` (`src/lib/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
+- **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (giornaliero alle 06:00, `vercel.json` — su piano Hobby i cron Vercel possono girare al massimo 1 volta/giorno: schedule sub-giornaliere fanno **fallire il deploy**) chiama `syncInstagram()` (`src/lib/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
 
 ## Internazionalizzazione (i18n)
 
