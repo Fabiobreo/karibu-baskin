@@ -15,14 +15,18 @@ App web per la squadra di Baskin di Montecchio Maggiore (VI). Gestione allenamen
 - **Upload immagini:** Vercel Blob (`@vercel/blob`) + `sharp` per resize/ottimizzazione — vedi `src/lib/blob.ts` (cartelle: avatars, teams, matches, events, posts) e `POST /api/upload`
 - **Rating giocatori:** sistema TrueSkill custom (`src/lib/trueskill.ts`, `ratingEngine.ts`, `ratingTrend.ts`) + ottimizzatore formazioni (`lineupOptimizer.ts`) + badge (`badges.ts`)
 - **Analytics:** Vercel Analytics
+- **Error monitoring:** Sentry (`@sentry/nextjs`) — config in `sentry.client/server/edge.config.ts`, init via `src/instrumentation.ts`, plugin in `next.config.ts` (`withSentryConfig`). Source map caricate solo in CI (`SENTRY_AUTH_TOKEN`)
+- **i18n:** next-intl (it/en) **cookie-based** — vedi sezione [Internazionalizzazione](#internazionalizzazione)
 - **Validazione input:** Zod v4 (schemi in `src/lib/schemas/`)
-- **Data fetching client:** SWR per fetch lato client; `fetch` diretto nei Server Component
+- **Data fetching client:** TanStack React Query (`useQuery`/`useMutation`); `fetch` diretto nei Server Component
 - **Email transazionali:** Resend + React Email (template in `src/emails/`)
 - **Storybook:** v10 (`.storybook/`, file `*.stories.tsx` accanto al componente) — `npm run storybook`
 - **Linter / Formatter:** ESLint (eslint-config-next) + Prettier (`.prettierrc`: semi, double quotes, 2 spazi, printWidth 100, trailingComma es5, LF)
 - **Testing:** Vitest (file `*.test.ts` accanto al sorgente — es. `src/lib/schemas/session.test.ts`, `src/app/api/sessions/route.test.ts`)
-- **Date:** `date-fns` v4 con locale `it`
-- **State management:** nessuna libreria globale — solo `useState`/`useReducer` locali + Context (`ToastContext`, `NotificationContext`, `ThemeContext`) + SWR cache
+- **Date:** `date-fns` v4 con locale dinamico (`it`/`enUS`) via `src/lib/dateLocale.ts` + hook `useActiveDateLocale`
+- **State management:** nessuna libreria globale di stato — solo `useState`/`useReducer` locali + Context (`ToastContext`, `NotificationContext`, `ThemeContext`, `LocaleContext`) + cache React Query
+
+> **Data fetching client:** usare **solo** TanStack React Query. `QueryClientProvider` è in `Providers.tsx` (con `ReactQueryDevtools`). Letture con `useQuery` (polling via `refetchInterval`, `refetchOnWindowFocus`), scritture con `useMutation`; invalidare/aggiornare la cache con `queryClient.invalidateQueries`/`setQueryData`. Non reintrodurre SWR né altre librerie di fetching.
 
 ## Comandi principali
 
@@ -138,14 +142,21 @@ src/
 ├── context/
 │   ├── ToastContext.tsx                   # Toast globali
 │   ├── NotificationContext.tsx            # Notifiche in-app (unread count, mark read)
-│   └── ThemeContext.tsx                   # Tema chiaro/scuro/system (persistito in localStorage)
+│   ├── ThemeContext.tsx                   # Tema chiaro/scuro/system (persistito in localStorage)
+│   └── LocaleContext.tsx                  # Lingua it/en (cookie karibu-locale) — useLocaleSwitch()
+├── i18n/                                  # next-intl (cookie-based)
+│   ├── locales.ts                         # LOCALES, DEFAULT_LOCALE, LOCALE_COOKIE, isValidLocale
+│   ├── request.ts                         # getRequestConfig (cookie → Accept-Language → it)
+│   └── messages/it.json, en.json          # Dizionari traduzioni
 ├── emails/                                # Template React Email
 │   ├── ContactConfirmationEmail.tsx       # Conferma all'utente
 │   └── ContactNotificationEmail.tsx       # Notifica all'admin
 ├── hooks/
 │   ├── useRegistrationForm.ts             # Hook logica form iscrizione
 │   ├── useConfirmDialog.tsx               # Dialog di conferma riutilizzabile
-│   └── useCookieConsent.ts                # Stato consenso cookie
+│   ├── useCookieConsent.ts                # Stato consenso cookie
+│   ├── useEntityLabels.ts                 # Label dominio tradotte (client) — ruolo/genere/risultato
+│   └── useActiveDateLocale.ts             # Locale date-fns corrente (it/enUS)
 ├── lib/
 │   ├── apiAuth.ts                         # Helper auth per API route (isCoachOrAdmin, isAdminUser)
 │   ├── appNotifications.ts                # Creazione notifiche in-app
@@ -155,8 +166,10 @@ src/
 │   ├── badges.ts                          # Calcolo badge giocatore
 │   ├── blob.ts                            # Upload/ottimizzazione immagini (Vercel Blob + sharp)
 │   ├── callupContext.ts / callupStats.ts  # Logica convocazioni partita
-│   ├── constants.ts                       # ROLE_LABELS, ROLE_COLORS, ROLES
+│   ├── constants.ts                       # ROLE_COLORS, ROLES (label tradotte via entityLabels)
 │   ├── dateUtils.ts                       # Helpers date (formattazione, confronto)
+│   ├── dateLocale.ts                      # getDateFnsLocale(locale) → it/enUS
+│   ├── entityLabels.ts                    # Label dominio tradotte (server) — getEntityLabels()
 │   ├── db.ts                              # Prisma singleton
 │   ├── faqs.ts                            # Contenuti FAQ
 │   ├── heroStyles.ts                      # Stili condivisi hero/PageHero
@@ -187,8 +200,14 @@ src/
 │       └── entities.ts                    # Tipi condivisi tra schemi
 ├── proxy.ts                               # Middleware pass-through (matcher vuoto — auth nei layout/API)
 ├── theme.ts                               # MUI theme arancione/nero (lightTheme + darkTheme)
+├── instrumentation.ts                     # Init Sentry per runtime (nodejs/edge)
 └── types/
     └── next-auth.d.ts                     # Augmentazione tipi sessione
+
+# (root, fuori da src/)
+sentry.client.config.ts                    # Sentry browser (replay) — NEXT_PUBLIC_SENTRY_DSN
+sentry.server.config.ts                    # Sentry server — SENTRY_DSN
+sentry.edge.config.ts                      # Sentry edge runtime
 ```
 
 ## Convenzioni di codice
@@ -197,7 +216,7 @@ src/
 - **Utilities/pages/API:** lowercase (`route.ts`, `page.tsx`, `constants.ts`)
 - **Costanti:** UPPER_SNAKE_CASE
 - **Alias import:** `@/` → `src/` (es. `import { prisma } from "@/lib/db"`)
-- **Lingua UI:** Italiano per tutto il testo visibile all'utente
+- **Lingua UI:** testo pubblico tradotto via next-intl (it/en) — mai stringhe hardcoded, usare `useTranslations`/`getTranslations` + dizionari `it.json`/`en.json`. Admin solo in italiano. Vedi [Internazionalizzazione](#internazionalizzazione)
 - **Tipi:** interface per oggetti, type per union; mai `as any` senza commento
 - **Stile MUI:** usare `sx` prop + colori dal tema (`primary.main`, `text.secondary`), mai colori hardcoded
 - **Server vs Client:** le pagine in `app/` sono Server Components di default; aggiungere `"use client"` solo dove serve interattività
@@ -314,6 +333,35 @@ Comportamento `checkRegistrationAllowed()`:
 - **Tema chiaro/scuro:** `ThemeContext` + `lightTheme`/`darkTheme` in `theme.ts`. Lo switch è nel menu utente (header) e nel drawer mobile. Usare sempre token semantici del tema (`text.primary`, `background.paper`, …): i colori hardcoded rompono il dark mode.
 - **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (ogni 6h, `vercel.json`) chiama `syncInstagram()` (`src/lib/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
 
+## Internazionalizzazione (i18n)
+
+Multilingua **it/en** con [next-intl](https://next-intl.dev), strategia **cookie-based** (la lingua è nel cookie `karibu-locale`, **non** nell'URL — niente prefissi `/it` `/en`). Plugin attivato in `next.config.ts` (`createNextIntlPlugin("./src/i18n/request.ts")`).
+
+**File chiave (`src/i18n/`):**
+
+- `locales.ts` — `LOCALES = ["it","en"]`, `DEFAULT_LOCALE = "it"`, `LOCALE_COOKIE = "karibu-locale"`, helper `isValidLocale()`
+- `request.ts` — `getRequestConfig`: legge la lingua dal cookie, fallback su `Accept-Language` del browser, poi su `it`. Carica `messages/<locale>.json`
+- `messages/it.json` + `messages/en.json` — dizionari delle traduzioni
+
+**Wiring:**
+
+- `Providers.tsx` monta `<LocaleContextProvider>` (il `NextIntlClientProvider` è fornito automaticamente dal plugin via root layout)
+- `src/context/LocaleContext.tsx` — `useLocaleSwitch()` → `{ locale, setLocale, isPending }`. `setLocale` scrive il cookie e fa `router.refresh()` dentro una `startTransition`
+- `src/components/layout/LanguageSwitcher.tsx` — UI di cambio lingua (header / drawer)
+
+**Uso nei componenti:**
+
+- Client: `useTranslations("namespace")` da `next-intl`
+- Server: `getTranslations("namespace")` da `next-intl/server`
+- **Label di dominio condivise** (ruolo sportivo, genere, risultato partita, colori squadra): NON hardcodare in italiano. Usare gli helper centralizzati che sostituiscono i vecchi `ROLE_LABELS`/`GENDER_LABELS`/`MATCH_RESULT_META.label`:
+  - Client: `useEntityLabels()` da `@/hooks/useEntityLabels`
+  - Server: `await getEntityLabels()` da `@/lib/entityLabels`
+- **Date localizzate:** `useActiveDateLocale()` (client) o `getDateFnsLocale(locale)` da `@/lib/dateLocale` per ottenere il locale `date-fns` corretto (`it`/`enUS`)
+
+**Scope:** solo UI **pubblica** tradotta; il pannello **admin resta solo in italiano**. Gli **URL non sono localizzati** (`/squadre` resta `/squadre` anche in inglese) — scelta deliberata legata al routing cookie-based.
+
+> Regola: ogni nuovo testo UI pubblico va aggiunto a **entrambi** i dizionari (`it.json` + `en.json`) e referenziato via `useTranslations`/`getTranslations`, mai stringa hardcoded.
+
 ## Variabili d'ambiente richieste
 
 ```
@@ -335,6 +383,10 @@ IG_BUSINESS_ACCOUNT_ID=          # Gallery: ID account Instagram Business
 YOUTUBE_CHANNEL_ID=               # Gallery: ID canale YouTube (feed RSS, sezione video)
 ENABLE_TEST_LOGIN=                # "true" per abilitare login fittizio (solo dev)
 TEST_PASSWORD=                    # Password per il login di test (default: karibu-test)
+SENTRY_ORG=                       # Sentry: organizzazione (build/upload source map)
+SENTRY_PROJECT=                   # Sentry: progetto
+SENTRY_AUTH_TOKEN=                # Sentry: token upload source map (solo CI)
+NEXT_PUBLIC_SENTRY_DSN=           # Sentry: DSN client (error monitoring)
 ```
 
 > `ADMIN_PASSWORD` e `COOKIE_SECRET` sono stati rimossi — non più necessari.
@@ -560,7 +612,7 @@ export default async function Page() {
 - **Mai `NextResponse.cookies.set()`** per cookie di sessione → bug Turbopack. Usare `res.headers.set("Set-Cookie", ...)`.
 - **Mai `null` su campo `Json` Prisma** → usare `Prisma.DbNull`. Per "field non passato" usare `Prisma.JsonNull` solo dentro update.
 - **Mai chiamare Prisma dentro `proxy.ts`** (middleware) → Edge Runtime non lo supporta. L'auth va nei layout/API routes.
-- **Mai testo UI in inglese** — tutto in italiano (label, toast, messaggi d'errore visibili).
+- **Mai stringhe UI hardcoded nella UI pubblica** — passare per i dizionari next-intl (`it.json` + `en.json`) via `useTranslations`/`getTranslations`. L'admin resta solo in italiano. Le label di dominio (ruolo/genere/risultato) vanno da `useEntityLabels`/`getEntityLabels`, non hardcodate.
 - **Mai default export per componenti riutilizzabili?** → No, in questo progetto i componenti usano **default export** (es. `export default function SessionCard()`). Mantenere coerenza. Utility e hook invece sono **named export**.
 - **Mai `prisma db push --accept-data-loss`** manualmente in dev se non sei consapevole della perdita dati. Il build di prod lo fa, ma fallisce su data-loss changes (comportamento voluto — non aggirare).
 - **Mai skippare `tsc --noEmit`** prima di un push: i deploy Vercel rompono silenziosamente se il type-check non è verde.

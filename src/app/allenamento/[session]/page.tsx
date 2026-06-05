@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import useSWR from "swr";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, Box, Paper, Skeleton, Grid2 as Grid } from "@mui/material";
@@ -71,10 +70,12 @@ export default function SessionPage() {
   const {
     data: session,
     isLoading: loading,
-    mutate: mutateSession,
-  } = useSWR<Session>(`/api/sessions/${encodeURIComponent(sessionParam)}`, fetcher, {
-    revalidateOnFocus: true,
-    refreshInterval: 60_000,
+    refetch: refetchSession,
+  } = useQuery<Session>({
+    queryKey: ["session", sessionParam],
+    queryFn: () => fetcher(`/api/sessions/${encodeURIComponent(sessionParam)}`),
+    refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
   });
   const realSessionId = session?.id ?? "";
 
@@ -106,17 +107,23 @@ export default function SessionPage() {
     void queryClient.invalidateQueries({ queryKey: regQueryKey });
   }
 
-  const teamsKey = realSessionId ? `/api/teams/${realSessionId}` : null;
+  const teamsQueryKey = ["teams", realSessionId] as const;
   const {
     data: teamsRaw,
     isLoading: teamsLoading,
-    mutate: mutateTeams,
-  } = useSWR<TeamsData>(teamsKey, fetcher, { revalidateOnFocus: true, refreshInterval });
+    refetch: refetchTeams,
+  } = useQuery<TeamsData>({
+    queryKey: teamsQueryKey,
+    queryFn: () => fetcher(`/api/teams/${realSessionId}`),
+    enabled: !!realSessionId,
+    refetchOnWindowFocus: true,
+    refetchInterval: refreshInterval === 0 ? false : refreshInterval,
+  });
   const teams: TeamsData | null = teamsRaw?.generated ? teamsRaw : null;
 
   function refreshSecondary() {
     invalidateRegistrations();
-    mutateTeams();
+    void refetchTeams();
   }
 
   function handleOptimisticAdd(
@@ -215,7 +222,7 @@ export default function SessionPage() {
     try {
       const res = await fetch(`/api/teams/${realSessionId}`, { method: "DELETE" });
       if (res.ok) {
-        mutateTeams(undefined, false);
+        queryClient.setQueryData(teamsQueryKey, undefined);
         setEditingTeams(false);
         showToast({ message: "Squadre rimosse", severity: "success" });
       } else {
@@ -232,7 +239,7 @@ export default function SessionPage() {
     if (newDateSlug !== sessionParam) {
       router.replace(`/allenamento/${newDateSlug}`);
     } else {
-      mutateSession();
+      void refetchSession();
     }
   }
 
@@ -292,7 +299,7 @@ export default function SessionPage() {
     onExitEditMode: () => setEditingTeams(false),
     teams,
     teamsLoading,
-    onTeamsGenerated: (newTeams: TeamsData) => mutateTeams(newTeams, false),
+    onTeamsGenerated: (newTeams: TeamsData) => queryClient.setQueryData(teamsQueryKey, newTeams),
   };
 
   return (
@@ -437,13 +444,13 @@ export default function SessionPage() {
                     {session.registrationOpen === false && isStaff && !isEnded && (
                       <OpenRegistrationsAlert
                         sessionId={realSessionId}
-                        onOpened={() => mutateSession()}
+                        onOpened={() => void refetchSession()}
                       />
                     )}
                     {session.registrationOpen === true && isStaff && !isEnded && (
                       <CloseRegistrationsAlert
                         sessionId={realSessionId}
-                        onClosed={() => mutateSession()}
+                        onClosed={() => void refetchSession()}
                       />
                     )}
                     <SectionErrorBoundary label="Modulo iscrizione">

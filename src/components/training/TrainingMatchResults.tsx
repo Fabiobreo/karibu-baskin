@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import {
   Box,
   Typography,
@@ -363,11 +363,11 @@ function MatchupSlot({
 
 export default function TrainingMatchResults({ sessionId, isStaff, teams, onResultsCount }: Props) {
   const t = useTranslations("trainings");
-  const { data: results = [], mutate } = useSWR<MatchResult[]>(
-    `/api/sessions/${sessionId}/match-results`,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
+  const { data: results = [], refetch } = useQuery<MatchResult[]>({
+    queryKey: ["match-results", sessionId],
+    queryFn: () => fetcher(`/api/sessions/${sessionId}/match-results`),
+    refetchOnWindowFocus: false,
+  });
 
   const hasThreeTeams = !!(teams?.teamC && teams.teamC.length > 0);
   const matchups = hasThreeTeams ? ALL_MATCHUPS : ALL_MATCHUPS.slice(0, 1);
@@ -417,8 +417,8 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
             result={results.find((r) => r.matchup === def.key)}
             sessionId={sessionId}
             isStaff={isStaff}
-            onSaved={() => mutate()}
-            onDeleted={() => mutate()}
+            onSaved={() => void refetch()}
+            onDeleted={() => void refetch()}
           />
         ))}
       </Box>

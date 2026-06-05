@@ -49,7 +49,7 @@ import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { alpha } from "@mui/material/styles";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { slugify } from "@/lib/slugUtils";
 
@@ -123,10 +123,10 @@ export default function SiteHeader() {
   const contattiActive = pathname === "/contatti" || pathname === "/faq" || pathname === "/sponsor";
 
   // Squadre della stagione corrente per i link dinamici del dropdown
-  const { data: allTeams } = useSWR<{ id: string; name: string; season: string }[]>(
-    "/api/competitive-teams",
-    (url: string) => fetch(url).then((r) => r.json())
-  );
+  const { data: allTeams } = useQuery<{ id: string; name: string; season: string }[]>({
+    queryKey: ["competitive-teams"],
+    queryFn: () => fetch("/api/competitive-teams").then((r) => r.json()),
+  });
   const currentSeason = getCurrentSeason();
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
   const squadreLinks = [
