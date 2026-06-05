@@ -2,8 +2,8 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminPageHeader from "@/components/AdminPageHeader";
-import AdminRosaClient from "@/components/AdminRosaClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminRosaClient from "@/components/admin/AdminRosaClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione rosa | Admin" };

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Container, Typography, Box, Paper, Divider } from "@mui/material";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "@/components/layout/SiteHeader";
 import Link from "next/link";
 
 export const metadata: Metadata = {

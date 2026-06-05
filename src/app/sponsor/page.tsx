@@ -10,8 +10,8 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { getTranslations } from "next-intl/server";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";

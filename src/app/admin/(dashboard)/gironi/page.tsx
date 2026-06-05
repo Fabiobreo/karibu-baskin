@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminGironiClient from "@/components/AdminGironiClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminGironiClient from "@/components/admin/AdminGironiClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import type { Metadata } from "next";
 

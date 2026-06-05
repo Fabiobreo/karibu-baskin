@@ -1,15 +1,15 @@
 import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
-import EmptyState from "@/components/EmptyState";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/common/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import type { Metadata } from "next";
-import ClassificaInternaTable from "@/components/ClassificaInternaTable";
-import type { PlayerStatRow } from "@/components/ClassificaInternaTable";
+import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
+import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 
 export const metadata: Metadata = {

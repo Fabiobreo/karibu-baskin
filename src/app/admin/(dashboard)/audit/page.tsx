@@ -1,6 +1,6 @@
 import HistoryIcon from "@mui/icons-material/History";
-import AuditLogClient from "@/components/AuditLogClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AuditLogClient from "@/components/admin/AuditLogClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 export const dynamic = "force-dynamic";
 

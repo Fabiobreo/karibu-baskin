@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
-import type { SportRoleResult } from "@/components/SportRoleQuestionnaire";
+import type { SportRoleResult } from "@/components/training/SportRoleQuestionnaire";
 
 // ── Tipi esportati (re-esportati da RegistrationForm per backwards compat) ────
 

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import AdminEventiClient from "@/components/AdminEventiClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminEventiClient from "@/components/admin/AdminEventiClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Eventi | Admin" };

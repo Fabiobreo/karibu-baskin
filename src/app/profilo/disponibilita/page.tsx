@@ -1,10 +1,10 @@
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "@/components/layout/SiteHeader";
 import MieDisponibilitaClient, {
   type AvailabilityMatch,
-} from "@/components/MieDisponibilitaClient";
+} from "@/components/matches/MieDisponibilitaClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Le mie disponibilità | Karibu Baskin" };

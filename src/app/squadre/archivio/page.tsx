@@ -10,9 +10,9 @@ import {
   Breadcrumbs,
   Link as MuiLink,
 } from "@mui/material";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import EmptyState from "@/components/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import EmptyState from "@/components/common/EmptyState";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import Link from "next/link";

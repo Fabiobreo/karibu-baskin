@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import EmptyState from "@/components/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import EmptyState from "@/components/common/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";

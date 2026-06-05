@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "@/components/layout/SiteHeader";
 import { Container } from "@mui/material";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

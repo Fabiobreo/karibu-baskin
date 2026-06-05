@@ -6,20 +6,20 @@ import { Container, Typography, Box, Paper, Chip, Divider, Stack, Button } from 
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import Link from "next/link";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "@/components/layout/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_COLORS } from "@/lib/constants";
 import { getEntityLabels } from "@/lib/entityLabels";
 import type { AppRole } from "@prisma/client";
-import ParentChildLinker, { type ChildData } from "@/components/ParentChildLinker";
-import NotificationPrefsPanel from "@/components/NotificationPrefsPanel";
+import ParentChildLinker, { type ChildData } from "@/components/profile/ParentChildLinker";
+import NotificationPrefsPanel from "@/components/profile/NotificationPrefsPanel";
 import { mergePrefs } from "@/lib/notifPrefs";
-import LinkRequestsSection from "@/components/LinkRequestsSection";
-import ClaimAnonymousCard from "@/components/ClaimAnonymousCard";
+import LinkRequestsSection from "@/components/profile/LinkRequestsSection";
+import ClaimAnonymousCard from "@/components/training/ClaimAnonymousCard";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { getCurrentSeason } from "@/lib/seasonUtils";
-import ProfileAvatarEditor from "@/components/ProfileAvatarEditor";
+import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 
 export const revalidate = 0;
 

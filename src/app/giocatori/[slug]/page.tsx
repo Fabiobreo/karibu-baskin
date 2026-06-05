@@ -16,8 +16,8 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/SiteHeader";
-import PlayerShareButtons from "@/components/PlayerShareButtons";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";

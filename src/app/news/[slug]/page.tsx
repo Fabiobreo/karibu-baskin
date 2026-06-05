@@ -19,8 +19,8 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import Link from "next/link";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
-import PollWidget from "@/components/PollWidget";
-import SiteHeader from "@/components/SiteHeader";
+import PollWidget from "@/components/news/PollWidget";
+import SiteHeader from "@/components/layout/SiteHeader";
 
 export const revalidate = 60;
 

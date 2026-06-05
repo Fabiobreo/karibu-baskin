@@ -1,4 +1,4 @@
-import type { TeamAthlete } from "@/components/TeamDisplay";
+import type { TeamAthlete } from "@/components/training/TeamDisplay";
 
 export const athletes: Record<string, TeamAthlete> = {
   centrale1: { id: "ath-1", name: "Marco Rossi", role: 1 },

@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminAvversarieClient from "@/components/AdminAvversarieClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminAvversarieClient from "@/components/admin/AdminAvversarieClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Squadre avversarie | Admin" };

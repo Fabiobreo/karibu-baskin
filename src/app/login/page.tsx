@@ -1,8 +1,8 @@
 import { Container, Paper, Typography, Box } from "@mui/material";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import { getTranslations } from "next-intl/server";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
-import TestLoginForm from "@/components/TestLoginForm";
+import GoogleSignInButton from "@/components/common/GoogleSignInButton";
+import TestLoginForm from "@/components/common/TestLoginForm";
 
 const testLoginEnabled = process.env.ENABLE_TEST_LOGIN === "true";
 

@@ -1,4 +1,4 @@
-import type { SessionWithCount } from "@/components/SessionCard";
+import type { SessionWithCount } from "@/components/training/SessionCard";
 import { teamsTwo } from "./teams";
 
 const NOW = Date.now();

@@ -122,7 +122,19 @@ src/
 │   ├── error.tsx                          # Pagina errore runtime (500)
 │   ├── global-error.tsx                   # Errore critico root layout
 │   └── not-found.tsx                      # Pagina 404
-├── components/                            # Componenti riutilizzabili (tutti PascalCase; sottocartella notifications/)
+├── components/                            # Componenti riutilizzabili — organizzati per dominio
+│   ├── admin/                             # Pannello admin (Admin*Client, AuditLogClient…)
+│   ├── training/                          # Allenamenti + iscrizioni + generazione squadre
+│   ├── matches/                           # Partite ufficiali, stats, convocazioni
+│   ├── teams/                             # Squadre agonistiche, gironi, classifiche
+│   ├── news/                              # Post + sondaggi
+│   ├── gallery/                           # Feed Instagram + YouTube
+│   ├── rating/                            # TrueSkill, badge, sviluppo
+│   ├── calendar/                          # Calendario + .ics
+│   ├── profile/                           # Profilo utente, avatar, figli, prefs
+│   ├── layout/                            # Header, footer, nav, providers, SW
+│   ├── notifications/                     # Bell, dropdown, centro notifiche
+│   └── common/                            # Componenti trasversali (hero, dialog, empty state…)
 ├── context/
 │   ├── ToastContext.tsx                   # Toast globali
 │   ├── NotificationContext.tsx            # Notifiche in-app (unread count, mark read)

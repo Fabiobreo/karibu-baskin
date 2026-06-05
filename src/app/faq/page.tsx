@@ -9,8 +9,8 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
 import { getFaqs } from "@/lib/faqs";
 
 export const metadata = { title: "FAQ — Karibu Baskin" };

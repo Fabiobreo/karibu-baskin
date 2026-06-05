@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Box, Container, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import SiteHeader from "@/components/SiteHeader";
-import CalendarClient from "@/components/CalendarClient";
-import SubscribeCalendarButton from "@/components/SubscribeCalendarButton";
+import SiteHeader from "@/components/layout/SiteHeader";
+import CalendarClient from "@/components/calendar/CalendarClient";
+import SubscribeCalendarButton from "@/components/calendar/SubscribeCalendarButton";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";

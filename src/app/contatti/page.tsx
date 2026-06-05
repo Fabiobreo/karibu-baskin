@@ -15,10 +15,10 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useSession } from "next-auth/react";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import ContactForm from "@/components/ContactForm";
-import SuggestionForm from "@/components/SuggestionForm";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import ContactForm from "@/components/common/ContactForm";
+import SuggestionForm from "@/components/common/SuggestionForm";
 import Image from "next/image";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
@@ -32,7 +32,7 @@ import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import MapEmbed from "@/components/MapEmbed";
+import MapEmbed from "@/components/common/MapEmbed";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 

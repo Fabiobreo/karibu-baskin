@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import AdminPartiteClient from "@/components/AdminPartiteClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminPartiteClient from "@/components/admin/AdminPartiteClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matchCoverage";
 import type { Metadata } from "next";
 

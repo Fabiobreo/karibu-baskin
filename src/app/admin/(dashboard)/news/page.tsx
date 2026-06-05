@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminNewsClient from "@/components/AdminNewsClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminNewsClient from "@/components/admin/AdminNewsClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
 export const metadata = { title: "News — Admin" };
 

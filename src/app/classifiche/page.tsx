@@ -1,15 +1,19 @@
 import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Stack, Button } from "@mui/material";
-import EmptyState from "@/components/EmptyState";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
+import EmptyState from "@/components/common/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import Link from "next/link";
 import type { Metadata } from "next";
-import GironeFullView from "@/components/GironeFullView";
-import type { MatchdayBucket, OurMatchData, ExternalMatchData } from "@/components/GironeFullView";
+import GironeFullView from "@/components/teams/GironeFullView";
+import type {
+  MatchdayBucket,
+  OurMatchData,
+  ExternalMatchData,
+} from "@/components/teams/GironeFullView";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { computeStandings } from "@/lib/standings";
 

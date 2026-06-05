@@ -14,7 +14,7 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "@/components/layout/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -28,7 +28,7 @@ import { ROLE_COLORS } from "@/lib/constants";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
-import UpcomingMatchRow from "@/components/UpcomingMatchRow";
+import UpcomingMatchRow from "@/components/matches/UpcomingMatchRow";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
 import type { AnyMatch } from "./_components/types";
 import NextMatchCard from "./_components/NextMatchCard";

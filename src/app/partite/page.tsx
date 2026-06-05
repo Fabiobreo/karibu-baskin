@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import EmptyState from "@/components/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import EmptyState from "@/components/common/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -13,7 +13,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import { getCurrentSeason } from "@/lib/seasonUtils";
-import MatchTimeCell from "@/components/MatchTimeCell";
+import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 

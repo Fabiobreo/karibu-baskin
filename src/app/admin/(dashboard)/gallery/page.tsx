@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import AdminGalleryClient from "@/components/AdminGalleryClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminGalleryClient from "@/components/admin/AdminGalleryClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { isInstagramConfigured } from "@/lib/instagram";
 import { isYouTubeConfigured } from "@/lib/youtube";
 import type { Metadata } from "next";

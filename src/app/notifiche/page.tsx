@@ -3,8 +3,8 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifPrefs";
 import type { AppNotificationType } from "@prisma/client";
-import SiteHeader from "@/components/SiteHeader";
-import NotificheClient from "@/components/NotificheClient";
+import SiteHeader from "@/components/layout/SiteHeader";
+import NotificheClient from "@/components/notifications/NotificheClient";
 
 const LIMIT = 20;
 

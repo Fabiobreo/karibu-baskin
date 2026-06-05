@@ -14,9 +14,9 @@ import ArticleIcon from "@mui/icons-material/Article";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
-import AdminDashboardTabs from "@/components/AdminDashboardTabs";
-import AdminNotificationSender from "@/components/AdminNotificationSender";
-import AdminProssimePartite from "@/components/AdminProssimePartite";
+import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
+import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
+import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 

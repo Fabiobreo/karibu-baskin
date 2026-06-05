@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
-import AdminAllenamentiClient from "@/components/AdminAllenamentiClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminAllenamentiClient from "@/components/admin/AdminAllenamentiClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Allenamenti da gestire | Admin" };

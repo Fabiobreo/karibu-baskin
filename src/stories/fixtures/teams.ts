@@ -1,4 +1,4 @@
-import type { TeamsData } from "@/components/TeamDisplay";
+import type { TeamsData } from "@/components/training/TeamDisplay";
 import { athletes, coaches } from "./athletes";
 
 export const teamsTwo: TeamsData = {

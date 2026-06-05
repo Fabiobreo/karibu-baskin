@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import AdminSquadreClient from "@/components/AdminSquadreClient";
-import AdminPageHeader from "@/components/AdminPageHeader";
+import AdminSquadreClient from "@/components/admin/AdminSquadreClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Squadre | Admin" };

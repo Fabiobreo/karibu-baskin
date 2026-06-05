@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ErrorPage from "@/components/ErrorPage";
+import ErrorPage from "@/components/common/ErrorPage";
 import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = { title: "Pagina non trovata | Karibu Baskin" };

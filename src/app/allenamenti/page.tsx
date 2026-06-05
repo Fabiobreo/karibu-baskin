@@ -1,10 +1,10 @@
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { Container } from "@mui/material";
-import SiteHeader from "@/components/SiteHeader";
-import AllenamentiClient from "@/components/AllenamentiClient";
+import SiteHeader from "@/components/layout/SiteHeader";
+import AllenamentiClient from "@/components/training/AllenamentiClient";
 import { parseTeamsData } from "@/lib/schemas";
-import type { TeamsData } from "@/components/TeamDisplay";
+import type { TeamsData } from "@/components/training/TeamDisplay";
 import type { Metadata } from "next";
 import { getSeasonStartDate } from "@/lib/seasonUtils";
 

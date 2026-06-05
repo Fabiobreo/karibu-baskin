@@ -9,8 +9,8 @@ import {
   Stack,
 } from "@mui/material";
 import { getTranslations, getLocale } from "next-intl/server";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
@@ -19,7 +19,7 @@ import StarIcon from "@mui/icons-material/Star";
 import GradeIcon from "@mui/icons-material/Grade";
 import { ROLE_COLORS } from "@/lib/constants";
 import { getRolesInfo, getBaskinRules } from "@/lib/baskinInfo";
-import LoSapeviCarousel from "@/components/LoSapeviCarousel";
+import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 
 const RULE_ICONS = [
   <SportsBasketballIcon key="0" />,

@@ -1,6 +1,6 @@
 import { Container, Paper, Typography, Box } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
+import GoogleSignInButton from "@/components/common/GoogleSignInButton";
 
 export default function AdminLoginPage() {
   return (

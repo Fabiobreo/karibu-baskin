@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminGironeWorkspaceClient from "@/components/AdminGironeWorkspaceClient";
+import AdminGironeWorkspaceClient from "@/components/admin/AdminGironeWorkspaceClient";
 import { generateGroupSlug } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 

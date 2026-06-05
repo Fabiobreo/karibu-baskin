@@ -5,16 +5,19 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, Box, Paper, Skeleton, Grid2 as Grid } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
-import SiteHeader from "@/components/SiteHeader";
-import RegistrationForm, { type CurrentUser, type ChildInfo } from "@/components/RegistrationForm";
-import RosterByRole from "@/components/RosterByRole";
-import TeamDisplay, { type TeamsData } from "@/components/TeamDisplay";
-import AllenamentoHero from "@/components/AllenamentoHero";
-import AllenamentoEndedView from "@/components/AllenamentoEndedView";
-import OpenRegistrationsAlert from "@/components/OpenRegistrationsAlert";
-import CloseRegistrationsAlert from "@/components/CloseRegistrationsAlert";
-import TeamsHeader from "@/components/TeamsHeader";
-import SectionErrorBoundary from "@/components/SectionErrorBoundary";
+import SiteHeader from "@/components/layout/SiteHeader";
+import RegistrationForm, {
+  type CurrentUser,
+  type ChildInfo,
+} from "@/components/training/RegistrationForm";
+import RosterByRole from "@/components/training/RosterByRole";
+import TeamDisplay, { type TeamsData } from "@/components/training/TeamDisplay";
+import AllenamentoHero from "@/components/training/AllenamentoHero";
+import AllenamentoEndedView from "@/components/training/AllenamentoEndedView";
+import OpenRegistrationsAlert from "@/components/training/OpenRegistrationsAlert";
+import CloseRegistrationsAlert from "@/components/training/CloseRegistrationsAlert";
+import TeamsHeader from "@/components/training/TeamsHeader";
+import SectionErrorBoundary from "@/components/common/SectionErrorBoundary";
 import { TEAM_META } from "@/lib/constants";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { useToast } from "@/context/ToastContext";
@@ -116,7 +119,9 @@ export default function SessionPage() {
     mutateTeams();
   }
 
-  function handleOptimisticAdd(reg: import("@/components/RegistrationForm").OptimisticReg) {
+  function handleOptimisticAdd(
+    reg: import("@/components/training/RegistrationForm").OptimisticReg
+  ) {
     const tempReg: Registration = {
       id: `temp-${Date.now()}`,
       note: null,

@@ -11,9 +11,9 @@ import {
   Button,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import EmptyState from "@/components/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import EmptyState from "@/components/common/EmptyState";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -220,7 +220,7 @@ function TeamGrid({
 }: {
   teams: Team[];
   muted?: boolean;
-   
+
   t: (key: string, values?: Record<string, any>) => string;
 }) {
   return (

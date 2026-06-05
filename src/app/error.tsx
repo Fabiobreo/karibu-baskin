@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import ErrorPage from "@/components/ErrorPage";
+import ErrorPage from "@/components/common/ErrorPage";
 import { useTranslations } from "next-intl";
 
 export default function Error({

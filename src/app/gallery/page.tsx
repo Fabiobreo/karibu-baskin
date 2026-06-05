@@ -3,11 +3,11 @@ import { Box, Container, Button, Divider } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import { getTranslations } from "next-intl/server";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import EmptyState from "@/components/EmptyState";
-import GalleryGrid from "@/components/GalleryGrid";
-import YouTubeSection from "@/components/YouTubeSection";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import EmptyState from "@/components/common/EmptyState";
+import GalleryGrid from "@/components/gallery/GalleryGrid";
+import YouTubeSection from "@/components/gallery/YouTubeSection";
 import { getChannelVideos } from "@/lib/youtube";
 import type { Metadata } from "next";
 

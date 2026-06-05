@@ -1,5 +1,5 @@
-import AdminPageHeader from "@/components/AdminPageHeader";
-import AdminEsportaClient from "@/components/AdminEsportaClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminEsportaClient from "@/components/admin/AdminEsportaClient";
 
 export default function AdminEsportaPage() {
   return (

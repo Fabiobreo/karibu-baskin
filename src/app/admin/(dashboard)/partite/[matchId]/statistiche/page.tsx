@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import MatchStatsClient from "@/components/MatchStatsClient";
+import MatchStatsClient from "@/components/matches/MatchStatsClient";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";

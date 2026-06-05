@@ -3,8 +3,8 @@ import { Paper, Typography } from "@mui/material";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminPageHeader from "@/components/AdminPageHeader";
-import DevelopmentTracker, { type TrackedAthlete } from "@/components/DevelopmentTracker";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import DevelopmentTracker, { type TrackedAthlete } from "@/components/rating/DevelopmentTracker";
 
 export const revalidate = 60;
 

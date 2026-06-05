@@ -3,8 +3,8 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import { buildTeamCallupContext, WINDOW_DAYS_FOR_PRESENCES } from "@/lib/callupContext";
-import ConvocazioniClient from "@/components/ConvocazioniClient";
-import MatchQualitySection from "@/components/MatchQualitySection";
+import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
+import MatchQualitySection from "@/components/matches/MatchQualitySection";
 import { computeMatchQuality } from "@/lib/matchQuality";
 import type { Metadata } from "next";
 

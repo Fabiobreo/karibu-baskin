@@ -1,5 +1,5 @@
-import AdminPageHeader from "@/components/AdminPageHeader";
-import AdminNuovoUtenteClient from "@/components/AdminNuovoUtenteClient";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminNuovoUtenteClient from "@/components/admin/AdminNuovoUtenteClient";
 
 export default function NuovoUtentePage() {
   return (

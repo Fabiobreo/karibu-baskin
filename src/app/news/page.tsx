@@ -9,9 +9,9 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
 import AddIcon from "@mui/icons-material/Add";
-import SiteHeader from "@/components/SiteHeader";
-import PageHero from "@/components/PageHero";
-import EmptyState from "@/components/EmptyState";
+import SiteHeader from "@/components/layout/SiteHeader";
+import PageHero from "@/components/common/PageHero";
+import EmptyState from "@/components/common/EmptyState";
 
 export const metadata = { title: "News — Karibu Baskin" };
 export const revalidate = 60;
