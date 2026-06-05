@@ -183,6 +183,7 @@ export function useRegistrationForm({
 
   // Rimuovi dall'ottimistico i soggetti che il server non considera più iscritti
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOptimisticSubjects((prev) => {
       if (prev.size === 0) return prev;
       const next = new Set(prev);

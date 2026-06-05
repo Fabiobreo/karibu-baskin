@@ -60,6 +60,7 @@ export default function PostEditor({
   useEffect(() => {
     if (editor && !initialized && value) {
       editor.commands.setContent(value);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInitialized(true);
     }
   }, [editor, value, initialized]);

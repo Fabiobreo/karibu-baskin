@@ -132,7 +132,9 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError("");
+
     setLoading(true);
 
     Promise.all([

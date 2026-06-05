@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 export type ConsentChoice = {
   maps: boolean;
@@ -24,16 +24,11 @@ function readStored(): Stored | null {
 }
 
 export function useCookieConsent() {
-  const [decided, setDecided] = useState(false);
-  const [consent, setConsent] = useState<ConsentChoice>({ maps: false });
-
-  useEffect(() => {
+  const [decided, setDecided] = useState(() => readStored() !== null);
+  const [consent, setConsent] = useState<ConsentChoice>(() => {
     const stored = readStored();
-    if (stored) {
-      setDecided(true);
-      setConsent({ maps: stored.maps });
-    }
-  }, []);
+    return stored ? { maps: stored.maps } : { maps: false };
+  });
 
   const accept = useCallback(() => {
     const value: Stored = { maps: true, v: VERSION };

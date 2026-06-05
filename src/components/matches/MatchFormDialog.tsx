@@ -482,6 +482,7 @@ export default function MatchFormDialog({
                   field.onChange(newDate);
                   const newSeason = seasonForDate(newDate);
                   const validTeams = teams.filter((t) => t.season === newSeason);
+                  // eslint-disable-next-line react-hooks/incompatible-library
                   const currentTeamId = watch("teamId");
                   if (!validTeams.some((t) => t.id === currentTeamId) && validTeams[0]) {
                     setValue("teamId", validTeams[0].id);

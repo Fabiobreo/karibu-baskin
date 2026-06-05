@@ -27,11 +27,11 @@ export default function LoSapeviCarousel() {
 
   const goNext = useCallback(() => {
     goTo((index + 1) % LO_SAPEVI.length, "next");
-  }, [index, goTo]);
+  }, [index, goTo, LO_SAPEVI.length]);
 
   const goPrev = useCallback(() => {
     goTo((index - 1 + LO_SAPEVI.length) % LO_SAPEVI.length, "prev");
-  }, [index, goTo]);
+  }, [index, goTo, LO_SAPEVI.length]);
 
   // Auto-avanzamento: un semplice timeout, si resetta ad ogni cambio di index
   useEffect(() => {

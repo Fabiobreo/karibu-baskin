@@ -26,17 +26,19 @@ function resolveTheme(mode: ColorMode, prefersDark: boolean): Theme {
 }
 
 export function ThemeContextProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ColorMode>("system");
-  const [prefersDark, setPrefersDark] = useState(false);
-
-  // Legge la preferenza salvata e ascolta il sistema
-  useEffect(() => {
+  const [mode, setModeState] = useState<ColorMode>(() => {
+    if (typeof window === "undefined") return "system";
     const saved = localStorage.getItem(STORAGE_KEY) as ColorMode | null;
-    if (saved === "light" || saved === "dark" || saved === "system") {
-      setModeState(saved);
-    }
+    if (saved === "light" || saved === "dark" || saved === "system") return saved;
+    return "system";
+  });
+  const [prefersDark, setPrefersDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    setPrefersDark(mq.matches);
     const handler = (e: MediaQueryListEvent) => setPrefersDark(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);

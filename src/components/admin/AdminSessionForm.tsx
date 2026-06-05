@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -62,14 +62,14 @@ export default function AdminSessionForm({
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(SessionFormSchema),
     defaultValues: { title: "", date: "", time: "18:00", endTime: "20:00" },
   });
 
-  const dateValue = watch("date");
+  const dateValue = useWatch({ control, name: "date" });
 
   async function onSubmit(values: FormValues) {
     onLoadingChange?.(true);

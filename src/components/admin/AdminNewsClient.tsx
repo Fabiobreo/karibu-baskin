@@ -145,6 +145,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
     const editId = searchParams.get("edit");
     if (!editId) return;
     const post = initialPosts.find((p) => p.id === editId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (post) openEdit(post);
     router.replace("/admin/news", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps

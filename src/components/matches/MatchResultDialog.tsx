@@ -75,6 +75,7 @@ export default function MatchResultDialog({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOurScore(initialOurScore !== null ? String(initialOurScore) : "");
     setTheirScore(initialTheirScore !== null ? String(initialTheirScore) : "");
     setError("");

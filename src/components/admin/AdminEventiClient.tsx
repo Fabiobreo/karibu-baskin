@@ -101,6 +101,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     const editId = searchParams.get("edit");
     if (!editId) return;
     const ev = initialEvents.find((e) => e.id === editId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ev) openEdit(ev);
     router.replace("/admin/eventi", { scroll: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -30,11 +30,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
   const { showToast } = useToast();
   const t = useTranslations("calendarSub");
   const tCommon = useTranslations("common");
-  const [origin, setOrigin] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") setOrigin(window.location.origin);
-  }, []);
+  const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
 
   const httpsUrl = useMemo(() => (origin ? `${origin}${ICS_PATH}` : ICS_PATH), [origin]);
   const webcalUrl = useMemo(

@@ -317,6 +317,7 @@ export default function AuditLogClient() {
   }, [page, pageSize, action, targetType, from, to]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 

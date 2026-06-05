@@ -397,6 +397,7 @@ export default function RosterByRole({
     if (unmarked.length === 0) return;
 
     autoMarkedRef.current = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAttendedOverrides((prev) => ({
       ...prev,
       ...Object.fromEntries(unmarked.map((r) => [r.id, true as boolean | null])),

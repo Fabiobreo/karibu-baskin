@@ -43,7 +43,6 @@ export const Futuro: Story = {
 };
 
 export const Oggi: Story = {
-  name: "Oggi",
   args: {
     session: sessionToday,
   },
@@ -58,7 +57,6 @@ export const InCorso: Story = {
 };
 
 export const Terminato: Story = {
-  name: "Terminato",
   args: {
     session: sessionPast,
     muted: true,

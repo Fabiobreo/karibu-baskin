@@ -43,6 +43,7 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
 
   useEffect(() => {
     if (!open || !team) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       name: team.name,
       city: team.city ?? "",

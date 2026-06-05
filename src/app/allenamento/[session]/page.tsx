@@ -157,6 +157,7 @@ export default function SessionPage() {
     const endStr = session?.endTime ?? null;
 
     if (!dateStr) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCountdown(null);
       return;
     }
@@ -201,7 +202,7 @@ export default function SessionPage() {
     update();
     const id = setInterval(update, 30_000);
     return () => clearInterval(id);
-  }, [session?.date, session?.endTime]);
+  }, [session?.date, session?.endTime, t]);
 
   const isStaff = currentUser?.appRole === "COACH" || currentUser?.appRole === "ADMIN";
 
