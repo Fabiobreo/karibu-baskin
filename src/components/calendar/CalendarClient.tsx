@@ -51,8 +51,9 @@ import {
   eachDayOfInterval,
   isSameMonth,
   isToday,
-  isSameDay,
   addDays,
+  startOfDay,
+  getDay,
 } from "date-fns";
 import { it } from "date-fns/locale";
 import type { CalendarEvent } from "@/app/api/calendar/route";
@@ -90,6 +91,35 @@ function isVisible(ev: CalendarEvent, hidden: Set<string>): boolean {
   if (ev.type === "event") return !hidden.has("event");
   if (ev.type === "match") return !hidden.has(`match:${ev.color}`) && !hidden.has("match:*");
   return true;
+}
+
+interface DaySegment {
+  multiDay: boolean;
+  isStart: boolean;
+  isEnd: boolean;
+  isContinuation: boolean; // giorno successivo all'inizio (durante/fine)
+}
+
+/** Confronta a livello di giorno l'evento con `day` e descrive il segmento. */
+function getDaySegment(ev: CalendarEvent, day: Date): DaySegment {
+  const start = startOfDay(new Date(ev.date));
+  const end = ev.endDate ? startOfDay(new Date(ev.endDate)) : start;
+  const d = startOfDay(day);
+  const multiDay = end.getTime() > start.getTime();
+  return {
+    multiDay,
+    isStart: d.getTime() === start.getTime(),
+    isEnd: d.getTime() === end.getTime(),
+    isContinuation: multiDay && d.getTime() > start.getTime(),
+  };
+}
+
+/** True se l'evento copre `day` (inizio ≤ day ≤ fine, a livello di giorno). */
+function spansDay(ev: CalendarEvent, day: Date): boolean {
+  const start = startOfDay(new Date(ev.date));
+  const end = ev.endDate ? startOfDay(new Date(ev.endDate)) : start;
+  const d = startOfDay(day);
+  return d.getTime() >= start.getTime() && d.getTime() <= end.getTime();
 }
 
 export default function CalendarClient({ isStaff = false, isAdmin = false, teams = [] }: Props) {
@@ -159,7 +189,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
   const eventsForDay = (day: Date) =>
-    events.filter((e) => isSameDay(new Date(e.date), day) && isVisible(e, hiddenKeys));
+    events.filter((e) => spansDay(e, day) && isVisible(e, hiddenKeys));
 
   function handleDayClick(day: Date) {
     const dayEvs = eventsForDay(day);
@@ -372,16 +402,23 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                 <Box
                   sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: "3px" }}
                 >
-                  {visible.map((ev) => (
-                    <EventChip
-                      key={ev.id}
-                      event={ev}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelected(ev);
-                      }}
-                    />
-                  ))}
+                  {visible.map((ev) => {
+                    const seg = getDaySegment(ev, day);
+                    return (
+                      <EventChip
+                        key={ev.id}
+                        event={ev}
+                        segment={seg}
+                        // Mostra il titolo all'inizio o a inizio settimana (lunedì),
+                        // così ogni riga della griglia resta leggibile.
+                        showTitle={seg.isStart || getDay(day) === 1}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected(ev);
+                        }}
+                      />
+                    );
+                  })}
                   {extra > 0 && (
                     <Typography
                       variant="caption"
@@ -408,19 +445,31 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                         : ev.type === "match"
                           ? EmojiEventsIcon
                           : EventNoteIcon;
+                    const seg = getDaySegment(ev, day);
+                    // Barra continua per eventi multi-giorno: bordi smussati solo
+                    // alle estremità ed estensione fino al bordo cella.
+                    const radius = seg.multiDay
+                      ? `${seg.isStart ? "3px" : "0"} ${seg.isEnd ? "3px" : "0"} ${
+                          seg.isEnd ? "3px" : "0"
+                        } ${seg.isStart ? "3px" : "0"}`
+                      : "3px";
                     return (
                       <Box
                         key={ev.id}
                         sx={{
                           height: 14,
-                          borderRadius: "3px",
+                          borderRadius: radius,
                           bgcolor: ev.color,
+                          mx: seg.multiDay ? "-4px" : 0,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <Icon sx={{ fontSize: "0.58rem", color: "common.white" }} />
+                        {/* Icona solo all'inizio: i giorni di proseguimento restano barra piena */}
+                        {(!seg.multiDay || seg.isStart) && (
+                          <Icon sx={{ fontSize: "0.58rem", color: "common.white" }} />
+                        )}
                       </Box>
                     );
                   })}
@@ -530,9 +579,13 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
 
 function EventChip({
   event,
+  segment,
+  showTitle = true,
   onClick,
 }: {
   event: CalendarEvent;
+  segment?: DaySegment;
+  showTitle?: boolean;
   onClick: (e: React.MouseEvent) => void;
 }) {
   const Icon =
@@ -542,31 +595,51 @@ function EventChip({
         ? EmojiEventsIcon
         : EventNoteIcon;
 
+  const multiDay = segment?.multiDay ?? false;
+  // Per gli eventi su più giorni, smussa solo i bordi terminali così che la
+  // barra appaia continua attraverso i giorni (inizio → durante → fine).
+  const borderRadius = multiDay
+    ? `${segment?.isStart ? "4px" : "0"} ${segment?.isEnd ? "4px" : "0"} ${
+        segment?.isEnd ? "4px" : "0"
+      } ${segment?.isStart ? "4px" : "0"}`
+    : "4px";
+
   return (
     <Box
       onClick={onClick}
+      title={event.title}
       sx={{
         display: "flex",
         alignItems: "center",
         gap: "3px",
         bgcolor: event.color,
-        borderRadius: "4px",
-        px: "5px",
+        borderRadius,
+        // Estende la barra fino al bordo della cella nei giorni di proseguimento
+        // per dare continuità visiva tra celle adiacenti.
+        mx: multiDay ? "-6px" : 0,
+        px: multiDay ? "8px" : "5px",
         py: "2px",
+        minHeight: 18,
         overflow: "hidden",
         cursor: "pointer",
         "&:hover": { filter: "brightness(0.88)" },
         transition: "filter 0.12s",
       }}
     >
-      <Icon sx={{ fontSize: "0.68rem", color: "common.white", flexShrink: 0 }} />
-      <Typography
-        variant="caption"
-        noWrap
-        sx={{ color: "common.white", fontSize: "0.65rem", fontWeight: 600, lineHeight: 1.3 }}
-      >
-        {event.title}
-      </Typography>
+      {/* L'icona compare all'inizio dell'evento (o quando mostriamo il titolo) */}
+      {(!multiDay || segment?.isStart || showTitle) && (
+        <Icon sx={{ fontSize: "0.68rem", color: "common.white", flexShrink: 0 }} />
+      )}
+      {showTitle && (
+        <Typography
+          variant="caption"
+          noWrap
+          sx={{ color: "common.white", fontSize: "0.65rem", fontWeight: 600, lineHeight: 1.3 }}
+        >
+          {event.title}
+          {multiDay && !segment?.isStart ? " (cont.)" : ""}
+        </Typography>
+      )}
     </Box>
   );
 }
@@ -843,8 +916,21 @@ function DayEventsDialog({
                       {ev.title}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {format(new Date(ev.date), "HH:mm")}
-                      {ev.endDate && ` – ${format(new Date(ev.endDate), "HH:mm")}`}
+                      {(() => {
+                        const seg = getDaySegment(ev, day);
+                        if (seg.multiDay) {
+                          // Evento su più giorni: mostra l'intervallo di date
+                          return `${format(new Date(ev.date), "d MMM", { locale: it })} → ${format(
+                            new Date(ev.endDate!),
+                            "d MMM",
+                            { locale: it }
+                          )}`;
+                        }
+                        return (
+                          format(new Date(ev.date), "HH:mm") +
+                          (ev.endDate ? ` – ${format(new Date(ev.endDate), "HH:mm")}` : "")
+                        );
+                      })()}
                     </Typography>
                   </Box>
                   <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled", flexShrink: 0 }} />

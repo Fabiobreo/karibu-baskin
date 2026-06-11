@@ -150,12 +150,17 @@ export default function MatchFormDialog({
   const watchTeamId = watch("teamId");
   const teamsForForm = teams.filter((t) => t.season === seasonForDate(watchDate ?? ""));
   const displayTeams = teamsForForm.length > 0 ? teamsForForm : teams;
+  const hasDate = !!watchDate;
   const [error, setError] = useState("");
   const [opponentValue, setOpponentValue] = useState<OpponentOpt | null>(null);
   const [opponentInput, setOpponentInput] = useState("");
   const [opponentError, setOpponentError] = useState<string | null>(null);
   const [newCity, setNewCity] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  // Internal opponents filtered by season (same logic as "Nostra squadra").
+  // Falls back to all teams only when no date is set (field is disabled in that case anyway).
+  const internalOpponentTeams = teamsForForm.length > 0 ? teamsForForm : teams;
 
   const opponentOptions: OpponentOpt[] = [
     ...opponents.map(
@@ -167,7 +172,7 @@ export default function MatchFormDialog({
         groupKey: "external",
       })
     ),
-    ...teams
+    ...internalOpponentTeams
       .filter((t) => t.id !== watchTeamId)
       .map(
         (t): OpponentOpt => ({
@@ -316,10 +321,48 @@ export default function MatchFormDialog({
           {error && <Alert severity="error">{error}</Alert>}
 
           <Controller
+            name="date"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Data e ora"
+                type="datetime-local"
+                fullWidth
+                error={!!matchErrors.date}
+                helperText={matchErrors.date?.message}
+                slotProps={{ inputLabel: { shrink: true } }}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  field.onChange(newDate);
+                  const newSeason = seasonForDate(newDate);
+                  const validTeams = teams.filter((t) => t.season === newSeason);
+                  // eslint-disable-next-line react-hooks/incompatible-library
+                  const currentTeamId = watch("teamId");
+                  if (!validTeams.some((t) => t.id === currentTeamId) && validTeams[0]) {
+                    setValue("teamId", validTeams[0].id);
+                  }
+                  // Clear internal opponent when it no longer belongs to the new season
+                  setOpponentValue((prev) => {
+                    if (
+                      prev?.kind === "internal" &&
+                      validTeams.length > 0 &&
+                      !validTeams.some((t) => t.id === prev.id)
+                    ) {
+                      return null;
+                    }
+                    return prev;
+                  });
+                }}
+              />
+            )}
+          />
+
+          <Controller
             name="teamId"
             control={control}
             render={({ field }) => (
-              <FormControl fullWidth required error={!!matchErrors.teamId}>
+              <FormControl fullWidth required error={!!matchErrors.teamId} disabled={!hasDate}>
                 <InputLabel>Nostra squadra</InputLabel>
                 <Select {...field} label="Nostra squadra">
                   {displayTeams.map((t) => (
@@ -351,6 +394,7 @@ export default function MatchFormDialog({
           <Box>
             <Autocomplete<OpponentOpt, false, false, false>
               value={opponentValue}
+              disabled={!hasDate}
               onChange={(_, val) => {
                 setOpponentValue(val);
                 setOpponentError(null);
@@ -382,12 +426,15 @@ export default function MatchFormDialog({
                 return filtered;
               }}
               renderOption={(props, opt) => {
-                const { key, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & {
+                // MUI generates keys from getOptionLabel, causing duplicates when two opponents
+                // share the same name. Use a unique composite key based on kind + id instead.
+                const { key: _muiKey, ...rest } = props as React.HTMLAttributes<HTMLLIElement> & {
                   key: string;
                 };
+                const uniqueKey = opt.kind === "new" ? `new:${opt.name}` : `${opt.kind}:${opt.id}`;
                 if (opt.kind === "new") {
                   return (
-                    <li key={key} {...rest}>
+                    <li key={uniqueKey} {...rest}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <AddIcon fontSize="small" color="primary" />
                         <Typography variant="body2">
@@ -399,7 +446,7 @@ export default function MatchFormDialog({
                 }
                 if (opt.kind === "internal") {
                   return (
-                    <li key={key} {...rest}>
+                    <li key={uniqueKey} {...rest}>
                       <Box
                         sx={{
                           display: "flex",
@@ -421,7 +468,7 @@ export default function MatchFormDialog({
                   );
                 }
                 return (
-                  <li key={key} {...rest}>
+                  <li key={uniqueKey} {...rest}>
                     <Box>
                       <Typography variant="body2">{opt.name}</Typography>
                       {opt.city && (
@@ -464,33 +511,6 @@ export default function MatchFormDialog({
               </Alert>
             )}
           </Box>
-
-          <Controller
-            name="date"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Data e ora"
-                type="datetime-local"
-                fullWidth
-                error={!!matchErrors.date}
-                helperText={matchErrors.date?.message}
-                slotProps={{ inputLabel: { shrink: true } }}
-                onChange={(e) => {
-                  const newDate = e.target.value;
-                  field.onChange(newDate);
-                  const newSeason = seasonForDate(newDate);
-                  const validTeams = teams.filter((t) => t.season === newSeason);
-                  // eslint-disable-next-line react-hooks/incompatible-library
-                  const currentTeamId = watch("teamId");
-                  if (!validTeams.some((t) => t.id === currentTeamId) && validTeams[0]) {
-                    setValue("teamId", validTeams[0].id);
-                  }
-                }}
-              />
-            )}
-          />
 
           <Box sx={{ display: "flex", gap: 2 }}>
             <Controller

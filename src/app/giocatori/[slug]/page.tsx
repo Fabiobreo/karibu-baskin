@@ -597,7 +597,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             sx={{
                               fontSize: "0.65rem",
                               fontWeight: 600,
-                              color: "text.disabled",
+                              color: "rgba(255,255,255,0.75)",
                             }}
                           >
                             {m.teamName} · {m.season}
@@ -649,7 +649,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: "0.78rem",
                         fontWeight: 700,
-                        color: "text.disabled",
+                        color: "rgba(255,255,255,0.75)",
                         textTransform: "uppercase",
                         letterSpacing: "0.08em",
                       }}
@@ -673,7 +673,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: "0.72rem",
                         fontWeight: 700,
-                        color: "text.disabled",
+                        color: "rgba(255,255,255,0.75)",
                       }}
                     >
                       {t("perGame")}
@@ -695,7 +695,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: "0.72rem",
                         fontWeight: 700,
-                        color: "text.disabled",
+                        color: "rgba(255,255,255,0.75)",
                       }}
                     >
                       {matchesPlayed === 1 ? "partita" : "partite"}

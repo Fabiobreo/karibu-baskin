@@ -62,8 +62,11 @@ export async function GET(req: Request) {
       orderBy: { date: "asc" },
     }),
     prisma.event.findMany({
+      // Un evento è rilevante per il mese se si sovrappone all'intervallo:
+      // inizia prima della fine del mese E (non ha fine OR finisce dopo l'inizio del mese)
       where: {
-        OR: [{ date: { gte: start, lt: end } }, { endDate: { gte: start, lt: end } }],
+        date: { lt: end },
+        OR: [{ endDate: null }, { endDate: { gte: start } }],
       },
       orderBy: { date: "asc" },
     }),
