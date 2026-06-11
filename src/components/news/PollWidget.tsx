@@ -17,7 +17,7 @@ import {
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import LockIcon from "@mui/icons-material/Lock";
 import { formatDistanceToNow } from "date-fns";
-import { it } from "date-fns/locale";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useToast } from "@/context/ToastContext";
 import { useRouter } from "next/navigation";
 
@@ -56,6 +56,7 @@ export default function PollWidget({
   const { showToast } = useToast();
   const router = useRouter();
   const t = useTranslations("poll");
+  const dateLocale = useActiveDateLocale();
 
   const now = new Date();
   const isClosed = closesAt ? new Date(closesAt) <= now : false;
@@ -129,7 +130,8 @@ export default function PollWidget({
         )}
         {!isClosed && closesAt && (
           <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
-            {t("closes")} {formatDistanceToNow(new Date(closesAt), { addSuffix: true, locale: it })}
+            {t("closes")}{" "}
+            {formatDistanceToNow(new Date(closesAt), { addSuffix: true, locale: dateLocale })}
           </Typography>
         )}
       </Box>

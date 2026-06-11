@@ -17,6 +17,7 @@
     "retry": "Try again",
     "networkError": "Network error, please try again",
     "saveError": "Error saving",
+    "deleteError": "Error deleting",
     "genericError": "An error occurred",
     "sending": "Sending...",
     "saving": "Saving...",
@@ -255,6 +256,9 @@
     "typeLeague": "League",
     "typeTournament": "Tournament",
     "typeFriendly": "Friendly",
+    "typeLeagueShort": "League",
+    "typeTournamentShort": "Tourn.",
+    "typeFriendlyShort": "Friendly",
     "home": "Home",
     "away": "Away",
     "imminent": "Imminent",
@@ -490,7 +494,27 @@
     "noUpcomingMatches": "No upcoming matches scheduled.",
     "upcoming": "Upcoming",
     "past": "Past",
-    "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}"
+    "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
+    "availabilitiesSaved": "{count, plural, one {# availability saved} other {# availabilities saved}}",
+    "availabilitiesSaveError": "{ok} saved, {failed} failed — {error}",
+    "notificationsSection": "Notifications",
+    "guestPending": "Your account is awaiting approval from the admin.",
+    "seasonLabel": "Season {season}",
+    "gdprExportNote": "You can download a copy of your personal data and that of your linked children under GDPR art. 20.",
+    "gdprDeleteNote": "You have the right to request the deletion of your account and personal data under GDPR art. 17.",
+    "appRoleGUEST": "Guest",
+    "appRoleATHLETE": "Athlete",
+    "appRolePARENT": "Parent",
+    "appRoleCOACH": "Coach",
+    "appRoleADMIN": "Admin"
+  },
+  "claim": {
+    "successTitle": "Linked! {count, plural, one {# training added} other {# trainings added}} to your profile.",
+    "successNote": "You'll find them in your training count.",
+    "title": "We recognize you! Have you already attended trainings?",
+    "found": "We found {count, plural, one {one training} other {# trainings}} that someone with your same name signed up for. Select the ones that were really you:",
+    "linkSelected": "Link selected ({count})",
+    "notMe": "It wasn't me"
   },
   "poll": {
     "badge": "Poll",
@@ -703,6 +727,55 @@
     "matchdayShort": "MD{n}"
   },
   "trainings": {
+    "questionnaire": {
+      "previousAnswer": "You already answered before — previous answer: {role}. You can update it below.",
+      "mobility": {
+        "question": "How do you usually move during physical activity?",
+        "wheelchair": "I use a wheelchair",
+        "walk": "I walk, but I don't run",
+        "run": "I run"
+      },
+      "chair_autonomy": {
+        "question": "Can you move the wheelchair by yourself?",
+        "bothHands": "Yes, with both hands",
+        "oneArm": "Yes, but only with one arm",
+        "assistance": "No, I need assistance"
+      },
+      "chair_ball": {
+        "question": "Can you throw a basketball?",
+        "yes": "Yes",
+        "difficulty": "No, I have difficulty with my arms or hands"
+      },
+      "walk_speed": {
+        "question": "Can you take a few quick steps or do a short jog?",
+        "no": "No",
+        "aBit": "Yes, a little"
+      },
+      "run_quality": {
+        "question": "How would you describe your running?",
+        "slow": "Strenuous, slow or poorly coordinated",
+        "slowSub": "I struggle to run smoothly",
+        "normal": "Normal or fast",
+        "normalSub": "I can run without major problems"
+      },
+      "run_dribble": {
+        "question": "Can you dribble a basketball while running?",
+        "no": "No, or barely",
+        "basic": "Yes, at a basic level",
+        "basicSub": "I can, but with some uncertainty",
+        "well": "Yes, well and continuously",
+        "wellSub": "I dribble without problems even while running"
+      },
+      "experience": {
+        "question": "Do you have experience with basketball or other ball sports?",
+        "little": "No, or little experience",
+        "years": "Yes, years of practice"
+      }
+    },
+    "titleRequired": "Title is required",
+    "dateRequired": "Date is required",
+    "endAfterStart": "End time must be after the start",
+    "invalidScores": "Enter valid scores",
     "live": "Live now",
     "gym": "Gym",
     "next": "Upcoming trainings",

@@ -44,7 +44,8 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { Gender } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -81,10 +82,10 @@ const EMPTY_EDIT_FORM: EditFormState = { name: "", gender: "", birthDate: "" };
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
-function formatBirthDate(d: string | null): string {
+function formatBirthDate(d: string | null, dateLocale: Locale): string {
   if (!d) return "—";
   try {
-    return format(new Date(d), "d MMMM yyyy", { locale: it });
+    return format(new Date(d), "d MMMM yyyy", { locale: dateLocale });
   } catch {
     return "—";
   }
@@ -124,6 +125,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
   const { showToast } = useToast();
   const t = useTranslations("childLinker");
   const tCommon = useTranslations("common");
+  const dateLocale = useActiveDateLocale();
   const { sportRoleLabel, genderLabel } = useEntityLabels();
 
   // ── Add flow ───────────────────────────────────────────────────────────────
@@ -492,7 +494,8 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                         date: formatBirthDate(
                           typeof child.birthDate === "string"
                             ? child.birthDate
-                            : (child.birthDate as Date).toISOString()
+                            : (child.birthDate as Date).toISOString(),
+                          dateLocale
                         ),
                       })}
                     </Typography>
@@ -864,7 +867,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                           primary={u.name ?? "—"}
                           secondary={[
                             u.gender ? genderLabel(u.gender as Gender) : null,
-                            u.birthDate ? formatBirthDate(u.birthDate) : null,
+                            u.birthDate ? formatBirthDate(u.birthDate, dateLocale) : null,
                           ]
                             .filter(Boolean)
                             .join(" · ")}
@@ -924,7 +927,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                     )}
                     {foundUser.birthDate && (
                       <Typography variant="caption" color="text.secondary" display="block">
-                        {t("bornOn", { date: formatBirthDate(foundUser.birthDate) })}
+                        {t("bornOn", { date: formatBirthDate(foundUser.birthDate, dateLocale) })}
                       </Typography>
                     )}
                   </Box>

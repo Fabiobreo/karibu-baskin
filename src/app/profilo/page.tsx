@@ -1,4 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
+import { getDateFnsLocale } from "@/lib/dateLocale";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -7,7 +8,6 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import Link from "next/link";
 import SiteHeader from "@/components/layout/SiteHeader";
-import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_COLORS } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
@@ -18,7 +18,6 @@ import { mergePrefs } from "@/lib/notifPrefs";
 import LinkRequestsSection from "@/components/profile/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/training/ClaimAnonymousCard";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 
@@ -39,6 +38,7 @@ export default async function ProfiloPage() {
   const t = await getTranslations("profile");
   const tPlayers = await getTranslations("players");
   const { roleLabel, genderLabel } = await getEntityLabels();
+  const dateLocale = getDateFnsLocale(await getLocale());
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -153,7 +153,7 @@ export default async function ProfiloPage() {
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
             <Chip
-              label={ROLE_LABELS_IT[user.appRole as AppRole]}
+              label={t(`appRole${user.appRole as AppRole}`)}
               color={APP_ROLE_CHIP_COLOR[user.appRole as AppRole]}
               size="small"
               sx={{ fontWeight: 600 }}
@@ -207,7 +207,7 @@ export default async function ProfiloPage() {
 
           {user.appRole === "GUEST" && (
             <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1.5 }}>
-              Il tuo account è in attesa di approvazione da parte dell&apos;admin.
+              {t("guestPending")}
             </Typography>
           )}
         </Paper>
@@ -242,7 +242,7 @@ export default async function ProfiloPage() {
                 {user.birthDate && (
                   <Row label={tPlayers("birthDate")}>
                     <Typography variant="body2">
-                      {format(new Date(user.birthDate), "d MMMM yyyy", { locale: it })}
+                      {format(new Date(user.birthDate), "d MMMM yyyy", { locale: dateLocale })}
                     </Typography>
                   </Row>
                 )}
@@ -271,7 +271,7 @@ export default async function ProfiloPage() {
                               {roleLabel(h.sportRole)}
                             </Box>
                             {" · "}
-                            {format(new Date(h.changedAt), "d MMM yyyy", { locale: it })}
+                            {format(new Date(h.changedAt), "d MMM yyyy", { locale: dateLocale })}
                           </Typography>
                         ))}
                       </Stack>
@@ -295,9 +295,9 @@ export default async function ProfiloPage() {
             </Typography>
             <Stack spacing={1}>
               {attendanceSeasons.map(([season, count]) => (
-                <Row key={season} label={`Stagione ${season}`}>
+                <Row key={season} label={t("seasonLabel", { season })}>
                   <Chip
-                    label={`${count} allenament${count !== 1 ? "i" : "o"}`}
+                    label={t("trainingsCount", { count })}
                     size="small"
                     variant={season === currentSeason ? "filled" : "outlined"}
                     color={season === currentSeason ? "primary" : "default"}
@@ -315,7 +315,7 @@ export default async function ProfiloPage() {
         {/* Notifiche */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
           <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-            Notifiche
+            {t("notificationsSection")}
           </Typography>
           <NotificationPrefsPanel initialPrefs={mergePrefs(user.notifPrefs)} />
         </Paper>
@@ -336,8 +336,7 @@ export default async function ProfiloPage() {
         {/* Export dati personali (GDPR art. 20) */}
         <Box sx={{ mt: 2, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
           <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
-            Puoi scaricare una copia dei tuoi dati personali e di quelli dei tuoi figli collegati ai
-            sensi dell&apos;art. 20 GDPR.
+            {t("gdprExportNote")}
           </Typography>
           <a href="/api/users/me/export" download style={{ textDecoration: "none" }}>
             <Button size="small" variant="outlined" sx={{ fontSize: "0.78rem" }}>
@@ -349,8 +348,7 @@ export default async function ProfiloPage() {
         {/* Eliminazione account (GDPR art. 17) */}
         <Box sx={{ mt: 2, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
           <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
-            Hai il diritto di richiedere la cancellazione del tuo account e dei tuoi dati personali
-            ai sensi dell&apos;art. 17 GDPR.
+            {t("gdprDeleteNote")}
           </Typography>
           <Link
             href={`mailto:asdkaribubaskin@gmail.com?subject=${encodeURIComponent("Richiesta eliminazione account GDPR")}&body=${encodeURIComponent(`Salve,\n\nrichiedo l'eliminazione del mio account e di tutti i dati personali associati.\n\nEmail account: ${user.email}\n\nGrazie.`)}`}

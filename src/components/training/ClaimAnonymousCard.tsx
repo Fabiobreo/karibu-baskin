@@ -16,12 +16,16 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { alpha } from "@mui/material/styles";
+import { useTranslations } from "next-intl";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 
 type Registration = { id: string; date: Date | string; dateSlug: string | null };
 
 export default function ClaimAnonymousCard({ registrations }: { registrations: Registration[] }) {
   const router = useRouter();
+  const t = useTranslations("claim");
+  const dateLocale = useActiveDateLocale();
   const [isPending, startTransition] = useTransition();
   const [answered, setAnswered] = useState<"yes" | "no" | null>(null);
   const [claimed, setClaimed] = useState(0);
@@ -34,17 +38,21 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
       <Paper
         elevation={0}
         variant="outlined"
-        sx={{ p: 2.5, mb: 3, borderColor: "success.main", bgcolor: "success.50" }}
+        sx={(theme) => ({
+          p: 2.5,
+          mb: 3,
+          borderColor: "success.main",
+          bgcolor: alpha(theme.palette.success.main, 0.08),
+        })}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <CheckCircleIcon color="success" />
           <Box>
             <Typography variant="body2" fontWeight={700} color="success.dark">
-              Collegato! {claimed} {claimed === 1 ? "allenamento aggiunto" : "allenamenti aggiunti"}{" "}
-              al tuo profilo.
+              {t("successTitle", { count: claimed })}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Li trovi nel conteggio degli allenamenti.
+              {t("successNote")}
             </Typography>
           </Box>
         </Box>
@@ -88,13 +96,10 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
         <WarningIcon color="primary" sx={{ mt: 0.3, flexShrink: 0 }} />
         <Box sx={{ flex: 1 }}>
           <Typography variant="body2" fontWeight={700} gutterBottom>
-            Ti riconosco! Sei già stato/a agli allenamenti?
+            {t("title")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            Abbiamo trovato{" "}
-            {registrations.length === 1 ? "un allenamento" : `${registrations.length} allenamenti`}{" "}
-            a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero
-            tu:
+            {t("found", { count: registrations.length })}
           </Typography>
           <Stack spacing={0.25} sx={{ mb: 2 }}>
             {registrations.map((r) => (
@@ -110,7 +115,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
                 }
                 label={
                   <Chip
-                    label={format(new Date(r.date), "d MMMM yyyy", { locale: it })}
+                    label={format(new Date(r.date), "d MMMM yyyy", { locale: dateLocale })}
                     size="small"
                     variant="outlined"
                     sx={{ fontWeight: 600, fontSize: "0.72rem", cursor: "pointer" }}
@@ -128,7 +133,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
               disabled={isPending || selected.size === 0}
               startIcon={isPending ? <CircularProgress size={14} /> : undefined}
             >
-              Collega selezionati ({selected.size})
+              {t("linkSelected", { count: selected.size })}
             </Button>
             <Button
               variant="outlined"
@@ -136,7 +141,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
               onClick={() => setAnswered("no")}
               disabled={isPending}
             >
-              Non ero io
+              {t("notMe")}
             </Button>
           </Box>
         </Box>

@@ -8,7 +8,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { it } from "date-fns/locale";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 
 interface NotificationItemProps {
   notification: {
@@ -34,6 +34,7 @@ function NotifIcon({ type }: { type: string }) {
 
 export default function NotificationItem({ notification, onRead }: NotificationItemProps) {
   const router = useRouter();
+  const dateLocale = useActiveDateLocale();
   const { id, type, title, body, url, createdAt, isRead } = notification;
 
   function handleClick() {
@@ -76,7 +77,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
           {body}
         </Typography>
         <Typography variant="caption" color="text.disabled">
-          {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: it })}
+          {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: dateLocale })}
         </Typography>
       </Box>
       {!isRead && (

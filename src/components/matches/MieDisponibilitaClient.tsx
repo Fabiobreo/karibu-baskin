@@ -22,7 +22,9 @@ import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import Link from "next/link";
 import { format, isToday, isTomorrow } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useToast } from "@/context/ToastContext";
 import type { MatchType } from "@prisma/client";
 
@@ -51,21 +53,19 @@ interface Props {
   initialMatches: AvailabilityMatch[];
 }
 
-const MATCH_TYPE_LABEL: Record<MatchType, string> = {
-  LEAGUE: "Camp.",
-  TOURNAMENT: "Torneo",
-  FRIENDLY: "Amich.",
-};
-
 function entityKey(matchId: string, entity: AvailabilityEntity) {
   return `${matchId}:${entity.kind}:${entity.id}`;
 }
 
-function formatShortDate(iso: string, tCommon: ReturnType<typeof useTranslations>): string {
+function formatShortDate(
+  iso: string,
+  tCommon: ReturnType<typeof useTranslations>,
+  dateLocale: Locale
+): string {
   const d = new Date(iso);
   if (isToday(d)) return `${tCommon("today")} · ${format(d, "HH:mm")}`;
   if (isTomorrow(d)) return `${tCommon("tomorrow")} · ${format(d, "HH:mm")}`;
-  return format(d, "EEE d MMM · HH:mm", { locale: it });
+  return format(d, "EEE d MMM · HH:mm", { locale: dateLocale });
 }
 
 export default function MieDisponibilitaClient({ initialMatches }: Props) {
@@ -138,7 +138,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
         }).then(async (res) => {
           if (!res.ok) {
             const data = (await res.json().catch(() => ({}))) as { error?: string };
-            throw new Error(data.error ?? "Errore");
+            throw new Error(data.error ?? tCommon("error"));
           }
           return r.key;
         })
@@ -154,7 +154,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
         newOverrides.set(requests[i].key, requests[i].body.available);
         newDrafts.delete(requests[i].key);
       } else {
-        failed.push(r.reason instanceof Error ? r.reason.message : "Errore");
+        failed.push(r.reason instanceof Error ? r.reason.message : tCommon("error"));
       }
     }
     setDrafts(newDrafts);
@@ -163,12 +163,16 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
 
     if (failed.length === 0) {
       showToast({
-        message: `${okCount} ${okCount === 1 ? "disponibilità salvata" : "disponibilità salvate"}`,
+        message: t("availabilitiesSaved", { count: okCount }),
         severity: "success",
       });
     } else {
       showToast({
-        message: `${okCount} salvate, ${failed.length} fallite — ${failed[0]}`,
+        message: t("availabilitiesSaveError", {
+          ok: okCount,
+          failed: failed.length,
+          error: failed[0],
+        }),
         severity: failed.length === requests.length ? "error" : "warning",
       });
     }
@@ -184,7 +188,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
           color="text.secondary"
           variant="body2"
         >
-          Profilo
+          {t("title")}
         </MuiLink>
         <Typography variant="body2" color="text.primary">
           {t("availabilitiesTitle")}
@@ -325,6 +329,8 @@ function CompactMatchRow({
   onChange,
 }: CompactMatchRowProps) {
   const tCommon = useTranslations("common");
+  const dateLocale = useActiveDateLocale();
+  const { matchTypeShort } = useEntityLabels();
   return (
     <Paper
       elevation={0}
@@ -348,7 +354,7 @@ function CompactMatchRow({
           vs {m.opponentLabel}
         </Typography>
         <Chip
-          label={MATCH_TYPE_LABEL[m.matchType]}
+          label={matchTypeShort(m.matchType)}
           size="small"
           sx={{ height: 16, fontSize: "0.6rem", fontWeight: 700 }}
         />
@@ -357,7 +363,7 @@ function CompactMatchRow({
           color="text.secondary"
           sx={{ ml: "auto", fontWeight: 600, fontSize: "0.72rem" }}
         >
-          {formatShortDate(m.date, tCommon)}
+          {formatShortDate(m.date, tCommon, dateLocale)}
         </Typography>
       </Box>
 

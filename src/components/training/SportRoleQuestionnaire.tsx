@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Box, Typography, Paper, Button, LinearProgress, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useTranslations } from "next-intl";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 export interface SportRoleResult {
   role: number;
@@ -19,90 +21,64 @@ type StepId =
   | "experience";
 
 interface Option {
-  label: string;
-  sublabel?: string;
+  /** Chiave i18n dell'opzione dentro trainings.questionnaire.<step> */
+  labelKey: string;
+  /** Chiave i18n del sottotitolo (opzionale) */
+  sublabelKey?: string;
   next: StepId | null;
   result?: SportRoleResult;
 }
 
 interface Question {
-  question: string;
   options: Option[];
 }
 
+// Le stringhe vivono nei dizionari next-intl (trainings.questionnaire.*);
+// qui restano solo le chiavi e la logica di branching → risultato (ruolo 1-5 + variante).
 const QUESTIONS: Record<StepId, Question> = {
   mobility: {
-    question: "Come ti muovi di solito durante un'attività fisica?",
     options: [
-      { label: "Uso una sedia a rotelle", next: "chair_autonomy" },
-      { label: "Cammino, ma non corro", next: "walk_speed" },
-      { label: "Corro", next: "run_quality" },
+      { labelKey: "wheelchair", next: "chair_autonomy" },
+      { labelKey: "walk", next: "walk_speed" },
+      { labelKey: "run", next: "run_quality" },
     ],
   },
   chair_autonomy: {
-    question: "Riesci a muovere la sedia a rotelle da solo/a?",
     options: [
-      { label: "Sì, con entrambe le mani", next: "chair_ball" },
-      { label: "Sì, ma solo con un braccio", next: null, result: { role: 2, variant: "T" } },
-      { label: "No, ho bisogno di assistenza", next: null, result: { role: 1 } },
+      { labelKey: "bothHands", next: "chair_ball" },
+      { labelKey: "oneArm", next: null, result: { role: 2, variant: "T" } },
+      { labelKey: "assistance", next: null, result: { role: 1 } },
     ],
   },
   chair_ball: {
-    question: "Riesci a lanciare una palla da basket?",
     options: [
-      { label: "Sì", next: null, result: { role: 2 } },
-      {
-        label: "No, ho difficoltà con braccia o mani",
-        next: null,
-        result: { role: 2, variant: "P" },
-      },
+      { labelKey: "yes", next: null, result: { role: 2 } },
+      { labelKey: "difficulty", next: null, result: { role: 2, variant: "P" } },
     ],
   },
   walk_speed: {
-    question: "Riesci a fare qualche passo veloce o una piccola corsetta?",
     options: [
-      { label: "No", next: null, result: { role: 2 } },
-      { label: "Sì, un po'", next: null, result: { role: 2, variant: "R" } },
+      { labelKey: "no", next: null, result: { role: 2 } },
+      { labelKey: "aBit", next: null, result: { role: 2, variant: "R" } },
     ],
   },
   run_quality: {
-    question: "Come descriveresti la tua corsa?",
     options: [
-      {
-        label: "Faticosa, lenta o poco coordinata",
-        sublabel: "Faccio fatica a correre in modo fluido",
-        next: null,
-        result: { role: 3 },
-      },
-      {
-        label: "Normale o veloce",
-        sublabel: "Riesco a correre senza grossi problemi",
-        next: "run_dribble",
-      },
+      { labelKey: "slow", sublabelKey: "slowSub", next: null, result: { role: 3 } },
+      { labelKey: "normal", sublabelKey: "normalSub", next: "run_dribble" },
     ],
   },
   run_dribble: {
-    question: "Sai palleggiare una palla da basket mentre corri?",
     options: [
-      { label: "No, o a malapena", next: null, result: { role: 3 } },
-      {
-        label: "Sì, di base",
-        sublabel: "Riesco, ma con qualche incertezza",
-        next: null,
-        result: { role: 4 },
-      },
-      {
-        label: "Sì, bene e in modo continuo",
-        sublabel: "Palleggio senza problemi anche in corsa",
-        next: "experience",
-      },
+      { labelKey: "no", next: null, result: { role: 3 } },
+      { labelKey: "basic", sublabelKey: "basicSub", next: null, result: { role: 4 } },
+      { labelKey: "well", sublabelKey: "wellSub", next: "experience" },
     ],
   },
   experience: {
-    question: "Hai esperienza con il basket o altri sport con la palla?",
     options: [
-      { label: "No, o poca esperienza", next: null, result: { role: 4 } },
-      { label: "Sì, anni di pratica", next: null, result: { role: 5 } },
+      { labelKey: "little", next: null, result: { role: 4 } },
+      { labelKey: "years", next: null, result: { role: 5 } },
     ],
   },
 };
@@ -116,6 +92,9 @@ interface Props {
 }
 
 export default function SportRoleQuestionnaire({ onResult, initialSuggested }: Props) {
+  const t = useTranslations("trainings.questionnaire");
+  const tCommon = useTranslations("common");
+  const { sportRoleLabel } = useEntityLabels();
   const [history, setHistory] = useState<StepId[]>(["mobility"]);
 
   const currentStep = history[history.length - 1];
@@ -152,8 +131,9 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
           })}
         >
           <Typography variant="caption" color="info.main" fontWeight={600}>
-            Hai già risposto in precedenza — risposta precedente: Ruolo {initialSuggested.role}
-            {initialSuggested.variant ?? ""}. Puoi aggiornarlo qui sotto.
+            {t("previousAnswer", {
+              role: sportRoleLabel(initialSuggested.role, initialSuggested.variant ?? null),
+            })}
           </Typography>
         </Box>
       )}
@@ -165,7 +145,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
       />
 
       <Typography variant="body1" fontWeight={600} sx={{ mb: 2 }}>
-        {question.question}
+        {t(`${currentStep}.question`)}
       </Typography>
 
       <Stack spacing={1} sx={{ mb: 2 }}>
@@ -198,11 +178,11 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
             })}
           >
             <Typography variant="body2" fontWeight={600}>
-              {opt.label}
+              {t(`${currentStep}.${opt.labelKey}`)}
             </Typography>
-            {opt.sublabel && (
+            {opt.sublabelKey && (
               <Typography variant="caption" color="text.secondary" display="block">
-                {opt.sublabel}
+                {t(`${currentStep}.${opt.sublabelKey}`)}
               </Typography>
             )}
           </Paper>
@@ -216,7 +196,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
           onClick={handleBack}
           sx={{ color: "text.secondary" }}
         >
-          Indietro
+          {tCommon("back")}
         </Button>
       )}
     </Box>

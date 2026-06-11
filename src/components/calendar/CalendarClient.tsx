@@ -4,6 +4,7 @@ import { alpha } from "@mui/material/styles";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { useEntityLabels } from "@/hooks/useEntityLabels";
 import {
   Box,
   Typography,
@@ -55,7 +56,6 @@ import {
   startOfDay,
   getDay,
 } from "date-fns";
-import { it } from "date-fns/locale";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { useToast } from "@/context/ToastContext";
 import SessionRestrictionEditor, {
@@ -63,11 +63,6 @@ import SessionRestrictionEditor, {
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
 
-const RESULT_LABELS: Record<string, string> = {
-  WIN: "Vittoria",
-  LOSS: "Sconfitta",
-  DRAW: "Pareggio",
-};
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
   LOSS: "match.loss",
@@ -657,6 +652,8 @@ function EventDetailDialog({
 }) {
   const t = useTranslations("calendar");
   const tCommon = useTranslations("common");
+  const dateLocale = useActiveDateLocale();
+  const { matchResultLabel } = useEntityLabels();
   if (!event) return null;
 
   const Icon =
@@ -680,9 +677,9 @@ function EventDetailDialog({
 
   const dateLabel = dateEnd
     ? isSameDay_
-      ? `${format(dateStart, "EEEE d MMMM yyyy", { locale: it })} · ${format(dateStart, "HH:mm")}–${format(dateEnd, "HH:mm")}`
-      : `${format(dateStart, "d MMM yyyy", { locale: it })} → ${format(dateEnd, "d MMM yyyy", { locale: it })}`
-    : `${format(dateStart, "EEEE d MMMM yyyy", { locale: it })} · ore ${format(dateStart, "HH:mm")}`;
+      ? `${format(dateStart, "EEEE d MMMM yyyy", { locale: dateLocale })} · ${format(dateStart, "HH:mm")}–${format(dateEnd, "HH:mm")}`
+      : `${format(dateStart, "d MMM yyyy", { locale: dateLocale })} → ${format(dateEnd, "d MMM yyyy", { locale: dateLocale })}`
+    : `${format(dateStart, "EEEE d MMMM yyyy", { locale: dateLocale })} · ${format(dateStart, "HH:mm")}`;
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
@@ -779,7 +776,7 @@ function EventDetailDialog({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Box sx={{ width: 20, height: 20, flexShrink: 0 }} />
               <Chip
-                label={RESULT_LABELS[event.result]}
+                label={matchResultLabel(event.result as "WIN" | "LOSS" | "DRAW")}
                 size="small"
                 sx={{
                   bgcolor: RESULT_COLORS[event.result] ?? "grey.500",
@@ -837,12 +834,13 @@ function DayEventsDialog({
 }) {
   const t = useTranslations("calendar");
   const tCommon = useTranslations("common");
+  const dateLocale = useActiveDateLocale();
   if (!day) return null;
 
   const sorted = [...events].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-  const dayLabel = format(day, "EEEE d MMMM", { locale: it });
+  const dayLabel = format(day, "EEEE d MMMM", { locale: dateLocale });
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
@@ -920,10 +918,10 @@ function DayEventsDialog({
                         const seg = getDaySegment(ev, day);
                         if (seg.multiDay) {
                           // Evento su più giorni: mostra l'intervallo di date
-                          return `${format(new Date(ev.date), "d MMM", { locale: it })} → ${format(
+                          return `${format(new Date(ev.date), "d MMM", { locale: dateLocale })} → ${format(
                             new Date(ev.endDate!),
                             "d MMM",
-                            { locale: it }
+                            { locale: dateLocale }
                           )}`;
                         }
                         return (
@@ -1006,6 +1004,7 @@ function CreateEventDialog({
   onCreated: () => void;
 }) {
   const { showToast } = useToast();
+  const dateLocale = useActiveDateLocale();
   const [tab, setTab] = useState<CreateType>("training");
   const [loading, setLoading] = useState(false);
 
@@ -1038,7 +1037,7 @@ function CreateEventDialog({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const dateStr = day ? format(day, "yyyy-MM-dd") : "";
-  const dateLabelFull = day ? format(day, "EEEE d MMMM yyyy", { locale: it }) : "";
+  const dateLabelFull = day ? format(day, "EEEE d MMMM yyyy", { locale: dateLocale }) : "";
 
   // Load teams/opponents when match tab is selected
   useEffect(() => {

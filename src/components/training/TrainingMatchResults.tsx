@@ -77,6 +77,7 @@ function MatchupSlot({
   const { teamColorLabel } = useEntityLabels();
   const t = useTranslations("trainings");
   const tm = useTranslations("matches");
+  const tCommon = useTranslations("common");
   const team1Name = teamColorLabel(team1.key);
   const team2Name = teamColorLabel(team2.key);
   const [editing, setEditing] = useState(false);
@@ -96,7 +97,7 @@ function MatchupSlot({
     const s1 = parseInt(score1, 10);
     const s2 = parseInt(score2, 10);
     if (isNaN(s1) || isNaN(s2) || s1 < 0 || s2 < 0) {
-      showToast({ message: "Inserisci punteggi validi", severity: "error" });
+      showToast({ message: t("invalidScores"), severity: "error" });
       return;
     }
     setSaving(true);
@@ -118,10 +119,10 @@ function MatchupSlot({
         onSaved();
       } else {
         const data = await res.json().catch(() => ({}));
-        showToast({ message: data.error ?? "Errore nel salvataggio", severity: "error" });
+        showToast({ message: data.error ?? tCommon("saveError"), severity: "error" });
       }
     } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setSaving(false);
     }
@@ -137,10 +138,10 @@ function MatchupSlot({
       if (res.ok) {
         onDeleted();
       } else {
-        showToast({ message: "Errore durante l'eliminazione", severity: "error" });
+        showToast({ message: tCommon("deleteError"), severity: "error" });
       }
     } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setDeleting(false);
     }

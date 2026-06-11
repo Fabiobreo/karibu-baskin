@@ -17,6 +17,7 @@
     "retry": "Riprova",
     "networkError": "Errore di rete, riprova",
     "saveError": "Errore nel salvataggio",
+    "deleteError": "Errore durante l'eliminazione",
     "genericError": "Si è verificato un errore",
     "sending": "Invio in corso...",
     "saving": "Salvataggio...",
@@ -255,6 +256,9 @@
     "typeLeague": "Campionato",
     "typeTournament": "Torneo",
     "typeFriendly": "Amichevole",
+    "typeLeagueShort": "Camp.",
+    "typeTournamentShort": "Torneo",
+    "typeFriendlyShort": "Amich.",
     "home": "Casa",
     "away": "Trasferta",
     "imminent": "Imminente",
@@ -490,7 +494,27 @@
     "noUpcomingMatches": "Nessuna partita futura programmata.",
     "upcoming": "Prossime",
     "past": "Passate",
-    "pendingChanges": "{count, plural, one {# modifica da salvare} other {# modifiche da salvare}}"
+    "pendingChanges": "{count, plural, one {# modifica da salvare} other {# modifiche da salvare}}",
+    "availabilitiesSaved": "{count, plural, one {# disponibilità salvata} other {# disponibilità salvate}}",
+    "availabilitiesSaveError": "{ok} salvate, {failed} fallite — {error}",
+    "notificationsSection": "Notifiche",
+    "guestPending": "Il tuo account è in attesa di approvazione da parte dell'admin.",
+    "seasonLabel": "Stagione {season}",
+    "gdprExportNote": "Puoi scaricare una copia dei tuoi dati personali e di quelli dei tuoi figli collegati ai sensi dell'art. 20 GDPR.",
+    "gdprDeleteNote": "Hai il diritto di richiedere la cancellazione del tuo account e dei tuoi dati personali ai sensi dell'art. 17 GDPR.",
+    "appRoleGUEST": "Ospite",
+    "appRoleATHLETE": "Atleta",
+    "appRolePARENT": "Genitore",
+    "appRoleCOACH": "Allenatore",
+    "appRoleADMIN": "Admin"
+  },
+  "claim": {
+    "successTitle": "Collegato! {count, plural, one {# allenamento aggiunto} other {# allenamenti aggiunti}} al tuo profilo.",
+    "successNote": "Li trovi nel conteggio degli allenamenti.",
+    "title": "Ti riconosco! Sei già stato/a agli allenamenti?",
+    "found": "Abbiamo trovato {count, plural, one {un allenamento} other {# allenamenti}} a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero tu:",
+    "linkSelected": "Collega selezionati ({count})",
+    "notMe": "Non ero io"
   },
   "poll": {
     "badge": "Sondaggio",
@@ -703,6 +727,55 @@
     "matchdayShort": "G{n}"
   },
   "trainings": {
+    "questionnaire": {
+      "previousAnswer": "Hai già risposto in precedenza — risposta precedente: {role}. Puoi aggiornarla qui sotto.",
+      "mobility": {
+        "question": "Come ti muovi di solito durante un'attività fisica?",
+        "wheelchair": "Uso una sedia a rotelle",
+        "walk": "Cammino, ma non corro",
+        "run": "Corro"
+      },
+      "chair_autonomy": {
+        "question": "Riesci a muovere la sedia a rotelle da solo/a?",
+        "bothHands": "Sì, con entrambe le mani",
+        "oneArm": "Sì, ma solo con un braccio",
+        "assistance": "No, ho bisogno di assistenza"
+      },
+      "chair_ball": {
+        "question": "Riesci a lanciare una palla da basket?",
+        "yes": "Sì",
+        "difficulty": "No, ho difficoltà con braccia o mani"
+      },
+      "walk_speed": {
+        "question": "Riesci a fare qualche passo veloce o una piccola corsetta?",
+        "no": "No",
+        "aBit": "Sì, un po'"
+      },
+      "run_quality": {
+        "question": "Come descriveresti la tua corsa?",
+        "slow": "Faticosa, lenta o poco coordinata",
+        "slowSub": "Faccio fatica a correre in modo fluido",
+        "normal": "Normale o veloce",
+        "normalSub": "Riesco a correre senza grossi problemi"
+      },
+      "run_dribble": {
+        "question": "Sai palleggiare una palla da basket mentre corri?",
+        "no": "No, o a malapena",
+        "basic": "Sì, di base",
+        "basicSub": "Riesco, ma con qualche incertezza",
+        "well": "Sì, bene e in modo continuo",
+        "wellSub": "Palleggio senza problemi anche in corsa"
+      },
+      "experience": {
+        "question": "Hai esperienza con il basket o altri sport con la palla?",
+        "little": "No, o poca esperienza",
+        "years": "Sì, anni di pratica"
+      }
+    },
+    "titleRequired": "Il titolo è obbligatorio",
+    "dateRequired": "La data è obbligatoria",
+    "endAfterStart": "L'orario di fine deve essere dopo l'inizio",
+    "invalidScores": "Inserisci punteggi validi",
     "live": "In corso",
     "gym": "Palestra",
     "next": "Prossimi allenamenti",

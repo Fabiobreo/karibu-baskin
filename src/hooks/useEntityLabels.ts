@@ -1,6 +1,6 @@
 "use client";
 import { useTranslations } from "next-intl";
-import type { Gender } from "@prisma/client";
+import type { Gender, MatchType } from "@prisma/client";
 
 type MatchResult = "WIN" | "LOSS" | "DRAW";
 
@@ -26,5 +26,17 @@ export function useEntityLabels() {
         : r === "LOSS"
           ? tm("resultLossShort")
           : tm("resultDrawShort"),
+    matchTypeLabel: (ty: MatchType) =>
+      ty === "LEAGUE"
+        ? tm("typeLeague")
+        : ty === "TOURNAMENT"
+          ? tm("typeTournament")
+          : tm("typeFriendly"),
+    matchTypeShort: (ty: MatchType) =>
+      ty === "LEAGUE"
+        ? tm("typeLeagueShort")
+        : ty === "TOURNAMENT"
+          ? tm("typeTournamentShort")
+          : tm("typeFriendlyShort"),
   };
 }

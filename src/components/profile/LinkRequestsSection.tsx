@@ -18,7 +18,8 @@ import { ROLE_COLORS } from "@/lib/constants";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import type { Locale } from "date-fns";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { Gender } from "@prisma/client";
 
 interface LinkRequest {
@@ -40,10 +41,10 @@ interface LinkRequest {
   createdAt: string;
 }
 
-function formatBirthDate(d: string | null): string {
+function formatBirthDate(d: string | null, dateLocale: Locale): string {
   if (!d) return "";
   try {
-    return format(new Date(d), "d MMMM yyyy", { locale: it });
+    return format(new Date(d), "d MMMM yyyy", { locale: dateLocale });
   } catch {
     return "";
   }
@@ -57,6 +58,7 @@ export default function LinkRequestsSection() {
   const t = useTranslations("linkRequests");
   const tCommon = useTranslations("common");
   const { sportRoleLabel, genderLabel } = useEntityLabels();
+  const dateLocale = useActiveDateLocale();
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -145,7 +147,7 @@ export default function LinkRequestsSection() {
                     : ""}
                   {req.child.gender ? ` · ${genderLabel(req.child.gender)}` : ""}
                   {req.child.birthDate
-                    ? ` · ${t("bornOn", { date: formatBirthDate(req.child.birthDate) })}`
+                    ? ` · ${t("bornOn", { date: formatBirthDate(req.child.birthDate, dateLocale) })}`
                     : ""}
                 </Typography>
                 {req.child.sportRole && (

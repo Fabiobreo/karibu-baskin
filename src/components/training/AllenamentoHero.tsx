@@ -29,7 +29,7 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import NextLink from "next/link";
 import { format } from "date-fns";
-import { it } from "date-fns/locale";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import ShareSection from "@/components/common/ShareSection";
 import SessionRestrictionEditor, {
   seasonForDate,
@@ -104,6 +104,7 @@ export default function AllenamientoHero({
   const t = useTranslations("trainings");
   const tCommon = useTranslations("common");
   const tRoles = useTranslations("roles");
+  const dateLocale = useActiveDateLocale();
   const status = getSessionStatus(sessionDate, sessionEnd, t, tCommon);
 
   const [sessionUrl] = useState(() => (typeof window !== "undefined" ? window.location.href : ""));
@@ -135,15 +136,15 @@ export default function AllenamientoHero({
 
   async function handleSaveEdit() {
     if (!editTitle.trim()) {
-      setEditError("Il titolo è obbligatorio");
+      setEditError(t("titleRequired"));
       return;
     }
     if (!editDate) {
-      setEditError("La data è obbligatoria");
+      setEditError(t("dateRequired"));
       return;
     }
     if (editEndTime && editEndTime <= editTime) {
-      setEditError("L'orario di fine deve essere dopo l'inizio");
+      setEditError(t("endAfterStart"));
       return;
     }
     setEditLoading(true);
@@ -167,13 +168,13 @@ export default function AllenamientoHero({
       });
       if (!res.ok) {
         const data = await res.json();
-        setEditError(data.error ?? "Errore nel salvataggio");
+        setEditError(data.error ?? tCommon("saveError"));
         return;
       }
       setEditOpen(false);
       onSessionSaved(dateSlug);
     } catch {
-      setEditError("Errore di rete, riprova");
+      setEditError(tCommon("networkError"));
     } finally {
       setEditLoading(false);
     }
@@ -430,7 +431,7 @@ export default function AllenamientoHero({
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <CalendarTodayIcon sx={{ fontSize: 16 }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {format(sessionDate, "EEEE d MMMM yyyy", { locale: it })}
+                {format(sessionDate, "EEEE d MMMM yyyy", { locale: dateLocale })}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
