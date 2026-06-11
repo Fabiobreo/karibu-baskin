@@ -52,6 +52,7 @@ import {
   ATHLETE_STATUS_CHIP_COLORS,
 } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -1007,7 +1008,11 @@ export default function AdminUserList({
                           cursor: "pointer",
                           fontWeight: active ? 700 : 400,
                           ...(active && t.color
-                            ? { bgcolor: t.color, color: "#fff", borderColor: t.color }
+                            ? {
+                                bgcolor: t.color,
+                                color: contrastText(t.color),
+                                borderColor: t.color,
+                              }
                             : {}),
                         }}
                         avatar={
@@ -1421,7 +1426,7 @@ export default function AdminUserList({
                             size="small"
                             sx={{
                               bgcolor: team.color ?? "primary.main",
-                              color: "common.white",
+                              color: contrastText(team.color),
                               fontWeight: 600,
                               fontSize: "0.68rem",
                             }}
@@ -1819,7 +1824,7 @@ export default function AdminUserList({
                             size="small"
                             sx={{
                               bgcolor: team.color ?? "primary.main",
-                              color: "common.white",
+                              color: contrastText(team.color),
                               fontWeight: 600,
                               fontSize: "0.68rem",
                             }}

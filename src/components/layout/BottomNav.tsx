@@ -50,17 +50,18 @@ export default function BottomNav() {
         left: 0,
         right: 0,
         zIndex: 1200,
-        borderTop: "1px solid rgba(255,255,255,0.08)",
+        borderTop: "1px solid",
+        borderColor: "divider",
       }}
     >
       <BottomNavigation
         value={active}
         onChange={(_e, val: string) => router.push(val)}
         sx={{
-          background: "#1A1A1A",
+          bgcolor: "background.paper",
           height: 60,
           "& .MuiBottomNavigationAction-root": {
-            color: "rgba(255,255,255,0.45)",
+            color: "text.secondary",
             minWidth: 0,
             "& .MuiBottomNavigationAction-label": {
               fontSize: "0.65rem",
@@ -115,7 +116,8 @@ export default function BottomNav() {
                   width: 24,
                   height: 24,
                   fontSize: "0.65rem",
-                  bgcolor: active === "/profilo" ? "primary.main" : "rgba(255,255,255,0.2)",
+                  bgcolor: active === "/profilo" ? "primary.main" : "action.selected",
+                  color: active === "/profilo" ? "primary.contrastText" : "text.primary",
                 }}
               >
                 {!(user.customImage ?? user.image) && initials}
@@ -128,7 +130,7 @@ export default function BottomNav() {
       </BottomNavigation>
 
       {/* Safe area per iPhone (home indicator) */}
-      <Box sx={{ height: "env(safe-area-inset-bottom, 0px)", background: "#1A1A1A" }} />
+      <Box sx={{ height: "env(safe-area-inset-bottom, 0px)", bgcolor: "background.paper" }} />
     </Paper>
   );
 }

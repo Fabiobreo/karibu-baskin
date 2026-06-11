@@ -2,6 +2,7 @@ import { Avatar, Box, Chip, Paper, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { ROLE_COLORS } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 
 export default async function AthleteCard({
@@ -42,6 +43,7 @@ export default async function AthleteCard({
           width: 48,
           height: 48,
           bgcolor: teamColor,
+          color: contrastText(teamColor),
           fontSize: 18,
           fontWeight: 800,
           flexShrink: 0,

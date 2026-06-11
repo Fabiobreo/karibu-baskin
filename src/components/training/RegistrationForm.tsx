@@ -17,6 +17,7 @@ import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_COLORS, ROLES } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 import { getCurrentSeason } from "@/lib/seasonUtils";
@@ -343,7 +344,7 @@ export default function RegistrationForm({
                             fontSize: "0.65rem",
                             fontWeight: 700,
                             bgcolor: m.teamColor ?? "primary.main",
-                            color: "#fff",
+                            color: contrastText(m.teamColor),
                             "& .MuiChip-label": { px: 0.75 },
                           }}
                         />
@@ -377,7 +378,7 @@ export default function RegistrationForm({
                               fontSize: "0.65rem",
                               fontWeight: 700,
                               bgcolor: m.teamColor ?? "primary.main",
-                              color: "#fff",
+                              color: contrastText(m.teamColor),
                               "& .MuiChip-label": { px: 0.75 },
                             }}
                           />

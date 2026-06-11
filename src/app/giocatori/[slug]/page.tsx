@@ -25,6 +25,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ROLE_COLORS, sportRoleLabel as sportRoleLabelRaw } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadges } from "@/lib/badges";
 import { slugify } from "@/lib/slugUtils";
@@ -517,7 +518,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     size="small"
                     sx={{
                       bgcolor: m.team.color ?? "text.primary",
-                      color: "common.white",
+                      color: contrastText(m.team.color),
                       fontWeight: 700,
                       fontSize: "0.72rem",
                     }}

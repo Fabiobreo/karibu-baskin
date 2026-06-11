@@ -8,6 +8,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
+import { contrastText } from "@/lib/colorUtils";
 import { MATCH_RESULT_META } from "@/lib/matchResults";
 import type { AnyMatch } from "./types";
 
@@ -101,7 +102,7 @@ export default async function NextMatchCard({
             <Box
               sx={{
                 bgcolor: teamColor,
-                color: "common.white",
+                color: contrastText(teamColor),
                 px: 1,
                 py: 0.4,
                 fontSize: "0.62rem",
@@ -227,7 +228,7 @@ export default async function NextMatchCard({
                   size="small"
                   sx={{
                     bgcolor: teamColor,
-                    color: "common.white",
+                    color: contrastText(teamColor),
                     fontWeight: 800,
                     fontSize: "0.6rem",
                     height: 18,
@@ -301,7 +302,7 @@ export default async function NextMatchCard({
                 height: { xs: 44, md: 54 },
                 borderRadius: "50%",
                 bgcolor: teamColor,
-                color: "common.white",
+                color: contrastText(teamColor),
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

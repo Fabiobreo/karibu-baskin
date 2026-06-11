@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { slugify } from "@/lib/slugUtils";
+import { contrastText } from "@/lib/colorUtils";
 import type { StandingEntry } from "@/lib/standings";
 
 export type OurMatchData = {
@@ -134,7 +135,11 @@ export default function GironeFullView({
             key={t.id}
             label={t.name}
             size="small"
-            sx={{ bgcolor: t.color ?? "primary.main", color: "#fff", fontWeight: 700 }}
+            sx={{
+              bgcolor: t.color ?? "primary.main",
+              color: contrastText(t.color),
+              fontWeight: 700,
+            }}
           />
         ))}
         <Typography variant="subtitle2" fontWeight={700}>

@@ -9,6 +9,7 @@ import Link from "next/link";
 import SiteHeader from "@/components/layout/SiteHeader";
 import { ROLE_LABELS_IT } from "@/lib/authRoles";
 import { ROLE_COLORS } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/profile/ParentChildLinker";
@@ -170,7 +171,11 @@ export default async function ProfiloPage() {
                 key={m.id}
                 label={m.team.name}
                 size="small"
-                sx={{ fontWeight: 700, bgcolor: m.team.color ?? "primary.main", color: "#fff" }}
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: m.team.color ?? "primary.main",
+                  color: contrastText(m.team.color),
+                }}
               />
             ))}
           </Box>

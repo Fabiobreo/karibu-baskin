@@ -25,6 +25,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Link from "next/link";
 import { ROLE_COLORS } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
@@ -449,7 +450,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 sx={{
                   fontSize: { xs: "2.4rem", sm: "3.2rem" },
                   fontWeight: 900,
-                  color: "#fff",
+                  color: contrastText(teamColor),
                   lineHeight: 1,
                   textShadow: "0 2px 8px rgba(0,0,0,0.3)",
                 }}
@@ -467,7 +468,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   mb: 1,
                   fontWeight: 700,
                   bgcolor: teamColor,
-                  color: "#fff",
+                  color: contrastText(teamColor),
                   fontSize: "0.7rem",
                 }}
               />

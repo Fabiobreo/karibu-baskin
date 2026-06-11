@@ -39,6 +39,7 @@ import {
   type RoleGroupKey,
 } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { contrastText } from "@/lib/colorUtils";
 import type { Gender } from "@prisma/client";
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
@@ -305,7 +306,7 @@ export default function AdminRosaClient({
           px: 2.5,
           py: 1.5,
           bgcolor: teamColor,
-          color: "common.white",
+          color: contrastText(teamColor),
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -652,7 +653,13 @@ function MemberRow({
     >
       <Avatar
         src={image ?? undefined}
-        sx={{ width: 32, height: 32, fontSize: 13, bgcolor: teamColor }}
+        sx={{
+          width: 32,
+          height: 32,
+          fontSize: 13,
+          bgcolor: teamColor,
+          color: contrastText(teamColor),
+        }}
       >
         {name[0]?.toUpperCase()}
       </Avatar>

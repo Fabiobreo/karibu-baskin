@@ -28,6 +28,7 @@ import { MATCH_RESULT_META } from "@/lib/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
+import { contrastText } from "@/lib/colorUtils";
 
 export const revalidate = 60;
 
@@ -458,7 +459,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 size="small"
                                 sx={{
                                   bgcolor: m.team.color ?? "primary.main",
-                                  color: "#fff",
+                                  color: contrastText(m.team.color),
                                   fontWeight: 700,
                                   fontSize: "0.68rem",
                                   height: 20,

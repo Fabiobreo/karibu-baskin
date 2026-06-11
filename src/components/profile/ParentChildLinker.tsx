@@ -38,6 +38,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useToast } from "@/context/ToastContext";
 import { ROLE_COLORS } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { Gender } from "@prisma/client";
@@ -442,7 +443,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                           size="small"
                           sx={{
                             bgcolor: m.team.color ?? "primary.main",
-                            color: "#fff",
+                            color: contrastText(m.team.color),
                             fontWeight: 700,
                             fontSize: "0.7rem",
                           }}

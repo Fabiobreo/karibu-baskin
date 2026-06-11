@@ -20,6 +20,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import { ROLE_COLORS } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
@@ -352,7 +353,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                               size="small"
                               sx={{
                                 bgcolor: t.color ?? "primary.main",
-                                color: "#fff",
+                                color: contrastText(t.color),
                                 fontWeight: 600,
                                 fontSize: "0.58rem",
                                 height: 14,
@@ -483,7 +484,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           size="small"
                           sx={{
                             bgcolor: t.color ?? "primary.main",
-                            color: "common.white",
+                            color: contrastText(t.color),
                             fontWeight: 600,
                             fontSize: "0.6rem",
                             height: 16,

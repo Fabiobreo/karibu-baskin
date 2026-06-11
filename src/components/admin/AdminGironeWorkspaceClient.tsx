@@ -30,6 +30,7 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
+import { contrastText } from "@/lib/colorUtils";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -413,7 +414,7 @@ export default function AdminGironeWorkspaceClient({
               label={t.name}
               sx={{
                 bgcolor: t.color ?? "primary.main",
-                color: "#fff",
+                color: contrastText(t.color),
                 fontWeight: 700,
               }}
             />
@@ -468,7 +469,7 @@ export default function AdminGironeWorkspaceClient({
                   size="small"
                   sx={{
                     bgcolor: t.color ?? "primary.main",
-                    color: "#fff",
+                    color: contrastText(t.color),
                     fontWeight: 700,
                   }}
                   onDelete={

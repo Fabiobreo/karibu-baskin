@@ -193,12 +193,12 @@ export default async function HomePage() {
                     </Box>
                     {i < storia.length - 1 && (
                       <Box
-                        sx={{
+                        sx={(theme) => ({
                           width: 2,
                           flex: 1,
-                          backgroundColor: alpha("#E65100", 0.2),
+                          backgroundColor: alpha(theme.palette.primary.main, 0.2),
                           my: 0.5,
-                        }}
+                        })}
                       />
                     )}
                   </Box>

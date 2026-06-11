@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Box, Typography, Paper, Button, LinearProgress, Stack } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export interface SportRoleResult {
@@ -141,14 +142,14 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
     <Box>
       {initialSuggested && (
         <Box
-          sx={{
+          sx={(theme) => ({
             mb: 2,
             p: 1.5,
-            bgcolor: "info.50",
+            bgcolor: alpha(theme.palette.info.main, 0.08),
             border: "1px solid",
-            borderColor: "info.200",
+            borderColor: alpha(theme.palette.info.main, 0.3),
             borderRadius: 1,
-          }}
+          })}
         >
           <Typography variant="caption" color="info.main" fontWeight={600}>
             Hai già risposto in precedenza — risposta precedente: Ruolo {initialSuggested.role}
@@ -160,7 +161,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
       <LinearProgress
         variant="determinate"
         value={progress}
-        sx={{ height: 3, borderRadius: 2, mb: 2.5, bgcolor: "grey.200" }}
+        sx={{ height: 3, borderRadius: 2, mb: 2.5, bgcolor: "action.hover" }}
       />
 
       <Typography variant="body1" fontWeight={600} sx={{ mb: 2 }}>
@@ -181,20 +182,20 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
                 handleOption(opt);
               }
             }}
-            sx={{
+            sx={(theme) => ({
               p: 1.5,
               cursor: "pointer",
               transition: "all 0.15s",
               "&:hover": {
                 borderColor: "primary.main",
-                bgcolor: "primary.50",
+                bgcolor: alpha(theme.palette.primary.main, 0.06),
               },
               "&:focus-visible": {
                 outline: "2px solid",
                 outlineColor: "primary.main",
                 outlineOffset: 2,
               },
-            }}
+            })}
           >
             <Typography variant="body2" fontWeight={600}>
               {opt.label}

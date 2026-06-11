@@ -41,6 +41,8 @@ export const ROLE_LABELS: Record<number, string> = {
   5: "Ruolo 5",
 };
 
+// Vincolo: tutti i colori devono restare abbastanza scuri da reggere testo bianco
+// (i call-site usano color: "#fff" fisso; per colori dinamici dal DB usare contrastText di colorUtils)
 export const ROLE_COLORS: Record<number, string> = {
   1: "#1565C0", // blu scuro
   2: "#2E7D32", // verde scuro

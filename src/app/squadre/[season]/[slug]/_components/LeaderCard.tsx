@@ -3,6 +3,7 @@ import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import Link from "next/link";
+import { contrastText } from "@/lib/colorUtils";
 
 export default function LeaderCard({
   rank,
@@ -70,7 +71,14 @@ export default function LeaderCard({
       </Box>
       <Avatar
         src={leader.image ?? undefined}
-        sx={{ width: 52, height: 52, bgcolor: teamColor, fontSize: 20, fontWeight: 800 }}
+        sx={{
+          width: 52,
+          height: 52,
+          bgcolor: teamColor,
+          color: contrastText(teamColor),
+          fontSize: 20,
+          fontWeight: 800,
+        }}
       >
         {leader.name[0]?.toUpperCase()}
       </Avatar>

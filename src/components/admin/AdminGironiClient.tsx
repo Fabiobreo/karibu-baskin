@@ -28,6 +28,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { contrastText } from "@/lib/colorUtils";
 
 type CompetitiveTeamLite = { id: string; name: string; color: string | null; season: string };
 type GroupCompetitiveTeam = { competitiveTeam: CompetitiveTeamLite };
@@ -223,7 +224,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                             size="small"
                             sx={{
                               bgcolor: t.color ?? "primary.main",
-                              color: "#fff",
+                              color: contrastText(t.color),
                               fontWeight: 700,
                               fontSize: "0.68rem",
                             }}
