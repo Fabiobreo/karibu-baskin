@@ -3,7 +3,17 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Container, Typography, Box, Paper, Chip, Divider, Stack, Button } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Chip,
+  Divider,
+  Stack,
+  Button,
+  Badge,
+} from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import Link from "next/link";
@@ -17,6 +27,8 @@ import NotificationPrefsPanel from "@/components/profile/NotificationPrefsPanel"
 import { mergePrefs } from "@/lib/notifPrefs";
 import LinkRequestsSection from "@/components/profile/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/training/ClaimAnonymousCard";
+import GuestWelcomeBanner from "@/components/common/GuestWelcomeBanner";
+import { countPendingAvailabilities } from "@/lib/availabilityPending";
 import { format } from "date-fns";
 import { getCurrentSeason } from "@/lib/seasonUtils";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
@@ -81,6 +93,8 @@ export default async function ProfiloPage() {
 
   if (!user) redirect("/login");
 
+  const pendingAvailabilities = await countPendingAvailabilities(user.id);
+
   const effectiveRole = session.user.appRole as AppRole;
   const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
   const isAthlete =
@@ -123,6 +137,12 @@ export default async function ProfiloPage() {
         <Typography variant="h4" fontWeight={800} gutterBottom>
           {t("title")}
         </Typography>
+
+        {user.appRole === "GUEST" && (
+          <Box sx={{ mb: 3 }}>
+            <GuestWelcomeBanner />
+          </Box>
+        )}
 
         {anonymousMatches.length > 0 && (
           <ClaimAnonymousCard
@@ -194,14 +214,16 @@ export default async function ProfiloPage() {
               </Link>
             )}
             <Link href="/profilo/disponibilita" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
-                sx={{ fontSize: "0.78rem", fontWeight: 600 }}
-              >
-                {t("myAvailabilities")}
-              </Button>
+              <Badge badgeContent={pendingAvailabilities} color="warning" max={99}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
+                  sx={{ fontSize: "0.78rem", fontWeight: 600 }}
+                >
+                  {t("myAvailabilities")}
+                </Button>
+              </Badge>
             </Link>
           </Stack>
 

@@ -489,7 +489,7 @@
     "trainingsCount": "{count, plural, one {# training} other {# trainings}}",
     "availabilitiesTitle": "Availability",
     "myAvailabilities": "My availabilities",
-    "availabilitiesDesc": "Tap 'Yes' or 'No' for each match, then save at the bottom. If you don't respond, the coach sees you as unavailable.",
+    "availabilitiesDesc": "Tap 'Yes' or 'No' for each match: your answer is saved right away. If you don't respond, the coach sees you as unavailable.",
     "noMatchesForTeams": "No matches found for your teams.",
     "noUpcomingMatches": "No upcoming matches scheduled.",
     "upcoming": "Upcoming",
@@ -502,11 +502,19 @@
     "seasonLabel": "Season {season}",
     "gdprExportNote": "You can download a copy of your personal data and that of your linked children under GDPR art. 20.",
     "gdprDeleteNote": "You have the right to request the deletion of your account and personal data under GDPR art. 17.",
+    "pendingAvailabilities": "You have {count, plural, one {# availability to confirm} other {# availabilities to confirm}} for upcoming matches.",
+    "respondNow": "Answer now",
     "appRoleGUEST": "Guest",
     "appRoleATHLETE": "Athlete",
     "appRolePARENT": "Parent",
     "appRoleCOACH": "Coach",
     "appRoleADMIN": "Admin"
+  },
+  "guestWelcome": {
+    "title": "Welcome to Karibu Baskin!",
+    "body": "Your account is under review: a coach will assign you the right role soon. In the meantime you can already sign up for trainings and take the questionnaire to discover your Baskin role.",
+    "cta": "Go to trainings",
+    "dismiss": "Got it"
   },
   "claim": {
     "successTitle": "Linked! {count, plural, one {# training added} other {# trainings added}} to your profile.",

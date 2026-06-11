@@ -8,7 +8,6 @@ import {
   Box,
   Paper,
   Chip,
-  Button,
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
@@ -17,7 +16,6 @@ import {
 } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
-import SaveIcon from "@mui/icons-material/Save";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import Link from "next/link";
@@ -83,103 +81,65 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
     return { futureMatches: future, pastMatches: past };
   });
 
-  // Mappa delle modifiche locali: key -> nuovo valore (true/false)
-  const [drafts, setDrafts] = useState<Map<string, boolean>>(new Map());
-  // Valori confermati dal server dopo un salvataggio (sovrascrivono entity.available)
-  const [savedOverrides, setSavedOverrides] = useState<Map<string, boolean>>(new Map());
-  const [saving, setSaving] = useState(false);
+  // Valori salvati localmente (optimistic update sopra entity.available)
+  const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
+  // Salvataggi in corso (toggle disabilitato nel frattempo)
+  const [savingKeys, setSavingKeys] = useState<Set<string>>(new Set());
   const { showToast } = useToast();
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
 
   function effectiveValue(matchId: string, entity: AvailabilityEntity): boolean | null {
     const k = entityKey(matchId, entity);
-    if (drafts.has(k)) return drafts.get(k)!;
-    if (savedOverrides.has(k)) return savedOverrides.get(k)!;
+    if (overrides.has(k)) return overrides.get(k)!;
     return entity.available;
   }
 
-  function setDraft(matchId: string, entity: AvailabilityEntity, value: boolean | null) {
+  // Salvataggio immediato al toggle, con rollback in caso di errore
+  async function handleChange(matchId: string, entity: AvailabilityEntity, value: boolean | null) {
+    if (value === null) return;
     const k = entityKey(matchId, entity);
-    const currentSaved = savedOverrides.has(k) ? savedOverrides.get(k)! : entity.available;
-    setDrafts((prev) => {
-      const next = new Map(prev);
-      // Se torno al valore già salvato, rimuovo dalla draft
-      if (value === null || value === currentSaved) {
-        next.delete(k);
-      } else {
-        next.set(k, value);
-      }
-      return next;
-    });
-  }
+    if (savingKeys.has(k)) return;
+    const prev = overrides.has(k) ? overrides.get(k)! : entity.available;
+    if (value === prev) return;
 
-  async function handleSave() {
-    if (drafts.size === 0) return;
-    setSaving(true);
-    const entries = Array.from(drafts.entries());
-    let okCount = 0;
-    const failed: string[] = [];
-
-    // Costruisco la lista delle richieste
-    const requests = entries.map(([key, value]) => {
-      const [matchId, kind, id] = key.split(":") as ["string", "user" | "child", string];
+    setOverrides((m) => new Map(m).set(k, value));
+    setSavingKeys((s) => new Set(s).add(k));
+    try {
       const body: { available: boolean; childId?: string } = { available: value };
-      if (kind === "child") body.childId = id;
-      return { matchId, key, body };
-    });
-
-    const results = await Promise.allSettled(
-      requests.map((r) =>
-        fetch(`/api/matches/${r.matchId}/availability`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(r.body),
-        }).then(async (res) => {
-          if (!res.ok) {
-            const data = (await res.json().catch(() => ({}))) as { error?: string };
-            throw new Error(data.error ?? tCommon("error"));
-          }
-          return r.key;
-        })
-      )
-    );
-
-    const newDrafts = new Map(drafts);
-    const newOverrides = new Map(savedOverrides);
-    for (let i = 0; i < results.length; i++) {
-      const r = results[i];
-      if (r.status === "fulfilled") {
-        okCount++;
-        newOverrides.set(requests[i].key, requests[i].body.available);
-        newDrafts.delete(requests[i].key);
-      } else {
-        failed.push(r.reason instanceof Error ? r.reason.message : tCommon("error"));
-      }
-    }
-    setDrafts(newDrafts);
-    setSavedOverrides(newOverrides);
-    setSaving(false);
-
-    if (failed.length === 0) {
-      showToast({
-        message: t("availabilitiesSaved", { count: okCount }),
-        severity: "success",
+      if (entity.kind === "child") body.childId = entity.id;
+      const res = await fetch(`/api/matches/${matchId}/availability`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
-    } else {
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? tCommon("error"));
+      }
+      showToast({ message: t("availabilitiesSaved", { count: 1 }), severity: "success" });
+    } catch (err) {
+      setOverrides((m) => {
+        const next = new Map(m);
+        if (prev === null) next.delete(k);
+        else next.set(k, prev);
+        return next;
+      });
       showToast({
-        message: t("availabilitiesSaveError", {
-          ok: okCount,
-          failed: failed.length,
-          error: failed[0],
-        }),
-        severity: failed.length === requests.length ? "error" : "warning",
+        message: err instanceof Error ? err.message : tCommon("error"),
+        severity: "error",
+      });
+    } finally {
+      setSavingKeys((s) => {
+        const next = new Set(s);
+        next.delete(k);
+        return next;
       });
     }
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, md: 4 }, pb: drafts.size > 0 ? 12 : 4 }}>
+    <Container maxWidth="sm" sx={{ py: { xs: 3, md: 4 } }}>
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <MuiLink
           component={Link}
@@ -230,8 +190,8 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                   match={m}
                   isPast={false}
                   effectiveValue={effectiveValue}
-                  hasDraft={(e) => drafts.has(entityKey(m.matchId, e))}
-                  onChange={setDraft}
+                  isSaving={(e) => savingKeys.has(entityKey(m.matchId, e))}
+                  onChange={handleChange}
                 />
               ))}
             </Box>
@@ -253,61 +213,13 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                   match={m}
                   isPast={true}
                   effectiveValue={effectiveValue}
-                  hasDraft={() => false}
+                  isSaving={() => false}
                   onChange={() => {}}
                 />
               ))}
             </Box>
           )}
         </>
-      )}
-
-      {/* Barra salva sticky in basso */}
-      {drafts.size > 0 && (
-        <Paper
-          elevation={6}
-          sx={{
-            position: "fixed",
-            bottom: 16,
-            left: 16,
-            right: 16,
-            maxWidth: 560,
-            mx: "auto",
-            p: 1.25,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 1,
-            zIndex: 10,
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="body2" fontWeight={700}>
-            {t("pendingChanges", { count: drafts.size })}
-          </Typography>
-          <Box sx={{ display: "flex", gap: 0.75 }}>
-            <Button
-              size="small"
-              onClick={() => setDrafts(new Map())}
-              disabled={saving}
-              sx={{ fontSize: "0.78rem" }}
-            >
-              {tCommon("cancel")}
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              startIcon={
-                saving ? <CircularProgress size={14} sx={{ color: "#fff" }} /> : <SaveIcon />
-              }
-              onClick={handleSave}
-              disabled={saving}
-              sx={{ fontSize: "0.78rem" }}
-            >
-              {tCommon("save")}
-            </Button>
-          </Box>
-        </Paper>
       )}
     </Container>
   );
@@ -317,7 +229,7 @@ interface CompactMatchRowProps {
   match: AvailabilityMatch;
   isPast: boolean;
   effectiveValue: (matchId: string, entity: AvailabilityEntity) => boolean | null;
-  hasDraft: (entity: AvailabilityEntity) => boolean;
+  isSaving: (entity: AvailabilityEntity) => boolean;
   onChange: (matchId: string, entity: AvailabilityEntity, value: boolean | null) => void;
 }
 
@@ -325,7 +237,7 @@ function CompactMatchRow({
   match: m,
   isPast,
   effectiveValue,
-  hasDraft,
+  isSaving,
   onChange,
 }: CompactMatchRowProps) {
   const tCommon = useTranslations("common");
@@ -370,7 +282,7 @@ function CompactMatchRow({
       {/* Entità: una riga ciascuna */}
       {m.entities.map((entity) => {
         const value = effectiveValue(m.matchId, entity);
-        const dirty = hasDraft(entity);
+        const saving = isSaving(entity);
         return (
           <Box
             key={`${entity.kind}-${entity.id}`}
@@ -403,24 +315,13 @@ function CompactMatchRow({
               >
                 {m.entities.length > 1 ? entity.name : entity.teamName}
               </Typography>
-              {dirty && (
-                <Box
-                  sx={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    bgcolor: "primary.main",
-                    flexShrink: 0,
-                  }}
-                  title="Modifica non salvata"
-                />
-              )}
+              {saving && <CircularProgress size={12} sx={{ flexShrink: 0 }} />}
             </Box>
             <ToggleButtonGroup
               value={value}
               exclusive
               size="small"
-              disabled={isPast}
+              disabled={isPast || saving}
               onChange={(_, v) => {
                 if (v === null) return; // ignora deselezione (non si può tornare a "non risposto")
                 onChange(m.matchId, entity, v as boolean);

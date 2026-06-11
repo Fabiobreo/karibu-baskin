@@ -489,7 +489,7 @@
     "trainingsCount": "{count, plural, one {# allenamento} other {# allenamenti}}",
     "availabilitiesTitle": "Disponibilità",
     "myAvailabilities": "Le mie disponibilità",
-    "availabilitiesDesc": "Tocca 'Sì' o 'No' per ogni partita, poi salva in fondo. Se non rispondi, il coach ti vede come non disponibile.",
+    "availabilitiesDesc": "Tocca 'Sì' o 'No' per ogni partita: la risposta si salva subito. Se non rispondi, il coach ti vede come non disponibile.",
     "noMatchesForTeams": "Nessuna partita trovata per le tue squadre.",
     "noUpcomingMatches": "Nessuna partita futura programmata.",
     "upcoming": "Prossime",
@@ -502,11 +502,19 @@
     "seasonLabel": "Stagione {season}",
     "gdprExportNote": "Puoi scaricare una copia dei tuoi dati personali e di quelli dei tuoi figli collegati ai sensi dell'art. 20 GDPR.",
     "gdprDeleteNote": "Hai il diritto di richiedere la cancellazione del tuo account e dei tuoi dati personali ai sensi dell'art. 17 GDPR.",
+    "pendingAvailabilities": "Hai {count, plural, one {# disponibilità da confermare} other {# disponibilità da confermare}} per le prossime partite.",
+    "respondNow": "Rispondi ora",
     "appRoleGUEST": "Ospite",
     "appRoleATHLETE": "Atleta",
     "appRolePARENT": "Genitore",
     "appRoleCOACH": "Allenatore",
     "appRoleADMIN": "Admin"
+  },
+  "guestWelcome": {
+    "title": "Benvenuto in Karibu Baskin!",
+    "body": "Il tuo account è in fase di revisione: un allenatore ti assegnerà presto il ruolo giusto. Nel frattempo puoi già iscriverti agli allenamenti e compilare il questionario per scoprire il tuo ruolo Baskin.",
+    "cta": "Vai agli allenamenti",
+    "dismiss": "Ho capito"
   },
   "claim": {
     "successTitle": "Collegato! {count, plural, one {# allenamento aggiunto} other {# allenamenti aggiunti}} al tuo profilo.",

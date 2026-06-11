@@ -12,6 +12,9 @@ import LatestNewsHero from "@/components/news/LatestNewsHero";
 import LoSapeviCard from "@/components/common/LoSapeviCard";
 import ProssimePartiteHome from "@/components/matches/ProssimePartiteHome";
 import BirthdayBanner from "@/components/common/BirthdayBanner";
+import GuestWelcomeBanner from "@/components/common/GuestWelcomeBanner";
+import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
+import { countPendingAvailabilities } from "@/lib/availabilityPending";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -33,7 +36,11 @@ export default async function HomePage() {
 
   const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
-  const isStaff = userSession?.user?.appRole === "COACH" || userSession?.user?.appRole === "ADMIN";
+  const appRole = userSession?.user?.appRole ?? null;
+  const isStaff = appRole === "COACH" || appRole === "ADMIN";
+  // Membri attivi: home "operativa" (allenamenti prima); anonimi/GUEST: home istituzionale
+  const isMember =
+    appRole === "ATHLETE" || appRole === "PARENT" || appRole === "COACH" || appRole === "ADMIN";
 
   const rawSessions = await prisma.trainingSession.findMany({
     where: { date: { gte: startOfToday } },
@@ -75,24 +82,50 @@ export default async function HomePage() {
     registrationIdBySession = Object.fromEntries(regs.map((r) => [r.sessionId, r.id]));
   }
 
+  const pendingAvailabilities = isMember && userId ? await countPendingAvailabilities(userId) : 0;
+
+  const sessionsBlock = (
+    <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <HomeSessionsSection
+        inCorso={inCorso}
+        upcoming={upcoming}
+        registrationIdBySession={registrationIdBySession}
+        isStaff={isStaff}
+      />
+    </Container>
+  );
+
+  // Home operativa per i membri: prima gli allenamenti e le cose da fare
+  if (isMember) {
+    return (
+      <>
+        <SiteHeader />
+        <BirthdayBanner />
+        <PendingAvailabilityBanner count={pendingAvailabilities} />
+        {sessionsBlock}
+        <ProssimePartiteHome />
+        <LatestNewsHero />
+        <LoSapeviCard />
+      </>
+    );
+  }
+
+  // Home istituzionale per anonimi e GUEST
   return (
     <>
       <SiteHeader />
-      {userSession?.user && userSession.user.appRole !== "GUEST" && <BirthdayBanner />}
+      {appRole === "GUEST" && (
+        <Container maxWidth="md" sx={{ pt: 2 }}>
+          <GuestWelcomeBanner />
+        </Container>
+      )}
       <HeroSection />
 
       <LatestNewsHero />
 
       <ProssimePartiteHome />
 
-      <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <HomeSessionsSection
-          inCorso={inCorso}
-          upcoming={upcoming}
-          registrationIdBySession={registrationIdBySession}
-          isStaff={isStaff}
-        />
-      </Container>
+      {sessionsBlock}
 
       <LoSapeviCard />
 
