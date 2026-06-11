@@ -470,6 +470,9 @@
   },
   "calendar": {
     "showAll": "Show all",
+    "homeVs": "Home vs {opponent}",
+    "awayAt": "Away @ {opponent}",
+    "moreEvents": "+{count} more",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
     "todayBtn": "Today",

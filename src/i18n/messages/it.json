@@ -470,6 +470,9 @@
   },
   "calendar": {
     "showAll": "Mostra tutto",
+    "homeVs": "In casa vs {opponent}",
+    "awayAt": "In trasferta @ {opponent}",
+    "moreEvents": "+{count} altri",
     "prevMonth": "Mese precedente",
     "nextMonth": "Mese successivo",
     "todayBtn": "Oggi",
