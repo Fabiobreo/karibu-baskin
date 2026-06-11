@@ -289,6 +289,7 @@
     "manageCallups": "Manage callups",
     "topScorers": "Top scorers",
     "pointsUnit": "points",
+    "membersOnly": "Members only",
     "callupsRestricted": "The callup list is only visible to athletes, parents and staff. Log in to view it.",
     "noCallups": "No callups",
     "callupsUnavailable": "The callup list is not yet available for this match.",
