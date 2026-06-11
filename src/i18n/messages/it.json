@@ -782,6 +782,7 @@
         "years": "Sì, anni di pratica"
       }
     },
+    "showPreviousSeasons": "Mostra le stagioni precedenti ({count, plural, one {# allenamento} other {# allenamenti}})",
     "titleRequired": "Il titolo è obbligatorio",
     "dateRequired": "La data è obbligatoria",
     "endAfterStart": "L'orario di fine deve essere dopo l'inizio",

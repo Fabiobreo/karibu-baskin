@@ -782,6 +782,7 @@
         "years": "Yes, years of practice"
       }
     },
+    "showPreviousSeasons": "Show previous seasons ({count, plural, one {# training} other {# trainings}})",
     "titleRequired": "Title is required",
     "dateRequired": "Date is required",
     "endAfterStart": "End time must be after the start",

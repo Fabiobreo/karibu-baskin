@@ -58,6 +58,7 @@ const NAV_HREFS = [
   { key: "home" as const, href: "/", iconOnly: true },
   { key: "trainings" as const, href: "/allenamenti" },
   { key: "calendar" as const, href: "/calendario" },
+  { key: "news" as const, href: "/news" },
 ];
 
 const PARTITE_HREFS = [
@@ -69,7 +70,6 @@ const PARTITE_HREFS = [
 
 const IL_BASKIN_HREFS: { key: string; href: string; disabled?: boolean; badge?: string }[] = [
   { key: "whatIsBaskin", href: "/il-baskin" },
-  { key: "news", href: "/news" },
   { key: "gallery", href: "/gallery" },
 ];
 
@@ -116,10 +116,7 @@ export default function SiteHeader() {
     pathname === "/marcatori" ||
     (pathname?.startsWith("/partite") ?? false);
   const squadreActive = pathname?.startsWith("/squadre") ?? false;
-  const ilBaskinActive =
-    pathname === "/il-baskin" ||
-    (pathname?.startsWith("/news") ?? false) ||
-    pathname === "/gallery";
+  const ilBaskinActive = pathname === "/il-baskin" || pathname === "/gallery";
   const contattiActive = pathname === "/contatti" || pathname === "/faq" || pathname === "/sponsor";
 
   // Squadre della stagione corrente per i link dinamici del dropdown
@@ -213,9 +210,12 @@ export default function SiteHeader() {
               alignItems: "center",
             }}
           >
-            {/* Voci semplici: Home, Allenamenti, Calendario */}
+            {/* Voci semplici: Home, Allenamenti, Calendario, News */}
             {NAV_HREFS.map((link) => {
-              const active = pathname === link.href;
+              const active =
+                link.href === "/news"
+                  ? (pathname?.startsWith("/news") ?? false)
+                  : pathname === link.href;
               return (
                 <Button
                   key={link.href}
@@ -628,8 +628,12 @@ export default function SiteHeader() {
           {[
             { key: "trainings" as const, href: "/allenamenti" },
             { key: "calendar" as const, href: "/calendario" },
+            { key: "news" as const, href: "/news" },
           ].map((link) => {
-            const active = pathname === link.href;
+            const active =
+              link.href === "/news"
+                ? (pathname?.startsWith("/news") ?? false)
+                : pathname === link.href;
             return (
               <ListItem key={link.href} disablePadding>
                 <ListItemButton

@@ -540,6 +540,7 @@ export default function AllenamentiClient({
   seasonTotal,
   isLoggedIn,
   isStaff = false,
+  previousSeasonsCount = 0,
 }: {
   inCorso: SessionWithCount[];
   upcoming: SessionWithCount[];
@@ -550,6 +551,7 @@ export default function AllenamentiClient({
   seasonTotal: number;
   isLoggedIn: boolean;
   isStaff?: boolean;
+  previousSeasonsCount?: number;
 }) {
   const t = useTranslations("trainings");
   const dateLocale = useActiveDateLocale();
@@ -1263,6 +1265,16 @@ export default function AllenamentiClient({
                   </Box>
                 );
               })
+            )}
+            {/* Le stagioni precedenti non vengono caricate di default */}
+            {previousSeasonsCount > 0 && (
+              <Box sx={{ textAlign: "center", mt: 2 }}>
+                <Link href="/allenamenti?all=1" style={{ textDecoration: "none" }}>
+                  <Button size="small" variant="text" sx={{ fontWeight: 600 }}>
+                    {t("showPreviousSeasons", { count: previousSeasonsCount })}
+                  </Button>
+                </Link>
+              </Box>
             )}
           </Box>
         )}

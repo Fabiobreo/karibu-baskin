@@ -11,19 +11,34 @@ import { getSeasonStartDate } from "@/lib/seasonUtils";
 export const metadata: Metadata = { title: "Allenamenti | Karibu Baskin" };
 export const revalidate = 0;
 
-export default async function AllenamentiPage() {
+export default async function AllenamentiPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const now = new Date();
   const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
   const isStaff = userSession?.user?.appRole === "COACH" || userSession?.user?.appRole === "ADMIN";
 
-  const rawSessions = await prisma.trainingSession.findMany({
-    orderBy: { date: "asc" },
-    include: {
-      _count: { select: { registrations: true } },
-      restrictTeam: { select: { id: true, name: true, color: true } },
-    },
-  });
+  // Di default solo la stagione corrente; ?all=1 carica anche le stagioni precedenti
+  const { all } = await searchParams;
+  const showAllSeasons = all === "1";
+  const seasonStart = getSeasonStartDate();
+
+  const [rawSessions, previousSeasonsCount] = await Promise.all([
+    prisma.trainingSession.findMany({
+      where: showAllSeasons ? undefined : { date: { gte: seasonStart } },
+      orderBy: { date: "asc" },
+      include: {
+        _count: { select: { registrations: true } },
+        restrictTeam: { select: { id: true, name: true, color: true } },
+      },
+    }),
+    showAllSeasons
+      ? Promise.resolve(0)
+      : prisma.trainingSession.count({ where: { date: { lt: seasonStart } } }),
+  ]);
 
   const sessions = rawSessions.map((s) => ({
     ...s,
@@ -54,8 +69,6 @@ export default async function AllenamentiPage() {
   let seasonTotal = 0;
 
   if (userId) {
-    const seasonStart = getSeasonStartDate();
-
     seasonTotal = sessions.filter((s) => {
       const d = new Date(s.date);
       return d >= seasonStart && d < now;
@@ -96,6 +109,7 @@ export default async function AllenamentiPage() {
           seasonTotal={seasonTotal}
           isLoggedIn={!!userId}
           isStaff={isStaff}
+          previousSeasonsCount={previousSeasonsCount}
         />
       </Container>
     </>
