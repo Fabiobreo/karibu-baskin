@@ -736,6 +736,7 @@
   },
   "trainings": {
     "questionnaire": {
+      "intro": "A few quick questions to suggest your Baskin role (1–5), so we can build balanced teams for everyone. Your individual answers are not stored: only the final role matters, and it will be confirmed by the staff.",
       "previousAnswer": "You already answered before — previous answer: {role}. You can update it below.",
       "mobility": {
         "question": "How do you usually move during physical activity?",

@@ -310,6 +310,17 @@ export default function RegistrationForm({
                 : t("alreadyRegisteredChild", { name: selectedChild?.name ?? "" })}
             </Typography>
           </Box>
+        ) : hasConfirmedRole && restrictionBlock ? (
+          /* Pre-check: ruolo già confermato e bloccato dalle restrizioni → niente form */
+          <Box sx={{ textAlign: "center", py: 2 }}>
+            <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
+            <Typography variant="body2" color="error.main" fontWeight={600}>
+              {t("cannotRegister")}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+              {restrictionBlock}
+            </Typography>
+          </Box>
         ) : (
           <>
             {/* Intestazione soggetto */}

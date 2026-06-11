@@ -736,6 +736,7 @@
   },
   "trainings": {
     "questionnaire": {
+      "intro": "Qualche domanda veloce per suggerirti il ruolo Baskin (1–5), così componiamo squadre equilibrate per tutti. Le singole risposte non vengono salvate: conta solo il ruolo finale, che verrà confermato dallo staff.",
       "previousAnswer": "Hai già risposto in precedenza — risposta precedente: {role}. Puoi aggiornarla qui sotto.",
       "mobility": {
         "question": "Come ti muovi di solito durante un'attività fisica?",
