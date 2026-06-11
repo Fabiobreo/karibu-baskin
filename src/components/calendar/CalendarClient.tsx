@@ -63,6 +63,8 @@ import SessionRestrictionEditor, {
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
 
+const FILTERS_STORAGE_KEY = "karibu-calendar-filters";
+
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
   LOSS: "match.loss",
@@ -135,13 +137,37 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
   const [dayView, setDayView] = useState<Date | null>(null);
   const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
 
+  // Ripristina i filtri persistiti dopo il mount (evita hydration mismatch)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (raw) setHiddenKeys(new Set(JSON.parse(raw) as string[]));
+    } catch {
+      // valore corrotto → si riparte senza filtri
+    }
+  }, []);
+
+  function persistFilters(next: Set<string>) {
+    try {
+      if (next.size === 0) localStorage.removeItem(FILTERS_STORAGE_KEY);
+      else localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify([...next]));
+    } catch {
+      // storage non disponibile → filtri solo in memoria
+    }
+  }
+
   function toggleKey(key: string) {
-    setHiddenKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    const next = new Set(hiddenKeys);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setHiddenKeys(next);
+    persistFilters(next);
+  }
+
+  function clearFilters() {
+    setHiddenKeys(new Set());
+    persistFilters(new Set());
   }
 
   const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -188,14 +214,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
 
   function handleDayClick(day: Date) {
     const dayEvs = eventsForDay(day);
-    // Su mobile mostra sempre il day view; su desktop apre creazione solo per staff
-    if (window.innerWidth < 600) {
-      if (dayEvs.length > 0 || isStaff) setDayView(day);
-    } else if (isStaff) {
-      setCreateDay(day);
-    } else if (dayEvs.length > 0) {
-      setDayView(day);
-    }
+    // Comportamento unico mobile/desktop: vista giorno; lo staff vi trova "Aggiungi"
+    if (dayEvs.length > 0 || isStaff) setDayView(day);
   }
 
   // Keyboard navigation: ←→ giorno, ↑↓ settimana
@@ -531,6 +551,17 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
               active={!hiddenKeys.has("event")}
               onClick={() => toggleKey("event")}
             />
+            {hiddenKeys.size > 0 && (
+              <Chip
+                size="small"
+                color="primary"
+                variant="outlined"
+                label={t("showAll")}
+                onClick={clearFilters}
+                onDelete={clearFilters}
+                sx={{ fontWeight: 700 }}
+              />
+            )}
           </Box>
         );
       })()}
@@ -859,7 +890,7 @@ function DayEventsDialog({
         </Typography>
         {isStaff && (
           <Button size="small" startIcon={<AddIcon />} onClick={onAddEvent} variant="outlined">
-            Aggiungi
+            {tCommon("add")}
           </Button>
         )}
       </Box>

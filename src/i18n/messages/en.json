@@ -468,6 +468,7 @@
     "all": "All"
   },
   "calendar": {
+    "showAll": "Show all",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
     "todayBtn": "Today",

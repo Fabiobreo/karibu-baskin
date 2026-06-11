@@ -468,6 +468,7 @@
     "all": "Tutti"
   },
   "calendar": {
+    "showAll": "Mostra tutto",
     "prevMonth": "Mese precedente",
     "nextMonth": "Mese successivo",
     "todayBtn": "Oggi",
