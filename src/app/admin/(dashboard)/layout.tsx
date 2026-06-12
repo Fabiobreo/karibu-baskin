@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import SiteHeader from "@/components/layout/SiteHeader";
+import AdminNavBar from "@/components/admin/AdminNavBar";
 import { Container } from "@mui/material";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <>
       <SiteHeader />
+      <AdminNavBar />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {children}
       </Container>
