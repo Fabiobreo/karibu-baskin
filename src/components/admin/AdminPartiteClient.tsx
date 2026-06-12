@@ -218,6 +218,9 @@ function MatchMobileCard({
                   : "+ Risultato"}
               </Button>
             </Tooltip>
+            {m.ourScore !== null && m._count.playerStats === 0 && (
+              <MissingStatsChip matchId={m.id} router={router} />
+            )}
           </Box>
         </Box>
         <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
@@ -263,6 +266,22 @@ function MatchMobileCard({
         </Box>
       </Box>
     </Box>
+  );
+}
+
+/** Chip per partite giocate senza statistiche giocatori — clicca per inserirle. */
+function MissingStatsChip({ matchId, router }: { matchId: string; router: RouterLike }) {
+  return (
+    <Tooltip title="Partita giocata senza statistiche giocatori — clicca per inserirle">
+      <Chip
+        label="Senza stats"
+        size="small"
+        color="warning"
+        variant="outlined"
+        onClick={() => router.push(`/admin/partite/${matchId}/statistiche`)}
+        sx={{ fontWeight: 700, fontSize: "0.65rem", height: 20, cursor: "pointer" }}
+      />
+    </Tooltip>
   );
 }
 
@@ -365,8 +384,18 @@ export default function AdminPartiteClient({
   }
 
   function handleResultSaved(matchId: string, fields: MatchResultSavedFields) {
+    const match = matches.find((m) => m.id === matchId);
     setMatches((prev) => prev.map((m) => (m.id === matchId ? { ...m, ...fields } : m)));
     showToast({ message: "Risultato aggiornato", severity: "success" });
+    // Partita giocata senza statistiche → proponi subito l'inserimento
+    if (fields.ourScore !== null && match && match._count.playerStats === 0) {
+      openConfirm(
+        "Statistiche giocatori",
+        "Risultato salvato. Vuoi inserire ora le statistiche dei giocatori?",
+        () => router.push(`/admin/partite/${matchId}/statistiche`),
+        { confirmLabel: "Inserisci statistiche", confirmColor: "primary" }
+      );
+    }
   }
 
   function handleSaved(saved: MatchFormMatch, isEdit: boolean) {
@@ -861,12 +890,16 @@ function MatchRowAndContext({
           </Tooltip>
         </TableCell>
         <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-          <Typography
-            variant="caption"
-            color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
-          >
-            {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
-          </Typography>
+          {m.ourScore !== null && m._count.playerStats === 0 ? (
+            <MissingStatsChip matchId={m.id} router={router} />
+          ) : (
+            <Typography
+              variant="caption"
+              color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+            >
+              {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
+            </Typography>
+          )}
         </TableCell>
         <TableCell align="right">
           <ActionIcons
@@ -1082,12 +1115,16 @@ function FlatView({
                   </Tooltip>
                 </TableCell>
                 <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  <Typography
-                    variant="caption"
-                    color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
-                  >
-                    {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
-                  </Typography>
+                  {m.ourScore !== null && m._count.playerStats === 0 ? (
+                    <MissingStatsChip matchId={m.id} router={router} />
+                  ) : (
+                    <Typography
+                      variant="caption"
+                      color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+                    >
+                      {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
+                    </Typography>
+                  )}
                 </TableCell>
                 <TableCell align="right">
                   <ActionIcons
