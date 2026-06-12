@@ -3,161 +3,34 @@ import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from
 import { useRouter, usePathname } from "next/navigation";
 import {
   Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Avatar,
-  Typography,
-  Select,
-  MenuItem,
-  Chip,
-  TextField,
-  InputAdornment,
-  IconButton,
+  Tabs,
+  Tab,
+  TablePagination,
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogContentText,
   DialogActions,
   Button,
-  Divider,
-  Stack,
-  DialogContentText,
-  Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
-  TableSortLabel,
-  TablePagination,
-  Badge,
-  Tabs,
-  Tab,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import HistoryIcon from "@mui/icons-material/History";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS, ROLE_HIERARCHY } from "@/lib/authRoles";
-import {
-  ROLE_COLORS,
-  SPORT_ROLE_VARIANT_LABELS,
-  sportRoleLabel,
-  GENDER_LABELS_SHORT,
-  ATHLETE_STATUS_LABELS,
-  ATHLETE_STATUS_CHIP_COLORS,
-} from "@/lib/constants";
+import type { AppRole } from "@prisma/client";
+import { ROLE_LABELS_IT, ROLE_HIERARCHY } from "@/lib/authRoles";
 import { useToast } from "@/context/ToastContext";
-import { contrastText } from "@/lib/colorUtils";
-import RatingBadge from "@/components/rating/RatingBadge";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
-
-// ── Tipi ────────────────────────────────────────────────────────────────────
-
-const ALL_APP_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
-
-type SortColumn = "name" | "createdAt" | "sportRole" | "registrations" | "appRole";
-
-interface RoleHistoryEntry {
-  sportRole: number;
-  changedAt: Date | string;
-}
-
-interface TeamInfo {
-  id: string;
-  name: string;
-  season: string;
-  color: string | null;
-}
-interface MembershipInfo {
-  id: string;
-  teamId: string;
-  isCaptain: boolean;
-  team: TeamInfo;
-}
-
-interface UserEntry {
-  id: string;
-  name: string | null;
-  email: string;
-  image: string | null;
-  appRole: AppRole;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-  sportRoleSuggested: number | null;
-  sportRoleSuggestedVariant: string | null;
-  gender: Gender | null;
-  birthDate: Date | string | null;
-  athleteStatus: AthleteStatus | null;
-  ratingMu: number | null;
-  ratingSigma: number | null;
-  createdAt: Date | string;
-  _count: { registrations: number };
-  sportRoleHistory: RoleHistoryEntry[];
-  teamMemberships: MembershipInfo[];
-}
-
-interface ChildEntry {
-  id: string;
-  name: string;
-  sportRole: number | null;
-  sportRoleVariant: string | null;
-  gender: Gender | null;
-  birthDate: Date | string | null;
-  athleteStatus: AthleteStatus | null;
-  ratingMu: number | null;
-  ratingSigma: number | null;
-  createdAt: Date | string;
-  parent: { name: string | null; email: string };
-  _count: { registrations: number };
-  teamMemberships: MembershipInfo[];
-}
-
-type AdminRow = (UserEntry & { kind: "user" }) | (ChildEntry & { kind: "child" });
-
-interface EditState {
-  name: string;
-  email: string;
-  appRole: string;
-  sportRole: string;
-  sportRoleVariant: string;
-  gender: string;
-  birthDate: string;
-  athleteStatus: string; // "" = attivo
-}
-
-// Chip per lo stato atleta. Non renderizza nulla se attivo (status null).
-function AthleteStatusChip({ status }: { status: AthleteStatus | null }) {
-  if (!status) return null;
-  return (
-    <Chip
-      label={ATHLETE_STATUS_LABELS[status]}
-      size="small"
-      color={ATHLETE_STATUS_CHIP_COLORS[status]}
-      variant="outlined"
-      sx={{ height: 18, fontSize: "0.62rem", fontWeight: 700 }}
-    />
-  );
-}
-
-// ── Componente ───────────────────────────────────────────────────────────────
-
-interface CurrentFilters {
-  search?: string;
-  appRole?: string;
-  sportRole?: string;
-  gender?: string;
-  teamId?: string;
-  athleteStatus?: string;
-  sortBy?: string;
-  sortDir?: string;
-  limit?: number;
-}
+import { getCurrentSeason } from "@/lib/seasonUtils";
+import UserFilters from "@/components/admin/userList/UserFilters";
+import UsersTable from "@/components/admin/userList/UsersTable";
+import UsersMobileCards from "@/components/admin/userList/UsersMobileCards";
+import ChildrenTab from "@/components/admin/userList/ChildrenTab";
+import UserEditDialog from "@/components/admin/userList/UserEditDialog";
+import type {
+  AdminRow,
+  ChildEntry,
+  CurrentFilters,
+  MembershipInfo,
+  SortColumn,
+  TeamInfo,
+  UserEntry,
+} from "@/components/admin/userList/userListShared";
 
 export default function AdminUserList({
   users: initialUsers,
@@ -274,40 +147,15 @@ export default function AdminUserList({
   // Tab attivo: 0 = utenti, 1 = figli senza account
   const [activeTab, setActiveTab] = useState(0);
 
-  // Stato locale per il tab figli (sempre client-side, sono pochi)
-  const [childSearch, setChildSearch] = useState("");
-  const [childSortBy, setChildSortBy] = useState<"name" | "createdAt" | "sportRole">("name");
-  const [childSortDir, setChildSortDir] = useState<"asc" | "desc">("asc");
-  const [childPage, setChildPage] = useState(0);
-  const [childRowsPerPage, setChildRowsPerPage] = useState(25);
-
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
-  const [editState, setEditState] = useState<EditState>({
-    name: "",
-    email: "",
-    appRole: "",
-    sportRole: "",
-    sportRoleVariant: "",
-    gender: "",
-    birthDate: "",
-    athleteStatus: "",
-  });
-  const [editTeamId, setEditTeamId] = useState("");
-  const [availableTeams, setAvailableTeams] = useState<TeamInfo[]>(initialTeams);
-  const [saving, setSaving] = useState(false);
   const [deleteRow, setDeleteRow] = useState<AdminRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const { showToast } = useToast();
 
-  function getCurrentSeason() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const startYear = month >= 8 ? year : year - 1;
-    return `${startYear}-${String(startYear + 1).slice(-2)}`;
-  }
+  const availableTeams = initialTeams;
+  const currentSeason = getCurrentSeason();
 
   const userCount = serverDriven ? (serverTotal ?? initialUsers.length) : initialUsers.length;
   const childCount = initialChildren.length;
@@ -349,9 +197,8 @@ export default function AdminUserList({
     if (filterGender === "none") result = result.filter((r) => !r.gender);
     else if (filterGender) result = result.filter((r) => r.gender === filterGender);
     if (filterTeamId) {
-      const season = getCurrentSeason();
       result = result.filter((r) =>
-        r.teamMemberships.some((m) => m.teamId === filterTeamId && m.team.season === season)
+        r.teamMemberships.some((m) => m.teamId === filterTeamId && m.team.season === currentSeason)
       );
     }
 
@@ -387,6 +234,7 @@ export default function AdminUserList({
     filterSportRoles,
     filterGender,
     filterTeamId,
+    currentSeason,
     sortBy,
     sortDir,
   ]);
@@ -395,41 +243,10 @@ export default function AdminUserList({
     ? processed
     : processed.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
-  // Tab 1 — figli senza account: sempre client-side (sono pochi e sempre caricati tutti)
-  const filteredChildren = useMemo(() => {
-    const childRows = rows.filter((r): r is ChildEntry & { kind: "child" } => r.kind === "child");
-    let result = childRows;
-    if (childSearch) {
-      const q = childSearch.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.parent.name?.toLowerCase().includes(q) ||
-          c.parent.email.toLowerCase().includes(q)
-      );
-    }
-    return [...result].sort((a, b) => {
-      let cmp = 0;
-      switch (childSortBy) {
-        case "name":
-          cmp = a.name.localeCompare(b.name, "it");
-          break;
-        case "createdAt":
-          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          break;
-        case "sportRole":
-          cmp = (a.sportRole ?? 99) - (b.sportRole ?? 99);
-          break;
-      }
-      return childSortDir === "asc" ? cmp : -cmp;
-    });
-  }, [rows, childSearch, childSortBy, childSortDir]);
-
-  function handleChildSort(col: "name" | "createdAt" | "sportRole") {
-    const newDir = childSortBy === col ? (childSortDir === "asc" ? "desc" : "asc") : "asc";
-    setChildSortBy(col);
-    setChildSortDir(newDir);
-  }
+  const childRows = useMemo(
+    () => rows.filter((r): r is ChildEntry & { kind: "child" } => r.kind === "child"),
+    [rows]
+  );
 
   function handleSort(col: SortColumn) {
     const newDir = sortBy === col ? (sortDir === "asc" ? "desc" : "asc") : "asc";
@@ -555,8 +372,7 @@ export default function AdminUserList({
   }
 
   async function handleTeamChange(row: AdminRow, newTeamId: string) {
-    const season = getCurrentSeason();
-    const existing = row.teamMemberships.find((m) => m.team.season === season);
+    const existing = row.teamMemberships.find((m) => m.team.season === currentSeason);
     if ((existing?.teamId ?? "") === newTeamId) return;
     try {
       if (existing) {
@@ -585,7 +401,7 @@ export default function AdminUserList({
       setRows((prev) =>
         prev.map((r) => {
           if (r.id !== row.id || r.kind !== row.kind) return r;
-          const others = r.teamMemberships.filter((m) => m.team.season !== season);
+          const others = r.teamMemberships.filter((m) => m.team.season !== currentSeason);
           return { ...r, teamMemberships: newMembership ? [...others, newMembership] : others };
         })
       );
@@ -596,148 +412,6 @@ export default function AdminUserList({
     } catch {
       showToast({ message: "Errore nella gestione della squadra", severity: "error" });
     }
-  }
-
-  function openEdit(row: AdminRow) {
-    setEditRow(row);
-    setEditState({
-      name: row.name ?? "",
-      email: row.kind === "user" ? (row.email ?? "") : "",
-      appRole: row.kind === "user" ? row.appRole : "",
-      sportRole: row.sportRole?.toString() ?? "",
-      sportRoleVariant: row.sportRoleVariant ?? "",
-      gender: row.gender ?? "",
-      birthDate: row.birthDate ? new Date(row.birthDate).toISOString().slice(0, 10) : "",
-      athleteStatus: row.athleteStatus ?? "",
-    });
-    const season = getCurrentSeason();
-    const membership = row.teamMemberships.find((m) => m.team.season === season);
-    setEditTeamId(membership?.teamId ?? "");
-  }
-
-  async function handleSaveAthleteData() {
-    if (!editRow) return;
-    setSaving(true);
-    const payload: Record<string, unknown> = {
-      sportRole: editState.sportRole ? parseInt(editState.sportRole) : null,
-      sportRoleVariant: editState.sportRoleVariant || null,
-      gender: editState.gender || null,
-      birthDate: editState.birthDate || null,
-      athleteStatus: editState.athleteStatus || null,
-    };
-    if (editState.name.trim()) payload.name = editState.name.trim();
-    if (editRow.kind === "user" && editState.appRole) {
-      payload.appRole = editState.appRole;
-    }
-    if (
-      editRow.kind === "user" &&
-      editState.email.trim() &&
-      editState.email.trim() !== editRow.email
-    ) {
-      payload.email = editState.email.trim();
-    }
-    const url =
-      editRow.kind === "user" ? `/api/users/${editRow.id}` : `/api/children/${editRow.id}`;
-    const res = await fetch(url, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      setSaving(false);
-      showToast({ message: "Errore nel salvataggio", severity: "error" });
-      return;
-    }
-
-    const updated = await res.json();
-    const season = getCurrentSeason();
-    const existingMembership = editRow.teamMemberships.find((m) => m.team.season === season);
-    const previousTeamId = existingMembership?.teamId ?? "";
-
-    // Handle team assignment change
-    let newMembership: MembershipInfo | null = null;
-    if (editTeamId !== previousTeamId) {
-      try {
-        if (existingMembership) {
-          await fetch(
-            `/api/competitive-teams/${existingMembership.teamId}/members/${existingMembership.id}`,
-            { method: "DELETE" }
-          );
-        }
-        if (editTeamId) {
-          const memberBody =
-            editRow.kind === "user" ? { userId: editRow.id } : { childId: editRow.id };
-          const memberRes = await fetch(`/api/competitive-teams/${editTeamId}/members`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(memberBody),
-          });
-          if (memberRes.ok) {
-            const memberData = await memberRes.json();
-            const teamInfo = availableTeams.find((t) => t.id === editTeamId);
-            if (teamInfo)
-              newMembership = {
-                id: memberData.id,
-                teamId: editTeamId,
-                isCaptain: false,
-                team: teamInfo,
-              };
-          } else {
-            showToast({ message: "Errore nell'assegnazione alla squadra", severity: "warning" });
-          }
-        }
-      } catch {
-        showToast({ message: "Errore nella gestione della squadra", severity: "warning" });
-      }
-    } else {
-      newMembership = existingMembership ?? null;
-    }
-
-    const rowId = editRow.id;
-    const rowKind = editRow.kind;
-    setRows((prev) =>
-      prev.map((r) => {
-        if (r.id !== rowId || r.kind !== rowKind) return r;
-        const otherMemberships = r.teamMemberships.filter((m) => m.team.season !== season);
-        const baseUpdate = {
-          ...r,
-          teamMemberships: newMembership ? [...otherMemberships, newMembership] : otherMemberships,
-        };
-        if (r.kind === "user") {
-          return {
-            ...baseUpdate,
-            name: updated.name ?? r.name,
-            email: updated.email ?? r.email,
-            appRole: updated.appRole ?? r.appRole,
-            sportRole: updated.sportRole,
-            sportRoleVariant: updated.sportRoleVariant,
-            gender: updated.gender,
-            birthDate: updated.birthDate,
-            athleteStatus: updated.athleteStatus ?? null,
-            sportRoleHistory:
-              updated.sportRole !== editRow.sportRole && updated.sportRole !== null
-                ? [
-                    { sportRole: updated.sportRole, changedAt: new Date().toISOString() },
-                    ...(editRow as UserEntry).sportRoleHistory,
-                  ]
-                : (editRow as UserEntry).sportRoleHistory,
-          };
-        }
-        return {
-          ...baseUpdate,
-          name: updated.name ?? r.name,
-          sportRole: updated.sportRole,
-          sportRoleVariant: updated.sportRoleVariant,
-          gender: updated.gender,
-          birthDate: updated.birthDate,
-          athleteStatus: updated.athleteStatus ?? null,
-        };
-      })
-    );
-
-    setSaving(false);
-    showToast({ message: "Dati atleta aggiornati", severity: "success" });
-    setEditRow(null);
   }
 
   async function handleDeleteConfirm() {
@@ -768,6 +442,12 @@ export default function AdminUserList({
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  const summary = serverDriven
+    ? `${serverTotal} utenti`
+    : processed.length !== userCount
+      ? `${processed.length} di ${userCount}`
+      : `${userCount} utenti`;
+
   return (
     <Box>
       {/* ── Tabs ── */}
@@ -780,696 +460,67 @@ export default function AdminUserList({
         {childCount > 0 && <Tab label={`Figli senza account (${childCount})`} />}
       </Tabs>
 
-      {/* ══════════════════════════════════════════════════════════
-          TAB 0 — Utenti con account
-      ══════════════════════════════════════════════════════════ */}
+      {/* TAB 0 — Utenti con account */}
       {activeTab === 0 && (
         <>
-          {/* ── Barra ricerca + info ── */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
-            <TextField
-              placeholder="Cerca per nome o email..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-                if (serverDriven) pushFilters({ search: e.target.value, page: 1 });
-              }}
-              size="small"
-              sx={{ width: { xs: "100%", sm: 280 } }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-              {serverDriven
-                ? `${serverTotal} utenti`
-                : processed.length !== userCount
-                  ? `${processed.length} di ${userCount}`
-                  : `${userCount} utenti`}
-            </Typography>
-            {activeFilterCount > 0 && (
-              <Button
-                size="small"
-                onClick={resetFilters}
-                startIcon={
-                  <Badge badgeContent={activeFilterCount} color="primary">
-                    <FilterListIcon fontSize="small" />
-                  </Badge>
-                }
-              >
-                Rimuovi filtri
-              </Button>
-            )}
-          </Box>
-
-          {/* ── Filtri ── */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 2.5 }}>
-            {/* Ruolo utente */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                sx={{ minWidth: 90 }}
-              >
-                Ruolo utente
-              </Typography>
-              <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-                {ALL_APP_ROLES.map((role) => (
-                  <Chip
-                    key={role}
-                    label={ROLE_LABELS_IT[role]}
-                    size="small"
-                    color={filterAppRoles.includes(role) ? ROLE_CHIP_COLORS[role] : "default"}
-                    variant={filterAppRoles.includes(role) ? "filled" : "outlined"}
-                    onClick={() => toggleAppRole(role)}
-                    aria-pressed={filterAppRoles.includes(role)}
-                    sx={{
-                      cursor: "pointer",
-                      fontWeight: filterAppRoles.includes(role) ? 700 : 400,
-                    }}
-                  />
-                ))}
-              </Box>
-            </Box>
-
-            {/* Ruolo Baskin */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                sx={{ minWidth: 90 }}
-              >
-                Ruolo Baskin
-              </Typography>
-              <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-                <Chip
-                  label="Non impostato"
-                  size="small"
-                  variant={filterSportRoles.includes("none") ? "filled" : "outlined"}
-                  onClick={() => toggleSportRole("none")}
-                  aria-pressed={filterSportRoles.includes("none")}
-                  sx={{
-                    cursor: "pointer",
-                    fontWeight: filterSportRoles.includes("none") ? 700 : 400,
-                  }}
-                />
-                {[1, 2, 3, 4, 5].map((r) => {
-                  const active = filterSportRoles.includes(r.toString());
-                  return (
-                    <Chip
-                      key={r}
-                      label={sportRoleLabel(r)}
-                      size="small"
-                      variant={active ? "filled" : "outlined"}
-                      onClick={() => toggleSportRole(r.toString())}
-                      aria-pressed={active}
-                      sx={{
-                        cursor: "pointer",
-                        fontWeight: active ? 700 : 400,
-                        bgcolor: active ? ROLE_COLORS[r] : undefined,
-                        color: active ? "#fff" : undefined,
-                        borderColor: active ? ROLE_COLORS[r] : undefined,
-                      }}
-                    />
-                  );
-                })}
-              </Box>
-            </Box>
-
-            {/* Genere */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                sx={{ minWidth: 90 }}
-              >
-                Genere
-              </Typography>
-              <ToggleButtonGroup
-                value={filterGender}
-                exclusive
-                size="small"
-                onChange={(_e, val) => {
-                  const v = val ?? "";
-                  setFilterGender(v);
-                  setPage(0);
-                  if (serverDriven) pushFilters({ gender: v, page: 1 });
-                }}
-              >
-                <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  Tutti
-                </ToggleButton>
-                <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  M
-                </ToggleButton>
-                <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  F
-                </ToggleButton>
-                <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  N/D
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-
-            {/* Stato atleta */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                sx={{ minWidth: 90 }}
-              >
-                Stato
-              </Typography>
-              <ToggleButtonGroup
-                value={filterAthleteStatus}
-                exclusive
-                size="small"
-                onChange={(_e, val) => {
-                  const v = val ?? "";
-                  setFilterAthleteStatus(v);
-                  setPage(0);
-                  if (serverDriven) pushFilters({ athleteStatus: v, page: 1 });
-                }}
-              >
-                <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  Tutti
-                </ToggleButton>
-                <ToggleButton value="active" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  Attivi
-                </ToggleButton>
-                <ToggleButton value="INACTIVE_SEASON" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  In pausa
-                </ToggleButton>
-                <ToggleButton value="FORMER" sx={{ px: 1.5, fontSize: "0.75rem" }}>
-                  Ex
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-
-            {/* Squadra */}
-            {availableTeams.length > 0 && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={600}
-                  sx={{ minWidth: 90 }}
-                >
-                  Squadra
-                </Typography>
-                <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-                  {availableTeams.map((t) => {
-                    const active = filterTeamId === t.id;
-                    return (
-                      <Chip
-                        key={t.id}
-                        label={t.name}
-                        size="small"
-                        variant={active ? "filled" : "outlined"}
-                        onClick={() => {
-                          const newVal = active ? "" : t.id;
-                          setFilterTeamId(newVal);
-                          setPage(0);
-                          if (serverDriven) pushFilters({ teamId: newVal, page: 1 });
-                        }}
-                        aria-pressed={active}
-                        sx={{
-                          cursor: "pointer",
-                          fontWeight: active ? 700 : 400,
-                          ...(active && t.color
-                            ? {
-                                bgcolor: t.color,
-                                color: contrastText(t.color),
-                                borderColor: t.color,
-                              }
-                            : {}),
-                        }}
-                        avatar={
-                          t.color && !active ? (
-                            <Box
-                              component="span"
-                              sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: "50%",
-                                bgcolor: t.color,
-                                ml: "6px !important",
-                                mr: "-4px !important",
-                              }}
-                            />
-                          ) : undefined
-                        }
-                      />
-                    );
-                  })}
-                </Box>
-              </Box>
-            )}
-          </Box>
-
-          {/* ── Tabella utenti ── */}
-          <TableContainer
-            component={Box}
-            sx={{
-              display: { xs: "none", sm: "block" },
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 1,
-              overflowX: "auto",
+          <UserFilters
+            search={search}
+            onSearchChange={(v) => {
+              setSearch(v);
+              setPage(0);
+              if (serverDriven) pushFilters({ search: v, page: 1 });
             }}
-          >
-            <Table size="small" aria-label="Lista utenti">
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortBy === "name"}
-                      direction={sortBy === "name" ? sortDir : "asc"}
-                      onClick={() => handleSort("name")}
-                    >
-                      Utente
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Email</TableCell>
-                  <TableCell>
-                    <TableSortLabel
-                      active={sortBy === "appRole"}
-                      direction={sortBy === "appRole" ? sortDir : "asc"}
-                      onClick={() => handleSort("appRole")}
-                    >
-                      Ruolo
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="center">
-                    <TableSortLabel
-                      active={sortBy === "sportRole"}
-                      direction={sortBy === "sportRole" ? sortDir : "asc"}
-                      onClick={() => handleSort("sportRole")}
-                    >
-                      Baskin
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="center">Squadra</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                    Skill
-                  </TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                    Genere
-                  </TableCell>
-                  <TableCell align="center">Azioni</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginated.map((row) => {
-                  if (row.kind !== "user") return null;
-                  return (
-                    <TableRow key={`user-${row.id}`} hover>
-                      {/* Nome */}
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Avatar
-                            src={row.image ?? undefined}
-                            sx={{ width: 30, height: 30, fontSize: 13 }}
-                          >
-                            {(row.name ?? "?")[0].toUpperCase()}
-                          </Avatar>
-                          <Box sx={{ minWidth: 0 }}>
-                            <Typography variant="body2" fontWeight={600} noWrap>
-                              {row.name ?? "—"}
-                            </Typography>
-                            <AthleteStatusChip status={row.athleteStatus} />
-                          </Box>
-                        </Box>
-                      </TableCell>
-
-                      {/* Email */}
-                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                        <Typography variant="body2" color="text.secondary">
-                          {row.email}
-                        </Typography>
-                      </TableCell>
-
-                      {/* Ruolo utente */}
-                      <TableCell>
-                        <Select
-                          value={row.appRole}
-                          size="small"
-                          onChange={(e) => handleRoleChange(row.id, e.target.value as AppRole)}
-                          sx={{ minWidth: 110, fontSize: "0.8rem" }}
-                          renderValue={(val) => (
-                            <Chip
-                              label={ROLE_LABELS_IT[val as AppRole]}
-                              size="small"
-                              color={ROLE_CHIP_COLORS[val as AppRole]}
-                              sx={{ fontWeight: 600 }}
-                            />
-                          )}
-                        >
-                          {ALL_APP_ROLES.map((r) => (
-                            <MenuItem key={r} value={r}>
-                              <Chip
-                                label={ROLE_LABELS_IT[r]}
-                                size="small"
-                                color={ROLE_CHIP_COLORS[r]}
-                                sx={{ fontWeight: 600 }}
-                              />
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </TableCell>
-
-                      {/* Ruolo Baskin */}
-                      <TableCell align="center">
-                        {row.sportRole ? (
-                          <Chip
-                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[row.sportRole],
-                              color: "#fff",
-                              fontWeight: 700,
-                              fontSize: "0.72rem",
-                            }}
-                          />
-                        ) : row.sportRoleSuggested ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.25,
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Chip
-                              label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                borderColor: ROLE_COLORS[row.sportRoleSuggested],
-                                color: ROLE_COLORS[row.sportRoleSuggested],
-                                fontWeight: 700,
-                                fontSize: "0.72rem",
-                              }}
-                              title="Autovalutazione — da confermare"
-                            />
-                            <Tooltip title="Conferma ruolo">
-                              <IconButton
-                                size="small"
-                                sx={{ p: "2px", color: "success.main" }}
-                                onClick={() => handleConfirmSuggestedRole(row)}
-                              >
-                                <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Rifiuta suggerimento">
-                              <IconButton
-                                size="small"
-                                sx={{ p: "2px", color: "error.main" }}
-                                onClick={() => handleRejectSuggestedRole(row)}
-                              >
-                                <HighlightOffIcon sx={{ fontSize: 15 }} />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.disabled">
-                            —
-                          </Typography>
-                        )}
-                      </TableCell>
-
-                      {/* Squadra */}
-                      <TableCell align="center">
-                        <Select
-                          value={
-                            row.teamMemberships.find((m) => m.team.season === getCurrentSeason())
-                              ?.teamId ?? ""
-                          }
-                          size="small"
-                          displayEmpty
-                          onChange={(e) => handleTeamChange(row, e.target.value)}
-                          sx={{ minWidth: 110, fontSize: "0.8rem" }}
-                          renderValue={(val) => {
-                            if (!val)
-                              return (
-                                <Typography variant="body2" color="text.disabled" component="span">
-                                  —
-                                </Typography>
-                              );
-                            const team =
-                              availableTeams.find((t) => t.id === val) ??
-                              row.teamMemberships.find((m) => m.teamId === val)?.team;
-                            if (!team)
-                              return (
-                                <Typography variant="body2" component="span">
-                                  —
-                                </Typography>
-                              );
-                            return (
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                                {team.color && (
-                                  <Box
-                                    component="span"
-                                    sx={{
-                                      width: 10,
-                                      height: 10,
-                                      borderRadius: "50%",
-                                      bgcolor: team.color,
-                                      flexShrink: 0,
-                                    }}
-                                  />
-                                )}
-                                <Typography variant="body2" noWrap component="span">
-                                  {team.name}
-                                </Typography>
-                              </Box>
-                            );
-                          }}
-                        >
-                          <MenuItem value="">
-                            <em>Nessuna squadra</em>
-                          </MenuItem>
-                          {availableTeams.map((t) => (
-                            <MenuItem key={t.id} value={t.id}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                {t.color && (
-                                  <Box
-                                    component="span"
-                                    sx={{
-                                      width: 10,
-                                      height: 10,
-                                      borderRadius: "50%",
-                                      bgcolor: t.color,
-                                      flexShrink: 0,
-                                    }}
-                                  />
-                                )}
-                                {t.name}
-                              </Box>
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </TableCell>
-
-                      {/* Skill (TrueSkill) — solo COACH/ADMIN */}
-                      <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                        <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
-                      </TableCell>
-
-                      {/* Genere */}
-                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        {row.gender ? (
-                          <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.disabled">
-                            —
-                          </Typography>
-                        )}
-                      </TableCell>
-
-                      {/* Azioni */}
-                      <TableCell align="center">
-                        <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                          <Tooltip title="Modifica utente">
-                            <IconButton
-                              size="medium"
-                              aria-label="Modifica utente"
-                              onClick={() => openEdit(row)}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Elimina utente">
-                            <IconButton
-                              size="medium"
-                              aria-label="Elimina utente"
-                              color="error"
-                              onClick={() => setDeleteRow(row)}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-
-                {paginated.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                      {activeFilterCount > 0
-                        ? "Nessun risultato corrisponde ai filtri selezionati."
-                        : "Nessun utente trovato."}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* ── Mobile card view utenti ── */}
-          <Box
-            sx={{
-              display: { xs: "block", sm: "none" },
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 1,
+            summary={summary}
+            activeFilterCount={activeFilterCount}
+            onResetFilters={resetFilters}
+            filterAppRoles={filterAppRoles}
+            onToggleAppRole={toggleAppRole}
+            filterSportRoles={filterSportRoles}
+            onToggleSportRole={toggleSportRole}
+            filterGender={filterGender}
+            onGenderChange={(v) => {
+              setFilterGender(v);
+              setPage(0);
+              if (serverDriven) pushFilters({ gender: v, page: 1 });
             }}
-          >
-            {paginated.length === 0 ? (
-              <Box sx={{ py: 4, textAlign: "center" }}>
-                <Typography variant="body2" color="text.secondary">
-                  {activeFilterCount > 0
-                    ? "Nessun risultato corrisponde ai filtri selezionati."
-                    : "Nessun utente trovato."}
-                </Typography>
-              </Box>
-            ) : (
-              paginated.map((row) => {
-                if (row.kind !== "user") return null;
-                const season = getCurrentSeason();
-                const team = row.teamMemberships.find((m) => m.team.season === season)?.team;
-                return (
-                  <Box
-                    key={`user-${row.id}`}
-                    sx={{
-                      px: 2,
-                      py: 1.5,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      "&:last-child": { borderBottom: 0 },
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                    }}
-                  >
-                    <Avatar
-                      src={row.image ?? undefined}
-                      sx={{ width: 36, height: 36, fontSize: 14, flexShrink: 0 }}
-                    >
-                      {(row.name ?? "?")[0].toUpperCase()}
-                    </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={700} noWrap>
-                        {row.name ?? "—"}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" noWrap display="block">
-                        {row.email}
-                      </Typography>
-                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
-                        <Chip
-                          label={ROLE_LABELS_IT[row.appRole]}
-                          size="small"
-                          color={ROLE_CHIP_COLORS[row.appRole]}
-                          sx={{ fontWeight: 600, fontSize: "0.68rem" }}
-                        />
-                        <AthleteStatusChip status={row.athleteStatus} />
-                        {row.sportRole ? (
-                          <Chip
-                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[row.sportRole],
-                              color: "common.white",
-                              fontWeight: 700,
-                              fontSize: "0.68rem",
-                            }}
-                          />
-                        ) : row.sportRoleSuggested ? (
-                          <Chip
-                            label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                              borderColor: ROLE_COLORS[row.sportRoleSuggested],
-                              color: ROLE_COLORS[row.sportRoleSuggested],
-                              fontWeight: 700,
-                              fontSize: "0.68rem",
-                            }}
-                          />
-                        ) : null}
-                        {team && (
-                          <Chip
-                            label={team.name}
-                            size="small"
-                            sx={{
-                              bgcolor: team.color ?? "primary.main",
-                              color: contrastText(team.color),
-                              fontWeight: 600,
-                              fontSize: "0.68rem",
-                            }}
-                          />
-                        )}
-                        {row.ratingMu != null && (
-                          <Chip
-                            size="small"
-                            variant="outlined"
-                            label={
-                              <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />
-                            }
-                            sx={{ fontSize: "0.68rem" }}
-                          />
-                        )}
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-                      <Tooltip title="Modifica utente">
-                        <IconButton
-                          size="medium"
-                          aria-label="Modifica utente"
-                          onClick={() => openEdit(row)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Elimina utente">
-                        <IconButton
-                          size="medium"
-                          aria-label="Elimina utente"
-                          color="error"
-                          onClick={() => setDeleteRow(row)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Box>
-                );
-              })
-            )}
-          </Box>
+            filterAthleteStatus={filterAthleteStatus}
+            onAthleteStatusChange={(v) => {
+              setFilterAthleteStatus(v);
+              setPage(0);
+              if (serverDriven) pushFilters({ athleteStatus: v, page: 1 });
+            }}
+            filterTeamId={filterTeamId}
+            onTeamFilterChange={(v) => {
+              setFilterTeamId(v);
+              setPage(0);
+              if (serverDriven) pushFilters({ teamId: v, page: 1 });
+            }}
+            teams={availableTeams}
+          />
+
+          <UsersTable
+            rows={paginated}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+            teams={availableTeams}
+            currentSeason={currentSeason}
+            activeFilterCount={activeFilterCount}
+            onRoleChange={handleRoleChange}
+            onConfirmSuggestedRole={handleConfirmSuggestedRole}
+            onRejectSuggestedRole={handleRejectSuggestedRole}
+            onTeamChange={handleTeamChange}
+            onEdit={setEditRow}
+            onDelete={setDeleteRow}
+          />
+
+          <UsersMobileCards
+            rows={paginated}
+            currentSeason={currentSeason}
+            activeFilterCount={activeFilterCount}
+            onEdit={setEditRow}
+            onDelete={setDeleteRow}
+          />
 
           {/* ── Paginazione ── */}
           <TablePagination
@@ -1498,400 +549,16 @@ export default function AdminUserList({
         </>
       )}
 
-      {/* ══════════════════════════════════════════════════════════
-          TAB 1 — Figli senza account
-      ══════════════════════════════════════════════════════════ */}
+      {/* TAB 1 — Figli senza account */}
       {activeTab === 1 && (
-        <>
-          {/* ── Barra ricerca figli ── */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
-            <TextField
-              placeholder="Cerca per nome o genitore..."
-              value={childSearch}
-              onChange={(e) => {
-                setChildSearch(e.target.value);
-                setChildPage(0);
-              }}
-              size="small"
-              sx={{ width: { xs: "100%", sm: 280 } }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-              {filteredChildren.length !== childCount
-                ? `${filteredChildren.length} di ${childCount}`
-                : `${childCount} figli senza account`}
-            </Typography>
-          </Box>
-
-          {/* ── Tabella figli ── */}
-          <TableContainer
-            component={Box}
-            sx={{
-              display: { xs: "none", sm: "block" },
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 1,
-              overflowX: "auto",
-            }}
-          >
-            <Table size="small" aria-label="Lista figli">
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    <TableSortLabel
-                      active={childSortBy === "name"}
-                      direction={childSortBy === "name" ? childSortDir : "asc"}
-                      onClick={() => handleChildSort("name")}
-                    >
-                      Nome
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Genitore</TableCell>
-                  <TableCell align="center">
-                    <TableSortLabel
-                      active={childSortBy === "sportRole"}
-                      direction={childSortBy === "sportRole" ? childSortDir : "asc"}
-                      onClick={() => handleChildSort("sportRole")}
-                    >
-                      Baskin
-                    </TableSortLabel>
-                  </TableCell>
-                  <TableCell align="center">Squadra</TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                    Skill
-                  </TableCell>
-                  <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                    Genere
-                  </TableCell>
-                  <TableCell align="center">Azioni</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredChildren
-                  .slice(childPage * childRowsPerPage, (childPage + 1) * childRowsPerPage)
-                  .map((row) => (
-                    <TableRow key={`child-${row.id}`} hover>
-                      {/* Nome */}
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: "grey.400" }}>
-                            {row.name[0].toUpperCase()}
-                          </Avatar>
-                          <Box sx={{ minWidth: 0 }}>
-                            <Typography variant="body2" fontWeight={600} noWrap>
-                              {row.name}
-                            </Typography>
-                            <AthleteStatusChip status={row.athleteStatus} />
-                          </Box>
-                        </Box>
-                      </TableCell>
-
-                      {/* Genitore */}
-                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontStyle: "italic" }}
-                        >
-                          {row.parent.name ?? row.parent.email}
-                        </Typography>
-                        <Typography variant="caption" color="text.disabled">
-                          {row.parent.email}
-                        </Typography>
-                      </TableCell>
-
-                      {/* Ruolo Baskin */}
-                      <TableCell align="center">
-                        {row.sportRole ? (
-                          <Chip
-                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[row.sportRole],
-                              color: "#fff",
-                              fontWeight: 700,
-                              fontSize: "0.72rem",
-                            }}
-                          />
-                        ) : (
-                          <Typography variant="body2" color="text.disabled">
-                            —
-                          </Typography>
-                        )}
-                      </TableCell>
-
-                      {/* Squadra */}
-                      <TableCell align="center">
-                        <Select
-                          value={
-                            row.teamMemberships.find((m) => m.team.season === getCurrentSeason())
-                              ?.teamId ?? ""
-                          }
-                          size="small"
-                          displayEmpty
-                          onChange={(e) =>
-                            handleTeamChange({ ...row, kind: "child" }, e.target.value)
-                          }
-                          sx={{ minWidth: 110, fontSize: "0.8rem" }}
-                          renderValue={(val) => {
-                            if (!val)
-                              return (
-                                <Typography variant="body2" color="text.disabled" component="span">
-                                  —
-                                </Typography>
-                              );
-                            const team =
-                              availableTeams.find((t) => t.id === val) ??
-                              row.teamMemberships.find((m) => m.teamId === val)?.team;
-                            if (!team)
-                              return (
-                                <Typography variant="body2" component="span">
-                                  —
-                                </Typography>
-                              );
-                            return (
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                                {team.color && (
-                                  <Box
-                                    component="span"
-                                    sx={{
-                                      width: 10,
-                                      height: 10,
-                                      borderRadius: "50%",
-                                      bgcolor: team.color,
-                                      flexShrink: 0,
-                                    }}
-                                  />
-                                )}
-                                <Typography variant="body2" noWrap component="span">
-                                  {team.name}
-                                </Typography>
-                              </Box>
-                            );
-                          }}
-                        >
-                          <MenuItem value="">
-                            <em>Nessuna squadra</em>
-                          </MenuItem>
-                          {availableTeams.map((t) => (
-                            <MenuItem key={t.id} value={t.id}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                {t.color && (
-                                  <Box
-                                    component="span"
-                                    sx={{
-                                      width: 10,
-                                      height: 10,
-                                      borderRadius: "50%",
-                                      bgcolor: t.color,
-                                      flexShrink: 0,
-                                    }}
-                                  />
-                                )}
-                                {t.name}
-                              </Box>
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </TableCell>
-
-                      {/* Skill (TrueSkill) — solo COACH/ADMIN */}
-                      <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                        <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
-                      </TableCell>
-
-                      {/* Genere */}
-                      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                        {row.gender ? (
-                          <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
-                        ) : (
-                          <Typography variant="body2" color="text.disabled">
-                            —
-                          </Typography>
-                        )}
-                      </TableCell>
-
-                      {/* Azioni */}
-                      <TableCell align="center">
-                        <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                          <Tooltip title="Modifica figlio">
-                            <IconButton
-                              size="medium"
-                              aria-label="Modifica figlio"
-                              onClick={() => openEdit({ ...row, kind: "child" })}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Elimina figlio">
-                            <IconButton
-                              size="medium"
-                              aria-label="Elimina figlio"
-                              color="error"
-                              onClick={() => setDeleteRow({ ...row, kind: "child" })}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-
-                {filteredChildren.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                      {childSearch
-                        ? "Nessun risultato corrisponde alla ricerca."
-                        : "Nessun figlio senza account trovato."}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {/* ── Mobile card view figli ── */}
-          <Box
-            sx={{
-              display: { xs: "block", sm: "none" },
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 1,
-            }}
-          >
-            {filteredChildren
-              .slice(childPage * childRowsPerPage, (childPage + 1) * childRowsPerPage)
-              .map((row) => {
-                const season = getCurrentSeason();
-                const team = row.teamMemberships.find((m) => m.team.season === season)?.team;
-                return (
-                  <Box
-                    key={`child-${row.id}`}
-                    sx={{
-                      px: 2,
-                      py: 1.5,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      "&:last-child": { borderBottom: 0 },
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        fontSize: 14,
-                        bgcolor: "grey.400",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {row.name[0].toUpperCase()}
-                    </Avatar>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={700} noWrap>
-                        {row.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" noWrap display="block">
-                        Figlio di {row.parent.name ?? row.parent.email}
-                      </Typography>
-                      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
-                        <AthleteStatusChip status={row.athleteStatus} />
-                        {row.sportRole && (
-                          <Chip
-                            label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[row.sportRole],
-                              color: "common.white",
-                              fontWeight: 700,
-                              fontSize: "0.68rem",
-                            }}
-                          />
-                        )}
-                        {team && (
-                          <Chip
-                            label={team.name}
-                            size="small"
-                            sx={{
-                              bgcolor: team.color ?? "primary.main",
-                              color: contrastText(team.color),
-                              fontWeight: 600,
-                              fontSize: "0.68rem",
-                            }}
-                          />
-                        )}
-                        {row.ratingMu != null && (
-                          <Chip
-                            size="small"
-                            variant="outlined"
-                            label={
-                              <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />
-                            }
-                            sx={{ fontSize: "0.68rem" }}
-                          />
-                        )}
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-                      <Tooltip title="Modifica figlio">
-                        <IconButton
-                          size="medium"
-                          aria-label="Modifica figlio"
-                          onClick={() => openEdit({ ...row, kind: "child" })}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Elimina figlio">
-                        <IconButton
-                          size="medium"
-                          aria-label="Elimina figlio"
-                          color="error"
-                          onClick={() => setDeleteRow({ ...row, kind: "child" })}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </Box>
-                );
-              })}
-            {filteredChildren.length === 0 && (
-              <Box sx={{ py: 4, textAlign: "center" }}>
-                <Typography variant="body2" color="text.secondary">
-                  {childSearch
-                    ? "Nessun risultato corrisponde alla ricerca."
-                    : "Nessun figlio senza account trovato."}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          <TablePagination
-            component="div"
-            count={filteredChildren.length}
-            page={childPage}
-            onPageChange={(_, p) => setChildPage(p)}
-            rowsPerPage={childRowsPerPage}
-            onRowsPerPageChange={(e) => {
-              setChildRowsPerPage(parseInt(e.target.value));
-              setChildPage(0);
-            }}
-            rowsPerPageOptions={[10, 25, 50]}
-            labelRowsPerPage="Righe:"
-            labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-          />
-        </>
+        <ChildrenTab
+          childRows={childRows}
+          teams={availableTeams}
+          currentSeason={currentSeason}
+          onTeamChange={handleTeamChange}
+          onEdit={setEditRow}
+          onDelete={setDeleteRow}
+        />
       )}
 
       {/* ── Dialog conferma eliminazione ── */}
@@ -1923,351 +590,21 @@ export default function AdminUserList({
         </DialogActions>
       </Dialog>
 
-      {/* ── Dialog modifica utente ── */}
-      <Dialog open={!!editRow} onClose={() => setEditRow(null)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          Modifica — {editRow?.name ?? (editRow?.kind === "user" ? editRow.email : "")}
-        </DialogTitle>
-        <DialogContent>
-          <Stack spacing={2.5} sx={{ mt: 1 }}>
-            {/* Nome */}
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                display="block"
-                gutterBottom
-              >
-                Nome completo
-              </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                value={editState.name}
-                onChange={(e) => setEditState((s) => ({ ...s, name: e.target.value }))}
-                inputProps={{ maxLength: 100 }}
-                placeholder="Es. Mario Rossi"
-                disabled={!isAdmin}
-              />
-            </Box>
-
-            {/* Email (solo utenti) */}
-            {editRow?.kind === "user" && (
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={600}
-                  display="block"
-                  gutterBottom
-                >
-                  Email
-                </Typography>
-                <TextField
-                  fullWidth
-                  size="small"
-                  type="email"
-                  value={editState.email}
-                  onChange={(e) => setEditState((s) => ({ ...s, email: e.target.value }))}
-                  inputProps={{ maxLength: 254 }}
-                  disabled={!isAdmin}
-                />
-              </Box>
-            )}
-
-            {/* Genere */}
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                display="block"
-                gutterBottom
-              >
-                Genere
-              </Typography>
-              <Select
-                fullWidth
-                size="small"
-                displayEmpty
-                value={editState.gender}
-                onChange={(e) => setEditState((s) => ({ ...s, gender: e.target.value }))}
-              >
-                <MenuItem value="">
-                  <em>Non impostato</em>
-                </MenuItem>
-                <MenuItem value="MALE">Maschio</MenuItem>
-                <MenuItem value="FEMALE">Femmina</MenuItem>
-              </Select>
-            </Box>
-
-            {/* Data di nascita */}
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                display="block"
-                gutterBottom
-              >
-                Data di nascita (opzionale)
-              </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                type="date"
-                value={editState.birthDate}
-                onChange={(e) => setEditState((s) => ({ ...s, birthDate: e.target.value }))}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
-            </Box>
-
-            {/* Stato atleta */}
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                display="block"
-                gutterBottom
-              >
-                Stato atleta
-              </Typography>
-              <Select
-                fullWidth
-                size="small"
-                displayEmpty
-                value={editState.athleteStatus}
-                onChange={(e) => setEditState((s) => ({ ...s, athleteStatus: e.target.value }))}
-              >
-                <MenuItem value="">
-                  <em>Attivo</em>
-                </MenuItem>
-                <MenuItem value="INACTIVE_SEASON">{ATHLETE_STATUS_LABELS.INACTIVE_SEASON}</MenuItem>
-                <MenuItem value="FORMER">{ATHLETE_STATUS_LABELS.FORMER}</MenuItem>
-              </Select>
-            </Box>
-
-            <Divider />
-
-            {/* Ruolo utente (solo per User con account) */}
-            {editRow?.kind === "user" && (
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={600}
-                  display="block"
-                  gutterBottom
-                >
-                  Ruolo utente
-                </Typography>
-                <Select
-                  fullWidth
-                  size="small"
-                  value={editState.appRole}
-                  onChange={(e) => setEditState((s) => ({ ...s, appRole: e.target.value }))}
-                  renderValue={(val) => (
-                    <Chip
-                      label={ROLE_LABELS_IT[val as AppRole]}
-                      size="small"
-                      color={ROLE_CHIP_COLORS[val as AppRole]}
-                      sx={{ fontWeight: 600 }}
-                    />
-                  )}
-                >
-                  {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
-                    <MenuItem key={r} value={r}>
-                      <Chip
-                        label={ROLE_LABELS_IT[r]}
-                        size="small"
-                        color={ROLE_CHIP_COLORS[r]}
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Box>
-            )}
-
-            {/* Ruolo Baskin */}
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                display="block"
-                gutterBottom
-              >
-                Ruolo Baskin (1–5)
-              </Typography>
-              {editRow?.kind === "user" && editRow.sportRoleSuggested && !editRow.sportRole && (
-                <Typography variant="caption" color="warning.main" display="block" sx={{ mb: 0.5 }}>
-                  Autovalutazione:{" "}
-                  {sportRoleLabel(editRow.sportRoleSuggested, editRow.sportRoleSuggestedVariant)}
-                  {editRow.sportRoleSuggestedVariant
-                    ? ` — ${SPORT_ROLE_VARIANT_LABELS[editRow.sportRoleSuggestedVariant] ?? ""}`
-                    : ""}
-                </Typography>
-              )}
-              <Select
-                fullWidth
-                size="small"
-                displayEmpty
-                value={editState.sportRole}
-                onChange={(e) =>
-                  setEditState((s) => ({ ...s, sportRole: e.target.value, sportRoleVariant: "" }))
-                }
-              >
-                <MenuItem value="">
-                  <em>Non impostato</em>
-                </MenuItem>
-                {[1, 2, 3, 4, 5].map((r) => (
-                  <MenuItem key={r} value={r.toString()}>
-                    <Chip
-                      label={sportRoleLabel(r)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[r],
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "0.72rem",
-                      }}
-                    />
-                  </MenuItem>
-                ))}
-              </Select>
-            </Box>
-
-            {/* Variante ruolo (solo 1 o 2) */}
-            {["1", "2"].includes(editState.sportRole) && (
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={600}
-                  display="block"
-                  gutterBottom
-                >
-                  Variante ruolo
-                </Typography>
-                <Select
-                  fullWidth
-                  size="small"
-                  displayEmpty
-                  value={editState.sportRoleVariant}
-                  onChange={(e) =>
-                    setEditState((s) => ({ ...s, sportRoleVariant: e.target.value }))
-                  }
-                >
-                  <MenuItem value="">
-                    <em>Nessuna variante (standard)</em>
-                  </MenuItem>
-                  {editState.sportRole === "1" && (
-                    <MenuItem value="S">S — {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
-                  )}
-                  {editState.sportRole === "2" && [
-                    <MenuItem key="T" value="T">
-                      T — {SPORT_ROLE_VARIANT_LABELS["T"]}
-                    </MenuItem>,
-                    <MenuItem key="P" value="P">
-                      P — {SPORT_ROLE_VARIANT_LABELS["P"]}
-                    </MenuItem>,
-                    <MenuItem key="R" value="R">
-                      R — {SPORT_ROLE_VARIANT_LABELS["R"]}
-                    </MenuItem>,
-                  ]}
-                </Select>
-              </Box>
-            )}
-
-            <Divider />
-
-            {/* Squadra stagione corrente */}
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                display="block"
-                gutterBottom
-              >
-                Squadra ({getCurrentSeason()})
-              </Typography>
-              {availableTeams.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                  Nessuna squadra per la stagione corrente
-                </Typography>
-              ) : (
-                <Select
-                  fullWidth
-                  size="small"
-                  displayEmpty
-                  value={editTeamId}
-                  onChange={(e) => setEditTeamId(e.target.value)}
-                >
-                  <MenuItem value="">
-                    <em>Nessuna squadra</em>
-                  </MenuItem>
-                  {availableTeams.map((t) => (
-                    <MenuItem key={t.id} value={t.id}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        {t.color && (
-                          <Box
-                            component="span"
-                            sx={{
-                              width: 12,
-                              height: 12,
-                              borderRadius: "50%",
-                              bgcolor: t.color,
-                              flexShrink: 0,
-                            }}
-                          />
-                        )}
-                        {t.name}
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-            </Box>
-
-            {/* Storico ruolo (solo utenti con account) */}
-            {editRow?.kind === "user" && editRow.sportRoleHistory.length > 0 && (
-              <Box>
-                <Divider sx={{ mb: 1.5 }} />
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
-                  <HistoryIcon fontSize="small" color="action" />
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                    Storico ruolo Baskin
-                  </Typography>
-                </Box>
-                <Stack spacing={0.5}>
-                  {editRow.sportRoleHistory.map((h, i) => (
-                    <Typography key={i} variant="caption" color="text.secondary">
-                      {sportRoleLabel(h.sportRole)}
-                      {" · "}
-                      {format(new Date(h.changedAt), "d MMM yyyy", { locale: it })}
-                    </Typography>
-                  ))}
-                </Stack>
-              </Box>
-            )}
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setEditRow(null)}>Annulla</Button>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleSaveAthleteData}
-            disabled={saving}
-          >
-            {saving ? "Salvataggio..." : "Salva"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* ── Dialog modifica utente/figlio (montato solo quando aperto) ── */}
+      {editRow && (
+        <UserEditDialog
+          row={editRow}
+          isAdmin={isAdmin}
+          teams={availableTeams}
+          currentSeason={currentSeason}
+          onClose={() => setEditRow(null)}
+          onSaved={(updated) =>
+            setRows((prev) =>
+              prev.map((r) => (r.id === updated.id && r.kind === updated.kind ? updated : r))
+            )
+          }
+        />
+      )}
     </Box>
   );
 }
