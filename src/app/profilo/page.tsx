@@ -142,14 +142,6 @@ export default async function ProfiloPage() {
             size="small"
             sx={{ fontWeight: 600 }}
           />
-          <Chip
-            label={t("trainingsCount", {
-              count: user._count.registrations + (user.childAccount?._count?.registrations ?? 0),
-            })}
-            size="small"
-            variant="outlined"
-            sx={{ fontWeight: 600 }}
-          />
           {currentTeams.map((m) => (
             <Chip
               key={m.id}

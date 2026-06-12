@@ -82,14 +82,18 @@ export async function PUT(req: Request, { params }: Params) {
 
   // Non si possono convocare giocatori che hanno marcato "non disponibile".
   // Chi non ha risposto è considerato non disponibile (default).
-  if (userIds.length > 0 || childIds.length > 0) {
+  // Eccezione: i giocatori in prestito (non membri della squadra) possono essere
+  // aggiunti dallo staff anche senza conferma di disponibilità (override).
+  const checkUserIds = userIds.filter((id) => !isLoanParticipation(loanLookup, { userId: id }));
+  const checkChildIds = childIds.filter((id) => !isLoanParticipation(loanLookup, { childId: id }));
+  if (checkUserIds.length > 0 || checkChildIds.length > 0) {
     const availables = await prisma.matchAvailability.findMany({
       where: {
         matchId,
         available: true,
         OR: [
-          userIds.length > 0 ? { userId: { in: userIds } } : null,
-          childIds.length > 0 ? { childId: { in: childIds } } : null,
+          checkUserIds.length > 0 ? { userId: { in: checkUserIds } } : null,
+          checkChildIds.length > 0 ? { childId: { in: checkChildIds } } : null,
         ].filter((x): x is NonNullable<typeof x> => x !== null),
       },
       select: { userId: true, childId: true },
@@ -101,8 +105,8 @@ export async function PUT(req: Request, { params }: Params) {
       availables.map((a) => a.childId).filter((id): id is string => !!id)
     );
     const blocked: string[] = [];
-    for (const id of userIds) if (!availableUserIds.has(id)) blocked.push(id);
-    for (const id of childIds) if (!availableChildIds.has(id)) blocked.push(id);
+    for (const id of checkUserIds) if (!availableUserIds.has(id)) blocked.push(id);
+    for (const id of checkChildIds) if (!availableChildIds.has(id)) blocked.push(id);
     if (blocked.length > 0) {
       return NextResponse.json(
         { error: "Non puoi convocare giocatori non disponibili" },

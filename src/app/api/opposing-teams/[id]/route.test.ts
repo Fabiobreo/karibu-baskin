@@ -12,7 +12,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
-  isAdminUser: vi.fn().mockResolvedValue(false),
+  isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("@/lib/authjs", () => ({
@@ -25,13 +25,13 @@ vi.mock("@/lib/audit", () => ({
 
 import { PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
   opposingTeam: { update: Mock; delete: Mock };
 };
 const p = prisma as unknown as PrismaMock;
-const mockIsAdmin = isAdminUser as Mock;
+const mockIsStaff = isCoachOrAdmin as Mock;
 
 const makeParams = (id: string) =>
   ({ params: Promise.resolve({ id }) }) as { params: Promise<{ id: string }> };
@@ -41,11 +41,11 @@ const baseTeam = { id: "opp-1", name: "Basket Vicenza", city: "Vicenza", notes: 
 describe("PUT /api/opposing-teams/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsAdmin.mockResolvedValue(false);
+    mockIsStaff.mockResolvedValue(false);
     p.opposingTeam.update.mockResolvedValue(baseTeam);
   });
 
-  it("restituisce 403 per utente non admin", async () => {
+  it("restituisce 403 per utente non staff", async () => {
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -56,7 +56,7 @@ describe("PUT /api/opposing-teams/[id]", () => {
   });
 
   it("restituisce 400 per JSON non valido", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -67,7 +67,7 @@ describe("PUT /api/opposing-teams/[id]", () => {
   });
 
   it("aggiorna la squadra con trim e restituisce 200", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -81,7 +81,7 @@ describe("PUT /api/opposing-teams/[id]", () => {
   });
 
   it("imposta city=null per stringa vuota", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -93,7 +93,7 @@ describe("PUT /api/opposing-teams/[id]", () => {
   });
 
   it("non aggiorna i campi non forniti nel body", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -110,11 +110,11 @@ describe("PUT /api/opposing-teams/[id]", () => {
 describe("DELETE /api/opposing-teams/[id]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsAdmin.mockResolvedValue(false);
+    mockIsStaff.mockResolvedValue(false);
     p.opposingTeam.delete.mockResolvedValue(baseTeam);
   });
 
-  it("restituisce 403 per utente non admin", async () => {
+  it("restituisce 403 per utente non staff", async () => {
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "DELETE",
     });
@@ -123,7 +123,7 @@ describe("DELETE /api/opposing-teams/[id]", () => {
   });
 
   it("elimina la squadra avversaria e restituisce 204", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams/opp-1", {
       method: "DELETE",
     });

@@ -24,9 +24,11 @@ function ThemedContent({ children }: { children: React.ReactNode }) {
 export default function Providers({
   children,
   session,
+  colorMode = "system",
 }: {
   children: React.ReactNode;
   session: Session | null;
+  colorMode?: "light" | "dark" | "system";
 }) {
   const [queryClient] = useState(
     () =>
@@ -44,7 +46,7 @@ export default function Providers({
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
         <LocaleContextProvider>
-          <ThemeContextProvider>
+          <ThemeContextProvider initialMode={colorMode}>
             <ThemedContent>
               <NotificationProvider>{children}</NotificationProvider>
             </ThemedContent>

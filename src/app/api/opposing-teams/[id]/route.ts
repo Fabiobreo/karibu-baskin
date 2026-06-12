@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { OpposingTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateOpposingTeamSlug } from "@/lib/slugUtils";
+import { deleteImage } from "@/lib/blob";
 
 type Params = { params: Promise<{ id: string }> };
 
 export async function PUT(req: Request, { params }: Params) {
   const authSession = await auth();
-  if (!(await isAdminUser())) {
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
@@ -27,7 +28,7 @@ export async function PUT(req: Request, { params }: Params) {
   const { id } = await params;
   const before = await prisma.opposingTeam.findUnique({
     where: { id },
-    select: { name: true, city: true, notes: true, slug: true },
+    select: { name: true, city: true, notes: true, slug: true, imageUrl: true },
   });
   let newSlug: string | undefined;
   if (body.name !== undefined && body.name.trim() !== before?.name) {
@@ -44,9 +45,16 @@ export async function PUT(req: Request, { params }: Params) {
       ...(body.website !== undefined && { website: body.website?.trim() || null }),
       ...(body.colors !== undefined && { colors: body.colors?.trim() || null }),
       ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
+      ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl || null }),
       ...("ratingMu" in body && { ratingMu: body.ratingMu ?? null }),
     },
   });
+  // Se l'immagine è stata sostituita o rimossa, elimina il vecchio blob.
+  if (body.imageUrl !== undefined && before?.imageUrl && before.imageUrl !== team.imageUrl) {
+    deleteImage(before.imageUrl).catch((err) =>
+      console.error("[blob] delete old opposing team image", err)
+    );
+  }
   if (authSession?.user?.id) {
     logAudit({
       actorId: authSession.user.id,
@@ -62,7 +70,7 @@ export async function PUT(req: Request, { params }: Params) {
 
 export async function DELETE(_req: Request, { params }: Params) {
   const authSession = await auth();
-  if (!(await isAdminUser())) {
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 

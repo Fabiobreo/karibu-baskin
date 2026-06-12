@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Box, Container, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
+import { Box, Button, Container, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import type { CandidateInput } from "@/lib/callupStats";
-import type { TeamCallupContext } from "@/lib/callupContext";
+import type { TeamCallupContext, LoanCandidate } from "@/lib/callupContext";
 import LineupOptimizerSection from "@/components/teams/LineupOptimizerSection";
 import {
   useConvocazioniSelection,
@@ -20,6 +21,7 @@ import ConvocazioniFilters, {
 } from "@/components/matches/convocazioni/ConvocazioniFilters";
 import ConvocazioniTable from "@/components/matches/convocazioni/ConvocazioniTable";
 import ConvocazioniUnavailable from "@/components/matches/convocazioni/ConvocazioniUnavailable";
+import ConvocazioniLoanDialog from "@/components/matches/convocazioni/ConvocazioniLoanDialog";
 
 interface Props {
   matchId: string;
@@ -28,6 +30,21 @@ interface Props {
   windowEligibleSessions: number;
   teams: TeamCallupContext[];
   opponentMu?: number | null;
+  loanPool?: LoanCandidate[];
+}
+
+/** Costruisce una riga candidato per un prestito (statistiche neutre). */
+function loanToRow(lc: LoanCandidate): ConvocazioneStatRow {
+  return {
+    candidate: lc.candidate,
+    presences: 0,
+    absences: 0,
+    eligibleSessions: 0,
+    seasonCallups: 0,
+    daysSinceLastCallup: null,
+    availability: null,
+    loanFrom: lc.teamName,
+  };
 }
 
 export default function ConvocazioniClient({
@@ -36,6 +53,7 @@ export default function ConvocazioniClient({
   windowEligibleSessions,
   teams,
   opponentMu = null,
+  loanPool = [],
 }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -45,6 +63,11 @@ export default function ConvocazioniClient({
   const [sortKey, setSortKey] = useState<ConvocazioniSortKey>("role");
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loanDialogOpen, setLoanDialogOpen] = useState(false);
+  // Prestiti aggiunti manualmente, per squadra (id squadra → righe candidato).
+  const [loanRowsByTeam, setLoanRowsByTeam] = useState<Map<string, ConvocazioneStatRow[]>>(
+    new Map()
+  );
 
   const activeTeam = teams[activeIndex] ?? teams[0];
   const {
@@ -57,21 +80,53 @@ export default function ConvocazioniClient({
     totalSelectedAll,
   } = useConvocazioniSelection(teams, activeTeam);
 
+  // Rosa + prestiti aggiunti per la squadra attiva. Dedup: se un prestito è
+  // già stato persistito (presente in activeTeam.stats dopo un refresh), la
+  // riga transitoria viene scartata.
+  const activeStats = useMemo<ConvocazioneStatRow[]>(() => {
+    const base = activeTeam.stats;
+    const baseKeys = new Set(base.map((r) => `${r.candidate.kind}-${r.candidate.id}`));
+    const loans = (loanRowsByTeam.get(activeTeam.id) ?? []).filter(
+      (r) => !baseKeys.has(`${r.candidate.kind}-${r.candidate.id}`)
+    );
+    return [...base, ...loans];
+  }, [activeTeam.stats, activeTeam.id, loanRowsByTeam]);
+
+  // Chiavi già presenti tra i candidati attivi (per filtrare il pool prestiti)
+  const activeExcludeKeys = useMemo(() => {
+    const s = new Set<string>();
+    for (const r of activeStats) s.add(`${r.candidate.kind}-${r.candidate.id}`);
+    return s;
+  }, [activeStats]);
+
+  function handleAddLoan(lc: LoanCandidate) {
+    const row = loanToRow(lc);
+    const key = `${lc.candidate.kind}-${lc.candidate.id}`;
+    setLoanRowsByTeam((prev) => {
+      const arr = prev.get(activeTeam.id) ?? [];
+      if (arr.some((r) => `${r.candidate.kind}-${r.candidate.id}` === key)) return prev;
+      const next = new Map(prev);
+      next.set(activeTeam.id, [...arr, row]);
+      return next;
+    });
+    toggle(row); // seleziona subito il prestito
+  }
+
   const filteredAvailable = useMemo(() => {
-    return activeTeam.stats.filter(
+    return activeStats.filter(
       (s) =>
         s.availability !== false &&
         (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
-  }, [activeTeam.stats, roleFilter]);
+  }, [activeStats, roleFilter]);
 
   const filteredUnavailable = useMemo(() => {
-    return activeTeam.stats.filter(
+    return activeStats.filter(
       (s) =>
         s.availability === false &&
         (roleFilter === null ? true : s.candidate.sportRole === roleFilter)
     );
-  }, [activeTeam.stats, roleFilter]);
+  }, [activeStats, roleFilter]);
 
   const sorted = useMemo(() => {
     const copy: ConvocazioneStatRow[] = [...filteredAvailable];
@@ -103,7 +158,7 @@ export default function ConvocazioniClient({
 
   const coverage = useMemo(() => {
     const map = new Map<number, number>();
-    for (const s of activeTeam.stats) {
+    for (const s of activeStats) {
       if (!isSelected(s)) continue;
       const r = s.candidate.sportRole;
       if (r == null) continue;
@@ -111,13 +166,13 @@ export default function ConvocazioniClient({
     }
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTeam.stats, selectionByTeam, activeIndex]);
+  }, [activeStats, selectionByTeam, activeIndex]);
 
   // Candidati selezionati nella squadra attiva — passati all'optimizer
   const selectedCandidates = useMemo<CandidateInput[]>(() => {
-    return activeTeam.stats.filter((s) => isSelected(s)).map((s) => s.candidate);
+    return activeStats.filter((s) => isSelected(s)).map((s) => s.candidate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTeam.stats, selectionByTeam, activeIndex]);
+  }, [activeStats, selectionByTeam, activeIndex]);
 
   async function handleSave() {
     setSaving(true);
@@ -241,6 +296,19 @@ export default function ConvocazioniClient({
         onSortKeyChange={setSortKey}
       />
 
+      {loanPool.length > 0 && (
+        <Box sx={{ mb: 1.5 }}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<SwapHorizIcon />}
+            onClick={() => setLoanDialogOpen(true)}
+          >
+            Aggiungi prestito
+          </Button>
+        </Box>
+      )}
+
       <ConvocazioniTable
         rows={sorted}
         roleFilter={roleFilter}
@@ -249,6 +317,14 @@ export default function ConvocazioniClient({
       />
 
       <ConvocazioniUnavailable rows={filteredUnavailable} />
+
+      <ConvocazioniLoanDialog
+        open={loanDialogOpen}
+        onClose={() => setLoanDialogOpen(false)}
+        pool={loanPool}
+        excludeKeys={activeExcludeKeys}
+        onAdd={handleAddLoan}
+      />
 
       {/* Analisi formazione */}
       <LineupOptimizerSection selectedCandidates={selectedCandidates} opponentMu={opponentMu} />

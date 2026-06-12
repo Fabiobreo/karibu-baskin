@@ -8,6 +8,8 @@ interface EntityHeroProps {
   chip?: string;
   subtitle?: string;
   breadcrumb?: React.ReactNode;
+  /** Azione opzionale ancorata in alto a destra (es. pulsante modifica). */
+  action?: React.ReactNode;
   py?: { xs: number; md: number };
   maxWidth?: ContainerProps["maxWidth"];
   children?: React.ReactNode;
@@ -19,6 +21,7 @@ export default function EntityHero({
   chip,
   subtitle,
   breadcrumb,
+  action,
   py = { xs: 5, md: 7 },
   maxWidth = "md",
   children,
@@ -75,6 +78,19 @@ export default function EntityHero({
           }}
         >
           {breadcrumb}
+        </Box>
+      )}
+
+      {action && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 20 },
+            zIndex: 3,
+          }}
+        >
+          {action}
         </Box>
       )}
 

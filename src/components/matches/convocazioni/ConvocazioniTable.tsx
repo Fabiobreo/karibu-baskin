@@ -16,6 +16,7 @@ import { alpha } from "@mui/material/styles";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import StarIcon from "@mui/icons-material/Star";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 
@@ -141,6 +142,23 @@ export default function ConvocazioniTable({
                                 height: 16,
                               }}
                             />
+                          )}
+                          {row.loanFrom && (
+                            <Tooltip title={`In prestito da ${row.loanFrom}`}>
+                              <Chip
+                                icon={<SwapHorizIcon sx={{ fontSize: "12px !important" }} />}
+                                label={`Prestito · ${row.loanFrom}`}
+                                size="small"
+                                sx={{
+                                  bgcolor: "secondary.main",
+                                  color: "secondary.contrastText",
+                                  fontWeight: 700,
+                                  fontSize: "0.58rem",
+                                  height: 16,
+                                  "& .MuiChip-icon": { color: "secondary.contrastText" },
+                                }}
+                              />
+                            </Tooltip>
                           )}
                         </Box>
                         {role && (

@@ -2,8 +2,11 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { Theme } from "@mui/material/styles";
 import { lightTheme, darkTheme } from "@/theme";
+import { COLOR_MODE_COOKIE, type ColorMode } from "@/lib/colorMode";
 
-type ColorMode = "light" | "dark" | "system";
+// Persistito in un cookie (non in localStorage) così il Server Component può
+// leggerlo e renderizzare il tema corretto al primo paint → niente hydration
+// mismatch sulle classi Emotion (che dipendono dal theme object al render).
 
 interface ThemeCtx {
   mode: ColorMode;
@@ -17,28 +20,52 @@ const ThemeContext = createContext<ThemeCtx>({
   activeTheme: lightTheme,
 });
 
-const STORAGE_KEY = "karibu-color-mode";
-
 function resolveTheme(mode: ColorMode, prefersDark: boolean): Theme {
   if (mode === "dark") return darkTheme;
   if (mode === "light") return lightTheme;
   return prefersDark ? darkTheme : lightTheme;
 }
 
-export function ThemeContextProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ColorMode>(() => {
-    if (typeof window === "undefined") return "system";
-    const saved = localStorage.getItem(STORAGE_KEY) as ColorMode | null;
-    if (saved === "light" || saved === "dark" || saved === "system") return saved;
-    return "system";
-  });
-  const [prefersDark, setPrefersDark] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
+function readCookieMode(): ColorMode | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${COLOR_MODE_COOKIE}=([^;]+)`));
+  const val = match?.[1];
+  if (val === "light" || val === "dark" || val === "system") return val;
+  return null;
+}
+
+function writeCookieMode(mode: ColorMode) {
+  // 1 anno, path root, lax — coerente con il cookie della lingua
+  document.cookie = `${COLOR_MODE_COOKIE}=${mode}; path=/; max-age=31536000; samesite=lax`;
+}
+
+export function ThemeContextProvider({
+  initialMode = "system",
+  children,
+}: {
+  initialMode?: ColorMode;
+  children: React.ReactNode;
+}) {
+  // Init deterministico: stesso valore lato server e al primo render client
+  // (arriva dal cookie letto nel Server Component). Mai leggere localStorage/
+  // matchMedia qui, altrimenti il primo render client divergerebbe dall'SSR.
+  const [mode, setModeState] = useState<ColorMode>(initialMode);
+  // prefersDark parte sempre false (deterministico) e viene risolto dopo il mount.
+  const [prefersDark, setPrefersDark] = useState(false);
 
   useEffect(() => {
+    // Migrazione una-tantum dalla vecchia persistenza localStorage al cookie.
+    if (!readCookieMode()) {
+      const legacy = localStorage.getItem(COLOR_MODE_COOKIE) as ColorMode | null;
+      if (legacy === "light" || legacy === "dark" || legacy === "system") {
+        writeCookieMode(legacy);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- migrazione una-tantum localStorage→cookie, solo al primo mount
+        setModeState(legacy);
+      }
+    }
+
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    setPrefersDark(mq.matches);
     const handler = (e: MediaQueryListEvent) => setPrefersDark(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
@@ -46,7 +73,7 @@ export function ThemeContextProvider({ children }: { children: React.ReactNode }
 
   const setMode = useCallback((newMode: ColorMode) => {
     setModeState(newMode);
-    localStorage.setItem(STORAGE_KEY, newMode);
+    writeCookieMode(newMode);
   }, []);
 
   const activeTheme = resolveTheme(mode, prefersDark);

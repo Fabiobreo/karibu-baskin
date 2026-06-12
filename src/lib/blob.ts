@@ -2,7 +2,14 @@ import { put, del } from "@vercel/blob";
 import sharp from "sharp";
 import { randomUUID } from "crypto";
 
-export type BlobFolder = "avatars" | "teams" | "matches" | "events" | "posts" | "gallery";
+export type BlobFolder =
+  | "avatars"
+  | "teams"
+  | "matches"
+  | "events"
+  | "posts"
+  | "gallery"
+  | "opponents";
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
 const MAX_INPUT_BYTES = 5 * 1024 * 1024; // 5 MB

@@ -29,6 +29,8 @@ import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { contrastText } from "@/lib/colorUtils";
+import { auth } from "@/lib/authjs";
+import OpposingTeamEditButton from "@/components/matches/OpposingTeamEditButton";
 
 export const revalidate = 60;
 
@@ -43,12 +45,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function OpposingTeamPublicPage({ params }: Params) {
   const { slug } = await params;
-  const [t, tMatches, locale, { matchResultShort }] = await Promise.all([
+  const [t, tMatches, locale, { matchResultShort }, session] = await Promise.all([
     getTranslations("teams"),
     getTranslations("matches"),
     getLocale(),
     getEntityLabels(),
+    auth(),
   ]);
+  const isStaff = session?.user?.appRole === "COACH" || session?.user?.appRole === "ADMIN";
   const dateLocale = getDateFnsLocale(locale);
   const matchTypeLabel = (type: string) =>
     ({
@@ -133,6 +137,22 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
         chip={t("opposingChip")}
         title={team.name}
         color="#E65100"
+        action={
+          isStaff ? (
+            <OpposingTeamEditButton
+              teamId={team.id}
+              initial={{
+                name: team.name,
+                city: team.city,
+                address: team.address,
+                website: team.website,
+                colors: team.colors,
+                notes: team.notes,
+                imageUrl: team.imageUrl,
+              }}
+            />
+          ) : undefined
+        }
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
@@ -161,6 +181,24 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
         }
       />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        {team.imageUrl && (
+          <Box
+            component="img"
+            src={team.imageUrl}
+            alt={team.name}
+            sx={{
+              width: "100%",
+              maxHeight: 280,
+              objectFit: "cover",
+              borderRadius: 2,
+              border: "1px solid",
+              borderColor: "divider",
+              display: "block",
+              mb: 3,
+            }}
+          />
+        )}
+
         {/* Info aggiuntive squadra */}
         <Box sx={{ mb: 4 }}>
           <Box
@@ -258,7 +296,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                     </Typography>
                     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
                       <Chip
-                        label={`${totals.wins} V`}
+                        label={`${totals.wins} ${tMatches("resultWinShort")}`}
                         sx={{
                           bgcolor: "match.win",
                           color: "#fff",
@@ -267,7 +305,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         }}
                       />
                       <Chip
-                        label={`${totals.draws} N`}
+                        label={`${totals.draws} ${tMatches("resultDrawShort")}`}
                         sx={{
                           bgcolor: "match.draw",
                           color: "#fff",
@@ -276,7 +314,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         }}
                       />
                       <Chip
-                        label={`${totals.losses} P`}
+                        label={`${totals.losses} ${tMatches("resultLossShort")}`}
                         sx={{
                           bgcolor: "match.loss",
                           color: "#fff",
@@ -319,29 +357,39 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         <Typography variant="caption" color="text.disabled" fontWeight={700}>
                           {t("lastMatches", { count: last5.length })}
                         </Typography>
-                        {last5.map((m) => (
-                          <Box
-                            key={m.id}
-                            title={`${format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })} · ${m.ourScore}–${m.theirScore}`}
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: "50%",
-                              bgcolor: MATCH_RESULT_META[m.result!].color,
-                              color: "#fff",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "0.7rem",
-                              fontWeight: 800,
-                              cursor: m.slug ? "pointer" : "default",
-                            }}
-                            component={m.slug ? Link : "div"}
-                            {...(m.slug ? { href: `/partite/${m.slug}` } : {})}
-                          >
-                            {matchResultShort(m.result!)}
-                          </Box>
-                        ))}
+                        {last5.map((m) => {
+                          const badge = (
+                            <Box
+                              title={`${format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })} · ${m.ourScore}–${m.theirScore}`}
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                bgcolor: MATCH_RESULT_META[m.result!].color,
+                                color: "#fff",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "0.7rem",
+                                fontWeight: 800,
+                                cursor: m.slug ? "pointer" : "default",
+                              }}
+                            >
+                              {matchResultShort(m.result!)}
+                            </Box>
+                          );
+                          return m.slug ? (
+                            <Link
+                              key={m.id}
+                              href={`/partite/${m.slug}`}
+                              style={{ textDecoration: "none" }}
+                            >
+                              {badge}
+                            </Link>
+                          ) : (
+                            <Box key={m.id}>{badge}</Box>
+                          );
+                        })}
                       </Box>
                     )}
                   </Paper>
@@ -371,17 +419,17 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                     {s.played > 0 && (
                       <>
                         <Chip
-                          label={`${s.wins} V`}
+                          label={`${s.wins} ${tMatches("resultWinShort")}`}
                           size="small"
                           sx={{ bgcolor: "match.win", color: "#fff", fontWeight: 700 }}
                         />
                         <Chip
-                          label={`${s.draws} N`}
+                          label={`${s.draws} ${tMatches("resultDrawShort")}`}
                           size="small"
                           sx={{ bgcolor: "match.draw", color: "#fff", fontWeight: 700 }}
                         />
                         <Chip
-                          label={`${s.losses} P`}
+                          label={`${s.losses} ${tMatches("resultLossShort")}`}
                           size="small"
                           sx={{ bgcolor: "match.loss", color: "#fff", fontWeight: 700 }}
                         />

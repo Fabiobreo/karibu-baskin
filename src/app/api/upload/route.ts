@@ -5,11 +5,11 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { uploadImage, type BlobFolder } from "@/lib/blob";
 import { z } from "zod";
 
-const STAFF_FOLDERS = new Set<BlobFolder>(["teams", "matches", "events", "posts"]);
+const STAFF_FOLDERS = new Set<BlobFolder>(["teams", "matches", "events", "posts", "opponents"]);
 const USER_FOLDERS = new Set<BlobFolder>(["avatars"]);
 
 const BodySchema = z.object({
-  folder: z.enum(["avatars", "teams", "matches", "events", "posts"]),
+  folder: z.enum(["avatars", "teams", "matches", "events", "posts", "opponents"]),
 });
 
 export async function POST(req: NextRequest) {

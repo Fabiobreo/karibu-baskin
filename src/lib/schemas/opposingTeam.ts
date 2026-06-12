@@ -6,6 +6,7 @@ const OpposingTeamBaseSchema = z.object({
   website: z.string().max(500).nullable().optional(),
   colors: z.string().max(100).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
+  imageUrl: z.string().url().max(1000).nullable().optional(),
 });
 
 export const OpposingTeamCreateSchema = OpposingTeamBaseSchema.extend({

@@ -25,9 +25,16 @@ export interface TeamCallupContext {
     seasonCallups: number;
     daysSinceLastCallup: number | null;
     availability: boolean | null; // true=disponibile, false=non disponibile, null=non risposto
+    loanFrom?: string | null; // se valorizzato, è un prestito: nome della squadra di provenienza
   }>;
   initialSelectedUserIds: string[];
   initialSelectedChildIds: string[];
+}
+
+/** Candidato esterno proponibile come prestito (giocatore di un'altra squadra). */
+export interface LoanCandidate {
+  candidate: CandidateInput;
+  teamName: string; // squadra di provenienza
 }
 
 const WINDOW_DAYS = 14;
@@ -281,24 +288,138 @@ export async function buildTeamCallupContext({
     referenceDate: now,
   });
 
+  // Prestiti già salvati per questo lato: convocati che NON sono membri della
+  // rosa. Vanno re-iniettati come righe (con statistiche neutre) così restano
+  // visibili e selezionati nell'editor anche dopo un reload.
+  const memberUserIdSet = new Set(candidateUserIds);
+  const memberChildIdSet = new Set(candidateChildIds);
+  const loanUserIds = existingCallups
+    .map((c) => c.userId)
+    .filter((id): id is string => !!id && !memberUserIdSet.has(id));
+  const loanChildIds = existingCallups
+    .map((c) => c.childId)
+    .filter((id): id is string => !!id && !memberChildIdSet.has(id));
+
+  const [loanUsers, loanChildren, loanMemberships] = await Promise.all([
+    loanUserIds.length > 0
+      ? prisma.user.findMany({
+          where: { id: { in: loanUserIds } },
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            ratingMu: true,
+            gender: true,
+            height: true,
+          },
+        })
+      : Promise.resolve([]),
+    loanChildIds.length > 0
+      ? prisma.child.findMany({
+          where: { id: { in: loanChildIds } },
+          select: {
+            id: true,
+            name: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            ratingMu: true,
+            gender: true,
+            height: true,
+          },
+        })
+      : Promise.resolve([]),
+    loanUserIds.length > 0 || loanChildIds.length > 0
+      ? prisma.teamMembership.findMany({
+          where: {
+            team: { season: teamSeason },
+            OR: [
+              loanUserIds.length > 0 ? { userId: { in: loanUserIds } } : null,
+              loanChildIds.length > 0 ? { childId: { in: loanChildIds } } : null,
+            ].filter((x): x is NonNullable<typeof x> => x !== null),
+          },
+          select: { userId: true, childId: true, team: { select: { name: true } } },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const loanTeamByUser = new Map<string, string>();
+  const loanTeamByChild = new Map<string, string>();
+  for (const m of loanMemberships) {
+    if (m.userId && !loanTeamByUser.has(m.userId)) loanTeamByUser.set(m.userId, m.team.name);
+    if (m.childId && !loanTeamByChild.has(m.childId)) loanTeamByChild.set(m.childId, m.team.name);
+  }
+
+  const loanStatRows = [
+    ...loanUsers.map((u) => ({
+      candidate: {
+        kind: "user" as const,
+        id: u.id,
+        name: u.name ?? "—",
+        image: u.image,
+        sportRole: u.sportRole,
+        sportRoleVariant: u.sportRoleVariant,
+        isCaptain: false,
+        teamIds: [] as string[],
+        ratingMu: u.ratingMu,
+        gender: u.gender,
+        height: u.height,
+      },
+      presences: 0,
+      absences: 0,
+      eligibleSessions: 0,
+      seasonCallups: 0,
+      daysSinceLastCallup: null,
+      availability: availByUserId.get(u.id) ?? null,
+      loanFrom: loanTeamByUser.get(u.id) ?? "Prestito",
+    })),
+    ...loanChildren.map((c) => ({
+      candidate: {
+        kind: "child" as const,
+        id: c.id,
+        name: c.name,
+        image: null,
+        sportRole: c.sportRole,
+        sportRoleVariant: c.sportRoleVariant,
+        isCaptain: false,
+        teamIds: [] as string[],
+        ratingMu: c.ratingMu,
+        gender: c.gender,
+        height: c.height,
+      },
+      presences: 0,
+      absences: 0,
+      eligibleSessions: 0,
+      seasonCallups: 0,
+      daysSinceLastCallup: null,
+      availability: availByChildId.get(c.id) ?? null,
+      loanFrom: loanTeamByChild.get(c.id) ?? "Prestito",
+    })),
+  ];
+
   return {
     id: teamId,
     name: teamName,
     color: teamColor,
     season: teamSeason,
-    stats: stats.map((s) => ({
-      candidate: s.candidate,
-      presences: s.presences,
-      absences: s.absences,
-      eligibleSessions: s.eligibleSessions,
-      seasonCallups: s.seasonCallups,
-      daysSinceLastCallup: s.daysSinceLastCallup,
-      // Default: chi non ha risposto è considerato NON disponibile.
-      availability:
-        s.candidate.kind === "user"
-          ? (availByUserId.get(s.candidate.id) ?? false)
-          : (availByChildId.get(s.candidate.id) ?? false),
-    })),
+    stats: [
+      ...stats.map((s) => ({
+        candidate: s.candidate,
+        presences: s.presences,
+        absences: s.absences,
+        eligibleSessions: s.eligibleSessions,
+        seasonCallups: s.seasonCallups,
+        daysSinceLastCallup: s.daysSinceLastCallup,
+        // Default: chi non ha risposto è considerato NON disponibile.
+        availability:
+          s.candidate.kind === "user"
+            ? (availByUserId.get(s.candidate.id) ?? false)
+            : (availByChildId.get(s.candidate.id) ?? false),
+        loanFrom: null as string | null,
+      })),
+      ...loanStatRows,
+    ],
     initialSelectedUserIds: existingCallups.map((c) => c.userId).filter((id): id is string => !!id),
     initialSelectedChildIds: existingCallups
       .map((c) => c.childId)
@@ -307,3 +428,114 @@ export async function buildTeamCallupContext({
 }
 
 export const WINDOW_DAYS_FOR_PRESENCES = WINDOW_DAYS;
+
+/**
+ * Costruisce il pool di giocatori "prestabili": membri di altre squadre
+ * agonistiche della stessa stagione, esclusi i giocatori già tesserati nelle
+ * squadre che partecipano alla partita (`excludeTeamIds`).
+ */
+export async function buildLoanPool(
+  season: string,
+  excludeTeamIds: string[]
+): Promise<LoanCandidate[]> {
+  const memberships = await prisma.teamMembership.findMany({
+    where: {
+      team: { season, id: { notIn: excludeTeamIds } },
+    },
+    select: {
+      isCaptain: true,
+      team: { select: { id: true, name: true } },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          sportRole: true,
+          sportRoleVariant: true,
+          ratingMu: true,
+          gender: true,
+          height: true,
+        },
+      },
+      child: {
+        select: {
+          id: true,
+          name: true,
+          sportRole: true,
+          sportRoleVariant: true,
+          ratingMu: true,
+          gender: true,
+          height: true,
+        },
+      },
+    },
+  });
+
+  // Esclude chi è già tesserato in una squadra partecipante (potrebbe militare
+  // sia in una squadra esclusa sia in un'altra). Dedup per giocatore: prima
+  // provenienza incontrata.
+  const excludeSet = new Set(excludeTeamIds);
+  const participantMembers = await prisma.teamMembership.findMany({
+    where: { teamId: { in: excludeTeamIds } },
+    select: { userId: true, childId: true },
+  });
+  const participantUserIds = new Set(
+    participantMembers.map((m) => m.userId).filter((x): x is string => !!x)
+  );
+  const participantChildIds = new Set(
+    participantMembers.map((m) => m.childId).filter((x): x is string => !!x)
+  );
+
+  const seenUserIds = new Set<string>();
+  const seenChildIds = new Set<string>();
+  const pool: LoanCandidate[] = [];
+
+  for (const m of memberships) {
+    if (m.user) {
+      if (participantUserIds.has(m.user.id) || seenUserIds.has(m.user.id)) continue;
+      seenUserIds.add(m.user.id);
+      pool.push({
+        teamName: m.team.name,
+        candidate: {
+          kind: "user",
+          id: m.user.id,
+          name: m.user.name ?? "—",
+          image: m.user.image,
+          sportRole: m.user.sportRole,
+          sportRoleVariant: m.user.sportRoleVariant,
+          isCaptain: false,
+          teamIds: [m.team.id],
+          ratingMu: m.user.ratingMu,
+          gender: m.user.gender,
+          height: m.user.height,
+        },
+      });
+    } else if (m.child) {
+      if (participantChildIds.has(m.child.id) || seenChildIds.has(m.child.id)) continue;
+      seenChildIds.add(m.child.id);
+      pool.push({
+        teamName: m.team.name,
+        candidate: {
+          kind: "child",
+          id: m.child.id,
+          name: m.child.name,
+          image: null,
+          sportRole: m.child.sportRole,
+          sportRoleVariant: m.child.sportRoleVariant,
+          isCaptain: false,
+          teamIds: [m.team.id],
+          ratingMu: m.child.ratingMu,
+          gender: m.child.gender,
+          height: m.child.height,
+        },
+      });
+    }
+  }
+
+  pool.sort(
+    (a, b) =>
+      (a.candidate.sportRole ?? 99) - (b.candidate.sportRole ?? 99) ||
+      a.candidate.name.localeCompare(b.candidate.name)
+  );
+  return pool;
+}

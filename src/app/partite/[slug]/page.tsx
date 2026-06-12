@@ -7,6 +7,9 @@ import { alpha } from "@mui/material/styles";
 import MatchEditButton from "@/components/matches/MatchEditButton";
 import SiteHeader from "@/components/layout/SiteHeader";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
+import MatchAvailabilityCard, {
+  type MatchAvailabilityEntity,
+} from "@/components/matches/MatchAvailabilityCard";
 import MatchCountdown from "@/components/matches/MatchCountdown";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -238,6 +241,68 @@ export default async function MatchDetailPage({ params }: Props) {
   const now = Date.now();
   const isUpcoming = !hasScore && new Date(match.date).getTime() > now;
   const isImminent = isUpcoming && new Date(match.date).getTime() - now <= 48 * 60 * 60 * 1000;
+
+  // Disponibilità self-service: per partite future, mostra i toggle a chi è
+  // membro di una delle squadre della partita (o genitore di un figlio membro).
+  let availabilityEntities: MatchAvailabilityEntity[] = [];
+  if (session?.user?.id && isUpcoming) {
+    const uid = session.user.id;
+    const teamIds = [match.team.id, match.opponentTeamId].filter((x): x is string => !!x);
+    const memberships = await prisma.teamMembership.findMany({
+      where: {
+        teamId: { in: teamIds },
+        OR: [{ userId: uid }, { child: { parentId: uid } }],
+      },
+      select: {
+        user: { select: { id: true, name: true } },
+        child: { select: { id: true, name: true } },
+        team: { select: { name: true, color: true } },
+      },
+    });
+    if (memberships.length > 0) {
+      const uIds = memberships.map((m) => m.user?.id).filter((x): x is string => !!x);
+      const cIds = memberships.map((m) => m.child?.id).filter((x): x is string => !!x);
+      const avails = await prisma.matchAvailability.findMany({
+        where: {
+          matchId: match.id,
+          OR: [
+            uIds.length > 0 ? { userId: { in: uIds } } : null,
+            cIds.length > 0 ? { childId: { in: cIds } } : null,
+          ].filter((x): x is NonNullable<typeof x> => x !== null),
+        },
+        select: { userId: true, childId: true, available: true },
+      });
+      const byUser = new Map(avails.filter((a) => a.userId).map((a) => [a.userId!, a.available]));
+      const byChild = new Map(
+        avails.filter((a) => a.childId).map((a) => [a.childId!, a.available])
+      );
+      availabilityEntities = memberships
+        .map((m): MatchAvailabilityEntity | null => {
+          if (m.user) {
+            return {
+              kind: "user",
+              id: m.user.id,
+              name: m.user.name ?? "—",
+              teamName: m.team.name,
+              teamColor: m.team.color,
+              available: byUser.get(m.user.id) ?? null,
+            };
+          }
+          if (m.child) {
+            return {
+              kind: "child",
+              id: m.child.id,
+              name: m.child.name,
+              teamName: m.team.name,
+              teamColor: m.team.color,
+              available: byChild.get(m.child.id) ?? null,
+            };
+          }
+          return null;
+        })
+        .filter((e): e is MatchAvailabilityEntity => e !== null);
+    }
+  }
 
   const heroBg = match.result
     ? RESULT_GRADIENT[match.result]
@@ -674,6 +739,10 @@ export default async function MatchDetailPage({ params }: Props) {
           {/* fine Box centrato */}
         </Container>
       </Box>
+
+      {availabilityEntities.length > 0 && (
+        <MatchAvailabilityCard matchId={match.id} entities={availabilityEntities} />
+      )}
 
       {match.mvps.length > 0 && (
         <Container maxWidth="md" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>

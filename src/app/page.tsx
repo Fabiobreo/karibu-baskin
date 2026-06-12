@@ -94,17 +94,150 @@ export default async function HomePage() {
     </Container>
   );
 
-  // Home operativa per i membri: prima gli allenamenti e le cose da fare
+  // ── Chi siamo (valori + storia) — mostrato in fondo a tutti ──────────────
+  const chiSiamoBlock = (
+    <Box
+      sx={{
+        bgcolor: "action.hover",
+        borderTop: "1px solid",
+        borderBottom: "1px solid",
+        borderColor: "divider",
+        py: { xs: 6, md: 9 },
+      }}
+    >
+      <Container maxWidth="md">
+        {/* Valori */}
+        <Box sx={{ mb: 8 }}>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
+            {t("whoWeAre")}
+          </Typography>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
+            {t("whatWeBelieve")}
+          </Typography>
+          <Grid container spacing={2}>
+            {[FavoriteIcon, GroupsIcon, EmojiEventsIcon, LocationOnIcon].map((Icon, i) => (
+              <Grid key={i} size={{ xs: 12, sm: 6 }}>
+                <Paper
+                  elevation={0}
+                  sx={{ p: 3, border: "1px solid", borderColor: "divider", height: "100%" }}
+                >
+                  <Box sx={{ color: "primary.main", mb: 1.5 }}>
+                    <Icon sx={{ fontSize: 32 }} />
+                  </Box>
+                  <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+                    {values[i]?.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                    {values[i]?.body}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+
+        <Divider sx={{ mb: 8 }} />
+
+        {/* Storia */}
+        <Box>
+          <Typography
+            variant="overline"
+            color="primary"
+            fontWeight={700}
+            sx={{ letterSpacing: "0.1em" }}
+          >
+            {t("ourHistory")}
+          </Typography>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          >
+            {t("tenYears")}
+          </Typography>
+          <Stack spacing={0}>
+            {storia.map((item, i) => (
+              <Box key={item.anno} sx={{ display: "flex", gap: 3 }}>
+                {/* Timeline line */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: "50%",
+                      backgroundColor: "primary.main",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <StarIcon sx={{ color: "#fff", fontSize: 18 }} />
+                  </Box>
+                  {i < storia.length - 1 && (
+                    // Server Component: niente sx a funzione (non serializzabile) →
+                    // token stringa theme-aware per la linea della timeline
+                    <Box sx={{ width: 2, flex: 1, bgcolor: "divider", my: 0.5 }} />
+                  )}
+                </Box>
+                {/* Content */}
+                <Box sx={{ pb: i < storia.length - 1 ? 4 : 0 }}>
+                  <Typography
+                    variant="caption"
+                    color="primary"
+                    fontWeight={700}
+                    sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
+                  >
+                    {item.anno}
+                  </Typography>
+                  <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 0.25, mb: 0.75 }}>
+                    {item.titolo}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ lineHeight: 1.75, maxWidth: 560 }}
+                  >
+                    {item.testo}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      </Container>
+    </Box>
+  );
+
+  // Home operativa per i membri: hero + prima gli allenamenti e le cose da fare
   if (isMember) {
     return (
       <>
         <SiteHeader />
         <BirthdayBanner />
+        <HeroSection />
         <PendingAvailabilityBanner count={pendingAvailabilities} />
         {sessionsBlock}
         <ProssimePartiteHome />
         <LatestNewsHero />
         <LoSapeviCard />
+        {chiSiamoBlock}
       </>
     );
   }
@@ -128,134 +261,7 @@ export default async function HomePage() {
 
       <LoSapeviCard />
 
-      {/* ── Chi siamo ───────────────────────────────────────────────────────── */}
-      <Box
-        sx={{
-          bgcolor: "action.hover",
-          borderTop: "1px solid",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          py: { xs: 6, md: 9 },
-        }}
-      >
-        <Container maxWidth="md">
-          {/* Valori */}
-          <Box sx={{ mb: 8 }}>
-            <Typography
-              variant="overline"
-              color="primary"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.1em" }}
-            >
-              {t("whoWeAre")}
-            </Typography>
-            <Typography
-              variant="h4"
-              fontWeight={800}
-              sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
-            >
-              {t("whatWeBelieve")}
-            </Typography>
-            <Grid container spacing={2}>
-              {[FavoriteIcon, GroupsIcon, EmojiEventsIcon, LocationOnIcon].map((Icon, i) => (
-                <Grid key={i} size={{ xs: 12, sm: 6 }}>
-                  <Paper
-                    elevation={0}
-                    sx={{ p: 3, border: "1px solid", borderColor: "divider", height: "100%" }}
-                  >
-                    <Box sx={{ color: "primary.main", mb: 1.5 }}>
-                      <Icon sx={{ fontSize: 32 }} />
-                    </Box>
-                    <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
-                      {values[i]?.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      {values[i]?.body}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          <Divider sx={{ mb: 8 }} />
-
-          {/* Storia */}
-          <Box>
-            <Typography
-              variant="overline"
-              color="primary"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.1em" }}
-            >
-              {t("ourHistory")}
-            </Typography>
-            <Typography
-              variant="h4"
-              fontWeight={800}
-              sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
-            >
-              {t("tenYears")}
-            </Typography>
-            <Stack spacing={0}>
-              {storia.map((item, i) => (
-                <Box key={item.anno} sx={{ display: "flex", gap: 3 }}>
-                  {/* Timeline line */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: "50%",
-                        backgroundColor: "primary.main",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <StarIcon sx={{ color: "#fff", fontSize: 18 }} />
-                    </Box>
-                    {i < storia.length - 1 && (
-                      // Server Component: niente sx a funzione (non serializzabile) →
-                      // token stringa theme-aware per la linea della timeline
-                      <Box sx={{ width: 2, flex: 1, bgcolor: "divider", my: 0.5 }} />
-                    )}
-                  </Box>
-                  {/* Content */}
-                  <Box sx={{ pb: i < storia.length - 1 ? 4 : 0 }}>
-                    <Typography
-                      variant="caption"
-                      color="primary"
-                      fontWeight={700}
-                      sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
-                    >
-                      {item.anno}
-                    </Typography>
-                    <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 0.25, mb: 0.75 }}>
-                      {item.titolo}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.75, maxWidth: 560 }}
-                    >
-                      {item.testo}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-        </Container>
-      </Box>
+      {chiSiamoBlock}
     </>
   );
 }

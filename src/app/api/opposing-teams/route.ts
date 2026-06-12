@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { OpposingTeamCreateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const authSession = await auth();
-  if (!(await isAdminUser())) {
+  if (!(await isCoachOrAdmin())) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 

@@ -380,6 +380,7 @@ model OpposingTeam {
   website   String?
   colors    String?
   notes     String?  @db.Text
+  imageUrl  String? // foto/logo della squadra avversaria (Vercel Blob)
   createdAt DateTime @default(now())
 
   // Stima TrueSkill della squadra avversaria (per-giocatore, come i nostri atleti).

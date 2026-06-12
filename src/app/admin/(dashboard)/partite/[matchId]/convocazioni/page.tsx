@@ -2,7 +2,11 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import { buildTeamCallupContext, WINDOW_DAYS_FOR_PRESENCES } from "@/lib/callupContext";
+import {
+  buildTeamCallupContext,
+  buildLoanPool,
+  WINDOW_DAYS_FOR_PRESENCES,
+} from "@/lib/callupContext";
 import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
 import MatchQualitySection from "@/components/matches/MatchQualitySection";
 import { computeMatchQuality } from "@/lib/matchQuality";
@@ -70,6 +74,13 @@ export default async function ConvocazioniPage({ params }: Params) {
       })
     : null;
 
+  // Pool prestiti: giocatori di altre squadre della stessa stagione, esclusi i
+  // tesserati delle squadre che partecipano alla partita.
+  const participantTeamIds = [match.team.id, match.opponentTeam?.id].filter(
+    (x): x is string => !!x
+  );
+  const loanPool = await buildLoanPool(match.team.season, participantTeamIds);
+
   // Numero di sessioni della finestra (uguale per entrambe le squadre, calcolato
   // sui training session della stagione; per ora una singola finestra globale).
   const windowEligibleSessions = await prisma.trainingSession.count({
@@ -97,6 +108,7 @@ export default async function ConvocazioniPage({ params }: Params) {
         windowEligibleSessions={windowEligibleSessions}
         teams={awayContext ? [homeContext, awayContext] : [homeContext]}
         opponentMu={match.opponent?.ratingMu ?? null}
+        loanPool={loanPool}
       />
     </>
   );

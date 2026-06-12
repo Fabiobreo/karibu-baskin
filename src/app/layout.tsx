@@ -4,6 +4,8 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Analytics } from "@vercel/analytics/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { cookies } from "next/headers";
+import { COLOR_MODE_COOKIE } from "@/lib/colorMode";
 import { ToastProvider } from "@/context/ToastContext";
 import Providers from "@/components/layout/Providers";
 import ServiceWorkerRegistrar from "@/components/layout/ServiceWorkerRegistrar";
@@ -69,6 +71,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
   const messages = await getMessages();
 
+  const colorModeRaw = (await cookies()).get(COLOR_MODE_COOKIE)?.value;
+  const colorMode =
+    colorModeRaw === "light" || colorModeRaw === "dark" || colorModeRaw === "system"
+      ? colorModeRaw
+      : "system";
+
   return (
     <html lang={locale} className={inter.variable}>
       <body
@@ -79,7 +87,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AppRouterCacheProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <ServiceWorkerRegistrar />
-            <Providers session={session}>
+            <Providers session={session} colorMode={colorMode}>
               <ToastProvider>
                 <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
                   <OfflineBanner />

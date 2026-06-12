@@ -14,13 +14,25 @@ import {
   Chip,
   Stack,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import RatingBadge from "@/components/rating/RatingBadge";
 import RatingSparkline from "@/components/rating/RatingSparkline";
 import { classifyTrend, TREND_META, type TrendLabel } from "@/lib/ratingTrend";
 import { ordinal } from "@/lib/trueskill";
-import { sportRoleLabel } from "@/lib/constants";
+import { ROLES, sportRoleLabel } from "@/lib/constants";
+
+type SkillBucket = "alta" | "media" | "bassa";
+
+const SKILL_LABELS: Record<SkillBucket, string> = {
+  alta: "Alta",
+  media: "Media",
+  bassa: "Bassa",
+};
 
 export interface TrackedAthlete {
   id: string;
@@ -28,6 +40,7 @@ export interface TrackedAthlete {
   name: string;
   sportRole: number | null;
   sportRoleVariant: string | null;
+  gender: "MALE" | "FEMALE" | null;
   mu: number;
   sigma: number;
   /** μ in ordine cronologico (curva di sviluppo). */
@@ -51,6 +64,9 @@ const TREND_ORDER: TrendLabel[] = ["crescita", "calo", "altalenante", "plateau",
 export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthlete[] }) {
   const [search, setSearch] = useState("");
   const [trendFilter, setTrendFilter] = useState<TrendLabel | null>(null);
+  const [roleFilter, setRoleFilter] = useState<number | null>(null);
+  const [genderFilter, setGenderFilter] = useState<"MALE" | "FEMALE" | null>(null);
+  const [skillFilter, setSkillFilter] = useState<SkillBucket | null>(null);
 
   const rows = useMemo(() => {
     return athletes
@@ -61,6 +77,22 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
       }))
       .sort((a, b) => b.ord - a.ord);
   }, [athletes]);
+
+  // Soglie di skill a terzili sull'ordinal dell'intera popolazione: "Alta" =
+  // terzo superiore, "Bassa" = terzo inferiore. Stabile rispetto agli altri filtri.
+  const skillThresholds = useMemo(() => {
+    const ords = rows.map((r) => r.ord).sort((a, b) => a - b);
+    if (ords.length < 3) return null;
+    return {
+      lo: ords[Math.floor(ords.length / 3)],
+      hi: ords[Math.floor((2 * ords.length) / 3)],
+    };
+  }, [rows]);
+
+  function skillBucketOf(ord: number): SkillBucket {
+    if (!skillThresholds) return "media";
+    return ord >= skillThresholds.hi ? "alta" : ord < skillThresholds.lo ? "bassa" : "media";
+  }
 
   const counts = useMemo(() => {
     const c: Record<TrendLabel, number> = {
@@ -76,6 +108,9 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
 
   const filtered = rows.filter((r) => {
     if (trendFilter && r.trend.label !== trendFilter) return false;
+    if (roleFilter !== null && r.sportRole !== roleFilter) return false;
+    if (genderFilter && r.gender !== genderFilter) return false;
+    if (skillFilter && skillBucketOf(r.ord) !== skillFilter) return false;
     if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -86,8 +121,10 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={1.5}
-        sx={{ mb: 2 }}
-        alignItems="center"
+        sx={{ mb: 1.5 }}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        flexWrap="wrap"
+        useFlexGap
       >
         <TextField
           size="small"
@@ -103,20 +140,76 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
               ),
             },
           }}
-          sx={{ minWidth: 220 }}
+          sx={{ minWidth: 220, flexGrow: { xs: 1, sm: 0 } }}
         />
-        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-          {TREND_ORDER.map((t) => (
-            <Chip
-              key={t}
-              label={`${TREND_META[t].label} (${counts[t]})`}
-              size="small"
-              color={trendFilter === t ? TREND_META[t].color : "default"}
-              variant={trendFilter === t ? "filled" : "outlined"}
-              onClick={() => setTrendFilter(trendFilter === t ? null : t)}
-            />
-          ))}
-        </Stack>
+
+        <FormControl size="small" sx={{ minWidth: 130 }}>
+          <InputLabel id="dev-role-label">Ruolo</InputLabel>
+          <Select
+            labelId="dev-role-label"
+            label="Ruolo"
+            value={roleFilter === null ? "all" : String(roleFilter)}
+            onChange={(e) =>
+              setRoleFilter(e.target.value === "all" ? null : Number(e.target.value))
+            }
+          >
+            <MenuItem value="all">Tutti</MenuItem>
+            {ROLES.map((r) => (
+              <MenuItem key={r} value={String(r)}>
+                {sportRoleLabel(r)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 130 }}>
+          <InputLabel id="dev-gender-label">Genere</InputLabel>
+          <Select
+            labelId="dev-gender-label"
+            label="Genere"
+            value={genderFilter ?? "all"}
+            onChange={(e) =>
+              setGenderFilter(
+                e.target.value === "all" ? null : (e.target.value as "MALE" | "FEMALE")
+              )
+            }
+          >
+            <MenuItem value="all">Tutti</MenuItem>
+            <MenuItem value="MALE">Maschile</MenuItem>
+            <MenuItem value="FEMALE">Femminile</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 130 }}>
+          <InputLabel id="dev-skill-label">Skill</InputLabel>
+          <Select
+            labelId="dev-skill-label"
+            label="Skill"
+            value={skillFilter ?? "all"}
+            onChange={(e) =>
+              setSkillFilter(e.target.value === "all" ? null : (e.target.value as SkillBucket))
+            }
+          >
+            <MenuItem value="all">Tutte</MenuItem>
+            <MenuItem value="alta">{SKILL_LABELS.alta}</MenuItem>
+            <MenuItem value="media">{SKILL_LABELS.media}</MenuItem>
+            <MenuItem value="bassa">{SKILL_LABELS.bassa}</MenuItem>
+          </Select>
+        </FormControl>
+      </Stack>
+
+      {/* Filtro per trend */}
+      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+        {TREND_ORDER.map((t) => (
+          <Chip
+            key={t}
+            label={`${TREND_META[t].label} (${counts[t]})`}
+            size="small"
+            color={trendFilter === t ? TREND_META[t].color : "default"}
+            variant={trendFilter === t ? "filled" : "outlined"}
+            onClick={() => setTrendFilter(trendFilter === t ? null : t)}
+          />
+        ))}
       </Stack>
 
       <TableContainer>

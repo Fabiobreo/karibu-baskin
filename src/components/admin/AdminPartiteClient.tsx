@@ -25,6 +25,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
+import EventIcon from "@mui/icons-material/Event";
+import HistoryIcon from "@mui/icons-material/History";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -35,6 +37,7 @@ import type { MatchCoverage } from "@/lib/matchCoverage";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { alpha } from "@mui/material/styles";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { MatchType, MatchResult } from "@prisma/client";
@@ -113,10 +116,62 @@ const RESULT_COLORS: Record<MatchResult, string> = {
   DRAW: "#E65100",
 };
 
+/** Una partita è "prossima" se la sua data è nel futuro rispetto a `now` (ms). */
+function isUpcoming(m: Match, now: number): boolean {
+  return new Date(m.date).getTime() >= now;
+}
+
+/** Chip "Prossima" mostrato sulle partite future per distinguerle dalle passate. */
+function MatchTimingChip({ upcoming }: { upcoming: boolean }) {
+  if (!upcoming) return null;
+  return (
+    <Chip
+      icon={<EventIcon sx={{ fontSize: "13px !important" }} />}
+      label="Prossima"
+      size="small"
+      color="info"
+      variant="outlined"
+      sx={{ fontWeight: 700, fontSize: "0.65rem", height: 20 }}
+    />
+  );
+}
+
+/** Intestazione di sezione (Prossime / Concluse) per le viste piatte. */
+function SectionHeader({
+  icon,
+  label,
+  accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  accent?: string;
+}) {
+  return (
+    <Box
+      sx={{
+        px: 2,
+        py: 1.25,
+        borderBottom: 1,
+        borderColor: "divider",
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        color: accent ?? "text.primary",
+      }}
+    >
+      {icon}
+      <Typography variant="subtitle2" fontWeight={700}>
+        {label}
+      </Typography>
+    </Box>
+  );
+}
+
 function MatchMobileCard({
   match,
   matchday,
   coverage,
+  now,
   router,
   onResult,
   onEdit,
@@ -126,6 +181,7 @@ function MatchMobileCard({
   match: Match;
   matchday?: number | null;
   coverage?: MatchCoverage;
+  now: number;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
@@ -133,6 +189,7 @@ function MatchMobileCard({
   onProfile: (m: Match) => void;
 }) {
   const m = match;
+  const upcoming = isUpcoming(m, now);
   return (
     <Box
       sx={{
@@ -141,6 +198,9 @@ function MatchMobileCard({
         borderBottom: "1px solid",
         borderColor: "divider",
         "&:last-child": { borderBottom: 0 },
+        borderLeft: upcoming ? "3px solid" : "3px solid transparent",
+        borderLeftColor: upcoming ? "info.main" : "transparent",
+        bgcolor: upcoming ? (theme) => alpha(theme.palette.info.main, 0.05) : undefined,
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -186,6 +246,7 @@ function MatchMobileCard({
                 {m.isHome ? "Casa" : "Trasferta"}
               </Typography>
             </Box>
+            <MatchTimingChip upcoming={upcoming} />
             {m.result && (
               <Chip
                 label={RESULT_LABELS[m.result]}
@@ -336,6 +397,8 @@ export default function AdminPartiteClient({
   const [tab, setTab] = useState<TabKey>("LEAGUE");
   const [page, setPage] = useState(0);
   const [rpp, setRpp] = useState(25);
+  // Istante di riferimento per distinguere prossime/passate (stabile dal mount).
+  const [now] = useState(() => Date.now());
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
 
@@ -508,6 +571,7 @@ export default function AdminPartiteClient({
           matches={filteredMatches}
           groupMatches={groupMatches}
           coverages={coverages}
+          now={now}
           router={router}
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
@@ -523,6 +587,7 @@ export default function AdminPartiteClient({
           rpp={rpp}
           setPage={setPage}
           setRpp={setRpp}
+          now={now}
           router={router}
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
@@ -613,6 +678,7 @@ function LeagueView({
   matches,
   groupMatches,
   coverages,
+  now,
   router,
   onResult,
   onEdit,
@@ -623,6 +689,7 @@ function LeagueView({
   matches: Match[];
   groupMatches: GroupMatch[];
   coverages: Record<string, MatchCoverage>;
+  now: number;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
@@ -747,6 +814,7 @@ function LeagueView({
                       match={m}
                       others={others}
                       coverage={coverages[m.id]}
+                      now={now}
                       router={router}
                       onResult={onResult}
                       onEdit={onEdit}
@@ -767,6 +835,7 @@ function LeagueView({
                 match={m}
                 matchday={m.matchday}
                 coverage={coverages[m.id]}
+                now={now}
                 router={router}
                 onResult={onResult}
                 onEdit={onEdit}
@@ -785,6 +854,7 @@ function MatchRowAndContext({
   match,
   others,
   coverage,
+  now,
   router,
   onResult,
   onEdit,
@@ -795,6 +865,7 @@ function MatchRowAndContext({
   match: Match;
   others: GroupMatch[];
   coverage: MatchCoverage | undefined;
+  now: number;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
@@ -806,9 +877,13 @@ function MatchRowAndContext({
   ) => void;
 }) {
   const m = match;
+  const upcoming = isUpcoming(m, now);
   return (
     <>
-      <TableRow hover>
+      <TableRow
+        hover
+        sx={upcoming ? { bgcolor: (theme) => alpha(theme.palette.info.main, 0.05) } : undefined}
+      >
         <TableCell>
           <Typography variant="body2" fontWeight={700} color="text.secondary">
             {m.matchday ?? "—"}
@@ -855,7 +930,7 @@ function MatchRowAndContext({
           )}
         </TableCell>
         <TableCell align="center">
-          {m.result && (
+          {m.result ? (
             <Chip
               label={RESULT_LABELS[m.result]}
               size="small"
@@ -866,6 +941,8 @@ function MatchRowAndContext({
                 fontSize: "0.68rem",
               }}
             />
+          ) : (
+            <MatchTimingChip upcoming={upcoming} />
           )}
         </TableCell>
         <TableCell align="center">
@@ -963,6 +1040,233 @@ function MatchRowAndContext({
 // Vista piatta: Amichevoli / Tornei
 // ──────────────────────────────────────────────────────────────────────────────
 
+/** Testata tabella per la vista piatta (Amichevoli / Tornei). */
+function FlatTableHead() {
+  return (
+    <TableHead>
+      <TableRow>
+        <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
+        <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+          Squadra
+        </TableCell>
+        <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
+        <TableCell sx={{ fontWeight: 700 }} align="center">
+          Esito
+        </TableCell>
+        <TableCell sx={{ fontWeight: 700 }} align="center">
+          Punteggio
+        </TableCell>
+        <TableCell
+          sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
+          align="center"
+        >
+          Stats
+        </TableCell>
+        <TableCell />
+      </TableRow>
+    </TableHead>
+  );
+}
+
+/** Riga desktop per la vista piatta. */
+function FlatMatchRow({
+  m,
+  coverage,
+  upcoming,
+  router,
+  onResult,
+  onEdit,
+  onDelete,
+  onProfile,
+}: {
+  m: Match;
+  coverage: MatchCoverage | undefined;
+  upcoming: boolean;
+  router: RouterLike;
+  onResult: (m: Match) => void;
+  onEdit: (m: Match) => void;
+  onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
+}) {
+  return (
+    <TableRow
+      hover
+      sx={upcoming ? { bgcolor: (theme) => alpha(theme.palette.info.main, 0.05) } : undefined}
+    >
+      <TableCell>
+        <Typography variant="body2" fontWeight={600}>
+          {format(new Date(m.date), "d MMM yyyy", { locale: it })}
+        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          {m.isHome ? (
+            <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+          ) : (
+            <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+          )}
+          <Typography variant="caption" color="text.disabled">
+            {m.isHome ? "Casa" : "Trasferta"}
+          </Typography>
+        </Box>
+      </TableCell>
+      <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+        <Chip
+          label={m.team.name}
+          size="small"
+          sx={{
+            backgroundColor: m.team.color ?? "primary.main",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: "0.7rem",
+          }}
+        />
+      </TableCell>
+      <TableCell>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="body2" fontWeight={600}>
+            {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
+            {m.opponentTeam && (
+              <Typography
+                component="span"
+                variant="caption"
+                sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
+              >
+                (interna)
+              </Typography>
+            )}
+          </Typography>
+          <CoverageWarningIcon coverage={coverage} />
+        </Box>
+        {m.opponent?.city && (
+          <Typography variant="caption" color="text.secondary">
+            {m.opponent.city}
+          </Typography>
+        )}
+      </TableCell>
+      <TableCell align="center">
+        {m.result ? (
+          <Chip
+            label={RESULT_LABELS[m.result]}
+            size="small"
+            sx={{
+              backgroundColor: RESULT_COLORS[m.result],
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "0.68rem",
+            }}
+          />
+        ) : (
+          <MatchTimingChip upcoming={upcoming} />
+        )}
+      </TableCell>
+      <TableCell align="center">
+        <Tooltip title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}>
+          <Button
+            size="small"
+            onClick={() => onResult(m)}
+            sx={{
+              minWidth: 0,
+              px: 1,
+              py: 0.25,
+              textTransform: "none",
+              color: m.ourScore !== null ? "text.primary" : "primary.main",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+            }}
+          >
+            {m.ourScore !== null && m.theirScore !== null
+              ? `${m.ourScore} – ${m.theirScore}`
+              : "+ Risultato"}
+          </Button>
+        </Tooltip>
+      </TableCell>
+      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+        {m.ourScore !== null && m._count.playerStats === 0 ? (
+          <MissingStatsChip matchId={m.id} router={router} />
+        ) : (
+          <Typography
+            variant="caption"
+            color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+          >
+            {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
+          </Typography>
+        )}
+      </TableCell>
+      <TableCell align="right">
+        <ActionIcons
+          match={m}
+          router={router}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onProfile={onProfile}
+        />
+      </TableCell>
+    </TableRow>
+  );
+}
+
+/** Tabella (desktop + card mobile) per una lista di partite, senza paginazione. */
+function FlatMatchesTable({
+  matches,
+  coverages,
+  now,
+  router,
+  onResult,
+  onEdit,
+  onDelete,
+  onProfile,
+}: {
+  matches: Match[];
+  coverages: Record<string, MatchCoverage>;
+  now: number;
+  router: RouterLike;
+  onResult: (m: Match) => void;
+  onEdit: (m: Match) => void;
+  onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
+}) {
+  return (
+    <>
+      {/* Desktop table */}
+      <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
+        <Table size="small">
+          <FlatTableHead />
+          <TableBody>
+            {matches.map((m) => (
+              <FlatMatchRow
+                key={m.id}
+                m={m}
+                coverage={coverages[m.id]}
+                upcoming={isUpcoming(m, now)}
+                router={router}
+                onResult={onResult}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onProfile={onProfile}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+      {/* Mobile card view */}
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
+        {matches.map((m) => (
+          <MatchMobileCard
+            key={m.id}
+            match={m}
+            coverage={coverages[m.id]}
+            now={now}
+            router={router}
+            onResult={onResult}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onProfile={onProfile}
+          />
+        ))}
+      </Box>
+    </>
+  );
+}
+
 function FlatView({
   matches,
   coverages,
@@ -970,6 +1274,7 @@ function FlatView({
   rpp,
   setPage,
   setRpp,
+  now,
   router,
   onResult,
   onEdit,
@@ -982,12 +1287,23 @@ function FlatView({
   rpp: number;
   setPage: (n: number) => void;
   setRpp: (n: number) => void;
+  now: number;
   router: RouterLike;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
   onProfile: (m: Match) => void;
 }) {
+  // Prossime in ordine cronologico crescente, concluse dalla più recente.
+  const { upcoming, past } = useMemo(() => {
+    const up: Match[] = [];
+    const pa: Match[] = [];
+    for (const m of matches) (isUpcoming(m, now) ? up : pa).push(m);
+    up.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    pa.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return { upcoming: up, past: pa };
+  }, [matches, now]);
+
   if (matches.length === 0) {
     return (
       <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
@@ -997,180 +1313,65 @@ function FlatView({
       </Paper>
     );
   }
-  const paginatedMatches = matches.slice(page * rpp, (page + 1) * rpp);
+
+  const pastPaginated = past.slice(page * rpp, (page + 1) * rpp);
+
   return (
-    <Paper elevation={0} variant="outlined">
-      {/* Desktop table */}
-      <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
-                Squadra
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-              <TableCell sx={{ fontWeight: 700 }} align="center">
-                Esito
-              </TableCell>
-              <TableCell sx={{ fontWeight: 700 }} align="center">
-                Punteggio
-              </TableCell>
-              <TableCell
-                sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
-                align="center"
-              >
-                Stats
-              </TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedMatches.map((m) => (
-              <TableRow key={m.id} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
-                    {format(new Date(m.date), "d MMM yyyy", { locale: it })}
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    {m.isHome ? (
-                      <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-                    ) : (
-                      <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-                    )}
-                    <Typography variant="caption" color="text.disabled">
-                      {m.isHome ? "Casa" : "Trasferta"}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  <Chip
-                    label={m.team.name}
-                    size="small"
-                    sx={{
-                      backgroundColor: m.team.color ?? "primary.main",
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: "0.7rem",
-                    }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography variant="body2" fontWeight={600}>
-                      {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
-                      {m.opponentTeam && (
-                        <Typography
-                          component="span"
-                          variant="caption"
-                          sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
-                        >
-                          (interna)
-                        </Typography>
-                      )}
-                    </Typography>
-                    <CoverageWarningIcon coverage={coverages[m.id]} />
-                  </Box>
-                  {m.opponent?.city && (
-                    <Typography variant="caption" color="text.secondary">
-                      {m.opponent.city}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="center">
-                  {m.result && (
-                    <Chip
-                      label={RESULT_LABELS[m.result]}
-                      size="small"
-                      sx={{
-                        backgroundColor: RESULT_COLORS[m.result],
-                        color: "#fff",
-                        fontWeight: 700,
-                        fontSize: "0.68rem",
-                      }}
-                    />
-                  )}
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip
-                    title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}
-                  >
-                    <Button
-                      size="small"
-                      onClick={() => onResult(m)}
-                      sx={{
-                        minWidth: 0,
-                        px: 1,
-                        py: 0.25,
-                        textTransform: "none",
-                        color: m.ourScore !== null ? "text.primary" : "primary.main",
-                        fontWeight: 700,
-                        fontSize: "0.85rem",
-                      }}
-                    >
-                      {m.ourScore !== null && m.theirScore !== null
-                        ? `${m.ourScore} – ${m.theirScore}`
-                        : "+ Risultato"}
-                    </Button>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {m.ourScore !== null && m._count.playerStats === 0 ? (
-                    <MissingStatsChip matchId={m.id} router={router} />
-                  ) : (
-                    <Typography
-                      variant="caption"
-                      color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
-                    >
-                      {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell align="right">
-                  <ActionIcons
-                    match={m}
-                    router={router}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    onProfile={onProfile}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
-      {/* Mobile card view */}
-      <Box sx={{ display: { xs: "block", sm: "none" } }}>
-        {paginatedMatches.map((m) => (
-          <MatchMobileCard
-            key={m.id}
-            match={m}
-            coverage={coverages[m.id]}
+    <Stack spacing={3}>
+      {upcoming.length > 0 && (
+        <Paper elevation={0} variant="outlined">
+          <SectionHeader
+            icon={<EventIcon fontSize="small" color="info" />}
+            label={`Prossime (${upcoming.length})`}
+            accent="info.main"
+          />
+          <FlatMatchesTable
+            matches={upcoming}
+            coverages={coverages}
+            now={now}
             router={router}
             onResult={onResult}
             onEdit={onEdit}
             onDelete={onDelete}
             onProfile={onProfile}
           />
-        ))}
-      </Box>
-      <TablePagination
-        component="div"
-        count={matches.length}
-        page={page}
-        onPageChange={(_, p) => setPage(p)}
-        rowsPerPage={rpp}
-        onRowsPerPageChange={(e) => {
-          setRpp(parseInt(e.target.value));
-          setPage(0);
-        }}
-        rowsPerPageOptions={[10, 25, 50]}
-        labelRowsPerPage="Righe:"
-        labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
-        sx={{ borderTop: "1px solid", borderColor: "divider" }}
-      />
-    </Paper>
+        </Paper>
+      )}
+
+      {past.length > 0 && (
+        <Paper elevation={0} variant="outlined">
+          <SectionHeader
+            icon={<HistoryIcon fontSize="small" sx={{ color: "text.secondary" }} />}
+            label={`Concluse (${past.length})`}
+          />
+          <FlatMatchesTable
+            matches={pastPaginated}
+            coverages={coverages}
+            now={now}
+            router={router}
+            onResult={onResult}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onProfile={onProfile}
+          />
+          <TablePagination
+            component="div"
+            count={past.length}
+            page={page}
+            onPageChange={(_, p) => setPage(p)}
+            rowsPerPage={rpp}
+            onRowsPerPageChange={(e) => {
+              setRpp(parseInt(e.target.value));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[10, 25, 50]}
+            labelRowsPerPage="Righe:"
+            labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
+            sx={{ borderTop: "1px solid", borderColor: "divider" }}
+          />
+        </Paper>
+      )}
+    </Stack>
   );
 }
 

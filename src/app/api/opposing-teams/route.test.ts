@@ -12,7 +12,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
-  isAdminUser: vi.fn().mockResolvedValue(false),
+  isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("@/lib/authjs", () => ({
@@ -25,13 +25,13 @@ vi.mock("@/lib/audit", () => ({
 
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isCoachOrAdmin } from "@/lib/apiAuth";
 
 type PrismaMock = {
   opposingTeam: { findMany: Mock; create: Mock; findUnique: Mock };
 };
 const p = prisma as unknown as PrismaMock;
-const mockIsAdmin = isAdminUser as Mock;
+const mockIsStaff = isCoachOrAdmin as Mock;
 
 const baseTeam = {
   id: "opp-1",
@@ -67,11 +67,11 @@ describe("GET /api/opposing-teams", () => {
 describe("POST /api/opposing-teams", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsAdmin.mockResolvedValue(false);
+    mockIsStaff.mockResolvedValue(false);
     p.opposingTeam.create.mockResolvedValue({ ...baseTeam, id: "opp-new" });
   });
 
-  it("restituisce 403 per utente non admin", async () => {
+  it("restituisce 403 per utente non staff", async () => {
     const req = new Request("http://localhost/api/opposing-teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -82,7 +82,7 @@ describe("POST /api/opposing-teams", () => {
   });
 
   it("restituisce 400 per body senza nome", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,7 +93,7 @@ describe("POST /api/opposing-teams", () => {
   });
 
   it("restituisce 400 per JSON non valido", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -104,7 +104,7 @@ describe("POST /api/opposing-teams", () => {
   });
 
   it("crea la squadra avversaria con trim e restituisce 201", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -118,7 +118,7 @@ describe("POST /api/opposing-teams", () => {
   });
 
   it("imposta city=null e notes=null se non forniti", async () => {
-    mockIsAdmin.mockResolvedValue(true);
+    mockIsStaff.mockResolvedValue(true);
     const req = new Request("http://localhost/api/opposing-teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
