@@ -60,7 +60,11 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   project: process.env.SENTRY_PROJECT,
   // Carica le source map solo in CI (quando SENTRY_AUTH_TOKEN è impostato)
   silent: !process.env.CI,
-  disableLogger: true,
-  // Non fare auto-instrumentazione Prisma/HTTP — la gestiamo noi
-  autoInstrumentServerFunctions: false,
+  // Opzioni del bundler webpack (build di produzione; ignorate con Turbopack in dev)
+  webpack: {
+    // Rimuove i log di debug del client SDK in produzione (ex disableLogger)
+    treeshake: { removeDebugLogging: true },
+    // Non fare auto-instrumentazione Prisma/HTTP — la gestiamo noi (ex top-level)
+    autoInstrumentServerFunctions: false,
+  },
 });
