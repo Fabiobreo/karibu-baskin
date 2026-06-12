@@ -31,5 +31,5 @@ export default async function MatchStatsPage({ params }: Params) {
   const opponentLabel = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
   const matchLabel = `${match.team.name} vs ${opponentLabel} (${format(match.date, "d MMM yyyy", { locale: it })})`;
 
-  return <MatchStatsClient matchId={matchId} matchLabel={matchLabel} />;
+  return <MatchStatsClient matchId={matchId} matchLabel={matchLabel} ourScore={match.ourScore} />;
 }

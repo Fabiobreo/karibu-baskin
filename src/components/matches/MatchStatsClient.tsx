@@ -22,11 +22,14 @@ import {
 } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { STAT_FIELDS_BY_ROLE, computePoints, type StatField } from "@/lib/schemas/match";
 import { useToast } from "@/context/ToastContext";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
 interface CalledPlayer {
   id: string;
@@ -98,6 +101,8 @@ function isAllowed(role: number | null, field: StatField): boolean {
 interface Props {
   matchId: string;
   matchLabel: string;
+  /** Risultato registrato della partita (null se non ancora inserito) */
+  ourScore: number | null;
 }
 
 const MVP_MAX = 3;
@@ -106,27 +111,42 @@ function mvpKeyFor(row: { userId: string | null; childId: string | null }): stri
   return row.userId ? `user-${row.userId}` : `child-${row.childId}`;
 }
 
-export default function MatchStatsClient({ matchId, matchLabel }: Props) {
+export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
+  const { openConfirm, ConfirmDialog } = useConfirmDialog();
   const [rows, setRows] = useState<StatRow[]>([]);
   const [mvpKeys, setMvpKeys] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  // Modifiche non salvate → prompt su refresh/chiusura + conferma su Annulla
+  const [dirty, setDirty] = useState(false);
+  useUnsavedChangesGuard(dirty);
+
+  function handleCancel() {
+    if (!dirty) {
+      router.push("/admin/partite");
+      return;
+    }
+    openConfirm(
+      "Modifiche non salvate",
+      "Hai modifiche non salvate alle statistiche. Uscire senza salvare?",
+      () => router.push("/admin/partite"),
+      { confirmLabel: "Esci senza salvare", confirmColor: "error" }
+    );
+  }
 
   function toggleMvp(key: string) {
+    if (!mvpKeys.has(key) && mvpKeys.size >= MVP_MAX) {
+      showToast({ message: `Massimo ${MVP_MAX} MVP per partita`, severity: "warning" });
+      return;
+    }
+    setDirty(true);
     setMvpKeys((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        if (next.size >= MVP_MAX) {
-          showToast({ message: `Massimo ${MVP_MAX} MVP per partita`, severity: "warning" });
-          return prev;
-        }
-        next.add(key);
-      }
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -190,10 +210,12 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
   }, [matchId]);
 
   function update(key: string, field: StatField, value: string) {
+    setDirty(true);
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
   }
 
   function updateNote(key: string, value: string) {
+    setDirty(true);
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, notes: value } : r)));
   }
 
@@ -275,6 +297,7 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
       }
 
       showToast({ message: "Statistiche e MVP salvati", severity: "success" });
+      setDirty(false);
       router.push("/admin/partite");
       router.refresh();
     } catch {
@@ -483,9 +506,12 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
                                   value={row[col.key]}
                                   onChange={(e) => update(row.key, col.key, e.target.value)}
                                   size="small"
+                                  // Evita modifiche accidentali con la rotella del mouse
+                                  onWheel={(e) => (e.target as HTMLElement).blur()}
                                   slotProps={{
                                     htmlInput: {
                                       min: 0,
+                                      inputMode: "numeric",
                                       style: {
                                         textAlign: "center",
                                         padding: "4px 6px",
@@ -571,14 +597,27 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
               </Table>
             </Box>
           </Paper>
+
+          {/* Riconciliazione col risultato registrato */}
+          {ourScore !== null && (
+            <Alert
+              severity={totals.points === ourScore ? "success" : "warning"}
+              sx={{ mt: 2 }}
+              icon={totals.points === ourScore ? undefined : <WarningAmberIcon />}
+            >
+              {totals.points === ourScore
+                ? `Totale statistiche (${totals.points} pt) coerente con il risultato registrato.`
+                : `Totale statistiche ${totals.points} pt ≠ risultato registrato ${ourScore} pt — controlla i valori prima di salvare.`}
+            </Alert>
+          )}
         </>
       )}
 
       {!loading && rows.length > 0 && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mt: 3 }}>
-          <Link href="/admin/partite" style={{ textDecoration: "none" }}>
-            <Button disabled={saving}>Annulla</Button>
-          </Link>
+          <Button onClick={handleCancel} disabled={saving}>
+            Annulla
+          </Button>
           <Button
             variant="contained"
             onClick={handleSave}
@@ -589,6 +628,8 @@ export default function MatchStatsClient({ matchId, matchLabel }: Props) {
           </Button>
         </Box>
       )}
+
+      {ConfirmDialog}
     </Box>
   );
 }
