@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminUserList from "@/components/admin/AdminUserList";
+import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
 import { Paper, Button } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Link from "next/link";
@@ -100,7 +101,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const isAdmin = session?.user?.appRole === "ADMIN";
   const currentSeason = getCurrentSeason();
 
-  const [users, total, childEntries, teams] = await Promise.all([
+  const [users, total, childEntries, teams, pendingGuests] = await Promise.all([
     prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
     prisma.user.count({ where }),
     prisma.child.findMany({
@@ -134,6 +135,12 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       select: { id: true, name: true, season: true, color: true },
       orderBy: { name: "asc" },
     }),
+    // Corsia rapida: nuovi account in attesa di approvazione
+    prisma.user.findMany({
+      where: { appRole: "GUEST" },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, email: true, image: true, createdAt: true },
+    }),
   ]);
 
   return (
@@ -149,6 +156,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           </Link>
         }
       />
+      <GuestApprovalInbox guests={pendingGuests} />
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         <AdminUserList
           users={users}
