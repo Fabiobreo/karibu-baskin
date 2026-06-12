@@ -26,6 +26,7 @@ import {
   InputAdornment,
   TablePagination,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import WarningIcon from "@mui/icons-material/Warning";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -239,7 +240,11 @@ export default function AdminAnonymousRegistrations({
               <TableRow
                 key={group.name.toLowerCase().trim()}
                 hover
-                sx={!group.hasEmail ? { bgcolor: "warning.50" } : undefined}
+                sx={
+                  !group.hasEmail
+                    ? { bgcolor: (theme) => alpha(theme.palette.warning.main, 0.08) }
+                    : undefined
+                }
               >
                 <TableCell sx={{ width: 40, pl: 0 }}>
                   <Avatar
@@ -335,7 +340,9 @@ export default function AdminAnonymousRegistrations({
               borderBottom: "1px solid",
               borderColor: "divider",
               "&:last-child": { borderBottom: 0 },
-              bgcolor: !group.hasEmail ? "warning.50" : undefined,
+              bgcolor: !group.hasEmail
+                ? (theme) => alpha(theme.palette.warning.main, 0.08)
+                : undefined,
             }}
           >
             <Box

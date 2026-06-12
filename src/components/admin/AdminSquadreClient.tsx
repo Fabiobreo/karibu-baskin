@@ -374,7 +374,10 @@ export default function AdminSquadreClient({
             cursor: teamsInSeason.length < 2 ? "pointer" : "default",
             "&:hover":
               teamsInSeason.length < 2
-                ? { borderColor: "primary.main", bgcolor: "primary.50" }
+                ? {
+                    borderColor: "primary.main",
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
+                  }
                 : {},
           }}
           onClick={teamsInSeason.length < 2 ? openCreate : undefined}

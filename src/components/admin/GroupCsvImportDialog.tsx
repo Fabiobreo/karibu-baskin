@@ -19,6 +19,7 @@ import {
   CircularProgress,
   Paper,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import UploadIcon from "@mui/icons-material/Upload";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -286,7 +287,11 @@ export default function GroupCsvImportDialog({
                     {rows.map((row, i) => (
                       <TableRow
                         key={i}
-                        sx={{ bgcolor: row.error ? "rgba(198,40,40,0.04)" : undefined }}
+                        sx={{
+                          bgcolor: row.error
+                            ? (theme) => alpha(theme.palette.error.main, 0.04)
+                            : undefined,
+                        }}
                       >
                         <TableCell sx={{ fontSize: "0.78rem" }}>{row.matchday ?? "—"}</TableCell>
                         <TableCell sx={{ fontSize: "0.78rem" }}>{row.date ?? "—"}</TableCell>
