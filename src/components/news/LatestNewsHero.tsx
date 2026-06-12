@@ -2,8 +2,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { Box, Container, Typography, Grid2 as Grid, Stack } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
-import { getLocale, getTranslations } from "next-intl/server";
-import { getDateFnsLocale } from "@/lib/dateLocale";
+import { getTranslations } from "next-intl/server";
 import FeaturedCard from "@/components/news/FeaturedCard";
 import SideCard from "@/components/news/SideCard";
 
@@ -18,24 +17,20 @@ export type PostItem = {
 };
 
 export default async function LatestNewsHero() {
-  const [posts, locale] = await Promise.all([
-    prisma.post.findMany({
-      where: { publishedAt: { not: null } },
-      orderBy: { publishedAt: "desc" },
-      take: 4,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        body: true,
-        imageUrl: true,
-        publishedAt: true,
-        poll: { select: { id: true, closesAt: true } },
-      },
-    }),
-    getLocale(),
-  ]);
-  const dateLocale = getDateFnsLocale(locale);
+  const posts = await prisma.post.findMany({
+    where: { publishedAt: { not: null } },
+    orderBy: { publishedAt: "desc" },
+    take: 4,
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      body: true,
+      imageUrl: true,
+      publishedAt: true,
+      poll: { select: { id: true, closesAt: true } },
+    },
+  });
   const [t, tm] = await Promise.all([getTranslations("home"), getTranslations("matches")]);
 
   if (posts.length === 0) return null;
@@ -69,14 +64,14 @@ export default async function LatestNewsHero() {
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: side.length > 0 ? 7 : 12 }}>
-            <FeaturedCard post={featured} dateLocale={dateLocale} featuredLabel={t("featured")} />
+            <FeaturedCard post={featured} featuredLabel={t("featured")} />
           </Grid>
 
           {side.length > 0 && (
             <Grid size={{ xs: 12, md: 5 }}>
               <Stack spacing={2} sx={{ height: "100%" }}>
                 {side.map((p) => (
-                  <SideCard key={p.id} post={p} dateLocale={dateLocale} />
+                  <SideCard key={p.id} post={p} />
                 ))}
               </Stack>
             </Grid>

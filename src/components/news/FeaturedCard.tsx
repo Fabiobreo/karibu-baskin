@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Box, Typography, Chip, Stack } from "@mui/material";
 import { format } from "date-fns";
-import type { Locale } from "date-fns";
 import ArticleIcon from "@mui/icons-material/Article";
 import PollChip from "@/components/news/PollChip";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
 
 const FEATURED_TEASER_LEN = 160;
@@ -20,11 +20,11 @@ function stripHtml(html: string, len: number): string {
 
 interface FeaturedCardProps {
   post: PostItem;
-  dateLocale: Locale;
   featuredLabel: string;
 }
 
-export default function FeaturedCard({ post, dateLocale, featuredLabel }: FeaturedCardProps) {
+export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps) {
+  const dateLocale = useActiveDateLocale();
   const teaser = stripHtml(post.body, FEATURED_TEASER_LEN);
 
   return (

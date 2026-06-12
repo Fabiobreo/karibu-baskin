@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { Box, Typography } from "@mui/material";
 import { format } from "date-fns";
-import type { Locale } from "date-fns";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
 import PollChip from "@/components/news/PollChip";
+import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
 
 const SIDE_TEASER_LEN = 70;
@@ -21,10 +21,10 @@ function stripHtml(html: string, len: number): string {
 
 interface SideCardProps {
   post: PostItem;
-  dateLocale: Locale;
 }
 
-export default function SideCard({ post, dateLocale }: SideCardProps) {
+export default function SideCard({ post }: SideCardProps) {
+  const dateLocale = useActiveDateLocale();
   const teaser = stripHtml(post.body, SIDE_TEASER_LEN);
 
   return (

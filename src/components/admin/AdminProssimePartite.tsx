@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Box, Paper, Typography, Chip, Stack } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -84,9 +83,9 @@ export default async function AdminProssimePartite() {
                 borderRadius: 1,
                 border: "1px solid",
                 borderColor: "divider",
-                bgcolor: isMissing
-                  ? (theme) => alpha(theme.palette.error.main, 0.04)
-                  : "transparent",
+                // Server Component: niente sx a funzione (non serializzabile) →
+                // rgba statico molto tenue, leggibile su tema chiaro e scuro
+                bgcolor: isMissing ? "rgba(211,47,47,0.04)" : "transparent",
               }}
             >
               <Link

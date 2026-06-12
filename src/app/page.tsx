@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import HomeSessionsSection from "@/components/training/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import SiteHeader from "@/components/layout/SiteHeader";
@@ -225,14 +224,9 @@ export default async function HomePage() {
                       <StarIcon sx={{ color: "#fff", fontSize: 18 }} />
                     </Box>
                     {i < storia.length - 1 && (
-                      <Box
-                        sx={(theme) => ({
-                          width: 2,
-                          flex: 1,
-                          backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                          my: 0.5,
-                        })}
-                      />
+                      // Server Component: niente sx a funzione (non serializzabile) →
+                      // token stringa theme-aware per la linea della timeline
+                      <Box sx={{ width: 2, flex: 1, bgcolor: "divider", my: 0.5 }} />
                     )}
                   </Box>
                   {/* Content */}
