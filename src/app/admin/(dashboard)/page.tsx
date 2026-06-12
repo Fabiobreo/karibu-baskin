@@ -115,7 +115,7 @@ export default async function AdminPage() {
           <NavCard
             href="/admin/allenamenti"
             icon={<CalendarMonthIcon />}
-            label="Gestione Allenamenti"
+            label="Allenamenti da completare"
             badge={sessionsIncomplete}
             badgeLabel="da completare"
             color="#00897B"

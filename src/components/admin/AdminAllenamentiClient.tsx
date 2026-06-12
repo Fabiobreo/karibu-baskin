@@ -11,6 +11,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
@@ -82,6 +83,10 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
+      {/* Legenda del ciclo a 3 stati (il tooltip non esiste su touch) */}
+      <Typography variant="caption" color="text.disabled" sx={{ mb: 0.5 }}>
+        Tocca per ciclare: presente → assente → non marcato
+      </Typography>
       {athletes.map((a) => {
         const effective = a.id in overrides ? overrides[a.id] : a.attended;
         const color = ROLE_COLORS[a.role] ?? "#9E9E9E";
@@ -94,7 +99,7 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
               display: "flex",
               alignItems: "center",
               gap: 0.75,
-              py: 0.4,
+              py: 0.25,
               px: 0.5,
               borderRadius: 1,
               "&:hover": { bgcolor: "action.hover" },
@@ -138,20 +143,28 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
               placement="left"
             >
               <span>
+                {/* Target ≥ 40px: si usa col pollice in palestra */}
                 <IconButton
                   size="small"
                   onClick={() => handleToggle(a)}
                   disabled={isToggling}
-                  sx={{ p: "3px", color: "inherit", "&:hover": { bgcolor: "transparent" } }}
+                  aria-label={
+                    effective === true
+                      ? `${a.name}: presente`
+                      : effective === false
+                        ? `${a.name}: assente`
+                        : `${a.name}: non marcato`
+                  }
+                  sx={{ p: 1, color: "inherit" }}
                 >
                   {isToggling ? (
-                    <CircularProgress size={12} />
+                    <CircularProgress size={18} />
                   ) : effective === true ? (
-                    <CheckCircleIcon sx={{ fontSize: 15, color: "success.main" }} />
+                    <CheckCircleIcon sx={{ fontSize: 22, color: "success.main" }} />
                   ) : effective === false ? (
-                    <CancelIcon sx={{ fontSize: 15, color: "error.main" }} />
+                    <CancelIcon sx={{ fontSize: 22, color: "error.main" }} />
                   ) : (
-                    <RadioButtonUncheckedIcon sx={{ fontSize: 15, color: "text.disabled" }} />
+                    <RadioButtonUncheckedIcon sx={{ fontSize: 22, color: "text.disabled" }} />
                   )}
                 </IconButton>
               </span>
@@ -258,9 +271,12 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
           alignItems: "center",
           justifyContent: "flex-end",
           gap: 1.5,
-          bgcolor: confirming
-            ? "success.50"
-            : (theme) => (theme.palette.mode === "dark" ? "grey.850" : "grey.50"),
+          bgcolor: (theme) =>
+            confirming
+              ? alpha(theme.palette.success.main, 0.08)
+              : theme.palette.mode === "dark"
+                ? theme.palette.background.default
+                : theme.palette.grey[50],
           transition: "background-color 0.2s",
         }}
       >

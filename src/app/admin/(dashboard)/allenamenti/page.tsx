@@ -2,6 +2,9 @@ import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
 import AdminAllenamentiClient from "@/components/admin/AdminAllenamentiClient";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { Alert } from "@mui/material";
+import MuiLink from "@mui/material/Link";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Allenamenti da gestire | Admin" };
@@ -57,6 +60,18 @@ export default async function AdminAllenamentiPage() {
         subtitle="Sessioni concluse con risultati delle partite ancora mancanti."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }]}
       />
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Qui concludi gli allenamenti passati: presenze e risultati delle partitelle. Per creare o
+        modificare gli allenamenti usa il{" "}
+        <MuiLink component={Link} href="/calendario" fontWeight={700}>
+          Calendario
+        </MuiLink>{" "}
+        o la pagina{" "}
+        <MuiLink component={Link} href="/allenamenti" fontWeight={700}>
+          Allenamenti
+        </MuiLink>
+        .
+      </Alert>
       <AdminAllenamentiClient sessions={sessions} />
     </>
   );
