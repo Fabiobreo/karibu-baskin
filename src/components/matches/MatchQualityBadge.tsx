@@ -4,7 +4,7 @@ import { Box, Tooltip, Typography, LinearProgress } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import RemoveIcon from "@mui/icons-material/Remove";
-import type { MatchQuality, QualityLabel } from "@/lib/matchQuality";
+import type { MatchQuality, QualityLabel } from "@/lib/matches/matchQuality";
 
 const LABEL_COLOR: Record<QualityLabel, string> = {
   Favoriti: "success.main",

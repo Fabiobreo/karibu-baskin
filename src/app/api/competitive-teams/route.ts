@@ -1,11 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { CompetitiveTeamCreateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-competitive-teams", 30, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
   const teams = await prisma.competitiveTeam.findMany({
     orderBy: [{ season: "desc" }, { name: "asc" }],
     include: {

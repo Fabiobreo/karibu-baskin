@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
-import type { LoanCandidate } from "@/lib/callupContext";
+import type { LoanCandidate } from "@/lib/matches/callupContext";
 
 function candidateKey(c: LoanCandidate): string {
   return `${c.candidate.kind}-${c.candidate.id}`;

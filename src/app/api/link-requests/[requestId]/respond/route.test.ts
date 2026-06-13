@@ -16,14 +16,14 @@ vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@/lib/webpush", () => ({
+vi.mock("@/lib/notifications/webpush", () => ({
   sendPushToUser: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { POST } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { sendPushToUser } from "@/lib/webpush";
+import { sendPushToUser } from "@/lib/notifications/webpush";
 
 type PrismaMock = {
   linkRequest: { findUnique: Mock };

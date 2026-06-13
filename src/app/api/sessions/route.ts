@@ -5,7 +5,7 @@ import { SessionCreateSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { notifySessionOpen } from "@/lib/sessionNotify";
+import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {

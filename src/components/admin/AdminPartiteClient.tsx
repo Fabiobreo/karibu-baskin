@@ -33,7 +33,7 @@ import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
-import type { MatchCoverage } from "@/lib/matchCoverage";
+import type { MatchCoverage } from "@/lib/matches/matchCoverage";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";

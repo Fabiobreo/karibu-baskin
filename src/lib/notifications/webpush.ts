@@ -1,5 +1,5 @@
 import webpush from "web-push";
-import { prisma } from "./db";
+import { prisma } from "@/lib/db";
 import { mergePrefs, type ControllableNotifType } from "./notifPrefs";
 
 // Lazy-init: if VAPID keys are missing (e.g. during testing), push is disabled rather

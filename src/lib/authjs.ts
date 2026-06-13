@@ -4,7 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
-import { sendPushToAll } from "@/lib/webpush";
+import { sendPushToAll } from "@/lib/notifications/webpush";
 import { generateUserSlug } from "@/lib/slugUtils";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

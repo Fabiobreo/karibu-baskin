@@ -6,7 +6,7 @@ import { Box, Tabs, Tab } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import GroupsIcon from "@mui/icons-material/Groups";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
-import type { StandingEntry } from "@/lib/standings";
+import type { StandingEntry } from "@/lib/season/standings";
 import type {
   CallupEntry,
   CallupWithStat,

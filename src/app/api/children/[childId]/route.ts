@@ -3,11 +3,11 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToUser } from "@/lib/webpush";
+import { sendPushToUser } from "@/lib/notifications/webpush";
 import { ChildPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { generateChildSlug } from "@/lib/slugUtils";
-import { recomputeRatings } from "@/lib/ratingEngine";
+import { recomputeRatings } from "@/lib/rating/ratingEngine";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(

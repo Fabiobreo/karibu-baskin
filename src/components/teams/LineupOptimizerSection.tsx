@@ -21,10 +21,10 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import HeightIcon from "@mui/icons-material/Height";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
-import { TRUESKILL } from "@/lib/trueskill";
-import { optimizeLineup } from "@/lib/lineupOptimizer";
-import type { CandidateInput } from "@/lib/callupStats";
-import type { LineupResult, RoleDepthEntry } from "@/lib/lineupOptimizer";
+import { TRUESKILL } from "@/lib/rating/trueskill";
+import { optimizeLineup } from "@/lib/rating/lineupOptimizer";
+import type { CandidateInput } from "@/lib/matches/callupStats";
+import type { LineupResult, RoleDepthEntry } from "@/lib/rating/lineupOptimizer";
 
 // Gap μ oltre il quale scatta il warning rischio falli
 const GAP_WARNING_THRESHOLD = 6;

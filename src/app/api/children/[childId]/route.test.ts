@@ -25,7 +25,7 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("@/lib/webpush", () => ({
+vi.mock("@/lib/notifications/webpush", () => ({
   sendPushToUser: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -33,7 +33,7 @@ import { PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToUser } from "@/lib/webpush";
+import { sendPushToUser } from "@/lib/notifications/webpush";
 
 type PrismaMock = {
   child: { findUnique: Mock; update: Mock; delete: Mock };

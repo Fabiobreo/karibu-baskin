@@ -5,8 +5,12 @@ import { GroupCreateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { generateGroupSlug } from "@/lib/slugUtils";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-groups", 30, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
   const season = req.nextUrl.searchParams.get("season");
   const competitiveTeamId = req.nextUrl.searchParams.get("competitiveTeamId");
 

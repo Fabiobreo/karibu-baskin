@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifPrefs";
+import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifications/notifPrefs";
 import type { AppNotificationType } from "@prisma/client";
 import SiteHeader from "@/components/layout/SiteHeader";
 import NotificheClient from "@/components/notifications/NotificheClient";

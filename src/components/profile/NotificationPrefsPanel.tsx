@@ -19,7 +19,7 @@ import {
   mergePrefs,
   type NotifPrefs,
   type ControllableNotifType,
-} from "@/lib/notifPrefs";
+} from "@/lib/notifications/notifPrefs";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);

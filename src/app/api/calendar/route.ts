@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export type CalendarEventType = "training" | "match" | "event";
 
@@ -19,6 +20,9 @@ export interface CalendarEvent {
 }
 
 export async function GET(req: Request) {
+  const rl = checkRateLimit(getClientIp(req), "get-calendar", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
   const { searchParams } = new URL(req.url);
   const month = searchParams.get("month"); // YYYY-MM
 

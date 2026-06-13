@@ -23,7 +23,7 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/appNotifications", () => ({
+vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -31,7 +31,7 @@ import { PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
-import { createAppNotification } from "@/lib/appNotifications";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 type PrismaMock = { teamMembership: { update: Mock; findUnique: Mock; delete: Mock } };
 const p = prisma as unknown as PrismaMock;

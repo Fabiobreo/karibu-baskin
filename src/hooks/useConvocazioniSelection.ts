@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { TeamCallupContext } from "@/lib/callupContext";
+import type { TeamCallupContext } from "@/lib/matches/callupContext";
 
 /** Riga candidato con statistiche, come prodotta da buildTeamCallupContext. */
 export type ConvocazioneStatRow = TeamCallupContext["stats"][number];

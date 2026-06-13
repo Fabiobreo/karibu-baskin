@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 /**
  * Banner "Hai N disponibilità da confermare" — Server Component.
- * Il conteggio arriva da countPendingAvailabilities() in @/lib/availabilityPending.
+ * Il conteggio arriva da countPendingAvailabilities() in @/lib/matches/availabilityPending.
  */
 export default async function PendingAvailabilityBanner({ count }: { count: number }) {
   if (count <= 0) return null;

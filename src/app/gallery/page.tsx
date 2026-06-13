@@ -8,7 +8,7 @@ import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import GalleryGrid from "@/components/gallery/GalleryGrid";
 import YouTubeSection from "@/components/gallery/YouTubeSection";
-import { getChannelVideos } from "@/lib/youtube";
+import { getChannelVideos } from "@/lib/gallery/youtube";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

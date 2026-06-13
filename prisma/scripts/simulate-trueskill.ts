@@ -18,13 +18,13 @@
  */
 
 import { PrismaClient, Gender, Prisma } from "@prisma/client";
-import { generateTeams, type Athlete } from "../../src/lib/teamGenerator";
+import { generateTeams, type Athlete } from "../../src/lib/season/teamGenerator";
 import {
   buildRostersSnapshot,
   recomputeRatings,
   type RegistrationRefMap,
-} from "../../src/lib/ratingEngine";
-import { ordinal } from "../../src/lib/trueskill";
+} from "../../src/lib/rating/ratingEngine";
+import { ordinal } from "../../src/lib/rating/trueskill";
 
 const prisma = new PrismaClient();
 

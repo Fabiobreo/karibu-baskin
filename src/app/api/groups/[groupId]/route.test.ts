@@ -14,7 +14,7 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("@/lib/standings", () => ({
+vi.mock("@/lib/season/standings", () => ({
   computeStandings: vi.fn().mockReturnValue([]),
 }));
 

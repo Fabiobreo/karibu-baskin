@@ -6,10 +6,10 @@ import {
   buildTeamCallupContext,
   buildLoanPool,
   WINDOW_DAYS_FOR_PRESENCES,
-} from "@/lib/callupContext";
+} from "@/lib/matches/callupContext";
 import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
 import MatchQualitySection from "@/components/matches/MatchQualitySection";
-import { computeMatchQuality } from "@/lib/matchQuality";
+import { computeMatchQuality } from "@/lib/matches/matchQuality";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Convocazioni | Admin" };

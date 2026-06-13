@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { contrastText } from "@/lib/colorUtils";
-import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./types";
 
 export default async function NextMatchCard({

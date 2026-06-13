@@ -71,7 +71,13 @@ export async function submitContactForm(
   const fromAddress = "Sito Karibu Baskin <noreply@karibubaskin.it>";
 
   if (!apiKey) {
-    console.log("[ContactForm]", { name, email, message });
+    // Fallback di sviluppo: nessun provider email configurato. Logghiamo il contenuto
+    // solo in dev — mai in produzione, per non finire dati personali nei log/Sentry.
+    if (process.env.NODE_ENV !== "production") {
+      console.log("[ContactForm]", { name, email, message });
+    } else {
+      console.error("[ContactForm] RESEND_API_KEY mancante: messaggio non inviato");
+    }
     return { success: true };
   }
 

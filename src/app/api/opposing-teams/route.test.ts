@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import type { Mock } from "vitest";
+import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
@@ -48,7 +49,7 @@ describe("GET /api/opposing-teams", () => {
   });
 
   it("restituisce la lista delle squadre avversarie", async () => {
-    const res = await GET();
+    const res = await GET(new NextRequest("http://localhost/api/opposing-teams"));
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json).toHaveLength(1);
@@ -58,7 +59,7 @@ describe("GET /api/opposing-teams", () => {
 
   it("restituisce array vuoto se non ci sono squadre", async () => {
     p.opposingTeam.findMany.mockResolvedValue([]);
-    const res = await GET();
+    const res = await GET(new NextRequest("http://localhost/api/opposing-teams"));
     const json = await res.json();
     expect(json).toEqual([]);
   });

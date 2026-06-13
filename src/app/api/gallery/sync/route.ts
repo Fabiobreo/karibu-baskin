@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { syncInstagram } from "@/lib/instagram";
+import { syncInstagram } from "@/lib/gallery/instagram";
 
 // Trigger manuale del sync Instagram dal pannello admin.
 export async function POST(req: NextRequest) {

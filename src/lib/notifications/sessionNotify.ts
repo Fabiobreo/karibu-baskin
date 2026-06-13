@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 export interface SessionNotifyInput {
   id: string;

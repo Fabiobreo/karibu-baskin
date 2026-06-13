@@ -18,11 +18,11 @@ vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("@/lib/webpush", () => ({
+vi.mock("@/lib/notifications/webpush", () => ({
   sendPushToAll: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/appNotifications", () => ({
+vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -41,8 +41,8 @@ vi.mock("@/lib/audit", () => ({
 import { GET, PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { sendPushToAll } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToAll } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 type PrismaMock = {
   match: { findUnique: Mock; update: Mock; delete: Mock };

@@ -5,7 +5,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { SessionUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { notifySessionOpen } from "@/lib/sessionNotify";
+import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 
 export async function GET(
   _req: NextRequest,

@@ -23,14 +23,14 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/sessionNotify", () => ({
+vi.mock("@/lib/notifications/sessionNotify", () => ({
   notifySessionOpen: vi.fn(),
 }));
 
 import { POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { notifySessionOpen } from "@/lib/sessionNotify";
+import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 import { Prisma } from "@prisma/client";
 
 type PrismaMock = { trainingSession: { update: Mock; findUnique: Mock } };

@@ -26,7 +26,7 @@ import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { slugify } from "@/lib/slugUtils";
 import { contrastText } from "@/lib/colorUtils";
-import type { StandingEntry } from "@/lib/standings";
+import type { StandingEntry } from "@/lib/season/standings";
 
 export type OurMatchData = {
   id: string;

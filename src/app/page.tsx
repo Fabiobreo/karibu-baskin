@@ -13,7 +13,7 @@ import ProssimePartiteHome from "@/components/matches/ProssimePartiteHome";
 import BirthdayBanner from "@/components/common/BirthdayBanner";
 import GuestWelcomeBanner from "@/components/common/GuestWelcomeBanner";
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
-import { countPendingAvailabilities } from "@/lib/availabilityPending";
+import { countPendingAvailabilities } from "@/lib/matches/availabilityPending";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";

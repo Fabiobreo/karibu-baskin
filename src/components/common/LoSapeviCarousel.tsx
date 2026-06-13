@@ -5,7 +5,7 @@ import { Box, Typography, IconButton } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { getLoSapevi } from "@/lib/loSapevi";
+import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
 
 const INTERVAL_MS = 7000;

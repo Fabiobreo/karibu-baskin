@@ -3,9 +3,9 @@ import { timingSafeEqual } from "crypto";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
-import { sendPushToUsers } from "@/lib/webpush";
-import { createTargetedAppNotifications } from "@/lib/appNotifications";
-import { computeMatchCoverageBatch } from "@/lib/matchCoverage";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
+import { computeMatchCoverageBatch } from "@/lib/matches/matchCoverage";
 
 // Vercel Cron — giornaliero alle 09:00 UTC.
 // Per ogni partita ufficiale tra 36 e 60 ore da adesso (≈ 48h),

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Box, Container, Typography } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
-import { getLoSapevi } from "@/lib/loSapevi";
+import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
 
 /**

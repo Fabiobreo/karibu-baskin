@@ -27,11 +27,11 @@ import { format } from "date-fns";
 import { ROLE_COLORS, sportRoleLabel as sportRoleLabelRaw } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
-import { computeBadges } from "@/lib/badges";
+import { computeBadges } from "@/lib/rating/badges";
 import { slugify } from "@/lib/slugUtils";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
-import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 
 type Props = {
   params: Promise<{ slug: string }>;

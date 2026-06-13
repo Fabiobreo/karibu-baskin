@@ -32,11 +32,11 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(true),
   isAdminUser: vi.fn().mockResolvedValue(false),
 }));
-vi.mock("@/lib/webpush", () => ({
+vi.mock("@/lib/notifications/webpush", () => ({
   sendPushToUser: vi.fn().mockResolvedValue(undefined),
   sendPushToUsers: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("@/lib/appNotifications", () => ({
+vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
   createTargetedAppNotifications: vi.fn().mockResolvedValue(undefined),
 }));

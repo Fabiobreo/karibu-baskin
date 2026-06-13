@@ -5,17 +5,17 @@ import { NextRequest } from "next/server";
 vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(true),
 }));
-vi.mock("@/lib/webpush", () => ({
+vi.mock("@/lib/notifications/webpush", () => ({
   sendPushToAll: vi.fn().mockResolvedValue({ sent: 5, removed: 0 }),
   sendPushToFilter: vi.fn().mockResolvedValue({ sent: 2, removed: 0 }),
 }));
-vi.mock("@/lib/appNotifications", () => ({
+vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { POST } from "./route";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToAll, sendPushToFilter } from "@/lib/webpush";
+import { sendPushToAll, sendPushToFilter } from "@/lib/notifications/webpush";
 
 const mockIsCoach = isCoachOrAdmin as Mock;
 const mockToAll = sendPushToAll as Mock;

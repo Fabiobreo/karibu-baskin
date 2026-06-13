@@ -9,7 +9,7 @@ import {
   buildRostersSnapshot,
   recomputeRatings,
   type RegistrationRefMap,
-} from "@/lib/ratingEngine";
+} from "@/lib/rating/ratingEngine";
 
 const MatchResultSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),

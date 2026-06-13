@@ -3,8 +3,8 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { PostUpdateSchema } from "@/lib/schemas/post";
-import { sendPushToAll } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToAll } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import DOMPurify from "isomorphic-dompurify";
 

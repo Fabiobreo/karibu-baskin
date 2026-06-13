@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToAll, sendPushToFilter } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToAll, sendPushToFilter } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 // Only relative same-origin paths are allowed — prevents open-redirect phishing via push.
 const relativeUrlRegex = /^\/[\w\-/?=&%.#]*$/;

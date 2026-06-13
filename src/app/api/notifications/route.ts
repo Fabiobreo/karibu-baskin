@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifPrefs";
+import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifications/notifPrefs";
 import type { AppNotificationType } from "@prisma/client";
 
 export async function GET(req: NextRequest) {

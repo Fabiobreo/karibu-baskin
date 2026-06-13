@@ -29,7 +29,7 @@ Regola di assegnazione: un componente va nella cartella del suo **dominio di uti
 - **Props:** `interface ComponentNameProps { ... }` definita nel file stesso, sopra il componente. Mai estrarre in `types/` se usata solo qui.
 - **Styling:** **solo** `sx` prop con token del tema (`primary.main`, `text.secondary`, ecc.). Niente `className`, niente CSS module, niente colori hardcoded. Per stili complessi/riusati: `styled()` da `@mui/material/styles`.
 - **Stato:** `useState`/`useReducer` locali. Per stato condiviso a livello di pagina, sollevarlo nel componente client di livello superiore (es. `AdminPartiteClient`).
-- **Fetch:** chiamare le API con `fetch("/api/...")`. Per dati che cambiano spesso o sono condivisi, usare SWR. Mai chiamare Prisma direttamente da qui.
+- **Fetch:** usare **TanStack React Query** (`useQuery` per le letture, `useMutation` per le scritture) con `fetch("/api/...")` come fetcher. Mai SWR né altre librerie di fetching. Mai chiamare Prisma direttamente da qui.
 - **Toast/errori:** `useToast()` da `@/context/ToastContext` — sempre `showToast({ message, severity: "success" | "error" | "info" | "warning" })`.
 - **Form admin:** pattern controlled inputs + `useState` per ogni campo, validazione client minima + affidamento allo schema Zod server-side per i messaggi d'errore reali.
 

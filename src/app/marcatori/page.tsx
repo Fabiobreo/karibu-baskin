@@ -10,7 +10,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
 import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 
 export const metadata: Metadata = {
   title: "Marcatori | Karibu Baskin",

@@ -50,7 +50,7 @@ import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { alpha } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { slugify } from "@/lib/slugUtils";
 
 // href-only — le label vengono da t() dentro il componente

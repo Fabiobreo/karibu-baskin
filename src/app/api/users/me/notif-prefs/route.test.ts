@@ -17,7 +17,7 @@ vi.mock("@/lib/authjs", () => ({
 import { GET, PATCH } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { DEFAULT_PREFS } from "@/lib/notifPrefs";
+import { DEFAULT_PREFS } from "@/lib/notifications/notifPrefs";
 import { NextRequest } from "next/server";
 
 type PrismaMock = { user: { findUnique: Mock; update: Mock } };

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import AdminPartiteClient from "@/components/admin/AdminPartiteClient";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matchCoverage";
+import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matches/matchCoverage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Partite | Admin" };

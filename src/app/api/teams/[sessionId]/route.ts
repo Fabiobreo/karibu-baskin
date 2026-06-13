@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { generateTeams } from "@/lib/teamGenerator";
+import { generateTeams } from "@/lib/season/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { sendPushToUsers } from "@/lib/webpush";
-import { createTargetedAppNotifications } from "@/lib/appNotifications";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 

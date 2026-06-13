@@ -2,7 +2,7 @@
 
 import { Box, Typography } from "@mui/material";
 import MatchQualityBadge from "@/components/matches/MatchQualityBadge";
-import type { MatchQuality } from "@/lib/matchQuality";
+import type { MatchQuality } from "@/lib/matches/matchQuality";
 
 interface MatchQualitySectionProps {
   quality: MatchQuality;

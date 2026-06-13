@@ -13,7 +13,7 @@ vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@/lib/notifPrefs", () => ({
+vi.mock("@/lib/notifications/notifPrefs", () => ({
   mergePrefs: vi.fn().mockReturnValue({
     push: { NEW_TRAINING: true, TEAMS_READY: true, MATCH_RESULT: true },
     inApp: { NEW_TRAINING: true, TEAMS_READY: true, MATCH_RESULT: true },
@@ -24,7 +24,7 @@ vi.mock("@/lib/notifPrefs", () => ({
 import { GET } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { mergePrefs } from "@/lib/notifPrefs";
+import { mergePrefs } from "@/lib/notifications/notifPrefs";
 
 type PrismaMock = {
   user: { findUnique: Mock };

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { notifySessionOpen } from "@/lib/sessionNotify";
+import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 import { sessionEndDate } from "@/lib/dateUtils";
 
 export async function POST(

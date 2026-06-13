@@ -16,7 +16,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
-import { computeStandings } from "@/lib/standings";
+import { computeStandings } from "@/lib/season/standings";
 import MatchTabellinoButton from "@/components/matches/MatchTabellinoButton";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
@@ -25,7 +25,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { ROLE_COLORS } from "@/lib/constants";
-import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 
 export const revalidate = 3600;

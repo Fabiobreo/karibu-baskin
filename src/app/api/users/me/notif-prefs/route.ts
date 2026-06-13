@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import { mergePrefs, CONTROLLABLE_TYPES, type NotifPrefs } from "@/lib/notifPrefs";
+import { mergePrefs, CONTROLLABLE_TYPES, type NotifPrefs } from "@/lib/notifications/notifPrefs";
 
 export async function GET() {
   const session = await auth();

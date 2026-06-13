@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import { sendPushToUser } from "@/lib/webpush";
+import { sendPushToUser } from "@/lib/notifications/webpush";
 
 // POST /api/link-requests/[requestId]/respond
 // Body: { accept: boolean }

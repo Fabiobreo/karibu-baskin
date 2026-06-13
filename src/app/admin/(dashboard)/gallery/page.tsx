@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import AdminGalleryClient from "@/components/admin/AdminGalleryClient";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { isInstagramConfigured } from "@/lib/instagram";
-import { isYouTubeConfigured } from "@/lib/youtube";
+import { isInstagramConfigured } from "@/lib/gallery/instagram";
+import { isYouTubeConfigured } from "@/lib/gallery/youtube";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Gallery | Admin" };

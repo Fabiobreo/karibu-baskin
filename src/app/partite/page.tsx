@@ -12,7 +12,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Metadata } from "next";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";

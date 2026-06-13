@@ -16,7 +16,7 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("@/lib/sessionNotify", () => ({
+vi.mock("@/lib/notifications/sessionNotify", () => ({
   notifySessionOpen: vi.fn(),
 }));
 
@@ -36,7 +36,7 @@ vi.mock("@/lib/audit", () => ({
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { notifySessionOpen } from "@/lib/sessionNotify";
+import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { Prisma } from "@prisma/client";
 

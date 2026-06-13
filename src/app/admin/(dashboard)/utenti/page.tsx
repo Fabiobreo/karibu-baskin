@@ -6,7 +6,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Link from "next/link";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { auth } from "@/lib/authjs";
 
 export const revalidate = 60;

@@ -6,7 +6,7 @@ import AllenamentiClient from "@/components/training/AllenamentiClient";
 import { parseTeamsData } from "@/lib/schemas";
 import type { TeamsData } from "@/components/training/TeamDisplay";
 import type { Metadata } from "next";
-import { getSeasonStartDate } from "@/lib/seasonUtils";
+import { getSeasonStartDate } from "@/lib/season/seasonUtils";
 
 export const metadata: Metadata = { title: "Allenamenti | Karibu Baskin" };
 export const revalidate = 0;

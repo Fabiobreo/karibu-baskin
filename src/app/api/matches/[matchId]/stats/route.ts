@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { PlayerStatsBatchSchema, computePoints } from "@/lib/schemas";
-import { sendPushToAll } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToAll } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { buildLoanLookup, isLoanParticipation } from "@/lib/loanDetection";
+import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 
 type Params = { params: Promise<{ matchId: string }> };
 

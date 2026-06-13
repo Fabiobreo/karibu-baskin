@@ -30,7 +30,7 @@ import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
 import UpcomingMatchRow from "@/components/matches/UpcomingMatchRow";
-import { MATCH_RESULT_META } from "@/lib/matchResults";
+import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./_components/types";
 import NextMatchCard from "./_components/NextMatchCard";
 import PlayedMatchCard from "./_components/PlayedMatchCard";

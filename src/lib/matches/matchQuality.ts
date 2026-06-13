@@ -5,7 +5,7 @@
 // dell'avversario (OpposingTeam.ratingMu). Approssimazione logistica della
 // funzione di distribuzione normale standard (nessuna dipendenza esterna).
 
-import { TRUESKILL } from "./trueskill";
+import { TRUESKILL } from "@/lib/rating/trueskill";
 
 /** Approssimazione logistica di Φ(x) — errore < 0.003 nell'intero dominio. */
 function normcdf(x: number): number {

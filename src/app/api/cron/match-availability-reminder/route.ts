@@ -3,8 +3,8 @@ import { timingSafeEqual } from "crypto";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
-import { sendPushToUsers } from "@/lib/webpush";
-import { createTargetedAppNotifications } from "@/lib/appNotifications";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { MIN_CALLUPS } from "@/lib/constants";
 
 // Vercel Cron — eseguito giornalmente.

@@ -1,6 +1,6 @@
 "use client";
 import { Box, Chip, Paper, Tab, Tabs } from "@mui/material";
-import type { TeamCallupContext } from "@/lib/callupContext";
+import type { TeamCallupContext } from "@/lib/matches/callupContext";
 import type { TeamSelectionState } from "@/hooks/useConvocazioniSelection";
 
 /** Tab per le due squadre delle amichevoli interne, con conteggio convocati. */

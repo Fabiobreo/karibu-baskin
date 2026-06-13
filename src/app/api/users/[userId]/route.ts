@@ -4,11 +4,11 @@ import { Prisma } from "@prisma/client";
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import { isAdminUser, isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
-import { sendPushToUser } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToUser } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
-import { recomputeRatings } from "@/lib/ratingEngine";
+import { recomputeRatings } from "@/lib/rating/ratingEngine";
 import {
   VALID_APP_ROLES,
   VALID_ATHLETE_STATUSES,

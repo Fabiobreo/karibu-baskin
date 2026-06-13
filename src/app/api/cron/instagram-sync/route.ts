@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { syncInstagram } from "@/lib/instagram";
+import { syncInstagram } from "@/lib/gallery/instagram";
 
 // Vercel Cron — sincronizza il feed Instagram nella Gallery.
 // Schedulato in vercel.json (ogni 6 ore).

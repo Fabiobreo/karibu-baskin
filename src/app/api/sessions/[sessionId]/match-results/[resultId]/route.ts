@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
-import { recomputeRatings } from "@/lib/ratingEngine";
+import { recomputeRatings } from "@/lib/rating/ratingEngine";
 
 const MatchResultUpdateSchema = z.object({
   matchup: z.enum(["AB", "AC", "BC"]).optional(),

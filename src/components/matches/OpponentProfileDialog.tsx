@@ -26,7 +26,7 @@ import type {
   OpponentStrength,
   OpponentPhysicality,
 } from "@/lib/schemas/match";
-import { OPPONENT_MU_PRESETS } from "@/lib/matchQuality";
+import { OPPONENT_MU_PRESETS } from "@/lib/matches/matchQuality";
 
 const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",

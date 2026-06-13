@@ -11,7 +11,7 @@ import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
-import { getFaqs } from "@/lib/faqs";
+import { getFaqs } from "@/lib/content/faqs";
 
 export const metadata = { title: "FAQ — Karibu Baskin" };
 

@@ -13,7 +13,7 @@
 // il giocatore non è ancora stato valutato).
 
 import { TRUESKILL } from "./trueskill";
-import type { CandidateInput } from "./callupStats";
+import type { CandidateInput } from "@/lib/matches/callupStats";
 
 /** Approssimazione logistica di Φ(x) — errore < 0.003. */
 function normcdf(x: number): number {

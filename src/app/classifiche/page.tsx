@@ -14,8 +14,8 @@ import type {
   OurMatchData,
   ExternalMatchData,
 } from "@/components/teams/GironeFullView";
-import { getCurrentSeason } from "@/lib/seasonUtils";
-import { computeStandings } from "@/lib/standings";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { computeStandings } from "@/lib/season/standings";
 
 export const metadata: Metadata = {
   title: "Classifiche | Karibu Baskin",

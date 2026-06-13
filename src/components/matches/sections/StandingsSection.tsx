@@ -13,7 +13,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import type { StandingEntry } from "@/lib/standings";
+import type { StandingEntry } from "@/lib/season/standings";
 
 /** Classifica compatta del girone con la nostra squadra evidenziata. */
 export default function StandingsSection({

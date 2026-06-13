@@ -4,13 +4,13 @@
 // (2 squadre, una per lato del match).
 
 import { prisma } from "@/lib/db";
-import { computeCandidateStats } from "@/lib/callupStats";
+import { computeCandidateStats } from "@/lib/matches/callupStats";
 import type {
   CandidateInput,
   SessionEligibilityInput,
   RegistrationLookup,
   CallupLookup,
-} from "@/lib/callupStats";
+} from "@/lib/matches/callupStats";
 
 export interface TeamCallupContext {
   id: string;

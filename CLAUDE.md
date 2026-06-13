@@ -13,7 +13,7 @@ App web per la squadra di Baskin di Montecchio Maggiore (VI). Gestione allenamen
 - **PWA:** manifest.json + service worker (`public/sw.js`) con offline support
 - **Push notifications:** Web Push API + `web-push` npm package (VAPID)
 - **Upload immagini:** Vercel Blob (`@vercel/blob`) + `sharp` per resize/ottimizzazione — vedi `src/lib/blob.ts` (cartelle: avatars, teams, matches, events, posts) e `POST /api/upload`
-- **Rating giocatori:** sistema TrueSkill custom (`src/lib/trueskill.ts`, `ratingEngine.ts`, `ratingTrend.ts`) + ottimizzatore formazioni (`lineupOptimizer.ts`) + badge (`badges.ts`)
+- **Rating giocatori:** sistema TrueSkill custom in `src/lib/rating/` (`trueskill.ts`, `ratingEngine.ts`, `ratingTrend.ts`) + ottimizzatore formazioni (`lineupOptimizer.ts`) + badge (`badges.ts`)
 - **Analytics:** Vercel Analytics
 - **Error monitoring:** Sentry (`@sentry/nextjs`) — config in `sentry.client/server/edge.config.ts`, init via `src/instrumentation.ts`, plugin in `next.config.ts` (`withSentryConfig`). Source map caricate solo in CI (`SENTRY_AUTH_TOKEN`)
 - **i18n:** next-intl (it/en) **cookie-based** — vedi sezione [Internazionalizzazione](#internazionalizzazione)
@@ -157,43 +157,45 @@ src/
 │   ├── useCookieConsent.ts                # Stato consenso cookie
 │   ├── useEntityLabels.ts                 # Label dominio tradotte (client) — ruolo/genere/risultato
 │   └── useActiveDateLocale.ts             # Locale date-fns corrente (it/enUS)
-├── lib/
+├── lib/                                   # Infra cross-cutting a root; sottosistemi di dominio in sottocartelle
 │   ├── apiAuth.ts                         # Helper auth per API route (isCoachOrAdmin, isAdminUser)
-│   ├── appNotifications.ts                # Creazione notifiche in-app
 │   ├── audit.ts                           # Audit logging (AuditEvent)
 │   ├── authjs.ts                          # Config Auth.js v5
 │   ├── authRoles.ts                       # Gerarchia ruoli + helper hasRole()
-│   ├── badges.ts                          # Calcolo badge giocatore
 │   ├── blob.ts                            # Upload/ottimizzazione immagini (Vercel Blob + sharp)
-│   ├── callupContext.ts / callupStats.ts  # Logica convocazioni partita
+│   ├── colorMode.ts / colorUtils.ts       # Helpers colore / contrasto tema
 │   ├── constants.ts                       # ROLE_COLORS, ROLES (label tradotte via entityLabels)
-│   ├── dateUtils.ts                       # Helpers date (formattazione, confronto)
-│   ├── dateLocale.ts                      # getDateFnsLocale(locale) → it/enUS
-│   ├── entityLabels.ts                    # Label dominio tradotte (server) — getEntityLabels()
+│   ├── dateUtils.ts / dateLocale.ts       # Helpers date + locale date-fns (it/enUS)
 │   ├── db.ts                              # Prisma singleton
-│   ├── faqs.ts                            # Contenuti FAQ
+│   ├── entityLabels.ts                    # Label dominio tradotte (server) — getEntityLabels()
 │   ├── heroStyles.ts                      # Stili condivisi hero/PageHero
-│   ├── instagram.ts                       # Gallery: client Graph API + mirror su Blob + upsert
-│   ├── youtube.ts                         # Gallery: lista video dal feed RSS del canale
-│   ├── lineupOptimizer.ts                 # Ottimizzatore formazioni (rating TrueSkill)
-│   ├── loanDetection.ts                   # Rilevamento prestiti tra squadre
-│   ├── loSapevi.ts                        # Fatti "Lo sapevi?" per la home
-│   ├── matchCoverage.ts                   # Copertura ruoli/convocazioni partita
-│   ├── matchQuality.ts                    # Qualità/bilanciamento partita
-│   ├── matchResults.ts                    # Helpers risultati partite
-│   ├── notifPrefs.ts                      # Preferenze notifiche per tipo evento
 │   ├── rateLimit.ts                       # Rate limiting per API route
-│   ├── ratingEngine.ts / ratingTrend.ts   # Motore rating TrueSkill + andamento
 │   ├── registrationRestrictions.ts        # Logica restrizioni iscrizioni (shared server+client)
-│   ├── seasonUtils.ts                     # Calcolo stagione corrente (YYYY-YY)
-│   ├── sessionNotify.ts                   # Notifiche legate agli allenamenti
 │   ├── slugUtils.ts                       # Generazione slug URL
-│   ├── standings.ts                       # Calcolo classifiche gironi
-│   ├── teamGenerator.ts                   # Mulberry32 PRNG seeded shuffle
-│   ├── trueskill.ts                       # Implementazione TrueSkill
 │   ├── useHasMounted.ts                   # Hook anti-SSR hydration mismatch
 │   ├── validators.ts                      # Validatori generici
-│   ├── webpush.ts                         # Invio notifiche push (sendPushToAll/Team/Filter)
+│   ├── rating/                            # Sistema rating TrueSkill
+│   │   ├── trueskill.ts                   #   Implementazione TrueSkill
+│   │   ├── ratingEngine.ts / ratingTrend.ts  # Motore rating + andamento
+│   │   ├── lineupOptimizer.ts             #   Ottimizzatore formazioni
+│   │   ├── badges.ts                      #   Calcolo badge giocatore
+│   │   └── loanDetection.ts               #   Rilevamento prestiti tra squadre
+│   ├── matches/                           # Logica partite ufficiali
+│   │   ├── callupContext.ts / callupStats.ts # Convocazioni
+│   │   ├── matchCoverage.ts / matchQuality.ts # Copertura ruoli + qualità/bilanciamento
+│   │   ├── matchResults.ts                #   Helpers risultati partite
+│   │   └── availabilityPending.ts         #   Disponibilità in attesa
+│   ├── notifications/                     # Notifiche push + in-app
+│   │   ├── webpush.ts                     #   Invio push (sendPushToAll/Team/Filter)
+│   │   ├── appNotifications.ts            #   Creazione notifiche in-app
+│   │   ├── notifPrefs.ts                  #   Preferenze per tipo evento
+│   │   └── sessionNotify.ts               #   Notifiche legate agli allenamenti
+│   ├── season/                            # Stagioni, classifiche, generazione squadre
+│   │   ├── seasonUtils.ts                 #   Calcolo stagione corrente (YYYY-YY)
+│   │   ├── standings.ts                   #   Calcolo classifiche gironi
+│   │   └── teamGenerator.ts               #   Mulberry32 PRNG seeded shuffle
+│   ├── gallery/                           # Gallery: instagram.ts (Graph API + mirror Blob) + youtube.ts (RSS)
+│   ├── content/                           # Contenuti statici: faqs.ts, baskinInfo.ts, loSapevi.ts
 │   └── schemas/                           # Schemi Zod per validazione input API
 │       ├── child.ts, competitiveTeam.ts, event.ts, group.ts, post.ts
 │       ├── match.ts, opposingTeam.ts, registration.ts, session.ts
@@ -312,7 +314,7 @@ Comportamento `checkRegistrationAllowed()`:
 
 - **Library:** `web-push` npm package
 - **VAPID keys:** generate con `node -e "require('web-push').generateVAPIDKeys()..."`
-- **Invio:** `sendPushToAll(payload, adminOnly?, type?)` / `sendPushToTeam(teamId, ...)` / `sendPushToFilter({ sportRoles, gender }, ...)` da `@/lib/webpush.ts`
+- **Invio:** `sendPushToAll(payload, adminOnly?, type?)` / `sendPushToTeam(teamId, ...)` / `sendPushToFilter({ sportRoles, gender }, ...)` da `@/lib/notifications/webpush.ts`
 - **Trigger automatici:** nuovo allenamento (tutti), squadre generate (tutti), nuovo utente GUEST (solo admin); inoltre i cron giornalieri (vedi sotto) inviano promemoria
 - **Subscribe UI:** `NotificationPrefsPanel` nella pagina profilo
 - **Cron Vercel** (autorizzati via `CRON_SECRET`, in `src/app/api/cron/`):
@@ -326,12 +328,12 @@ Comportamento `checkRegistrationAllowed()`:
 
 ## Sottosistemi recenti
 
-- **Rating / TrueSkill:** `src/lib/trueskill.ts` (implementazione), `ratingEngine.ts` (applicazione ai risultati), `ratingTrend.ts` (andamento), `RatingUpdate` (storico). Usato da `lineupOptimizer.ts` per suggerire formazioni bilanciate (UI: `LineupOptimizerSection`) e dal tracker sviluppo (`/admin/sviluppo`, `DevelopmentTracker`). Badge derivati in `badges.ts`.
+- **Rating / TrueSkill:** in `src/lib/rating/` — `trueskill.ts` (implementazione), `ratingEngine.ts` (applicazione ai risultati), `ratingTrend.ts` (andamento), `RatingUpdate` (storico). Usato da `lineupOptimizer.ts` per suggerire formazioni bilanciate (UI: `LineupOptimizerSection`) e dal tracker sviluppo (`/admin/sviluppo`, `DevelopmentTracker`). Badge derivati in `badges.ts`.
 - **News / bacheca:** modelli `Post` + `Poll`/`PollOption`/`PollVote`. API `posts/` (+ `posts/admin/`) e `polls/[id]/vote`. Admin: `/admin/news` (`AdminNewsClient`, `PostEditor`, `PollEditor`). Pubblico: `/news` e `/news/[slug]`. Widget: `PollWidget`, `LatestNewsHero`.
 - **Disponibilità & convocazioni:** `MatchAvailability` (l'atleta dichiara la disponibilità per una partita) e `MatchCallup` (lo staff convoca). API `matches/[matchId]/availability` e `/callups`, più `users/me/availabilities`. UI utente: `/profilo/disponibilita` (`MieDisponibilitaClient`); UI staff: `/admin/partite/[matchId]/convocazioni` (`ConvocazioniClient`). Logica: `callupContext.ts`, `callupStats.ts`, `matchCoverage.ts`.
 - **MVP partita:** `MatchMvp` + `matches/[matchId]/mvps`.
 - **Tema chiaro/scuro:** `ThemeContext` + `lightTheme`/`darkTheme` in `theme.ts`. Lo switch è nel menu utente (header) e nel drawer mobile. Usare sempre token semantici del tema (`text.primary`, `background.paper`, …): i colori hardcoded rompono il dark mode.
-- **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (giornaliero alle 06:00, `vercel.json` — su piano Hobby i cron Vercel possono girare al massimo 1 volta/giorno: schedule sub-giornaliere fanno **fallire il deploy**) chiama `syncInstagram()` (`src/lib/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
+- **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (giornaliero alle 06:00, `vercel.json` — su piano Hobby i cron Vercel possono girare al massimo 1 volta/giorno: schedule sub-giornaliere fanno **fallire il deploy**) chiama `syncInstagram()` (`src/lib/gallery/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `gallery/youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.
 
 ## Internazionalizzazione (i18n)
 
@@ -393,13 +395,13 @@ NEXT_PUBLIC_SENTRY_DSN=           # Sentry: DSN client (error monitoring)
 
 ## Offline / PWA
 
-Service worker (`public/sw.js`) con 3 strategie (versione `karibu-v4`):
+Service worker (`public/sw.js`) con 3 strategie (versione `karibu-v7`):
 
 - **Cache-first:** asset statici (`/logo.png`, `/_next/static/*`, ecc.)
 - **Network-first + cache fallback:** pagine HTML (fallback su `/offline.html` se mai visitata)
-- **Network-first + cache fallback:** `GET /api/sessions*` e `GET /api/teams/*` — cache usata solo se offline (era stale-while-revalidate, rimossa per evitare dati obsoleti)
+- **Network-first + cache fallback:** GET su `/api/sessions`, `/api/teams/`, `/api/matches`, `/api/competitive-teams`, `/api/events`, `/api/calendar` — cache usata solo se offline (era stale-while-revalidate, rimossa per evitare dati obsoleti)
 
-Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/la-squadra`, `/contatti`, `/sponsor`.
+Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/squadre`, `/contatti`, `/sponsor`. (Mai precachare un redirect come `/la-squadra` → `cache.add` può salvare una risposta "redirected" che rompe il match nel SW.)
 
 ## Pagina allenamento (`/allenamento/[sessionId]`)
 
@@ -564,9 +566,9 @@ export default function Xxx({ initialItems }: XxxProps) {
       if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
       const created = await res.json();
       setItems((prev) => [created, ...prev]);
-      showToast("Creato", "success");
+      showToast({ message: "Creato", severity: "success" });
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Errore", "error");
+      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
     } finally {
       setLoading(false);
     }
@@ -637,7 +639,7 @@ export default async function Page() {
 - **Mai esporre dati sensibili in client props** (email altrui, ruoli admin di altri utenti che non dovrebbero vederli) — fare `select` esplicito in Prisma.
 - **Mai dimenticare il rate-limit** sulle API pubbliche (GET senza auth): `checkRateLimit(getClientIp(req), "key", limit, windowMs)`.
 - **Mai usare `prisma.session` quando intendi `prisma.trainingSession`** — `session` = sessione Auth.js.
-- **Mai aggiungere libreria di state management** (Redux, Zustand, Jotai...) senza discuterne — il pattern attuale è useState + Context + SWR.
+- **Mai aggiungere libreria di state management** (Redux, Zustand, Jotai...) senza discuterne — il pattern attuale è useState + Context + TanStack React Query (per il data fetching).
 - **Mai introdurre nuovi alias di import** oltre `@/` → `src/`.
 - **Mai committare file generati** (`.next/`, `node_modules/`, `prisma/migrations/` su branch develop senza review).
 - **Mai bypassare `isCoachOrAdmin()` / `isAdminUser()`** in API route admin con controlli ad-hoc.

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { createAppNotification } from "@/lib/appNotifications";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 type Params = { params: Promise<{ teamId: string; membershipId: string }> };
 

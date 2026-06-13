@@ -21,7 +21,7 @@ import { ROLE_COLORS } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { formatBirthDate, type ChildData } from "@/components/profile/childLinkerShared";
 import ChildAddDialog from "@/components/profile/dialogs/ChildAddDialog";

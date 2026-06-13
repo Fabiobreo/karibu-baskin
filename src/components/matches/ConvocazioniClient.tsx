@@ -7,8 +7,8 @@ import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
-import type { CandidateInput } from "@/lib/callupStats";
-import type { TeamCallupContext, LoanCandidate } from "@/lib/callupContext";
+import type { CandidateInput } from "@/lib/matches/callupStats";
+import type { TeamCallupContext, LoanCandidate } from "@/lib/matches/callupContext";
 import LineupOptimizerSection from "@/components/teams/LineupOptimizerSection";
 import {
   useConvocazioniSelection,

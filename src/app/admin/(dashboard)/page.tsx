@@ -18,7 +18,7 @@ import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
 import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 
 export const revalidate = 30;
 

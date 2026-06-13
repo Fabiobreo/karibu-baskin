@@ -20,8 +20,8 @@ Ogni `route.ts` deve seguire questo ordine:
 - `isCoachOrAdmin`, `isAdminUser` da `@/lib/apiAuth` — auth checks.
 - `hasRole` da `@/lib/authRoles` — per check granulari.
 - `checkRateLimit`, `getClientIp` da `@/lib/rateLimit` — rate limiting.
-- `sendPushToAll`/`sendPushToTeam`/`sendPushToFilter` da `@/lib/webpush`.
-- `createAppNotification` da `@/lib/appNotifications`.
+- `sendPushToAll`/`sendPushToTeam`/`sendPushToFilter` da `@/lib/notifications/webpush`.
+- `createAppNotification` da `@/lib/notifications/appNotifications`.
 - `logAudit` da `@/lib/audit` per azioni admin sensibili.
 
 ## Messaggi d'errore

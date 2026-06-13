@@ -4,7 +4,7 @@ import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminGironiClient from "@/components/admin/AdminGironiClient";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gironi | Admin" };

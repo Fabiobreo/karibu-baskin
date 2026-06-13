@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 
 interface CompetitiveTeam {
   id: string;

@@ -18,7 +18,7 @@ import TimerIcon from "@mui/icons-material/Timer";
 import StarIcon from "@mui/icons-material/Star";
 import GradeIcon from "@mui/icons-material/Grade";
 import { ROLE_COLORS } from "@/lib/constants";
-import { getRolesInfo, getBaskinRules } from "@/lib/baskinInfo";
+import { getRolesInfo, getBaskinRules } from "@/lib/content/baskinInfo";
 import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 
 const RULE_ICONS = [

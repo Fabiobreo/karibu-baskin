@@ -16,7 +16,7 @@ import {
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_HIERARCHY } from "@/lib/authRoles";
 import { useToast } from "@/context/ToastContext";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import UserFilters from "@/components/admin/userList/UserFilters";
 import UsersTable from "@/components/admin/userList/UsersTable";
 import UsersMobileCards from "@/components/admin/userList/UsersMobileCards";

@@ -4,7 +4,7 @@ import { isAdminUser } from "@/lib/apiAuth";
 import { TeamMemberSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { createAppNotification } from "@/lib/appNotifications";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 
 type Params = { params: Promise<{ teamId: string }> };
 

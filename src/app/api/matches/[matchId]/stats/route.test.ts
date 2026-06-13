@@ -16,8 +16,10 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-vi.mock("@/lib/webpush", () => ({ sendPushToAll: vi.fn().mockResolvedValue(undefined) }));
-vi.mock("@/lib/appNotifications", () => ({
+vi.mock("@/lib/notifications/webpush", () => ({
+  sendPushToAll: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@/lib/notifications/appNotifications", () => ({
   createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 

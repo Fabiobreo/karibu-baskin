@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isAdminUser } from "@/lib/apiAuth";
-import { sendPushToAll } from "@/lib/webpush";
-import { createAppNotification } from "@/lib/appNotifications";
+import { sendPushToAll } from "@/lib/notifications/webpush";
+import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { MatchUpdateSchema, deriveResult } from "@/lib/schemas";
 import { generateMatchSlug } from "@/lib/slugUtils";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
-import { recomputeRatings } from "@/lib/ratingEngine";
+import { recomputeRatings } from "@/lib/rating/ratingEngine";
 
 type Params = { params: Promise<{ matchId: string }> };
 

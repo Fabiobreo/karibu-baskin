@@ -4,7 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { CallupsSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
-import { buildLoanLookup, isLoanParticipation } from "@/lib/loanDetection";
+import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 
 type Params = { params: Promise<{ matchId: string }> };
 

@@ -20,7 +20,7 @@ import { ROLE_COLORS, ROLES } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
-import { getCurrentSeason } from "@/lib/seasonUtils";
+import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { signIn } from "next-auth/react";
 import { useRegistrationForm } from "@/hooks/useRegistrationForm";
 import RegistrationSubjectSelector from "@/components/training/RegistrationSubjectSelector";

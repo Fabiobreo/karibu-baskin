@@ -10,7 +10,7 @@ import HeadToHeadSection from "@/components/matches/sections/HeadToHeadSection";
 import StandingsSection from "@/components/matches/sections/StandingsSection";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
 import type { CallupWithStat, PrevMatchPreview } from "@/components/matches/matchDetailTypes";
-import type { StandingEntry } from "@/lib/standings";
+import type { StandingEntry } from "@/lib/season/standings";
 
 interface MatchCallupsTabProps {
   callups: CallupWithStat[];

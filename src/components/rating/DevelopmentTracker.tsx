@@ -22,8 +22,8 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import RatingBadge from "@/components/rating/RatingBadge";
 import RatingSparkline from "@/components/rating/RatingSparkline";
-import { classifyTrend, TREND_META, type TrendLabel } from "@/lib/ratingTrend";
-import { ordinal } from "@/lib/trueskill";
+import { classifyTrend, TREND_META, type TrendLabel } from "@/lib/rating/ratingTrend";
+import { ordinal } from "@/lib/rating/trueskill";
 import { ROLES, sportRoleLabel } from "@/lib/constants";
 
 type SkillBucket = "alta" | "media" | "bassa";
