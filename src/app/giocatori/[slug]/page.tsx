@@ -28,6 +28,7 @@ import { ROLE_COLORS, sportRoleLabel as sportRoleLabelRaw } from "@/lib/constant
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadgeState } from "@/lib/rating/badges";
+import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
 import { slugify } from "@/lib/slugUtils";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
@@ -219,7 +220,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     points: number;
   };
   const medals: Medal[] = [];
-  if (teamSeasonPairs.length > 0) {
+  // Il "top scorer" è calcolato PER RUOLO: confrontare i punti totali tra ruoli
+  // diversi (es. R1 vs R5) non sarebbe equo. Serve quindi il ruolo del giocatore.
+  const subjectRole = player.sportRole;
+  if (teamSeasonPairs.length > 0 && subjectRole != null) {
     // Fetch di tutti i playerStats per le (team, season) del giocatore, esclusi i prestiti.
     // Le partite del team in quella stagione vengono filtrate via match.team.season.
     const allRelevantStats = await prisma.playerMatchStats.findMany({
@@ -236,6 +240,32 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         match: { select: { teamId: true, team: { select: { season: true } } } },
       },
     });
+
+    // Ruolo (attuale) di ogni marcatore, per limitare il confronto allo stesso ruolo.
+    const uIds = [
+      ...new Set(allRelevantStats.map((s) => s.userId).filter((x): x is string => !!x)),
+    ];
+    const cIds = [
+      ...new Set(allRelevantStats.map((s) => s.childId).filter((x): x is string => !!x)),
+    ];
+    const [statUsers, statChildren] = await Promise.all([
+      uIds.length > 0
+        ? prisma.user.findMany({
+            where: { id: { in: uIds } },
+            select: { id: true, sportRole: true },
+          })
+        : [],
+      cIds.length > 0
+        ? prisma.child.findMany({
+            where: { id: { in: cIds } },
+            select: { id: true, sportRole: true },
+          })
+        : [],
+    ]);
+    const roleByKey = new Map<string, number | null>();
+    for (const u of statUsers) roleByKey.set(`u:${u.id}`, u.sportRole);
+    for (const c of statChildren) roleByKey.set(`c:${c.id}`, c.sportRole);
+
     // Aggrega per (teamId, season, playerKey)
     type Agg = { teamId: string; season: string; playerKey: string; points: number };
     const aggMap = new Map<string, Agg>();
@@ -253,9 +283,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           points: s.points,
         });
     }
-    // Raggruppa per (teamId, season) e ordina
+    // Raggruppa per (teamId, season), considerando solo i giocatori dello stesso ruolo
     const byTeamSeason = new Map<string, Agg[]>();
     for (const agg of aggMap.values()) {
+      if (roleByKey.get(agg.playerKey) !== subjectRole) continue;
       const k = `${agg.teamId}::${agg.season}`;
       const arr = byTeamSeason.get(k) ?? [];
       arr.push(agg);
@@ -284,9 +315,22 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   }
 
   const { earned: earnedBadges, locked: lockedBadges } = computeBadgeState({
-    matchStats: player.matchStats,
+    matchStats: player.matchStats.map((ms) => ({
+      points: ms.points,
+      twoPointers: ms.twoPointers,
+      threePointers: ms.threePointers,
+      freeThrows: ms.freeThrows,
+      shotsAttempted: ms.shotsAttempted,
+      fouls: ms.fouls,
+      illegalFouls: ms.illegalFouls,
+      isLoan: ms.isLoan,
+      won: ms.match.result === "WIN",
+      date: ms.match.date,
+      season: ms.match.team.season,
+    })),
     mvpCount: player._count.matchMvps,
     topScorerCount: medals.filter((m) => m.rank === 1).length,
+    sportRole: player.sportRole,
   });
 
   // Data di sblocco dei badge (da EarnedBadge), per mostrare "Sbloccato il …".
@@ -295,15 +339,17 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     select: { badgeId: true, unlockedAt: true },
   });
   const unlockedAtMap = new Map(earnedBadgeRows.map((r) => [r.badgeId, r.unlockedAt]));
+  const badgeI18n = await getBadgeI18n();
   const earnedBadgesView: EarnedBadgeView[] = earnedBadges.map((b) => {
     const at = unlockedAtMap.get(b.id);
     return {
-      ...b,
+      ...badgeI18n.translate(b),
       unlockedAtLabel: at
         ? t("unlockedOn", { date: format(at, "d MMM yyyy", { locale: dateLocale }) })
         : null,
     };
   });
+  const lockedBadgesView = lockedBadges.map((b) => badgeI18n.translate(b));
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
   const seasons = Array.from(
@@ -563,10 +609,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         ? "medal.silver"
                         : "medal.bronze";
                     const medalLabel = isFirst
-                      ? "Top scorer"
+                      ? "Top scorer di ruolo"
                       : isSecond
-                        ? "2° marcatore"
-                        : "3° marcatore";
+                        ? "2° marcatore di ruolo"
+                        : "3° marcatore di ruolo";
                     return (
                       <Box
                         key={`${m.teamId}-${m.season}-${i}`}
@@ -790,11 +836,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         </Paper>
 
         {/* Badge / achievement */}
-        {(earnedBadgesView.length > 0 || lockedBadges.length > 0) && (
+        {(earnedBadgesView.length > 0 || lockedBadgesView.length > 0) && (
           <Box sx={{ mb: 5 }}>
             <BadgeShowcase
               earned={earnedBadgesView}
-              locked={lockedBadges}
+              locked={lockedBadgesView}
               title={t("achievements")}
               nextTitle={t("nextAchievements")}
             />
@@ -979,10 +1025,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       ? "linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)"
                       : "linear-gradient(135deg, #D7A56B 0%, #8D6E63 100%)";
                   const medalLabel = isFirst
-                    ? "Top scorer"
+                    ? "Top scorer di ruolo"
                     : isSecond
-                      ? "2° marcatore"
-                      : "3° marcatore";
+                      ? "2° marcatore di ruolo"
+                      : "3° marcatore di ruolo";
                   return (
                     <Grid key={`${m.teamId}-${m.season}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
                       <Paper

@@ -476,6 +476,72 @@
     "searchPlayer": "Search player…",
     "all": "All"
   },
+  "badges": {
+    "esordiente": { "label": "Debutant", "description": "First official match played" },
+    "cinque_partite": { "label": "5 matches", "description": "5 official matches played" },
+    "dieci_partite": { "label": "10 matches", "description": "10 official matches played" },
+    "venti_partite": { "label": "20 matches", "description": "20 official matches played" },
+    "veterano": { "label": "Veteran", "description": "30 official matches played" },
+    "fedelissimo": {
+      "label": "Ever-present",
+      "description": "Played in at least 3 different seasons"
+    },
+    "primo_canestro": {
+      "label": "First basket",
+      "description": "First point scored in an official match"
+    },
+    "doppia_cifra": { "label": "Double figures", "description": "10 or more points in a match" },
+    "bomber": { "label": "Bomber", "description": "20 or more points in a single match" },
+    "centurione": { "label": "Centurion", "description": "100 career points" },
+    "artigliere": { "label": "Gunner", "description": "200 career points" },
+    "cannoniere": { "label": "Cannoneer", "description": "300 career points" },
+    "cecchino": { "label": "Sniper", "description": "3 or more 3-pointers in a single match" },
+    "mira_acciaio": {
+      "label": "Steel aim",
+      "description": "At least 70% shooting in a match (min. 5 shots)"
+    },
+    "cecchino_perfetto": {
+      "label": "Perfect sniper",
+      "description": "100% shooting in a match with at least 3 baskets"
+    },
+    "costante": { "label": "Consistent", "description": "Scored in 5 consecutive matches" },
+    "in_fiamme": {
+      "label": "On fire",
+      "description": "At least 10 points in 3 consecutive matches"
+    },
+    "vincente": { "label": "Winner", "description": "10 matches won" },
+    "trascinatore": {
+      "label": "Match-winner",
+      "description": "20+ points in a match that was won"
+    },
+    "mvp": { "label": "MVP", "description": "Voted match MVP at least once" },
+    "beniamino": { "label": "Fan favourite", "description": "Voted match MVP 3 times" },
+    "top_scorer": {
+      "label": "Top scorer",
+      "description": "Top scorer in your role within the team in a season"
+    },
+    "tripla": {
+      "label": "Mixed treble",
+      "description": "In one match: at least one 2pt, one 3pt and one free throw"
+    },
+    "mercenario": {
+      "label": "Mercenary",
+      "description": "At least one match played on loan for another team"
+    },
+    "fair_play": {
+      "label": "Fair play",
+      "description": "10 matches without illegal fouls (R4/R5 roles)"
+    }
+  },
+  "badgeCategories": {
+    "punti": "Points",
+    "precisione": "Accuracy",
+    "continuita": "Consistency",
+    "vittorie": "Wins",
+    "presenza": "Appearances",
+    "premi": "Awards",
+    "speciali": "Special"
+  },
   "calendar": {
     "showAll": "Show all",
     "homeVs": "Home vs {opponent}",
@@ -516,6 +582,10 @@
     "noAchievementsYet": "No achievements yet — get on the court and start collecting them!",
     "childAchievements": "{name}'s achievements",
     "unlockedOn": "Unlocked on {date}",
+    "viewAllAchievements": "View all achievements",
+    "achievementsPageChip": "Achievements",
+    "achievementsPageSubtitle": "Unlock achievements by playing official matches: points, appearances, MVP awards and more.",
+    "achievementsProgress": "{earned}/{total} unlocked",
     "tabProfile": "Profile",
     "tabFamily": "Family",
     "tabNotifications": "Notifications",

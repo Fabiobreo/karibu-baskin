@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack, Button, Badge } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import SiteHeader from "@/components/layout/SiteHeader";
 import { contrastText } from "@/lib/colorUtils";
@@ -24,6 +25,7 @@ import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 import { loadBadgeInput, type PlayerRef } from "@/lib/rating/badgeService";
 import { computeBadgeState } from "@/lib/rating/badges";
+import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
 import type { LockedBadge } from "@/lib/rating/badges";
 
@@ -43,6 +45,7 @@ const APP_ROLE_CHIP_COLOR: Record<
 export default async function ProfiloPage() {
   const t = await getTranslations("profile");
   const locale = await getLocale();
+  const badgeI18n = await getBadgeI18n();
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -65,9 +68,12 @@ export default async function ProfiloPage() {
     const unlockedMap = new Map(rows.map((r) => [r.badgeId, r.unlockedAt]));
     const earnedView: EarnedBadgeView[] = earned.map((b) => {
       const at = unlockedMap.get(b.id);
-      return { ...b, unlockedAtLabel: at ? t("unlockedOn", { date: dateFmt.format(at) }) : null };
+      return {
+        ...badgeI18n.translate(b),
+        unlockedAtLabel: at ? t("unlockedOn", { date: dateFmt.format(at) }) : null,
+      };
     });
-    return { earned: earnedView, locked };
+    return { earned: earnedView, locked: locked.map((b) => badgeI18n.translate(b)) };
   }
 
   const user = await prisma.user.findUnique({
@@ -240,13 +246,25 @@ export default async function ProfiloPage() {
       )}
 
       {userBadges && (
-        <BadgeShowcase
-          earned={userBadges.earned}
-          locked={userBadges.locked}
-          title={t("achievements")}
-          nextTitle={t("nextAchievements")}
-          emptyLabel={t("noAchievementsYet")}
-        />
+        <Box sx={{ mb: 3 }}>
+          <BadgeShowcase
+            earned={userBadges.earned}
+            locked={userBadges.locked}
+            title={t("achievements")}
+            nextTitle={t("nextAchievements")}
+            emptyLabel={t("noAchievementsYet")}
+          />
+          <Box sx={{ mt: -1.5, textAlign: "right" }}>
+            <Link href="/profilo/traguardi" style={{ textDecoration: "none" }}>
+              <Button
+                size="small"
+                endIcon={<EmojiEventsIcon sx={{ fontSize: "1rem !important" }} />}
+              >
+                {t("viewAllAchievements")}
+              </Button>
+            </Link>
+          </Box>
+        </Box>
       )}
 
       {attendanceSeasons.length > 1 && (

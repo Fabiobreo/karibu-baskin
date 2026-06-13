@@ -476,6 +476,75 @@
     "searchPlayer": "Cerca giocatore…",
     "all": "Tutti"
   },
+  "badges": {
+    "esordiente": { "label": "Esordiente", "description": "Prima partita ufficiale disputata" },
+    "cinque_partite": { "label": "5 partite", "description": "5 partite ufficiali disputate" },
+    "dieci_partite": { "label": "10 partite", "description": "10 partite ufficiali disputate" },
+    "venti_partite": { "label": "20 partite", "description": "20 partite ufficiali disputate" },
+    "veterano": { "label": "Veterano", "description": "30 partite ufficiali disputate" },
+    "fedelissimo": {
+      "label": "Fedelissimo",
+      "description": "Presente in almeno 3 stagioni diverse"
+    },
+    "primo_canestro": {
+      "label": "Primo canestro",
+      "description": "Primo punto segnato in una partita ufficiale"
+    },
+    "doppia_cifra": { "label": "Doppia cifra", "description": "10 o più punti in una partita" },
+    "bomber": { "label": "Bomber", "description": "20 o più punti in una singola partita" },
+    "centurione": { "label": "Centurione", "description": "100 punti totali in carriera" },
+    "artigliere": { "label": "Artigliere", "description": "200 punti totali in carriera" },
+    "cannoniere": { "label": "Cannoniere", "description": "300 punti totali in carriera" },
+    "cecchino": {
+      "label": "Cecchino",
+      "description": "3 o più canestri da 3 punti in una singola partita"
+    },
+    "mira_acciaio": {
+      "label": "Mira d'acciaio",
+      "description": "Almeno 70% di realizzazione in una partita (min. 5 tiri)"
+    },
+    "cecchino_perfetto": {
+      "label": "Cecchino perfetto",
+      "description": "100% di realizzazione in una partita con almeno 3 canestri"
+    },
+    "costante": { "label": "Costante", "description": "A segno in 5 partite consecutive" },
+    "in_fiamme": {
+      "label": "In fiamme",
+      "description": "Almeno 10 punti in 3 partite consecutive"
+    },
+    "vincente": { "label": "Vincente", "description": "10 partite vinte disputate" },
+    "trascinatore": {
+      "label": "Trascinatore",
+      "description": "20+ punti in una partita poi vinta"
+    },
+    "mvp": { "label": "MVP", "description": "Eletto MVP della partita almeno una volta" },
+    "beniamino": { "label": "Beniamino", "description": "Eletto MVP della partita 3 volte" },
+    "top_scorer": {
+      "label": "Top scorer",
+      "description": "1° marcatore del proprio ruolo in una stagione"
+    },
+    "tripla": {
+      "label": "Tripla mista",
+      "description": "In una partita: almeno 1 canestro da 2pt, 1 da 3pt e 1 tiro libero"
+    },
+    "mercenario": {
+      "label": "Mercenario",
+      "description": "Almeno una partita giocata in prestito per un'altra squadra"
+    },
+    "fair_play": {
+      "label": "Fair play",
+      "description": "10 partite senza falli illegali (ruoli R4/R5)"
+    }
+  },
+  "badgeCategories": {
+    "punti": "Punti",
+    "precisione": "Precisione",
+    "continuita": "Continuità",
+    "vittorie": "Vittorie",
+    "presenza": "Presenza",
+    "premi": "Premi",
+    "speciali": "Speciali"
+  },
   "calendar": {
     "showAll": "Mostra tutto",
     "homeVs": "In casa vs {opponent}",
@@ -516,6 +585,10 @@
     "noAchievementsYet": "Nessun traguardo ancora — scendi in campo e inizia a collezionarli!",
     "childAchievements": "Traguardi di {name}",
     "unlockedOn": "Sbloccato il {date}",
+    "viewAllAchievements": "Vedi tutti i traguardi",
+    "achievementsPageChip": "Traguardi",
+    "achievementsPageSubtitle": "Sblocca traguardi giocando le partite ufficiali: punti, presenze, premi MVP e altro.",
+    "achievementsProgress": "{earned}/{total} sbloccati",
     "tabProfile": "Profilo",
     "tabFamily": "Famiglia",
     "tabNotifications": "Notifiche",

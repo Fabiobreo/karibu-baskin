@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { computeBadges, getBadgeById } from "@/lib/rating/badges";
+import { computeBadges, getBadgeById, type StatsInput } from "@/lib/rating/badges";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 
@@ -13,27 +13,60 @@ export type PlayerRef =
  * al calcolo dei badge di un giocatore. Stessa semantica usata dal profilo
  * pubblico: include anche le partite giocate in prestito.
  */
-export async function loadBadgeInput(ref: PlayerRef) {
+export async function loadBadgeInput(ref: PlayerRef): Promise<StatsInput> {
   const where = ref.userId ? { userId: ref.userId } : { childId: ref.childId };
   const playerKey = ref.userId ? `u:${ref.userId}` : `c:${ref.childId}`;
 
-  const [matchStats, mvpCount, memberships] = await Promise.all([
+  const [rawStats, mvpCount, memberships, sportRole] = await Promise.all([
     prisma.playerMatchStats.findMany({
       where,
-      select: { points: true, twoPointers: true, threePointers: true, freeThrows: true },
+      select: {
+        points: true,
+        twoPointers: true,
+        threePointers: true,
+        freeThrows: true,
+        shotsAttempted: true,
+        fouls: true,
+        illegalFouls: true,
+        isLoan: true,
+        match: { select: { date: true, result: true, team: { select: { season: true } } } },
+      },
     }),
     prisma.matchMvp.count({ where }),
     prisma.teamMembership.findMany({
       where,
       select: { team: { select: { id: true, season: true } } },
     }),
+    ref.userId
+      ? prisma.user
+          .findUnique({ where: { id: ref.userId }, select: { sportRole: true } })
+          .then((u) => u?.sportRole ?? null)
+      : prisma.child
+          .findUnique({ where: { id: ref.childId }, select: { sportRole: true } })
+          .then((c) => c?.sportRole ?? null),
   ]);
 
+  const matchStats = rawStats.map((s) => ({
+    points: s.points,
+    twoPointers: s.twoPointers,
+    threePointers: s.threePointers,
+    freeThrows: s.freeThrows,
+    shotsAttempted: s.shotsAttempted,
+    fouls: s.fouls,
+    illegalFouls: s.illegalFouls,
+    isLoan: s.isLoan,
+    won: s.match.result === "WIN",
+    date: s.match.date,
+    season: s.match.team.season,
+  }));
+
   // topScorerCount: per ogni (squadra, stagione) di cui il giocatore è membro,
-  // verifica se è il 1° marcatore (prestiti esclusi, come sul profilo pubblico).
+  // verifica se è il 1° marcatore DEL PROPRIO RUOLO (prestiti esclusi). Il
+  // confronto è limitato ai giocatori dello stesso ruolo Baskin: paragonare i
+  // punti tra ruoli diversi (R1 vs R5) non sarebbe equo.
   let topScorerCount = 0;
   const pairs = memberships.map((m) => ({ teamId: m.team.id, season: m.team.season }));
-  if (pairs.length > 0) {
+  if (pairs.length > 0 && sportRole != null) {
     const relevant = await prisma.playerMatchStats.findMany({
       where: {
         isLoan: false,
@@ -46,11 +79,33 @@ export async function loadBadgeInput(ref: PlayerRef) {
         match: { select: { teamId: true, team: { select: { season: true } } } },
       },
     });
-    // Aggrega punti per (teamId, season, playerKey)
+
+    // Ruolo (attuale) di ogni marcatore, per limitare il confronto allo stesso ruolo.
+    const uIds = [...new Set(relevant.map((s) => s.userId).filter((x): x is string => !!x))];
+    const cIds = [...new Set(relevant.map((s) => s.childId).filter((x): x is string => !!x))];
+    const [statUsers, statChildren] = await Promise.all([
+      uIds.length > 0
+        ? prisma.user.findMany({
+            where: { id: { in: uIds } },
+            select: { id: true, sportRole: true },
+          })
+        : [],
+      cIds.length > 0
+        ? prisma.child.findMany({
+            where: { id: { in: cIds } },
+            select: { id: true, sportRole: true },
+          })
+        : [],
+    ]);
+    const roleByKey = new Map<string, number | null>();
+    for (const u of statUsers) roleByKey.set(`u:${u.id}`, u.sportRole);
+    for (const c of statChildren) roleByKey.set(`c:${c.id}`, c.sportRole);
+
+    // Aggrega punti per (teamId, season, playerKey), solo per i giocatori dello stesso ruolo.
     const agg = new Map<string, number>();
     for (const s of relevant) {
       const pk = s.userId ? `u:${s.userId}` : s.childId ? `c:${s.childId}` : null;
-      if (!pk) continue;
+      if (!pk || roleByKey.get(pk) !== sportRole) continue;
       const key = `${s.match.teamId}::${s.match.team.season}::${pk}`;
       agg.set(key, (agg.get(key) ?? 0) + s.points);
     }
@@ -69,7 +124,7 @@ export async function loadBadgeInput(ref: PlayerRef) {
     }
   }
 
-  return { matchStats, mvpCount, topScorerCount };
+  return { matchStats, mvpCount, topScorerCount, sportRole };
 }
 
 /**
