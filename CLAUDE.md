@@ -33,9 +33,9 @@ App web per la squadra di Baskin di Montecchio Maggiore (VI). Gestione allenamen
 ```bash
 npm run dev          # dev server (Turbopack)
 npm run dev:clean    # cancella .next e riavvia (fix cache Turbopack corrotta)
-npm run build        # prisma db push + prisma generate + next build
-npm run db:migrate   # prisma migrate dev (sviluppo)
-npm run db:deploy    # prisma migrate deploy (produzione)
+npm run build        # prisma migrate deploy + prisma generate + next build
+npm run db:migrate   # prisma migrate dev (sviluppo — crea una nuova migration)
+npm run db:deploy    # prisma migrate deploy (applica le migration pendenti)
 npm run db:generate  # prisma generate
 npm run db:studio    # Prisma Studio
 npm run lint         # ESLint su src/
@@ -47,7 +47,7 @@ npm run email:dev    # Preview React Email (porta 3333)
 npx tsc --noEmit     # type check — SEMPRE prima di fare push
 ```
 
-> **Importante:** eseguire sempre `tsc --noEmit` (dopo aver eliminato `.next/`) prima di committare. Il `build` script include `prisma db push` che sincronizza automaticamente il DB di produzione ad ogni deploy Vercel.
+> **Importante:** eseguire sempre `tsc --noEmit` (dopo aver eliminato `.next/`) prima di committare. Il `build` script esegue `prisma migrate deploy`, che applica al DB di produzione **solo** le migration committate in `prisma/migrations/` non ancora applicate. **Non** sincronizza più lo schema automaticamente: ogni modifica a `schema.prisma` deve essere accompagnata da una migration (vedi [Workflow migrazioni](#workflow-migrazioni-db)).
 
 ## Struttura cartelle
 
@@ -450,13 +450,29 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 
 `DELETE /api/children/[childId]`: prima di eliminare il figlio, cancella esplicitamente le sue iscrizioni e azzera il campo `teams` (JSON) degli allenamenti coinvolti con `Prisma.DbNull`. Necessario perché `Registration.child` ha `onDelete: SetNull` (non Cascade).
 
+## Workflow migrazioni DB
+
+Dal giugno 2026 il progetto usa **Prisma Migrate** (non più `db push`). Lo storico vive in `prisma/migrations/` ed è la fonte di verità: il build di produzione esegue `prisma migrate deploy`, che applica le migration committate non ancora presenti nel DB.
+
+**Cambiare lo schema:**
+
+1. Modificare `prisma/schema.prisma`.
+2. `npm run db:migrate` → Prisma chiede un nome, crea `prisma/migrations/<timestamp>_<nome>/migration.sql` e la applica al DB di sviluppo.
+3. Verificare la SQL generata (soprattutto per rename/drop: Prisma può interpretarli come drop+create con perdita dati — in quel caso editare la SQL a mano).
+4. **Committare** sia `schema.prisma` sia la cartella della migration.
+5. Al deploy Vercel, `migrate deploy` applica la migration alla produzione. Le change distruttive **non** vengono nascoste: se la migration droppa dati, è perché la SQL lo dice esplicitamente — leggerla prima di committare.
+
+**Baseline (storico):** il DB di prod è stato adottato in Migrate il 2026-06-12. La migration `20260612000000_sync_db_push_drift` cattura tutto il drift accumulato nel periodo `db push` (modelli Post/Poll, RatingUpdate, InstagramPost, Suggestion, colonne rating/height/slug/imageUrl, ecc.). Su prod le migration fino a quella data erano già fisicamente applicate, quindi sono state marcate con `prisma migrate resolve --applied <nome>` invece di essere rieseguite.
+
+> **Ambienti multipli:** ogni Neon branch (dev/prod) ha la sua tabella `_prisma_migrations`. Un branch creato/ripristinato **prima** dell'adozione di Migrate va baselinato una tantum con `migrate resolve --applied` sulle migration già presenti, altrimenti `migrate deploy` tenta di rieseguirle e fallisce.
+
 ## Note importanti
 
 - **Generazione squadre:** deterministica con Mulberry32 PRNG seedato su `sessionId` — stesso seed = stesse squadre
 - **3 squadre:** supportate (Arancioni / Neri / Bianchi), opzione nel form admin
 - **Stagione corrente:** `month >= 8 ? year : year - 1` → formattata `YYYY-YY` (es. "2025-26")
 - **Neon branch:** usare branch separati per dev e prod; le variabili Vercel devono puntare al branch corretto per environment
-- **Build script:** `prisma db push` nel build sincronizza automaticamente il DB di produzione — sicuro per aggiungere colonne, fallisce se ci sono data-loss changes (comportamento voluto)
+- **Build script:** `prisma migrate deploy` nel build applica al DB di produzione le migration committate non ancora applicate. **Mai più `db push` in prod** (rischio data-loss silenzioso): ogni cambiamento di schema passa da una migration. Vedi [Workflow migrazioni](#workflow-migrazioni-db)
 - **TypeScript strict:** abilitato — nessuna eccezione; risolvere tutti gli errori prima del push
 - **Turbopack cache corrotta:** se si vedono errori `.sst` nei log, usare `npm run dev:clean`
 - **Mock users:** `prisma/seed.ts` crea utenti di test (es. `npx tsx prisma/seed.ts 15`) — ricordarsi di pulirli prima di andare in produzione
@@ -469,7 +485,7 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 
 ### Aggiungere una nuova entità (modello + CRUD + admin UI)
 
-1. **Schema DB** — aggiungere il modello in `prisma/schema.prisma`. Niente `migrate` in dev se non necessario; il build di prod fa `prisma db push`. Per lo sviluppo locale, `npm run db:migrate` solo se serve storia.
+1. **Schema DB** — aggiungere il modello in `prisma/schema.prisma`, poi generare la migration con `npm run db:migrate` (chiede un nome, crea `prisma/migrations/<timestamp>_<nome>/`). **Committare la migration**: il build di prod la applica con `prisma migrate deploy`. Vedi [Workflow migrazioni](#workflow-migrazioni-db).
 2. **Schema Zod** — creare `src/lib/schemas/<entity>.ts` con `XxxCreateSchema` e `XxxUpdateSchema`. Esportare anche tipi inferiti se condivisi.
 3. **Test schema** — `src/lib/schemas/<entity>.test.ts` (Vitest) — coprire i casi limite di validazione.
 4. **API routes** — `src/app/api/<entity>/route.ts` (GET list / POST create) e `src/app/api/<entity>/[id]/route.ts` (GET / PUT / DELETE). Vedi template sotto.
@@ -614,7 +630,8 @@ export default async function Page() {
 - **Mai chiamare Prisma dentro `proxy.ts`** (middleware) → Edge Runtime non lo supporta. L'auth va nei layout/API routes.
 - **Mai stringhe UI hardcoded nella UI pubblica** — passare per i dizionari next-intl (`it.json` + `en.json`) via `useTranslations`/`getTranslations`. L'admin resta solo in italiano. Le label di dominio (ruolo/genere/risultato) vanno da `useEntityLabels`/`getEntityLabels`, non hardcodate.
 - **Mai default export per componenti riutilizzabili?** → No, in questo progetto i componenti usano **default export** (es. `export default function SessionCard()`). Mantenere coerenza. Utility e hook invece sono **named export**.
-- **Mai `prisma db push --accept-data-loss`** manualmente in dev se non sei consapevole della perdita dati. Il build di prod lo fa, ma fallisce su data-loss changes (comportamento voluto — non aggirare).
+- **Mai `prisma db push` verso il DB di produzione** (né `--accept-data-loss`): il drift di schema va sempre versionato come migration. `db push` è tollerato **solo** in locale per prototipare rapidamente, ma prima di committare lo schema va trasformato in una migration con `npm run db:migrate`.
+- **Mai modificare `schema.prisma` senza creare la migration corrispondente** — altrimenti il build di prod (`migrate deploy`) non applica la modifica e il DB resta indietro.
 - **Mai skippare `tsc --noEmit`** prima di un push: i deploy Vercel rompono silenziosamente se il type-check non è verde.
 - **Mai chiamare `auth()` in un Client Component** — passare la session/dati utente come prop dal Server Component padre, oppure fetchare via `/api/users/me`.
 - **Mai esporre dati sensibili in client props** (email altrui, ruoli admin di altri utenti che non dovrebbero vederli) — fare `select` esplicito in Prisma.
