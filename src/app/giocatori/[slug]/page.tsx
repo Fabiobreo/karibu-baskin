@@ -27,7 +27,8 @@ import { format } from "date-fns";
 import { ROLE_COLORS, sportRoleLabel as sportRoleLabelRaw } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
-import { computeBadges } from "@/lib/rating/badges";
+import { computeBadgeState } from "@/lib/rating/badges";
+import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
 import { slugify } from "@/lib/slugUtils";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
@@ -282,10 +283,26 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     medals.sort((a, b) => b.season.localeCompare(a.season) || a.rank - b.rank);
   }
 
-  const badges = computeBadges({
+  const { earned: earnedBadges, locked: lockedBadges } = computeBadgeState({
     matchStats: player.matchStats,
     mvpCount: player._count.matchMvps,
     topScorerCount: medals.filter((m) => m.rank === 1).length,
+  });
+
+  // Data di sblocco dei badge (da EarnedBadge), per mostrare "Sbloccato il …".
+  const earnedBadgeRows = await prisma.earnedBadge.findMany({
+    where: childRow ? { childId: player.id } : { userId: player.id },
+    select: { badgeId: true, unlockedAt: true },
+  });
+  const unlockedAtMap = new Map(earnedBadgeRows.map((r) => [r.badgeId, r.unlockedAt]));
+  const earnedBadgesView: EarnedBadgeView[] = earnedBadges.map((b) => {
+    const at = unlockedAtMap.get(b.id);
+    return {
+      ...b,
+      unlockedAtLabel: at
+        ? t("unlockedOn", { date: format(at, "d MMM yyyy", { locale: dateLocale }) })
+        : null,
+    };
   });
 
   // Stagioni disponibili per il filtro (da matchStats e teamMemberships)
@@ -773,67 +790,15 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         </Paper>
 
         {/* Badge / achievement */}
-        {badges.length > 0 && (
-          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-              {t("achievements")}
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
-              {badges.map((badge) => {
-                const tierColor =
-                  badge.tier === "gold"
-                    ? { border: "medal.gold", bg: alpha("#F9A825", 0.08), text: "medal.gold" }
-                    : badge.tier === "silver"
-                      ? { border: "medal.silver", bg: "action.hover", text: "text.secondary" }
-                      : {
-                          border: "medal.bronze",
-                          bg: alpha("#CD7F32", 0.08),
-                          text: "medal.bronze",
-                        };
-                return (
-                  <Box
-                    key={badge.id}
-                    title={badge.description}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.75,
-                      px: 1.5,
-                      py: 0.75,
-                      borderRadius: 2,
-                      border: "1.5px solid",
-                      borderColor: tierColor.border,
-                      bgcolor: tierColor.bg,
-                      cursor: "default",
-                    }}
-                  >
-                    <Typography sx={{ fontSize: "1.1rem", lineHeight: 1 }}>
-                      {badge.emoji}
-                    </Typography>
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontWeight: 800,
-                          color: tierColor.text,
-                          display: "block",
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {badge.label}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "text.disabled", fontSize: "0.62rem", display: "block" }}
-                      >
-                        {badge.description}
-                      </Typography>
-                    </Box>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Paper>
+        {(earnedBadgesView.length > 0 || lockedBadges.length > 0) && (
+          <Box sx={{ mb: 5 }}>
+            <BadgeShowcase
+              earned={earnedBadgesView}
+              locked={lockedBadges}
+              title={t("achievements")}
+              nextTitle={t("nextAchievements")}
+            />
+          </Box>
         )}
 
         {/* Storico ruolo sportivo */}

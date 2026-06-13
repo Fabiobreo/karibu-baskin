@@ -7,6 +7,7 @@ import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
+import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -99,6 +100,18 @@ export async function PUT(req: Request, { params }: Params) {
       targetId: matchId,
       after: { rowCount: saved.length },
     }).catch((err) => console.error("[audit] update match stats", err));
+  }
+
+  // Sblocco badge fire-and-forget per ogni giocatore con stats aggiornate
+  if (saved.length > 0) {
+    for (const s of body) {
+      const ref = s.userId
+        ? ({ userId: s.userId } as const)
+        : s.childId
+          ? ({ childId: s.childId } as const)
+          : null;
+      if (ref) reconcilePlayerBadges(ref, { notify: true }).catch(console.error);
+    }
   }
 
   // Notifica push + in-app fire-and-forget agli atleti con stats

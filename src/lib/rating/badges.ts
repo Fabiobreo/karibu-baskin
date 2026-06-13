@@ -8,18 +8,28 @@ export type Badge = {
   tier: BadgeTier;
 };
 
+/** Badge non ancora sbloccato, con avanzamento verso la soglia. */
+export type LockedBadge = Badge & { current: number; target: number };
+
+type MatchStat = {
+  points: number;
+  twoPointers: number;
+  threePointers: number;
+  freeThrows: number;
+};
+
 type StatsInput = {
-  matchStats: Array<{
-    points: number;
-    twoPointers: number;
-    threePointers: number;
-    freeThrows: number;
-  }>;
+  matchStats: MatchStat[];
   mvpCount: number;
   topScorerCount: number; // stagioni come 1° marcatore
 };
 
-// Definizioni badge in ordine di "rarità" crescente
+const maxOf = (stats: MatchStat[], pick: (m: MatchStat) => number): number =>
+  stats.reduce((max, m) => Math.max(max, pick(m)), 0);
+
+// Definizioni badge in ordine di "rarità" crescente.
+// `progress` (opzionale) descrive l'avanzamento verso lo sblocco, usato per
+// mostrare "prossimi traguardi" con barra di completamento.
 const BADGE_DEFS: Array<{
   id: string;
   label: string;
@@ -27,6 +37,7 @@ const BADGE_DEFS: Array<{
   emoji: string;
   tier: BadgeTier;
   check: (s: StatsInput) => boolean;
+  progress?: (s: StatsInput) => { current: number; target: number };
 }> = [
   {
     id: "esordiente",
@@ -35,6 +46,7 @@ const BADGE_DEFS: Array<{
     emoji: "🏀",
     tier: "bronze",
     check: ({ matchStats }) => matchStats.length >= 1,
+    progress: ({ matchStats }) => ({ current: Math.min(matchStats.length, 1), target: 1 }),
   },
   {
     id: "primo_canestro",
@@ -43,6 +55,13 @@ const BADGE_DEFS: Array<{
     emoji: "🎯",
     tier: "bronze",
     check: ({ matchStats }) => matchStats.some((m) => m.points > 0),
+    progress: ({ matchStats }) => ({
+      current: Math.min(
+        maxOf(matchStats, (m) => m.points),
+        1
+      ),
+      target: 1,
+    }),
   },
   {
     id: "dieci_partite",
@@ -51,6 +70,7 @@ const BADGE_DEFS: Array<{
     emoji: "🔟",
     tier: "bronze",
     check: ({ matchStats }) => matchStats.length >= 10,
+    progress: ({ matchStats }) => ({ current: Math.min(matchStats.length, 10), target: 10 }),
   },
   {
     id: "cecchino",
@@ -59,6 +79,13 @@ const BADGE_DEFS: Array<{
     emoji: "🏹",
     tier: "bronze",
     check: ({ matchStats }) => matchStats.some((m) => m.threePointers >= 3),
+    progress: ({ matchStats }) => ({
+      current: Math.min(
+        maxOf(matchStats, (m) => m.threePointers),
+        3
+      ),
+      target: 3,
+    }),
   },
   {
     id: "venticinque_partite",
@@ -67,6 +94,7 @@ const BADGE_DEFS: Array<{
     emoji: "⭐",
     tier: "silver",
     check: ({ matchStats }) => matchStats.length >= 25,
+    progress: ({ matchStats }) => ({ current: Math.min(matchStats.length, 25), target: 25 }),
   },
   {
     id: "tripla",
@@ -84,6 +112,13 @@ const BADGE_DEFS: Array<{
     emoji: "💣",
     tier: "silver",
     check: ({ matchStats }) => matchStats.some((m) => m.points >= 20),
+    progress: ({ matchStats }) => ({
+      current: Math.min(
+        maxOf(matchStats, (m) => m.points),
+        20
+      ),
+      target: 20,
+    }),
   },
   {
     id: "mvp",
@@ -92,6 +127,7 @@ const BADGE_DEFS: Array<{
     emoji: "🌟",
     tier: "silver",
     check: ({ mvpCount }) => mvpCount >= 1,
+    progress: ({ mvpCount }) => ({ current: Math.min(mvpCount, 1), target: 1 }),
   },
   {
     id: "cinquanta_partite",
@@ -100,6 +136,7 @@ const BADGE_DEFS: Array<{
     emoji: "🏆",
     tier: "gold",
     check: ({ matchStats }) => matchStats.length >= 50,
+    progress: ({ matchStats }) => ({ current: Math.min(matchStats.length, 50), target: 50 }),
   },
   {
     id: "top_scorer",
@@ -108,9 +145,40 @@ const BADGE_DEFS: Array<{
     emoji: "👑",
     tier: "gold",
     check: ({ topScorerCount }) => topScorerCount >= 1,
+    progress: ({ topScorerCount }) => ({ current: Math.min(topScorerCount, 1), target: 1 }),
   },
 ];
 
+/** Metadati di tutti i badge (senza la logica di check), per lookup in UI/notifiche. */
+export const ALL_BADGES: Badge[] = BADGE_DEFS.map(({ check: _c, progress: _p, ...badge }) => badge);
+
+export function getBadgeById(id: string): Badge | undefined {
+  return ALL_BADGES.find((b) => b.id === id);
+}
+
+/** Badge attualmente sbloccati dal giocatore. */
 export function computeBadges(input: StatsInput): Badge[] {
-  return BADGE_DEFS.filter((def) => def.check(input)).map(({ check: _check, ...badge }) => badge);
+  return BADGE_DEFS.filter((def) => def.check(input)).map(
+    ({ check: _check, progress: _p, ...badge }) => badge
+  );
+}
+
+/**
+ * Stato completo: badge sbloccati + badge ancora bloccati (con avanzamento).
+ * I bloccati includono solo quelli con una funzione `progress` definita, così
+ * la UI può sempre mostrare una barra "x/y".
+ */
+export function computeBadgeState(input: StatsInput): { earned: Badge[]; locked: LockedBadge[] } {
+  const earned: Badge[] = [];
+  const locked: LockedBadge[] = [];
+  for (const def of BADGE_DEFS) {
+    const { check, progress, ...badge } = def;
+    if (check(input)) {
+      earned.push(badge);
+    } else if (progress) {
+      const { current, target } = progress(input);
+      locked.push({ ...badge, current, target });
+    }
+  }
+  return { earned, locked };
 }

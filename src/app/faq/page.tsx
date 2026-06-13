@@ -1,16 +1,10 @@
-import {
-  Container,
-  Box,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Container, Box, Typography, Button } from "@mui/material";
+import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
+import FaqAccordion from "@/components/common/FaqAccordion";
 import { getFaqs } from "@/lib/content/faqs";
 
 export const metadata = { title: "FAQ — Karibu Baskin" };
@@ -41,42 +35,37 @@ export default async function FaqPage() {
           .
         </Typography>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {FAQS.map((section) => (
-            <Box key={section.category}>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                sx={{ fontWeight: 700, mb: 1, display: "block" }}
-              >
-                {section.category}
-              </Typography>
-              <Box>
-                {section.items.map((item, i) => (
-                  <Accordion
-                    key={i}
-                    disableGutters
-                    elevation={0}
-                    sx={{
-                      border: "1px solid",
-                      borderColor: "divider",
-                      "&:not(:last-child)": { borderBottom: 0 },
-                      "&::before": { display: "none" },
-                    }}
-                  >
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography fontWeight={500}>{item.q}</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                        {item.a}
-                      </Typography>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-              </Box>
-            </Box>
-          ))}
+        <FaqAccordion faqs={FAQS} />
+
+        {/* CTA suggerimenti */}
+        <Box
+          sx={{
+            mt: 6,
+            p: { xs: 2.5, md: 3 },
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+            bgcolor: "action.hover",
+            display: "flex",
+            gap: 2,
+            alignItems: { xs: "flex-start", sm: "center" },
+            flexDirection: { xs: "column", sm: "row" },
+          }}
+        >
+          <LightbulbIcon sx={{ color: "primary.main", flexShrink: 0 }} />
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              {t("faq.suggestionCta")}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {t("faq.suggestionCtaDesc")}
+            </Typography>
+          </Box>
+          <Link href="/contatti#suggerimenti" style={{ textDecoration: "none" }}>
+            <Button variant="contained" sx={{ fontWeight: 700, borderRadius: 2, flexShrink: 0 }}>
+              {t("faq.suggestionCtaBtn")}
+            </Button>
+          </Link>
         </Box>
       </Container>
     </>

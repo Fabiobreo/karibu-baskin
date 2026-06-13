@@ -319,7 +319,9 @@ export default function ContattiPage() {
           {/* Suggerimenti — solo utenti loggati */}
           {status === "authenticated" && (
             <Box
+              id="suggerimenti"
               sx={{
+                scrollMarginTop: 80,
                 mb: 5,
                 p: { xs: 2.5, md: 3 },
                 border: "1px solid",

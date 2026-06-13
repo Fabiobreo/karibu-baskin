@@ -41,6 +41,8 @@ export interface PlayerStatRow {
   fouls: number;
   illegalFouls: number;
   shotsAttempted: number;
+  /** Premi MVP ricevuti nella stagione (non splittato prestito/principale). */
+  mvpCount: number;
   teams: { id: string; name: string; color: string | null }[];
   // Quote "in prestito": partite/punti/tiri fatti giocando per una squadra
   // diversa dalla propria. Sommate al valore principale danno il totale.
@@ -63,7 +65,9 @@ type SortKey =
   | "fouls"
   | "illegalFouls"
   | "shotsAttempted"
-  | "avgPoints";
+  | "avgPoints"
+  | "accuracy"
+  | "mvp";
 
 const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
 
@@ -75,9 +79,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
     { key: "matches", label: t("colMatches"), title: t("titleMatches") },
     { key: "points", label: t("colPoints"), title: t("titlePoints") },
     { key: "avgPoints", label: t("colAvg"), title: t("titleAvg") },
+    { key: "accuracy", label: t("colAccuracy"), title: t("titleAccuracy") },
     { key: "freeThrows", label: t("col1pt"), title: t("titleFreeThrows") },
     { key: "twoPointers", label: t("col2pt"), title: t("title2pt") },
     { key: "threePointers", label: t("col3pt"), title: t("title3pt") },
+    { key: "mvp", label: t("colMvp"), title: t("titleMvp") },
     { key: "fouls", label: t("colFouls"), title: t("colFouls") },
     { key: "illegalFouls", label: t("colIllegal"), title: t("titleIllegal") },
   ];
@@ -135,6 +141,22 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         // così la cella non mostra (+X) per la media.
         return { primary: avg, loan: 0 };
       }
+      case "accuracy": {
+        // % realizzazione = canestri totali (1+2+3) / tiri tentati totali.
+        const made =
+          row.freeThrows +
+          row.twoPointers +
+          row.threePointers +
+          row.loanFreeThrows +
+          row.loanTwoPointers +
+          row.loanThreePointers;
+        const attempted = row.shotsAttempted + row.loanShotsAttempted;
+        const pct = attempted > 0 ? (made / attempted) * 100 : 0;
+        return { primary: pct, loan: 0 };
+      }
+      case "mvp":
+        // MVP non è tracciato come prestito: sempre primario.
+        return { primary: row.mvpCount, loan: 0 };
     }
   }
 
@@ -367,8 +389,15 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   {COLS.map((col) => {
                     const { primary, loan } = getParts(row, col.key);
                     const isActive = sortBy === col.key;
+                    const attemptedTot = row.shotsAttempted + row.loanShotsAttempted;
                     const primaryLabel =
-                      col.key === "avgPoints" ? primary.toFixed(1) : primary.toString();
+                      col.key === "avgPoints"
+                        ? primary.toFixed(1)
+                        : col.key === "accuracy"
+                          ? attemptedTot > 0
+                            ? `${Math.round(primary)}%`
+                            : "—"
+                          : primary.toString();
                     return (
                       <TableCell
                         key={col.key}
@@ -419,6 +448,16 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             const totMatches = row.matches + row.loanMatches;
             const totPoints = row.points + row.loanPoints;
             const avg = totMatches > 0 ? totPoints / totMatches : 0;
+            const madeTot =
+              row.freeThrows +
+              row.twoPointers +
+              row.threePointers +
+              row.loanFreeThrows +
+              row.loanTwoPointers +
+              row.loanThreePointers;
+            const attemptedTot = row.shotsAttempted + row.loanShotsAttempted;
+            const accuracyLabel =
+              attemptedTot > 0 ? `${Math.round((madeTot / attemptedTot) * 100)}%` : "—";
             const rank = page * rowsPerPage + i + 1;
             return (
               <Box
@@ -506,10 +545,12 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   {[
                     { label: "Pt", value: totPoints, primary: true },
                     { label: "Media", value: avg.toFixed(1) },
+                    { label: t("colAccuracy"), value: accuracyLabel },
                     { label: "G", value: totMatches },
                     { label: "2pt", value: row.twoPointers + row.loanTwoPointers },
                     { label: "3pt", value: row.threePointers + row.loanThreePointers },
                     { label: "TL", value: row.freeThrows + row.loanFreeThrows },
+                    { label: t("colMvp"), value: row.mvpCount },
                     { label: "Falli", value: row.fouls + row.loanFouls },
                     {
                       label: "Ill.",

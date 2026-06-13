@@ -59,6 +59,23 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     }),
   ]);
 
+  // Conteggio premi MVP per giocatore nella stagione attiva (non splittato
+  // prestito/principale: il modello MatchMvp non traccia isLoan).
+  const mvpRows = await prisma.matchMvp.groupBy({
+    by: ["userId", "childId"],
+    where: {
+      OR: [{ userId: { not: null } }, { childId: { not: null } }],
+      match: { team: { season: activeSeason } },
+    },
+    _count: { _all: true },
+  });
+  const mvpByPlayer = new Map<string, number>();
+  for (const m of mvpRows) {
+    const k = m.userId ? `u:${m.userId}` : m.childId ? `c:${m.childId}` : null;
+    if (!k) continue;
+    mvpByPlayer.set(k, (mvpByPlayer.get(k) ?? 0) + m._count._all);
+  }
+
   // Chiave giocatore unica per User/Child ("u:id" | "c:id").
   const keyOf = (s: { userId: string | null; childId: string | null }): string | null =>
     s.userId ? `u:${s.userId}` : s.childId ? `c:${s.childId}` : null;
@@ -188,6 +205,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
         fouls: primary.fouls,
         illegalFouls: primary.illegalFouls,
         shotsAttempted: primary.shotsAttempted,
+        mvpCount: mvpByPlayer.get(k) ?? 0,
         teams: teamsByPlayer.get(k) ?? [],
         loanMatches: loan.matches,
         loanPoints: loan.points,

@@ -100,6 +100,7 @@ model User {
   ratingUpdates         RatingUpdate[]
   suggestions           Suggestion[]
   suggestionNotes       SuggestionNote[]
+  earnedBadges          EarnedBadge[]
 }
 
 model Account {
@@ -207,6 +208,7 @@ model Child {
   linkRequests        LinkRequest[]
   ratingUpdates       RatingUpdate[]
   sportRoleHistory    SportRoleHistory[]
+  earnedBadges        EarnedBadge[]
 
   @@index([parentId])
 }
@@ -603,6 +605,27 @@ enum AppNotificationType {
   BIRTHDAY
   NEW_POST // nuovo articolo pubblicato
   NEW_POLL // nuovo sondaggio (post con poll allegato)
+  BADGE_UNLOCKED // traguardo/badge sbloccato da un giocatore
+}
+
+// Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione
+// del badge (label, soglia, emoji) vive in `src/lib/rating/badges.ts`: qui
+// persistiamo solo l'id del badge + il momento dello sblocco, così possiamo
+// notificare una sola volta e mostrare la data di conseguimento.
+model EarnedBadge {
+  id         String   @id @default(cuid())
+  badgeId    String // corrisponde a Badge.id in badges.ts (es. "bomber")
+  userId     String?
+  childId    String?
+  unlockedAt DateTime @default(now())
+
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@unique([childId, badgeId])
+  @@index([userId])
+  @@index([childId])
 }
 
 enum LinkRequestStatus {

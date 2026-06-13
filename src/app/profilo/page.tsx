@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -22,6 +22,10 @@ import GdprSection from "@/components/profile/GdprSection";
 import { countPendingAvailabilities } from "@/lib/matches/availabilityPending";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
+import { loadBadgeInput, type PlayerRef } from "@/lib/rating/badgeService";
+import { computeBadgeState } from "@/lib/rating/badges";
+import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
+import type { LockedBadge } from "@/lib/rating/badges";
 
 export const revalidate = 0;
 
@@ -38,8 +42,33 @@ const APP_ROLE_CHIP_COLOR: Record<
 
 export default async function ProfiloPage() {
   const t = await getTranslations("profile");
+  const locale = await getLocale();
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+
+  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "it-IT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  // Costruisce la vista badge (sbloccati + prossimi) di un giocatore.
+  async function buildBadgeView(
+    ref: PlayerRef
+  ): Promise<{ earned: EarnedBadgeView[]; locked: LockedBadge[] }> {
+    const input = await loadBadgeInput(ref);
+    const { earned, locked } = computeBadgeState(input);
+    const rows = await prisma.earnedBadge.findMany({
+      where: ref.userId ? { userId: ref.userId } : { childId: ref.childId },
+      select: { badgeId: true, unlockedAt: true },
+    });
+    const unlockedMap = new Map(rows.map((r) => [r.badgeId, r.unlockedAt]));
+    const earnedView: EarnedBadgeView[] = earned.map((b) => {
+      const at = unlockedMap.get(b.id);
+      return { ...b, unlockedAtLabel: at ? t("unlockedOn", { date: dateFmt.format(at) }) : null };
+    });
+    return { earned: earnedView, locked };
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -114,6 +143,17 @@ export default async function ProfiloPage() {
           session: { select: { id: true, date: true, dateSlug: true } },
         },
       })
+    : [];
+
+  // Badge dell'utente (solo atleti) e dei figli (per il tab Famiglia)
+  const userBadges = isAthlete ? await buildBadgeView({ userId: user.id }) : null;
+  const childBadges = isParent
+    ? await Promise.all(
+        user.children.map(async (c) => ({
+          name: c.name,
+          ...(await buildBadgeView({ childId: c.id })),
+        }))
+      )
     : [];
 
   // ── Contenuto tab "Profilo": card principale + dati atleta + presenze ──
@@ -199,6 +239,16 @@ export default async function ProfiloPage() {
         />
       )}
 
+      {userBadges && (
+        <BadgeShowcase
+          earned={userBadges.earned}
+          locked={userBadges.locked}
+          title={t("achievements")}
+          nextTitle={t("nextAchievements")}
+          emptyLabel={t("noAchievementsYet")}
+        />
+      )}
+
       {attendanceSeasons.length > 1 && (
         <AttendanceSection seasons={attendanceSeasons} currentSeason={currentSeason} />
       )}
@@ -217,6 +267,23 @@ export default async function ProfiloPage() {
       <ParentChildLinker initialChildren={user.children as ChildData[]} />
     </Paper>
   ) : null;
+
+  const childBadgesTab =
+    childBadges.length > 0 ? (
+      <>
+        {childBadges
+          .filter((cb) => cb.earned.length > 0 || cb.locked.length > 0)
+          .map((cb) => (
+            <BadgeShowcase
+              key={cb.name}
+              earned={cb.earned}
+              locked={cb.locked}
+              title={t("childAchievements", { name: cb.name })}
+              nextTitle={t("nextAchievements")}
+            />
+          ))}
+      </>
+    ) : null;
 
   // ── Contenuto tab "Notifiche" ──
   const notificationsTab = (
@@ -257,7 +324,14 @@ export default async function ProfiloPage() {
 
         <ProfileTabs
           profile={profileTab}
-          family={familyTab}
+          family={
+            familyTab || childBadgesTab ? (
+              <>
+                {familyTab}
+                {childBadgesTab}
+              </>
+            ) : null
+          }
           notifications={notificationsTab}
           privacy={<GdprSection email={user.email} />}
         />

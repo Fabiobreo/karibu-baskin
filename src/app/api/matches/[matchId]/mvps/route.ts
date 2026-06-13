@@ -4,6 +4,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { MvpsSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { reconcilePlayerBadges } from "@/lib/rating/badgeService";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -113,6 +114,14 @@ export async function PUT(req: Request, { params }: Params) {
       },
       after: { userIds, childIds },
     }).catch((err) => console.error("[audit] update mvps", err));
+  }
+
+  // Sblocco badge "MVP" fire-and-forget per i nuovi premiati
+  for (const userId of userIds) {
+    reconcilePlayerBadges({ userId }, { notify: true }).catch(console.error);
+  }
+  for (const childId of childIds) {
+    reconcilePlayerBadges({ childId }, { notify: true }).catch(console.error);
   }
 
   return NextResponse.json({ ok: true, total: userIds.length + childIds.length });
