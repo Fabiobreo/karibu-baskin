@@ -14,6 +14,7 @@ import {
   Divider,
   Breadcrumbs,
   Link as MuiLink,
+  Button,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SiteHeader from "@/components/layout/SiteHeader";
@@ -30,6 +31,8 @@ import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadgeState } from "@/lib/rating/badges";
 import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
+import PointsTrendChart from "@/components/rating/PointsTrendChart";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { slugify } from "@/lib/slugUtils";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
@@ -378,6 +381,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const matchesPlayed = filteredStats.length;
 
   const hasStats = matchesPlayed > 0;
+
+  // Andamento punti per partita in ordine cronologico (filteredStats è desc).
+  const trendValues = [...filteredStats].reverse().map((ms) => ms.points);
 
   // Colore dominante: colore della squadra corrente, fallback all'arancione Karibu
   const playerColor = currentTeams[0]?.team.color ?? "#E65100";
@@ -994,6 +1000,34 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 </Grid>
               ))}
             </Grid>
+
+            {trendValues.length >= 3 && (
+              <Paper
+                elevation={0}
+                variant="outlined"
+                sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: 3 }}
+              >
+                <Typography
+                  variant="overline"
+                  color="text.secondary"
+                  sx={{ fontWeight: 700, display: "block", mb: 1 }}
+                >
+                  {t("pointsTrend")}
+                </Typography>
+                <PointsTrendChart values={trendValues} colorToken={playerColor} />
+              </Paper>
+            )}
+
+            <Box sx={{ mb: 5 }}>
+              <Link
+                href={`/giocatori/confronta?a=${encodeURIComponent(slug)}`}
+                style={{ textDecoration: "none" }}
+              >
+                <Button size="small" variant="outlined" startIcon={<CompareArrowsIcon />}>
+                  {t("compare")}
+                </Button>
+              </Link>
+            </Box>
           </>
         )}
 

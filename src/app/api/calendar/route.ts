@@ -111,6 +111,7 @@ export async function GET(req: Request) {
       endDate: e.endDate?.toISOString(),
       color: "#039BE5",
       location: e.location ?? undefined,
+      href: `/eventi/${e.slug ?? e.id}`,
     })),
   ];
 

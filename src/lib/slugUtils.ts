@@ -137,6 +137,27 @@ function cuid(): string {
 }
 
 /**
+ * Genera uno slug univoco per un Evento a partire dal titolo.
+ * Se "torneo-estivo" esiste già, prova "torneo-estivo-2", ecc.
+ */
+export async function generateEventSlug(title: string): Promise<string> {
+  const base = slugify(title);
+  if (!base) return "";
+
+  const existing = await prisma.event.findUnique({ where: { slug: base } });
+  if (!existing) return base;
+
+  let n = 2;
+  while (n < 1000) {
+    const candidate = `${base}-${n}`;
+    const found = await prisma.event.findUnique({ where: { slug: candidate } });
+    if (!found) return candidate;
+    n++;
+  }
+  return "";
+}
+
+/**
  * Genera uno slug univoco per una partita.
  * Formato: "{team-slug}-vs-{opponent-slug}-{YYYY-MM-DD}"
  * Se esiste già, aggiunge suffisso numerico: "-2", "-3", ecc.

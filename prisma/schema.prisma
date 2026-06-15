@@ -101,6 +101,7 @@ model User {
   suggestions           Suggestion[]
   suggestionNotes       SuggestionNote[]
   earnedBadges          EarnedBadge[]
+  eventAttendances      EventAttendance[]
 }
 
 model Account {
@@ -209,6 +210,7 @@ model Child {
   ratingUpdates       RatingUpdate[]
   sportRoleHistory    SportRoleHistory[]
   earnedBadges        EarnedBadge[]
+  eventAttendances    EventAttendance[]
 
   @@index([parentId])
 }
@@ -606,6 +608,7 @@ enum AppNotificationType {
   NEW_POST // nuovo articolo pubblicato
   NEW_POLL // nuovo sondaggio (post con poll allegato)
   BADGE_UNLOCKED // traguardo/badge sbloccato da un giocatore
+  NEW_EVENT // nuovo evento generico pubblicato
 }
 
 // Traguardo (badge) sbloccato da un giocatore (User o Child). La definizione
@@ -784,6 +787,7 @@ model PollVote {
 model Event {
   id          String    @id @default(cuid())
   title       String
+  slug        String?   @unique // URL leggibile pagina pubblica
   date        DateTime
   endDate     DateTime? // per eventi multi-giorno (es. torneo)
   location    String?
@@ -792,7 +796,37 @@ model Event {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  attendances EventAttendance[]
+
   @@index([date])
+}
+
+enum EventAttendanceStatus {
+  GOING
+  MAYBE
+  NOT_GOING
+}
+
+// RSVP a un evento generico. Una riga per partecipante (User o Child), come
+// MatchAvailability per le partite. L'autore della riga è il genitore per i figli.
+model EventAttendance {
+  id        String                @id @default(cuid())
+  eventId   String
+  userId    String?
+  childId   String?
+  status    EventAttendanceStatus
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@unique([eventId, childId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([childId])
 }
 
 // ── Storico rating TrueSkill (append-only) ───────────────────────────────────

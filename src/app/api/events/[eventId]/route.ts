@@ -6,6 +6,7 @@ import { EventUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
+import { generateEventSlug } from "@/lib/slugUtils";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -32,10 +33,16 @@ export async function PUT(req: Request, { params }: Params) {
     deleteImage(before.imageUrl).catch((e) => console.error("[blob] delete event image", e));
   }
 
+  // Genera lo slug se manca (eventi creati prima dell'introduzione del campo).
+  // Lo slug resta poi stabile anche se il titolo cambia, per non rompere i link.
+  const newSlug =
+    before && !before.slug ? await generateEventSlug(body.title ?? before.title) : null;
+
   try {
     const event = await prisma.event.update({
       where: { id: eventId },
       data: {
+        ...(newSlug ? { slug: newSlug } : {}),
         ...(body.title !== undefined && { title: body.title.trim() }),
         ...(body.date !== undefined && { date: new Date(body.date) }),
         ...(body.endDate !== undefined && {

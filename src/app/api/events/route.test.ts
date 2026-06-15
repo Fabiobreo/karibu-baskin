@@ -6,9 +6,18 @@ vi.mock("@/lib/db", () => ({
   prisma: {
     event: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
     },
   },
+}));
+
+vi.mock("@/lib/notifications/webpush", () => ({
+  sendPushToAll: vi.fn().mockResolvedValue({ sent: 0, removed: 0 }),
+}));
+
+vi.mock("@/lib/notifications/appNotifications", () => ({
+  createAppNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
@@ -37,7 +46,7 @@ function makeGet(): NextRequest {
   return new NextRequest("http://localhost/api/events");
 }
 
-type PrismaMock = { event: { findMany: Mock; create: Mock } };
+type PrismaMock = { event: { findMany: Mock; findUnique: Mock; create: Mock } };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
 
@@ -87,6 +96,7 @@ describe("POST /api/events", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsCoachOrAdmin.mockResolvedValue(false);
+    p.event.findUnique.mockResolvedValue(null); // slug libero
     p.event.create.mockResolvedValue({ ...baseEvent, id: "evt-new" });
   });
 

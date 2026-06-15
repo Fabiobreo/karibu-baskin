@@ -47,6 +47,7 @@ import { useThemeMode } from "@/context/ThemeContext";
 import Tooltip from "@mui/material/Tooltip";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import GlobalSearch from "@/components/layout/GlobalSearch";
 import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { alpha } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
@@ -58,8 +59,12 @@ const NAV_HREFS = [
   { key: "home" as const, href: "/", iconOnly: true },
   { key: "trainings" as const, href: "/allenamenti" },
   { key: "calendar" as const, href: "/calendario" },
+  { key: "events" as const, href: "/eventi" },
   { key: "news" as const, href: "/news" },
 ];
+
+// Voci la cui attivazione si basa su startsWith (hanno pagine di dettaglio).
+const STARTSWITH_NAV = ["/news", "/eventi"];
 
 const PARTITE_HREFS = [
   { key: "nextMatches" as const, href: "/partite" },
@@ -212,10 +217,9 @@ export default function SiteHeader() {
           >
             {/* Voci semplici: Home, Allenamenti, Calendario, News */}
             {NAV_HREFS.map((link) => {
-              const active =
-                link.href === "/news"
-                  ? (pathname?.startsWith("/news") ?? false)
-                  : pathname === link.href;
+              const active = STARTSWITH_NAV.includes(link.href)
+                ? (pathname?.startsWith(link.href) ?? false)
+                : pathname === link.href;
               return (
                 <Button
                   key={link.href}
@@ -433,6 +437,9 @@ export default function SiteHeader() {
 
           <Box sx={{ flex: { xs: 1, md: 0 } }} />
 
+          {/* Ricerca globale — visibile sempre (desktop + mobile) */}
+          <GlobalSearch />
+
           {/* Selettore tema + lingua (desktop) — visibili a tutti, loggati e non */}
           <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, mr: 0.5 }}>
             <ThemeSwitcher />
@@ -628,12 +635,12 @@ export default function SiteHeader() {
           {[
             { key: "trainings" as const, href: "/allenamenti" },
             { key: "calendar" as const, href: "/calendario" },
+            { key: "events" as const, href: "/eventi" },
             { key: "news" as const, href: "/news" },
           ].map((link) => {
-            const active =
-              link.href === "/news"
-                ? (pathname?.startsWith("/news") ?? false)
-                : pathname === link.href;
+            const active = STARTSWITH_NAV.includes(link.href)
+              ? (pathname?.startsWith(link.href) ?? false)
+              : pathname === link.href;
             return (
               <ListItem key={link.href} disablePadding>
                 <ListItemButton

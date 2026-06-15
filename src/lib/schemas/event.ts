@@ -18,3 +18,9 @@ export const EventUpdateSchema = EventBaseSchema.extend({
   title: z.string().min(1, "Il titolo non può essere vuoto").max(200).optional(),
   date: z.string().min(1).optional(),
 });
+
+export const EventAttendanceSchema = z.object({
+  status: z.enum(["GOING", "MAYBE", "NOT_GOING"]),
+  // Se valorizzato, l'utente risponde per conto di un proprio figlio.
+  childId: z.string().optional(),
+});
