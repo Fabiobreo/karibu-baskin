@@ -1,4 +1,5 @@
 import { Container, Box, Typography, Paper, Avatar, Chip, Divider } from "@mui/material";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import SiteHeader from "@/components/layout/SiteHeader";
@@ -86,17 +87,25 @@ async function loadComparePlayer(key: string): Promise<ComparePlayer | null> {
 }
 
 function CompareHeader({ p }: { p: ComparePlayer }) {
+  const href = `/giocatori/${p.slug ?? p.id}`;
   return (
     <Box sx={{ textAlign: "center" }}>
-      <Avatar
-        src={p.image ?? undefined}
-        sx={{ width: 64, height: 64, mx: "auto", mb: 1, fontSize: 26 }}
-      >
-        {p.name[0]}
-      </Avatar>
-      <Typography variant="subtitle1" fontWeight={800} noWrap>
-        {p.name}
-      </Typography>
+      <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
+        <Avatar
+          src={p.image ?? undefined}
+          sx={{ width: 64, height: 64, mx: "auto", mb: 1, fontSize: 26, cursor: "pointer" }}
+        >
+          {p.name[0]}
+        </Avatar>
+        <Typography
+          variant="subtitle1"
+          fontWeight={800}
+          noWrap
+          sx={{ "&:hover": { textDecoration: "underline" } }}
+        >
+          {p.name}
+        </Typography>
+      </Link>
       {p.sportRole && (
         <Chip label={`R${p.sportRole}`} size="small" sx={{ mt: 0.5, fontWeight: 700 }} />
       )}

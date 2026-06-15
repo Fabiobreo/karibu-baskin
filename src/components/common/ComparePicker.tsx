@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Box, Autocomplete, TextField, Button } from "@mui/material";
+import { Box, Autocomplete, TextField, Button, CircularProgress } from "@mui/material";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -15,35 +15,44 @@ interface ComparePickerProps {
   initialB?: { slug: string; label: string } | null;
 }
 
-function usePlayerSearch(query: string): Option[] {
+function usePlayerSearch(query: string): { options: Option[]; loading: boolean } {
   const [options, setOptions] = useState<Option[]>([]);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const q = query.trim();
+    let cancelled = false;
     const id = setTimeout(
       async () => {
         if (q.length < 2) {
           setOptions([]);
+          setLoading(false);
           return;
         }
+        setLoading(true);
         try {
           const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
-          if (!res.ok) return;
+          if (!res.ok) throw new Error(`search ${res.status}`);
           const data = await res.json();
-          setOptions(
-            (data.players as { name: string; href: string }[]).map((p) => ({
-              label: p.name,
-              slug: p.href.split("/").pop() ?? "",
-            }))
-          );
-        } catch {
-          /* ignore */
+          if (cancelled) return;
+          const players = (data.players ?? []) as { name: string; href: string }[];
+          setOptions(players.map((p) => ({ label: p.name, slug: p.href.split("/").pop() ?? "" })));
+        } catch (err) {
+          if (!cancelled) {
+            console.error("[ComparePicker] search failed", err);
+            setOptions([]);
+          }
+        } finally {
+          if (!cancelled) setLoading(false);
         }
       },
       q.length < 2 ? 0 : 250
     );
-    return () => clearTimeout(id);
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
   }, [query]);
-  return options;
+  return { options, loading };
 }
 
 function PlayerField({
@@ -55,12 +64,22 @@ function PlayerField({
   onChange: (o: Option | null) => void;
   placeholder: string;
 }) {
+  const t = useTranslations("search");
   const [input, setInput] = useState("");
-  const options = usePlayerSearch(input);
-  const merged = useMemo(
-    () => (value && !options.some((o) => o.slug === value.slug) ? [value, ...options] : options),
-    [value, options]
-  );
+  const { options, loading } = usePlayerSearch(input);
+  // Deduplica per slug e tiene il valore selezionato sempre tra le opzioni.
+  const merged = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Option[] = [];
+    for (const o of value ? [value, ...options] : options) {
+      if (o.slug && !seen.has(o.slug)) {
+        seen.add(o.slug);
+        list.push(o);
+      }
+    }
+    return list;
+  }, [value, options]);
+
   return (
     <Autocomplete
       sx={{ flex: 1, minWidth: 200 }}
@@ -71,7 +90,31 @@ function PlayerField({
       isOptionEqualToValue={(o, v) => o.slug === v.slug}
       getOptionLabel={(o) => o.label}
       filterOptions={(x) => x}
-      renderInput={(params) => <TextField {...params} size="small" placeholder={placeholder} />}
+      loading={loading}
+      noOptionsText={input.trim().length < 2 ? t("hint") : t("noResults")}
+      renderOption={(props, option) => (
+        <li {...props} key={option.slug}>
+          {option.label}
+        </li>
+      )}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          size="small"
+          placeholder={placeholder}
+          slotProps={{
+            input: {
+              ...params.InputProps,
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress size={16} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            },
+          }}
+        />
+      )}
     />
   );
 }
