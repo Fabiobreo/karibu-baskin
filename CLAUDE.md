@@ -227,44 +227,46 @@ sentry.edge.config.ts                      # Sentry edge runtime
 
 ## Modelli Prisma principali
 
-| Modello Prisma         | Tabella DB             | Scopo                                               |
-| ---------------------- | ---------------------- | --------------------------------------------------- |
-| `TrainingSession`      | `TrainingSession`      | Allenamenti                                         |
-| `Registration`         | `Registration`         | Iscrizioni (userId o childId o anonimo)             |
-| `User`                 | `User`                 | Utenti Auth.js + dati atleta                        |
-| `Session`              | `Session`              | Sessioni OAuth (Auth.js)                            |
-| `Account`              | `Account`              | Provider OAuth (Google)                             |
-| `Child`                | `Child`                | Figli senza account, gestiti dal genitore           |
-| `LinkRequest`          | `LinkRequest`          | Richiesta collegamento genitore-figlio              |
-| `SportRoleHistory`     | `SportRoleHistory`     | Storico cambi ruolo sportivo                        |
-| `PushSubscription`     | `PushSubscription`     | Subscription Web Push                               |
-| `Season`               | `Season`               | Stagioni sportive (es. "2025-26")                   |
-| `CompetitiveTeam`      | `CompetitiveTeam`      | Squadre agonistiche per stagione                    |
-| `TeamMembership`       | `TeamMembership`       | Appartenenza giocatore (User o Child) a una squadra |
-| `Match`                | `OfficialMatch`        | Partite ufficiali                                   |
-| `OpposingTeam`         | `OpposingTeam`         | Squadre avversarie                                  |
-| `PlayerMatchStats`     | `PlayerMatchStats`     | Statistiche giocatore per partita                   |
-| `Event`                | `Event`                | Eventi generici (tornei, trasferte…)                |
-| `EventAttendance`      | `EventAttendance`      | RSVP a un evento (User o Child)                     |
-| `EarnedBadge`          | `EarnedBadge`          | Badge/traguardi sbloccati (User o Child)            |
-| `AppNotification`      | `AppNotification`      | Notifiche in-app                                    |
-| `AppNotificationRead`  | `AppNotificationRead`  | Tracking lettura notifiche per utente               |
-| `Group`                | `Group`                | Gironi di campionato                                |
-| `GroupCompetitiveTeam` | `GroupCompetitiveTeam` | Nostre squadre iscritte a un girone                 |
-| `GroupTeam`            | `GroupTeam`            | Squadre avversarie iscritte a un girone             |
-| `GroupMatch`           | `GroupMatch`           | Partite di girone                                   |
-| `MatchCallup`          | `MatchCallup`          | Convocazioni giocatore per partita                  |
-| `MatchAvailability`    | `MatchAvailability`    | Disponibilità giocatore a una partita               |
-| `MatchMvp`             | `MatchMvp`             | MVP votati per partita                              |
-| `RatingUpdate`         | `RatingUpdate`         | Storico aggiornamenti rating TrueSkill              |
-| `Post`                 | `Post`                 | News/post della bacheca                             |
-| `Poll`                 | `Poll`                 | Sondaggi abbinati ai post                           |
-| `PollOption`           | `PollOption`           | Opzioni di un sondaggio                             |
-| `PollVote`             | `PollVote`             | Voti dei sondaggi                                   |
-| `TrainingMatchResult`  | `TrainingMatchResult`  | Risultati partitelle a fine allenamento             |
-| `AuditEvent`           | `AuditEvent`           | Log azioni admin (audit trail)                      |
-| `InstagramPost`        | `InstagramPost`        | Post Instagram mirrorati per la Gallery             |
-| `VerificationToken`    | `VerificationToken`    | Token verifica Auth.js                              |
+| Modello Prisma         | Tabella DB             | Scopo                                                   |
+| ---------------------- | ---------------------- | ------------------------------------------------------- |
+| `TrainingSession`      | `TrainingSession`      | Allenamenti                                             |
+| `Registration`         | `Registration`         | Iscrizioni (userId o childId o anonimo)                 |
+| `User`                 | `User`                 | Utenti Auth.js + dati atleta                            |
+| `Session`              | `Session`              | Sessioni OAuth (Auth.js)                                |
+| `Account`              | `Account`              | Provider OAuth (Google)                                 |
+| `Child`                | `Child`                | Figli senza account, gestiti dal genitore               |
+| `LinkRequest`          | `LinkRequest`          | Richiesta collegamento genitore-figlio                  |
+| `SportRoleHistory`     | `SportRoleHistory`     | Storico cambi ruolo sportivo                            |
+| `PushSubscription`     | `PushSubscription`     | Subscription Web Push                                   |
+| `Season`               | `Season`               | Stagioni sportive (es. "2025-26")                       |
+| `CompetitiveTeam`      | `CompetitiveTeam`      | Squadre agonistiche per stagione                        |
+| `TeamMembership`       | `TeamMembership`       | Appartenenza giocatore (User o Child) a una squadra     |
+| `Match`                | `OfficialMatch`        | Partite ufficiali                                       |
+| `OpposingTeam`         | `OpposingTeam`         | Squadre avversarie                                      |
+| `PlayerMatchStats`     | `PlayerMatchStats`     | Statistiche giocatore per partita                       |
+| `Event`                | `Event`                | Eventi generici (tornei, trasferte…)                    |
+| `EventAttendance`      | `EventAttendance`      | RSVP a un evento (User o Child) + note                  |
+| `EventOption`          | `EventOption`          | Sotto-opzione di un evento articolato (sessione/pasto…) |
+| `EventOptionSelection` | `EventOptionSelection` | Selezione di una sotto-opzione (User o Child)           |
+| `EarnedBadge`          | `EarnedBadge`          | Badge/traguardi sbloccati (User o Child)                |
+| `AppNotification`      | `AppNotification`      | Notifiche in-app                                        |
+| `AppNotificationRead`  | `AppNotificationRead`  | Tracking lettura notifiche per utente                   |
+| `Group`                | `Group`                | Gironi di campionato                                    |
+| `GroupCompetitiveTeam` | `GroupCompetitiveTeam` | Nostre squadre iscritte a un girone                     |
+| `GroupTeam`            | `GroupTeam`            | Squadre avversarie iscritte a un girone                 |
+| `GroupMatch`           | `GroupMatch`           | Partite di girone                                       |
+| `MatchCallup`          | `MatchCallup`          | Convocazioni giocatore per partita                      |
+| `MatchAvailability`    | `MatchAvailability`    | Disponibilità giocatore a una partita                   |
+| `MatchMvp`             | `MatchMvp`             | MVP votati per partita                                  |
+| `RatingUpdate`         | `RatingUpdate`         | Storico aggiornamenti rating TrueSkill                  |
+| `Post`                 | `Post`                 | News/post della bacheca                                 |
+| `Poll`                 | `Poll`                 | Sondaggi abbinati ai post                               |
+| `PollOption`           | `PollOption`           | Opzioni di un sondaggio                                 |
+| `PollVote`             | `PollVote`             | Voti dei sondaggi                                       |
+| `TrainingMatchResult`  | `TrainingMatchResult`  | Risultati partitelle a fine allenamento                 |
+| `AuditEvent`           | `AuditEvent`           | Log azioni admin (audit trail)                          |
+| `InstagramPost`        | `InstagramPost`        | Post Instagram mirrorati per la Gallery                 |
+| `VerificationToken`    | `VerificationToken`    | Token verifica Auth.js                                  |
 
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
@@ -336,7 +338,7 @@ Comportamento `checkRegistrationAllowed()`:
 - **MVP partita:** `MatchMvp` + `matches/[matchId]/mvps`. La classifica marcatori (`/marcatori`) mostra anche conteggio MVP stagionale e % di realizzazione.
 - **Badge / traguardi:** definizioni in `src/lib/rating/badges.ts` (`computeBadges`, `computeBadgeState` con avanzamento "prossimi traguardi"). Persistenza in `EarnedBadge` (User **o** Child, una riga per badge sbloccato). Il servizio `src/lib/rating/badgeService.ts` (`loadBadgeInput`, `reconcilePlayerBadges`) ricalcola, persiste i nuovi e notifica (in-app `BADGE_UNLOCKED` + push) il giocatore — o il **genitore** per i figli. Agganciato fire-and-forget a `matches/[matchId]/stats` e `/mvps`. UI: `BadgeShowcase` (in `components/rating/`) usato dal profilo pubblico (`/giocatori/[slug]`) e dal proprio profilo (`/profilo`, anche per i figli). **Dopo il deploy eseguire una tantum `POST /api/admin/badges/backfill`** (admin) per popolare `EarnedBadge` dallo storico **senza notifiche**: salta questo passo e la prima modifica stats di un giocatore già "decorato" gli notificherebbe in blocco tutti i badge storici.
 - **Tema chiaro/scuro:** `ThemeContext` + `lightTheme`/`darkTheme` in `theme.ts`. Lo switch è nel menu utente (header) e nel drawer mobile. Usare sempre token semantici del tema (`text.primary`, `background.paper`, …): i colori hardcoded rompono il dark mode.
-- **Eventi pubblici + RSVP:** il modello `Event` (con `slug` e `imageUrl`) è esposto pubblicamente su `/eventi` (lista prossimi/passati) e `/eventi/[slug]` (dettaglio con copertina, mappa, descrizione). RSVP via `EventAttendance` (status `GOING|MAYBE|NOT_GOING`, una riga per User o Child) — API `PUT/GET /api/events/[eventId]/attendance`, UI `EventRsvp` (anche per i figli). Alla creazione l'evento notifica push + in-app (`NEW_EVENT`). Gli URL risolvono `slug OR id` (eventi vecchi senza slug funzionano via id; lo slug viene generato alla creazione/modifica). Il dialog del calendario linka al dettaglio pubblico.
+- **Eventi pubblici + RSVP:** il modello `Event` (con `slug` e `imageUrl`) è esposto pubblicamente su `/eventi` (lista prossimi/passati) e `/eventi/[slug]` (dettaglio con copertina, mappa, descrizione). RSVP via `EventAttendance` (status `GOING|MAYBE|NOT_GOING` + `note`, una riga per User o Child) — API `PUT/GET /api/events/[eventId]/attendance`, UI `EventRsvp` (anche per i figli). **Eventi articolati:** un evento può avere `EventOption` (sotto-opzioni: sessione/pasto/pernotto, gestite dall'admin nel dialog evento); se presenti, il partecipante spunta a quali partecipa (`EventOptionSelection`) + note, invece del semplice Ci sarò/Forse/No. API `PUT/GET /api/events/[eventId]/options` (staff, replace in blocco) e `PUT /api/events/[eventId]/selections` (utente). Alla creazione l'evento notifica push + in-app (`NEW_EVENT`). Gli URL risolvono `slug OR id` (eventi vecchi senza slug funzionano via id; lo slug viene generato alla creazione/modifica). Il dialog del calendario linka al dettaglio pubblico.
 - **Ricerca globale:** `GET /api/search?q=` cerca su giocatori, squadre, avversarie, news, eventi (rate-limited, `q ≥ 2`). **Privacy:** esclude account `GUEST` e **minorenni reali** (età < 18 da `birthDate`; un Child maggiorenne compare). UI `GlobalSearch` (icona nell'header, dialog con risultati raggruppati, React Query debounced).
 - **Confronto giocatori + trend:** `/giocatori/confronta?a=&b=` mette a confronto due giocatori (partite, punti, media, %, MVP, badge) con selettore `ComparePicker` (autocomplete via `/api/search`). Il profilo pubblico mostra l'andamento punti con `PointsTrendChart` (SVG puro, niente librerie) e un pulsante "Confronta".
 - **Gallery:** feed Instagram automatico + video YouTube. Il cron `instagram-sync` (giornaliero alle 06:00, `vercel.json` — su piano Hobby i cron Vercel possono girare al massimo 1 volta/giorno: schedule sub-giornaliere fanno **fallire il deploy**) chiama `syncInstagram()` (`src/lib/gallery/instagram.ts`): scarica gli ultimi post via **Instagram Graph API** (account Business → `IG_ACCESS_TOKEN` + `IG_BUSINESS_ACCOUNT_ID`), **ri-carica le immagini su Vercel Blob** (gli URL CDN di IG scadono) e fa upsert in `InstagramPost`. La pagina pubblica `/gallery` legge dal DB (`GalleryGrid` con lightbox) + sezione video da `gallery/youtube.ts` (feed RSS, `YOUTUBE_CHANNEL_ID`, embed `youtube-nocookie` con click-to-load). Admin: `/admin/gallery` (`AdminGalleryClient`) per sync manuale e moderazione (`hidden`/elimina). API: `gallery/sync` (POST, staff) e `gallery/[id]` (PATCH/DELETE). Mai linkare direttamente `media_url` di IG: scadono.

@@ -29,6 +29,10 @@ async function findEvent(slug: string) {
       location: true,
       description: true,
       imageUrl: true,
+      options: {
+        orderBy: [{ order: "asc" as const }, { startsAt: "asc" as const }],
+        select: { id: true, label: true, startsAt: true, kind: true },
+      },
     },
   });
 }
@@ -75,8 +79,10 @@ export default async function EventoPage({ params }: Props) {
       })
     : [];
 
-  // Conteggi + risposte proprie
-  const [grouped, mine] = await Promise.all([
+  const optionIds = ev.options.map((o) => o.id);
+
+  // Conteggi + risposte proprie (status/note) + selezioni opzioni proprie
+  const [grouped, mine, mySelections] = await Promise.all([
     prisma.eventAttendance.groupBy({
       by: ["status"],
       where: { eventId: ev.id },
@@ -88,7 +94,16 @@ export default async function EventoPage({ params }: Props) {
             eventId: ev.id,
             OR: [{ userId }, { childId: { in: children.map((c) => c.id) } }],
           },
-          select: { userId: true, childId: true, status: true },
+          select: { userId: true, childId: true, status: true, note: true },
+        })
+      : [],
+    userId && optionIds.length > 0
+      ? prisma.eventOptionSelection.findMany({
+          where: {
+            optionId: { in: optionIds },
+            OR: [{ userId }, { childId: { in: children.map((c) => c.id) } }],
+          },
+          select: { optionId: true, userId: true, childId: true },
         })
       : [],
   ]);
@@ -97,18 +112,42 @@ export default async function EventoPage({ params }: Props) {
   for (const g of grouped) counts[g.status] = g._count._all;
 
   const statusByKey = new Map<string, "GOING" | "MAYBE" | "NOT_GOING">();
-  for (const a of mine) statusByKey.set(a.childId ?? "self", a.status);
+  const noteByKey = new Map<string, string | null>();
+  for (const a of mine) {
+    statusByKey.set(a.childId ?? "self", a.status);
+    noteByKey.set(a.childId ?? "self", a.note);
+  }
+  const selByKey = new Map<string, string[]>();
+  for (const s of mySelections) {
+    const k = s.childId ?? "self";
+    selByKey.set(k, [...(selByKey.get(k) ?? []), s.optionId]);
+  }
 
   const subjects: EventRsvpSubject[] = userId
     ? [
-        { childId: null, name: session!.user!.name ?? t("me"), status: statusByKey.get("self") },
+        {
+          childId: null,
+          name: session!.user!.name ?? t("me"),
+          status: statusByKey.get("self"),
+          selectedOptionIds: selByKey.get("self") ?? [],
+          note: noteByKey.get("self") ?? null,
+        },
         ...children.map((c) => ({
           childId: c.id,
           name: c.name,
           status: statusByKey.get(c.id),
+          selectedOptionIds: selByKey.get(c.id) ?? [],
+          note: noteByKey.get(c.id) ?? null,
         })),
       ]
     : [];
+
+  const optionsView = ev.options.map((o) => ({
+    id: o.id,
+    label: o.label,
+    startsAt: o.startsAt ? o.startsAt.toISOString() : null,
+    kind: o.kind as string,
+  }));
 
   const mapsUrl = ev.location
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`
@@ -234,6 +273,7 @@ export default async function EventoPage({ params }: Props) {
             isLoggedIn={!!userId}
             isPast={isPast}
             subjects={subjects}
+            options={optionsView}
             initialCounts={counts}
           />
         </Stack>

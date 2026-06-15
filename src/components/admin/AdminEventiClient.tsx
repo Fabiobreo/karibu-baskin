@@ -20,6 +20,8 @@ import {
   TableCell,
   Tooltip,
   TablePagination,
+  MenuItem,
+  Divider,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -34,6 +36,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ImageUploader from "@/components/common/ImageUploader";
 
+type EventOptionRow = {
+  id?: string;
+  label: string;
+  startsAt?: string | Date | null;
+  kind: string;
+  order?: number;
+};
+
 type Event = {
   id: string;
   title: string;
@@ -42,7 +52,18 @@ type Event = {
   location?: string | null;
   description?: string | null;
   imageUrl?: string | null;
+  options?: EventOptionRow[];
 };
+
+const OPTION_KINDS = [
+  { value: "SESSIONE", label: "Sessione" },
+  { value: "PASTO", label: "Pasto" },
+  { value: "PERNOTTO", label: "Pernotto" },
+  { value: "ALTRO", label: "Altro" },
+];
+
+// Riga opzione in editing (startsAt = stringa datetime-local, "" se assente).
+type OptionDraft = { id?: string; label: string; startsAt: string; kind: string };
 
 const EventFormSchema = z.object({
   title: z.string().min(1, "Titolo obbligatorio").max(200),
@@ -62,6 +83,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>([]);
   const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -80,6 +102,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const openCreate = () => {
     setEditingId(null);
     setImageUrl(null);
+    setOptionDrafts([]);
     reset({ title: "", date: "", endDate: "", location: "", description: "" });
     setDialogOpen(true);
   };
@@ -87,6 +110,14 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const openEdit = (ev: Event) => {
     setEditingId(ev.id);
     setImageUrl(ev.imageUrl ?? null);
+    setOptionDrafts(
+      (ev.options ?? []).map((o) => ({
+        id: o.id,
+        label: o.label,
+        startsAt: o.startsAt ? format(new Date(o.startsAt), "yyyy-MM-dd'T'HH:mm") : "",
+        kind: o.kind ?? "ALTRO",
+      }))
+    );
     reset({
       title: ev.title,
       date: format(new Date(ev.date), "yyyy-MM-dd'T'HH:mm"),
@@ -96,6 +127,12 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     });
     setDialogOpen(true);
   };
+
+  const addOption = () =>
+    setOptionDrafts((d) => [...d, { label: "", startsAt: "", kind: "ALTRO" }]);
+  const updateOption = (i: number, patch: Partial<OptionDraft>) =>
+    setOptionDrafts((d) => d.map((o, idx) => (idx === i ? { ...o, ...patch } : o)));
+  const removeOption = (i: number) => setOptionDrafts((d) => d.filter((_, idx) => idx !== i));
 
   useEffect(() => {
     const editId = searchParams.get("edit");
@@ -136,11 +173,33 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     }
 
     const saved: Event = await res.json();
+
+    // Salva le sotto-opzioni (replace in blocco). L'evento deve già esistere.
+    let savedOptions: EventOptionRow[] = saved.options ?? [];
+    const optionsPayload = optionDrafts
+      .filter((o) => o.label.trim())
+      .map((o, i) => ({
+        id: o.id,
+        label: o.label.trim(),
+        startsAt: o.startsAt || null,
+        kind: o.kind,
+        order: i,
+      }));
+    const optRes = await fetch(`/api/events/${saved.id}/options`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ options: optionsPayload }),
+    });
+    if (optRes.ok) savedOptions = await optRes.json();
+
+    const savedWithOptions: Event = { ...saved, options: savedOptions };
     if (editingId) {
-      setEvents((prev) => prev.map((e) => (e.id === editingId ? saved : e)));
+      setEvents((prev) => prev.map((e) => (e.id === editingId ? savedWithOptions : e)));
     } else {
       setEvents((prev) =>
-        [...prev, saved].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        [...prev, savedWithOptions].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        )
       );
     }
     setDialogOpen(false);
@@ -395,6 +454,74 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                   shape="square"
                   size={120}
                 />
+              </Box>
+
+              <Divider />
+
+              {/* Sotto-opzioni: per eventi articolati (giorni, sessioni, pasti…) */}
+              <Box>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                  Opzioni di partecipazione
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mb: 1.5 }}
+                >
+                  Facoltative. Se aggiungi opzioni (es. &quot;Sabato mattina&quot;, &quot;Pranzo
+                  domenica&quot;), i partecipanti spuntano a cosa partecipano invece del semplice
+                  &quot;Ci sarò&quot;.
+                </Typography>
+                <Stack spacing={1.5}>
+                  {optionDrafts.map((o, i) => (
+                    <Box key={i} sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+                      <TextField
+                        label="Etichetta"
+                        value={o.label}
+                        onChange={(e) => updateOption(i, { label: e.target.value })}
+                        size="small"
+                        sx={{ flex: 1, minWidth: 120 }}
+                      />
+                      <TextField
+                        label="Data/ora"
+                        type="datetime-local"
+                        value={o.startsAt}
+                        onChange={(e) => updateOption(i, { startsAt: e.target.value })}
+                        size="small"
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        sx={{ width: 180 }}
+                      />
+                      <TextField
+                        label="Tipo"
+                        select
+                        value={o.kind}
+                        onChange={(e) => updateOption(i, { kind: e.target.value })}
+                        size="small"
+                        sx={{ width: 120 }}
+                      >
+                        {OPTION_KINDS.map((k) => (
+                          <MenuItem key={k.value} value={k.value}>
+                            {k.label}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                      <IconButton
+                        aria-label="Rimuovi opzione"
+                        onClick={() => removeOption(i)}
+                        sx={{ mt: 0.5 }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                  <Button
+                    startIcon={<AddIcon />}
+                    onClick={addOption}
+                    sx={{ alignSelf: "flex-start" }}
+                  >
+                    Aggiungi opzione
+                  </Button>
+                </Stack>
               </Box>
             </Stack>
           </DialogContent>

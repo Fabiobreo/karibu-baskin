@@ -572,7 +572,10 @@
     "me": "Io",
     "attendees": "Partecipanti",
     "saved": "Risposta salvata",
-    "saveError": "Errore nel salvataggio"
+    "saveError": "Errore nel salvataggio",
+    "save": "Salva",
+    "notePlaceholder": "Note (allergie, esigenze…)",
+    "optionsHint": "Seleziona a cosa parteciperai"
   },
   "search": {
     "open": "Cerca",

@@ -569,7 +569,10 @@
     "me": "Me",
     "attendees": "Attendees",
     "saved": "Response saved",
-    "saveError": "Couldn't save"
+    "saveError": "Couldn't save",
+    "save": "Save",
+    "notePlaceholder": "Notes (allergies, needs…)",
+    "optionsHint": "Select what you'll attend"
   },
   "search": {
     "open": "Search",

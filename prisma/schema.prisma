@@ -102,6 +102,7 @@ model User {
   suggestionNotes       SuggestionNote[]
   earnedBadges          EarnedBadge[]
   eventAttendances      EventAttendance[]
+  eventOptionSelections EventOptionSelection[]
 }
 
 model Account {
@@ -211,6 +212,7 @@ model Child {
   sportRoleHistory    SportRoleHistory[]
   earnedBadges        EarnedBadge[]
   eventAttendances    EventAttendance[]
+  eventOptionSelections EventOptionSelection[]
 
   @@index([parentId])
 }
@@ -797,6 +799,7 @@ model Event {
   updatedAt   DateTime  @updatedAt
 
   attendances EventAttendance[]
+  options     EventOption[]
 
   @@index([date])
 }
@@ -807,6 +810,51 @@ enum EventAttendanceStatus {
   NOT_GOING
 }
 
+enum EventOptionKind {
+  SESSIONE
+  PASTO
+  PERNOTTO
+  ALTRO
+}
+
+// Sotto-opzione selezionabile di un evento articolato (es. "Sabato mattina",
+// "Pranzo domenica", "Cena sociale"). Se un evento non ha opzioni, vale il
+// flusso RSVP semplice (EventAttendance.status). Definite dallo staff.
+model EventOption {
+  id        String          @id @default(cuid())
+  eventId   String
+  label     String
+  startsAt  DateTime? // data/ora indicativa, per ordinamento e visualizzazione
+  kind      EventOptionKind @default(ALTRO)
+  order     Int             @default(0)
+  createdAt DateTime        @default(now())
+
+  event      Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  selections EventOptionSelection[]
+
+  @@index([eventId])
+}
+
+// Selezione di una sotto-opzione da parte di un partecipante (User o Child).
+// Una riga = "partecipo a questa opzione".
+model EventOptionSelection {
+  id        String   @id @default(cuid())
+  optionId  String
+  userId    String?
+  childId   String?
+  createdAt DateTime @default(now())
+
+  option EventOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user   User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child  Child?      @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([optionId, userId])
+  @@unique([optionId, childId])
+  @@index([optionId])
+  @@index([userId])
+  @@index([childId])
+}
+
 // RSVP a un evento generico. Una riga per partecipante (User o Child), come
 // MatchAvailability per le partite. L'autore della riga è il genitore per i figli.
 model EventAttendance {
@@ -815,6 +863,7 @@ model EventAttendance {
   userId    String?
   childId   String?
   status    EventAttendanceStatus
+  note      String? // note libere del partecipante (es. allergie, esigenze)
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt
 
