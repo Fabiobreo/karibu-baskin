@@ -19,6 +19,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import StarIcon from "@mui/icons-material/Star";
 import HistoryIcon from "@mui/icons-material/History";
+import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
@@ -135,6 +136,39 @@ export default async function SquadrePage() {
             <TeamGrid teams={currentTeams} t={t} />
           </Box>
         )}
+
+        {/* Simulatore Sfida — solo loggati (la pagina reindirizza al login) */}
+        <Box
+          sx={{
+            mt: 6,
+            p: { xs: 2.5, md: 3 },
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <SportsKabaddiIcon sx={{ color: "primary.main" }} />
+            <Box>
+              <Typography variant="subtitle1" fontWeight={700}>
+                {t("simChallengeTitle")}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t("simChallengeDesc")}
+              </Typography>
+            </Box>
+          </Box>
+          <Link href="/squadre/sfida" style={{ textDecoration: "none" }}>
+            <Button variant="contained" size="small" sx={{ fontWeight: 700 }}>
+              {t("simChallengeCta")}
+            </Button>
+          </Link>
+        </Box>
 
         {/* Link archivio */}
         {hasPastSeasons && (

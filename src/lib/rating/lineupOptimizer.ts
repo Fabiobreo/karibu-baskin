@@ -13,6 +13,7 @@
 // il giocatore non è ancora stato valutato).
 
 import { TRUESKILL } from "./trueskill";
+import { isLineupValid } from "./lineupRules";
 import type { CandidateInput } from "@/lib/matches/callupStats";
 
 /** Approssimazione logistica di Φ(x) — errore < 0.003. */
@@ -42,25 +43,8 @@ function* combinations<T>(arr: T[], k: number): Generator<T[]> {
 // ── Validazione formazione ────────────────────────────────────────────────────
 
 function isValidLineup(players: CandidateInput[]): boolean {
-  if (players.length !== 6) return false;
-
-  // 1. Esattamente 1 tra R1 e R2
-  const r1r2Count = players.filter((p) => p.sportRole === 1 || p.sportRole === 2).length;
-  if (r1r2Count !== 1) return false;
-
-  // 2. Somma ruoli ≤ 23
-  const roleSum = players.reduce((s, p) => s + (p.sportRole ?? 0), 0);
-  if (roleSum > 23) return false;
-
-  // 3. Tra R4+R5: ≥1 femmina E ≥1 maschio (solo se ce ne sono)
-  const highRole = players.filter((p) => p.sportRole === 4 || p.sportRole === 5);
-  if (highRole.length > 0) {
-    const hasFemale = highRole.some((p) => p.gender === "FEMALE");
-    const hasMale = highRole.some((p) => p.gender === "MALE");
-    if (!hasFemale || !hasMale) return false;
-  }
-
-  return true;
+  // Regole condivise con il simulatore sfida (vedi lib/rating/lineupRules.ts).
+  return isLineupValid(players);
 }
 
 // ── Probabilità di vittoria ───────────────────────────────────────────────────

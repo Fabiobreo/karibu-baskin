@@ -11,7 +11,8 @@
       "PowerShell(npx tsc --noEmit 2>&1)",
       "Bash(mkdir -p \"D:/Dev/Companies/HomeProjects/karibu-baskin/.claude\")",
       "mcp__Claude_in_Chrome__list_connected_browsers",
-      "mcp__Claude_in_Chrome__select_browser"
+      "mcp__Claude_in_Chrome__select_browser",
+      "PowerShell($c = Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { Stop-Process -Id $c.OwningProcess -Force -ErrorAction SilentlyContinue; \"Dev server PID $\\($c.OwningProcess\\) fermato\" } else { \"Niente sulla 3000\" }; $c2 = Get-NetTCPConnection -LocalPort 3001 -State Listen -ErrorAction SilentlyContinue; if \\($c2\\) { Stop-Process -Id $c2.OwningProcess -Force -ErrorAction SilentlyContinue; \"Dev server PID $\\($c2.OwningProcess\\) \\(3001\\) fermato\" })"
     ]
   }
 }
