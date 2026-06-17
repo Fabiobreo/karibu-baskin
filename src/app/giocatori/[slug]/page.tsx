@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
+import { SITE_URL } from "@/lib/siteUrl";
 import {
   Box,
   Container,
@@ -79,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     descParts.length > 0
       ? `${descParts.join(" · ")} — Karibu Baskin, Montecchio Maggiore`
       : `Profilo di ${p.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore.`;
-  const url = `https://karibu-baskin.vercel.app/giocatori/${slug}`;
+  const url = `${SITE_URL}/giocatori/${slug}`;
   return {
     title,
     description,

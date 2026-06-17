@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container, Typography, Box, Paper, Divider } from "@mui/material";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Link from "next/link";
+import { SITE_HOST } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
   title: "Informativa Privacy | Karibu Baskin",
@@ -48,8 +49,8 @@ export default function PrivacyPage() {
 
           <Section title="2. Categorie di dati trattati">
             <P>
-              Tramite il sito <strong>karibu-baskin.vercel.app</strong> raccogliamo e trattiamo le
-              seguenti categorie di dati personali:
+              Tramite il sito <strong>{SITE_HOST}</strong> raccogliamo e trattiamo le seguenti
+              categorie di dati personali:
             </P>
             <Ul>
               <Li>
@@ -163,6 +164,12 @@ export default function PrivacyPage() {
               </Li>
               <Li>
                 <strong>Resend</strong> (invio email transazionali del modulo contatti) — SCC.
+              </Li>
+              <Li>
+                <strong>Functional Software, Inc. (Sentry)</strong> (monitoraggio errori e
+                registrazione tecnica delle sessioni a fini di diagnostica) — Stati Uniti; SCC. La
+                registrazione delle sessioni maschera per impostazione predefinita testi e dati
+                inseriti nei moduli.
               </Li>
             </Ul>
             <P>

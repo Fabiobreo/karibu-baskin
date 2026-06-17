@@ -7,6 +7,7 @@ import type { Locale } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { SITE_HOST } from "@/lib/siteUrl";
 import type { TeamsData } from "./TeamDisplay";
 import { ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
 
@@ -304,7 +305,7 @@ export default function ShareTeamsButton({
                 textTransform: "uppercase",
               }}
             >
-              karibubaskin.vercel.app
+              {SITE_HOST}
             </span>
             <div style={{ display: "flex", gap: 3 }}>
               {meta.map((m) => (

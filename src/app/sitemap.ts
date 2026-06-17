@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
+import { SITE_URL } from "@/lib/siteUrl";
 
-const BASE = "https://karibu-baskin.vercel.app";
+const BASE = SITE_URL;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [

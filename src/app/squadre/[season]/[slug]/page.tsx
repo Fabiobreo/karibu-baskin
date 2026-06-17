@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { SITE_URL } from "@/lib/siteUrl";
 import {
   Box,
   Container,
@@ -139,7 +140,7 @@ export async function generateMetadata({
   const description = team.championship
     ? `${team.name} nel ${team.championship}. Roster, partite e statistiche della stagione ${team.season}.`
     : `Roster, partite e statistiche di ${team.name} — stagione ${team.season}.`;
-  const url = `https://karibu-baskin.vercel.app/squadre/${season}/${slug}`;
+  const url = `${SITE_URL}/squadre/${season}/${slug}`;
   return {
     title,
     description,

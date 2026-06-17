@@ -17,6 +17,7 @@ import SwUpdateToast from "@/components/layout/SwUpdateToast";
 import CookieBanner from "@/components/layout/CookieBanner";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
+import { SITE_URL } from "@/lib/siteUrl";
 import "./globals.css";
 
 const inter = Inter({
@@ -25,7 +26,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-const BASE_URL = "https://karibu-baskin.vercel.app";
+const BASE_URL = SITE_URL;
 
 export const metadata: Metadata = {
   title: "Karibu Baskin | Montecchio Maggiore",

@@ -18,7 +18,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.public.blob.vercel-storage.com",
       "font-src 'self'",
       "connect-src 'self' https://*.neon.tech https://*.blob.vercel-storage.com wss:",
-      "frame-src https://maps.google.com https://www.google.com",
+      "frame-src https://maps.google.com https://www.google.com https://www.youtube-nocookie.com",
       "frame-ancestors 'none'",
     ].join("; "),
   },
