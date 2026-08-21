@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { isAdminUser } from "@/lib/apiAuth";
 import { CompetitiveTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
@@ -9,7 +10,9 @@ import { deleteImage } from "@/lib/blob";
 
 type Params = { params: Promise<{ teamId: string }> };
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(req: Request, { params }: Params) {
+  const rl = checkRateLimit(getClientIp(req), "get-competitive-team", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { teamId } = await params;
 
   const team = await prisma.competitiveTeam.findUnique({

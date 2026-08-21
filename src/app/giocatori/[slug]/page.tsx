@@ -35,6 +35,7 @@ import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeSh
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { slugify } from "@/lib/slugUtils";
+import { isMinor } from "@/lib/minors";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
@@ -50,6 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     name: true,
     sportRole: true,
     sportRoleVariant: true,
+    birthDate: true,
     matchStats: { select: { points: true } },
   };
   // Cerca prima tra gli utenti, poi tra i figli (per slug, fallback su ID).
@@ -86,8 +88,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     openGraph: { title, description, url, type: "profile" },
     twitter: { card: "summary", title, description },
-    // I profili dei figli (potenzialmente minori) non vengono indicizzati.
-    ...(isChild ? { robots: { index: false, follow: false } } : {}),
+    // Non vengono indicizzati né i profili dei figli (potenzialmente minori)
+    // né quelli dei minorenni accertati — anche se hanno un account utente.
+    ...(isChild || isMinor(p.birthDate) ? { robots: { index: false, follow: false } } : {}),
   };
 }
 
@@ -803,7 +806,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <InfoRow label={t("gender")} value={genderLabel(player.gender)} />
               </Grid>
             )}
-            {player.birthDate && (
+            {/* Privacy: la data di nascita dei minorenni non è mai pubblica. */}
+            {player.birthDate && !isMinor(player.birthDate) && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow
                   label={t("birthDate")}

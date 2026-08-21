@@ -39,15 +39,15 @@ export const metadata: Metadata = {
     description: "Iscriviti agli allenamenti e scopri le squadre del Karibu Baskin.",
     url: BASE_URL,
     siteName: "Karibu Baskin",
-    images: [{ url: "/logo.png", width: 512, height: 512, alt: "Karibu Baskin logo" }],
+    // Nessun `images` esplicito: così vale la convenzione file-based di Next
+    // (`src/app/opengraph-image.tsx`, 1200x630) invece del logo 512x512.
     locale: "it_IT",
     type: "website",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Karibu Baskin — Montecchio Maggiore",
     description: "Iscriviti agli allenamenti del Karibu Baskin.",
-    images: ["/logo.png"],
   },
   appleWebApp: {
     capable: true,

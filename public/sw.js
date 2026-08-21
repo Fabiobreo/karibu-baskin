@@ -1,5 +1,5 @@
 // Service Worker — Karibu Baskin
-const VERSION = "karibu-v7";
+const VERSION = "karibu-v8";
 const STATIC_CACHE  = `${VERSION}-static`;
 const PAGE_CACHE    = `${VERSION}-pages`;
 const API_CACHE     = `${VERSION}-api`;

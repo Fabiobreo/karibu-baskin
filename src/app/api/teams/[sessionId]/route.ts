@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { generateTeams } from "@/lib/season/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
@@ -11,9 +12,11 @@ import { logAudit } from "@/lib/audit";
 
 // GET — ritorna le squadre salvate in DB
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const rl = checkRateLimit(getClientIp(req), "get-teams", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { sessionId } = await params;
   const session = await prisma.trainingSession.findUnique({
     where: { id: sessionId },

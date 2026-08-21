@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ childId: string }> }) {
+  const rl = checkRateLimit(getClientIp(req), "child-season-stats", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { childId } = await params;
   const season = req.nextUrl.searchParams.get("season") ?? null;
 

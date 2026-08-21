@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { computeStandings } from "@/lib/season/standings";
 import { GroupUpdateSchema } from "@/lib/schemas";
@@ -10,7 +11,9 @@ import { generateGroupSlug } from "@/lib/slugUtils";
 
 type Params = { params: Promise<{ groupId: string }> };
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
+  const rl = checkRateLimit(getClientIp(req), "get-group", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { groupId } = await params;
 
   const group = await prisma.group.findUnique({

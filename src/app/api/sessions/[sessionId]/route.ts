@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { SessionUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
@@ -8,9 +9,11 @@ import { logAudit } from "@/lib/audit";
 import { notifySessionOpen } from "@/lib/notifications/sessionNotify";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const rl = checkRateLimit(getClientIp(req), "get-session", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { sessionId } = await params;
 
   // Prova prima per ID (CUID), poi per dateSlug (es. "2025-03-15T18:00")

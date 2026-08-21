@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { isAdminUser } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
@@ -13,7 +14,9 @@ import { recomputeRatings } from "@/lib/rating/ratingEngine";
 
 type Params = { params: Promise<{ matchId: string }> };
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(req: Request, { params }: Params) {
+  const rl = checkRateLimit(getClientIp(req), "get-match", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { matchId } = await params;
 
   const match = await prisma.match.findUnique({

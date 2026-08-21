@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { slugify } from "@/lib/slugUtils";
+import { notMinorFilter } from "@/lib/minors";
 
 // Ricerca globale pubblica su giocatori, squadre, avversarie, news ed eventi.
 // Privacy: esclude gli account GUEST e i MINORENNI REALI (età < 18 calcolata da
@@ -17,10 +18,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ players: [], teams: [], opponents: [], news: [], events: [] });
   }
 
-  // Soglia maggiore età: nato entro questa data ⇒ adulto.
-  const adultCutoff = new Date();
-  adultCutoff.setFullYear(adultCutoff.getFullYear() - 18);
-  const notMinor = { OR: [{ birthDate: null }, { birthDate: { lte: adultCutoff } }] };
+  // Regola condivisa con sitemap e profilo pubblico (@/lib/minors).
+  const notMinor = notMinorFilter();
   const nameMatch = { name: { contains: q, mode: "insensitive" as const } };
 
   const [users, children, teams, opponents, posts, events] = await Promise.all([
