@@ -1,7 +1,8 @@
-import { Container, Paper, Typography, Box } from "@mui/material";
+import { Container, Paper, Typography, Box, Divider } from "@mui/material";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import { getTranslations } from "next-intl/server";
 import GoogleSignInButton from "@/components/common/GoogleSignInButton";
+import MagicLinkForm from "@/components/common/MagicLinkForm";
 import TestLoginForm from "@/components/common/TestLoginForm";
 
 const testLoginEnabled = process.env.ENABLE_TEST_LOGIN === "true";
@@ -22,6 +23,21 @@ export default async function LoginPage() {
         <Box>
           <GoogleSignInButton callbackUrl="/" />
         </Box>
+
+        <Divider sx={{ my: 3 }}>
+          <Typography variant="caption" color="text.secondary">
+            {t("login.divider")}
+          </Typography>
+        </Divider>
+
+        <MagicLinkForm callbackUrl="/" />
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mt: 1.5, textAlign: "left" }}
+        >
+          {t("login.emailHelp")}
+        </Typography>
 
         {testLoginEnabled && <TestLoginForm callbackUrl="/" />}
       </Paper>

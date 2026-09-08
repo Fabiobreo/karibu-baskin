@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { sendMagicLinkEmail, AUTH_EMAIL_FROM, MAGIC_LINK_MAX_AGE_SECONDS } from "@/lib/authEmail";
 import { prisma } from "@/lib/db";
 import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
@@ -18,6 +20,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Permette di collegare l'account Google a utenti pre-creati dall'admin via email.
       // Intenzionale: senza questa opzione, un utente pre-creato non riuscirebbe a fare login.
       allowDangerousEmailAccountLinking: true,
+    }),
+    // Magic link: unica via d'accesso per chi non ha un account Google
+    // (Alice, Libero, Yahoo, Hotmail…). Nessuna password in gioco.
+    Resend({
+      apiKey: process.env.RESEND_API_KEY,
+      from: AUTH_EMAIL_FROM,
+      maxAge: MAGIC_LINK_MAX_AGE_SECONDS,
+      sendVerificationRequest: sendMagicLinkEmail,
+      // Normalizza l'indirizzo: evita utenti duplicati per differenze di
+      // maiuscole/spazi tra pre-creazione admin e digitazione dell'utente.
+      normalizeIdentifier: (identifier) => identifier.trim().toLowerCase(),
     }),
   ],
   session: { strategy: "database", maxAge: 60 * 60 * 24 * 365 }, // 1 anno
@@ -51,6 +64,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
         })().catch((err) => console.error("[authjs] signIn profile update failed:", err));
       }
+
+      // Accesso via magic link: non c'è un profilo OAuth da cui leggere nome e
+      // foto, ma un utente pre-creato dall'admin non ha ancora lo slug (la POST
+      // /api/users non lo genera). Senza slug il profilo pubblico non è raggiungibile.
+      if (account?.provider === "resend" && user.email) {
+        (async () => {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+            select: { id: true, slug: true, name: true },
+          });
+          if (!dbUser || dbUser.slug || !dbUser.name) return;
+          const slug = await generateUserSlug(dbUser.name);
+          if (slug) {
+            await prisma.user.update({ where: { id: dbUser.id }, data: { slug } });
+          }
+        })().catch((err) => console.error("[authjs] signIn slug (magic link) failed:", err));
+      }
+
       return true;
     },
     async session({ session, user }) {
@@ -89,5 +120,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/login",
+    verifyRequest: "/login/verifica",
   },
 });

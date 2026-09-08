@@ -515,11 +515,26 @@
     "all": "All"
   },
   "badges": {
-    "esordiente": { "label": "Debutant", "description": "First official match played" },
-    "cinque_partite": { "label": "5 matches", "description": "5 official matches played" },
-    "dieci_partite": { "label": "10 matches", "description": "10 official matches played" },
-    "venti_partite": { "label": "20 matches", "description": "20 official matches played" },
-    "veterano": { "label": "Veteran", "description": "30 official matches played" },
+    "esordiente": {
+      "label": "Debutant",
+      "description": "First official match played"
+    },
+    "cinque_partite": {
+      "label": "5 matches",
+      "description": "5 official matches played"
+    },
+    "dieci_partite": {
+      "label": "10 matches",
+      "description": "10 official matches played"
+    },
+    "venti_partite": {
+      "label": "20 matches",
+      "description": "20 official matches played"
+    },
+    "veterano": {
+      "label": "Veteran",
+      "description": "30 official matches played"
+    },
     "fedelissimo": {
       "label": "Ever-present",
       "description": "Played in at least 3 different seasons"
@@ -528,12 +543,30 @@
       "label": "First basket",
       "description": "First point scored in an official match"
     },
-    "doppia_cifra": { "label": "Double figures", "description": "10 or more points in a match" },
-    "bomber": { "label": "Bomber", "description": "20 or more points in a single match" },
-    "centurione": { "label": "Centurion", "description": "100 career points" },
-    "artigliere": { "label": "Gunner", "description": "200 career points" },
-    "cannoniere": { "label": "Cannoneer", "description": "300 career points" },
-    "cecchino": { "label": "Sniper", "description": "3 or more 3-pointers in a single match" },
+    "doppia_cifra": {
+      "label": "Double figures",
+      "description": "10 or more points in a match"
+    },
+    "bomber": {
+      "label": "Bomber",
+      "description": "20 or more points in a single match"
+    },
+    "centurione": {
+      "label": "Centurion",
+      "description": "100 career points"
+    },
+    "artigliere": {
+      "label": "Gunner",
+      "description": "200 career points"
+    },
+    "cannoniere": {
+      "label": "Cannoneer",
+      "description": "300 career points"
+    },
+    "cecchino": {
+      "label": "Sniper",
+      "description": "3 or more 3-pointers in a single match"
+    },
     "mira_acciaio": {
       "label": "Steel aim",
       "description": "At least 70% shooting in a match (min. 5 shots)"
@@ -542,18 +575,30 @@
       "label": "Perfect sniper",
       "description": "100% shooting in a match with at least 3 baskets"
     },
-    "costante": { "label": "Consistent", "description": "Scored in 5 consecutive matches" },
+    "costante": {
+      "label": "Consistent",
+      "description": "Scored in 5 consecutive matches"
+    },
     "in_fiamme": {
       "label": "On fire",
       "description": "At least 10 points in 3 consecutive matches"
     },
-    "vincente": { "label": "Winner", "description": "10 matches won" },
+    "vincente": {
+      "label": "Winner",
+      "description": "10 matches won"
+    },
     "trascinatore": {
       "label": "Match-winner",
       "description": "20+ points in a match that was won"
     },
-    "mvp": { "label": "MVP", "description": "Voted match MVP at least once" },
-    "beniamino": { "label": "Fan favourite", "description": "Voted match MVP 3 times" },
+    "mvp": {
+      "label": "MVP",
+      "description": "Voted match MVP at least once"
+    },
+    "beniamino": {
+      "label": "Fan favourite",
+      "description": "Voted match MVP 3 times"
+    },
     "top_scorer": {
       "label": "Top scorer",
       "description": "Top scorer in your role within the team in a season"
@@ -740,7 +785,14 @@
     },
     "login": {
       "title": "Log in to Karibu Baskin",
-      "subtitle": "Log in with your Google account to register for training sessions and manage your profile."
+      "subtitle": "Sign in with Google, or get a link by email — no password to remember.",
+      "divider": "or",
+      "emailLabel": "Your email",
+      "emailCta": "Send me a sign-in link",
+      "emailSending": "Sending…",
+      "emailHelp": "Works with any address — Gmail, Libero, Alice, Yahoo, Hotmail. You get a link to click, valid for 24 hours.",
+      "invalidEmail": "Please check the email address: it does not look valid.",
+      "emailError": "We could not send the link. Please try again shortly."
     },
     "notifiche": {
       "empty": "No notifications",
@@ -795,7 +847,10 @@
           "title": "Social media visibility",
           "desc": "Mentions on Instagram, Facebook and YouTube"
         },
-        { "title": "Logo on the jersey", "desc": "Your logo on our teams' match kits" },
+        {
+          "title": "Logo on the jersey",
+          "desc": "Your logo on our teams' match kits"
+        },
         {
           "title": "Presence at events",
           "desc": "Visibility during tournaments, open trainings and initiatives"
@@ -824,7 +879,10 @@
           "title": "Social media visibility",
           "desc": "Mentions on Instagram, Facebook and YouTube"
         },
-        { "title": "Logo on the jersey", "desc": "Your logo on our teams' match kits" },
+        {
+          "title": "Logo on the jersey",
+          "desc": "Your logo on our teams' match kits"
+        },
         {
           "title": "Presence at events",
           "desc": "Visibility during tournaments, open trainings and initiatives"
@@ -877,6 +935,12 @@
     "privacy": {
       "heroChip": "Policy",
       "breadcrumb": "Privacy"
+    },
+    "verifyRequest": {
+      "title": "Check your inbox",
+      "body": "If the address is registered, we just sent you a sign-in link. Open it on this device: it is valid for 24 hours and works only once.",
+      "spamHint": "Can't find it? Check your spam or junk folder.",
+      "back": "Back to sign in"
     }
   },
   "standings": {

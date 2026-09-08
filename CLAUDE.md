@@ -277,7 +277,12 @@ sentry.edge.config.ts                      # Sentry edge runtime
 
 ## Sistema di autenticazione
 
-**Solo Google OAuth** (Auth.js v5) — nessun CredentialsProvider.
+**Due provider** (Auth.js v5) — **nessun CredentialsProvider, nessuna password**:
+
+1. **Google OAuth** — via principale, usata dalla maggior parte degli utenti.
+2. **Magic link via Resend** (`next-auth/providers/resend`) — link monouso inviato per email. Esiste perché una parte della rosa usa indirizzi Alice/Libero/Yahoo/Hotmail, che non sono account Google e non potrebbero altrimenti accedere. Implementazione in `src/lib/authEmail.ts` (`sendMagicLinkEmail`: template React Email `MagicLinkEmail`, lingua dal cookie `karibu-locale`, rate limit 5 richieste / 15 min **per indirizzo**), template in `src/emails/MagicLinkEmail.tsx`, UI in `MagicLinkForm` + pagina `/login/verifica` (`pages.verifyRequest`). Token valido 24h, monouso, richiede `VerificationToken` (già a schema).
+
+> La pagina `/login/verifica` non conferma mai se l'indirizzo esiste: stesso testo in ogni caso, per non trasformare il form in un oracolo di enumerazione degli iscritti.
 
 - **Ruoli:** `GUEST | ATHLETE | PARENT | COACH | ADMIN`
 - **Gerarchia:** `GUEST(0) < ATHLETE(1) < PARENT(2) < COACH(3) < ADMIN(4)`
@@ -286,6 +291,7 @@ sentry.edge.config.ts                      # Sentry edge runtime
 - **Protezione layout:** usare `auth()` da `@/lib/authjs` nei Server Component
 - **`proxy.ts`:** matcher vuoto — non fa auth (Edge Runtime non supporta Prisma)
 - **Account linking:** `allowDangerousEmailAccountLinking: true` sul provider Google — permette di collegare account Google a utenti pre-creati dall'admin
+- **Slug al primo accesso:** la POST `/api/users` (creazione admin) non genera lo `slug`. Lo fa il callback `signIn` in `authjs.ts`, che ha **due rami**: Google (aggiorna anche nome e foto dal profilo) e magic link (genera solo lo slug dal nome già a DB, non essendoci profilo OAuth). Toccando uno dei due, verificare l'altro.
 - **Sessione:** database strategy, durata 1 anno
 - **Immagine profilo:** aggiornata ad ogni login tramite callback `signIn` in `authjs.ts` (salva `name` e `image` da Google profile). Richiede `lh3.googleusercontent.com` in `next.config.ts` `images.remotePatterns`.
 
@@ -384,7 +390,8 @@ NEXTAUTH_URL=                     # URL pubblico (es. https://karibu-baskin.verc
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=     # Chiave pubblica VAPID per Web Push
 VAPID_PRIVATE_KEY=                # Chiave privata VAPID
 VAPID_EMAIL=                      # Email contatto per Web Push (es. admin@karibubaskin.it)
-RESEND_API_KEY=                   # API key Resend per email transazionali
+RESEND_API_KEY=                   # API key Resend per email transazionali + magic link
+AUTH_EMAIL_FROM=                  # Mittente magic link (default: Karibu Baskin <noreply@karibubaskin.it>) — dominio da verificare su Resend
 CONTACT_EMAIL=                    # Destinatario notifiche form contatti
 BLOB_READ_WRITE_TOKEN=            # Token Vercel Blob per upload immagini (auto su Vercel)
 CRON_SECRET=                      # Secret per autorizzare i cron job Vercel

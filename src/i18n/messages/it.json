@@ -515,11 +515,26 @@
     "all": "Tutti"
   },
   "badges": {
-    "esordiente": { "label": "Esordiente", "description": "Prima partita ufficiale disputata" },
-    "cinque_partite": { "label": "5 partite", "description": "5 partite ufficiali disputate" },
-    "dieci_partite": { "label": "10 partite", "description": "10 partite ufficiali disputate" },
-    "venti_partite": { "label": "20 partite", "description": "20 partite ufficiali disputate" },
-    "veterano": { "label": "Veterano", "description": "30 partite ufficiali disputate" },
+    "esordiente": {
+      "label": "Esordiente",
+      "description": "Prima partita ufficiale disputata"
+    },
+    "cinque_partite": {
+      "label": "5 partite",
+      "description": "5 partite ufficiali disputate"
+    },
+    "dieci_partite": {
+      "label": "10 partite",
+      "description": "10 partite ufficiali disputate"
+    },
+    "venti_partite": {
+      "label": "20 partite",
+      "description": "20 partite ufficiali disputate"
+    },
+    "veterano": {
+      "label": "Veterano",
+      "description": "30 partite ufficiali disputate"
+    },
     "fedelissimo": {
       "label": "Fedelissimo",
       "description": "Presente in almeno 3 stagioni diverse"
@@ -528,11 +543,26 @@
       "label": "Primo canestro",
       "description": "Primo punto segnato in una partita ufficiale"
     },
-    "doppia_cifra": { "label": "Doppia cifra", "description": "10 o più punti in una partita" },
-    "bomber": { "label": "Bomber", "description": "20 o più punti in una singola partita" },
-    "centurione": { "label": "Centurione", "description": "100 punti totali in carriera" },
-    "artigliere": { "label": "Artigliere", "description": "200 punti totali in carriera" },
-    "cannoniere": { "label": "Cannoniere", "description": "300 punti totali in carriera" },
+    "doppia_cifra": {
+      "label": "Doppia cifra",
+      "description": "10 o più punti in una partita"
+    },
+    "bomber": {
+      "label": "Bomber",
+      "description": "20 o più punti in una singola partita"
+    },
+    "centurione": {
+      "label": "Centurione",
+      "description": "100 punti totali in carriera"
+    },
+    "artigliere": {
+      "label": "Artigliere",
+      "description": "200 punti totali in carriera"
+    },
+    "cannoniere": {
+      "label": "Cannoniere",
+      "description": "300 punti totali in carriera"
+    },
     "cecchino": {
       "label": "Cecchino",
       "description": "3 o più canestri da 3 punti in una singola partita"
@@ -545,18 +575,30 @@
       "label": "Cecchino perfetto",
       "description": "100% di realizzazione in una partita con almeno 3 canestri"
     },
-    "costante": { "label": "Costante", "description": "A segno in 5 partite consecutive" },
+    "costante": {
+      "label": "Costante",
+      "description": "A segno in 5 partite consecutive"
+    },
     "in_fiamme": {
       "label": "In fiamme",
       "description": "Almeno 10 punti in 3 partite consecutive"
     },
-    "vincente": { "label": "Vincente", "description": "10 partite vinte disputate" },
+    "vincente": {
+      "label": "Vincente",
+      "description": "10 partite vinte disputate"
+    },
     "trascinatore": {
       "label": "Trascinatore",
       "description": "20+ punti in una partita poi vinta"
     },
-    "mvp": { "label": "MVP", "description": "Eletto MVP della partita almeno una volta" },
-    "beniamino": { "label": "Beniamino", "description": "Eletto MVP della partita 3 volte" },
+    "mvp": {
+      "label": "MVP",
+      "description": "Eletto MVP della partita almeno una volta"
+    },
+    "beniamino": {
+      "label": "Beniamino",
+      "description": "Eletto MVP della partita 3 volte"
+    },
     "top_scorer": {
       "label": "Top scorer",
       "description": "1° marcatore del proprio ruolo in una stagione"
@@ -743,7 +785,14 @@
     },
     "login": {
       "title": "Accedi a Karibu Baskin",
-      "subtitle": "Accedi con il tuo account Google per iscriverti agli allenamenti e gestire il tuo profilo."
+      "subtitle": "Accedi con Google, oppure fatti mandare un link via email: nessuna password da ricordare.",
+      "divider": "oppure",
+      "emailLabel": "La tua email",
+      "emailCta": "Mandami un link di accesso",
+      "emailSending": "Invio in corso…",
+      "emailHelp": "Funziona con qualsiasi indirizzo — Gmail, Libero, Alice, Yahoo, Hotmail. Ti arriva un link da cliccare, valido 24 ore.",
+      "invalidEmail": "Controlla l'indirizzo email: non sembra valido.",
+      "emailError": "Non siamo riusciti a inviare il link. Riprova tra poco."
     },
     "notifiche": {
       "empty": "Nessuna notifica",
@@ -794,7 +843,10 @@
           "title": "Logo sul sito",
           "desc": "Il tuo brand visibile su tutte le pagine del sito ufficiale"
         },
-        { "title": "Visibilità sui social", "desc": "Menzioni su Instagram, Facebook e YouTube" },
+        {
+          "title": "Visibilità sui social",
+          "desc": "Menzioni su Instagram, Facebook e YouTube"
+        },
         {
           "title": "Logo sulla maglia",
           "desc": "Il tuo logo sulle divise di gara delle nostre squadre"
@@ -823,7 +875,10 @@
           "title": "Logo sul sito",
           "desc": "Il tuo brand visibile su tutte le pagine del sito ufficiale"
         },
-        { "title": "Visibilità sui social", "desc": "Menzioni su Instagram, Facebook e YouTube" },
+        {
+          "title": "Visibilità sui social",
+          "desc": "Menzioni su Instagram, Facebook e YouTube"
+        },
         {
           "title": "Logo sulla maglia",
           "desc": "Il tuo logo sulle divise di gara delle nostre squadre"
@@ -880,6 +935,12 @@
     "privacy": {
       "heroChip": "Informativa",
       "breadcrumb": "Privacy"
+    },
+    "verifyRequest": {
+      "title": "Controlla la posta",
+      "body": "Se l'indirizzo è registrato, ti abbiamo appena inviato un link per accedere. Cliccalo da questo dispositivo: è valido 24 ore e funziona una volta sola.",
+      "spamHint": "Non lo trovi? Controlla nello spam o nella posta indesiderata.",
+      "back": "Torna al login"
     }
   },
   "standings": {
