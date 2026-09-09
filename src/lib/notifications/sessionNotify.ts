@@ -20,7 +20,7 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
     ? `${format(session.date, "HH:mm")}–${format(session.endTime, "HH:mm")}`
     : `ore ${format(session.date, "HH:mm")}`;
   const dateLabel = format(session.date, "EEEE d MMMM", { locale: it });
-  const body = `${session.title} — ${dateLabel}, ${timeRange}`;
+  const body = `${session.title}: ${dateLabel}, ${timeRange}`;
   const url = `/allenamento/${session.dateSlug ?? session.id}`;
   const pushTitle =
     kind === "updated"

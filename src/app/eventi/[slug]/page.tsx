@@ -13,6 +13,7 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
 
@@ -23,6 +24,7 @@ async function findEvent(slug: string) {
     where: { OR: [{ slug }, { id: slug }] },
     select: {
       id: true,
+      slug: true,
       title: true,
       date: true,
       endDate: true,
@@ -40,16 +42,22 @@ async function findEvent(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const ev = await findEvent(slug);
-  if (!ev) return { title: "Evento non trovato" };
-  return {
-    title: `${ev.title} | Karibu Baskin`,
-    description: ev.description?.slice(0, 160) ?? `${ev.title} — Karibu Baskin.`,
-    openGraph: {
-      title: ev.title,
-      description: ev.description?.slice(0, 160) ?? undefined,
-      images: ev.imageUrl ? [ev.imageUrl] : undefined,
-    },
-  };
+  if (!ev) {
+    return buildMetadata({
+      title: "Evento non trovato",
+      description: "Questo evento non esiste o è stato rimosso.",
+      path: `/eventi/${slug}`,
+      noindex: true,
+    });
+  }
+  return buildMetadata({
+    title: ev.title,
+    description: ev.description?.slice(0, 160) ?? `${ev.title}, un evento del Karibu Baskin.`,
+    path: `/eventi/${ev.slug ?? slug}`,
+    type: "article",
+    // La copertina dell'evento è un'anteprima migliore della card generica del sito.
+    image: ev.imageUrl ?? undefined,
+  });
 }
 
 export default async function EventoPage({ params }: Props) {

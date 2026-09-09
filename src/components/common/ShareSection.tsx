@@ -98,7 +98,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
 
       <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          QR Code — {sessionTitle}
+          QR Code: {sessionTitle}
           <IconButton
             onClick={() => setQrOpen(false)}
             aria-label={tCommon("close")}

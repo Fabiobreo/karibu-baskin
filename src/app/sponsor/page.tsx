@@ -17,6 +17,14 @@ import EmailIcon from "@mui/icons-material/Email";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Image from "next/image";
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Sponsor",
+  description:
+    "Le aziende e le realtà del territorio che sostengono il Karibu Baskin di Montecchio Maggiore.",
+  path: "/sponsor",
+});
 
 const SPONSORS = [
   {

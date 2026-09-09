@@ -7,8 +7,15 @@ import { parseTeamsData } from "@/lib/schemas";
 import type { TeamsData } from "@/components/training/TeamDisplay";
 import type { Metadata } from "next";
 import { getSeasonStartDate } from "@/lib/season/seasonUtils";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Allenamenti | Karibu Baskin" };
+export const metadata: Metadata = buildMetadata({
+  title: "Allenamenti",
+  description:
+    "Tutti gli allenamenti del Karibu Baskin di Montecchio Maggiore: date, orari e iscrizione online.",
+  path: "/allenamenti",
+});
+
 export const revalidate = 0;
 
 export default async function AllenamentiPage({

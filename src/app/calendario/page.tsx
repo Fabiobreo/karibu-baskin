@@ -9,8 +9,14 @@ import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import type { AppRole } from "@prisma/client";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Calendario | Karibu Baskin" };
+export const metadata: Metadata = buildMetadata({
+  title: "Calendario",
+  description:
+    "Allenamenti, partite ed eventi del Karibu Baskin di Montecchio Maggiore in un unico calendario.",
+  path: "/calendario",
+});
 
 export default async function CalendarioPage() {
   const t = await getTranslations("nav");

@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
-import { SITE_URL } from "@/lib/siteUrl";
 import {
   Box,
   Container,
@@ -38,6 +37,7 @@ import PlayedMatchCard from "./_components/PlayedMatchCard";
 import LeaderCard from "./_components/LeaderCard";
 import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
+import { buildMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ season: string; slug: string }>;
@@ -135,18 +135,24 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { season, slug } = await params;
   const team = await getTeam(parseSeasonParam(season), slug);
-  if (!team) return { title: "Squadra non trovata" };
-  const title = `${team.name} — Stagione ${team.season} | Karibu Baskin`;
-  const description = team.championship
-    ? `${team.name} nel ${team.championship}. Roster, partite e statistiche della stagione ${team.season}.`
-    : `Roster, partite e statistiche di ${team.name} — stagione ${team.season}.`;
-  const url = `${SITE_URL}/squadre/${season}/${slug}`;
-  return {
-    title,
-    description,
-    openGraph: { title, description, url, type: "website" },
-    twitter: { card: "summary", title, description },
-  };
+  if (!team) {
+    return buildMetadata({
+      title: "Squadra non trovata",
+      description: "Questa squadra non esiste o non ha giocato in questa stagione.",
+      path: `/squadre/${season}/${slug}`,
+      noindex: true,
+    });
+  }
+  return buildMetadata({
+    title: `${team.name}, stagione ${team.season}`,
+    description: team.championship
+      ? `${team.name} nel ${team.championship}. Roster, partite e statistiche della stagione ${team.season}.`
+      : `Roster, partite e statistiche di ${team.name} nella stagione ${team.season}.`,
+    // La stagione è accettata sia come "202526" sia come "2025-26": canonical
+    // sulla forma compatta, la stessa usata dalla sitemap.
+    path: `/squadre/${team.season.replace("-", "")}/${slug}`,
+    image: "own",
+  });
 }
 
 export const revalidate = 3600;

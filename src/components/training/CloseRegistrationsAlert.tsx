@@ -19,7 +19,7 @@ export default function CloseRegistrationsAlert({ sessionId, onClosed }: Props) 
     try {
       const res = await fetch(`/api/sessions/${sessionId}/close-registrations`, { method: "POST" });
       if (res.ok) {
-        showToast({ message: "Iscrizioni chiuse — notifica inviata", severity: "success" });
+        showToast({ message: "Iscrizioni chiuse (notifica inviata)", severity: "success" });
         onClosed?.();
       } else {
         const data = await res.json().catch(() => ({}));

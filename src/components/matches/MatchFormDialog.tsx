@@ -377,7 +377,7 @@ export default function MatchFormDialog({
                           }}
                         />
                         {t.name}
-                        {teamsForForm.length === 0 && ` — ${t.season}`}
+                        {teamsForForm.length === 0 && ` · ${t.season}`}
                       </Box>
                     </MenuItem>
                   ))}
@@ -583,7 +583,7 @@ export default function MatchFormDialog({
                           )
                           .map((g) => (
                             <MenuItem key={g.id} value={g.id}>
-                              {g.name} {g.championship ? `(${g.championship})` : ""} — {g.season}
+                              {g.name} {g.championship ? `(${g.championship})` : ""} · {g.season}
                             </MenuItem>
                           ))}
                       </Select>
@@ -608,7 +608,7 @@ export default function MatchFormDialog({
               Immagine copertina
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
-              Facoltativa — mostrata nella pagina pubblica della partita.
+              Facoltativa: mostrata nella pagina pubblica della partita.
             </Typography>
             <ImageUploader
               currentUrl={imageUrl}

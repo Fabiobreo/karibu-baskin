@@ -201,7 +201,7 @@ export default function UserEditDialog({
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ fontWeight: 700 }}>
-        Modifica — {row.name ?? (row.kind === "user" ? row.email : "")}
+        Modifica {row.name ?? (row.kind === "user" ? row.email : "")}
       </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ mt: 1 }}>
@@ -382,7 +382,7 @@ export default function UserEditDialog({
                 Autovalutazione:{" "}
                 {sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)}
                 {row.sportRoleSuggestedVariant
-                  ? ` — ${SPORT_ROLE_VARIANT_LABELS[row.sportRoleSuggestedVariant] ?? ""}`
+                  ? ` · ${SPORT_ROLE_VARIANT_LABELS[row.sportRoleSuggestedVariant] ?? ""}`
                   : ""}
               </Typography>
             )}
@@ -438,17 +438,17 @@ export default function UserEditDialog({
                   <em>Nessuna variante (standard)</em>
                 </MenuItem>
                 {editState.sportRole === "1" && (
-                  <MenuItem value="S">S — {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
+                  <MenuItem value="S">S · {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
                 )}
                 {editState.sportRole === "2" && [
                   <MenuItem key="T" value="T">
-                    T — {SPORT_ROLE_VARIANT_LABELS["T"]}
+                    T · {SPORT_ROLE_VARIANT_LABELS["T"]}
                   </MenuItem>,
                   <MenuItem key="P" value="P">
-                    P — {SPORT_ROLE_VARIANT_LABELS["P"]}
+                    P · {SPORT_ROLE_VARIANT_LABELS["P"]}
                   </MenuItem>,
                   <MenuItem key="R" value="R">
-                    R — {SPORT_ROLE_VARIANT_LABELS["R"]}
+                    R · {SPORT_ROLE_VARIANT_LABELS["R"]}
                   </MenuItem>,
                 ]}
               </Select>

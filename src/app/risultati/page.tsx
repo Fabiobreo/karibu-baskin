@@ -15,12 +15,14 @@ import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Risultati | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Risultati",
   description:
     "Storico risultati delle partite ufficiali del Karibu Baskin di Montecchio Maggiore.",
-};
+  path: "/risultati",
+});
 
 export const revalidate = 3600;
 

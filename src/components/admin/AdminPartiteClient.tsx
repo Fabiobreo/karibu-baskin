@@ -333,7 +333,7 @@ function MatchMobileCard({
 /** Chip per partite giocate senza statistiche giocatori — clicca per inserirle. */
 function MissingStatsChip({ matchId, router }: { matchId: string; router: RouterLike }) {
   return (
-    <Tooltip title="Partita giocata senza statistiche giocatori — clicca per inserirle">
+    <Tooltip title="Partita giocata senza statistiche giocatori (clicca per inserirle)">
       <Chip
         label="Senza stats"
         size="small"
@@ -510,7 +510,7 @@ export default function AdminPartiteClient({
       {matchesWithShortfall.length > 0 && (
         <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
           <AlertTitle sx={{ fontWeight: 700 }}>
-            Copertura ruoli insufficiente — {matchesWithShortfall.length} partit
+            Copertura ruoli insufficiente in {matchesWithShortfall.length} partit
             {matchesWithShortfall.length === 1 ? "a" : "e"}
           </AlertTitle>
           <Stack spacing={0.5} sx={{ mt: 0.5 }}>
@@ -601,7 +601,7 @@ export default function AdminPartiteClient({
           open={!!resultMatch}
           onClose={() => setResultMatch(null)}
           matchId={resultMatch.id}
-          matchLabel={`${resultMatch.team.name} vs ${resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"} — ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
+          matchLabel={`${resultMatch.team.name} vs ${resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"} del ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
           ourTeamName={resultMatch.team.name}
           theirTeamName={
             resultMatch.opponent?.name ?? resultMatch.opponentTeam?.name ?? "Avversario"

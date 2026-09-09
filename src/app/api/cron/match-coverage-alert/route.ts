@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       .join(" · ");
 
     const title = "⚠️ Copertura ruoli insufficiente";
-    const body = `${m.team.name} vs ${opponentName} ${dateLabel} — ${shortfallDetail}`;
+    const body = `${m.team.name} vs ${opponentName} ${dateLabel}: ${shortfallDetail}`;
     const url = "/admin/partite";
 
     sendPushToUsers(staffIds, { title, body, url, type: "SYSTEM" }).catch((err) =>

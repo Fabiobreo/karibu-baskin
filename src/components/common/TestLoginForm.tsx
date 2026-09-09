@@ -57,7 +57,7 @@ export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: str
         variant="outlined"
         sx={{ mb: 2, fontSize: "0.75rem", py: 0.5 }}
       >
-        Modalità test — non disponibile in produzione
+        Modalità test: non disponibile in produzione
       </Alert>
 
       <Box

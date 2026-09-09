@@ -154,7 +154,7 @@ function MatchupSlot({
       color="text.secondary"
       sx={{ display: "block", mb: 1.25 }}
     >
-      {team1Name} — {team2Name}
+      {team1Name} vs {team2Name}
     </Typography>
   );
 

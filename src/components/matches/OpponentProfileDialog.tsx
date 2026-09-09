@@ -265,7 +265,7 @@ export default function OpponentProfileDialog({
           </ToggleButtonGroup>
           {strengthPreset === null && (
             <Typography variant="caption" color="text.disabled" display="block" mt={0.75}>
-              Non impostata — il Match Quality Score non sarà disponibile per questa squadra.
+              Non impostata: il Match Quality Score non sarà disponibile per questa squadra.
             </Typography>
           )}
         </Box>

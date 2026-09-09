@@ -3,12 +3,14 @@ import { Container, Typography, Box, Paper, Divider } from "@mui/material";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Link from "next/link";
 import { SITE_HOST } from "@/lib/siteUrl";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Informativa Privacy | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Informativa Privacy",
   description:
     "Informativa sul trattamento dei dati personali ai sensi del Regolamento UE 2016/679 (GDPR).",
-};
+  path: "/privacy",
+});
 
 const LAST_UPDATE = "20 maggio 2026";
 
@@ -150,27 +152,27 @@ export default function PrivacyPage() {
             </P>
             <Ul>
               <Li>
-                <strong>Vercel Inc.</strong> (hosting del sito e Vercel Analytics) — server
+                <strong>Vercel Inc.</strong> (hosting del sito e Vercel Analytics): server
                 localizzati nell&apos;Unione Europea con possibili trasferimenti negli Stati Uniti,
                 garantiti da clausole contrattuali standard della Commissione UE (SCC) e
                 dall&apos;adesione al Data Privacy Framework UE-USA.
               </Li>
               <Li>
-                <strong>Neon Inc.</strong> (database PostgreSQL gestito) — regione UE; SCC.
+                <strong>Neon Inc.</strong> (database PostgreSQL gestito): regione UE; SCC.
               </Li>
               <Li>
                 <strong>Google LLC</strong> (Google OAuth per il login, Google Maps per la mappa
-                della sede) — Data Privacy Framework UE-USA.
+                della sede): Data Privacy Framework UE-USA.
               </Li>
               <Li>
                 <strong>Resend</strong> (invio email transazionali: modulo contatti e link di
-                accesso al sito) — SCC.
+                accesso al sito): SCC.
               </Li>
               <Li>
                 <strong>Functional Software, Inc. (Sentry)</strong> (monitoraggio errori e
-                registrazione tecnica delle sessioni, solo in caso di errore, a fini di diagnostica)
-                — Stati Uniti; SCC. La registrazione delle sessioni maschera per impostazione
-                predefinita testi e dati inseriti nei moduli.
+                registrazione tecnica delle sessioni, solo in caso di errore, a fini di
+                diagnostica): Stati Uniti; SCC. La registrazione delle sessioni maschera per
+                impostazione predefinita testi e dati inseriti nei moduli.
               </Li>
             </Ul>
             <P>

@@ -9,8 +9,14 @@ import PointsTrendChart from "@/components/rating/PointsTrendChart";
 import { loadBadgeInput } from "@/lib/rating/badgeService";
 import { computeBadges } from "@/lib/rating/badges";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Confronto giocatori | Karibu Baskin" };
+export const metadata: Metadata = buildMetadata({
+  title: "Confronto giocatori",
+  description:
+    "Metti a confronto statistiche, punti e traguardi di due giocatori del Karibu Baskin.",
+  path: "/giocatori/confronta",
+});
 export const revalidate = 0;
 
 type Props = { searchParams: Promise<{ a?: string; b?: string }> };

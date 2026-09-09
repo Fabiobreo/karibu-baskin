@@ -456,7 +456,7 @@ export default function AdminAnonymousRegistrations({
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Modifica — {editGroup?.name}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Modifica {editGroup?.name}</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <Box>
@@ -557,17 +557,17 @@ export default function AdminAnonymousRegistrations({
                     <em>Nessuna variante (standard)</em>
                   </MenuItem>
                   {editState.role === "1" && (
-                    <MenuItem value="S">S — {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
+                    <MenuItem value="S">S · {SPORT_ROLE_VARIANT_LABELS["S"]}</MenuItem>
                   )}
                   {editState.role === "2" && [
                     <MenuItem key="T" value="T">
-                      T — {SPORT_ROLE_VARIANT_LABELS["T"]}
+                      T · {SPORT_ROLE_VARIANT_LABELS["T"]}
                     </MenuItem>,
                     <MenuItem key="P" value="P">
-                      P — {SPORT_ROLE_VARIANT_LABELS["P"]}
+                      P · {SPORT_ROLE_VARIANT_LABELS["P"]}
                     </MenuItem>,
                     <MenuItem key="R" value="R">
-                      R — {SPORT_ROLE_VARIANT_LABELS["R"]}
+                      R · {SPORT_ROLE_VARIANT_LABELS["R"]}
                     </MenuItem>,
                   ]}
                 </Select>

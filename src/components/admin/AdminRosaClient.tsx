@@ -831,7 +831,7 @@ function PoolRow({
       <Tooltip
         title={
           otherTeamName
-            ? `Già in rosa con ${otherTeamName} — non aggiungibile`
+            ? `Non aggiungibile: è già in rosa con ${otherTeamName}`
             : "Aggiungi alla rosa"
         }
       >

@@ -28,6 +28,14 @@ import { computeBadgeState } from "@/lib/rating/badges";
 import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
 import type { LockedBadge } from "@/lib/rating/badges";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Il mio profilo",
+  description: "Il tuo profilo sul sito del Karibu Baskin.",
+  path: "/profilo",
+  noindex: true,
+});
 
 export const revalidate = 0;
 

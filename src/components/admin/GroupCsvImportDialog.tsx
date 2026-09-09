@@ -191,7 +191,7 @@ export default function GroupCsvImportDialog({
 
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>Importa risultati — {groupName}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700 }}>Importa risultati: {groupName}</DialogTitle>
       <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>

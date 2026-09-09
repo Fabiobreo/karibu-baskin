@@ -661,7 +661,7 @@ export default function AllenamentiClient({
           )
         );
         showToast({
-          message: `Iscrizioni aperte per "${s.title}" — notifica inviata`,
+          message: `Iscrizioni aperte per "${s.title}" (notifica inviata)`,
           severity: "success",
         });
       } else {
@@ -685,7 +685,7 @@ export default function AllenamentiClient({
           prev.map((p) => (p.id === s.id ? { ...p, registrationOpen: false } : p))
         );
         showToast({
-          message: `Iscrizioni chiuse per "${s.title}" — notifica inviata`,
+          message: `Iscrizioni chiuse per "${s.title}" (notifica inviata)`,
           severity: "success",
         });
       } else {

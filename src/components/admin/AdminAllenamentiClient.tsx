@@ -134,10 +134,10 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
             <Tooltip
               title={
                 effective === true
-                  ? "Presente — clicca per segnare assente"
+                  ? "Presente (clicca per segnare assente)"
                   : effective === false
-                    ? "Assente — clicca per resettare"
-                    : "Non marcato — clicca per segnare presente"
+                    ? "Assente (clicca per resettare)"
+                    : "Non marcato (clicca per segnare presente)"
               }
               arrow
               placement="left"
@@ -248,7 +248,7 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
             color="text.secondary"
             sx={{ letterSpacing: "0.08em" }}
           >
-            Presenze — {s.presentCount}/{s.athleteCount}
+            Presenze: {s.presentCount}/{s.athleteCount}
           </Typography>
           <Divider sx={{ my: 1 }} />
           <AttendanceList athletes={s.athletes} />

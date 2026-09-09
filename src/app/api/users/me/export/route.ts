@@ -225,7 +225,7 @@ export async function GET(req: NextRequest) {
   const payload = {
     exportInfo: {
       generatedAt: new Date().toISOString(),
-      basis: "GDPR Art. 20 — Diritto alla portabilità dei dati",
+      basis: "GDPR Art. 20: diritto alla portabilità dei dati",
       scope:
         "Dati personali dell'utente loggato e dei figli a lui collegati. Esclusi token OAuth e sessioni Auth.js.",
       app: "Karibu Baskin",

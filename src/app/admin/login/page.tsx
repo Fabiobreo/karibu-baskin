@@ -11,8 +11,7 @@ export default function AdminLoginPage() {
           Area Admin
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Accedi con il tuo account Google — solo gli utenti con ruolo Coach o Admin possono
-          entrare.
+          Accedi con il tuo account Google. Possono entrare solo gli utenti con ruolo Coach o Admin.
         </Typography>
         <GoogleSignInButton callbackUrl="/admin" />
       </Paper>

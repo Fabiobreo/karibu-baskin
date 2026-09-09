@@ -18,10 +18,13 @@ import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Archivio squadre | Karibu Baskin",
-};
+export const metadata: Metadata = buildMetadata({
+  title: "Archivio squadre",
+  description: "Le squadre del Karibu Baskin delle stagioni passate, con roster e risultati.",
+  path: "/squadre/archivio",
+});
 
 export const revalidate = 3600;
 

@@ -11,12 +11,14 @@ import type { Metadata } from "next";
 import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
 import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Marcatori | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Marcatori",
   description:
-    "Classifica marcatori interna del Karibu Baskin di Montecchio Maggiore — punti, tiri e statistiche per giocatore.",
-};
+    "Classifica marcatori interna del Karibu Baskin di Montecchio Maggiore: punti, tiri e statistiche per giocatore.",
+  path: "/marcatori",
+});
 
 export const revalidate = 3600;
 

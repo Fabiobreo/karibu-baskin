@@ -275,7 +275,7 @@ export default function MatchEditButton({
                 >
                   {internalTeams.map((t) => (
                     <MenuItem key={t.id} value={t.id}>
-                      {t.name} — {t.season}
+                      {t.name} · {t.season}
                     </MenuItem>
                   ))}
                 </Select>
@@ -397,7 +397,7 @@ export default function MatchEditButton({
                     </MenuItem>
                     {groups.map((g) => (
                       <MenuItem key={g.id} value={g.id}>
-                        {g.name} {g.championship ? `(${g.championship})` : ""} — {g.season}
+                        {g.name} {g.championship ? `(${g.championship})` : ""} · {g.season}
                       </MenuItem>
                     ))}
                   </Select>

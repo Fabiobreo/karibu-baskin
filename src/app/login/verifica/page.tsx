@@ -2,6 +2,14 @@ import { Container, Paper, Typography, Box, Button } from "@mui/material";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Controlla la posta",
+  description: "Ti abbiamo inviato un link per completare l'accesso.",
+  path: "/login/verifica",
+  noindex: true,
+});
 
 /**
  * Pagina mostrata da Auth.js (`pages.verifyRequest`) dopo la richiesta di un

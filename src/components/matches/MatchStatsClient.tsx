@@ -607,7 +607,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
             >
               {totals.points === ourScore
                 ? `Totale statistiche (${totals.points} pt) coerente con il risultato registrato.`
-                : `Totale statistiche ${totals.points} pt ≠ risultato registrato ${ourScore} pt — controlla i valori prima di salvare.`}
+                : `Totale statistiche ${totals.points} pt ≠ risultato registrato ${ourScore} pt. Controlla i valori prima di salvare.`}
             </Alert>
           )}
         </>

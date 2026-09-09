@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 
@@ -14,6 +15,7 @@ function parseSeasonParam(s: string): string {
 
 export default async function OgImage({ params }: Props) {
   const { season: seasonParam, slug } = await params;
+  const fonts = await loadInterFonts([400, 700, 800]);
   const season = parseSeasonParam(seasonParam);
 
   const teams = await prisma.competitiveTeam.findMany({
@@ -36,7 +38,7 @@ export default async function OgImage({ params }: Props) {
         justifyContent: "center",
         background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 40%, ${teamColor} 140%)`,
         color: "#fff",
-        fontFamily: "sans-serif",
+        fontFamily: "Inter, sans-serif",
         position: "relative",
         overflow: "hidden",
       }}
@@ -140,6 +142,6 @@ export default async function OgImage({ params }: Props) {
         Karibu Baskin · Montecchio Maggiore
       </div>
     </div>,
-    { ...size }
+    { ...size, fonts }
   );
 }

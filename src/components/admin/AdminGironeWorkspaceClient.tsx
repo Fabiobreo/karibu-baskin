@@ -306,7 +306,7 @@ export default function AdminGironeWorkspaceClient({
   async function handleRemoveTeamFromGroup(teamId: string, teamName: string) {
     if (derivedIds.has(teamId)) {
       showToast({
-        message: "Squadra collegata a partite del girone — eliminale prima",
+        message: "Squadra collegata a partite del girone: eliminale prima",
         severity: "warning",
       });
       return;
@@ -758,7 +758,7 @@ export default function AdminGironeWorkspaceClient({
                     <Typography variant="body2" fontWeight={700}>
                       {m.homeScore !== null && m.awayScore !== null
                         ? `${m.homeScore} – ${m.awayScore}`
-                        : "— – —"}
+                        : "—"}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -844,7 +844,7 @@ export default function AdminGironeWorkspaceClient({
                       .map((o) => (
                         <MenuItem key={o.id} value={o.id}>
                           {o.name}
-                          {o.city ? ` — ${o.city}` : ""}
+                          {o.city ? ` (${o.city})` : ""}
                         </MenuItem>
                       ))}
                   </Select>
@@ -923,7 +923,7 @@ export default function AdminGironeWorkspaceClient({
                   .filter((t) => !ourTeamById.has(t.id))
                   .map((t) => (
                     <MenuItem key={t.id} value={t.id}>
-                      {t.name} — {t.season}
+                      {t.name} · {t.season}
                     </MenuItem>
                   ))}
               </Select>
@@ -999,7 +999,7 @@ export default function AdminGironeWorkspaceClient({
               open={!!resultMatch}
               onClose={() => setResultMatch(null)}
               matchId={resultMatch.id}
-              matchLabel={`${ourName} vs ${resultMatch.opponent?.name ?? "Avversario"} — ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
+              matchLabel={`${ourName} vs ${resultMatch.opponent?.name ?? "Avversario"} del ${format(new Date(resultMatch.date), "d MMM yyyy", { locale: it })}`}
               ourTeamName={ourName}
               theirTeamName={resultMatch.opponent?.name ?? "Avversario"}
               initialOurScore={resultMatch.ourScore}

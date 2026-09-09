@@ -39,7 +39,7 @@ export default function StandingsSection({
           sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.62rem" }}
         >
           {t("groupStandings")}
-          {groupName ? ` — ${groupName}` : ""}
+          {groupName ? ` · ${groupName}` : ""}
         </Typography>
         <Link href="/classifiche" style={{ textDecoration: "none" }}>
           <Typography

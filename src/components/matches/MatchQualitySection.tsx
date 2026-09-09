@@ -39,7 +39,7 @@ export default function MatchQualitySection({
         hint={
           callupsWithRatingCount > 0
             ? `basato su ${callupsWithRatingCount} convocati con rating`
-            : "nessun convocato con rating — usa il rating medio della squadra"
+            : "nessun convocato con rating: usa il rating medio della squadra"
         }
       />
     </Box>

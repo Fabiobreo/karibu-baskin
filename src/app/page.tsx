@@ -19,6 +19,13 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarIcon from "@mui/icons-material/Star";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  description:
+    "Iscriviti agli allenamenti e scopri le squadre del Karibu Baskin di Montecchio Maggiore.",
+  path: "/",
+});
 
 export const revalidate = 0;
 

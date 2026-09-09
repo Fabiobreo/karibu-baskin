@@ -384,7 +384,7 @@ export default function ContattiPage() {
                     Polisportivo Gino Cosaro
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Via del Vigo, 11 — 36075 Montecchio Maggiore (VI)
+                    Via del Vigo, 11 - 36075 Montecchio Maggiore (VI)
                   </Typography>
                 </Box>
               </Box>

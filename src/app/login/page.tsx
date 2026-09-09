@@ -4,6 +4,14 @@ import { getTranslations } from "next-intl/server";
 import GoogleSignInButton from "@/components/common/GoogleSignInButton";
 import MagicLinkForm from "@/components/common/MagicLinkForm";
 import TestLoginForm from "@/components/common/TestLoginForm";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Accedi",
+  description: "Accedi al sito del Karibu Baskin con Google o con un link via email.",
+  path: "/login",
+  noindex: true,
+});
 
 const testLoginEnabled = process.env.ENABLE_TEST_LOGIN === "true";
 

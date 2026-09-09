@@ -26,6 +26,15 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.15.109", "localhost", "127.0.0.1"],
+  // Le OG dinamiche leggono i font da public/fonts a runtime. Il file tracing di
+  // Next non li rileva (il path è costruito con un template literal) e su Vercel
+  // public/ non finisce nel bundle delle funzioni: senza questo, in produzione
+  // i font non si caricherebbero e i titoli tornerebbero al peso di default.
+  outputFileTracingIncludes: {
+    "/giocatori/[slug]/opengraph-image": ["./public/fonts/*.ttf"],
+    "/partite/[slug]/opengraph-image": ["./public/fonts/*.ttf"],
+    "/squadre/[season]/[slug]/opengraph-image": ["./public/fonts/*.ttf"],
+  },
   images: {
     remotePatterns: [
       {

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import AdminNewsClient from "@/components/admin/AdminNewsClient";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 
-export const metadata = { title: "News — Admin" };
+export const metadata = { title: "News | Admin" };
 
 export default async function AdminNewsPage() {
   const session = await auth();

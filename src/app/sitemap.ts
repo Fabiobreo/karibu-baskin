@@ -6,6 +6,11 @@ import { notMinorFilter } from "@/lib/minors";
 
 const BASE = SITE_URL;
 
+// Senza questo la sitemap viene prerenderizzata una volta sola al build e resta
+// congelata fino al deploy successivo: news, partite e allenamenti nuovi non
+// comparirebbero mai. Un'ora è un buon compromesso per un sito di questa cadenza.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: BASE, priority: 1.0, changeFrequency: "weekly" },
@@ -17,13 +22,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/marcatori`, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/il-baskin`, priority: 0.6, changeFrequency: "monthly" },
     { url: `${BASE}/news`, priority: 0.6, changeFrequency: "weekly" },
+    { url: `${BASE}/eventi`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/gallery`, priority: 0.55, changeFrequency: "weekly" },
     { url: `${BASE}/faq`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/contatti`, priority: 0.5, changeFrequency: "monthly" },
     { url: `${BASE}/sponsor`, priority: 0.4, changeFrequency: "monthly" },
   ];
 
-  const [teams, players, sessions, matches, opposingTeams] = await Promise.all([
+  const [teams, players, sessions, matches, opposingTeams, posts, events] = await Promise.all([
     prisma.competitiveTeam.findMany({
       select: { name: true, season: true, createdAt: true },
       orderBy: { createdAt: "desc" },
@@ -47,6 +53,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.opposingTeam.findMany({
       where: { slug: { not: null } },
       select: { slug: true, createdAt: true },
+    }),
+    // Solo i post effettivamente pubblicati: le bozze non esistono per il pubblico.
+    prisma.post.findMany({
+      where: { publishedAt: { not: null } },
+      select: { slug: true, updatedAt: true },
+      orderBy: { publishedAt: "desc" },
+    }),
+    prisma.event.findMany({
+      where: { slug: { not: null } },
+      select: { slug: true, updatedAt: true },
+      orderBy: { date: "desc" },
     }),
   ]);
 
@@ -89,6 +106,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     }));
 
+  const postPages: MetadataRoute.Sitemap = posts.map((p) => ({
+    url: `${BASE}/news/${p.slug}`,
+    lastModified: p.updatedAt,
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
+  const eventPages: MetadataRoute.Sitemap = events
+    .filter((e) => e.slug)
+    .map((e) => ({
+      url: `${BASE}/eventi/${e.slug}`,
+      lastModified: e.updatedAt,
+      changeFrequency: "monthly",
+      priority: 0.55,
+    }));
+
   return [
     ...staticPages,
     ...teamPages,
@@ -96,5 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...sessionPages,
     ...matchPages,
     ...opposingTeamPages,
+    ...postPages,
+    ...eventPages,
   ];
 }

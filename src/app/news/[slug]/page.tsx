@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { buildMetadata } from "@/lib/seo";
 import { hasRole } from "@/lib/authRoles";
 import { notFound } from "next/navigation";
 import {
@@ -26,13 +28,48 @@ export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
-export async function generateMetadata({ params }: Props) {
+/** Estrae un riassunto leggibile dal body HTML sanitizzato di TipTap. */
+function excerpt(html: string, max = 160): string {
+  const text = html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= max) return text;
+  // Taglia all'ultimo spazio per non troncare a metà parola.
+  return `${text.slice(0, max).replace(/\s+\S*$/, "")}…`;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await prisma.post.findFirst({
     where: { slug, publishedAt: { not: null } },
-    select: { title: true },
+    select: { title: true, body: true, imageUrl: true, publishedAt: true },
   });
-  return { title: post ? `${post.title} — Karibu Baskin` : "News" };
+
+  if (!post) {
+    return buildMetadata({
+      title: "News non trovata",
+      description: "Questa notizia non esiste o non è più pubblicata.",
+      path: `/news/${slug}`,
+      noindex: true,
+    });
+  }
+
+  return buildMetadata({
+    title: post.title,
+    description: excerpt(post.body) || `${post.title}. Una notizia dal Karibu Baskin.`,
+    path: `/news/${slug}`,
+    type: "article",
+    publishedTime: post.publishedAt?.toISOString(),
+    // La copertina del post è un'anteprima migliore della card generica del sito.
+    image: post.imageUrl ?? undefined,
+  });
 }
 
 export default async function NewsSlugPage({ params }: Props) {

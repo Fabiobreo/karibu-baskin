@@ -90,7 +90,7 @@ export default async function AdminRosaPage({ params }: Params) {
   return (
     <>
       <AdminPageHeader
-        title={`Rosa — ${team.name}`}
+        title={`Rosa di ${team.name}`}
         subtitle={`Stagione ${team.season}${team.championship ? ` · ${team.championship}` : ""}`}
         breadcrumb={[
           { label: "Dashboard", href: "/admin" },

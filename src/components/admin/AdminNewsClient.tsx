@@ -455,7 +455,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
               Immagine di copertina
             </Typography>
             <Typography variant="caption" color="text.disabled" sx={{ display: "block", mb: 1 }}>
-              Facoltativa — mostrata come banner nella pagina news e nell&apos;anteprima in lista.
+              Facoltativa: mostrata come banner nella pagina news e nell&apos;anteprima in lista.
             </Typography>
             <ImageUploader
               currentUrl={imageUrl}

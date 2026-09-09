@@ -12,7 +12,7 @@ const LO_SAPEVI_IT: LoSapeviItem[] = [
   {
     titolo: '"Karibu" vuol dire benvenuto',
     testo:
-      "In swahili — la lingua parlata in Kenya e Tanzania — karibu è la prima parola che senti quando entri in casa di qualcuno. Era il messaggio che le fondatrici volevano dare a tutti.",
+      "In swahili, la lingua parlata in Kenya e Tanzania, karibu è la prima parola che senti quando entri in casa di qualcuno. Era il messaggio che le fondatrici volevano dare a tutti.",
   },
   {
     titolo: "5 ruoli, stesse emozioni",
@@ -27,7 +27,7 @@ const LO_SAPEVI_IT: LoSapeviItem[] = [
   {
     titolo: "Il Baskin è riconosciuto dal CONI",
     testo:
-      "Dal 2016 è sport ufficialmente riconosciuto dal Comitato Olimpico Nazionale Italiano — lo stesso ente che regola calcio, nuoto e atletica.",
+      "Dal 2016 è sport ufficialmente riconosciuto dal Comitato Olimpico Nazionale Italiano: lo stesso ente che regola calcio, nuoto e atletica.",
   },
   {
     titolo: "Non serve esperienza",
@@ -57,7 +57,7 @@ const LO_SAPEVI_IT: LoSapeviItem[] = [
   {
     titolo: "Si gioca con tre canestri",
     testo:
-      "Oltre al canestro tradizionale a 3,05 m, il campo di Baskin ha due canestri laterali a diverse altezze — uno a 1,10 m, uno a 2,20 m. Ogni ruolo ha il suo bersaglio.",
+      "Oltre al canestro tradizionale a 3,05 m, il campo di Baskin ha due canestri laterali a diverse altezze: uno a 1,10 m, uno a 2,20 m. Ogni ruolo ha il suo bersaglio.",
   },
   {
     titolo: "Il ruolo 5 non può fare tutto",
@@ -92,7 +92,7 @@ const LO_SAPEVI_IT: LoSapeviItem[] = [
   {
     titolo: "Il Baskin non conta i passi per tutti",
     testo:
-      "Per i giocatori di ruolo 3, le infrazioni di passi e doppio non vengono fischiate — a patto che eseguano almeno 2 palleggi durante la corsa. Una regola pensata per chi ha difficoltà di coordinazione.",
+      "Per i giocatori di ruolo 3, le infrazioni di passi e doppio non vengono fischiate, a patto che eseguano almeno 2 palleggi durante la corsa. Una regola pensata per chi ha difficoltà di coordinazione.",
   },
   {
     titolo: "Montecchio Maggiore, capitale vicentina del Baskin",
@@ -110,7 +110,7 @@ const LO_SAPEVI_EN: LoSapeviItem[] = [
   {
     titolo: '"Karibu" means welcome',
     testo:
-      "In Swahili — the language spoken in Kenya and Tanzania — karibu is the first word you hear when you enter someone's home. It was the message the founders wanted to give everyone.",
+      "In Swahili, the language spoken in Kenya and Tanzania, karibu is the first word you hear when you enter someone's home. It was the message the founders wanted to give everyone.",
   },
   {
     titolo: "5 roles, the same emotions",
@@ -125,7 +125,7 @@ const LO_SAPEVI_EN: LoSapeviItem[] = [
   {
     titolo: "Baskin is recognised by CONI",
     testo:
-      "Since 2016 it has been a sport officially recognised by the Italian National Olympic Committee — the same body that governs football, swimming and athletics.",
+      "Since 2016 it has been a sport officially recognised by the Italian National Olympic Committee: the same body that governs football, swimming and athletics.",
   },
   {
     titolo: "No experience needed",
@@ -155,7 +155,7 @@ const LO_SAPEVI_EN: LoSapeviItem[] = [
   {
     titolo: "It's played with three baskets",
     testo:
-      "Besides the traditional 3.05 m basket, the Baskin court has two side baskets at different heights — one at 1.10 m, one at 2.20 m. Each role has its own target.",
+      "Besides the traditional 3.05 m basket, the Baskin court has two side baskets at different heights: one at 1.10 m, one at 2.20 m. Each role has its own target.",
   },
   {
     titolo: "Role 5 can't do everything",
@@ -190,7 +190,7 @@ const LO_SAPEVI_EN: LoSapeviItem[] = [
   {
     titolo: "Baskin doesn't count travelling for everyone",
     testo:
-      "For role 3 players, travelling and double-dribble violations aren't called — as long as they take at least 2 dribbles while running. A rule designed for those with coordination difficulties.",
+      "For role 3 players, travelling and double-dribble violations aren't called, as long as they take at least 2 dribbles while running. A rule designed for those with coordination difficulties.",
   },
   {
     titolo: "Montecchio Maggiore, the Vicenza capital of Baskin",

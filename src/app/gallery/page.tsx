@@ -10,12 +10,14 @@ import GalleryGrid from "@/components/gallery/GalleryGrid";
 import YouTubeSection from "@/components/gallery/YouTubeSection";
 import { getChannelVideos } from "@/lib/gallery/youtube";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Gallery | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Gallery",
   description:
     "Foto e video del Karibu Baskin di Montecchio Maggiore: allenamenti, partite e momenti della squadra.",
-};
+  path: "/gallery",
+});
 
 // I post sono aggiornati dal cron; rivalido la pagina ogni 30 minuti.
 export const revalidate = 1800;

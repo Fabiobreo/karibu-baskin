@@ -5,6 +5,14 @@ import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifications/notifPrefs";
 import type { AppNotificationType } from "@prisma/client";
 import SiteHeader from "@/components/layout/SiteHeader";
 import NotificheClient from "@/components/notifications/NotificheClient";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Notifiche",
+  description: "Le tue notifiche dal Karibu Baskin.",
+  path: "/notifiche",
+  noindex: true,
+});
 
 const LIMIT = 20;
 

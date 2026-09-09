@@ -324,9 +324,9 @@ export default function AdminSquadreClient({
           </Box>
           <Typography variant="body2" color="text.secondary">
             {teamsInSeason.length === 0
-              ? "Nessuna squadra — aggiungine una."
+              ? "Nessuna squadra. Aggiungine una."
               : teamsInSeason.length >= 2
-                ? "2/2 squadre — limite stagionale raggiunto"
+                ? "2/2 squadre: limite stagionale raggiunto"
                 : `1/2 squadre in questa stagione`}
           </Typography>
         </Box>
@@ -456,7 +456,7 @@ export default function AdminSquadreClient({
       {/* ── Dialog: crea / modifica squadra ───────────────────────────────────── */}
       <Dialog open={teamDialog} onClose={() => setTeamDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle fontWeight={700}>
-          {editTeam ? `Modifica "${editTeam.name}"` : `Nuova squadra — ${activeSeason}`}
+          {editTeam ? `Modifica "${editTeam.name}"` : `Nuova squadra (${activeSeason})`}
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
@@ -476,7 +476,7 @@ export default function AdminSquadreClient({
               onChange={(e) => setTeamForm((f) => ({ ...f, championship: e.target.value }))}
               fullWidth
               placeholder="es. Campionato Veneto Gold Ovest"
-              helperText="Facoltativo — viene mostrato sotto il nome nelle pagine pubbliche"
+              helperText="Facoltativo: viene mostrato sotto il nome nelle pagine pubbliche"
             />
             <Box>
               <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
@@ -527,7 +527,7 @@ export default function AdminSquadreClient({
                   }}
                 />
                 <Typography variant="caption" color="text.secondary">
-                  {TEAM_COLORS.find((c) => c.value === teamForm.color)?.label ?? "Personalizzato"} —
+                  {TEAM_COLORS.find((c) => c.value === teamForm.color)?.label ?? "Personalizzato"}{" "}
                   selezionato
                 </Typography>
               </Box>
@@ -550,7 +550,7 @@ export default function AdminSquadreClient({
                 color="text.secondary"
                 sx={{ display: "block", mb: 1.5 }}
               >
-                Facoltativa — mostrata nella pagina pubblica della squadra.
+                Facoltativa: mostrata nella pagina pubblica della squadra.
               </Typography>
               <ImageUploader
                 currentUrl={teamForm.imageUrl}

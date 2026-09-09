@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
-import { SITE_URL } from "@/lib/siteUrl";
 import {
   Box,
   Container,
@@ -39,6 +38,7 @@ import { isMinor } from "@/lib/minors";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
+import { buildMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -49,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const metaSelect = {
     name: true,
+    slug: true,
     sportRole: true,
     sportRoleVariant: true,
     birthDate: true,
@@ -63,14 +64,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? null
     : await prisma.child.findFirst({ where: { OR: [{ slug }, { id: slug }] }, select: metaSelect });
   const p = userRow ?? childRow;
-  if (!p) return { title: "Giocatore non trovato" };
+  if (!p) {
+    return buildMetadata({
+      title: "Giocatore non trovato",
+      description: "Questo giocatore non esiste o non ha un profilo pubblico.",
+      path: `/giocatori/${slug}`,
+      noindex: true,
+    });
+  }
 
   const isChild = !userRow;
   const totalPoints = p.matchStats.reduce((s, m) => s + m.points, 0);
   const matchesPlayed = p.matchStats.length;
   const avgPoints = matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : null;
   const roleLabel = p.sportRole ? sportRoleLabelRaw(p.sportRole, p.sportRoleVariant ?? null) : null;
-  const title = `${p.name ?? "Giocatore"} · Karibu Baskin`;
+  const title = p.name ?? "Giocatore";
   const descParts: string[] = [];
   if (roleLabel) descParts.push(roleLabel);
   if (matchesPlayed > 0) {
@@ -80,18 +88,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const description =
     descParts.length > 0
-      ? `${descParts.join(" · ")} — Karibu Baskin, Montecchio Maggiore`
+      ? `${descParts.join(" · ")} · Karibu Baskin, Montecchio Maggiore`
       : `Profilo di ${p.name ?? "atleta"} del Karibu Baskin di Montecchio Maggiore.`;
-  const url = `${SITE_URL}/giocatori/${slug}`;
-  return {
+  return buildMetadata({
     title,
     description,
-    openGraph: { title, description, url, type: "profile" },
-    twitter: { card: "summary", title, description },
+    // Canonical sullo slug: la pagina risponde anche per id, e due URL che si
+    // auto-canonicalizzano non consolidano nulla.
+    path: `/giocatori/${p.slug ?? slug}`,
+    type: "profile",
+    image: "own",
     // Non vengono indicizzati né i profili dei figli (potenzialmente minori)
     // né quelli dei minorenni accertati — anche se hanno un account utente.
-    ...(isChild || isMinor(p.birthDate) ? { robots: { index: false, follow: false } } : {}),
-  };
+    noindex: isChild || isMinor(p.birthDate),
+  });
 }
 
 export const revalidate = 3600;

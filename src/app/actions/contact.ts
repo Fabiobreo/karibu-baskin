@@ -88,7 +88,7 @@ export async function submitContactForm(
     from: fromAddress,
     to: [toEmail],
     replyTo: email,
-    subject: `Nuovo messaggio dal sito — ${name}`,
+    subject: `Nuovo messaggio dal sito: ${name}`,
     react: ContactNotificationEmail({ senderName: name, senderEmail: email, message }),
   });
 
@@ -99,9 +99,7 @@ export async function submitContactForm(
 
   // 2. Conferma automatica al mittente nella sua lingua (fire-and-forget)
   const confirmSubject =
-    locale === "en"
-      ? "We received your message — Karibu Baskin"
-      : "Abbiamo ricevuto il tuo messaggio — Karibu Baskin";
+    locale === "en" ? "We received your message" : "Abbiamo ricevuto il tuo messaggio";
 
   resend.emails
     .send({

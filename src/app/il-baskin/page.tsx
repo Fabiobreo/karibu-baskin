@@ -20,6 +20,14 @@ import GradeIcon from "@mui/icons-material/Grade";
 import { ROLE_COLORS } from "@/lib/constants";
 import { getRolesInfo, getBaskinRules } from "@/lib/content/baskinInfo";
 import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Il Baskin",
+  description:
+    "Che cos'è il Baskin: le regole, i cinque ruoli e perché è uno sport in cui può giocare davvero chiunque.",
+  path: "/il-baskin",
+});
 
 const RULE_ICONS = [
   <SportsBasketballIcon key="0" />,

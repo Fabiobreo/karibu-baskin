@@ -16,11 +16,13 @@ import type {
 } from "@/components/teams/GironeFullView";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { computeStandings } from "@/lib/season/standings";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Classifiche | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Classifiche",
   description: "Classifica di campionato del Karibu Baskin di Montecchio Maggiore.",
-};
+  path: "/classifiche",
+});
 
 export const revalidate = 3600;
 

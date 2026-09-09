@@ -31,13 +31,15 @@ const BASE_URL = SITE_URL;
 export const metadata: Metadata = {
   title: "Karibu Baskin | Montecchio Maggiore",
   description:
-    "Iscriviti agli allenamenti e scopri le squadre — Karibu Baskin di Montecchio Maggiore.",
+    "Iscriviti agli allenamenti e scopri le squadre del Karibu Baskin di Montecchio Maggiore.",
   manifest: "/manifest.json",
   metadataBase: new URL(BASE_URL),
   openGraph: {
-    title: "Karibu Baskin — Montecchio Maggiore",
+    title: "Karibu Baskin | Montecchio Maggiore",
     description: "Iscriviti agli allenamenti e scopri le squadre del Karibu Baskin.",
-    url: BASE_URL,
+    // Nessun `url` qui: è ereditato da ogni pagina che non lo sovrascrive e
+    // farebbe puntare alla home l'identità di tutti i link condivisi. Le pagine
+    // lo impostano da `buildMetadata` in @/lib/seo.
     siteName: "Karibu Baskin",
     // Nessun `images` esplicito: così vale la convenzione file-based di Next
     // (`src/app/opengraph-image.tsx`, 1200x630) invece del logo 512x512.
@@ -46,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Karibu Baskin — Montecchio Maggiore",
+    title: "Karibu Baskin | Montecchio Maggiore",
     description: "Iscriviti agli allenamenti del Karibu Baskin.",
   },
   appleWebApp: {

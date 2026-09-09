@@ -23,10 +23,14 @@ import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Squadre | Karibu Baskin",
-};
+export const metadata: Metadata = buildMetadata({
+  title: "Squadre",
+  description:
+    "Le squadre agonistiche del Karibu Baskin di Montecchio Maggiore, stagione per stagione.",
+  path: "/squadre",
+});
 
 export const revalidate = 3600;
 

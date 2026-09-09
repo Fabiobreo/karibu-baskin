@@ -6,8 +6,15 @@ import MieDisponibilitaClient, {
   type AvailabilityMatch,
 } from "@/components/matches/MieDisponibilitaClient";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Le mie disponibilità | Karibu Baskin" };
+export const metadata: Metadata = buildMetadata({
+  title: "Le mie disponibilità",
+  description: "Le tue disponibilità per le partite del Karibu Baskin.",
+  path: "/profilo/disponibilita",
+  noindex: true,
+});
+
 export const revalidate = 0;
 
 export default async function MieDisponibilitaPage() {

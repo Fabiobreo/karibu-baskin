@@ -85,8 +85,8 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
             </Typography>
           ) : result === null || result.feasibleCount === 0 ? (
             <Alert severity="warning" sx={{ fontSize: "0.82rem" }}>
-              Nessuna formazione valida trovata — controlla i vincoli regolamentari (R1/R2
-              esclusivi, somma ruoli ≤ 23, genere su R4/R5).
+              Nessuna formazione valida trovata. Controlla i vincoli regolamentari (R1/R2 esclusivi,
+              somma ruoli ≤ 23, genere su R4/R5).
             </Alert>
           ) : (
             <Stack spacing={2.5}>
@@ -163,7 +163,7 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
         />
         {winLabel && (
           <Chip
-            label={`${Math.round((winPct ?? 0) * 100)}% — ${winLabel}`}
+            label={`${Math.round((winPct ?? 0) * 100)}% · ${winLabel}`}
             size="small"
             sx={{
               fontWeight: 700,

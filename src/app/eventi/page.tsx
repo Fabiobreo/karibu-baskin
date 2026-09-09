@@ -11,11 +11,13 @@ import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import { splitEventsByTime } from "@/lib/events";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Eventi | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Eventi",
   description: "Tornei, trasferte, feste e appuntamenti del Karibu Baskin di Montecchio Maggiore.",
-};
+  path: "/eventi",
+});
 
 export const revalidate = 300;
 

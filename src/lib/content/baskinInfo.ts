@@ -16,7 +16,7 @@ export interface RuleInfo {
 const ROLES_INFO_IT: RoleInfo[] = [
   {
     role: 1,
-    label: "Ruolo 1 — Il Pivot Fisso",
+    label: "Ruolo 1: Il Pivot Fisso",
     tag: "Pivot",
     canestro: "Laterale basso (h. 1,10 m)",
     punteggio: "3 pt (1 tiro) • 2 pt (2 tiri)",
@@ -26,7 +26,7 @@ const ROLES_INFO_IT: RoleInfo[] = [
   },
   {
     role: 2,
-    label: "Ruolo 2 — Il Pivot di Movimento",
+    label: "Ruolo 2: Il Pivot di Movimento",
     tag: "Pivot",
     canestro: "Laterale alto (h. 2,20 m)",
     punteggio: "2 pt (settore centrale) • 3 pt (settore laterale)",
@@ -36,7 +36,7 @@ const ROLES_INFO_IT: RoleInfo[] = [
   },
   {
     role: 3,
-    label: "Ruolo 3 — Il Protagonista",
+    label: "Ruolo 3: Il Protagonista",
     tag: "Protagonista",
     canestro: "Laterale alto o tradizionale",
     punteggio: "2 pt (laterale) • 3 pt (tradizionale)",
@@ -46,7 +46,7 @@ const ROLES_INFO_IT: RoleInfo[] = [
   },
   {
     role: 4,
-    label: "Ruolo 4 — Lo specialista",
+    label: "Ruolo 4: Lo specialista",
     tag: "Specialista",
     canestro: "Solo canestro tradizionale",
     punteggio: "2 pt (avanti) • 3 pt (dietro la linea)",
@@ -56,20 +56,20 @@ const ROLES_INFO_IT: RoleInfo[] = [
   },
   {
     role: 5,
-    label: "Ruolo 5 — Il Regista",
+    label: "Ruolo 5: Il Regista",
     tag: "Regista",
     canestro: "Solo canestro tradizionale",
     punteggio: "2 pt (avanti) • 3 pt (dietro la linea)",
     marcatura: "Da Ruolo 3, 4 o 5",
     description:
-      "Atleta che possiede tutti i fondamentali del basket: palleggio, tiro, entrata, passaggio, difesa. Valgono tutte le regole del basket tradizionale. Può effettuare al massimo 3 tiri per tempo — al quarto tiro il gioco viene fermato e la palla passa alla squadra avversaria. Può marcare solo giocatori dello stesso ruolo.",
+      "Atleta che possiede tutti i fondamentali del basket: palleggio, tiro, entrata, passaggio, difesa. Valgono tutte le regole del basket tradizionale. Può effettuare al massimo 3 tiri per tempo: al quarto il gioco viene fermato e la palla passa alla squadra avversaria. Può marcare solo giocatori dello stesso ruolo.",
   },
 ];
 
 const ROLES_INFO_EN: RoleInfo[] = [
   {
     role: 1,
-    label: "Role 1 — The Fixed Pivot",
+    label: "Role 1: The Fixed Pivot",
     tag: "Pivot",
     canestro: "Low side basket (h. 1.10 m)",
     punteggio: "3 pts (1 shot) • 2 pts (2 shots)",
@@ -79,7 +79,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
   },
   {
     role: 2,
-    label: "Role 2 — The Moving Pivot",
+    label: "Role 2: The Moving Pivot",
     tag: "Pivot",
     canestro: "High side basket (h. 2.20 m)",
     punteggio: "2 pts (central sector) • 3 pts (side sector)",
@@ -89,7 +89,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
   },
   {
     role: 3,
-    label: "Role 3 — The Protagonist",
+    label: "Role 3: The Protagonist",
     tag: "Protagonist",
     canestro: "High side or traditional",
     punteggio: "2 pts (side) • 3 pts (traditional)",
@@ -99,7 +99,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
   },
   {
     role: 4,
-    label: "Role 4 — The Specialist",
+    label: "Role 4: The Specialist",
     tag: "Specialist",
     canestro: "Traditional basket only",
     punteggio: "2 pts (front) • 3 pts (behind the line)",
@@ -109,13 +109,13 @@ const ROLES_INFO_EN: RoleInfo[] = [
   },
   {
     role: 5,
-    label: "Role 5 — The Playmaker",
+    label: "Role 5: The Playmaker",
     tag: "Playmaker",
     canestro: "Traditional basket only",
     punteggio: "2 pts (front) • 3 pts (behind the line)",
     marcatura: "By Role 3, 4 or 5",
     description:
-      "An athlete who has all the fundamentals of basketball: dribbling, shooting, drives, passing, defence. All the rules of traditional basketball apply. They can take at most 3 shots per period — on the fourth shot play is stopped and the ball goes to the opposing team. They can only mark players of the same role.",
+      "An athlete who has all the fundamentals of basketball: dribbling, shooting, drives, passing, defence. All the rules of traditional basketball apply. They can take at most 3 shots per period: on the fourth, play is stopped and the ball goes to the opposing team. They can only mark players of the same role.",
   },
 ];
 

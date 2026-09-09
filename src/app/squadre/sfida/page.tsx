@@ -9,8 +9,14 @@ import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import MatchSimulator, { type SimTeam } from "@/components/teams/MatchSimulator";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Simulatore Sfida | Karibu Baskin" };
+export const metadata: Metadata = buildMetadata({
+  title: "Simulatore Sfida",
+  description: "Simula una sfida tra due squadre del Karibu Baskin.",
+  path: "/squadre/sfida",
+  noindex: true,
+});
 export const revalidate = 0;
 
 export default async function SfidaPage() {

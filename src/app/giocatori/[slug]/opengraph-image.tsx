@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { sportRoleLabel } from "@/lib/constants";
 
@@ -17,6 +18,7 @@ const ROLE_COLORS: Record<number, string> = {
 
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
+  const fonts = await loadInterFonts([400, 700, 800]);
 
   const user = await prisma.user.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
@@ -51,7 +53,7 @@ export default async function OgImage({ params }: Props) {
         alignItems: "center",
         background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 30%, ${playerColor} 130%)`,
         color: "#fff",
-        fontFamily: "sans-serif",
+        fontFamily: "Inter, sans-serif",
         position: "relative",
         overflow: "hidden",
         padding: "0 80px",
@@ -202,6 +204,6 @@ export default async function OgImage({ params }: Props) {
         )}
       </div>
     </div>,
-    { ...size }
+    { ...size, fonts }
   );
 }

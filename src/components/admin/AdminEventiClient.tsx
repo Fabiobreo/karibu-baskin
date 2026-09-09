@@ -444,7 +444,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                   color="text.secondary"
                   sx={{ display: "block", mb: 1.5 }}
                 >
-                  Facoltativa — mostrata nella pagina calendario e nella card evento.
+                  Facoltativa: mostrata nella pagina calendario e nella card evento.
                 </Typography>
                 <ImageUploader
                   currentUrl={imageUrl}

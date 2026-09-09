@@ -24,7 +24,7 @@ const TEXT_MUTED = "#6b7280";
 
 const COPY = {
   it: {
-    preview: "Abbiamo ricevuto il tuo messaggio — ti risponderemo presto!",
+    preview: "Abbiamo ricevuto il tuo messaggio. Ti risponderemo presto!",
     greeting: (name: string) => `Ciao ${name}! 👋`,
     received: "Abbiamo ricevuto il tuo messaggio e ti risponderemo il prima possibile.",
     direct:
@@ -33,7 +33,7 @@ const COPY = {
     footer: "Hai ricevuto questa email perché hai compilato il form su karibubaskin.it",
   },
   en: {
-    preview: "We received your message — we'll get back to you soon!",
+    preview: "We received your message. We'll get back to you soon!",
     greeting: (name: string) => `Hi ${name}! 👋`,
     received: "We have received your message and will get back to you as soon as possible.",
     direct:

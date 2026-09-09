@@ -16,12 +16,14 @@ import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Prossime partite | Karibu Baskin",
+export const metadata: Metadata = buildMetadata({
+  title: "Prossime partite",
   description:
     "Calendario delle prossime partite ufficiali del Karibu Baskin di Montecchio Maggiore.",
-};
+  path: "/partite",
+});
 
 export const revalidate = 3600;
 

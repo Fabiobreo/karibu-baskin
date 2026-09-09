@@ -152,7 +152,7 @@ export default function SessionRestrictionEditor({
         Limita alla squadra (opzionale)
         {seasonFilter && teams.length === 0 && !loadingTeams && (
           <Box component="span" sx={{ ml: 1, color: "warning.main" }}>
-            — nessuna squadra per {seasonFilter}
+            · nessuna squadra per {seasonFilter}
           </Box>
         )}
       </Typography>

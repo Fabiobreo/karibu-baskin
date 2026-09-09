@@ -11,8 +11,14 @@ import { computeAllBadges } from "@/lib/rating/badges";
 import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import AchievementsGrid, { type AchievementItem } from "@/components/rating/AchievementsGrid";
 import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "I miei traguardi | Karibu Baskin" };
+export const metadata: Metadata = buildMetadata({
+  title: "I miei traguardi",
+  description: "I traguardi che hai sbloccato con il Karibu Baskin.",
+  path: "/profilo/traguardi",
+  noindex: true,
+});
 export const revalidate = 0;
 
 export default async function TraguardiPage() {

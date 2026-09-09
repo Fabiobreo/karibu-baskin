@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -30,6 +31,7 @@ const DEFAULT_BG = "linear-gradient(150deg,#1A1A1A 0%,#2D1A0A 60%,#3D2010 100%)"
 
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
+  const fonts = await loadInterFonts([400, 700, 800]);
 
   const match = await prisma.match.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
@@ -57,13 +59,13 @@ export default async function OgImage({ params }: Props) {
           justifyContent: "center",
           background: DEFAULT_BG,
           color: "#fff",
-          fontFamily: "sans-serif",
+          fontFamily: "Inter, sans-serif",
           fontSize: 48,
         }}
       >
         Partita non trovata
       </div>,
-      { ...size }
+      { ...size, fonts }
     );
   }
 
@@ -89,7 +91,7 @@ export default async function OgImage({ params }: Props) {
         justifyContent: "center",
         background: bg,
         color: "#fff",
-        fontFamily: "sans-serif",
+        fontFamily: "Inter, sans-serif",
         position: "relative",
         overflow: "hidden",
       }}
@@ -230,6 +232,6 @@ export default async function OgImage({ params }: Props) {
         {format(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
       </div>
     </div>,
-    { ...size }
+    { ...size, fonts }
   );
 }

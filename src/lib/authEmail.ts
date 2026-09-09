@@ -47,8 +47,8 @@ export function localeFromRequest(req: Request | undefined): string {
 /** Oggetto dell'email, nella lingua dell'utente. */
 export function magicLinkSubject(locale: string): string {
   return locale === "en"
-    ? "Your sign-in link — Karibu Baskin"
-    : "Il tuo link di accesso — Karibu Baskin";
+    ? "Your Karibu Baskin sign-in link"
+    : "Il tuo link di accesso a Karibu Baskin";
 }
 
 export async function sendMagicLinkEmail(params: EmailProviderSendVerificationRequestParams) {

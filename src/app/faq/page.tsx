@@ -6,8 +6,14 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import FaqAccordion from "@/components/common/FaqAccordion";
 import { getFaqs } from "@/lib/content/faqs";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = { title: "FAQ — Karibu Baskin" };
+export const metadata = buildMetadata({
+  title: "FAQ",
+  description:
+    "Le domande più frequenti su come iniziare a giocare a Baskin con il Karibu di Montecchio Maggiore.",
+  path: "/faq",
+});
 
 export default async function FaqPage() {
   const [t, locale] = await Promise.all([getTranslations("pages"), getLocale()]);

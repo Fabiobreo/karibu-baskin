@@ -209,7 +209,7 @@ export default function UsersTable({
                           fontWeight: 700,
                           fontSize: "0.72rem",
                         }}
-                        title="Autovalutazione — da confermare"
+                        title="Autovalutazione da confermare"
                       />
                       <Tooltip title="Conferma ruolo">
                         <IconButton

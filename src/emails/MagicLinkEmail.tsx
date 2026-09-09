@@ -47,7 +47,7 @@ const COPY = {
       `This link is valid for ${h} ${h === 1 ? "hour" : "hours"} and can be used once.`,
     fallback: "If the button does not work, copy and paste this address into your browser:",
     ignore:
-      "If you did not request this sign-in, you can ignore this email — nobody can get in without the link.",
+      "If you did not request this sign-in, you can ignore this email. Nobody can get in without the link.",
     footer: "You received this email because a sign-in was requested on karibubaskin.it",
   },
 };

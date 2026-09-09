@@ -111,7 +111,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       sendPushToAll(
         {
           title: "👤 Nuovo utente",
-          body: `${user.name ?? user.email} si è registrato — in attesa di conferma.`,
+          body: `${user.name ?? user.email} si è registrato ed è in attesa di conferma.`,
           url: "/admin/utenti",
         },
         true // solo admin

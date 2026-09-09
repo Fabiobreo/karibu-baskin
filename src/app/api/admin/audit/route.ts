@@ -96,7 +96,7 @@ async function resolveTargetLabels(
           });
           rows.forEach((r) => {
             result[`TrainingSession:${r.id}`] =
-              `${r.title} — ${new Date(r.date).toLocaleDateString("it-IT")}`;
+              `${r.title} (${new Date(r.date).toLocaleDateString("it-IT")})`;
           });
           break;
         }

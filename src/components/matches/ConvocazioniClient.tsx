@@ -201,7 +201,7 @@ export default function ConvocazioniClient({
       }
       if (errors.length > 0) {
         showToast({
-          message: `Errori salvataggio — ${errors.join("; ")}`,
+          message: `Errori nel salvataggio: ${errors.join("; ")}`,
           severity: "error",
         });
         return;
@@ -259,9 +259,9 @@ export default function ConvocazioniClient({
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {isMulti
-            ? "Amichevole interna — convoca i giocatori per ciascuna squadra"
+            ? "Amichevole interna: convoca i giocatori per ciascuna squadra"
             : `Stagione ${activeTeam.season}`}
-          {" — presenze calcolate sulle ultime 2 settimane"}
+          {". Presenze calcolate sulle ultime 2 settimane"}
           {windowEligibleSessions > 0
             ? ` (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento gestito" : "allenamenti gestiti"})`
             : " (nessun allenamento gestito in finestra)"}

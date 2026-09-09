@@ -12,8 +12,13 @@ import AddIcon from "@mui/icons-material/Add";
 import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = { title: "News — Karibu Baskin" };
+export const metadata = buildMetadata({
+  title: "News",
+  description: "Notizie, risultati e aggiornamenti dal Karibu Baskin di Montecchio Maggiore.",
+  path: "/news",
+});
 export const revalidate = 60;
 
 export default async function NewsPage() {

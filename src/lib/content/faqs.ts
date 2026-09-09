@@ -39,7 +39,7 @@ const FAQS_IT: FaqCategory[] = [
       },
       {
         q: "È necessario avere una diagnosi per partecipare?",
-        a: "No. Il Baskin accoglie tutti. Non è richiesta alcuna certificazione medica per partecipare agli allenamenti. Per le gare agonistiche ufficiali possono essere necessari documenti specifici — il nostro staff ti guiderà.",
+        a: "No. Il Baskin accoglie tutti. Non è richiesta alcuna certificazione medica per partecipare agli allenamenti. Per le gare agonistiche ufficiali possono essere necessari documenti specifici. Il nostro staff ti guiderà.",
       },
     ],
   },
@@ -93,7 +93,7 @@ const FAQS_EN: FaqCategory[] = [
       },
       {
         q: "Do I need a diagnosis to take part?",
-        a: "No. Baskin welcomes everyone. No medical certification is required to take part in training sessions. For official competitive matches specific documents may be needed — our staff will guide you.",
+        a: "No. Baskin welcomes everyone. No medical certification is required to take part in training sessions. For official competitive matches specific documents may be needed. Our staff will guide you.",
       },
     ],
   },

@@ -85,7 +85,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
       );
       setForm({ name: "", season: defaultSeason, championship: "" });
       showToast({
-        message: "Girone creato — aggiungi le squadre dalla pagina del girone",
+        message: "Girone creato. Aggiungi le squadre dalla pagina del girone",
         severity: "success",
       });
     });

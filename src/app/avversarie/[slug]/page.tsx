@@ -24,6 +24,7 @@ import { format } from "date-fns";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { buildMetadata } from "@/lib/seo";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -39,8 +40,19 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const team = await prisma.opposingTeam.findUnique({ where: { slug }, select: { name: true } });
-  if (!team) return { title: "Squadra avversaria" };
-  return { title: `${team.name} — Storico` };
+  if (!team) {
+    return buildMetadata({
+      title: "Squadra avversaria non trovata",
+      description: "Questa squadra avversaria non esiste o è stata rimossa.",
+      path: `/avversarie/${slug}`,
+      noindex: true,
+    });
+  }
+  return buildMetadata({
+    title: `Storico con ${team.name}`,
+    description: `Storico dei confronti tra il Karibu Baskin e ${team.name}: risultati, date e statistiche.`,
+    path: `/avversarie/${slug}`,
+  });
 }
 
 export default async function OpposingTeamPublicPage({ params }: Params) {

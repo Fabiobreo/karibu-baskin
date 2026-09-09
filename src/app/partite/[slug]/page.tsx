@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
+import { buildMetadata } from "@/lib/seo";
 import { Container, Typography, Box, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import MatchEditButton from "@/components/matches/MatchEditButton";
@@ -102,13 +103,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const [match, locale] = await Promise.all([getMatch(slug), getLocale()]);
   const dateLocale = getDateFnsLocale(locale);
-  if (!match) return { title: "Partita non trovata" };
+  if (!match) {
+    return buildMetadata({
+      title: "Partita non trovata",
+      description: "Questa partita non esiste o è stata rimossa.",
+      path: `/partite/${slug}`,
+      noindex: true,
+    });
+  }
   const score = match.ourScore !== null ? `${match.ourScore}–${match.theirScore}` : "vs";
   const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
-  return {
-    title: `${match.team.name} ${score} ${opponentName} | Karibu Baskin`,
-    description: `Dettaglio partita ${match.team.name} vs ${opponentName} — ${format(new Date(match.date), "d MMMM yyyy", { locale: dateLocale })}`,
-  };
+  const when = format(new Date(match.date), "d MMMM yyyy", { locale: dateLocale });
+  return buildMetadata({
+    title: `${match.team.name} ${score} ${opponentName}`,
+    description: `Dettaglio della partita ${match.team.name} contro ${opponentName} del ${when}: risultato, tabellino e statistiche.`,
+    path: `/partite/${match.slug ?? slug}`,
+    image: "own",
+  });
 }
 
 export default async function MatchDetailPage({ params }: Props) {

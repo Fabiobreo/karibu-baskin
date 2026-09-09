@@ -18,7 +18,7 @@ export default function OpenRegistrationsAlert({ sessionId, onOpened }: Props) {
     try {
       const res = await fetch(`/api/sessions/${sessionId}/open-registrations`, { method: "POST" });
       if (res.ok) {
-        showToast({ message: "Iscrizioni aperte — notifica inviata", severity: "success" });
+        showToast({ message: "Iscrizioni aperte (notifica inviata)", severity: "success" });
         onOpened?.();
       } else {
         const data = await res.json().catch(() => ({}));
