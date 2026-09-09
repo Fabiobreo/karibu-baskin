@@ -1191,5 +1191,13 @@
         "testo": "Raggiungiamo i 10 anni di attività con oltre 80 iscritti e organizziamo la \"Karibu Ten League\", un torneo celebrativo con 6 squadre partecipanti. Un traguardo che celebra la crescita dell'associazione e apre una nuova era: quella dei Montekki e dei Kapuleti."
       }
     ]
+  },
+  "install": {
+    "title": "Installa l'app",
+    "body": "Aggiungi Karibu Baskin alla schermata Home del telefono: si apre a schermo intero, si avvia più in fretta e funziona anche senza connessione.",
+    "install": "Installa",
+    "later": "Non ora",
+    "iosStep1": "Tocca Condividi nella barra di Safari",
+    "iosStep2": "Scegli «Aggiungi a Home»"
   }
 }

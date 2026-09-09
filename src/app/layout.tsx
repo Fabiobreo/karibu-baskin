@@ -15,6 +15,7 @@ import SponsorBanner from "@/components/common/SponsorBanner";
 import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
 import CookieBanner from "@/components/layout/CookieBanner";
+import InstallPrompt from "@/components/layout/InstallPrompt";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -57,8 +58,11 @@ export const metadata: Metadata = {
     title: "Karibu Baskin",
   },
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
   },
 };
 
@@ -87,6 +91,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
         suppressHydrationWarning
       >
+        {/* beforeinstallprompt puo scattare prima dell'idratazione: lo parcheggiamo
+            su window, InstallPrompt lo recupera al mount. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__kbInstallPrompt=e;});",
+          }}
+        />
         <AppRouterCacheProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <ServiceWorkerRegistrar />
@@ -101,6 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <BottomNav />
                 <SwUpdateToast />
                 <CookieBanner />
+                <InstallPrompt />
               </ToastProvider>
             </Providers>
           </NextIntlClientProvider>

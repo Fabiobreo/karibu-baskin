@@ -1,5 +1,5 @@
 // Service Worker — Karibu Baskin
-const VERSION = "karibu-v8";
+const VERSION = "karibu-v9";
 const STATIC_CACHE  = `${VERSION}-static`;
 const PAGE_CACHE    = `${VERSION}-pages`;
 const API_CACHE     = `${VERSION}-api`;
@@ -7,6 +7,9 @@ const API_CACHE     = `${VERSION}-api`;
 // Asset statici: cache-first, non cambiano spesso
 const PRECACHE_STATIC = [
   "/logo.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
   "/manifest.json",
   "/offline.html",
 ];
