@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { ChildCreateSchema } from "@/lib/schemas";
+import { generateChildSlug } from "@/lib/slugUtils";
 
 // GET /api/users/me/children — figli del genitore loggato
 export async function GET() {
@@ -55,10 +56,16 @@ export async function POST(req: NextRequest) {
 
   const { name, sportRole, sportRoleVariant, gender, birthDate } = parsed.data;
 
+  const trimmedName = name.trim();
+  // Come per gli utenti: senza slug il profilo pubblico del figlio è
+  // raggiungibile solo via id. La PATCH lo generava, la create no.
+  const slug = await generateChildSlug(trimmedName);
+
   const child = await prisma.child.create({
     data: {
       parentId: session.user.id,
-      name: name.trim(),
+      name: trimmedName,
+      ...(slug ? { slug } : {}),
       sportRole: sportRole ?? null,
       sportRoleVariant: sportRoleVariant ?? null,
       gender: gender ?? null,

@@ -9,6 +9,7 @@ import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { generateUserSlug } from "@/lib/slugUtils";
 import {
   VALID_APP_ROLES,
   VALID_ATHLETE_STATUSES,
@@ -69,7 +70,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
 
   if (body.name !== undefined && isAdmin) {
     const trimmed = body.name.trim().slice(0, 100);
-    if (trimmed) data.name = trimmed;
+    if (trimmed) {
+      data.name = trimmed;
+      // Se l'utente non ha ancora uno slug (pre-creato dall'admin e mai
+      // loggato) lo genera ora, altrimenti il profilo pubblico resta
+      // raggiungibile solo via id. Uno slug esistente non viene mai
+      // riscritto: gli URL già condivisi devono restare validi.
+      const cur = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { slug: true },
+      });
+      if (cur && !cur.slug) {
+        const generated = await generateUserSlug(trimmed);
+        if (generated) data.slug = generated;
+      }
+    }
   }
 
   if (body.email !== undefined && isAdmin) {

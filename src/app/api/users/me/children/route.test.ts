@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
-    child: { findMany: vi.fn(), create: vi.fn() },
+    child: { findMany: vi.fn(), create: vi.fn(), findUnique: vi.fn() },
   },
 }));
 
@@ -21,7 +21,7 @@ import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 
-type PrismaMock = { child: { findMany: Mock; create: Mock } };
+type PrismaMock = { child: { findMany: Mock; create: Mock; findUnique: Mock } };
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
 
@@ -97,6 +97,8 @@ describe("POST /api/users/me/children", () => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "user-1" } });
     p.child.create.mockResolvedValue({ ...baseChild, id: "child-new" });
+    // generateChildSlug: nessuno slug occupato
+    p.child.findUnique.mockResolvedValue(null);
   });
 
   const makeRequest = (body: unknown) =>
@@ -183,5 +185,11 @@ describe("POST /api/users/me/children", () => {
     await POST(req);
     const call = p.child.create.mock.calls[0][0].data;
     expect(call.birthDate).toBeInstanceOf(Date);
+  });
+
+  it("genera lo slug dal nome alla creazione", async () => {
+    await POST(makeRequest({ name: "Luca Rossi", sportRole: 3, parentalConsent: true }));
+    const call = p.child.create.mock.calls[0][0].data;
+    expect(call.slug).toBe("luca-rossi");
   });
 });

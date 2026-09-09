@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import type { AppRole, Gender, Prisma } from "@prisma/client";
 import { isAdminUser } from "@/lib/apiAuth";
 import { VALID_APP_ROLES, VALID_GENDERS, VALID_SPORT_ROLES } from "@/lib/validators";
+import { generateUserSlug } from "@/lib/slugUtils";
 
 // GET /api/users — lista tutti gli utenti (solo ADMIN)
 // Supporta: ?search=&appRole=&sportRole=&gender=&sortBy=createdAt&sortDir=desc&page=1&limit=25
@@ -118,10 +119,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Esiste già un utente con questa email" }, { status: 409 });
   }
 
+  const name = body.name?.trim() || null;
+  // Lo slug serve al profilo pubblico: senza, i link cadono sul fallback all'id
+  // (/giocatori/<cuid>). Il callback signIn lo genera solo al primo accesso,
+  // quindi un utente pre-creato e mai loggato ne resterebbe privo.
+  const slug = name ? await generateUserSlug(name) : "";
+
   const user = await prisma.user.create({
     data: {
       email,
-      name: body.name?.trim() || null,
+      name,
+      ...(slug ? { slug } : {}),
       appRole: body.appRole ?? "GUEST",
       sportRole: body.sportRole ?? null,
       gender: body.gender ?? null,

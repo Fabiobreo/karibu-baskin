@@ -301,4 +301,16 @@ describe("POST /api/users", () => {
     const data = p.user.create.mock.calls[0][0].data;
     expect(data.name).toBe("Spazi");
   });
+
+  it("genera lo slug dal nome alla creazione", async () => {
+    await POST(makePost({ email: "ok@example.com", name: "Marco Cenci" }));
+    const data = p.user.create.mock.calls[0][0].data;
+    expect(data.slug).toBe("marco-cenci");
+  });
+
+  it("non imposta lo slug se il nome manca", async () => {
+    await POST(makePost({ email: "ok@example.com" }));
+    const data = p.user.create.mock.calls[0][0].data;
+    expect(data.slug).toBeUndefined();
+  });
 });
