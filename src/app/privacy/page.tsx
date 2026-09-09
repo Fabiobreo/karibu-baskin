@@ -163,13 +163,14 @@ export default function PrivacyPage() {
                 della sede) — Data Privacy Framework UE-USA.
               </Li>
               <Li>
-                <strong>Resend</strong> (invio email transazionali del modulo contatti) — SCC.
+                <strong>Resend</strong> (invio email transazionali: modulo contatti e link di
+                accesso al sito) — SCC.
               </Li>
               <Li>
                 <strong>Functional Software, Inc. (Sentry)</strong> (monitoraggio errori e
-                registrazione tecnica delle sessioni a fini di diagnostica) — Stati Uniti; SCC. La
-                registrazione delle sessioni maschera per impostazione predefinita testi e dati
-                inseriti nei moduli.
+                registrazione tecnica delle sessioni, solo in caso di errore, a fini di diagnostica)
+                — Stati Uniti; SCC. La registrazione delle sessioni maschera per impostazione
+                predefinita testi e dati inseriti nei moduli.
               </Li>
             </Ul>
             <P>

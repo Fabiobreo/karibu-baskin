@@ -6,8 +6,11 @@ if (dsn) {
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV,
-    // Campiona il 10% delle sessioni replay per non consumare quota
-    replaysSessionSampleRate: 0.1,
+    // Nessuna registrazione della navigazione ordinaria: fra gli utenti ci sono
+    // minori e una sessione in cui non succede nulla non ha valore diagnostico.
+    // Si registra solo quando un errore si verifica davvero (riga sotto), che è
+    // l'unico caso in cui il replay serve.
+    replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 1.0,
     integrations: [Sentry.replayIntegration()],
   });
