@@ -22,6 +22,7 @@ import { ROLE_COLORS, ROLES } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { readError } from "@/lib/fetchJson";
 
 interface Registration {
   id: string;
@@ -285,8 +286,8 @@ export default function RosterByRole({
     mutationFn: async (reg: Registration) => {
       const res = await fetch(`/api/registrations/${reg.id}`, { method: "DELETE" });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Errore durante la disiscrizione");
+        const message = await readError(res);
+        throw new Error(message);
       }
     },
     onSuccess: () => onUnregistered?.(),

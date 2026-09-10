@@ -22,6 +22,7 @@ import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import EmptyState from "@/components/common/EmptyState";
+import { readError } from "@/lib/fetchJson";
 
 interface GalleryAdminPost {
   id: string;
@@ -54,8 +55,8 @@ export default function AdminGalleryClient({
     setSyncing(true);
     try {
       const res = await fetch("/api/gallery/sync", { method: "POST" });
+      if (!res.ok) throw new Error(await readError(res));
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? data.reason ?? "Errore durante il sync");
       showToast({
         message: `Sync completato: ${data.created} nuovi, ${data.updated} aggiornati, ${data.pruned} rimossi.`,
         severity: "success",
@@ -83,7 +84,7 @@ export default function AdminGalleryClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hidden: next }),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      if (!res.ok) throw new Error(await readError(res));
       setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, hidden: next } : p)));
       showToast({ message: next ? "Post nascosto" : "Post visibile", severity: "success" });
     } catch (err) {
@@ -105,7 +106,7 @@ export default function AdminGalleryClient({
     setBusyId(post.id);
     try {
       const res = await fetch(`/api/gallery/${post.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      if (!res.ok) throw new Error(await readError(res));
       setPosts((prev) => prev.filter((p) => p.id !== post.id));
       showToast({ message: "Post eliminato", severity: "success" });
     } catch (err) {

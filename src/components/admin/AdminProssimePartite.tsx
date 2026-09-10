@@ -140,7 +140,7 @@ export default async function AdminProssimePartite() {
               >
                 <Typography
                   variant="caption"
-                  color="primary"
+                  color="primary.onLight"
                   sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
                 >
                   Convoca →

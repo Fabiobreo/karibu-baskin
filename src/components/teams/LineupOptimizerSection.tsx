@@ -72,7 +72,12 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
             {result.feasibleCount} formazioni valide
           </Typography>
         )}
-        <IconButton size="small" sx={{ p: 0 }}>
+        <IconButton
+          size="small"
+          sx={{ p: 0 }}
+          aria-label={expanded ? "Comprimi analisi formazione" : "Espandi analisi formazione"}
+          aria-expanded={expanded}
+        >
           {expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
         </IconButton>
       </Box>
@@ -151,7 +156,7 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
         <Typography
           variant="overline"
           fontWeight={800}
-          color="primary"
+          color="primary.onLight"
           sx={{ letterSpacing: "0.08em" }}
         >
           Formazione Ottimale

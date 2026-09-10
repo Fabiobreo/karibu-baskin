@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import Link from "next/link";
+import StatAbbr from "@/components/teams/StatAbbr";
 import { useTranslations } from "next-intl";
 import type { StandingEntry } from "@/lib/season/standings";
 
@@ -45,7 +46,7 @@ export default function StandingsSection({
           <Typography
             variant="caption"
             sx={{
-              color: "primary.main",
+              color: "primary.onLight",
               fontWeight: 700,
               fontSize: "0.68rem",
               "&:hover": { textDecoration: "underline" },
@@ -73,14 +74,9 @@ export default function StandingsSection({
               <TableCell sx={{ fontWeight: 700, fontSize: "0.65rem", py: 0.75 }}>
                 {tStandings("colTeam")}
               </TableCell>
-              {[
-                tStandings("colPlayed"),
-                tStandings("colWins"),
-                tStandings("colDraws"),
-                tStandings("colLosses"),
-              ].map((h) => (
+              {(["colPlayed", "colWins", "colDraws", "colLosses"] as const).map((key) => (
                 <TableCell
-                  key={h}
+                  key={key}
                   align="center"
                   sx={{
                     fontWeight: 700,
@@ -90,7 +86,7 @@ export default function StandingsSection({
                     width: 28,
                   }}
                 >
-                  {h}
+                  <StatAbbr short={tStandings(key)} full={tStandings(`${key}Full`)} />
                 </TableCell>
               ))}
               <TableCell
@@ -98,12 +94,12 @@ export default function StandingsSection({
                 sx={{
                   fontWeight: 700,
                   fontSize: "0.65rem",
-                  color: "primary.main",
+                  color: "primary.onLight",
                   py: 0.75,
                   width: 36,
                 }}
               >
-                {tStandings("colPoints")}
+                <StatAbbr short={tStandings("colPoints")} full={tStandings("colPointsFull")} />
               </TableCell>
             </TableRow>
           </TableHead>
@@ -137,14 +133,25 @@ export default function StandingsSection({
                   <TableCell
                     key={j}
                     align="center"
-                    sx={{ fontSize: "0.75rem", color: "text.secondary", py: 1 }}
+                    sx={{
+                      fontSize: "0.75rem",
+                      color: "text.secondary",
+                      py: 1,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
                   >
                     {v}
                   </TableCell>
                 ))}
                 <TableCell
                   align="center"
-                  sx={{ fontSize: "0.82rem", fontWeight: 800, color: "primary.main", py: 1 }}
+                  sx={{
+                    fontSize: "0.82rem",
+                    fontWeight: 800,
+                    color: "primary.onLight",
+                    py: 1,
+                    fontVariantNumeric: "tabular-nums",
+                  }}
                 >
                   {row.points}
                 </TableCell>

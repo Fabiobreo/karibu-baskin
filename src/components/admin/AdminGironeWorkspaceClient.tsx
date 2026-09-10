@@ -17,6 +17,7 @@ import {
   InputLabel,
   Alert,
   Table,
+  TableContainer,
   TableHead,
   TableBody,
   TableRow,
@@ -59,6 +60,7 @@ import MatchResultDialog, {
   type MatchResultSavedFields,
 } from "@/components/matches/MatchResultDialog";
 import GroupCsvImportDialog from "@/components/admin/GroupCsvImportDialog";
+import { readError } from "@/lib/fetchJson";
 
 type OpposingTeam = MatchFormOpposingTeam & { slug: string | null };
 type Team = MatchFormTeam;
@@ -235,8 +237,8 @@ export default function AdminGironeWorkspaceClient({
       body: JSON.stringify({ opposingTeamId: opposingTeam.id }),
     });
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setOppError(data.error ?? "Errore nell'associazione");
+      const message = await readError(res);
+      setOppError(message);
       return false;
     }
     setExplicitTeams((prev) =>
@@ -405,7 +407,7 @@ export default function AdminGironeWorkspaceClient({
           </Typography>
         </Breadcrumbs>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-          <Typography variant="h4" fontWeight={800}>
+          <Typography variant="h4" component="h1" fontWeight={800}>
             {group.name}
           </Typography>
           {ourTeamsInGroup.map((t) => (
@@ -723,81 +725,83 @@ export default function AdminGironeWorkspaceClient({
             Nessun risultato esterno inserito.
           </Typography>
         ) : (
-          <Table size="small" aria-label="Risultati altre squadre">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 700 }}>
-                  Ris.
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {gmMatches.map((m) => (
-                <TableRow key={m.id} hover>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {m.matchday ?? "—"}
-                    </Typography>
+          <TableContainer>
+            <Table size="small" aria-label="Risultati altre squadre">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700 }}>
+                    Ris.
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {m.date ? format(new Date(m.date), "d MMM yy", { locale: it }) : "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {m.homeTeam.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography variant="body2" fontWeight={700}>
-                      {m.homeScore !== null && m.awayScore !== null
-                        ? `${m.homeScore} – ${m.awayScore}`
-                        : "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" fontWeight={600}>
-                      {m.awayTeam.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      aria-label="Modifica partita"
-                      onClick={() => {
-                        setGmForm({
-                          matchday: m.matchday !== null ? String(m.matchday) : "",
-                          date: m.date ? m.date.slice(0, 10) : "",
-                          homeTeamId: m.homeTeamId,
-                          awayTeamId: m.awayTeamId,
-                          homeScore: m.homeScore !== null ? String(m.homeScore) : "",
-                          awayScore: m.awayScore !== null ? String(m.awayScore) : "",
-                        });
-                        setEditGm(m);
-                        setGmError("");
-                      }}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      aria-label="Elimina partita"
-                      onClick={() => handleDeleteGm(m.id)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
+                  <TableCell />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {gmMatches.map((m) => (
+                  <TableRow key={m.id} hover>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {m.matchday ?? "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {m.date ? format(new Date(m.date), "d MMM yy", { locale: it }) : "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600}>
+                        {m.homeTeam.name}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography variant="body2" fontWeight={700}>
+                        {m.homeScore !== null && m.awayScore !== null
+                          ? `${m.homeScore} – ${m.awayScore}`
+                          : "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600}>
+                        {m.awayTeam.name}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        aria-label="Modifica partita"
+                        onClick={() => {
+                          setGmForm({
+                            matchday: m.matchday !== null ? String(m.matchday) : "",
+                            date: m.date ? m.date.slice(0, 10) : "",
+                            homeTeamId: m.homeTeamId,
+                            awayTeamId: m.awayTeamId,
+                            homeScore: m.homeScore !== null ? String(m.homeScore) : "",
+                            awayScore: m.awayScore !== null ? String(m.awayScore) : "",
+                          });
+                          setEditGm(m);
+                          setGmError("");
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        aria-label="Elimina partita"
+                        onClick={() => handleDeleteGm(m.id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
       </Paper>
 
@@ -955,8 +959,8 @@ export default function AdminGironeWorkspaceClient({
                   body: JSON.stringify({ competitiveTeamId: ourTeamSelectedId }),
                 });
                 if (!res.ok) {
-                  const data = await res.json().catch(() => ({}));
-                  setOurTeamError(data.error ?? "Errore nell'associazione");
+                  const message = await readError(res);
+                  setOurTeamError(message);
                   return;
                 }
                 const created = (await res.json()) as Team;

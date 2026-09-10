@@ -4,6 +4,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { alpha } from "@mui/material/styles";
 import { useLocaleSwitch } from "@/context/LocaleContext";
 import { LOCALES, type Locale } from "@/i18n/locales";
+import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 
 interface LanguageSwitcherProps {
   /** Stili pensati per superfici scure (header/drawer): testo bianco trasparente */
@@ -20,16 +21,16 @@ export default function LanguageSwitcher({ onDark = false }: LanguageSwitcherPro
       onChange={(_, val: Locale | null) => {
         if (val) setLocale(val);
       }}
-      size="small"
       disabled={isPending}
       aria-label="Lingua / Language"
-      sx={{ height: 28 }}
     >
       {LOCALES.map((l) => (
         <ToggleButton
           key={l}
           value={l}
           sx={{
+            // Erano 30x28: sotto la soglia tattile.
+            ...TOUCH_TARGET_MIN,
             px: 1,
             py: 0,
             fontSize: "0.72rem",
@@ -44,7 +45,7 @@ export default function LanguageSwitcher({ onDark = false }: LanguageSwitcherPro
                 bgcolor: (theme) => alpha(theme.palette.common.white, 0.08),
               },
               "&.Mui-selected": {
-                color: "primary.main",
+                color: "primary.light",
                 bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
                 "&:hover": {
                   bgcolor: (theme) => alpha(theme.palette.primary.main, 0.2),

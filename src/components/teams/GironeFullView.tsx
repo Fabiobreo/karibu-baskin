@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { slugify } from "@/lib/slugUtils";
 import { contrastText } from "@/lib/colorUtils";
+import StatAbbr from "@/components/teams/StatAbbr";
 import type { StandingEntry } from "@/lib/season/standings";
 
 export type OurMatchData = {
@@ -68,10 +69,14 @@ interface Props {
   matchdays: MatchdayBucket[];
 }
 
+// Token del tema: i valori vivono in `palette.match` (vedi src/theme.ts).
+// Cifre a larghezza fissa: senza, le colonne numeriche non si incolonnano.
+const NUMERIC_CELL = { fontVariantNumeric: "tabular-nums" } as const;
+
 const RESULT_COLORS: Record<string, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
+  WIN: "match.win",
+  LOSS: "match.loss",
+  DRAW: "match.draw",
 };
 
 function bucketHasPlayed(b: MatchdayBucket): boolean {
@@ -183,18 +188,27 @@ export default function GironeFullView({
               >
                 <TableCell sx={{ pl: 2, width: 28 }}>#</TableCell>
                 <TableCell>{t("colTeam")}</TableCell>
-                <TableCell align="center">{t("colPlayed")}</TableCell>
-                <TableCell align="center">{t("colWins")}</TableCell>
-                <TableCell align="center">{t("colDraws")}</TableCell>
-                <TableCell align="center">{t("colLosses")}</TableCell>
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {t("colPointsFor")}
-                </TableCell>
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                  {t("colPointsAgainst")}
-                </TableCell>
-                <TableCell align="center" sx={{ color: "primary.main !important" }}>
-                  {t("colPoints")}
+                {(["colPlayed", "colWins", "colDraws", "colLosses"] as const).map((key) => (
+                  <TableCell key={key} align="center">
+                    <StatAbbr short={t(key)} full={t(`${key}Full`)} />
+                  </TableCell>
+                ))}
+                {(["colPointsFor", "colPointsAgainst"] as const).map((key) => (
+                  <TableCell
+                    key={key}
+                    align="center"
+                    sx={{ display: { xs: "none", sm: "table-cell" } }}
+                  >
+                    <StatAbbr short={t(key)} full={t(`${key}Full`)} />
+                  </TableCell>
+                ))}
+                <TableCell
+                  align="center"
+                  // Il token va risolto qui: `sx` non lo risolve piu' quando la
+                  // stringa porta anche `!important`, e la regola veniva scartata.
+                  sx={(theme) => ({ color: `${theme.palette.primary.onLight} !important` })}
+                >
+                  <StatAbbr short={t("colPoints")} full={t("colPointsFull")} />
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -205,8 +219,13 @@ export default function GironeFullView({
                   <TableRow
                     key={s.id}
                     sx={{
-                      bgcolor: s.isOurs ? "primary.main" : undefined,
-                      "& td": s.isOurs ? { color: "#fff", fontWeight: 700 } : {},
+                      // La nostra riga era arancione pieno con testo bianco:
+                      // 3,79:1 su testo di tabella. Ora e' una velatura, e il
+                      // grassetto fa il resto.
+                      bgcolor: s.isOurs
+                        ? (theme) => alpha(theme.palette.primary.main, 0.14)
+                        : undefined,
+                      "& td": s.isOurs ? { color: "text.primary", fontWeight: 700 } : {},
                     }}
                   >
                     <TableCell sx={{ pl: 2 }}>
@@ -238,25 +257,21 @@ export default function GironeFullView({
                         </Typography>
                       )}
                     </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.played}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.won}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.drawn}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Typography variant="body2">{s.lost}</Typography>
-                    </TableCell>
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      <Typography variant="body2">{s.goalsFor}</Typography>
-                    </TableCell>
-                    <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                      <Typography variant="body2">{s.goalsAgainst}</Typography>
-                    </TableCell>
-                    <TableCell align="center">
+                    {[s.played, s.won, s.drawn, s.lost].map((v, j) => (
+                      <TableCell key={j} align="center" sx={NUMERIC_CELL}>
+                        <Typography variant="body2">{v}</Typography>
+                      </TableCell>
+                    ))}
+                    {[s.goalsFor, s.goalsAgainst].map((v, j) => (
+                      <TableCell
+                        key={j}
+                        align="center"
+                        sx={{ ...NUMERIC_CELL, display: { xs: "none", sm: "table-cell" } }}
+                      >
+                        <Typography variant="body2">{v}</Typography>
+                      </TableCell>
+                    ))}
+                    <TableCell align="center" sx={NUMERIC_CELL}>
                       <Typography variant="body2" fontWeight={800}>
                         {s.points}
                       </Typography>
@@ -363,7 +378,7 @@ export default function GironeFullView({
                               size="small"
                               sx={{
                                 bgcolor: RESULT_COLORS[m.result],
-                                color: "#fff",
+                                color: "common.white",
                                 fontWeight: 700,
                                 height: 18,
                                 fontSize: "0.65rem",

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Box, Popover, TextField, Button, Typography, CircularProgress } from "@mui/material";
 import { useToast } from "@/context/ToastContext";
+import { readError } from "@/lib/fetchJson";
 
 interface Props {
   groupId: string;
@@ -64,8 +65,8 @@ export default function GroupMatchInlineScore({
         body: JSON.stringify({ homeScore: h, awayScore: a }),
       });
       if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as { error?: string };
-        showToast({ message: err.error ?? "Errore nel salvataggio", severity: "error" });
+        const message = await readError(res);
+        showToast({ message: message, severity: "error" });
         return;
       }
       onSaved(matchId, { homeScore: h, awayScore: a });

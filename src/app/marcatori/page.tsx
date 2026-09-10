@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -10,7 +9,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
 import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getActiveSeason } from "@/lib/season/activeSeason";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
@@ -25,41 +24,43 @@ export const revalidate = 3600;
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function MarcatoriPage({ searchParams }: Props) {
-  const t = await getTranslations("scorers");
+  const [t, tCommon] = await Promise.all([getTranslations("scorers"), getTranslations("common")]);
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null;
 
-  const currentSeason = getCurrentSeason();
-  const activeSeason = seasonFilter ?? currentSeason;
+  // Stagione attiva del sito + stagioni con statistiche (per i chip). Senza
+  // filtro esplicito si mostra la stagione da visualizzare, che ricade
+  // sull'ultima popolata quando la attiva non è ancora iniziata.
+  const {
+    activeSeason: siteSeason,
+    displaySeason,
+    isFallback,
+    seasons: chipSeasons,
+    hasAnyData,
+  } = await getActiveSeason("playerStats");
+  const activeSeason = seasonFilter ?? displaySeason;
+  // La riga di ricaduta si mostra solo quando l'utente non ha scelto lui la stagione.
+  const showFallbackNotice = !seasonFilter && isFallback;
 
-  const [statSeasons, allStats] = await Promise.all([
-    // Stagioni con statistiche disponibili
-    prisma.competitiveTeam.findMany({
-      where: { matches: { some: { playerStats: { some: {} } } } },
-      select: { season: true },
-      distinct: ["season"],
-      orderBy: { season: "desc" },
-    }),
-    // Player stats per la stagione, separati per "prestito" vs principale
-    // così possiamo mostrare la breakdown X (+Y) in tabella.
-    prisma.playerMatchStats.groupBy({
-      by: ["userId", "childId", "isLoan"],
-      where: {
-        OR: [{ userId: { not: null } }, { childId: { not: null } }],
-        match: { team: { season: activeSeason } },
-      },
-      _sum: {
-        points: true,
-        twoPointers: true,
-        threePointers: true,
-        freeThrows: true,
-        fouls: true,
-        illegalFouls: true,
-        shotsAttempted: true,
-      },
-      _count: { matchId: true },
-    }),
-  ]);
+  // Player stats per la stagione, separati per "prestito" vs principale
+  // così possiamo mostrare la breakdown X (+Y) in tabella.
+  const allStats = await prisma.playerMatchStats.groupBy({
+    by: ["userId", "childId", "isLoan"],
+    where: {
+      OR: [{ userId: { not: null } }, { childId: { not: null } }],
+      match: { team: { season: activeSeason } },
+    },
+    _sum: {
+      points: true,
+      twoPointers: true,
+      threePointers: true,
+      freeThrows: true,
+      fouls: true,
+      illegalFouls: true,
+      shotsAttempted: true,
+    },
+    _count: { matchId: true },
+  });
 
   // Conteggio premi MVP per giocatore nella stagione attiva (non splittato
   // prestito/principale: il modello MatchMvp non traccia isLoan).
@@ -220,20 +221,22 @@ export default async function MarcatoriPage({ searchParams }: Props) {
       };
     });
 
-  const availableSeasons = statSeasons.map((s) => s.season);
+  // La stagione attiva è sempre fra i chip, anche quando è vuota: così si può
+  // tornarci dopo una ricaduta. Un filtro su una stagione fuori elenco si aggiunge.
+  const availableSeasons = chipSeasons.includes(activeSeason)
+    ? chipSeasons
+    : [...chipSeasons, activeSeason].sort((a, b) => b.localeCompare(a));
   const hasStats = statRows.length > 0;
 
   return (
     <>
-      <SiteHeader />
-
       {/* Hero */}
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <LeaderboardIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
             variant="overline"
-            color="primary.main"
+            color="primary.light"
             fontWeight={700}
             sx={{ letterSpacing: "0.12em" }}
           >
@@ -281,7 +284,9 @@ export default async function MarcatoriPage({ searchParams }: Props) {
         </Box>
       </PageHero>
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      {/* `lg` e non `md`: questa e' l'unica tabella larga del sito, e dentro un
+          contenitore da testo l'ultima colonna restava tagliata. */}
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {/* Filtri stagione */}
         {availableSeasons.length > 0 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 3, alignItems: "center" }}>
@@ -311,6 +316,12 @@ export default async function MarcatoriPage({ searchParams }: Props) {
           </Box>
         )}
 
+        {showFallbackNotice && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {tCommon("seasonNotStarted", { active: siteSeason, shown: displaySeason })}
+          </Typography>
+        )}
+
         {hasStats ? (
           <>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -321,8 +332,12 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             </Typography>
             <ClassificaInternaTable rows={statRows} />
           </>
-        ) : availableSeasons.length > 0 ? (
-          <EmptyState title={t("empty", { season: activeSeason })} />
+        ) : hasAnyData ? (
+          <EmptyState
+            icon={<LeaderboardIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            title={t("empty", { season: activeSeason })}
+            message={t("emptySeasonDesc")}
+          />
         ) : (
           <EmptyState
             icon={<LeaderboardIcon sx={{ fontSize: 56, color: "text.disabled" }} />}

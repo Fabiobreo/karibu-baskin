@@ -127,7 +127,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
             <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
               <Typography
                 variant="caption"
-                color="primary"
+                color="primary.onLight"
                 sx={{ "&:hover": { textDecoration: "underline" } }}
               >
                 Vedi tutti →

@@ -20,6 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useRouter } from "next/navigation";
+import { readError } from "@/lib/fetchJson";
 
 export interface OpposingTeamEditButtonProps {
   teamId: string;
@@ -82,9 +83,13 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
       fd.append("folder", "opponents");
       fd.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
-      if (!res.ok || !data.url) {
-        setError(data.error ?? "Errore durante il caricamento dell'immagine");
+      if (!res.ok) {
+        setError(await readError(res));
+        return;
+      }
+      const data = (await res.json().catch(() => ({}))) as { url?: string };
+      if (!data.url) {
+        setError("Errore durante il caricamento dell'immagine");
         return;
       }
       setImageUrl(data.url);
@@ -117,8 +122,8 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
         }),
       });
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Errore nel salvataggio");
+        const message = await readError(res);
+        setError(message);
         setLoading(false);
         return;
       }
@@ -139,7 +144,7 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
           size="small"
           aria-label="Modifica squadra avversaria"
           sx={{
-            color: "#fff",
+            color: "common.white",
             bgcolor: "rgba(255,255,255,0.1)",
             border: "1px solid rgba(255,255,255,0.2)",
             "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },

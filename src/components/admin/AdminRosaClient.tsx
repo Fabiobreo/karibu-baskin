@@ -41,6 +41,7 @@ import {
 import { useToast } from "@/context/ToastContext";
 import { contrastText } from "@/lib/colorUtils";
 import type { Gender } from "@prisma/client";
+import { readError } from "@/lib/fetchJson";
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
@@ -222,7 +223,7 @@ export default function AdminRosaClient({
             entry.kind === "child" ? { childId: entry.id } : { userId: entry.id }
           ),
         });
-        if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+        if (!res.ok) throw new Error(await readError(res));
         const created = await res.json();
         const newMembership: Membership = {
           id: created.id,

@@ -46,7 +46,7 @@ export default async function LatestNewsHero() {
           <Box>
             <Typography
               variant="overline"
-              color="primary"
+              color="primary.onLight"
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
             >
@@ -54,6 +54,7 @@ export default async function LatestNewsHero() {
             </Typography>
             <Typography
               variant="h5"
+              component="h2"
               fontWeight={800}
               sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
             >
@@ -82,7 +83,7 @@ export default async function LatestNewsHero() {
           <Link href="/news" style={{ textDecoration: "none" }}>
             <Typography
               variant="body2"
-              color="primary"
+              color="primary.onLight"
               sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
             >
               {tm("homeSeeAll")}

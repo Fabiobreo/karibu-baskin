@@ -20,6 +20,11 @@ export default async function AttendanceSection({
       <Typography variant="subtitle1" fontWeight={700} gutterBottom>
         {t("trainingAttendance")}
       </Typography>
+      {seasons.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          {t("attendanceEmpty")}
+        </Typography>
+      )}
       <Stack spacing={1}>
         {seasons.map(([season, count]) => (
           <ProfileRow key={season} label={t("seasonLabel", { season })}>

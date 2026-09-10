@@ -5,8 +5,9 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { Container, Typography, Box, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { brandColor } from "@/lib/heroStyles";
+import { visuallyHidden } from "@mui/utils";
 import MatchEditButton from "@/components/matches/MatchEditButton";
-import SiteHeader from "@/components/layout/SiteHeader";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
 import MatchAvailabilityCard, {
   type MatchAvailabilityEntity,
@@ -27,7 +28,9 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { ROLE_COLORS } from "@/lib/constants";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
+import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
+import { onHover } from "@/lib/hoverStyles";
 
 export const revalidate = 3600;
 
@@ -326,8 +329,6 @@ export default async function MatchDetailPage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader />
-
       <Box
         style={{
           backgroundImage: match.imageUrl
@@ -365,7 +366,7 @@ export default async function MatchDetailPage({ params }: Props) {
               sx={{
                 color: "rgba(255,255,255,0.65)",
                 fontWeight: 500,
-                "&:hover": { color: "#fff" },
+                "&:hover": { color: brandColor.white },
               }}
             >
               {t("breadcrumb")}
@@ -390,7 +391,7 @@ export default async function MatchDetailPage({ params }: Props) {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: alpha("#E65100", 0.1),
+            backgroundColor: alpha(brandColor.orange, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -403,7 +404,7 @@ export default async function MatchDetailPage({ params }: Props) {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: alpha("#E65100", 0.06),
+            backgroundColor: alpha(brandColor.orange, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -453,6 +454,11 @@ export default async function MatchDetailPage({ params }: Props) {
         <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
           {/* Contenuto centrato */}
           <Box sx={{ textAlign: "center" }}>
+            {/* Il titolo della partita e composto da piu blocchi visivi (squadre,
+                punteggio): l'h1 riassume la partita per chi naviga a voce. */}
+            <Typography variant="h1" component="h1" sx={visuallyHidden}>
+              {match.team.name} vs {opponentName}
+            </Typography>
             {/* Team + championship */}
             <Box
               sx={{
@@ -473,7 +479,8 @@ export default async function MatchDetailPage({ params }: Props) {
                   size="small"
                   sx={{
                     bgcolor: match.team.color ?? "primary.main",
-                    color: "common.white",
+                    // Il colore squadra arriva dal DB: l'etichetta lo segue.
+                    color: match.team.color ? contrastText(match.team.color) : "common.white",
                     fontWeight: 700,
                     cursor: "pointer",
                     "&:hover": { opacity: 0.85 },
@@ -483,7 +490,7 @@ export default async function MatchDetailPage({ params }: Props) {
               {match.group?.name && (
                 <Typography
                   variant="caption"
-                  sx={{ color: alpha("#ffffff", 0.5), fontWeight: 600 }}
+                  sx={{ color: alpha(brandColor.white, 0.5), fontWeight: 600 }}
                 >
                   {match.group.name}
                 </Typography>
@@ -493,8 +500,8 @@ export default async function MatchDetailPage({ params }: Props) {
                 size="small"
                 variant="outlined"
                 sx={{
-                  color: alpha("#ffffff", 0.6),
-                  borderColor: alpha("#ffffff", 0.2),
+                  color: alpha(brandColor.white, 0.6),
+                  borderColor: alpha(brandColor.white, 0.2),
                   fontSize: "0.68rem",
                 }}
               />
@@ -542,7 +549,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             fontSize: { xs: "1.8rem", md: "2.8rem" },
                             fontWeight: 900,
                             lineHeight: 1.05,
-                            color: alpha("#ffffff", 0.92),
+                            color: alpha(brandColor.white, 0.92),
                             wordBreak: "break-word",
                           }}
                         >
@@ -555,7 +562,7 @@ export default async function MatchDetailPage({ params }: Props) {
                         key="vs"
                         sx={{
                           flex: "0 0 auto",
-                          color: alpha("#ffffff", 0.35),
+                          color: alpha(brandColor.white, 0.65),
                           fontWeight: 800,
                           fontSize: { xs: "1.2rem", md: "1.6rem" },
                           letterSpacing: "0.05em",
@@ -594,10 +601,10 @@ export default async function MatchDetailPage({ params }: Props) {
                           animation: "karibuMatchPulse 1.6s ease-in-out infinite",
                           "@keyframes karibuMatchPulse": {
                             "0%, 100%": {
-                              boxShadow: `0 0 0 0 ${alpha("#E65100", 0.7)}`,
+                              boxShadow: `0 0 0 0 ${alpha(brandColor.orange, 0.7)}`,
                             },
                             "50%": {
-                              boxShadow: `0 0 0 8px ${alpha("#E65100", 0)}`,
+                              boxShadow: `0 0 0 8px ${alpha(brandColor.orange, 0)}`,
                             },
                           },
                         }}
@@ -633,10 +640,14 @@ export default async function MatchDetailPage({ params }: Props) {
                   );
                   const them = (
                     <Box key="them" sx={{ textAlign: "center", minWidth: 100 }}>
+                      {/* La gerarchia "noi contro loro" resta, ma la fa il peso
+                          (700 contro 900) e la dimensione, non un bianco spento:
+                          al 55% il punteggio avversario spariva nel verde della
+                          vittoria. */}
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha("#ffffff", 0.45),
+                          color: alpha(brandColor.white, 0.8),
                           textTransform: "uppercase",
                           letterSpacing: "0.08em",
                           fontWeight: 700,
@@ -648,10 +659,10 @@ export default async function MatchDetailPage({ params }: Props) {
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: "3.5rem", md: "5rem" },
-                          fontWeight: 900,
+                          fontSize: { xs: "2.7rem", md: "3.8rem" },
+                          fontWeight: 700,
                           lineHeight: 1,
-                          color: alpha("#ffffff", 0.55),
+                          color: alpha(brandColor.white, 0.92),
                         }}
                       >
                         {hasScore ? match.theirScore : "–"}
@@ -675,7 +686,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       ) : (
                         <Typography
                           sx={{
-                            color: alpha("#ffffff", 0.3),
+                            color: alpha(brandColor.white, 0.65),
                             fontWeight: 700,
                             fontSize: "1.4rem",
                           }}
@@ -705,7 +716,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   display: "flex",
                   alignItems: "center",
                   gap: 0.5,
-                  color: alpha("#ffffff", 0.5),
+                  color: alpha(brandColor.white, 0.5),
                 }}
               >
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
@@ -718,7 +729,7 @@ export default async function MatchDetailPage({ params }: Props) {
                   display: "flex",
                   alignItems: "center",
                   gap: 0.5,
-                  color: alpha("#ffffff", 0.5),
+                  color: alpha(brandColor.white, 0.5),
                 }}
               >
                 {match.isHome ? (
@@ -761,9 +772,12 @@ export default async function MatchDetailPage({ params }: Props) {
             sx={{
               p: 2.5,
               borderRadius: 2,
-              background: "linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%)",
-              border: "1px solid #F9A825",
-              boxShadow: "0 2px 8px rgba(249,168,37,0.15)",
+              // Era una card color crema con bordo oro, fuori palette e
+              // sbagliata in dark: ora e' una superficie del tema col bordo
+              // della medaglia.
+              bgcolor: "action.hover",
+              border: "1px solid",
+              borderColor: "medal.gold",
             }}
           >
             <Box
@@ -775,15 +789,15 @@ export default async function MatchDetailPage({ params }: Props) {
                 justifyContent: "center",
               }}
             >
-              <EmojiEventsIcon sx={{ color: "#F57F17" }} />
+              <EmojiEventsIcon sx={{ color: "medal.gold" }} />
               <Typography
                 variant="overline"
                 fontWeight={800}
-                sx={{ color: "#F57F17", letterSpacing: "0.12em" }}
+                sx={{ color: "medal.gold", letterSpacing: "0.12em" }}
               >
                 {t("mvp")}
               </Typography>
-              <EmojiEventsIcon sx={{ color: "#F57F17" }} />
+              <EmojiEventsIcon sx={{ color: "medal.gold" }} />
             </Box>
             <Box
               sx={{
@@ -809,10 +823,11 @@ export default async function MatchDetailPage({ params }: Props) {
                       py: 0.75,
                       borderRadius: 1.5,
                       bgcolor: "background.paper",
-                      border: `1px solid ${alpha("#F9A825", 0.3)}`,
+                      border: "1px solid",
+                      borderColor: "divider",
                       cursor: slug ? "pointer" : "default",
                       transition: "transform 0.15s",
-                      "&:hover": slug ? { transform: "translateY(-2px)" } : undefined,
+                      ...(slug ? onHover({ transform: "translateY(-2px)" }) : {}),
                     }}
                   >
                     <EmojiEventsIcon sx={{ color: "medal.gold", fontSize: 20 }} />

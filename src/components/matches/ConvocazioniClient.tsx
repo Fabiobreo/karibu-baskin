@@ -22,6 +22,7 @@ import ConvocazioniFilters, {
 import ConvocazioniTable from "@/components/matches/convocazioni/ConvocazioniTable";
 import ConvocazioniUnavailable from "@/components/matches/convocazioni/ConvocazioniUnavailable";
 import ConvocazioniLoanDialog from "@/components/matches/convocazioni/ConvocazioniLoanDialog";
+import { readError } from "@/lib/fetchJson";
 
 interface Props {
   matchId: string;
@@ -195,8 +196,8 @@ export default function ConvocazioniClient({
           }),
         });
         if (!res.ok) {
-          const data = (await res.json().catch(() => ({}))) as { error?: string };
-          errors.push(`${team.name}: ${data.error ?? "errore"}`);
+          const message = await readError(res);
+          errors.push(`${team.name}: ${message}`);
         }
       }
       if (errors.length > 0) {
@@ -247,14 +248,14 @@ export default function ConvocazioniClient({
           <GroupsIcon color="primary" />
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
             Convocazioni
           </Typography>
         </Box>
-        <Typography variant="h5" fontWeight={800}>
+        <Typography variant="h5" component="h1" fontWeight={800}>
           {matchLabel}
         </Typography>
         <Typography variant="body2" color="text.secondary">

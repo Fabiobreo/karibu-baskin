@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Box,
   Typography,
@@ -36,6 +36,8 @@ import SessionRestrictionEditor, {
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
+import { readError } from "@/lib/fetchJson";
+import { formatRoleNumbers } from "@/lib/roleList";
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = {
   allowedRoles: [],
@@ -60,6 +62,8 @@ interface Session {
 interface StatusBadge {
   label: string;
   bgcolor: string;
+  /** Colore dell'etichetta: la pastiglia non e' sempre scura. */
+  color: string;
 }
 
 function getSessionStatus(
@@ -71,16 +75,30 @@ function getSessionStatus(
   const now = new Date();
   const end = sessionEndDate(date, endTime);
 
-  if (now >= date && now <= end) return { label: t("live"), bgcolor: "match.win" };
-  if (now > end) return { label: t("ended"), bgcolor: "action.selected" };
+  if (now >= date && now <= end)
+    return { label: t("live"), bgcolor: "match.win", color: "common.white" };
+  if (now > end) return { label: t("ended"), bgcolor: "action.selected", color: "text.secondary" };
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return { label: t("todayBang"), bgcolor: "primary.main" };
-  if (diffDays === 1) return { label: tCommon("tomorrow"), bgcolor: "info.main" };
-  return { label: tCommon("daysAway", { count: diffDays }), bgcolor: "info.main" };
+  if (diffDays === 0)
+    return { label: t("todayBang"), bgcolor: "primary.main", color: "common.white" };
+  // "Domani" e "Tra N giorni" stavano sul ciano di default di MUI, fuori dalla
+  // palette arancione/nera: passano al nero del tema, che resta distinto sia
+  // dall'arancione di "Oggi" sia dal grigio di "Concluso".
+  if (diffDays === 1)
+    return {
+      label: tCommon("tomorrow"),
+      bgcolor: "secondary.main",
+      color: "secondary.contrastText",
+    };
+  return {
+    label: tCommon("daysAway", { count: diffDays }),
+    bgcolor: "secondary.main",
+    color: "secondary.contrastText",
+  };
 }
 
 interface Props {
@@ -103,9 +121,18 @@ export default function AllenamientoHero({
   const tNav = useTranslations("nav");
   const t = useTranslations("trainings");
   const tCommon = useTranslations("common");
-  const tRoles = useTranslations("roles");
+  const locale = useLocale();
   const dateLocale = useActiveDateLocale();
   const status = getSessionStatus(sessionDate, sessionEnd, t, tCommon);
+
+  // "Solo ruoli 1 e 5" invece di "Ruolo 1, Ruolo 5": l'elenco lo costruisce un
+  // helper, la concordanza la fa il plurale ICU.
+  const allowedRolesLabel = session.allowedRoles?.length
+    ? t("onlyRoles", {
+        count: session.allowedRoles.length,
+        roles: formatRoleNumbers(session.allowedRoles, locale),
+      })
+    : "";
 
   const [sessionUrl] = useState(() => (typeof window !== "undefined" ? window.location.href : ""));
 
@@ -167,8 +194,7 @@ export default function AllenamientoHero({
         }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        setEditError(data.error ?? tCommon("saveError"));
+        setEditError(await readError(res));
         return;
       }
       setEditOpen(false);
@@ -246,13 +272,16 @@ export default function AllenamientoHero({
           }}
         />
 
+        {/* Il breadcrumb stava in `position: absolute` sopra il titolo: a 390px
+            andava a capo e i due testi finivano uno sull'altro. Qui ha una riga
+            sua, e resta su una riga sola con l'ellissi. */}
         <Box
           sx={{
-            position: "absolute",
-            top: { xs: 12, md: 16 },
-            left: { xs: 12, md: 20 },
-            right: { xs: 60, md: 80 },
+            position: "relative",
             zIndex: 2,
+            mb: { xs: 2, md: 2.5 },
+            pr: isStaff ? { xs: 5, md: 6 } : 0,
+            minWidth: 0,
           }}
         >
           <Breadcrumbs
@@ -260,7 +289,14 @@ export default function AllenamientoHero({
             sx={{
               "& .MuiBreadcrumbs-separator": {
                 color: (theme) => alpha(theme.palette.common.white, 0.4),
+                flexShrink: 0,
               },
+              // Una riga sola: l'ultima voce si tronca, le altre restano
+              // intere. Senza `flexShrink: 0` sul primo elemento le due voci si
+              // restringono entrambe e i testi si sovrappongono a 320px.
+              "& .MuiBreadcrumbs-ol": { flexWrap: "nowrap" },
+              "& .MuiBreadcrumbs-li": { minWidth: 0, overflow: "hidden" },
+              "& .MuiBreadcrumbs-li:not(:last-of-type)": { flexShrink: 0 },
             }}
           >
             <MuiLink
@@ -271,6 +307,7 @@ export default function AllenamientoHero({
               sx={{
                 color: (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: 500,
+                whiteSpace: "nowrap",
                 "&:hover": { color: "common.white" },
               }}
             >
@@ -278,7 +315,11 @@ export default function AllenamientoHero({
             </MuiLink>
             <Typography
               variant="body2"
-              sx={{ color: (theme) => alpha(theme.palette.common.white, 0.9), fontWeight: 500 }}
+              sx={{
+                color: (theme) => alpha(theme.palette.common.white, 0.9),
+                fontWeight: 500,
+                minWidth: 0,
+              }}
               noWrap
             >
               {session.title}
@@ -295,8 +336,6 @@ export default function AllenamientoHero({
               lineHeight: 1.15,
               fontSize: { xs: "1.7rem", sm: "2.2rem", md: "2.6rem" },
               mb: 1.5,
-              // Lascia spazio alla matita absolute top-right per lo staff
-              px: isStaff ? { xs: 5, md: 6 } : 0,
             }}
           >
             {session.title}
@@ -357,7 +396,7 @@ export default function AllenamientoHero({
               size="small"
               sx={{
                 bgcolor: status.bgcolor,
-                color: "common.white",
+                color: status.color,
                 fontWeight: 700,
                 fontSize: "0.72rem",
                 letterSpacing: 0.5,
@@ -369,8 +408,8 @@ export default function AllenamientoHero({
                 icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
                 label={
                   session.restrictTeam
-                    ? `${t("onlyTeam", { team: session.restrictTeam.name })}${session.allowedRoles?.length ? ` · ${session.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}` : ""}`
-                    : session.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
+                    ? `${t("onlyTeam", { team: session.restrictTeam.name })}${allowedRolesLabel ? ` · ${allowedRolesLabel}` : ""}`
+                    : allowedRolesLabel
                 }
                 size="small"
                 sx={{
@@ -384,7 +423,10 @@ export default function AllenamientoHero({
             {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
               <Chip
                 icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
-                label={t("openToAllRoles", { roles: session.openRoles.join(", ") })}
+                label={t("openToAllRoles", {
+                  count: session.openRoles.length,
+                  roles: formatRoleNumbers(session.openRoles, locale),
+                })}
                 size="small"
                 sx={{
                   bgcolor: "success.light",

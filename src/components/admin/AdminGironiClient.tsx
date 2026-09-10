@@ -13,6 +13,7 @@ import {
   FormControl,
   InputLabel,
   Table,
+  TableContainer,
   TableHead,
   TableBody,
   TableRow,
@@ -172,102 +173,110 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
         </Typography>
       ) : (
         <Paper elevation={0} variant="outlined">
-          <Table size="small" aria-label="Lista gironi">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Girone</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Stagione</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Campionato</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Nostre squadre</TableCell>
-                <TableCell sx={{ fontWeight: 700 }} align="center">
-                  Partite
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {groups.slice(page * rpp, (page + 1) * rpp).map((g) => (
-                <TableRow key={g.id} hover>
-                  <TableCell>
-                    <Link
-                      href={`/admin/gironi/${g.slug ?? g.id}`}
-                      style={{ textDecoration: "none", color: "inherit" }}
-                    >
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        sx={{ color: "primary.main", "&:hover": { textDecoration: "underline" } }}
-                      >
-                        {g.name}
-                      </Typography>
-                    </Link>
+          {/* Senza `TableContainer` la tabella e' piu' larga del viewport e
+              trascina in orizzontale tutto il documento, header e breadcrumb
+              compresi. Cosi' scorre solo lei, e la paginazione resta ferma. */}
+          <TableContainer>
+            <Table size="small" aria-label="Lista gironi">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Girone</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Stagione</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Campionato</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Nostre squadre</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }} align="center">
+                    Partite
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{g.season}</Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {g.championship ?? "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {g.competitiveTeams.length === 0 ? (
-                      <Typography variant="caption" color="text.disabled">
-                        nessuna
-                      </Typography>
-                    ) : (
-                      <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
-                        {g.competitiveTeams.map(({ competitiveTeam: t }) => (
-                          <Chip
-                            key={t.id}
-                            label={t.name}
-                            size="small"
-                            sx={{
-                              bgcolor: t.color ?? "primary.main",
-                              color: contrastText(t.color),
-                              fontWeight: 700,
-                              fontSize: "0.68rem",
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                    )}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Typography
-                      variant="caption"
-                      color={g._count.matches > 0 ? "primary" : "text.disabled"}
-                    >
-                      {g._count.matches}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Apri girone">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        aria-label="Apri girone"
-                        component={Link}
-                        href={`/admin/gironi/${g.slug ?? g.id}`}
-                      >
-                        <OpenInNewIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Elimina">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        aria-label="Elimina girone"
-                        onClick={() => handleDelete(g)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                  <TableCell />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {groups.slice(page * rpp, (page + 1) * rpp).map((g) => (
+                  <TableRow key={g.id} hover>
+                    <TableCell>
+                      <Link
+                        href={`/admin/gironi/${g.slug ?? g.id}`}
+                        style={{ textDecoration: "none", color: "inherit" }}
+                      >
+                        <Typography
+                          variant="body2"
+                          fontWeight={700}
+                          sx={{
+                            color: "primary.onLight",
+                            "&:hover": { textDecoration: "underline" },
+                          }}
+                        >
+                          {g.name}
+                        </Typography>
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{g.season}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {g.championship ?? "—"}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {g.competitiveTeams.length === 0 ? (
+                        <Typography variant="caption" color="text.disabled">
+                          nessuna
+                        </Typography>
+                      ) : (
+                        <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
+                          {g.competitiveTeams.map(({ competitiveTeam: t }) => (
+                            <Chip
+                              key={t.id}
+                              label={t.name}
+                              size="small"
+                              sx={{
+                                bgcolor: t.color ?? "primary.main",
+                                color: contrastText(t.color),
+                                fontWeight: 700,
+                                fontSize: "0.68rem",
+                              }}
+                            />
+                          ))}
+                        </Stack>
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Typography
+                        variant="caption"
+                        color={g._count.matches > 0 ? "primary" : "text.disabled"}
+                      >
+                        {g._count.matches}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Apri girone">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          aria-label="Apri girone"
+                          component={Link}
+                          href={`/admin/gironi/${g.slug ?? g.id}`}
+                        >
+                          <OpenInNewIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Elimina">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          aria-label="Elimina girone"
+                          onClick={() => handleDelete(g)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
           <TablePagination
             component="div"
             count={groups.length}

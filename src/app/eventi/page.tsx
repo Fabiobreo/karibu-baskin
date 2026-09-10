@@ -6,12 +6,12 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { format } from "date-fns";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import { splitEventsByTime } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { onHover } from "@/lib/hoverStyles";
 
 export const metadata: Metadata = buildMetadata({
   title: "Eventi",
@@ -48,7 +48,7 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
           borderRadius: 3,
           height: "100%",
           transition: "transform 0.15s ease, box-shadow 0.15s ease",
-          "&:hover": { transform: "translateY(-3px)", boxShadow: 4 },
+          ...onHover({ transform: "translateY(-3px)", boxShadow: 4 }),
         }}
       >
         <Box
@@ -82,6 +82,7 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
           />
           <Typography
             variant="subtitle1"
+            component="h3"
             fontWeight={800}
             sx={{ color: "text.primary", lineHeight: 1.25 }}
           >
@@ -115,6 +116,7 @@ function EventSection({
     <Box sx={{ mb: 5 }}>
       <Typography
         variant="overline"
+        component="h2"
         color="text.secondary"
         sx={{ fontWeight: 700, mb: 1.5, display: "block" }}
       >
@@ -155,7 +157,6 @@ export default async function EventiPage() {
 
   return (
     <>
-      <SiteHeader />
       <PageHero
         chip={t("heroChip")}
         title={t("heroTitle")}

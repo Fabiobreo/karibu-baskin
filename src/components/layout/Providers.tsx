@@ -9,13 +9,16 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { Session } from "next-auth";
+import type { ColorMode, ResolvedScheme } from "@/lib/colorMode";
 
 // Componente separato per accedere al context DOPO che ThemeContextProvider è montato
 function ThemedContent({ children }: { children: React.ReactNode }) {
   const { activeTheme } = useThemeMode();
   return (
     <ThemeProvider theme={activeTheme}>
-      <CssBaseline />
+      {/* enableColorScheme dichiara `color-scheme` su <html>: scrollbar,
+          <select> nativi, date picker e autofill seguono il tema. */}
+      <CssBaseline enableColorScheme />
       {children}
     </ThemeProvider>
   );
@@ -25,10 +28,12 @@ export default function Providers({
   children,
   session,
   colorMode = "system",
+  colorScheme = "light",
 }: {
   children: React.ReactNode;
   session: Session | null;
-  colorMode?: "light" | "dark" | "system";
+  colorMode?: ColorMode;
+  colorScheme?: ResolvedScheme;
 }) {
   const [queryClient] = useState(
     () =>
@@ -46,7 +51,7 @@ export default function Providers({
     <QueryClientProvider client={queryClient}>
       <SessionProvider session={session}>
         <LocaleContextProvider>
-          <ThemeContextProvider initialMode={colorMode}>
+          <ThemeContextProvider initialMode={colorMode} initialScheme={colorScheme}>
             <ThemedContent>
               <NotificationProvider>{children}</NotificationProvider>
             </ThemedContent>

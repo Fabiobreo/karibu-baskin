@@ -265,7 +265,7 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
                       <Typography
                         component="span"
                         variant="caption"
-                        color="primary.main"
+                        color="primary.onLight"
                         sx={{ ml: 0.5 }}
                         title={`+ ${r.officialGames} partite ufficiali`}
                       >

@@ -559,6 +559,7 @@ export async function POST(req: NextRequest) {
 import { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useToast } from "@/context/ToastContext";
+import { readError } from "@/lib/fetchJson";
 
 interface XxxProps {
   initialItems: Array<{ id: string; name: string }>;
@@ -578,7 +579,11 @@ export default function Xxx({ initialItems }: XxxProps) {
           /* ... */
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      // Mai `res.json()` su una risposta di errore: quando il server risponde
+      // con una pagina HTML (500, 502, 413, timeout del gateway) il SyntaxError
+      // del parser sostituisce l'errore vero. `readError` guarda il
+      // content-type e ricade sullo status.
+      if (!res.ok) throw new Error(await readError(res));
       const created = await res.json();
       setItems((prev) => [created, ...prev]);
       showToast({ message: "Creato", severity: "success" });
@@ -652,6 +657,8 @@ export default async function Page() {
 - **Mai skippare `tsc --noEmit`** prima di un push: i deploy Vercel rompono silenziosamente se il type-check non è verde.
 - **Mai chiamare `auth()` in un Client Component** — passare la session/dati utente come prop dal Server Component padre, oppure fetchare via `/api/users/me`.
 - **Mai esporre dati sensibili in client props** (email altrui, ruoli admin di altri utenti che non dovrebbero vederli) — fare `select` esplicito in Prisma.
+- **Mai `res.json()` su una risposta di errore** senza controllare il `content-type`: usare `readError(res)` da `@/lib/fetchJson`. Con una pagina HTML di errore il parser JSON solleva un `SyntaxError` che **sostituisce** l'errore reale, e l'utente legge `Unexpected token '<'` invece del motivo.
+- **Mai una chiamata Prisma fuori da try/catch in una rotta di scrittura**: un'eccezione non gestita diventa un 500 con pagina HTML, che nessun client sa leggere. Gestire almeno `P2002` e ricadere su un JSON con lo stato.
 - **Mai dimenticare il rate-limit** sulle API pubbliche (GET senza auth): `checkRateLimit(getClientIp(req), "key", limit, windowMs)`.
 - **Mai usare `prisma.session` quando intendi `prisma.trainingSession`** — `session` = sessione Auth.js.
 - **Mai aggiungere libreria di state management** (Redux, Zustand, Jotai...) senza discuterne — il pattern attuale è useState + Context + TanStack React Query (per il data fetching).

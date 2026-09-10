@@ -1,7 +1,7 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import { Container } from "@mui/material";
-import SiteHeader from "@/components/layout/SiteHeader";
+import { Container, Typography } from "@mui/material";
 import AllenamentiClient from "@/components/training/AllenamentiClient";
 import { parseTeamsData } from "@/lib/schemas";
 import type { TeamsData } from "@/components/training/TeamDisplay";
@@ -23,6 +23,7 @@ export default async function AllenamentiPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
+  const t = await getTranslations("nav");
   const now = new Date();
   const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
@@ -104,8 +105,10 @@ export default async function AllenamentiPage({
 
   return (
     <>
-      <SiteHeader />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+        <Typography variant="h4" component="h1" fontWeight={800} sx={{ mb: 2 }}>
+          {t("trainings")}
+        </Typography>
         <AllenamentiClient
           inCorso={inCorso}
           upcoming={upcoming}

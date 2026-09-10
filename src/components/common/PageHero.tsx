@@ -1,6 +1,6 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { heroGradient } from "@/lib/heroStyles";
+import { brandColor, heroGradient } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 
 interface PageHeroProps {
@@ -34,7 +34,7 @@ export default function PageHero({
     <Box
       style={{ backgroundImage: heroGradient.dark }}
       sx={{
-        color: "#fff",
+        color: "common.white",
         py,
         px: 2,
         textAlign: align === "center" ? "center" : undefined,
@@ -52,7 +52,7 @@ export default function PageHero({
               width: 260,
               height: 260,
               borderRadius: "50%",
-              backgroundColor: alpha("#E65100", 0.1),
+              backgroundColor: alpha(brandColor.orange, 0.1),
               pointerEvents: "none",
             }}
           />
@@ -64,7 +64,7 @@ export default function PageHero({
               width: 320,
               height: 320,
               borderRadius: "50%",
-              backgroundColor: alpha("#E65100", 0.06),
+              backgroundColor: alpha(brandColor.orange, 0.06),
               pointerEvents: "none",
             }}
           />
@@ -113,6 +113,7 @@ export default function PageHero({
             {subtitle && (
               <Typography
                 variant="h6"
+                component="p"
                 sx={{
                   color: "rgba(255,255,255,0.75)",
                   fontWeight: 400,

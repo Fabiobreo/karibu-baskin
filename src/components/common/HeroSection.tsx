@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { Box, Typography, Button, Container } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -16,7 +15,9 @@ export default function HeroSection() {
     <Box
       sx={{
         position: "relative",
-        minHeight: { xs: "92svh", md: "88vh" },
+        // Non a tutta altezza: cosi' il bordo della sezione sotto si intravede
+        // senza scorrere, e l'indicatore "scorri" non serve piu'.
+        minHeight: { xs: "82svh", md: "80vh" },
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -63,7 +64,7 @@ export default function HeroSection() {
             fontWeight: 900,
             fontSize: { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
             lineHeight: 0.95,
-            color: "#fff",
+            color: "common.white",
             letterSpacing: "-0.03em",
             textShadow: "0 2px 24px rgba(0,0,0,0.5)",
           }}
@@ -130,7 +131,7 @@ export default function HeroSection() {
                 py: 1.4,
                 fontSize: "0.95rem",
                 borderRadius: 2,
-                color: "#fff",
+                color: "common.white",
                 borderColor: "rgba(255,255,255,0.35)",
                 backdropFilter: "blur(4px)",
                 bgcolor: "rgba(255,255,255,0.06)",
@@ -145,37 +146,6 @@ export default function HeroSection() {
           </Link>
         </Box>
       </Container>
-
-      {/* Freccia scroll */}
-      <Box
-        component="button"
-        onClick={scrollToAllenamenti}
-        sx={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          position: "absolute",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 0.5,
-          color: "rgba(255,255,255,0.3)",
-          textDecoration: "none",
-          transition: "color 0.2s",
-          "&:hover": { color: "rgba(255,255,255,0.65)" },
-          zIndex: 1,
-        }}
-      >
-        <Typography
-          sx={{ letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.58rem" }}
-        >
-          {t("scroll")}
-        </Typography>
-        <KeyboardArrowDownIcon fontSize="small" />
-      </Box>
     </Box>
   );
 }

@@ -9,7 +9,6 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
 import AddIcon from "@mui/icons-material/Add";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import { buildMetadata } from "@/lib/seo";
@@ -43,8 +42,6 @@ export default async function NewsPage() {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero
         chip={t("news.heroChip")}
         title="News"

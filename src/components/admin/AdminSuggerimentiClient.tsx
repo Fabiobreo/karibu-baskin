@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
+import { readError } from "@/lib/fetchJson";
 
 type Category = "APP" | "ALLENAMENTI" | "PARTITE_EVENTI" | "ALTRO";
 type Status = "NUOVO" | "LETTO" | "ARCHIVIATO";
@@ -112,8 +113,8 @@ export default function AdminSuggerimentiClient({
         body: JSON.stringify({ status }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? "Errore nell'aggiornamento");
+        const message = await readError(res);
+        throw new Error(message);
       }
       const updated: Suggestion = await res.json();
       setItems((prev) => prev.map((i) => (i.id === id ? updated : i)));
@@ -133,8 +134,8 @@ export default function AdminSuggerimentiClient({
         try {
           const res = await fetch(`/api/suggestions/${s.id}`, { method: "DELETE" });
           if (!res.ok && res.status !== 204) {
-            const data = await res.json().catch(() => null);
-            throw new Error(data?.error ?? "Errore nell'eliminazione");
+            const message = await readError(res);
+            throw new Error(message);
           }
           setItems((prev) => prev.filter((i) => i.id !== s.id));
           showToast({ message: "Suggerimento eliminato", severity: "success" });
@@ -158,8 +159,8 @@ export default function AdminSuggerimentiClient({
         body: JSON.stringify({ body }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? "Errore nell'invio della nota");
+        const message = await readError(res);
+        throw new Error(message);
       }
       const note: Note = await res.json();
       setItems((prev) =>
@@ -180,8 +181,8 @@ export default function AdminSuggerimentiClient({
           method: "DELETE",
         });
         if (!res.ok && res.status !== 204) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.error ?? "Errore nell'eliminazione");
+          const message = await readError(res);
+          throw new Error(message);
         }
         setItems((prev) =>
           prev.map((i) =>

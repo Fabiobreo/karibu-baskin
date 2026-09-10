@@ -67,7 +67,7 @@ export default function AllenamentoEndedView({
             removingTeams={removingTeams}
             onRemoveTeams={onRemoveTeams}
           />
-          <TeamDisplay {...teamDisplayProps} isStaff={false} />
+          <TeamDisplay {...teamDisplayProps} isStaff={false} isEnded />
         </Paper>
       </SectionErrorBoundary>
     </>

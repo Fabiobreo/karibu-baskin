@@ -8,6 +8,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import PollChip from "@/components/news/PollChip";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
+import { onHover } from "@/lib/hoverStyles";
 
 const SIDE_TEASER_LEN = 70;
 
@@ -39,10 +40,10 @@ export default function SideCard({ post }: SideCardProps) {
           borderColor: "divider",
           bgcolor: "background.paper",
           transition: "border-color 0.15s, transform 0.15s",
-          "&:hover": {
+          ...onHover({
             borderColor: "primary.main",
             transform: "translateX(2px)",
-          },
+          }),
         }}
       >
         <Box
@@ -77,6 +78,7 @@ export default function SideCard({ post }: SideCardProps) {
           )}
           <Typography
             variant="subtitle2"
+            component="h3"
             fontWeight={700}
             sx={{
               color: "text.primary",

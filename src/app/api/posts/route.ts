@@ -8,6 +8,7 @@ import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import DOMPurify from "isomorphic-dompurify";
+import { Prisma } from "@prisma/client";
 
 // GET — lista post pubblicati (pubblica)
 export async function GET(req: NextRequest) {
@@ -55,34 +56,51 @@ export async function POST(req: NextRequest) {
   const slug = await generatePostSlug(title);
   const publishedAt = publish ? new Date() : null;
 
-  const post = await prisma.post.create({
-    data: {
-      slug,
-      title,
-      body: sanitizedBody,
-      imageUrl: imageUrl ?? null,
-      authorId,
-      publishedAt,
-      ...(poll
-        ? {
-            poll: {
-              create: {
-                question: poll.question,
-                multiSelect: poll.multiSelect,
-                closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
-                options: {
-                  create: poll.options.map((o) => ({ text: o.text, order: o.order })),
+  // Senza try/catch qualunque eccezione Prisma diventa un 500 con pagina HTML,
+  // e il client non ha piu' modo di dire cosa e' andato storto.
+  let post;
+  try {
+    post = await prisma.post.create({
+      data: {
+        slug,
+        title,
+        body: sanitizedBody,
+        imageUrl: imageUrl ?? null,
+        authorId,
+        publishedAt,
+        ...(poll
+          ? {
+              poll: {
+                create: {
+                  question: poll.question,
+                  multiSelect: poll.multiSelect,
+                  closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
+                  options: {
+                    create: poll.options.map((o) => ({ text: o.text, order: o.order })),
+                  },
                 },
               },
-            },
-          }
-        : {}),
-    },
-    include: {
-      author: { select: { name: true } },
-      poll: { include: { options: { orderBy: { order: "asc" } } } },
-    },
-  });
+            }
+          : {}),
+      },
+      include: {
+        author: { select: { name: true } },
+        poll: { include: { options: { orderBy: { order: "asc" } } } },
+      },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === "P2002") {
+        return NextResponse.json({ error: "Esiste gia' un post con questo slug" }, { status: 409 });
+      }
+      return NextResponse.json(
+        { error: `Errore del database (${err.code}) durante la creazione del post` },
+        { status: 400 }
+      );
+    }
+    console.error("[posts] create", err);
+    return NextResponse.json({ error: "Errore durante la creazione del post" }, { status: 500 });
+  }
 
   if (publish && publishedAt) {
     const notifType = poll ? "NEW_POLL" : "NEW_POST";

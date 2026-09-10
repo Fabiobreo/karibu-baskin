@@ -80,7 +80,7 @@ export default function HeadToHeadSection({
                   size="small"
                   sx={{
                     bgcolor: resMeta.color,
-                    color: "#fff",
+                    color: "common.white",
                     fontWeight: 700,
                     fontSize: "0.62rem",
                     height: 18,

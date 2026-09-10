@@ -7,6 +7,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
+import { heroGradient } from "@/lib/heroStyles";
 
 const INTERVAL_MS = 7000;
 
@@ -66,8 +67,8 @@ export default function LoSapeviCarousel() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       sx={{
-        background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
-        color: "#fff",
+        background: heroGradient.footer,
+        color: "common.white",
         borderRadius: 3,
         position: "relative",
         overflow: "hidden",
@@ -123,7 +124,7 @@ export default function LoSapeviCarousel() {
               mt: 0.25,
             }}
           >
-            <LightbulbIcon sx={{ fontSize: 20, color: "#fff" }} />
+            <LightbulbIcon sx={{ fontSize: 20, color: "common.white" }} />
           </Box>
 
           {/* Testo */}
@@ -131,7 +132,7 @@ export default function LoSapeviCarousel() {
             <Typography
               variant="overline"
               sx={{
-                color: "primary.main",
+                color: "primary.onLight",
                 fontWeight: 700,
                 letterSpacing: "0.12em",
                 fontSize: "0.68rem",
@@ -141,7 +142,12 @@ export default function LoSapeviCarousel() {
             >
               {t("didYouKnow")}
             </Typography>
-            <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 0.75, lineHeight: 1.3 }}>
+            <Typography
+              variant="subtitle1"
+              component="h3"
+              fontWeight={800}
+              sx={{ mb: 0.75, lineHeight: 1.3 }}
+            >
               {item.titolo}
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.75 }}>
@@ -161,51 +167,44 @@ export default function LoSapeviCarousel() {
           justifyContent: "space-between",
         }}
       >
-        {/* Dot pill indicators — quello attivo si allunga */}
-        <Box sx={{ display: "flex", gap: 0.75, alignItems: "center" }}>
-          {LO_SAPEVI.map((_, i) => (
-            <Box
-              key={i}
-              onClick={() => goTo(i, i > index ? "next" : "prev")}
+        {/* Contatore al posto dei puntini: con quattordici curiosita' i
+            puntini non comunicavano piu' nessuna posizione. */}
+        <Typography
+          variant="body2"
+          fontWeight={700}
+          sx={{ color: "rgba(255,255,255,0.75)", fontVariantNumeric: "tabular-nums" }}
+          aria-live="polite"
+        >
+          {index + 1} / {LO_SAPEVI.length}
+        </Typography>
+
+        {/* Frecce: 44x44 e bianco pieno. Erano 30px a 0,4 di opacita', cioe'
+            piccole e a basso contrasto su un fondo scuro. */}
+        <Box sx={{ display: "flex", gap: 0.5 }}>
+          {[
+            { onClick: goPrev, label: t("prevFact"), icon: <ArrowBackIosNewIcon /> },
+            { onClick: goNext, label: t("nextFact"), icon: <ArrowForwardIosIcon /> },
+          ].map((b) => (
+            <IconButton
+              key={b.label}
+              onClick={b.onClick}
+              aria-label={b.label}
               sx={{
-                height: 6,
-                width: i === index ? 20 : 6,
-                borderRadius: 3,
-                bgcolor: i === index ? "primary.main" : "rgba(255,255,255,0.2)",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
+                width: 44,
+                height: 44,
+                color: "common.white",
+                border: "1px solid",
+                borderColor: "rgba(255,255,255,0.3)",
+                "& svg": { fontSize: 16 },
                 "&:hover": {
-                  bgcolor: i === index ? "primary.main" : "rgba(255,255,255,0.45)",
+                  bgcolor: "rgba(255,255,255,0.14)",
+                  borderColor: "rgba(255,255,255,0.6)",
                 },
               }}
-            />
+            >
+              {b.icon}
+            </IconButton>
           ))}
-        </Box>
-
-        {/* Frecce */}
-        <Box sx={{ display: "flex", gap: 0.5 }}>
-          <IconButton
-            size="small"
-            onClick={goPrev}
-            aria-label={t("prevFact")}
-            sx={{
-              color: "rgba(255,255,255,0.4)",
-              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
-            }}
-          >
-            <ArrowBackIosNewIcon sx={{ fontSize: 14 }} />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={goNext}
-            aria-label={t("nextFact")}
-            sx={{
-              color: "rgba(255,255,255,0.4)",
-              "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
-            }}
-          >
-            <ArrowForwardIosIcon sx={{ fontSize: 14 }} />
-          </IconButton>
         </Box>
       </Box>
     </Box>

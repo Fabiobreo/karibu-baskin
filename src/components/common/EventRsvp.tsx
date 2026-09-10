@@ -22,6 +22,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { readError } from "@/lib/fetchJson";
 
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
 
@@ -92,7 +93,7 @@ function SubjectOptionsForm({
           note: note.trim() || null,
         }),
       });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error ?? t("saveError"));
+      if (!res.ok) throw new Error(await readError(res));
     },
     onSuccess: () => {
       const nowGoing = selected.size > 0;
@@ -197,7 +198,7 @@ export default function EventRsvp({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: vars.status, childId: vars.childId ?? undefined }),
       });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error ?? t("saveError"));
+      if (!res.ok) throw new Error(await readError(res));
       return vars;
     },
     onSuccess: ({ childId, status }) => {

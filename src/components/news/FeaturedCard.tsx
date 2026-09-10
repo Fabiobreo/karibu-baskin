@@ -7,6 +7,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import PollChip from "@/components/news/PollChip";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
+import { onHover } from "@/lib/hoverStyles";
 
 const FEATURED_TEASER_LEN = 160;
 
@@ -40,10 +41,10 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           borderColor: "divider",
           bgcolor: post.imageUrl ? "common.black" : "background.paper",
           transition: "transform 0.2s, border-color 0.15s",
-          "&:hover": {
+          ...onHover({
             borderColor: "primary.main",
             "& .featured-img": { transform: "scale(1.04)" },
-          },
+          }),
         }}
       >
         {post.imageUrl ? (
@@ -121,6 +122,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
 
           <Typography
             variant="h5"
+            component="h3"
             fontWeight={800}
             sx={{
               color: "#fff",

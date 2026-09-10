@@ -14,13 +14,13 @@ import { useNotifications } from "@/context/NotificationContext";
 export default function BottomNav() {
   const t = useTranslations("nav");
   const router = useRouter();
-  const pathnameRaw = usePathname();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const { unreadCount } = useNotifications();
   const mounted = useHasMounted();
 
-  // Calcola la voce attiva in base al pathname
-  const pathname = mounted ? pathnameRaw : "/";
+  // Calcola la voce attiva in base al pathname (nessun gate sul mount:
+  // usePathname e gia risolto lato server, la voce attiva non "salta").
   let active: string;
   if (pathname === "/") active = "/";
   else if (pathname.startsWith("/allenament")) active = "/allenamenti";
@@ -42,6 +42,8 @@ export default function BottomNav() {
 
   return (
     <Paper
+      component="nav"
+      aria-label={t("quickNav")}
       elevation={8}
       sx={{
         display: { xs: "block", md: "none" },
@@ -69,7 +71,12 @@ export default function BottomNav() {
             },
           },
           "& .Mui-selected": {
-            color: "primary.main !important",
+            // Etichetta di testo (10px): serve l'arancione accessibile, non
+            // `primary.main`, che su fondo chiaro si ferma a 3,79:1.
+            // Il valore passa da callback: `sx` non risolve i token di palette
+            // quando la stringa porta anche `!important`, e la regola veniva
+            // scartata come CSS non valido.
+            color: (theme) => `${theme.palette.primary.onLight} !important`,
           },
         }}
       >

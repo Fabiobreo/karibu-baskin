@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useSession } from "next-auth/react";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import ContactForm from "@/components/common/ContactForm";
 import SuggestionForm from "@/components/common/SuggestionForm";
@@ -33,6 +32,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import MapEmbed from "@/components/common/MapEmbed";
+import { onHover } from "@/lib/hoverStyles";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
@@ -127,8 +127,6 @@ export default function ContattiPage() {
 
   return (
     <>
-      <SiteHeader />
-
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <PageHero
         chip={t("contatti.heroChip")}
@@ -233,7 +231,7 @@ export default function ContattiPage() {
           {/* Titolo sezione */}
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -268,11 +266,11 @@ export default function ContattiPage() {
                     textDecoration: "none",
                     color: "inherit",
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.15s",
-                    "&:hover": {
+                    ...onHover({
                       borderColor: "primary.main",
                       boxShadow: (theme) => `0 2px 12px ${alpha(theme.palette.primary.main, 0.12)}`,
                       transform: "translateY(-2px)",
-                    },
+                    }),
                   }}
                 >
                   <Box sx={{ color: "primary.main", display: "flex" }}>{c.icon}</Box>
@@ -365,7 +363,7 @@ export default function ContattiPage() {
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 variant="overline"
-                color="primary"
+                color="primary.onLight"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >
@@ -394,7 +392,7 @@ export default function ContattiPage() {
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 variant="overline"
-                color="primary"
+                color="primary.onLight"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >
@@ -491,7 +489,7 @@ export default function ContattiPage() {
           {/* Sponsor attuali — logo strip */}
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -536,11 +534,11 @@ export default function ContattiPage() {
                   borderRadius: 2,
                   overflow: "hidden",
                   transition: "box-shadow 0.2s, transform 0.15s, border-color 0.2s",
-                  "&:hover": {
+                  ...onHover({
                     boxShadow: (theme) => `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`,
                     transform: "translateY(-2px)",
                     borderColor: (theme) => alpha(theme.palette.primary.main, 0.4),
-                  },
+                  }),
                 }}
               >
                 <Image
@@ -559,7 +557,7 @@ export default function ContattiPage() {
           {/* Diventa sponsor */}
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >

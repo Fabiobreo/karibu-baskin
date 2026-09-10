@@ -11,6 +11,7 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { contrastText } from "@/lib/colorUtils";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./types";
+import { onHover } from "@/lib/hoverStyles";
 
 export default async function NextMatchCard({
   match,
@@ -68,10 +69,10 @@ export default async function NextMatchCard({
           boxShadow: 2,
           cursor: "pointer",
           transition: "all 0.2s",
-          "&:hover": {
+          ...onHover({
             transform: "translateY(-3px)",
             boxShadow: `0 10px 32px ${alpha(teamColor, 0.2)}`,
-          },
+          }),
         }}
       >
         {/* ── BANNER SCURO IN ALTO con tile calendario ─────────────────────── */}

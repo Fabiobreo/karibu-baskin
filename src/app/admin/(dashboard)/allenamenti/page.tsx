@@ -6,7 +6,7 @@ import { Alert } from "@mui/material";
 import MuiLink from "@mui/material/Link";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Allenamenti da gestire | Admin" };
+export const metadata: Metadata = { title: "Allenamenti da completare | Admin" };
 export const revalidate = 0;
 
 export default async function AdminAllenamentiPage() {
@@ -56,10 +56,23 @@ export default async function AdminAllenamentiPage() {
     <>
       <AdminPageHeader
         title="Allenamenti da completare"
-        subtitle="Sessioni concluse con risultati delle partite ancora mancanti."
-        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }]}
+        subtitle="Sessioni passate ancora aperte: segna le presenze, registra le partitelle e chiudi."
+        breadcrumb={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Allenamenti da completare" },
+        ]}
       />
-      <Alert severity="info" sx={{ mb: 3 }}>
+      {/* Banner informativo su superfici del tema: l'azzurro di default di MUI
+          e' fuori dalla palette arancione/nera del sito. */}
+      <Alert
+        severity="info"
+        sx={{
+          mb: 3,
+          bgcolor: "action.hover",
+          color: "text.primary",
+          "& .MuiAlert-icon": { color: "primary.onLight" },
+        }}
+      >
         Qui concludi gli allenamenti passati: presenze e risultati delle partitelle. Per creare o
         modificare gli allenamenti usa il{" "}
         <MuiLink href="/calendario" fontWeight={700}>

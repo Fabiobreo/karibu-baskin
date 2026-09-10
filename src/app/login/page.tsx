@@ -22,7 +22,7 @@ export default async function LoginPage() {
     <Container maxWidth="xs" sx={{ pt: 10 }}>
       <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
         <SportsBasketballIcon color="primary" sx={{ fontSize: 48, mb: 1 }} />
-        <Typography variant="h5" fontWeight={700} gutterBottom>
+        <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
           {t("login.title")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

@@ -5,13 +5,12 @@ import {
   Box,
   Typography,
   Button,
-  Chip,
   Stack,
   CircularProgress,
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
-import WarningIcon from "@mui/icons-material/Warning";
+import WavingHandIcon from "@mui/icons-material/WavingHand";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -20,7 +19,13 @@ import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 
-type Registration = { id: string; date: Date | string; dateSlug: string | null };
+type Registration = {
+  id: string;
+  date: Date | string;
+  dateSlug: string | null;
+  /** Titolo dell'allenamento: da sola, la data non dice a cosa ti stai collegando. */
+  title: string;
+};
 
 export default function ClaimAnonymousCard({ registrations }: { registrations: Registration[] }) {
   const router = useRouter();
@@ -93,7 +98,9 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
       sx={{ p: 2.5, mb: 3, borderColor: "primary.main", borderStyle: "dashed" }}
     >
       <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-        <WarningIcon color="primary" sx={{ mt: 0.3, flexShrink: 0 }} />
+        {/* Non è un problema da segnalare, è un'occasione: il triangolo di
+            avviso diceva la cosa sbagliata. */}
+        <WavingHandIcon color="primary" sx={{ mt: 0.3, flexShrink: 0 }} />
         <Box sx={{ flex: 1 }}>
           <Typography variant="body2" fontWeight={700} gutterBottom>
             {t("title")}
@@ -114,14 +121,18 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
                   />
                 }
                 label={
-                  <Chip
-                    label={format(new Date(r.date), "d MMMM yyyy", { locale: dateLocale })}
-                    size="small"
-                    variant="outlined"
-                    sx={{ fontWeight: 600, fontSize: "0.72rem", cursor: "pointer" }}
-                  />
+                  <Box
+                    sx={{ display: "flex", alignItems: "baseline", gap: 0.75, flexWrap: "wrap" }}
+                  >
+                    <Typography variant="body2" fontWeight={700} sx={{ cursor: "pointer" }}>
+                      {r.title}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ cursor: "pointer" }}>
+                      {format(new Date(r.date), "d MMMM yyyy", { locale: dateLocale })}
+                    </Typography>
+                  </Box>
                 }
-                sx={{ ml: 0 }}
+                sx={{ ml: 0, alignItems: "center" }}
               />
             ))}
           </Stack>

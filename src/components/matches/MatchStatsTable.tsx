@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { ROLE_COLORS } from "@/lib/constants";
+import { contrastText } from "@/lib/colorUtils";
 
 export interface MatchStatRow {
   id: string;
@@ -142,7 +143,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                             size="small"
                             sx={{
                               bgcolor: ROLE_COLORS[role],
-                              color: "#fff",
+                              color: contrastText(ROLE_COLORS[role]),
                               fontWeight: 600,
                               fontSize: "0.55rem",
                               height: 13,
@@ -192,7 +193,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                             : !allowedForRole
                               ? "text.disabled"
                               : col.key === "fouls" && val >= 4
-                                ? "#C62828"
+                                ? "stats.fouls"
                                 : undefined,
                         }}
                       >

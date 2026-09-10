@@ -20,6 +20,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useToast } from "@/context/ToastContext";
 import { useRouter } from "next/navigation";
+import { readError } from "@/lib/fetchJson";
 
 interface PollOption {
   id: string;
@@ -91,7 +92,7 @@ export default function PollWidget({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ optionIds: selected }),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      if (!res.ok) throw new Error(await readError(res));
       setHasVoted(true);
       showToast({ message: t("voteRecorded"), severity: "success" });
       // Aggiorna i risultati lato server (anteprima staff o sondaggio chiuso)

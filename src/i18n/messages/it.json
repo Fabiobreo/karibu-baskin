@@ -1,5 +1,8 @@
 {
   "common": {
+    "sponsorsLabel": "Sponsor",
+    "sponsorsPause": "Metti in pausa lo scorrimento degli sponsor",
+    "sponsorsResume": "Riprendi lo scorrimento degli sponsor",
     "save": "Salva",
     "cancel": "Annulla",
     "delete": "Elimina",
@@ -28,7 +31,8 @@
     "copy": "Copia",
     "copied": "Copiato negli appunti",
     "paginationRows": "{from}–{to} di {count}",
-    "rowsPerPage": "Righe:"
+    "rowsPerPage": "Righe:",
+    "seasonNotStarted": "La stagione {active} non è ancora iniziata. Di seguito la {shown}."
   },
   "roles": {
     "role": "Ruolo {n}",
@@ -229,7 +233,11 @@
     "logout": "Esci",
     "login": "Accedi",
     "privacyPolicy": "Informativa privacy",
-    "notifications": "Notifiche"
+    "notifications": "Notifiche",
+    "skipToContent": "Vai al contenuto",
+    "mainNav": "Navigazione principale",
+    "quickNav": "Navigazione rapida",
+    "adminNav": "Navigazione pannello admin"
   },
   "cookie": {
     "title": "Questo sito usa cookie di terze parti",
@@ -425,7 +433,6 @@
     "ruleThree": "Almeno un ruolo 3",
     "ruleFive": "Almeno due ruoli 5",
     "ruleSum": "Somma ruoli {sum}/{max}",
-    "ruleWoman": "Una donna tra i ruoli 4 e 5",
     "needValid": "Completa due formazioni valide (6 giocatori, regole rispettate) per simulare.",
     "simulate": "Simula",
     "reset": "Svuota",
@@ -438,7 +445,8 @@
     "share": "Condividi",
     "shareCopied": "Link della sfida copiato!",
     "emptyTitle": "Nessuna rosa disponibile",
-    "emptyDesc": "Le squadre della stagione corrente non hanno ancora giocatori in rosa."
+    "emptyDesc": "Le squadre della stagione corrente non hanno ancora giocatori in rosa.",
+    "ruleGenderMix": "Una donna e un uomo tra i ruoli 4 e 5"
   },
   "players": {
     "notFound": "Giocatore non trovato",
@@ -450,7 +458,7 @@
     "baskinRole": "Ruolo Baskin",
     "trainingsLabel": "Allenamenti",
     "trainingCount": "{inscriptions} iscrizioni · {attended} presenze",
-    "achievements": "Achievement",
+    "achievements": "Traguardi",
     "nextAchievements": "Prossimi traguardi",
     "unlockedOn": "Sbloccato il {date}",
     "pointsTrend": "Andamento punti",
@@ -488,6 +496,10 @@
     "empty": "Nessun dato disponibile per la stagione {season}.",
     "emptyGeneric": "Nessun dato disponibile",
     "emptyDesc": "La classifica marcatori verrà aggiornata con l'avanzare della stagione.",
+    "advancedStats": "Statistiche avanzate",
+    "advancedStatsHint": "Mostra 1pt, MVP e falli illegali",
+    "roleFilterLabel": "Ruolo:",
+    "colFoulsTitle": "Falli commessi",
     "colPlayer": "Giocatore",
     "colMatches": "Giocate",
     "titleMatches": "Partite giocate",
@@ -512,7 +524,8 @@
     "noPlayersRole": "Nessun giocatore con questo ruolo.",
     "rowsPerPage": "Righe:",
     "searchPlayer": "Cerca giocatore…",
-    "all": "Tutti"
+    "all": "Tutti",
+    "emptySeasonDesc": "Le statistiche compariranno dopo le prime partite ufficiali della stagione."
   },
   "badges": {
     "esordiente": {
@@ -674,7 +687,9 @@
     "typeMatch": "Partita",
     "typeEvent": "Evento",
     "noEvents": "Nessun evento in questo giorno.",
-    "viewPage": "Vai alla pagina"
+    "viewPage": "Vai alla pagina",
+    "noEventsMonth": "Nessun evento questo mese",
+    "noEventsMonthDesc": "Allenamenti, partite ed eventi compariranno qui appena in programma."
   },
   "profile": {
     "title": "Il mio profilo",
@@ -720,7 +735,36 @@
     "appRoleATHLETE": "Atleta",
     "appRolePARENT": "Genitore",
     "appRoleCOACH": "Allenatore",
-    "appRoleADMIN": "Admin"
+    "appRoleADMIN": "Admin",
+    "noMatchesForTeamsDesc": "Appena la tua squadra avrà partite in calendario le troverai qui.",
+    "noUpcomingMatchesDesc": "Non ci sono partite in programma per cui dichiarare la disponibilità.",
+    "heroChip": "Area personale",
+    "heroSubtitle": "I tuoi dati, i tuoi allenamenti e i traguardi che hai sbloccato.",
+    "availabilitiesHeroChip": "Partite",
+    "availabilitiesHeroSubtitle": "Dichiara se ci sarai: lo staff usa queste risposte per le convocazioni.",
+    "breadcrumbHome": "Home",
+    "showPastMatches": "{count, plural, one {Mostra # partita conclusa} other {Mostra le # partite concluse}}",
+    "hidePastMatches": "Nascondi le partite concluse",
+    "answeredYes": "Eri disponibile",
+    "answeredNo": "Non eri disponibile",
+    "answeredNone": "Non hai risposto",
+    "nextTraining": "Prossimo allenamento",
+    "nextTrainingNone": "Nessun allenamento in programma",
+    "nextTrainingNoneDesc": "Appena lo staff ne pubblica uno lo trovi qui e sulla home.",
+    "registered": "Sei tra gli iscritti",
+    "notRegistered": "Non sei ancora tra gli iscritti",
+    "childRegistered": "{name} è tra gli iscritti",
+    "childNotRegistered": "{name} non è tra gli iscritti",
+    "register": "Iscrivimi",
+    "registerChild": "Iscrivi {name}",
+    "unregister": "Disdici",
+    "registrationsClosed": "Iscrizioni non ancora aperte",
+    "registrationsClosedDesc": "Lo staff aprirà le iscrizioni a breve.",
+    "openTraining": "Apri l'allenamento",
+    "needsRoleToRegister": "Serve il ruolo Baskin per iscriverti da qui: aprilo e completa il questionario.",
+    "registerDone": "Iscrizione registrata",
+    "unregisterDone": "Iscrizione annullata",
+    "attendanceEmpty": "Nessuna presenza registrata, per ora."
   },
   "guestWelcome": {
     "title": "Benvenuto in Karibu Baskin!",
@@ -792,13 +836,24 @@
       "emailSending": "Invio in corso…",
       "emailHelp": "Funziona con qualsiasi indirizzo: Gmail, Libero, Alice, Yahoo, Hotmail. Ti arriva un link da cliccare, valido 24 ore.",
       "invalidEmail": "Controlla l'indirizzo email: non sembra valido.",
-      "emailError": "Non siamo riusciti a inviare il link. Riprova tra poco."
+      "emailError": "Non siamo riusciti a inviare il link. Riprova tra poco.",
+      "googleCta": "Accedi con Google",
+      "googleLoading": "Accesso in corso…"
     },
     "notifiche": {
       "empty": "Nessuna notifica",
       "loadMore": "Carica precedenti",
       "loading": "Caricamento...",
-      "loadError": "Errore nel caricamento"
+      "loadError": "Errore nel caricamento",
+      "heroChip": "Aggiornamenti",
+      "heroTitle": "Notifiche",
+      "heroSubtitle": "Allenamenti, partite e novità della squadra, in ordine di arrivo.",
+      "markAllRead": "Segna tutte come lette",
+      "groupToday": "Oggi",
+      "groupThisWeek": "Questa settimana",
+      "groupEarlier": "Prima",
+      "opens": "Apri",
+      "emptyDesc": "Quando lo staff pubblica un allenamento o un risultato lo trovi qui."
     },
     "contatti": {
       "heroChip": "Siamo qui",
@@ -968,7 +1023,15 @@
     "colPointsFor": "PF",
     "colPointsAgainst": "PS",
     "colPoints": "Pt",
-    "matchdayShort": "G{n}"
+    "colPlayedFull": "Partite giocate",
+    "colWinsFull": "Vittorie",
+    "colDrawsFull": "Pareggi",
+    "colLossesFull": "Sconfitte",
+    "colPointsForFull": "Punti fatti",
+    "colPointsAgainstFull": "Punti subiti",
+    "colPointsFull": "Punti in classifica",
+    "matchdayShort": "G{n}",
+    "pageTitle": "Classifiche"
   },
   "trainings": {
     "questionnaire": {
@@ -1069,7 +1132,7 @@
     "loginEasier": "Accedi per registrarti più facilmente.",
     "notes": "Comunicazioni (opzionale)",
     "notesPlaceholder": "es. Devo andare via alle 11:30",
-    "notesEmpty": "Lascia vuoto se non hai comunicazioni",
+    "notesEmpty": "La leggono lo staff e chi apre la lista iscritti.",
     "roleLabel": "Ruolo:",
     "roleSuggested": "Ruolo suggerito:",
     "redoQuestionnaire": "↩ Rifai il questionario",
@@ -1120,7 +1183,7 @@
     "todayBang": "Oggi!",
     "registeredBadge": "Iscritto",
     "onlyTeam": "Solo {team}",
-    "openToAllRoles": "Aperto a tutti i {roles}",
+    "openToAllRoles": "{count, plural, one {Aperto anche al ruolo {roles}} other {Aperto anche ai ruoli {roles}}}",
     "rolesOpenShort": "{roles} aperti",
     "matchResultsTitle": "Risultati partite",
     "matchNotRecorded": "Non ancora registrato",
@@ -1131,13 +1194,18 @@
     "viewTeamsBtn": "Vedi squadre",
     "teamChip": "Squadra",
     "registeredSuccess": "{name} iscritto/a con successo!",
-    "enterName": "Inserisci il tuo nome"
+    "enterName": "Inserisci il tuo nome",
+    "noneDesc": "I prossimi allenamenti compariranno qui appena in programma.",
+    "nonePastDesc": "Gli allenamenti conclusi compariranno qui a fine stagione.",
+    "teamsNotPublishedPast": "Squadre non pubblicate",
+    "teamsNotPublishedPastDesc": "Per questo allenamento non sono state pubblicate le squadre.",
+    "staffCanRegisterAnyway": "Le iscrizioni sono chiuse, ma come staff puoi iscriverti comunque.",
+    "onlyRoles": "{count, plural, one {Solo ruolo {roles}} other {Solo ruoli {roles}}}"
   },
   "home": {
     "heroSubtitle": "Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.",
     "upcomingTrainings": "Prossimi allenamenti",
     "whatIsBaskin": "Cos'è il Baskin?",
-    "scroll": "Scorri",
     "birthdaySingular": "{name} compie gli anni oggi",
     "birthdayPlural": "Oggi festeggiano",
     "birthdayWish": "Fai gli auguri",

@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Stack, Button } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
@@ -14,7 +13,7 @@ import type {
   OurMatchData,
   ExternalMatchData,
 } from "@/components/teams/GironeFullView";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getActiveSeason } from "@/lib/season/activeSeason";
 import { computeStandings } from "@/lib/season/standings";
 import { buildMetadata } from "@/lib/seo";
 
@@ -110,22 +109,20 @@ function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
 }
 
 export default async function ClassifichePage() {
-  const t = await getTranslations("standings");
-  const currentSeason = getCurrentSeason();
-  const currentGroups = await groupsQuery(currentSeason);
+  const [t, tCommon] = await Promise.all([getTranslations("standings"), getTranslations("common")]);
+  const { activeSeason, displaySeason, isFallback } = await getActiveSeason("groups");
+  const currentGroups = await groupsQuery(displaySeason);
   const hasCurrentGroups = currentGroups.length > 0;
 
   return (
     <>
-      <SiteHeader />
-
       {/* Hero */}
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
             variant="overline"
-            color="primary.main"
+            color="primary.light"
             fontWeight={700}
             sx={{ letterSpacing: "0.12em" }}
           >
@@ -138,7 +135,10 @@ export default async function ClassifichePage() {
           fontWeight={800}
           sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
         >
-          {t("seasonValue", { season: currentSeason })}
+          {t("pageTitle")}
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 1, color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
+          {t("seasonValue", { season: displaySeason })}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
           <Link href="/marcatori" style={{ textDecoration: "none" }}>
@@ -188,13 +188,19 @@ export default async function ClassifichePage() {
       </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        {isFallback && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
+          </Typography>
+        )}
+
         {hasCurrentGroups ? (
           <Box>
             <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
               {t("standingsTitle")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              {t("standingsDesc", { season: currentSeason })}
+              {t("standingsDesc", { season: displaySeason })}
             </Typography>
 
             <Stack spacing={3}>
@@ -219,7 +225,7 @@ export default async function ClassifichePage() {
         ) : (
           <EmptyState
             icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={t("noGroups", { season: currentSeason })}
+            title={t("noGroups", { season: displaySeason })}
             message={t("noGroupsDesc")}
           />
         )}

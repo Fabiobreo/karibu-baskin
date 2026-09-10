@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Chip, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import BoltIcon from "@mui/icons-material/Bolt";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -59,8 +60,10 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
             fontWeight: 800,
             fontSize: "0.6rem",
             height: 18,
-            bgcolor: "primary.main",
-            color: "#fff",
+            // Riempimento tenue + testo arancione accessibile: l'etichetta
+            // bianca su primary.main si fermava a 3,79:1.
+            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.14),
+            color: "primary.onLight",
             "& .MuiChip-icon": { ml: "4px", mr: "-4px" },
           }}
         />

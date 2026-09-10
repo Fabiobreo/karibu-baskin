@@ -16,6 +16,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import TouchAppIcon from "@mui/icons-material/TouchApp";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -83,10 +84,6 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
-      {/* Legenda del ciclo a 3 stati (il tooltip non esiste su touch) */}
-      <Typography variant="caption" color="text.disabled" sx={{ mb: 0.5 }}>
-        Tocca per ciclare: presente → assente → non marcato
-      </Typography>
       {athletes.map((a) => {
         const effective = a.id in overrides ? overrides[a.id] : a.attended;
         const color = ROLE_COLORS[a.role] ?? "#9E9E9E";
@@ -143,9 +140,9 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
               placement="left"
             >
               <span>
-                {/* Target ≥ 40px: si usa col pollice in palestra */}
+                {/* 44px pieni: e' l'azione piu' ripetuta della pagina e si
+                    usa col pollice, in palestra. */}
                 <IconButton
-                  size="small"
                   onClick={() => handleToggle(a)}
                   disabled={isToggling}
                   aria-label={
@@ -155,16 +152,16 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
                         ? `${a.name}: assente`
                         : `${a.name}: non marcato`
                   }
-                  sx={{ p: 1, color: "inherit" }}
+                  sx={{ width: 44, height: 44, color: "inherit" }}
                 >
                   {isToggling ? (
-                    <CircularProgress size={18} />
+                    <CircularProgress size={22} />
                   ) : effective === true ? (
-                    <CheckCircleIcon sx={{ fontSize: 22, color: "success.main" }} />
+                    <CheckCircleIcon sx={{ fontSize: 26, color: "success.main" }} />
                   ) : effective === false ? (
-                    <CancelIcon sx={{ fontSize: 22, color: "error.main" }} />
+                    <CancelIcon sx={{ fontSize: 26, color: "error.main" }} />
                   ) : (
-                    <RadioButtonUncheckedIcon sx={{ fontSize: 22, color: "text.disabled" }} />
+                    <RadioButtonUncheckedIcon sx={{ fontSize: 26, color: "text.secondary" }} />
                   )}
                 </IconButton>
               </span>
@@ -180,6 +177,7 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
 
 function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => void }) {
   const href = `/allenamento/${s.dateSlug ?? s.id}`;
+  const hasAthletes = s.athleteCount > 0;
   const [confirming, setConfirming] = useState(false);
   const [concluding, setConcluding] = useState(false);
   const { showToast } = useToast();
@@ -233,15 +231,21 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
         </Typography>
       </Box>
 
-      {/* Body: due colonne */}
+      {/* Body: due colonne quando c'e' qualcosa da mettere nella seconda */}
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          gridTemplateColumns: { xs: "1fr", md: hasAthletes ? "1fr 1fr" : "1fr" },
         }}
       >
         {/* Colonna sinistra: presenze */}
-        <Box sx={{ p: 2.5, borderRight: { md: "1px solid" }, borderColor: { md: "divider" } }}>
+        <Box
+          sx={{
+            p: 2.5,
+            borderRight: { md: hasAthletes ? "1px solid" : "none" },
+            borderColor: { md: "divider" },
+          }}
+        >
           <Typography
             variant="overline"
             fontWeight={700}
@@ -254,10 +258,14 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
           <AttendanceList athletes={s.athletes} />
         </Box>
 
-        {/* Colonna destra: risultati */}
-        <Box sx={{ p: 2.5 }}>
-          <TrainingMatchResults sessionId={s.id} isStaff={true} teams={s.teams} />
-        </Box>
+        {/* Colonna destra: risultati. Senza iscritti non c'e' nessuna
+            partitella da registrare, e il form chiedeva "Arancioni vs Neri"
+            anche sugli allenamenti con zero presenze. */}
+        {hasAthletes && (
+          <Box sx={{ p: 2.5 }}>
+            <TrainingMatchResults sessionId={s.id} isStaff={true} teams={s.teams} />
+          </Box>
+        )}
       </Box>
 
       {/* Footer: concludi */}
@@ -309,11 +317,11 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
           </>
         ) : (
           <Button
-            size="small"
-            variant="outlined"
-            color="success"
+            variant="contained"
+            color="primary"
             startIcon={<DoneAllIcon />}
             onClick={() => setConfirming(true)}
+            sx={{ fontWeight: 700 }}
           >
             Concludi allenamento
           </Button>
@@ -340,10 +348,61 @@ export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSe
     );
   }
 
+  // Quindici allenamenti arretrati di fila sono troppi da scorrere: il mese e'
+  // il raggruppamento naturale, e le sessioni arrivano gia' ordinate per data.
+  const months: { key: string; label: string; items: AdminSessionRow[] }[] = [];
+  for (const s of sessions) {
+    const d = new Date(s.date);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    const last = months[months.length - 1];
+    if (last && last.key === key) last.items.push(s);
+    else months.push({ key, label: format(d, "MMMM yyyy", { locale: it }), items: [s] });
+  }
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {sessions.map((s) => (
-        <SessionCard key={s.id} s={s} onComplete={() => router.refresh()} />
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      {/* La legenda del ciclo a tre stati stava dentro ogni card, ripetuta
+          quindici volte e in un grigio troppo chiaro. Una volta sola, qui. */}
+      <Paper
+        variant="outlined"
+        sx={{
+          px: 2,
+          py: 1.25,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          bgcolor: "action.hover",
+        }}
+      >
+        <TouchAppIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+        <Typography variant="body2" color="text.secondary">
+          Nelle presenze, tocca il pallino per ciclare:{" "}
+          <Box component="span" sx={{ color: "success.main", fontWeight: 700 }}>
+            presente
+          </Box>{" "}
+          →{" "}
+          <Box component="span" sx={{ color: "error.main", fontWeight: 700 }}>
+            assente
+          </Box>{" "}
+          → non marcato.
+        </Typography>
+      </Paper>
+
+      {months.map((m) => (
+        <Box key={m.key} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography
+            variant="overline"
+            component="h2"
+            fontWeight={800}
+            color="text.secondary"
+            sx={{ letterSpacing: "0.1em", textTransform: "capitalize" }}
+          >
+            {m.label} · {m.items.length}
+          </Typography>
+          {m.items.map((s) => (
+            <SessionCard key={s.id} s={s} onComplete={() => router.refresh()} />
+          ))}
+        </Box>
       ))}
     </Box>
   );

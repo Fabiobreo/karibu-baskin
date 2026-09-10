@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import type { Locale } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { Gender } from "@prisma/client";
+import { readError } from "@/lib/fetchJson";
 
 interface LinkRequest {
   id: string;
@@ -82,8 +83,8 @@ export default function LinkRequestsSection() {
         body: JSON.stringify({ accept }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        showToast({ message: data.error ?? t("responseError"), severity: "error" });
+        const message = await readError(res);
+        showToast({ message: message, severity: "error" });
         return;
       }
       setRequests((prev) => prev.filter((r) => r.id !== requestId));

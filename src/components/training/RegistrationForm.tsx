@@ -436,7 +436,7 @@ export default function RegistrationForm({
                         type="button"
                         onClick={() => signIn("google", { callbackUrl: window.location.href })}
                         sx={{
-                          color: "primary.main",
+                          color: "primary.onLight",
                           fontWeight: 600,
                           textDecoration: "none",
                           background: "none",
@@ -557,7 +557,7 @@ export default function RegistrationForm({
                         setChosenRole(null);
                         setPhase("questionnaire");
                       }}
-                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}
+                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.onLight" }}
                     >
                       {t("redoQuestionnaire")}
                     </Button>
@@ -580,7 +580,7 @@ export default function RegistrationForm({
                         setChosenRole(null);
                         setPhase("questionnaire");
                       }}
-                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.main" }}
+                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.onLight" }}
                     >
                       {t("changeRole")}
                     </Button>

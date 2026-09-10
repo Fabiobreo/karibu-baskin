@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Box, Container, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import SiteHeader from "@/components/layout/SiteHeader";
 import CalendarClient from "@/components/calendar/CalendarClient";
 import SubscribeCalendarButton from "@/components/calendar/SubscribeCalendarButton";
 import { auth } from "@/lib/authjs";
@@ -34,7 +33,6 @@ export default async function CalendarioPage() {
 
   return (
     <>
-      <SiteHeader />
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box
           sx={{
@@ -48,7 +46,7 @@ export default async function CalendarioPage() {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <CalendarMonthIcon color="primary" />
-            <Typography variant="h4" fontWeight={800}>
+            <Typography variant="h4" component="h1" fontWeight={800}>
               {t("calendar")}
             </Typography>
           </Box>

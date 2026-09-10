@@ -43,6 +43,9 @@ import LockOpenIcon from "@mui/icons-material/LockOpen";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
+import HistoryIcon from "@mui/icons-material/History";
+import EmptyState from "@/components/common/EmptyState";
 import Link from "next/link";
 import { format, isSameDay } from "date-fns";
 import type { Locale } from "date-fns";
@@ -61,6 +64,7 @@ import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/date
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { TEAM_META } from "@/lib/constants";
+import { readError } from "@/lib/fetchJson";
 const DEFAULT_RESTRICTIONS: RestrictionValue = {
   allowedRoles: [],
   restrictTeamId: null,
@@ -749,8 +753,7 @@ export default function AllenamentiClient({
         }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        setEditError(data.error ?? "Errore nel salvataggio");
+        setEditError(await readError(res));
         return;
       }
       const updated: SessionWithCount = await res.json();
@@ -969,13 +972,11 @@ export default function AllenamentiClient({
         {activeTab === 0 && (
           <Box>
             {upcoming.length === 0 ? (
-              <Paper
-                elevation={0}
-                variant="outlined"
-                sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}
-              >
-                <Typography color="text.secondary">{t("none")}</Typography>
-              </Paper>
+              <EmptyState
+                icon={<EventBusyIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+                title={t("none")}
+                message={t("noneDesc")}
+              />
             ) : restUpcoming.length === 0 ? (
               <Typography variant="body2" color="text.disabled" sx={{ py: 2 }}>
                 {t("noneMore")}
@@ -1127,13 +1128,11 @@ export default function AllenamentiClient({
         {activeTab === 1 && (
           <Box>
             {pastYearGroups.length === 0 ? (
-              <Paper
-                elevation={0}
-                variant="outlined"
-                sx={{ p: 4, textAlign: "center", borderStyle: "dashed" }}
-              >
-                <Typography color="text.secondary">{t("nonePast")}</Typography>
-              </Paper>
+              <EmptyState
+                icon={<HistoryIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+                title={t("nonePast")}
+                message={t("nonePastDesc")}
+              />
             ) : (
               pastYearGroups.map(([year, yearSessions]) => {
                 const isYearOpen = openYears.has(year);

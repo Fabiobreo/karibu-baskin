@@ -37,6 +37,7 @@ import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slugUtils";
 import Link from "next/link";
 import ImageUploader from "@/components/common/ImageUploader";
+import { onHover } from "@/lib/hoverStyles";
 
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
@@ -510,7 +511,7 @@ export default function AdminSquadreClient({
                             ? `0 0 0 2px #fff, 0 0 0 4px ${c.value}`
                             : "0 1px 3px rgba(0,0,0,0.25)",
                         transition: "all 0.15s",
-                        "&:hover": { transform: "scale(1.15)" },
+                        ...onHover({ transform: "scale(1.15)" }),
                       }}
                     />
                   </Tooltip>

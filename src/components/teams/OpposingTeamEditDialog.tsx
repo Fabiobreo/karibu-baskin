@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
+import { readError } from "@/lib/fetchJson";
 
 export type OpposingTeamEditable = {
   id: string;
@@ -75,8 +76,8 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
         }),
       });
       if (!res.ok) {
-        const errData = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(errData.error ?? "Errore nel salvataggio");
+        const message = await readError(res);
+        setError(message);
         return;
       }
       const saved = (await res.json()) as OpposingTeamEditable;

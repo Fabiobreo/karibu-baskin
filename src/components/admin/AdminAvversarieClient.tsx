@@ -8,6 +8,7 @@ import {
   TextField,
   IconButton,
   Table,
+  TableContainer,
   TableHead,
   TableBody,
   TableRow,
@@ -115,68 +116,70 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
         </Typography>
       ) : (
         <Paper elevation={0} variant="outlined">
-          <Table size="small" aria-label="Lista squadre avversarie">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Città</TableCell>
-                <TableCell />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {opponents.slice(page * rpp, (page + 1) * rpp).map((o) => (
-                <TableRow key={o.id} hover>
-                  <TableCell>
-                    {o.slug ? (
-                      <Link
-                        href={`/avversarie/${o.slug}`}
-                        target="_blank"
-                        style={{ textDecoration: "none", color: "inherit" }}
-                      >
-                        <Typography
-                          variant="body2"
-                          fontWeight={600}
-                          sx={{ "&:hover": { color: "primary.main" } }}
+          <TableContainer>
+            <Table size="small" aria-label="Lista squadre avversarie">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Città</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {opponents.slice(page * rpp, (page + 1) * rpp).map((o) => (
+                  <TableRow key={o.id} hover>
+                    <TableCell>
+                      {o.slug ? (
+                        <Link
+                          href={`/avversarie/${o.slug}`}
+                          target="_blank"
+                          style={{ textDecoration: "none", color: "inherit" }}
                         >
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{ "&:hover": { color: "primary.main" } }}
+                          >
+                            {o.name}
+                          </Typography>
+                        </Link>
+                      ) : (
+                        <Typography variant="body2" fontWeight={600}>
                           {o.name}
                         </Typography>
-                      </Link>
-                    ) : (
-                      <Typography variant="body2" fontWeight={600}>
-                        {o.name}
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {o.city ?? "—"}
                       </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="text.secondary">
-                      {o.city ?? "—"}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Modifica">
-                      <IconButton
-                        size="small"
-                        aria-label="Modifica squadra avversaria"
-                        onClick={() => setEditTeam(o)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Elimina">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        aria-label="Elimina squadra avversaria"
-                        onClick={() => handleDelete(o.id, o.name)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Tooltip title="Modifica">
+                        <IconButton
+                          size="small"
+                          aria-label="Modifica squadra avversaria"
+                          onClick={() => setEditTeam(o)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Elimina">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          aria-label="Elimina squadra avversaria"
+                          onClick={() => handleDelete(o.id, o.name)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
           <TablePagination
             component="div"
             count={opponents.length}

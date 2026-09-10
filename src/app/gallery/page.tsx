@@ -3,7 +3,6 @@ import { Box, Container, Button, Divider } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import { getTranslations } from "next-intl/server";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import GalleryGrid from "@/components/gallery/GalleryGrid";
@@ -40,8 +39,6 @@ export default async function GalleryPage() {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero chip={t("gallery.heroChip")} title="Gallery" subtitle={t("gallery.heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>

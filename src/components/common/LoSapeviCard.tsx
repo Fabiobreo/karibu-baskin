@@ -63,7 +63,7 @@ export default function LoSapeviCard() {
             <Typography
               variant="overline"
               sx={{
-                color: "primary.main",
+                color: "primary.onLight",
                 fontWeight: 700,
                 letterSpacing: "0.12em",
                 display: "block",
@@ -73,7 +73,12 @@ export default function LoSapeviCard() {
             >
               {t("didYouKnow")}
             </Typography>
-            <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 0.5, lineHeight: 1.3 }}>
+            <Typography
+              variant="subtitle1"
+              component="h3"
+              fontWeight={800}
+              sx={{ mb: 0.5, lineHeight: 1.3 }}
+            >
               {item.titolo}
             </Typography>
             <Typography

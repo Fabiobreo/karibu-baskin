@@ -33,7 +33,7 @@ export default function MatchCountdown({ targetIso }: Props) {
 
   if (!parts) {
     return (
-      <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "0.95rem" }}>
+      <Typography sx={{ color: "common.white", fontWeight: 800, fontSize: "0.95rem" }}>
         {t("countdownInProgress")}
       </Typography>
     );
@@ -60,7 +60,7 @@ export default function MatchCountdown({ targetIso }: Props) {
       <AccessTimeIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }} />
       <Typography
         sx={{
-          color: "#fff",
+          color: "common.white",
           fontWeight: 700,
           fontSize: { xs: "0.78rem", md: "0.85rem" },
           letterSpacing: "0.02em",

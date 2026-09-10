@@ -2,7 +2,6 @@ import { Container, Box, Typography, Button } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import FaqAccordion from "@/components/common/FaqAccordion";
 import { getFaqs } from "@/lib/content/faqs";
@@ -21,8 +20,6 @@ export default async function FaqPage() {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero
         chip={t("faq.heroChip")}
         title={t("faq.heroTitle")}
@@ -34,7 +31,7 @@ export default async function FaqPage() {
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           {t("faq.noAnswer")}{" "}
           <Link href="/contatti" style={{ color: "inherit" }}>
-            <Box component="span" sx={{ color: "primary.main", fontWeight: 600 }}>
+            <Box component="span" sx={{ color: "primary.onLight", fontWeight: 600 }}>
               {t("faq.contactUs")}
             </Box>
           </Link>

@@ -45,7 +45,16 @@ export default function AdminEsportaClient() {
       <Paper
         elevation={0}
         variant="outlined"
-        sx={{ p: 2.5, mb: 3, display: "flex", alignItems: "center", gap: 2 }}
+        // `flexWrap`: senza, etichetta + select + chip su una riga sola
+        // superano i 390px e trascinano il documento in orizzontale.
+        sx={{
+          p: 2.5,
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
       >
         <Typography variant="body2" fontWeight={600} sx={{ flexShrink: 0 }}>
           Stagione di riferimento

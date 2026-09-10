@@ -2,10 +2,10 @@ import { Container, Box, Typography, Paper, Avatar, Chip, Divider } from "@mui/m
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import ComparePicker from "@/components/common/ComparePicker";
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
+import { shootingAccuracy } from "@/lib/matches/accuracy";
 import { loadBadgeInput } from "@/lib/rating/badgeService";
 import { computeBadges } from "@/lib/rating/badges";
 import type { Metadata } from "next";
@@ -85,7 +85,7 @@ async function loadComparePlayer(key: string): Promise<ComparePlayer | null> {
     matches,
     points,
     avg: matches > 0 ? points / matches : 0,
-    accuracy: shots > 0 ? Math.round((made / shots) * 100) : null,
+    accuracy: shootingAccuracy(made, shots),
     mvp: row._count.matchMvps,
     badges: computeBadges(badgeInput).length,
     trend: stats.map((m) => m.points),
@@ -143,7 +143,6 @@ export default async function ConfrontaPage({ searchParams }: Props) {
 
   return (
     <>
-      <SiteHeader />
       <PageHero chip={t("compare")} title={t("compareTitle")} subtitle={t("comparePick")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>

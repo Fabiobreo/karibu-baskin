@@ -8,6 +8,7 @@ import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { useThemeMode } from "@/context/ThemeContext";
+import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 
 const MODES = ["light", "system", "dark"] as const;
 type ColorMode = (typeof MODES)[number];
@@ -39,9 +40,7 @@ export default function ThemeSwitcher() {
       onChange={(_, val: ColorMode | null) => {
         if (val) setMode(val);
       }}
-      size="small"
       aria-label={t("themeSystem")}
-      sx={{ height: 28 }}
     >
       {MODES.map((m) => (
         <ToggleButton
@@ -50,6 +49,8 @@ export default function ThemeSwitcher() {
           title={t(LABEL_KEY[m])}
           aria-label={t(LABEL_KEY[m])}
           sx={{
+            // Erano 32x28: sotto la soglia tattile, e in fila di tre.
+            ...TOUCH_TARGET_MIN,
             px: 0.9,
             py: 0,
             lineHeight: 1,
@@ -60,7 +61,7 @@ export default function ThemeSwitcher() {
               bgcolor: (theme) => alpha(theme.palette.common.white, 0.08),
             },
             "&.Mui-selected": {
-              color: "primary.main",
+              color: "primary.light",
               bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
               "&:hover": {
                 bgcolor: (theme) => alpha(theme.palette.primary.main, 0.2),

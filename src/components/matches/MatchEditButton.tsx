@@ -29,6 +29,7 @@ import FlightIcon from "@mui/icons-material/Flight";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import type { MatchType, MatchResult } from "@prisma/client";
+import { readError } from "@/lib/fetchJson";
 
 const MATCH_TYPE_LABELS: Record<MatchType, string> = {
   LEAGUE: "Campionato",
@@ -183,8 +184,8 @@ export default function MatchEditButton({
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Errore nel salvataggio");
+        const message = await readError(res);
+        setError(message);
         setLoading(false);
         return;
       }
@@ -205,7 +206,7 @@ export default function MatchEditButton({
           size="small"
           aria-label="Modifica partita"
           sx={{
-            color: "#fff",
+            color: "common.white",
             bgcolor: "rgba(255,255,255,0.1)",
             border: "1px solid rgba(255,255,255,0.2)",
             "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },

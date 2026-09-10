@@ -15,6 +15,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { readError } from "@/lib/fetchJson";
 import SessionRestrictionEditor, {
   seasonForDate,
   type RestrictionValue,
@@ -97,8 +98,7 @@ export default function AdminSessionForm({
         return;
       }
       if (!res.ok) {
-        const data = await res.json();
-        setApiError(data.error ?? "Errore nella creazione");
+        setApiError(await readError(res));
         return;
       }
 

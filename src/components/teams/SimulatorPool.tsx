@@ -113,7 +113,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
               sx={{
                 minWidth: 40,
                 fontWeight: 800,
-                color: "primary.main",
+                color: "primary.onLight",
                 borderColor: "primary.main",
               }}
             >

@@ -19,7 +19,7 @@ export default function SimulatorChecklist({ checks }: { checks: LineupChecks })
     { ok: checks.hasThree, label: t("ruleThree") },
     { ok: checks.twoFives, label: t("ruleFive") },
     { ok: checks.roleSumOk, label: t("ruleSum", { sum: checks.roleSum, max: MAX_ROLE_SUM }) },
-    { ok: checks.genderMix, label: t("ruleWoman") },
+    { ok: checks.genderMix, label: t("ruleGenderMix") },
   ];
 
   return (

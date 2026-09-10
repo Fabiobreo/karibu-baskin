@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
+import { readError } from "@/lib/fetchJson";
 
 export interface GuestUser {
   id: string;
@@ -37,8 +38,8 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
         body: JSON.stringify({ appRole }),
       });
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        showToast({ message: data.error ?? "Errore nell'approvazione", severity: "error" });
+        const message = await readError(res);
+        showToast({ message: message, severity: "error" });
         return;
       }
       setGuests((prev) => prev.filter((g) => g.id !== guest.id));

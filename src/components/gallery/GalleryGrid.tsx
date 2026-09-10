@@ -18,6 +18,7 @@ import CollectionsIcon from "@mui/icons-material/Collections";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import Image from "next/image";
+import { onHover } from "@/lib/hoverStyles";
 
 export interface GalleryPost {
   id: string;
@@ -72,7 +73,7 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
               cursor: "pointer",
               borderRadius: 1,
               overflow: "hidden",
-              "&:hover img": { transform: "scale(1.04)" },
+              ...onHover({ "& img": { transform: "scale(1.04)" } }),
             }}
           >
             <Image

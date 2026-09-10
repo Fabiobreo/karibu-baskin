@@ -32,6 +32,9 @@ import type {
   UserEntry,
 } from "@/components/admin/userList/userListShared";
 
+/** Righe per pagina di default, allineato al server (vedi utenti/page.tsx). */
+const DEFAULT_ROWS_PER_PAGE = 25;
+
 export default function AdminUserList({
   users: initialUsers,
   childEntries: initialChildren,
@@ -39,7 +42,7 @@ export default function AdminUserList({
   isAdmin = false,
   serverTotal,
   serverPage = 1,
-  serverLimit = 10,
+  serverLimit = DEFAULT_ROWS_PER_PAGE,
   currentFilters = {},
 }: {
   users: UserEntry[];
@@ -106,7 +109,8 @@ export default function AdminUserList({
       if (merged.sortBy !== "createdAt") params.set("sortBy", merged.sortBy);
       if (merged.sortDir !== "desc") params.set("sortDir", merged.sortDir);
       if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
-      if ((merged.limit ?? 10) !== 10) params.set("limit", String(merged.limit));
+      if ((merged.limit ?? DEFAULT_ROWS_PER_PAGE) !== DEFAULT_ROWS_PER_PAGE)
+        params.set("limit", String(merged.limit));
       startTransition(() => router.push(`${pathname}?${params.toString()}`));
     },
     [

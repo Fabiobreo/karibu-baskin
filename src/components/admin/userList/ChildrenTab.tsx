@@ -305,7 +305,7 @@ export default function ChildrenTab({
           setRowsPerPage(parseInt(e.target.value));
           setPage(0);
         }}
-        rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage="Righe:"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} di ${count}`}
       />

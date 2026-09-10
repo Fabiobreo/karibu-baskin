@@ -64,17 +64,26 @@ type StatusKey = "live" | "ended" | "todayBang" | "tomorrow" | "daysAway";
 function getStatusData(
   date: Date,
   endTime: Date | null
-): { key: StatusKey; diffDays?: number; color: string } {
+): { key: StatusKey; diffDays?: number; color: string; labelColor: string } {
   const now = new Date();
   const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
-  if (now >= date && now <= end) return { key: "live", color: "match.win" };
-  if (now > end) return { key: "ended", color: "text.disabled" };
+  if (now >= date && now <= end)
+    return { key: "live", color: "match.win", labelColor: "common.white" };
+  if (now > end) return { key: "ended", color: "text.disabled", labelColor: "common.white" };
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return { key: "todayBang", color: "primary.main" };
-  if (diffDays === 1) return { key: "tomorrow", color: "info.main" };
-  return { key: "daysAway", diffDays, color: "info.main" };
+  if (diffDays === 0)
+    return { key: "todayBang", color: "primary.main", labelColor: "common.white" };
+  // Come nell'hero: niente ciano fuori palette per "Domani" / "Tra N giorni".
+  if (diffDays === 1)
+    return { key: "tomorrow", color: "secondary.main", labelColor: "secondary.contrastText" };
+  return {
+    key: "daysAway",
+    diffDays,
+    color: "secondary.main",
+    labelColor: "secondary.contrastText",
+  };
 }
 
 export default function SessionCard({
@@ -136,7 +145,7 @@ export default function SessionCard({
       : statusData.key === "tomorrow"
         ? tCommon("tomorrow")
         : t(statusData.key);
-  const status = { label: statusLabel, color: statusData.color };
+  const status = { label: statusLabel, color: statusData.color, labelColor: statusData.labelColor };
   const now = new Date();
   const sessEnd = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
   const isPast = now > sessEnd;
@@ -223,6 +232,7 @@ export default function SessionCard({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
             <Typography
               variant={hero ? "h4" : "subtitle1"}
+              component="h3"
               fontWeight={hero ? 800 : 700}
               noWrap={!hero}
               sx={{
@@ -278,7 +288,7 @@ export default function SessionCard({
               size="small"
               sx={{
                 bgcolor: muted ? "action.selected" : status.color,
-                color: muted ? "text.secondary" : "common.white",
+                color: muted ? "text.secondary" : status.labelColor,
                 fontWeight: 700,
                 fontSize: "0.68rem",
               }}

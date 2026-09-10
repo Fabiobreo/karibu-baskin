@@ -47,9 +47,12 @@ export default function MagicLinkForm({ callbackUrl = "/" }: { callbackUrl?: str
         onChange={(e) => setEmail(e.target.value)}
         disabled={loading}
       />
+      {/* `text` e non `outlined`: Google e' la via principale e resta nella
+          sua forma canonica, quindi la gerarchia la fa il magic link
+          arretrando. */}
       <Button
         type="submit"
-        variant="outlined"
+        variant="text"
         fullWidth
         disabled={loading}
         startIcon={loading ? <CircularProgress size={18} /> : <MailOutlineIcon />}

@@ -52,6 +52,7 @@ interface Props {
   slugMap?: Record<string, string>; // reg.id → user.slug
   currentUserTeamIndex?: number; // tab da selezionare di default su mobile
   editMode?: boolean; // controllato dal parent (via TeamsHeader)
+  isEnded?: boolean; // allenamento già concluso: cambia il messaggio "nessuna squadra"
   onExitEditMode?: () => void;
   // Stato squadre gestito dal parent
   teams: TeamsData | null;
@@ -511,6 +512,7 @@ export default function TeamDisplay({
   slugMap = {},
   currentUserTeamIndex,
   editMode = false,
+  isEnded = false,
   onExitEditMode,
   teams,
   teamsLoading,
@@ -651,10 +653,10 @@ export default function TeamDisplay({
       >
         <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
         <Typography variant="body1" color="text.secondary" fontWeight={500}>
-          {t("teamsNotPublished")}
+          {isEnded ? t("teamsNotPublishedPast") : t("teamsNotPublished")}
         </Typography>
         <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-          {t("teamsNotPublishedDesc")}
+          {isEnded ? t("teamsNotPublishedPastDesc") : t("teamsNotPublishedDesc")}
         </Typography>
       </Box>
     );

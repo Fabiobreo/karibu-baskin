@@ -7,7 +7,7 @@ export default function AdminLoginPage() {
     <Container maxWidth="xs" sx={{ pt: 10 }}>
       <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
         <LockIcon color="primary" sx={{ fontSize: 48, mb: 1 }} />
-        <Typography variant="h4" gutterBottom fontWeight={800}>
+        <Typography variant="h4" component="h1" gutterBottom fontWeight={800}>
           Area Admin
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

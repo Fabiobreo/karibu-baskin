@@ -2,12 +2,23 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { Container, Typography, Box, Paper, Chip, Stack, Button, Badge } from "@mui/material";
+import {
+  Breadcrumbs,
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Chip,
+  Stack,
+  Button,
+  Badge,
+  Link as MuiLink,
+} from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
-import SiteHeader from "@/components/layout/SiteHeader";
 import { contrastText } from "@/lib/colorUtils";
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/profile/ParentChildLinker";
@@ -29,6 +40,12 @@ import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
 import type { LockedBadge } from "@/lib/rating/badges";
 import { buildMetadata } from "@/lib/seo";
+import PageHero from "@/components/common/PageHero";
+import NextTrainingCard, {
+  type NextTrainingInfo,
+  type TrainingSubject,
+} from "@/components/profile/NextTrainingCard";
+import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 
 export const metadata = buildMetadata({
   title: "Il mio profilo",
@@ -125,6 +142,35 @@ export default async function ProfiloPage() {
 
   const pendingAvailabilities = await countPendingAvailabilities(user.id);
 
+  // ── Prossimo allenamento ──────────────────────────────────────────────────
+  // È il motivo principale per cui un atleta apre il sito, e nel profilo non
+  // c'era. Per un genitore le righe sono quelle dei figli collegati.
+  const childIds = user.children.map((c) => c.id);
+  const nextSession = await prisma.trainingSession.findFirst({
+    where: { date: { gte: new Date() } },
+    orderBy: { date: "asc" },
+    select: {
+      id: true,
+      title: true,
+      date: true,
+      dateSlug: true,
+      registrationOpen: true,
+      allowedRoles: true,
+      restrictTeamId: true,
+      openRoles: true,
+      team: { select: { name: true } },
+      registrations: {
+        where: {
+          OR: [
+            { userId: user.id },
+            ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
+          ],
+        },
+        select: { id: true, userId: true, childId: true },
+      },
+    },
+  });
+
   const effectiveRole = session.user.appRole as AppRole;
   const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
   const isAthlete =
@@ -154,10 +200,72 @@ export default async function ProfiloPage() {
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
-          session: { select: { id: true, date: true, dateSlug: true } },
+          session: { select: { id: true, title: true, date: true, dateSlug: true } },
         },
       })
     : [];
+
+  let nextTraining: NextTrainingInfo | null = null;
+  let trainingSubjects: TrainingSubject[] = [];
+  if (nextSession) {
+    const restrictions = {
+      allowedRoles: nextSession.allowedRoles,
+      restrictTeamId: nextSession.restrictTeamId,
+      openRoles: nextSession.openRoles,
+    };
+    const inRestrictedTeam = (memberships: { teamId: string }[]) =>
+      restrictions.restrictTeamId === null ||
+      memberships.length === 0 || // nessuna squadra → bypass, come fa l'API
+      memberships.some((m) => m.teamId === restrictions.restrictTeamId);
+
+    const subjects: TrainingSubject[] = [];
+    if (isAthlete) {
+      const check = checkRegistrationAllowed(
+        restrictions,
+        effectiveRole,
+        user.sportRole ?? 0,
+        inRestrictedTeam(user.teamMemberships)
+      );
+      subjects.push({
+        kind: "user",
+        id: user.id,
+        name: user.name ?? "",
+        sportRole: user.sportRole,
+        registrationId: nextSession.registrations.find((r) => r.userId === user.id)?.id ?? null,
+        allowed: check.allowed,
+        reason: check.reason ?? null,
+      });
+    }
+    for (const child of user.children) {
+      const check = checkRegistrationAllowed(
+        restrictions,
+        "ATHLETE",
+        child.sportRole ?? 0,
+        inRestrictedTeam(child.teamMemberships)
+      );
+      subjects.push({
+        kind: "child",
+        id: child.id,
+        name: child.name,
+        sportRole: child.sportRole,
+        registrationId: nextSession.registrations.find((r) => r.childId === child.id)?.id ?? null,
+        allowed: check.allowed,
+        reason: check.reason ?? null,
+      });
+    }
+
+    if (subjects.length > 0) {
+      nextTraining = {
+        id: nextSession.id,
+        title: nextSession.title,
+        date: nextSession.date.toISOString(),
+        href: `/allenamento/${nextSession.dateSlug ?? nextSession.id}`,
+        registrationOpen: nextSession.registrationOpen,
+        teamName: nextSession.team?.name ?? null,
+      };
+      trainingSubjects = subjects;
+    }
+  }
 
   // Badge dell'utente (solo atleti) e dei figli (per il tab Famiglia)
   const userBadges = isAthlete ? await buildBadgeView({ userId: user.id }) : null;
@@ -173,6 +281,32 @@ export default async function ProfiloPage() {
   // ── Contenuto tab "Profilo": card principale + dati atleta + presenze ──
   const profileTab = (
     <>
+      {nextTraining ? (
+        <NextTrainingCard training={nextTraining} subjects={trainingSubjects} />
+      ) : (
+        // La domanda "quando è il prossimo allenamento?" deve avere una
+        // risposta anche quando la risposta è "nessuno".
+        <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+            <CalendarMonthIcon sx={{ fontSize: 20, color: "text.disabled" }} />
+            <Typography
+              variant="overline"
+              fontWeight={800}
+              color="text.secondary"
+              sx={{ letterSpacing: "0.08em" }}
+            >
+              {t("nextTraining")}
+            </Typography>
+          </Box>
+          <Typography variant="body2" fontWeight={700}>
+            {t("nextTrainingNone")}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t("nextTrainingNoneDesc")}
+          </Typography>
+        </Paper>
+      )}
+
       <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
           <ProfileAvatarEditor
@@ -275,9 +409,9 @@ export default async function ProfiloPage() {
         </Box>
       )}
 
-      {attendanceSeasons.length > 1 && (
-        <AttendanceSection seasons={attendanceSeasons} currentSeason={currentSeason} />
-      )}
+      {/* Le presenze erano già calcolate ma comparivano solo con più di una
+          stagione alle spalle: per chi è al primo anno sparivano del tutto. */}
+      <AttendanceSection seasons={attendanceSeasons} currentSeason={currentSeason} />
     </>
   );
 
@@ -323,12 +457,39 @@ export default async function ProfiloPage() {
 
   return (
     <>
-      <SiteHeader />
-      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography variant="h4" fontWeight={800} gutterBottom>
-          {t("title")}
-        </Typography>
+      {/* Stesso schema delle pagine pubbliche: passando da /squadre a /profilo
+          non deve sembrare un altro sito. */}
+      <PageHero
+        chip={t("heroChip")}
+        title={t("title")}
+        subtitle={t("heroSubtitle")}
+        subtitleMaxWidth={540}
+        breadcrumb={
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+          >
+            {/* Niente `component={Link}`: qui siamo in un Server Component e
+                passare un componente a un Client Component non attraversa il
+                confine RSC. Resta un'ancora normale. */}
+            <MuiLink
+              href="/"
+              underline="hover"
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+            >
+              {t("breadcrumbHome")}
+            </MuiLink>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+              {t("title")}
+            </Typography>
+          </Breadcrumbs>
+        }
+      />
 
+      {/* `md` come tutte le altre pagine: con `sm` su 1440px restava una
+          strisciolina centrale da 600px. */}
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {user.appRole === "GUEST" && (
           <Box sx={{ mb: 3 }}>
             <GuestWelcomeBanner />
@@ -339,6 +500,7 @@ export default async function ProfiloPage() {
           <ClaimAnonymousCard
             registrations={anonymousMatches.map((r) => ({
               id: r.id,
+              title: r.session.title,
               date: r.session.date,
               dateSlug: r.session.dateSlug,
             }))}

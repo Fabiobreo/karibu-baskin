@@ -14,6 +14,7 @@ import {
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { useToast } from "@/context/ToastContext";
+import { readError } from "@/lib/fetchJson";
 
 export interface MatchAvailabilityEntity {
   kind: "user" | "child";
@@ -68,8 +69,8 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? tCommon("error"));
+        const message = await readError(res);
+        throw new Error(message);
       }
       showToast({ message: t("availabilitySaved"), severity: "success" });
     } catch (err) {
@@ -103,7 +104,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
         <Typography
           variant="overline"
           fontWeight={800}
-          color="primary"
+          color="primary.onLight"
           sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}
         >
           {t("yourAvailability")}

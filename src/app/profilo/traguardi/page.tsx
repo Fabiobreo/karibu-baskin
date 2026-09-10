@@ -1,9 +1,8 @@
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
-import { Container, Box, Typography, Chip } from "@mui/material";
+import { Breadcrumbs, Container, Box, Typography, Chip, Link as MuiLink } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import { prisma } from "@/lib/db";
 import { loadBadgeInput, type PlayerRef } from "@/lib/rating/badgeService";
@@ -79,12 +78,29 @@ export default async function TraguardiPage() {
 
   return (
     <>
-      <SiteHeader />
       <PageHero
         chip={t("achievementsPageChip")}
         title={t("achievements")}
         subtitle={t("achievementsPageSubtitle")}
         subtitleMaxWidth={520}
+        breadcrumb={
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+          >
+            <MuiLink
+              href="/profilo"
+              underline="hover"
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+            >
+              {t("title")}
+            </MuiLink>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+              {t("achievementsPageChip")}
+            </Typography>
+          </Breadcrumbs>
+        }
       />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>

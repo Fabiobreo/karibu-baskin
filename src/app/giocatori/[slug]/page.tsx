@@ -17,7 +17,8 @@ import {
   Button,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/layout/SiteHeader";
+import { brandColor, heroMedal } from "@/lib/heroStyles";
+import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -39,6 +40,7 @@ import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { buildMetadata } from "@/lib/seo";
+import { onHover } from "@/lib/hoverStyles";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -220,6 +222,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   const currentSeason = getCurrentSeason();
   const currentTeams = player.teamMemberships.filter((m) => m.team.season === currentSeason);
+  // Squadra da usare come genitore nel breadcrumb: quella della stagione in
+  // corso, altrimenti la piu' recente a cui il giocatore e' appartenuto.
+  const breadcrumbTeam =
+    currentTeams[0]?.team ??
+    [...player.teamMemberships].sort((a, b) => b.team.season.localeCompare(a.team.season))[0]
+      ?.team ??
+    null;
 
   // Medaglie: calcola se l'utente è 1°/2°/3° top scorer per ciascuna (squadra, stagione)
   const teamSeasonPairs = player.teamMemberships.map((m) => ({
@@ -404,8 +413,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   return (
     <>
-      <SiteHeader />
-
       {/* Hero — design "carta giocatore" condivisibile */}
       <Box
         style={{
@@ -429,7 +436,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: alpha("#E65100", 0.1),
+            backgroundColor: alpha(brandColor.orange, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -442,7 +449,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: alpha("#E65100", 0.06),
+            backgroundColor: alpha(brandColor.orange, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -467,11 +474,27 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               sx={{
                 color: "rgba(255,255,255,0.65)",
                 fontWeight: 500,
-                "&:hover": { color: "#fff" },
+                "&:hover": { color: brandColor.white },
               }}
             >
               {tTeams("teamBreadcrumb")}
             </MuiLink>
+            {/* Il profilo giocatore non sta sotto /squadre: il genitore reale
+                e' la sua squadra. Senza squadra ci si ferma a "Squadre". */}
+            {breadcrumbTeam && (
+              <MuiLink
+                href={`/squadre/${breadcrumbTeam.season.replace("-", "")}/${slugify(breadcrumbTeam.name)}`}
+                underline="hover"
+                variant="body2"
+                sx={{
+                  color: "rgba(255,255,255,0.65)",
+                  fontWeight: 500,
+                  "&:hover": { color: brandColor.white },
+                }}
+              >
+                {breadcrumbTeam.name}
+              </MuiLink>
+            )}
             <Typography
               variant="body2"
               sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
@@ -593,7 +616,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     icon={
                       m.isCaptain ? (
                         <EmojiEventsIcon
-                          sx={{ fontSize: "0.95rem !important", color: "#FFD54F !important" }}
+                          sx={{
+                            fontSize: "0.95rem !important",
+                            color: `${heroMedal.gold} !important`,
+                          }}
                         />
                       ) : undefined
                     }
@@ -622,7 +648,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {medals.slice(0, 4).map((m, i) => {
                     const isFirst = m.rank === 1;
                     const isSecond = m.rank === 2;
-                    const medalColor = isFirst ? "#FFC107" : isSecond ? "#BDBDBD" : "#CD7F32";
+                    // L'hero e' scuro in entrambi i temi: qui servono i
+                    // valori metallici, non quelli (scuriti) del tema chiaro.
+                    const medalColor = isFirst
+                      ? heroMedal.gold
+                      : isSecond
+                        ? heroMedal.silver
+                        : heroMedal.bronze;
                     const medalColorToken = isFirst
                       ? "medal.gold"
                       : isSecond
@@ -640,7 +672,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           display: "flex",
                           alignItems: "center",
                           gap: 0.75,
-                          bgcolor: alpha("#000000", 0.35),
+                          bgcolor: alpha(brandColor.black, 0.35),
                           border: `1.5px solid ${medalColor}`,
                           borderRadius: 999,
                           pl: 0.5,
@@ -654,7 +686,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             height: 22,
                             borderRadius: "50%",
                             background: `radial-gradient(circle at 30% 30%, ${medalColor} 0%, ${
-                              isFirst ? "#FFA000" : isSecond ? "#9E9E9E" : "#8D6E63"
+                              isFirst
+                                ? heroMedal.goldDeep
+                                : isSecond
+                                  ? heroMedal.silverDeep
+                                  : heroMedal.bronzeDeep
                             } 100%)`,
                             display: "flex",
                             alignItems: "center",
@@ -695,7 +731,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       label={`+${medals.length - 4}`}
                       size="small"
                       sx={{
-                        bgcolor: alpha("#ffffff", 0.1),
+                        bgcolor: alpha(brandColor.white, 0.1),
                         color: "common.white",
                         fontWeight: 700,
                         fontSize: "0.7rem",
@@ -921,7 +957,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               <Box>
                 <Typography
                   variant="overline"
-                  color="primary"
+                  color="primary.onLight"
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
@@ -1055,7 +1091,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <EmojiEventsIcon sx={{ color: "medal.gold" }} />
                 <Typography
                   variant="overline"
-                  sx={{ color: "#FFC107", fontWeight: 700, letterSpacing: "0.1em" }}
+                  sx={{ color: "medal.gold", fontWeight: 700, letterSpacing: "0.1em" }}
                 >
                   {t("honors")}
                 </Typography>
@@ -1067,12 +1103,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 {medals.map((m, i) => {
                   const isFirst = m.rank === 1;
                   const isSecond = m.rank === 2;
-                  const medalColor = isFirst ? "#FFC107" : isSecond ? "#9E9E9E" : "#CD7F32";
-                  const medalGradient = isFirst
-                    ? "linear-gradient(135deg, #FFD54F 0%, #FFA000 100%)"
+                  // Su fondo chiaro le medaglie prendono i token del tema, che
+                  // qui sono scuriti: l'oro #FFC107 su bianco faceva 1,63:1.
+                  const medalColor = isFirst
+                    ? "medal.gold"
                     : isSecond
-                      ? "linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)"
-                      : "linear-gradient(135deg, #D7A56B 0%, #8D6E63 100%)";
+                      ? "medal.silver"
+                      : "medal.bronze";
                   const medalLabel = isFirst
                     ? "Top scorer di ruolo"
                     : isSecond
@@ -1086,30 +1123,21 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           p: 2,
                           border: "1px solid",
                           borderColor: isFirst ? medalColor : "divider",
-                          boxShadow: isFirst ? `0 4px 16px ${medalColor}33` : "none",
+                          boxShadow: isFirst
+                            ? `0 4px 16px ${alpha(brandColor.black, 0.12)}`
+                            : "none",
                           display: "flex",
                           alignItems: "center",
                           gap: 1.5,
                           height: "100%",
                         }}
                       >
-                        <Box
-                          sx={{
-                            width: 46,
-                            height: 46,
-                            borderRadius: "50%",
-                            background: medalGradient,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "common.white",
-                            border: "3px solid #fff",
-                            boxShadow: "0 3px 10px rgba(0,0,0,0.2)",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <EmojiEventsIcon sx={{ fontSize: 22, color: "common.white" }} />
-                        </Box>
+                        <MedalDisc
+                          rank={isFirst ? 1 : isSecond ? 2 : 3}
+                          size={46}
+                          borderWidth={3}
+                          iconSize={22}
+                        />
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography
                             variant="caption"
@@ -1149,7 +1177,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <GroupsIcon color="primary" />
                 <Typography
                   variant="overline"
-                  color="primary"
+                  color="primary.onLight"
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
@@ -1176,7 +1204,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         alignItems: "stretch",
                         cursor: "pointer",
                         transition: "all 0.12s",
-                        "&:hover": { transform: "translateX(4px)", boxShadow: 2 },
+                        ...onHover({ transform: "translateX(4px)", boxShadow: 2 }),
                       }}
                     >
                       <Box
@@ -1235,7 +1263,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <SportsSoccerIcon color="primary" />
                 <Typography
                   variant="overline"
-                  color="primary"
+                  color="primary.onLight"
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
@@ -1260,7 +1288,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         overflow: "hidden",
                         cursor: "pointer",
                         transition: "box-shadow 0.12s, transform 0.12s",
-                        "&:hover": { boxShadow: 2, transform: "translateX(3px)" },
+                        ...onHover({ boxShadow: 2, transform: "translateX(3px)" }),
                       }}
                     >
                       <Box sx={{ display: "flex", alignItems: "stretch" }}>

@@ -9,7 +9,6 @@ import { format } from "date-fns";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import SiteHeader from "@/components/layout/SiteHeader";
 import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
@@ -163,8 +162,6 @@ export default async function EventoPage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader />
-
       {/* Hero copertina */}
       <Box
         sx={{
@@ -253,7 +250,7 @@ export default async function EventoPage({ params }: Props) {
                     rel="noopener noreferrer"
                     style={{ textDecoration: "none" }}
                   >
-                    <Typography variant="body1" fontWeight={600} sx={{ color: "primary.main" }}>
+                    <Typography variant="body1" fontWeight={600} sx={{ color: "primary.onLight" }}>
                       {ev.location}
                     </Typography>
                   </Link>

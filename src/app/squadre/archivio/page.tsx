@@ -10,7 +10,6 @@ import {
   Breadcrumbs,
   Link as MuiLink,
 } from "@mui/material";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -51,8 +50,6 @@ export default async function SquadreArchivioPage() {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero
         chip={t("archiveHeroChip")}
         chipWhite

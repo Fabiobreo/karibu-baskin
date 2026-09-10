@@ -3,28 +3,30 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  Container,
   Typography,
   Box,
+  Button,
+  Collapse,
   Paper,
   Chip,
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
-  Breadcrumbs,
-  Link as MuiLink,
 } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
+import EmptyState from "@/components/common/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
+import HistoryIcon from "@mui/icons-material/History";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FlightIcon from "@mui/icons-material/Flight";
-import Link from "next/link";
 import { format, isToday, isTomorrow } from "date-fns";
 import type { Locale } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useToast } from "@/context/ToastContext";
 import type { MatchType } from "@prisma/client";
+import { readError } from "@/lib/fetchJson";
 
 export interface AvailabilityEntity {
   kind: "user" | "child";
@@ -85,6 +87,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
   const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
   // Salvataggi in corso (toggle disabilitato nel frattempo)
   const [savingKeys, setSavingKeys] = useState<Set<string>>(new Set());
+  const [showPast, setShowPast] = useState(false);
   const { showToast } = useToast();
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
@@ -114,8 +117,8 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? tCommon("error"));
+        const message = await readError(res);
+        throw new Error(message);
       }
       showToast({ message: t("availabilitiesSaved", { count: 1 }), severity: "success" });
     } catch (err) {
@@ -139,47 +142,33 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: { xs: 3, md: 4 } }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <MuiLink
-          component={Link}
-          href="/profilo"
-          underline="hover"
-          color="text.secondary"
-          variant="body2"
-        >
-          {t("title")}
-        </MuiLink>
-        <Typography variant="body2" color="text.primary">
-          {t("availabilitiesTitle")}
-        </Typography>
-      </Breadcrumbs>
-
-      <Typography variant="h4" fontWeight={800} gutterBottom>
-        {t("myAvailabilities")}
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: "block" }}>
+    <>
+      {/* Microcopy operativa: dice cosa fare, quando si salva e cosa succede
+          se non rispondi. Sta in cima apposta. */}
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, display: "block" }}>
         {t("availabilitiesDesc")}
       </Typography>
 
       {initialMatches.length === 0 ? (
-        <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-          <Typography color="text.secondary">{t("noMatchesForTeams")}</Typography>
-        </Paper>
+        <EmptyState
+          icon={<EventBusyIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+          title={t("noMatchesForTeams")}
+          message={t("noMatchesForTeamsDesc")}
+        />
       ) : (
         <>
           {futureMatches.length === 0 ? (
-            <Paper elevation={0} variant="outlined" sx={{ p: 2.5, textAlign: "center", mb: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                {t("noUpcomingMatches")}
-              </Typography>
-            </Paper>
+            <EmptyState
+              icon={<EventBusyIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+              title={t("noUpcomingMatches")}
+              message={t("noUpcomingMatchesDesc")}
+            />
           ) : (
             <Box sx={{ mb: 3 }}>
               <Typography
                 variant="overline"
                 fontWeight={800}
-                color="primary"
+                color="primary.onLight"
                 sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
               >
                 {t("upcoming")} ({futureMatches.length})
@@ -197,31 +186,48 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
             </Box>
           )}
 
+          {/* Le concluse non sono azionabili: undici righe di pulsanti spenti
+              spingevano giu' la parte utile. Restano a un clic di distanza. */}
           {pastMatches.length > 0 && (
             <Box>
-              <Typography
-                variant="overline"
-                fontWeight={800}
-                color="text.disabled"
-                sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
+              <Button
+                onClick={() => setShowPast((v) => !v)}
+                size="small"
+                aria-expanded={showPast}
+                startIcon={<HistoryIcon sx={{ fontSize: "1rem !important" }} />}
+                endIcon={
+                  <ExpandMoreIcon
+                    sx={{
+                      transform: showPast ? "rotate(180deg)" : "none",
+                      transition: "transform 0.2s",
+                    }}
+                  />
+                }
+                sx={{ fontWeight: 700 }}
               >
-                {t("past")} ({pastMatches.length})
-              </Typography>
-              {pastMatches.map((m) => (
-                <CompactMatchRow
-                  key={m.matchId}
-                  match={m}
-                  isPast={true}
-                  effectiveValue={effectiveValue}
-                  isSaving={() => false}
-                  onChange={() => {}}
-                />
-              ))}
+                {showPast
+                  ? t("hidePastMatches")
+                  : t("showPastMatches", { count: pastMatches.length })}
+              </Button>
+              <Collapse in={showPast} unmountOnExit>
+                <Box sx={{ mt: 1.5 }}>
+                  {pastMatches.map((m) => (
+                    <CompactMatchRow
+                      key={m.matchId}
+                      match={m}
+                      isPast={true}
+                      effectiveValue={effectiveValue}
+                      isSaving={() => false}
+                      onChange={() => {}}
+                    />
+                  ))}
+                </Box>
+              </Collapse>
             </Box>
           )}
         </>
       )}
-    </Container>
+    </>
   );
 }
 
@@ -240,9 +246,10 @@ function CompactMatchRow({
   isSaving,
   onChange,
 }: CompactMatchRowProps) {
+  const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const dateLocale = useActiveDateLocale();
-  const { matchTypeShort } = useEntityLabels();
+  const { matchTypeLabel } = useEntityLabels();
   return (
     <Paper
       elevation={0}
@@ -251,7 +258,8 @@ function CompactMatchRow({
         px: 1.5,
         py: 1.25,
         mb: 1,
-        opacity: isPast ? 0.5 : 1,
+        // Le concluse restano informazione da leggere: prima erano al 50% di
+        // opacita', cioe' avversario e squadra sotto qualunque soglia.
         bgcolor: isPast ? "action.hover" : "background.paper",
       }}
     >
@@ -265,10 +273,11 @@ function CompactMatchRow({
         <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.88rem" }}>
           vs {m.opponentLabel}
         </Typography>
+        {/* Etichetta per esteso: "Amich." e "Camp." non si capiscono. */}
         <Chip
-          label={matchTypeShort(m.matchType)}
+          label={matchTypeLabel(m.matchType)}
           size="small"
-          sx={{ height: 16, fontSize: "0.6rem", fontWeight: 700 }}
+          sx={{ height: 18, fontSize: "0.68rem", fontWeight: 700 }}
         />
         <Typography
           variant="caption"
@@ -317,52 +326,75 @@ function CompactMatchRow({
               </Typography>
               {saving && <CircularProgress size={12} sx={{ flexShrink: 0 }} />}
             </Box>
-            <ToggleButtonGroup
-              value={value}
-              exclusive
-              size="small"
-              disabled={isPast || saving}
-              onChange={(_, v) => {
-                if (v === null) return; // ignora deselezione (non si può tornare a "non risposto")
-                onChange(m.matchId, entity, v as boolean);
-              }}
-              sx={{
-                "& .MuiToggleButton-root": {
-                  py: 0.25,
-                  px: 1,
-                  fontSize: "0.7rem",
-                  fontWeight: 700,
-                  textTransform: "none",
-                  border: "1px solid",
-                  borderColor: "divider",
-                },
-              }}
-            >
-              <ToggleButton
-                value={true}
+            {isPast ? (
+              // Niente pulsanti spenti: la risposta data si legge come testo.
+              <Typography
+                variant="caption"
+                fontWeight={700}
                 sx={{
-                  "&.Mui-selected": {
-                    bgcolor: "match.win",
-                    color: "common.white",
+                  flexShrink: 0,
+                  color:
+                    value === true
+                      ? "match.win"
+                      : value === false
+                        ? "match.loss"
+                        : "text.secondary",
+                }}
+              >
+                {value === true
+                  ? t("answeredYes")
+                  : value === false
+                    ? t("answeredNo")
+                    : t("answeredNone")}
+              </Typography>
+            ) : (
+              <ToggleButtonGroup
+                value={value}
+                exclusive
+                size="small"
+                disabled={saving}
+                onChange={(_, v) => {
+                  if (v === null) return; // ignora deselezione (non si può tornare a "non risposto")
+                  onChange(m.matchId, entity, v as boolean);
+                }}
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    py: 0.25,
+                    px: 1,
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    border: "1px solid",
+                    borderColor: "divider",
                   },
                 }}
               >
-                <EventAvailableIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                {tCommon("yes")}
-              </ToggleButton>
-              <ToggleButton
-                value={false}
-                sx={{
-                  "&.Mui-selected": {
-                    bgcolor: "match.loss",
-                    color: "common.white",
-                  },
-                }}
-              >
-                <EventBusyIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                {tCommon("no")}
-              </ToggleButton>
-            </ToggleButtonGroup>
+                <ToggleButton
+                  value={true}
+                  sx={{
+                    "&.Mui-selected": {
+                      bgcolor: "match.win",
+                      color: "common.white",
+                    },
+                  }}
+                >
+                  <EventAvailableIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                  {tCommon("yes")}
+                </ToggleButton>
+                <ToggleButton
+                  value={false}
+                  sx={{
+                    "&.Mui-selected": {
+                      bgcolor: "match.loss",
+                      color: "common.white",
+                    },
+                  }}
+                >
+                  <EventBusyIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                  {tCommon("no")}
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
           </Box>
         );
       })}

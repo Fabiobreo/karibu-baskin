@@ -13,6 +13,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Sfondo prima dell'idratazione. `data-scheme` lo mette il Server Component
+   (dal cookie) e, al primo caricamento senza cookie, lo script bloccante in
+   <head>. Senza questa regola lo sfondo chiaro qui sopra produce il lampo
+   bianco in dark: e' l'unico punto che deve valere prima che React monti,
+   quindi non e' esprimibile con `sx`. I colori sono gli stessi di
+   `darkTheme.palette.background` in src/theme.ts. */
+html[data-scheme="dark"],
+html[data-scheme="dark"] body {
+  background-color: #121212;
+  color-scheme: dark;
+}
+
 /* Rimuove il flash blu sul tap su mobile */
 * {
   -webkit-tap-highlight-color: transparent;

@@ -32,6 +32,7 @@ import { format } from "date-fns";
 import type { MatchType } from "@prisma/client";
 import { seasonForDate } from "@/components/training/SessionRestrictionEditor";
 import ImageUploader from "@/components/common/ImageUploader";
+import { readError } from "@/lib/fetchJson";
 
 export type MatchFormTeam = {
   id: string;
@@ -305,8 +306,8 @@ export default function MatchFormDialog({
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      const errData = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(errData.error ?? "Errore nel salvataggio");
+      const message = await readError(res);
+      setError(message);
       return;
     }
     const saved = (await res.json()) as MatchFormMatch;

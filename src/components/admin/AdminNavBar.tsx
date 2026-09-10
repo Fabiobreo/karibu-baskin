@@ -1,13 +1,14 @@
 "use client";
-import { Box, Container, Tab, Tabs } from "@mui/material";
+import { Box, Container, Tab, Tabs, Typography } from "@mui/material";
+import ShieldIcon from "@mui/icons-material/Shield";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // Sezioni principali del pannello; gli strumenti (export, audit, …) restano
-// raggiungibili dalle NavCard della dashboard per non affollare la barra.
+// raggiungibili dalla dashboard per non affollare la barra.
 const NAV_ITEMS: { label: string; href: string; exact?: boolean }[] = [
   { label: "Dashboard", href: "/admin", exact: true },
-  { label: "Allenamenti", href: "/admin/allenamenti" },
+  { label: "Allenamenti da completare", href: "/admin/allenamenti" },
   { label: "Partite", href: "/admin/partite" },
   { label: "Eventi", href: "/admin/eventi" },
   { label: "News", href: "/admin/news" },
@@ -16,7 +17,22 @@ const NAV_ITEMS: { label: string; href: string; exact?: boolean }[] = [
   { label: "Gironi", href: "/admin/gironi" },
 ];
 
-/** Barra di navigazione persistente del pannello admin (tab orizzontali scrollabili). */
+// L'arancione scuro del brand, fisso in entrambi i temi come lo e' l'AppBar:
+// e' colore di chrome, non una superficie di contenuto. Il bianco sopra fa
+// 5,60:1, quindi le etichette restano leggibili senza scale di opacita'.
+const ADMIN_BAND = "#BF360C";
+const ADMIN_BAND_SELECTED = "rgba(0,0,0,0.22)";
+
+/**
+ * Barra di navigazione persistente del pannello admin.
+ *
+ * Cinque etichette (Allenamenti, Partite, Eventi, News, Squadre) sono identiche
+ * a quelle del menu pubblico trenta pixel più sopra e portano altrove, e niente
+ * diceva di essere passati in area gestione. La barra ora si dichiara: banda
+ * arancione piena, che non si confonde ne' col menu pubblico scuro ne' col
+ * corpo della pagina, ed etichetta "Amministrazione" a sinistra. Le voci
+ * restano corte, che e' quello che serve a una barra scrollabile.
+ */
 export default function AdminNavBar() {
   const pathname = usePathname();
 
@@ -27,35 +43,80 @@ export default function AdminNavBar() {
     )?.href ?? false;
 
   return (
-    <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "background.paper" }}>
+    <Box
+      component="nav"
+      aria-label="Navigazione pannello amministrazione"
+      sx={{ bgcolor: ADMIN_BAND, color: "common.white" }}
+    >
       <Container maxWidth="lg" disableGutters sx={{ px: { xs: 1, sm: 2 } }}>
-        <Tabs
-          value={active}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          aria-label="Sezioni pannello admin"
-          sx={{
-            minHeight: 44,
-            "& .MuiTab-root": {
+        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 2 } }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              flexShrink: 0,
+              pl: { xs: 0.5, sm: 0 },
+            }}
+          >
+            <ShieldIcon sx={{ fontSize: 18, color: "common.white" }} />
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 800,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                fontSize: "0.65rem",
+                color: "common.white",
+                display: { xs: "none", md: "block" },
+              }}
+            >
+              Amministrazione
+            </Typography>
+          </Box>
+
+          <Tabs
+            value={active}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            aria-label="Sezioni pannello amministrazione"
+            sx={{
+              flex: 1,
+              minWidth: 0,
               minHeight: 44,
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "0.85rem",
-              px: 1.75,
-            },
-          }}
-        >
-          {NAV_ITEMS.map((item) => (
-            <Tab
-              key={item.href}
-              value={item.href}
-              label={item.label}
-              component={Link}
-              href={item.href}
-            />
-          ))}
-        </Tabs>
+              "& .MuiTabs-indicator": { backgroundColor: "common.white", height: 3 },
+              "& .MuiTabs-scrollButtons": { color: "common.white" },
+              "& .MuiTab-root": {
+                minHeight: 44,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                px: 1.75,
+                // Tutte le etichette a bianco pieno: la selezionata si
+                // distingue per peso e riempimento, non abbassando il
+                // contrasto delle altre.
+                color: "common.white",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
+                "&.Mui-selected": {
+                  color: "common.white",
+                  fontWeight: 800,
+                  bgcolor: ADMIN_BAND_SELECTED,
+                },
+              },
+            }}
+          >
+            {NAV_ITEMS.map((item) => (
+              <Tab
+                key={item.href}
+                value={item.href}
+                label={item.label}
+                component={Link}
+                href={item.href}
+              />
+            ))}
+          </Tabs>
+        </Box>
       </Container>
     </Box>
   );

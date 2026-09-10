@@ -39,6 +39,8 @@ import { it } from "date-fns/locale";
 import dynamic from "next/dynamic";
 import PollEditor, { type PollDraft } from "@/components/news/PollEditor";
 import ImageUploader from "@/components/common/ImageUploader";
+import { readError } from "@/lib/fetchJson";
+import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 
 const PostEditor = dynamic(() => import("@/components/news/PostEditor"), { ssr: false });
 
@@ -117,7 +119,9 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
         setPoll({
           question: full.poll.question,
           multiSelect: full.poll.multiSelect,
-          closesAt: full.poll.closesAt ?? null,
+          // L'input `datetime-local` non sa leggere un ISO con la Z: senza
+          // questa conversione il campo restava vuoto in modifica.
+          closesAt: isoToLocalInput(full.poll.closesAt),
           options:
             Array.isArray(full.poll.options) && full.poll.options.length >= 2
               ? full.poll.options.map((o: { text: string; order: number }, i: number) => ({
@@ -178,7 +182,9 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
         body,
         imageUrl,
         publish,
-        poll: hasPoll ? poll : null,
+        // Lo schema Zod vuole un ISO con offset; l'input ne produce uno senza
+        // secondi ne' fuso, e la creazione falliva con "Invalid ISO datetime".
+        poll: hasPoll ? { ...poll, closesAt: localInputToIso(poll.closesAt) } : null,
       };
       const url = editPost ? `/api/posts/${editPost.id}` : "/api/posts";
       const method = editPost ? "PUT" : "POST";
@@ -194,7 +200,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
             : payload
         ),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Errore");
+      if (!res.ok) throw new Error(await readError(res));
       const saved = await res.json();
 
       if (editPost) {

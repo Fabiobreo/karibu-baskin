@@ -16,12 +16,15 @@ import {
   TablePagination,
   InputAdornment,
   TextField,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import { ROLE_COLORS } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { useTranslations } from "next-intl";
+import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 export interface PlayerStatRow {
@@ -75,24 +78,39 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
   const t = useTranslations("scorers");
   const tCommon = useTranslations("common");
   const { sportRoleLabel } = useEntityLabels();
-  const COLS: { key: SortKey; label: string; title?: string }[] = [
+  // `advanced: true` = colonna secondaria, nascosta finché non si accende
+  // l'interruttore. Le dodici colonne tutte insieme non stavano nella pagina:
+  // restano sempre visibili posizione, giocatore, giocate, punti e media.
+  const ALL_COLS: { key: SortKey; label: string; title?: string; advanced?: boolean }[] = [
     { key: "matches", label: t("colMatches"), title: t("titleMatches") },
     { key: "points", label: t("colPoints"), title: t("titlePoints") },
     { key: "avgPoints", label: t("colAvg"), title: t("titleAvg") },
     { key: "accuracy", label: t("colAccuracy"), title: t("titleAccuracy") },
-    { key: "freeThrows", label: t("col1pt"), title: t("titleFreeThrows") },
+    { key: "freeThrows", label: t("col1pt"), title: t("titleFreeThrows"), advanced: true },
     { key: "twoPointers", label: t("col2pt"), title: t("title2pt") },
     { key: "threePointers", label: t("col3pt"), title: t("title3pt") },
-    { key: "mvp", label: t("colMvp"), title: t("titleMvp") },
-    { key: "fouls", label: t("colFouls"), title: t("colFouls") },
-    { key: "illegalFouls", label: t("colIllegal"), title: t("titleIllegal") },
+    { key: "mvp", label: t("colMvp"), title: t("titleMvp"), advanced: true },
+    { key: "fouls", label: t("colFouls"), title: t("colFoulsTitle") },
+    { key: "illegalFouls", label: t("colIllegal"), title: t("titleIllegal"), advanced: true },
   ];
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [nameSearch, setNameSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const COLS = ALL_COLS.filter((c) => showAdvanced || !c.advanced);
+
+  // Se si spengono le avanzate mentre si ordina per una di quelle, l'ordinamento
+  // resterebbe su una colonna invisibile: si torna ai punti.
+  function handleToggleAdvanced(next: boolean) {
+    setShowAdvanced(next);
+    if (!next && ALL_COLS.some((c) => c.advanced && c.key === sortBy)) {
+      setSortBy("points");
+      setSortDir("desc");
+    }
+  }
 
   function handleSort(col: SortKey) {
     if (sortBy === col) {
@@ -112,6 +130,22 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
   function handleNameSearch(val: string) {
     setNameSearch(val);
     setPage(0);
+  }
+
+  // Canestri e tiri di tutta la stagione, prestiti inclusi.
+  function madeTotal(row: PlayerStatRow): number {
+    return (
+      row.freeThrows +
+      row.twoPointers +
+      row.threePointers +
+      row.loanFreeThrows +
+      row.loanTwoPointers +
+      row.loanThreePointers
+    );
+  }
+
+  function attemptedTotal(row: PlayerStatRow): number {
+    return row.shotsAttempted + row.loanShotsAttempted;
   }
 
   // Mappa colonna ordinabile → coppia (primario, prestito) della riga.
@@ -143,16 +177,10 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
       }
       case "accuracy": {
         // % realizzazione = canestri totali (1+2+3) / tiri tentati totali.
-        const made =
-          row.freeThrows +
-          row.twoPointers +
-          row.threePointers +
-          row.loanFreeThrows +
-          row.loanTwoPointers +
-          row.loanThreePointers;
-        const attempted = row.shotsAttempted + row.loanShotsAttempted;
-        const pct = attempted > 0 ? (made / attempted) * 100 : 0;
-        return { primary: pct, loan: 0 };
+        // `shootingAccuracy` scarta i casi in cui i tentativi sono meno dei
+        // canestri: lì il dato è incompleto e non c'è percentuale da ordinare.
+        const pct = shootingAccuracy(madeTotal(row), attemptedTotal(row));
+        return { primary: pct ?? 0, loan: 0 };
       }
       case "mvp":
         // MVP non è tracciato come prestito: sempre primario.
@@ -224,7 +252,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             fontWeight={700}
             sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
           >
-            Ruolo:
+            {t("roleFilterLabel")}
           </Typography>
           <Chip
             label={t("all")}
@@ -245,7 +273,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 cursor: "pointer",
                 fontSize: "0.72rem",
                 bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
-                color: roleFilter === r ? "#fff" : "text.primary",
+                color: roleFilter === r ? contrastText(ROLE_COLORS[r]) : "text.primary",
                 border: "1px solid",
                 borderColor: roleFilter === r ? ROLE_COLORS[r] : "divider",
                 "&:hover": {
@@ -255,11 +283,28 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             />
           ))}
           {filtered.length !== rows.length && (
-            <Typography variant="caption" color="text.disabled" sx={{ ml: "auto" }}>
+            <Typography variant="caption" color="text.disabled">
               {t("playerCount", { count: filtered.length })}
             </Typography>
           )}
         </Box>
+        {/* Colonne secondarie a richiesta: con tutte e dodici la tabella
+            sbordava dal contenitore e l'ultima colonna restava tagliata. */}
+        <FormControlLabel
+          sx={{ ml: { xs: 0, sm: "auto" }, mr: 0 }}
+          control={
+            <Switch
+              size="small"
+              checked={showAdvanced}
+              onChange={(e) => handleToggleAdvanced(e.target.checked)}
+            />
+          }
+          label={
+            <Typography variant="caption" fontWeight={600} title={t("advancedStatsHint")}>
+              {t("advancedStats")}
+            </Typography>
+          }
+        />
       </Box>
 
       {/* Desktop table */}
@@ -361,7 +406,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                               size="small"
                               sx={{
                                 bgcolor: ROLE_COLORS[row.sportRole],
-                                color: "#fff",
+                                color: contrastText(ROLE_COLORS[row.sportRole]),
                                 fontWeight: 600,
                                 fontSize: "0.58rem",
                                 height: 14,
@@ -389,14 +434,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   {COLS.map((col) => {
                     const { primary, loan } = getParts(row, col.key);
                     const isActive = sortBy === col.key;
-                    const attemptedTot = row.shotsAttempted + row.loanShotsAttempted;
                     const primaryLabel =
                       col.key === "avgPoints"
                         ? primary.toFixed(1)
                         : col.key === "accuracy"
-                          ? attemptedTot > 0
-                            ? `${Math.round(primary)}%`
-                            : "—"
+                          ? formatAccuracy(madeTotal(row), attemptedTotal(row))
                           : primary.toString();
                     return (
                       <TableCell
@@ -404,10 +446,13 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         align="center"
                         sx={{
                           fontWeight: isActive ? 700 : 400,
-                          color: isActive ? "primary.main" : "text.primary",
+                          color: isActive ? "primary.onLight" : "text.primary",
                           fontSize: "0.82rem",
                           whiteSpace: "nowrap",
                           px: 1,
+                          // Cifre a larghezza fissa: senza, le colonne
+                          // numeriche non si incolonnano.
+                          fontVariantNumeric: "tabular-nums",
                         }}
                       >
                         {primaryLabel}
@@ -440,7 +485,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         {paginated.length === 0 ? (
           <Box sx={{ py: 4, textAlign: "center" }}>
             <Typography variant="body2" color="text.disabled">
-              Nessun giocatore con questo ruolo.
+              {t("noPlayersRole")}
             </Typography>
           </Box>
         ) : (
@@ -448,16 +493,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             const totMatches = row.matches + row.loanMatches;
             const totPoints = row.points + row.loanPoints;
             const avg = totMatches > 0 ? totPoints / totMatches : 0;
-            const madeTot =
-              row.freeThrows +
-              row.twoPointers +
-              row.threePointers +
-              row.loanFreeThrows +
-              row.loanTwoPointers +
-              row.loanThreePointers;
-            const attemptedTot = row.shotsAttempted + row.loanShotsAttempted;
-            const accuracyLabel =
-              attemptedTot > 0 ? `${Math.round((madeTot / attemptedTot) * 100)}%` : "—";
+            const accuracyLabel = formatAccuracy(madeTotal(row), attemptedTotal(row));
             const rank = page * rowsPerPage + i + 1;
             return (
               <Box
@@ -543,19 +579,24 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   }}
                 >
                   {[
-                    { label: "Pt", value: totPoints, primary: true },
-                    { label: "Media", value: avg.toFixed(1) },
+                    { label: t("colPoints"), value: totPoints, primary: true },
+                    { label: t("colAvg"), value: avg.toFixed(1) },
                     { label: t("colAccuracy"), value: accuracyLabel },
-                    { label: "G", value: totMatches },
-                    { label: "2pt", value: row.twoPointers + row.loanTwoPointers },
-                    { label: "3pt", value: row.threePointers + row.loanThreePointers },
-                    { label: "TL", value: row.freeThrows + row.loanFreeThrows },
-                    { label: t("colMvp"), value: row.mvpCount },
-                    { label: "Falli", value: row.fouls + row.loanFouls },
-                    {
-                      label: "Ill.",
-                      value: row.illegalFouls + row.loanIllegalFouls,
-                    },
+                    { label: t("colMatches"), value: totMatches },
+                    { label: t("col2pt"), value: row.twoPointers + row.loanTwoPointers },
+                    { label: t("col3pt"), value: row.threePointers + row.loanThreePointers },
+                    { label: t("colFouls"), value: row.fouls + row.loanFouls },
+                    // Le stesse tre colonne secondarie della tabella desktop.
+                    ...(showAdvanced
+                      ? [
+                          { label: t("col1pt"), value: row.freeThrows + row.loanFreeThrows },
+                          { label: t("colMvp"), value: row.mvpCount },
+                          {
+                            label: t("colIllegal"),
+                            value: row.illegalFouls + row.loanIllegalFouls,
+                          },
+                        ]
+                      : []),
                   ].map(({ label, value, primary }) => (
                     <Box key={label} sx={{ textAlign: "center" }}>
                       <Typography
@@ -569,8 +610,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                       <Typography
                         variant="body2"
                         fontWeight={primary ? 800 : 600}
-                        color={primary ? "primary.main" : "text.primary"}
-                        sx={{ fontSize: "0.82rem" }}
+                        color={primary ? "primary.onLight" : "text.primary"}
+                        sx={{ fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}
                       >
                         {value}
                       </Typography>
@@ -594,7 +635,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(0);
         }}
-        rowsPerPageOptions={[10, 25, 50]}
+        rowsPerPageOptions={[10, 25, 50, 100]}
         labelRowsPerPage={t("rowsPerPage")}
         labelDisplayedRows={({ from, to, count }) => tCommon("paginationRows", { from, to, count })}
         sx={{ borderTop: "1px solid", borderColor: "divider" }}

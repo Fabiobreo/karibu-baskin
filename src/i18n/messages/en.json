@@ -1,5 +1,8 @@
 {
   "common": {
+    "sponsorsLabel": "Sponsors",
+    "sponsorsPause": "Pause the sponsor strip",
+    "sponsorsResume": "Resume the sponsor strip",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -28,7 +31,8 @@
     "copy": "Copy",
     "copied": "Copied to clipboard",
     "paginationRows": "{from}–{to} of {count}",
-    "rowsPerPage": "Rows:"
+    "rowsPerPage": "Rows:",
+    "seasonNotStarted": "The {active} season has not started yet. Showing {shown} below."
   },
   "roles": {
     "role": "Role {n}",
@@ -229,7 +233,11 @@
     "logout": "Log out",
     "login": "Log in",
     "privacyPolicy": "Privacy policy",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "skipToContent": "Skip to content",
+    "mainNav": "Main navigation",
+    "quickNav": "Quick navigation",
+    "adminNav": "Admin panel navigation"
   },
   "cookie": {
     "title": "This site uses third-party cookies",
@@ -425,7 +433,6 @@
     "ruleThree": "At least one role 3",
     "ruleFive": "At least two role 5",
     "ruleSum": "Role sum {sum}/{max}",
-    "ruleWoman": "A woman among roles 4 and 5",
     "needValid": "Complete two valid lineups (6 players, rules satisfied) to simulate.",
     "simulate": "Simulate",
     "reset": "Clear",
@@ -438,7 +445,8 @@
     "share": "Share",
     "shareCopied": "Challenge link copied!",
     "emptyTitle": "No squad available",
-    "emptyDesc": "The current season's teams don't have any players yet."
+    "emptyDesc": "The current season's teams don't have any players yet.",
+    "ruleGenderMix": "One woman and one man among roles 4 and 5"
   },
   "players": {
     "notFound": "Player not found",
@@ -488,6 +496,10 @@
     "empty": "No data available for season {season}.",
     "emptyGeneric": "No data available",
     "emptyDesc": "The scorers table will be updated as the season progresses.",
+    "advancedStats": "Advanced stats",
+    "advancedStatsHint": "Show 1pt, MVP and illegal fouls",
+    "roleFilterLabel": "Role:",
+    "colFoulsTitle": "Fouls committed",
     "colPlayer": "Player",
     "colMatches": "Played",
     "titleMatches": "Matches played",
@@ -512,7 +524,8 @@
     "noPlayersRole": "No players with this role.",
     "rowsPerPage": "Rows:",
     "searchPlayer": "Search player…",
-    "all": "All"
+    "all": "All",
+    "emptySeasonDesc": "Stats will show up after the first official matches of the season."
   },
   "badges": {
     "esordiente": {
@@ -674,7 +687,9 @@
     "typeMatch": "Match",
     "typeEvent": "Event",
     "noEvents": "No events on this day.",
-    "viewPage": "Go to page"
+    "viewPage": "Go to page",
+    "noEventsMonth": "No events this month",
+    "noEventsMonthDesc": "Trainings, matches and events will show up here as soon as they are scheduled."
   },
   "profile": {
     "title": "My profile",
@@ -720,7 +735,36 @@
     "appRoleATHLETE": "Athlete",
     "appRolePARENT": "Parent",
     "appRoleCOACH": "Coach",
-    "appRoleADMIN": "Admin"
+    "appRoleADMIN": "Admin",
+    "noMatchesForTeamsDesc": "As soon as your team has scheduled matches you will find them here.",
+    "noUpcomingMatchesDesc": "There are no scheduled matches to declare your availability for.",
+    "heroChip": "Your area",
+    "heroSubtitle": "Your details, your trainings and the achievements you have unlocked.",
+    "availabilitiesHeroChip": "Matches",
+    "availabilitiesHeroSubtitle": "Tell the staff whether you will be there: call-ups are based on these answers.",
+    "breadcrumbHome": "Home",
+    "showPastMatches": "{count, plural, one {Show # finished match} other {Show the # finished matches}}",
+    "hidePastMatches": "Hide finished matches",
+    "answeredYes": "You were available",
+    "answeredNo": "You were not available",
+    "answeredNone": "You did not answer",
+    "nextTraining": "Next training",
+    "nextTrainingNone": "No training scheduled",
+    "nextTrainingNoneDesc": "As soon as the staff publishes one, it shows up here and on the home page.",
+    "registered": "You are signed up",
+    "notRegistered": "You are not signed up yet",
+    "childRegistered": "{name} is signed up",
+    "childNotRegistered": "{name} is not signed up",
+    "register": "Sign me up",
+    "registerChild": "Sign up {name}",
+    "unregister": "Cancel",
+    "registrationsClosed": "Sign-ups not open yet",
+    "registrationsClosedDesc": "The staff will open sign-ups shortly.",
+    "openTraining": "Open the training",
+    "needsRoleToRegister": "You need a Baskin role to sign up from here: open the training and fill in the questionnaire.",
+    "registerDone": "You are signed up",
+    "unregisterDone": "Sign-up cancelled",
+    "attendanceEmpty": "No attendance recorded yet."
   },
   "guestWelcome": {
     "title": "Welcome to Karibu Baskin!",
@@ -792,13 +836,24 @@
       "emailSending": "Sending…",
       "emailHelp": "Works with any address: Gmail, Libero, Alice, Yahoo, Hotmail. You get a link to click, valid for 24 hours.",
       "invalidEmail": "Please check the email address: it does not look valid.",
-      "emailError": "We could not send the link. Please try again shortly."
+      "emailError": "We could not send the link. Please try again shortly.",
+      "googleCta": "Sign in with Google",
+      "googleLoading": "Signing in…"
     },
     "notifiche": {
       "empty": "No notifications",
       "loadMore": "Load previous",
       "loading": "Loading...",
-      "loadError": "Loading error"
+      "loadError": "Loading error",
+      "heroChip": "Updates",
+      "heroTitle": "Notifications",
+      "heroSubtitle": "Trainings, matches and team news, newest first.",
+      "markAllRead": "Mark all as read",
+      "groupToday": "Today",
+      "groupThisWeek": "This week",
+      "groupEarlier": "Earlier",
+      "opens": "Open",
+      "emptyDesc": "When the staff publishes a training or a result, you will find it here."
     },
     "contatti": {
       "heroChip": "We're here",
@@ -968,7 +1023,15 @@
     "colPointsFor": "PF",
     "colPointsAgainst": "PA",
     "colPoints": "Pts",
-    "matchdayShort": "MD{n}"
+    "colPlayedFull": "Matches played",
+    "colWinsFull": "Wins",
+    "colDrawsFull": "Draws",
+    "colLossesFull": "Losses",
+    "colPointsForFull": "Points for",
+    "colPointsAgainstFull": "Points against",
+    "colPointsFull": "League points",
+    "matchdayShort": "MD{n}",
+    "pageTitle": "Standings"
   },
   "trainings": {
     "questionnaire": {
@@ -1069,7 +1132,7 @@
     "loginEasier": "Log in to register more easily.",
     "notes": "Notes (optional)",
     "notesPlaceholder": "e.g. I need to leave at 11:30",
-    "notesEmpty": "Leave empty if you have no notes",
+    "notesEmpty": "The staff and anyone opening the sign-up list can read it.",
     "roleLabel": "Role:",
     "roleSuggested": "Suggested role:",
     "redoQuestionnaire": "↩ Redo questionnaire",
@@ -1120,7 +1183,7 @@
     "todayBang": "Today!",
     "registeredBadge": "Registered",
     "onlyTeam": "Only {team}",
-    "openToAllRoles": "Open to all {roles}",
+    "openToAllRoles": "{count, plural, one {Also open to role {roles}} other {Also open to roles {roles}}}",
     "rolesOpenShort": "{roles} open",
     "matchResultsTitle": "Match results",
     "matchNotRecorded": "Not recorded yet",
@@ -1131,13 +1194,18 @@
     "viewTeamsBtn": "View teams",
     "teamChip": "Team",
     "registeredSuccess": "{name} registered successfully!",
-    "enterName": "Enter your name"
+    "enterName": "Enter your name",
+    "noneDesc": "Upcoming trainings will show up here as soon as they are scheduled.",
+    "nonePastDesc": "Finished trainings will show up here as the season goes on.",
+    "teamsNotPublishedPast": "Teams not published",
+    "teamsNotPublishedPastDesc": "No teams were published for this training.",
+    "staffCanRegisterAnyway": "Registrations are closed, but as staff you can still sign up.",
+    "onlyRoles": "{count, plural, one {Role {roles} only} other {Roles {roles} only}}"
   },
   "home": {
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",
     "upcomingTrainings": "Upcoming trainings",
     "whatIsBaskin": "What is Baskin?",
-    "scroll": "Scroll",
     "birthdaySingular": "{name}'s birthday today",
     "birthdayPlural": "Celebrating today",
     "birthdayWish": "Send wishes",

@@ -14,7 +14,6 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/layout/SiteHeader";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -26,6 +25,7 @@ import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Link from "next/link";
 import { ROLE_COLORS } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
+import AccentText from "@/components/common/AccentText";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
@@ -350,8 +350,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
 
   return (
     <>
-      <SiteHeader />
-
       <Box
         style={{
           backgroundImage: team.imageUrl
@@ -481,6 +479,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               />
               <Typography
                 variant="h3"
+                component="h1"
                 fontWeight={900}
                 sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" }, lineHeight: 1.1 }}
               >
@@ -633,12 +632,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               }}
             >
               <Box>
-                <Typography
+                <AccentText
                   variant="overline"
-                  sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
+                  accent={teamColor}
+                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
                 >
                   Statistiche
-                </Typography>
+                </AccentText>
                 <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5 }}>
                   {t("seasonBalance")}
                 </Typography>
@@ -864,12 +864,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           <Box sx={{ mb: 6 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
               <StarIcon sx={{ color: teamColor }} />
-              <Typography
+              <AccentText
                 variant="overline"
-                sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
+                accent={teamColor}
+                sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
               >
                 {t("leaders")}
-              </Typography>
+              </AccentText>
             </Box>
             <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
               {t("topScorer")}
@@ -918,12 +919,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <GroupsIcon sx={{ color: teamColor }} />
-                <Typography
+                <AccentText
                   variant="overline"
-                  sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
+                  accent={teamColor}
+                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
                 >
                   {t("rosterSection")}
-                </Typography>
+                </AccentText>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {t("rosterCount", { count: team.memberships.length })}
@@ -1027,12 +1029,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <EmojiEventsIcon sx={{ color: teamColor }} />
-                <Typography
+                <AccentText
                   variant="overline"
-                  sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
+                  accent={teamColor}
+                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
                 >
                   {t("historySection")}
-                </Typography>
+                </AccentText>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
                 Risultati
@@ -1057,12 +1060,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <CalendarTodayIcon sx={{ color: teamColor }} />
-                <Typography
+                <AccentText
                   variant="overline"
-                  sx={{ color: teamColor, fontWeight: 700, letterSpacing: "0.1em" }}
+                  accent={teamColor}
+                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
                 >
                   {t("upcomingSection")}
-                </Typography>
+                </AccentText>
               </Box>
               <Typography variant="h4" fontWeight={800} sx={{ mb: 2.5 }}>
                 {t("upcomingMatches")}

@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { useTranslations } from "next-intl";
 import NotificationDropdown from "./NotificationDropdown";
+import { TOUCH_TARGET } from "@/lib/touchTarget";
 
 export default function NotificationBell() {
   const t = useTranslations("nav");
@@ -25,8 +26,11 @@ export default function NotificationBell() {
       <IconButton
         onClick={(e) => setAnchorEl(e.currentTarget)}
         aria-label={t("notifications")}
-        sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#fff" } }}
-        size="small"
+        sx={{
+          ...TOUCH_TARGET,
+          color: "rgba(255,255,255,0.85)",
+          "&:hover": { color: "common.white" },
+        }}
       >
         <Badge badgeContent={visibleCount} color="error" max={99} invisible={visibleCount === 0}>
           {visibleCount > 0 ? (

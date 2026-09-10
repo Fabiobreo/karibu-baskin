@@ -2,14 +2,24 @@
 import { Button, CircularProgress } from "@mui/material";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
+/**
+ * Pulsante di accesso Google.
+ *
+ * Resta nella sua forma canonica (fondo chiaro, logo a colori, testo scuro):
+ * un `contained` arancione violerebbe le linee guida di branding di Google.
+ * La gerarchia rispetto al magic link la fa quest'ultimo, degradato a `text`.
+ */
 export default function GoogleSignInButton({ callbackUrl = "/" }: { callbackUrl?: string }) {
+  const t = useTranslations("pages.login");
   const [loading, setLoading] = useState(false);
 
   return (
     <Button
       variant="outlined"
       fullWidth
+      size="large"
       disabled={loading}
       onClick={async () => {
         setLoading(true);
@@ -36,9 +46,21 @@ export default function GoogleSignInButton({ callbackUrl = "/" }: { callbackUrl?
           </svg>
         )
       }
-      sx={{ textTransform: "none", fontWeight: 600 }}
+      sx={{
+        textTransform: "none",
+        fontWeight: 700,
+        fontSize: "0.95rem",
+        py: 1.25,
+        // Fondo chiaro e bordo tenue: e' la variante "light" prevista dalle
+        // linee guida, e l'ombra la stacca dal magic link senza ricolorarla.
+        color: "text.primary",
+        bgcolor: "background.paper",
+        borderColor: "divider",
+        boxShadow: 1,
+        "&:hover": { bgcolor: "action.hover", borderColor: "text.disabled" },
+      }}
     >
-      {loading ? "Accesso in corso..." : "Accedi con Google"}
+      {loading ? t("googleLoading") : t("googleCta")}
     </Button>
   );
 }

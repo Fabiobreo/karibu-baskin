@@ -226,7 +226,7 @@ function MatchMobileCard({
               <Typography
                 component="span"
                 variant="caption"
-                sx={{ color: "primary.main", fontWeight: 700, fontSize: "0.68rem" }}
+                sx={{ color: "primary.onLight", fontWeight: 700, fontSize: "0.68rem" }}
               >
                 (interna)
               </Typography>
@@ -1128,7 +1128,7 @@ function FlatMatchRow({
               <Typography
                 component="span"
                 variant="caption"
-                sx={{ ml: 0.5, color: "primary.main", fontWeight: 700 }}
+                sx={{ ml: 0.5, color: "primary.onLight", fontWeight: 700 }}
               >
                 (interna)
               </Typography>

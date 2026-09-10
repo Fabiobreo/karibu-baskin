@@ -1,9 +1,11 @@
 import { Avatar, Box, Paper, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import Link from "next/link";
 import { contrastText } from "@/lib/colorUtils";
+import { brandColor } from "@/lib/heroStyles";
+import MedalDisc from "@/components/rating/MedalDisc";
+import AccentText from "@/components/common/AccentText";
+import { onHover } from "@/lib/hoverStyles";
 
 export default function LeaderCard({
   rank,
@@ -20,13 +22,6 @@ export default function LeaderCard({
   };
   teamColor: string;
 }) {
-  const medalGradient =
-    rank === 1
-      ? "linear-gradient(135deg, #FFD54F 0%, #FFA000 100%)"
-      : rank === 2
-        ? "linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)"
-        : "linear-gradient(135deg, #D7A56B 0%, #8D6E63 100%)";
-  const MedalIcon = rank === 1 ? EmojiEventsIcon : WorkspacePremiumIcon;
   const isFirst = rank === 1;
 
   const content = (
@@ -37,7 +32,7 @@ export default function LeaderCard({
         pt: 2.5,
         border: "1px solid",
         borderColor: isFirst ? "medal.gold" : "divider",
-        boxShadow: isFirst ? `0 4px 16px ${alpha("#FFC107", 0.2)}` : "none",
+        boxShadow: isFirst ? `0 4px 16px ${alpha(brandColor.black, 0.14)}` : "none",
         height: "100%",
         display: "flex",
         alignItems: "center",
@@ -45,29 +40,12 @@ export default function LeaderCard({
         position: "relative",
         overflow: "hidden",
         transition: "all 0.15s",
-        "&:hover": { borderColor: teamColor, transform: "translateY(-2px)" },
+        ...onHover({ borderColor: teamColor, transform: "translateY(-2px)" }),
       }}
     >
       {/* Medaglia/trofeo in alto a destra */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          width: 34,
-          height: 34,
-          borderRadius: "50%",
-          background: medalGradient,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "common.white",
-          boxShadow: `0 3px 10px ${alpha("#000000", 0.25)}`,
-          border: "2px solid",
-          borderColor: "common.white",
-        }}
-      >
-        <MedalIcon sx={{ fontSize: 18, color: "common.white" }} />
+      <Box sx={{ position: "absolute", top: 8, right: 8 }}>
+        <MedalDisc rank={rank === 1 ? 1 : rank === 2 ? 2 : 3} />
       </Box>
       <Avatar
         src={leader.image ?? undefined}
@@ -87,13 +65,16 @@ export default function LeaderCard({
           {leader.name}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5, mt: 0.25 }}>
-          <Typography
+          {/* Il colore squadra arriva dal DB: come testo va adattato alla
+              superficie, o un verde chiaro sparisce sulla card bianca. */}
+          <AccentText
             variant="h5"
             fontWeight={900}
-            sx={{ color: teamColor, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
+            accent={teamColor}
+            sx={{ lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
           >
             {leader.points}
-          </Typography>
+          </AccentText>
           <Typography variant="caption" color="text.secondary" fontWeight={600}>
             pt
           </Typography>

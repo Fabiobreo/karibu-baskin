@@ -34,6 +34,7 @@ import SessionRestrictionEditor, {
   seasonForDate,
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
+import { readError } from "@/lib/fetchJson";
 
 // Dialog riservato allo staff → testi in italiano per scelta (come l'admin)
 
@@ -207,8 +208,8 @@ export default function CreateEventDialog({
       }
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        showToast({ message: data.error ?? "Errore nella creazione", severity: "error" });
+        const message = await readError(res);
+        showToast({ message: message, severity: "error" });
         return;
       }
 

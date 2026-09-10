@@ -7,6 +7,7 @@ import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import DOMPurify from "isomorphic-dompurify";
+import { Prisma } from "@prisma/client";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -88,67 +89,83 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const wasPublished = !!existing.publishedAt;
   const willPublish = publish && !wasPublished;
 
-  const updatedPost = await prisma.$transaction(async (tx) => {
-    // Calcola publishedAt
-    let publishedAt = existing.publishedAt;
-    if (publish && !wasPublished) publishedAt = new Date();
-    if (unpublish) publishedAt = null;
+  // Come nella POST: senza try/catch un errore Prisma esce come 500 con pagina
+  // HTML, e il messaggio vero non arriva mai al client.
+  let updatedPost;
+  try {
+    updatedPost = await prisma.$transaction(async (tx) => {
+      // Calcola publishedAt
+      let publishedAt = existing.publishedAt;
+      if (publish && !wasPublished) publishedAt = new Date();
+      if (unpublish) publishedAt = null;
 
-    const updated = await tx.post.update({
-      where: { id },
-      data: {
-        ...(title ? { title } : {}),
-        ...(body ? { body: DOMPurify.sanitize(body) } : {}),
-        ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
-        publishedAt,
-      },
-      include: {
-        author: { select: { name: true } },
-        poll: { include: { options: { orderBy: { order: "asc" } } } },
-      },
-    });
+      const updated = await tx.post.update({
+        where: { id },
+        data: {
+          ...(title ? { title } : {}),
+          ...(body ? { body: DOMPurify.sanitize(body) } : {}),
+          ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
+          publishedAt,
+        },
+        include: {
+          author: { select: { name: true } },
+          poll: { include: { options: { orderBy: { order: "asc" } } } },
+        },
+      });
 
-    // Gestione poll: crea/aggiorna/elimina
-    if (poll !== undefined) {
-      if (poll === null) {
-        // Rimuovi poll esistente
-        if (existing.poll) {
-          await tx.poll.delete({ where: { id: existing.poll.id } });
-        }
-      } else {
-        if (existing.poll) {
-          // Aggiorna il poll esistente: cancella le opzioni vecchie e ricrea
-          await tx.pollOption.deleteMany({ where: { pollId: existing.poll.id } });
-          await tx.poll.update({
-            where: { id: existing.poll.id },
-            data: {
-              question: poll.question,
-              multiSelect: poll.multiSelect,
-              closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
-              options: {
-                create: poll.options.map((o) => ({ text: o.text, order: o.order })),
-              },
-            },
-          });
+      // Gestione poll: crea/aggiorna/elimina
+      if (poll !== undefined) {
+        if (poll === null) {
+          // Rimuovi poll esistente
+          if (existing.poll) {
+            await tx.poll.delete({ where: { id: existing.poll.id } });
+          }
         } else {
-          // Crea nuovo poll
-          await tx.poll.create({
-            data: {
-              postId: id,
-              question: poll.question,
-              multiSelect: poll.multiSelect,
-              closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
-              options: {
-                create: poll.options.map((o) => ({ text: o.text, order: o.order })),
+          if (existing.poll) {
+            // Aggiorna il poll esistente: cancella le opzioni vecchie e ricrea
+            await tx.pollOption.deleteMany({ where: { pollId: existing.poll.id } });
+            await tx.poll.update({
+              where: { id: existing.poll.id },
+              data: {
+                question: poll.question,
+                multiSelect: poll.multiSelect,
+                closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
+                options: {
+                  create: poll.options.map((o) => ({ text: o.text, order: o.order })),
+                },
               },
-            },
-          });
+            });
+          } else {
+            // Crea nuovo poll
+            await tx.poll.create({
+              data: {
+                postId: id,
+                question: poll.question,
+                multiSelect: poll.multiSelect,
+                closesAt: poll.closesAt ? new Date(poll.closesAt) : null,
+                options: {
+                  create: poll.options.map((o) => ({ text: o.text, order: o.order })),
+                },
+              },
+            });
+          }
         }
       }
+      return updated;
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === "P2002") {
+        return NextResponse.json({ error: "Esiste gia' un post con questo slug" }, { status: 409 });
+      }
+      return NextResponse.json(
+        { error: `Errore del database (${err.code}) durante il salvataggio del post` },
+        { status: 400 }
+      );
     }
-
-    return updated;
-  });
+    console.error("[posts] update", err);
+    return NextResponse.json({ error: "Errore durante il salvataggio del post" }, { status: 500 });
+  }
 
   // Notifiche alla prima pubblicazione
   if (willPublish) {

@@ -17,6 +17,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { SUGGESTION_CATEGORIES } from "@/lib/schemas/suggestion";
+import { readError } from "@/lib/fetchJson";
 
 export default function SuggestionForm() {
   const { showToast } = useToast();
@@ -44,8 +45,8 @@ export default function SuggestionForm() {
         body: JSON.stringify({ category, message }),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error ?? t("sendError"));
+        const message = await readError(res);
+        throw new Error(message);
       }
       setSent(true);
       setCategory("");

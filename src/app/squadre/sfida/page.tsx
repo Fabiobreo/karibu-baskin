@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
@@ -96,7 +95,6 @@ export default async function SfidaPage() {
 
   return (
     <>
-      <SiteHeader />
       <PageHero chip={t("heroChip")} title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>

@@ -53,7 +53,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
             >
               {i === 0 && (
                 <StarIcon
-                  sx={{ position: "absolute", top: 6, right: 6, fontSize: 14, color: "#FFB300" }}
+                  sx={{ position: "absolute", top: 6, right: 6, fontSize: 14, color: "medal.gold" }}
                 />
               )}
               <Avatar
@@ -71,7 +71,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                   size="small"
                   sx={{
                     bgcolor: ROLE_COLORS[role],
-                    color: "#fff",
+                    color: "common.white",
                     fontWeight: 600,
                     fontSize: "0.56rem",
                     height: 14,
@@ -83,7 +83,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                 sx={{
                   fontSize: "1.8rem",
                   fontWeight: 900,
-                  color: "primary.main",
+                  color: "primary.onLight",
                   lineHeight: 1.1,
                   mt: 1,
                 }}

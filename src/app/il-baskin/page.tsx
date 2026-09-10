@@ -9,7 +9,6 @@ import {
   Stack,
 } from "@mui/material";
 import { getTranslations, getLocale } from "next-intl/server";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
@@ -45,8 +44,6 @@ export default async function IlBaskinPage() {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero
         chip={t("ilbaskin.heroChip")}
         title={t("ilbaskin.heroTitle")}
@@ -59,7 +56,7 @@ export default async function IlBaskinPage() {
         <Box sx={{ mb: 5 }}>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -67,6 +64,7 @@ export default async function IlBaskinPage() {
           </Typography>
           <Typography
             variant="h4"
+            component="h2"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 2, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
@@ -86,7 +84,7 @@ export default async function IlBaskinPage() {
         <Box sx={{ mb: 7 }}>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -94,6 +92,7 @@ export default async function IlBaskinPage() {
           </Typography>
           <Typography
             variant="h4"
+            component="h2"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
@@ -116,7 +115,12 @@ export default async function IlBaskinPage() {
                 >
                   <Box sx={{ color: "primary.main", mt: 0.3, flexShrink: 0 }}>{RULE_ICONS[i]}</Box>
                   <Box>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.5 }}>
+                    <Typography
+                      variant="subtitle2"
+                      component="h3"
+                      fontWeight={700}
+                      sx={{ mb: 0.5 }}
+                    >
                       {rule.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
@@ -135,7 +139,7 @@ export default async function IlBaskinPage() {
         <Box>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -143,6 +147,7 @@ export default async function IlBaskinPage() {
           </Typography>
           <Typography
             variant="h4"
+            component="h2"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
@@ -171,7 +176,12 @@ export default async function IlBaskinPage() {
                     gap: 1,
                   }}
                 >
-                  <Typography variant="subtitle1" fontWeight={700} sx={{ color: "#fff" }}>
+                  <Typography
+                    variant="subtitle1"
+                    component="h3"
+                    fontWeight={700}
+                    sx={{ color: "#fff" }}
+                  >
                     {r.label}
                   </Typography>
                   <Chip

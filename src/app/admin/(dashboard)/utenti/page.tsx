@@ -28,7 +28,9 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const sortBy = (sp.sortBy as string | undefined) ?? "createdAt";
   const sortDir = ((sp.sortDir as string | undefined) ?? "desc") as "asc" | "desc";
   const page = Math.max(1, parseInt((sp.page as string | undefined) ?? "1", 10));
-  const limit = Math.min(100, Math.max(10, parseInt((sp.limit as string | undefined) ?? "10", 10)));
+  // 25 e non 10: con 111 utenti la paginazione a dieci righe faceva dodici
+  // pagine, ed e' il default gia' documentato in CLAUDE.md.
+  const limit = Math.min(100, Math.max(10, parseInt((sp.limit as string | undefined) ?? "25", 10)));
 
   const where: Prisma.UserWhereInput = {};
   if (search) {

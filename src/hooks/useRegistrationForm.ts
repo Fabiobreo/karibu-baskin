@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { SportRoleResult } from "@/components/training/SportRoleQuestionnaire";
+import { readError } from "@/lib/fetchJson";
 
 // ── Tipi esportati (re-esportati da RegistrationForm per backwards compat) ────
 
@@ -228,8 +229,8 @@ export function useRegistrationForm({
         body: JSON.stringify(body),
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Errore durante l'iscrizione");
+        const message = await readError(res);
+        throw new Error(message);
       }
     },
     onMutate: ({ submittedSubject, optimisticReg }) => {

@@ -1,5 +1,4 @@
 import { Box, Typography, Paper, LinearProgress } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import type { Badge, LockedBadge } from "@/lib/rating/badges";
 
 export type EarnedBadgeView = Badge & { unlockedAtLabel?: string | null };
@@ -17,12 +16,13 @@ interface BadgeShowcaseProps {
   maxNext?: number;
 }
 
+/**
+ * Colori del livello come token del tema: questo e' un Server Component, e una
+ * callback dentro `sx` non attraversa il confine RSC.
+ */
 function tierColors(tier: Badge["tier"]) {
-  return tier === "gold"
-    ? { border: "medal.gold", bg: alpha("#F9A825", 0.08), text: "medal.gold" }
-    : tier === "silver"
-      ? { border: "medal.silver", bg: "action.hover", text: "text.secondary" }
-      : { border: "medal.bronze", bg: alpha("#CD7F32", 0.08), text: "medal.bronze" };
+  const key = tier === "gold" ? "gold" : tier === "silver" ? "silver" : "bronze";
+  return { border: `medal.${key}`, bg: `medal.${key}Bg`, text: `medal.${key}` };
 }
 
 export default function BadgeShowcase({
@@ -70,14 +70,19 @@ export default function BadgeShowcase({
                 <Typography sx={{ fontSize: "1.1rem", lineHeight: 1 }}>{badge.emoji}</Typography>
                 <Box>
                   <Typography
-                    variant="caption"
-                    sx={{ fontWeight: 800, color: c.text, display: "block", lineHeight: 1.2 }}
+                    sx={{
+                      fontSize: "0.8125rem",
+                      fontWeight: 800,
+                      color: c.text,
+                      display: "block",
+                      lineHeight: 1.25,
+                    }}
                   >
                     {badge.label}
                   </Typography>
+                  {/* Era a 0,62rem, circa 10px. */}
                   <Typography
-                    variant="caption"
-                    sx={{ color: "text.disabled", fontSize: "0.62rem", display: "block" }}
+                    sx={{ color: "text.secondary", fontSize: "0.75rem", display: "block" }}
                   >
                     {badge.unlockedAtLabel ?? badge.description}
                   </Typography>
@@ -106,15 +111,21 @@ export default function BadgeShowcase({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {next.map((badge) => (
               <Box key={badge.id} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Typography sx={{ fontSize: "1.1rem", lineHeight: 1, opacity: 0.5 }}>
+                {/* I "prossimi" sono desaturati: si distinguono dagli sbloccati
+                    senza doverne leggere l'etichetta. */}
+                <Typography
+                  sx={{ fontSize: "1.1rem", lineHeight: 1, filter: "grayscale(1)", opacity: 0.7 }}
+                >
                   {badge.emoji}
                 </Typography>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 0.25 }}>
-                    <Typography variant="caption" fontWeight={700} noWrap>
+                    <Typography sx={{ fontSize: "0.8125rem", fontWeight: 700 }} noWrap>
                       {badge.label}
                     </Typography>
-                    <Typography variant="caption" color="text.disabled" sx={{ flexShrink: 0 }}>
+                    <Typography
+                      sx={{ fontSize: "0.75rem", color: "text.secondary", flexShrink: 0 }}
+                    >
                       {badge.current}/{badge.target}
                     </Typography>
                   </Box>

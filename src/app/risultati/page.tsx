@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
@@ -10,7 +9,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Metadata } from "next";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getActiveSeason } from "@/lib/season/activeSeason";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -30,12 +29,17 @@ type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function RisultatiPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const season = sp.season ?? getCurrentSeason();
-  const [t, locale, { matchResultLabel }] = await Promise.all([
+  const [t, tCommon, locale, { matchResultLabel }] = await Promise.all([
     getTranslations("matches"),
+    getTranslations("common"),
     getLocale(),
     getEntityLabels(),
   ]);
+  // Stagione attiva del sito: con la stagione appena aperta e ancora senza
+  // partite giocate si ricade sull'ultima popolata, dicendolo.
+  const { activeSeason, displaySeason, isFallback, seasons } = await getActiveSeason("results");
+  const season = sp.season ?? displaySeason;
+  const showFallbackNotice = !sp.season && isFallback;
   const dateLocale = getDateFnsLocale(locale);
   const winShort = t("resultWinShort");
   const drawShort = t("resultDrawShort");
@@ -45,13 +49,11 @@ export default async function RisultatiPage({ searchParams }: Props) {
       type
     ] ?? type;
 
-  // Stagioni disponibili (per i chip filtro)
-  const allSeasons = await prisma.competitiveTeam.findMany({
-    select: { season: true },
-    distinct: ["season"],
-    orderBy: { season: "desc" },
-  });
-  const seasons = allSeasons.map((s) => s.season);
+  // Stagioni per i chip filtro: quelle con risultati più la attiva, che resta
+  // selezionabile anche se vuota. Un filtro fuori elenco si aggiunge.
+  const chipSeasons = seasons.includes(season)
+    ? seasons
+    : [...seasons, season].sort((a, b) => b.localeCompare(a));
 
   // Partite giocate della stagione, raggruppate per squadra
   const matches = await prisma.match.findMany({
@@ -103,15 +105,13 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
   return (
     <>
-      <SiteHeader />
-
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
           <Typography
             variant="overline"
-            color="primary.main"
+            color="primary.light"
             fontWeight={700}
             sx={{ letterSpacing: "0.12em" }}
           >
@@ -190,7 +190,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* ── Filtri stagione ──────────────────────────────────────────────── */}
-        {seasons.length > 1 && (
+        {chipSeasons.length > 1 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
             <Typography
               variant="caption"
@@ -200,7 +200,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
             >
               {t("seasonLabel")}
             </Typography>
-            {seasons.map((s) => (
+            {chipSeasons.map((s) => (
               <Link
                 key={s}
                 href={`/risultati?season=${encodeURIComponent(s)}`}
@@ -216,6 +216,12 @@ export default async function RisultatiPage({ searchParams }: Props) {
               </Link>
             ))}
           </Box>
+        )}
+
+        {showFallbackNotice && (
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
+          </Typography>
         )}
 
         {/* ── Nessun dato ─────────────────────────────────────────────────── */}
@@ -325,7 +331,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
             <Link href="/partite" style={{ textDecoration: "none" }}>
               <Typography
                 variant="body2"
-                color="primary"
+                color="primary.onLight"
                 sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
               >
                 {t("seeMatches")}

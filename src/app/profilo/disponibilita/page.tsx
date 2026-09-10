@@ -1,7 +1,9 @@
 import { auth } from "@/lib/authjs";
+import { getTranslations } from "next-intl/server";
+import { Breadcrumbs, Container, Typography, Link as MuiLink } from "@mui/material";
+import PageHero from "@/components/common/PageHero";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import SiteHeader from "@/components/layout/SiteHeader";
 import MieDisponibilitaClient, {
   type AvailabilityMatch,
 } from "@/components/matches/MieDisponibilitaClient";
@@ -120,10 +122,40 @@ export default async function MieDisponibilitaPage() {
     });
   }
 
+  const t = await getTranslations("profile");
+
   return (
     <>
-      <SiteHeader />
-      <MieDisponibilitaClient initialMatches={items} />
+      <PageHero
+        chip={t("availabilitiesHeroChip")}
+        title={t("myAvailabilities")}
+        subtitle={t("availabilitiesHeroSubtitle")}
+        subtitleMaxWidth={540}
+        breadcrumb={
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+          >
+            {/* Niente `component={Link}`: qui siamo in un Server Component e
+                passare un componente a un Client Component non attraversa il
+                confine RSC. Resta un'ancora normale. */}
+            <MuiLink
+              href="/profilo"
+              underline="hover"
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+            >
+              {t("title")}
+            </MuiLink>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+              {t("availabilitiesTitle")}
+            </Typography>
+          </Breadcrumbs>
+        }
+      />
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        <MieDisponibilitaClient initialMatches={items} />
+      </Container>
     </>
   );
 }

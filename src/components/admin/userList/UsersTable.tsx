@@ -50,6 +50,14 @@ interface UsersTableProps {
   onDelete: (row: AdminRow) => void;
 }
 
+/**
+ * La colonna mostra `26.2 ±6.1` senza dire cosa sia: e' il rating TrueSkill
+ * usato per bilanciare le partitelle, con la sua incertezza.
+ */
+const SKILL_COLUMN_HINT =
+  "Rating TrueSkill: stima di livello usata per bilanciare le squadre. " +
+  "Il ± e' l'incertezza della stima, e cala col numero di partite giocate.";
+
 /** Tabella desktop del tab Utenti. */
 export default function UsersTable({
   rows,
@@ -89,7 +97,9 @@ export default function UsersTable({
                 Utente
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>Email</TableCell>
+            <TableCell sx={{ display: { xs: "none", md: "table-cell" }, minWidth: 200 }}>
+              Email
+            </TableCell>
             <TableCell>
               <TableSortLabel
                 active={sortBy === "appRole"}
@@ -110,7 +120,14 @@ export default function UsersTable({
             </TableCell>
             <TableCell align="center">Squadra</TableCell>
             <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-              Skill
+              <Tooltip title={SKILL_COLUMN_HINT}>
+                <Box
+                  component="span"
+                  sx={{ cursor: "help", borderBottom: "1px dotted", pb: "1px" }}
+                >
+                  Skill
+                </Box>
+              </Tooltip>
             </TableCell>
             <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
               Genere
@@ -141,9 +158,21 @@ export default function UsersTable({
                   </Box>
                 </TableCell>
 
-                {/* Email */}
-                <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                  <Typography variant="body2" color="text.secondary">
+                {/* Email — una riga sola: andando a capo raddoppiava l'altezza
+                    di ogni riga della tabella. Il valore intero resta in hover. */}
+                <TableCell
+                  sx={{
+                    display: { xs: "none", md: "table-cell" },
+                    maxWidth: 260,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    noWrap
+                    title={row.email ?? undefined}
+                    sx={{ display: "block" }}
+                  >
                     {row.email}
                   </Typography>
                 </TableCell>

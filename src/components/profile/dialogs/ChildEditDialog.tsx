@@ -16,6 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { ChildData, ChildFormState } from "@/components/profile/childLinkerShared";
+import { readError } from "@/lib/fetchJson";
 
 interface ChildEditDialogProps {
   child: ChildData;
@@ -50,11 +51,11 @@ export default function ChildEditDialog({ child, onClose, onSaved }: ChildEditDi
           birthDate: form.birthDate || null,
         }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        showToast({ message: data.error ?? tCommon("saveError"), severity: "error" });
+        showToast({ message: await readError(res), severity: "error" });
         return;
       }
+      const data = await res.json();
       showToast({ message: t("childUpdated", { name: data.name }), severity: "success" });
       onSaved(data);
       onClose();

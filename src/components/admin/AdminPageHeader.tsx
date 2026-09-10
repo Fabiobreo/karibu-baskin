@@ -65,7 +65,7 @@ export default function AdminPageHeader({
         >
           {icon}
           <Box>
-            <Typography variant="h4" fontWeight={800}>
+            <Typography variant="h4" component="h1" fontWeight={800}>
               {title}
             </Typography>
             {subtitle && (

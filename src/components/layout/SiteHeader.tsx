@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useHasMounted } from "@/lib/useHasMounted";
 import { useRouter } from "next/navigation";
 import {
   AppBar,
@@ -53,6 +52,7 @@ import { alpha } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { slugify } from "@/lib/slugUtils";
+import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
 // href-only — le label vengono da t() dentro il componente
 const NAV_HREFS = [
@@ -106,15 +106,15 @@ export default function SiteHeader() {
   const [ilBaskinOpen, setIlBaskinOpen] = useState(false);
   const [contattiAnchor, setContattiAnchor] = useState<null | HTMLElement>(null);
   const [contattiOpen, setContattiOpen] = useState(false);
-  const mounted = useHasMounted();
   const { mode: colorMode, setMode: setColorMode } = useThemeMode();
 
   function cycleColorMode() {
     const idx = COLOR_MODE_ORDER.indexOf(colorMode as ColorMode);
     setColorMode(COLOR_MODE_ORDER[(idx + 1) % COLOR_MODE_ORDER.length]);
   }
-  const pathnameRaw = usePathname();
-  const pathname = mounted ? pathnameRaw : null;
+  // Nessun gate sul mount: usePathname e gia risolto durante il render sul
+  // server, cosi la voce attiva e evidenziata gia al primo frame.
+  const pathname = usePathname();
   const partiteActive =
     pathname === "/risultati" ||
     pathname === "/classifiche" ||
@@ -174,6 +174,9 @@ export default function SiteHeader() {
               alignItems: "center",
               gap: 10,
               flexShrink: 0,
+              // Su mobile resta solo il logo da 38px: senza questo il bersaglio
+              // sta sotto la soglia tattile.
+              minHeight: TOUCH_TARGET_SIZE,
             }}
           >
             <Image
@@ -185,15 +188,23 @@ export default function SiteHeader() {
             />
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Typography
+                component="span"
                 variant="subtitle2"
                 fontWeight={800}
-                sx={{ color: "common.white", lineHeight: 1.1, fontSize: "0.9rem" }}
+                sx={{
+                  display: "block",
+                  color: "common.white",
+                  lineHeight: 1.1,
+                  fontSize: "0.9rem",
+                }}
               >
                 Karibu Baskin
               </Typography>
               <Typography
+                component="span"
                 variant="caption"
                 sx={{
+                  display: "block",
                   color: (theme) => alpha(theme.palette.common.white, 0.5),
                   fontSize: "0.62rem",
                   letterSpacing: "0.07em",
@@ -207,6 +218,8 @@ export default function SiteHeader() {
 
           {/* Nav desktop */}
           <Box
+            component="nav"
+            aria-label={t("mainNav")}
             sx={{
               display: { xs: "none", md: "flex" },
               gap: 0.5,
@@ -226,6 +239,7 @@ export default function SiteHeader() {
                   component={Link}
                   href={link.href}
                   size="small"
+                  aria-label={link.iconOnly ? t(link.key) : undefined}
                   sx={{
                     color: active
                       ? "common.white"
@@ -464,7 +478,7 @@ export default function SiteHeader() {
               <>
                 <IconButton
                   onClick={(e) => setMenuAnchor(e.currentTarget)}
-                  aria-label="Menu utente"
+                  aria-label={t("userMenu")}
                   sx={{ p: 0.5 }}
                 >
                   <Avatar
@@ -526,7 +540,7 @@ export default function SiteHeader() {
                         setMenuAnchor(null);
                         router.push("/admin");
                       }}
-                      sx={{ color: "primary.main", fontWeight: 700 }}
+                      sx={{ color: "primary.onLight", fontWeight: 700 }}
                     >
                       <ListItemIcon>
                         <AdminPanelSettingsIcon fontSize="small" sx={{ color: "primary.main" }} />
@@ -573,7 +587,7 @@ export default function SiteHeader() {
             color="inherit"
             onClick={() => setDrawerOpen(true)}
             aria-label={t("openMenu")}
-            sx={{ display: { md: "none" } }}
+            sx={{ ...TOUCH_TARGET, display: { md: "none" } }}
           >
             <MenuIcon />
           </IconButton>
@@ -607,6 +621,7 @@ export default function SiteHeader() {
           }}
         >
           <Typography
+            component="span"
             variant="subtitle2"
             fontWeight={700}
             sx={{
@@ -630,7 +645,7 @@ export default function SiteHeader() {
         <Divider sx={{ borderColor: (theme) => alpha(theme.palette.common.white, 0.08) }} />
 
         {/* Nav mobile */}
-        <List disablePadding sx={{ flex: 1 }}>
+        <List component="nav" aria-label={t("mainNav")} disablePadding sx={{ flex: 1 }}>
           {/* Voci semplici prima di "Partite" */}
           {[
             { key: "trainings" as const, href: "/allenamenti" },
@@ -969,7 +984,7 @@ export default function SiteHeader() {
                   }}
                   sx={{
                     py: 1.25,
-                    color: "primary.main",
+                    color: "primary.light",
                     borderLeft: "3px solid",
                     borderLeftColor: "primary.main",
                   }}

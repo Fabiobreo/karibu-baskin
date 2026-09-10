@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { getTranslations } from "next-intl/server";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
@@ -18,6 +17,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Image from "next/image";
 import Link from "next/link";
 import { buildMetadata } from "@/lib/seo";
+import { onHover } from "@/lib/hoverStyles";
 
 export const metadata = buildMetadata({
   title: "Sponsor",
@@ -69,8 +69,6 @@ export default async function SponsorPage() {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero
         chip={t("sponsor.heroChip")}
         title={t("sponsor.heroTitle")}
@@ -83,7 +81,7 @@ export default async function SponsorPage() {
         <Box sx={{ mb: 7 }}>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -120,11 +118,11 @@ export default async function SponsorPage() {
                     textDecoration: "none",
                     color: "inherit",
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
-                    "&:hover": {
+                    ...onHover({
                       borderColor: "primary.main",
                       boxShadow: `0 2px 12px ${alpha("#E65100", 0.1)}`,
                       transform: "translateY(-2px)",
-                    },
+                    }),
                   }}
                 >
                   {/* Logo */}
@@ -183,7 +181,7 @@ export default async function SponsorPage() {
         <Box>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >

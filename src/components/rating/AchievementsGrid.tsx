@@ -1,7 +1,6 @@
 import { Box, Typography, LinearProgress } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { alpha } from "@mui/material/styles";
 import {
   BADGE_CATEGORY_ORDER,
   BADGE_CATEGORY_LABELS,
@@ -9,6 +8,7 @@ import {
   type BadgeProgress,
   type BadgeTier,
 } from "@/lib/rating/badges";
+import { onHover } from "@/lib/hoverStyles";
 
 export type AchievementItem = BadgeProgress & { unlockedAtLabel?: string | null };
 
@@ -18,17 +18,19 @@ interface AchievementsGridProps {
   categoryLabels?: Record<BadgeCategory, string>;
 }
 
+/**
+ * Colori del livello come token del tema, non come valori risolti: questo
+ * componente e' un Server Component, e una callback dentro `sx` non
+ * attraversa il confine RSC.
+ */
 function tierColors(tier: BadgeTier) {
-  return tier === "gold"
-    ? { border: "medal.gold", bg: alpha("#F9A825", 0.1), text: "medal.gold" }
-    : tier === "silver"
-      ? { border: "medal.silver", bg: alpha("#9E9E9E", 0.12), text: "text.primary" }
-      : { border: "medal.bronze", bg: alpha("#CD7F32", 0.1), text: "medal.bronze" };
+  const key = tier === "gold" ? "gold" : tier === "silver" ? "silver" : "bronze";
+  return { border: `medal.${key}`, bg: `medal.${key}Bg`, text: `medal.${key}` };
 }
 
 function AchievementCard({ item }: { item: AchievementItem }) {
-  const c = tierColors(item.tier);
   const earned = item.earned;
+  const c = tierColors(item.tier);
   const hasProgress = !earned && item.target != null && item.target > 0;
   const pct = hasProgress ? Math.min(100, ((item.current ?? 0) / item.target!) * 100) : 0;
 
@@ -42,12 +44,19 @@ function AchievementCard({ item }: { item: AchievementItem }) {
         textAlign: "center",
         p: { xs: 1.5, sm: 2 },
         borderRadius: 3,
-        border: "1.5px solid",
+        // Sbloccato e da conquistare devono distinguersi senza leggere il
+        // testo: colore del livello e bordo pieno contro grigio e tratteggio.
+        // Prima cambiava solo il colore dell'icona.
+        border: earned ? "1.5px solid" : "1.5px dashed",
         borderColor: earned ? c.border : "divider",
-        bgcolor: earned ? c.bg : "action.hover",
-        opacity: earned ? 1 : 0.62,
+        bgcolor: earned ? c.bg : "transparent",
+        // Desaturato, ma non sotto la soglia di leggibilita': il criterio va
+        // letto anche sui bloccati, e' quello che dice come sbloccarli.
+        filter: earned ? "none" : "saturate(0.25)",
+        opacity: earned ? 1 : 0.85,
+        boxShadow: earned ? 1 : "none",
         transition: "transform 0.15s ease, box-shadow 0.15s ease",
-        "&:hover": earned ? { transform: "translateY(-2px)", boxShadow: 3 } : undefined,
+        ...(earned ? onHover({ transform: "translateY(-2px)", boxShadow: 3 }) : {}),
       }}
     >
       {/* Indicatore stato in alto a destra */}
@@ -72,36 +81,51 @@ function AchievementCard({ item }: { item: AchievementItem }) {
       </Typography>
 
       <Typography
-        variant="caption"
         sx={{
+          fontSize: "0.875rem",
           fontWeight: 800,
           color: earned ? c.text : "text.secondary",
-          lineHeight: 1.2,
+          lineHeight: 1.25,
           display: "block",
         }}
       >
         {item.label}
       </Typography>
 
+      {/* Il criterio dice come si sblocca: era a 0,64rem, cioe' circa 10px. */}
       <Typography
-        variant="caption"
         sx={{
-          color: "text.disabled",
-          fontSize: "0.64rem",
-          lineHeight: 1.3,
+          color: "text.secondary",
+          fontSize: "0.75rem",
+          lineHeight: 1.35,
           display: "block",
-          mt: 0.25,
+          mt: 0.5,
         }}
       >
-        {earned ? (item.unlockedAtLabel ?? item.description) : item.description}
+        {item.description}
       </Typography>
+
+      {/* La data di sblocco e' informazione secondaria: non compete col criterio. */}
+      {earned && item.unlockedAtLabel && (
+        <Typography
+          sx={{
+            color: "text.disabled",
+            fontSize: "0.75rem",
+            lineHeight: 1.35,
+            display: "block",
+            mt: 0.5,
+            fontStyle: "italic",
+          }}
+        >
+          {item.unlockedAtLabel}
+        </Typography>
+      )}
 
       {hasProgress && (
         <Box sx={{ width: "100%", mt: 1 }}>
           <LinearProgress variant="determinate" value={pct} sx={{ height: 5, borderRadius: 3 }} />
           <Typography
-            variant="caption"
-            sx={{ color: "text.disabled", fontSize: "0.6rem", mt: 0.25, display: "block" }}
+            sx={{ color: "text.secondary", fontSize: "0.75rem", mt: 0.25, display: "block" }}
           >
             {item.current}/{item.target}
           </Typography>

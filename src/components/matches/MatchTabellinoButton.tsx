@@ -83,14 +83,14 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
         disabled={loading}
         aria-label={label}
         sx={{
-          color: "#fff",
+          color: "common.white",
           bgcolor: "rgba(255,255,255,0.08)",
           border: "1px solid rgba(255,255,255,0.2)",
           "&:hover": { bgcolor: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.4)" },
         }}
       >
         {loading ? (
-          <CircularProgress size={18} sx={{ color: "#fff" }} />
+          <CircularProgress size={18} sx={{ color: "common.white" }} />
         ) : (
           <ShareIcon sx={{ fontSize: 18 }} />
         )}

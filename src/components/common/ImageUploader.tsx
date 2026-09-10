@@ -18,6 +18,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useToast } from "@/context/ToastContext";
 import type { BlobFolder } from "@/lib/blob";
+import { readError } from "@/lib/fetchJson";
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
@@ -68,8 +69,10 @@ export default function ImageUploader({
     setUploading(true);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
+      // L'upload e' il caso in cui questo conta di piu': un file troppo grande
+      // torna 413 con una pagina HTML, non con un JSON.
+      if (!res.ok) throw new Error(await readError(res));
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Errore durante l'upload");
       onUploaded(data.url as string);
       showToast({ message: "Immagine caricata", severity: "success" });
     } catch (err) {

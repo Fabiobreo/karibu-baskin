@@ -18,7 +18,6 @@ import LanguageIcon from "@mui/icons-material/Language";
 import PaletteIcon from "@mui/icons-material/Palette";
 import StadiumIcon from "@mui/icons-material/Stadium";
 import Link from "next/link";
-import SiteHeader from "@/components/layout/SiteHeader";
 import EntityHero from "@/components/common/EntityHero";
 import { format } from "date-fns";
 import type { Metadata } from "next";
@@ -144,7 +143,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
 
   return (
     <>
-      <SiteHeader />
       <EntityHero
         chip={t("opposingChip")}
         title={team.name}
@@ -250,7 +248,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    color: "primary.main",
+                    color: "primary.onLight",
                     textDecoration: "none",
                     "&:hover": { textDecoration: "underline" },
                   }}

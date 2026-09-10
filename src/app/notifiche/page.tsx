@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { Container } from "@mui/material";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifications/notifPrefs";
 import type { AppNotificationType } from "@prisma/client";
-import SiteHeader from "@/components/layout/SiteHeader";
 import NotificheClient from "@/components/notifications/NotificheClient";
+import PageHero from "@/components/common/PageHero";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -20,6 +22,7 @@ export default async function NotifichePage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
+  const t = await getTranslations("pages.notifiche");
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -58,8 +61,18 @@ export default async function NotifichePage() {
 
   return (
     <>
-      <SiteHeader />
-      <NotificheClient initialNotifications={initialNotifications} initialHasMore={LIMIT < total} />
+      <PageHero
+        chip={t("heroChip")}
+        title={t("heroTitle")}
+        subtitle={t("heroSubtitle")}
+        subtitleMaxWidth={520}
+      />
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        <NotificheClient
+          initialNotifications={initialNotifications}
+          initialHasMore={LIMIT < total}
+        />
+      </Container>
     </>
   );
 }

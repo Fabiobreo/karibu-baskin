@@ -1,5 +1,6 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { brandColor } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 
 interface EntityHeroProps {
@@ -32,7 +33,7 @@ export default function EntityHero({
         backgroundImage: `linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, ${color} 130%)`,
       }}
       sx={{
-        color: "#fff",
+        color: "common.white",
         py,
         px: 2,
         position: "relative",
@@ -49,7 +50,7 @@ export default function EntityHero({
           width: 260,
           height: 260,
           borderRadius: "50%",
-          backgroundColor: alpha("#E65100", 0.1),
+          backgroundColor: alpha(brandColor.orange, 0.1),
           pointerEvents: "none",
         }}
       />
@@ -62,7 +63,7 @@ export default function EntityHero({
           width: 320,
           height: 320,
           borderRadius: "50%",
-          backgroundColor: alpha("#E65100", 0.06),
+          backgroundColor: alpha(brandColor.orange, 0.06),
           pointerEvents: "none",
         }}
       />

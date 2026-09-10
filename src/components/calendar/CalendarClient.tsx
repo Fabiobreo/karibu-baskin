@@ -9,6 +9,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
+import EmptyState from "@/components/common/EmptyState";
 import {
   format,
   startOfMonth,
@@ -33,6 +35,7 @@ import CalendarLegend from "@/components/calendar/CalendarLegend";
 import EventDetailDialog from "@/components/calendar/dialogs/EventDetailDialog";
 import DayEventsDialog from "@/components/calendar/dialogs/DayEventsDialog";
 import CreateEventDialog from "@/components/calendar/dialogs/CreateEventDialog";
+import { TOUCH_TARGET } from "@/lib/touchTarget";
 
 const FILTERS_STORAGE_KEY = "karibu-calendar-filters";
 
@@ -134,6 +137,9 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
   const eventsForDay = (day: Date) =>
     events.filter((e) => spansDay(e, day) && isVisible(e, hiddenKeys));
 
+  // Un mese di celle vuote non dice nulla: sotto la griglia va un messaggio.
+  const monthHasEvents = days.some((d) => isSameMonth(d, firstDay) && eventsForDay(d).length > 0);
+
   function handleDayClick(day: Date) {
     const dayEvs = eventsForDay(day);
     // Comportamento unico mobile/desktop: vista giorno; lo staff vi trova "Aggiungi"
@@ -181,7 +187,9 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     <Box>
       {/* Intestazione mese */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-        <IconButton onClick={prevMonth} size="small" aria-label={t("prevMonth")}>
+        {/* 44x44: sono l'interazione principale della pagina e stanno
+            vicine fra loro. L'icona resta piccola, cresce l'area. */}
+        <IconButton onClick={prevMonth} aria-label={t("prevMonth")} sx={TOUCH_TARGET}>
           <ChevronLeftIcon />
         </IconButton>
         <Typography
@@ -196,7 +204,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         >
           {format(new Date(year, month), "MMMM yyyy", { locale: dateLocale })}
         </Typography>
-        <IconButton onClick={nextMonth} size="small" aria-label={t("nextMonth")}>
+        <IconButton onClick={nextMonth} aria-label={t("nextMonth")} sx={TOUCH_TARGET}>
           <ChevronRightIcon />
         </IconButton>
         <Typography
@@ -205,7 +213,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
           sx={{
             ml: 0.5,
             cursor: "pointer",
-            color: "primary.main",
+            color: "primary.onLight",
             fontWeight: 600,
             "&:hover": { textDecoration: "underline" },
             fontSize: { xs: "0.75rem", sm: "0.875rem" },
@@ -428,6 +436,14 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
             );
           })}
         </Box>
+      )}
+
+      {!loading && !monthHasEvents && (
+        <EmptyState
+          icon={<EventBusyIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+          title={t("noEventsMonth")}
+          message={t("noEventsMonthDesc")}
+        />
       )}
 
       {/* Legenda + filtri */}

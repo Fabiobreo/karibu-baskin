@@ -11,7 +11,6 @@ import {
   Button,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -22,8 +21,12 @@ import HistoryIcon from "@mui/icons-material/History";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
+import { contrastText } from "@/lib/colorUtils";
+import { brandColor } from "@/lib/heroStyles";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { onHover } from "@/lib/hoverStyles";
+import { getActiveSeason } from "@/lib/season/activeSeason";
 
 export const metadata: Metadata = buildMetadata({
   title: "Squadre",
@@ -35,30 +38,26 @@ export const metadata: Metadata = buildMetadata({
 export const revalidate = 3600;
 
 export default async function SquadrePage() {
-  const t = await getTranslations("teams");
+  const [t, tCommon] = await Promise.all([getTranslations("teams"), getTranslations("common")]);
   const STATS = [
     { value: "2015", label: t("foundingYear") },
     { value: "80+", label: t("registeredAthletes") },
     { value: "2", label: t("teamsInField") },
     { value: "1°", label: t("regionalTitle") },
   ];
-  const [teams, seasonRecords] = await Promise.all([
+  const [teams, { activeSeason, displaySeason, isFallback }] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: { _count: { select: { memberships: true, matches: true } } },
     }),
-    prisma.season.findMany(),
+    getActiveSeason("teams"),
   ]);
 
-  const currentSeason = seasonRecords.find((s) => s.isCurrent)?.label ?? null;
-
-  const currentTeams = currentSeason ? teams.filter((t) => t.season === currentSeason) : teams;
-  const hasPastSeasons = teams.some((t) => !currentSeason || t.season < currentSeason);
+  const currentTeams = teams.filter((t) => t.season === displaySeason);
+  const hasPastSeasons = teams.some((t) => t.season < displaySeason);
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero
         chip={t("heroChip")}
         title={t("heroTitle")}
@@ -82,8 +81,9 @@ export default async function SquadrePage() {
               >
                 <Typography
                   variant="h4"
+                  component="p"
                   fontWeight={800}
-                  color="primary"
+                  color="primary.onLight"
                   sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
                 >
                   {s.value}
@@ -111,8 +111,8 @@ export default async function SquadrePage() {
           />
         ) : (
           <Box>
-            {currentSeason && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+              {!isFallback && (
                 <Chip
                   label={t("currentSeasonChip")}
                   size="small"
@@ -120,18 +120,24 @@ export default async function SquadrePage() {
                   color="warning"
                   sx={{ fontWeight: 700 }}
                 />
-                <Typography
-                  variant="overline"
-                  color="primary"
-                  fontWeight={700}
-                  sx={{ letterSpacing: "0.1em" }}
-                >
-                  {t("seasonLabel")} {currentSeason}
-                </Typography>
-              </Box>
+              )}
+              <Typography
+                variant="overline"
+                color="primary.onLight"
+                fontWeight={700}
+                sx={{ letterSpacing: "0.1em" }}
+              >
+                {t("seasonLabel")} {displaySeason}
+              </Typography>
+            </Box>
+            {isFallback && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
+              </Typography>
             )}
             <Typography
               variant="h4"
+              component="h2"
               fontWeight={800}
               sx={{ mb: 3, fontSize: { xs: "1.7rem", md: "2.1rem" } }}
             >
@@ -159,7 +165,7 @@ export default async function SquadrePage() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <SportsKabaddiIcon sx={{ color: "primary.main" }} />
             <Box>
-              <Typography variant="subtitle1" fontWeight={700}>
+              <Typography variant="subtitle1" component="h2" fontWeight={700}>
                 {t("simChallengeTitle")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -193,7 +199,7 @@ export default async function SquadrePage() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <HistoryIcon sx={{ color: "text.secondary" }} />
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>
+                <Typography variant="subtitle1" component="h2" fontWeight={700}>
                   {t("previousSeasons")}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -226,7 +232,7 @@ export default async function SquadrePage() {
             }}
           >
             <EmojiEventsIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
-            <Typography variant="h5" fontWeight={800}>
+            <Typography variant="h5" component="h2" fontWeight={800}>
               {t("joinUs")}
             </Typography>
             <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 420 }}>
@@ -262,84 +268,94 @@ function TeamGrid({
   t: (key: string, values?: Record<string, any>) => string;
 }) {
   return (
-    <Grid container spacing={3}>
-      {teams.map((team) => (
-        <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
-          <Link
-            href={`/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`}
-            style={{ textDecoration: "none" }}
-          >
-            <Paper
-              elevation={0}
-              sx={{
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor: "divider",
-                height: "100%",
-                cursor: "pointer",
-                opacity: muted ? 0.7 : 1,
-                transition: "all 0.15s",
-                "&:hover": { transform: "translateY(-3px)", boxShadow: 4, opacity: 1 },
-              }}
+    // `alignItems: start`: le card senza descrizione si allungavano fino
+    // all'altezza della gemella, lasciando un vuoto sotto i metadati.
+    <Grid container spacing={3} alignItems="flex-start">
+      {teams.map((team) => {
+        // Il colore squadra arriva dal DB e puo' essere chiaro (il verde dei
+        // Montekki): il testo bianco fisso ci faceva 2,6:1. Qui il colore del
+        // nome segue la luminanza dello sfondo.
+        const headerText = contrastText(team.color);
+        return (
+          <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
+            <Link
+              href={`/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`}
+              style={{ textDecoration: "none" }}
             >
-              <Box
+              <Paper
+                elevation={0}
                 sx={{
-                  px: 2.5,
-                  py: 2,
-                  backgroundColor: muted ? "grey.200" : (team.color ?? "primary.main"),
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  overflow: "hidden",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  cursor: "pointer",
+                  opacity: muted ? 0.7 : 1,
+                  transition: "all 0.15s",
+                  ...onHover({ transform: "translateY(-3px)", boxShadow: 4, opacity: 1 }),
                 }}
               >
-                <Typography
-                  variant="h6"
-                  fontWeight={800}
-                  sx={{ color: muted ? "text.secondary" : "#fff" }}
+                <Box
+                  sx={{
+                    px: 2.5,
+                    py: 2,
+                    backgroundColor: muted ? "grey.200" : (team.color ?? "primary.main"),
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
                 >
-                  {team.name}
-                </Typography>
-                {team.championship && (
-                  <Chip
-                    label={team.championship}
-                    size="small"
-                    sx={{
-                      backgroundColor: muted ? alpha("#000000", 0.08) : "rgba(255,255,255,0.2)",
-                      color: muted ? "text.secondary" : "#fff",
-                      fontWeight: 700,
-                    }}
-                  />
-                )}
-              </Box>
-              <Box sx={{ p: 2.5 }}>
-                {team.description && (
                   <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ lineHeight: 1.75, mb: 2 }}
+                    variant="h6"
+                    component="h3"
+                    fontWeight={800}
+                    sx={{ color: muted ? "text.secondary" : headerText }}
                   >
-                    {team.description}
+                    {team.name}
                   </Typography>
-                )}
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <GroupsIcon sx={{ fontSize: 16, color: "text.disabled" }} />
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      {t("athleteCount", { count: team._count.memberships })}
+                  {team.championship && (
+                    <Chip
+                      label={team.championship}
+                      size="small"
+                      sx={{
+                        backgroundColor: muted
+                          ? alpha(brandColor.black, 0.08)
+                          : alpha(headerText, 0.18),
+                        color: muted ? "text.secondary" : headerText,
+                        fontWeight: 700,
+                      }}
+                    />
+                  )}
+                </Box>
+                <Box sx={{ p: 2.5 }}>
+                  {team.description && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.75, mb: 2 }}
+                    >
+                      {team.description}
                     </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                    <SportsSoccerIcon sx={{ fontSize: 16, color: "text.disabled" }} />
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                      {t("matchCount", { count: team._count.matches })}
-                    </Typography>
+                  )}
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <GroupsIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                        {t("athleteCount", { count: team._count.memberships })}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <SportsSoccerIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                        {t("matchCount", { count: team._count.matches })}
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
-            </Paper>
-          </Link>
-        </Grid>
-      ))}
+              </Paper>
+            </Link>
+          </Grid>
+        );
+      })}
     </Grid>
   );
 }

@@ -18,6 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { TOUCH_TARGET } from "@/lib/touchTarget";
 
 interface ResultItem {
   name: string;
@@ -78,7 +79,12 @@ export default function GlobalSearch() {
   return (
     <>
       <Tooltip title={t("open")}>
-        <IconButton onClick={() => setOpen(true)} aria-label={t("open")} color="inherit">
+        <IconButton
+          onClick={() => setOpen(true)}
+          aria-label={t("open")}
+          color="inherit"
+          sx={TOUCH_TARGET}
+        >
           <SearchIcon />
         </IconButton>
       </Tooltip>

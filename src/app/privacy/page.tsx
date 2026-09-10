@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Container, Typography, Box, Paper, Divider } from "@mui/material";
-import SiteHeader from "@/components/layout/SiteHeader";
 import Link from "next/link";
 import { SITE_HOST } from "@/lib/siteUrl";
 import { buildMetadata } from "@/lib/seo";
@@ -17,13 +16,13 @@ const LAST_UPDATE = "20 maggio 2026";
 export default function PrivacyPage() {
   return (
     <>
-      <SiteHeader />
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography variant="overline" color="primary" fontWeight={700}>
+        <Typography variant="overline" color="primary.onLight" fontWeight={700}>
           Documento legale
         </Typography>
         <Typography
           variant="h3"
+          component="h1"
           fontWeight={800}
           sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.8rem", md: "2.4rem" } }}
         >

@@ -16,16 +16,18 @@ import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useState, useEffect } from "react";
 import type { MatchResult } from "@prisma/client";
+import { readError } from "@/lib/fetchJson";
 
 const RESULT_LABELS: Record<MatchResult, string> = {
   WIN: "Vittoria",
   LOSS: "Sconfitta",
   DRAW: "Pareggio",
 };
+// Token del tema: i valori vivono in `palette.match` (vedi src/theme.ts).
 const RESULT_COLORS: Record<MatchResult, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  DRAW: "#E65100",
+  WIN: "match.win",
+  LOSS: "match.loss",
+  DRAW: "match.draw",
 };
 
 function deriveResult(our: string, their: string): MatchResult | null {
@@ -108,8 +110,8 @@ export default function MatchResultDialog({
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const errData = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(errData.error ?? "Errore nel salvataggio");
+        const message = await readError(res);
+        setError(message);
         return;
       }
       onSaved(matchId, payload);
@@ -175,7 +177,7 @@ export default function MatchResultDialog({
               label={RESULT_LABELS[derived]}
               sx={{
                 bgcolor: RESULT_COLORS[derived],
-                color: "#fff",
+                color: "common.white",
                 fontWeight: 700,
                 fontSize: "0.85rem",
                 px: 1.5,

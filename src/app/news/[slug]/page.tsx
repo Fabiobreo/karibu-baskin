@@ -22,7 +22,6 @@ import Link from "next/link";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
 import PollWidget from "@/components/news/PollWidget";
-import SiteHeader from "@/components/layout/SiteHeader";
 
 export const revalidate = 60;
 
@@ -118,7 +117,6 @@ export default async function NewsSlugPage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader />
       {post.imageUrl && (
         <Box
           sx={{
@@ -143,7 +141,7 @@ export default async function NewsSlugPage({ params }: Props) {
 
         <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
           {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
-          <Typography variant="h4" fontWeight={800} sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h4" component="h1" fontWeight={800} sx={{ flex: 1, minWidth: 0 }}>
             {post.title}
           </Typography>
           {isStaff && (

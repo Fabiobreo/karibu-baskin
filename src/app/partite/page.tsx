@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import SiteHeader from "@/components/layout/SiteHeader";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import HomeIcon from "@mui/icons-material/Home";
@@ -12,7 +11,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Metadata } from "next";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getActiveSeason } from "@/lib/season/activeSeason";
 import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -31,7 +30,10 @@ type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function PartitePage({ searchParams }: Props) {
   const sp = await searchParams;
-  const season = sp.season ?? getCurrentSeason();
+  // Nessuna ricaduta qui: le "prossime partite" di una stagione conclusa non
+  // esistono, quindi si resta sulla stagione attiva del sito.
+  const { activeSeason, seasons } = await getActiveSeason("teams");
+  const season = sp.season ?? activeSeason;
   const [t, locale] = await Promise.all([getTranslations("matches"), getLocale()]);
   const dateLocale = getDateFnsLocale(locale);
   const matchTypeLabel = (type: string) =>
@@ -40,12 +42,9 @@ export default async function PartitePage({ searchParams }: Props) {
     ] ?? type;
   const now = new Date();
 
-  const allSeasons = await prisma.competitiveTeam.findMany({
-    select: { season: true },
-    distinct: ["season"],
-    orderBy: { season: "desc" },
-  });
-  const seasons = allSeasons.map((s) => s.season);
+  const chipSeasons = seasons.includes(season)
+    ? seasons
+    : [...seasons, season].sort((a, b) => b.localeCompare(a));
 
   const upcoming = await prisma.match.findMany({
     where: { result: null, date: { gte: now }, team: { season } },
@@ -84,14 +83,12 @@ export default async function PartitePage({ searchParams }: Props) {
 
   return (
     <>
-      <SiteHeader />
-
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <CalendarTodayIcon sx={{ fontSize: 30, color: "primary.main" }} />
           <Typography
             variant="overline"
-            sx={{ color: "primary.main", letterSpacing: "0.12em", fontWeight: 700 }}
+            sx={{ color: "primary.light", letterSpacing: "0.12em", fontWeight: 700 }}
           >
             {t("upcomingHeroChip")}
           </Typography>
@@ -112,7 +109,7 @@ export default async function PartitePage({ searchParams }: Props) {
       </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        {seasons.length > 1 && (
+        {chipSeasons.length > 1 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
             <Typography
               variant="caption"
@@ -122,7 +119,7 @@ export default async function PartitePage({ searchParams }: Props) {
             >
               {t("seasonLabel")}
             </Typography>
-            {seasons.map((s) => (
+            {chipSeasons.map((s) => (
               <Link
                 key={s}
                 href={`/partite?season=${encodeURIComponent(s)}`}
@@ -149,7 +146,7 @@ export default async function PartitePage({ searchParams }: Props) {
               <Link href="/risultati" style={{ textDecoration: "none" }}>
                 <Typography
                   variant="body2"
-                  color="primary"
+                  color="primary.onLight"
                   sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
                 >
                   {t("seeResults")}
@@ -375,7 +372,7 @@ export default async function PartitePage({ searchParams }: Props) {
             <Link href="/risultati" style={{ textDecoration: "none" }}>
               <Typography
                 variant="body2"
-                color="primary"
+                color="primary.onLight"
                 sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
               >
                 {t("seeResults")}

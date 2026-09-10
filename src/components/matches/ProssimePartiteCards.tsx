@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import type { Locale } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { onHover } from "@/lib/hoverStyles";
 
 export interface MatchCardData {
   id: string;
@@ -75,10 +76,10 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 borderColor: highlight ? "primary.main" : "divider",
                 transition: "all 0.18s",
                 cursor: "pointer",
-                "&:hover": {
+                ...onHover({
                   transform: "translateY(-3px)",
                   boxShadow: 8,
-                },
+                }),
               }}
             >
               <Box
@@ -101,7 +102,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                       mb: 1,
                       fontWeight: 700,
                       bgcolor: "primary.main",
-                      color: "#fff",
+                      color: "common.white",
                       animation: "karibuPulse 1.6s ease-in-out infinite",
                       "@keyframes karibuPulse": {
                         "0%, 100%": {

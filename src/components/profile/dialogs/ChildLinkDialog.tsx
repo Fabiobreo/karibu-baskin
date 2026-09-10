@@ -15,6 +15,7 @@ import LinkIcon from "@mui/icons-material/Link";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { ChildData } from "@/components/profile/childLinkerShared";
+import { readError } from "@/lib/fetchJson";
 
 interface ChildLinkDialogProps {
   child: ChildData;
@@ -50,11 +51,11 @@ export default function ChildLinkDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ linkEmail: email.trim() }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        setEmailError(data.error ?? t("linkError"));
+        setEmailError(await readError(res));
         return;
       }
+      const data = await res.json();
       if (data.pending) {
         // Richiesta inviata, in attesa di conferma
         onRequestSent(data.requestId ?? null);

@@ -35,6 +35,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ImageUploader from "@/components/common/ImageUploader";
+import { readError } from "@/lib/fetchJson";
 
 type EventOptionRow = {
   id?: string;
@@ -167,8 +168,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
         });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError("root", { message: data.error ?? "Errore durante il salvataggio" });
+      const message = await readError(res);
+      setError("root", { message: message });
       return;
     }
 

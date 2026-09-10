@@ -26,6 +26,8 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { alpha } from "@mui/material/styles";
+import { contrastText } from "@/lib/colorUtils";
 import { STAT_FIELDS_BY_ROLE, computePoints, type StatField } from "@/lib/schemas/match";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
@@ -335,7 +337,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
         </Breadcrumbs>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <LeaderboardIcon color="primary" />
-          <Typography variant="h4" fontWeight={800}>
+          <Typography variant="h4" component="h1" fontWeight={800}>
             Statistiche giocatori
           </Typography>
         </Box>
@@ -371,7 +373,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
           {/* MVP picker — max 3 dai convocati */}
           <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <EmojiEventsIcon sx={{ color: "#F9A825" }} />
+              <EmojiEventsIcon sx={{ color: "medal.gold" }} />
               <Typography variant="subtitle1" fontWeight={700}>
                 MVP della partita
               </Typography>
@@ -380,8 +382,11 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                 size="small"
                 sx={{
                   fontWeight: 700,
-                  bgcolor: mvpKeys.size > 0 ? "rgba(249,168,37,0.15)" : "action.hover",
-                  color: mvpKeys.size > 0 ? "match.draw" : "text.secondary",
+                  bgcolor: (theme) =>
+                    mvpKeys.size > 0
+                      ? alpha(theme.palette.medal.gold, 0.15)
+                      : theme.palette.action.hover,
+                  color: mvpKeys.size > 0 ? "medal.gold" : "text.secondary",
                 }}
               />
             </Box>
@@ -399,18 +404,29 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                     onClick={() => toggleMvp(key)}
                     icon={
                       selected ? (
-                        <EmojiEventsIcon sx={{ fontSize: "16px !important", color: "#fff" }} />
+                        <EmojiEventsIcon
+                          sx={(theme) => ({
+                            fontSize: "16px !important",
+                            color: contrastText(theme.palette.medal.gold),
+                          })}
+                        />
                       ) : undefined
                     }
                     sx={{
                       fontWeight: 700,
                       cursor: "pointer",
-                      bgcolor: selected ? "#F9A825" : "transparent",
-                      color: selected ? "#fff" : "text.primary",
+                      bgcolor: (theme) => (selected ? theme.palette.medal.gold : "transparent"),
+                      color: (theme) =>
+                        selected
+                          ? contrastText(theme.palette.medal.gold)
+                          : theme.palette.text.primary,
                       border: "1px solid",
-                      borderColor: selected ? "#F9A825" : "divider",
+                      borderColor: selected ? "medal.gold" : "divider",
                       "&:hover": {
-                        bgcolor: selected ? "#F57F17" : "rgba(249,168,37,0.08)",
+                        bgcolor: (theme) =>
+                          selected
+                            ? theme.palette.medal.goldDeep
+                            : alpha(theme.palette.medal.gold, 0.08),
                       },
                     }}
                   />
@@ -442,7 +458,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                         fontWeight: 700,
                         fontSize: "0.75rem",
                         minWidth: 52,
-                        color: "primary.main",
+                        color: "primary.onLight",
                       }}
                     >
                       Pt
@@ -485,7 +501,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                                   size="small"
                                   sx={{
                                     bgcolor: ROLE_COLORS[row.sportRole],
-                                    color: "#fff",
+                                    color: contrastText(ROLE_COLORS[row.sportRole]),
                                     fontWeight: 600,
                                     fontSize: "0.55rem",
                                     height: 14,
@@ -544,7 +560,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                             py: 0.5,
                             px: 0.5,
                             fontWeight: 800,
-                            color: "primary.main",
+                            color: "primary.onLight",
                             fontSize: "0.9rem",
                           }}
                         >
@@ -587,7 +603,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                     ))}
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: 800, fontSize: "0.9rem", color: "primary.main" }}
+                      sx={{ fontWeight: 800, fontSize: "0.9rem", color: "primary.onLight" }}
                     >
                       {totals.points}
                     </TableCell>

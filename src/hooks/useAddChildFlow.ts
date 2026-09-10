@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
+import { readError } from "@/lib/fetchJson";
 import {
   EMPTY_CHILD_FORM,
   type AddStep,
@@ -133,11 +134,11 @@ export function useAddChildFlow({ onChildAdded, onClose }: UseAddChildFlowParams
           parentalConsent: true,
         }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        showToast({ message: data.error ?? t("addError"), severity: "error" });
+        showToast({ message: await readError(res), severity: "error" });
         return;
       }
+      const data = await res.json();
       onChildAdded(data);
       showToast({ message: t("childAdded", { name: data.name }), severity: "success" });
       onClose();

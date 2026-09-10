@@ -5,11 +5,13 @@ import { Analytics } from "@vercel/analytics/react";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { cookies } from "next/headers";
-import { COLOR_MODE_COOKIE } from "@/lib/colorMode";
+import { COLOR_MODE_COOKIE, COLOR_SCHEME_COOKIE, resolveScheme } from "@/lib/colorMode";
 import { ToastProvider } from "@/context/ToastContext";
 import Providers from "@/components/layout/Providers";
 import ServiceWorkerRegistrar from "@/components/layout/ServiceWorkerRegistrar";
 import OfflineBanner from "@/components/layout/OfflineBanner";
+import SiteHeader from "@/components/layout/SiteHeader";
+import SkipToContent from "@/components/layout/SkipToContent";
 import Footer from "@/components/layout/Footer";
 import SponsorBanner from "@/components/common/SponsorBanner";
 import BottomNav from "@/components/layout/BottomNav";
@@ -66,26 +68,61 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#E65100",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-};
+// Script bloccante: gira in <head> PRIMA di qualsiasi paint. In modalità
+// "system" risolve la media query e la persiste nel cookie `karibu-scheme`,
+// così dal caricamento successivo il Server Component rende già il tema giusto
+// e non c'è nessun lampo chiaro. `data-scheme` su <html> serve subito, al primo
+// caricamento, per lo sfondo pre-idratazione (vedi globals.css).
+const COLOR_SCHEME_SCRIPT = `(function(){try{
+var m=document.cookie.match(/(?:^|; )${COLOR_MODE_COOKIE}=([^;]+)/);
+var mode=m&&m[1];
+var explicit=mode==="light"||mode==="dark";
+var scheme=explicit?mode:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+document.documentElement.dataset.scheme=scheme;
+if(!explicit){document.cookie="${COLOR_SCHEME_COOKIE}="+scheme+"; path=/; max-age=31536000; samesite=lax";}
+}catch(e){}})();`;
+
+async function readColorPrefs() {
+  const store = await cookies();
+  const modeRaw = store.get(COLOR_MODE_COOKIE)?.value;
+  const mode =
+    modeRaw === "light" || modeRaw === "dark" || modeRaw === "system" ? modeRaw : "system";
+  const hintRaw = store.get(COLOR_SCHEME_COOKIE)?.value;
+  const hint = hintRaw === "dark" ? "dark" : "light";
+  return { mode, scheme: resolveScheme(mode, hint) } as const;
+}
+
+export async function generateViewport(): Promise<Viewport> {
+  const { scheme } = await readColorPrefs();
+  return {
+    // La barra di stato PWA segue il tema risolto: arancione in chiaro,
+    // grigio scurissimo in scuro (prima era fissa su #E65100).
+    themeColor: scheme === "dark" ? "#121212" : "#E65100",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const locale = await getLocale();
   const messages = await getMessages();
 
-  const colorModeRaw = (await cookies()).get(COLOR_MODE_COOKIE)?.value;
-  const colorMode =
-    colorModeRaw === "light" || colorModeRaw === "dark" || colorModeRaw === "system"
-      ? colorModeRaw
-      : "system";
+  const { mode: colorMode, scheme: colorScheme } = await readColorPrefs();
 
   return (
-    <html lang={locale} className={inter.variable}>
+    // suppressHydrationWarning: allo sbarco senza cookie lo script in <head>
+    // corregge `data-scheme` prima dell'idratazione.
+    <html
+      lang={locale}
+      className={inter.variable}
+      data-scheme={colorScheme}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: COLOR_SCHEME_SCRIPT }} />
+      </head>
       <body
         className={inter.className}
         style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
@@ -102,9 +139,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <AppRouterCacheProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <ServiceWorkerRegistrar />
-            <Providers session={session} colorMode={colorMode}>
+            <Providers session={session} colorMode={colorMode} colorScheme={colorScheme}>
               <ToastProvider>
-                <Box component="main" sx={{ flex: 1, pb: { xs: "60px", md: 0 } }}>
+                <SkipToContent />
+                <SiteHeader />
+                {/* tabIndex -1: senza, lo skip link sposta solo lo scroll e il
+                    focus resta sul body. */}
+                <Box
+                  component="main"
+                  id="contenuto"
+                  tabIndex={-1}
+                  sx={{ flex: 1, pb: { xs: "60px", md: 0 }, outline: "none" }}
+                >
                   <OfflineBanner />
                   {children}
                 </Box>

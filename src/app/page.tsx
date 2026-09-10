@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
 import HomeSessionsSection from "@/components/training/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/training/SessionCard";
-import SiteHeader from "@/components/layout/SiteHeader";
 import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/common/HeroSection";
 import LatestNewsHero from "@/components/news/LatestNewsHero";
@@ -117,7 +116,7 @@ export default async function HomePage() {
         <Box sx={{ mb: 8 }}>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -125,6 +124,7 @@ export default async function HomePage() {
           </Typography>
           <Typography
             variant="h4"
+            component="h2"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
@@ -140,7 +140,7 @@ export default async function HomePage() {
                   <Box sx={{ color: "primary.main", mb: 1.5 }}>
                     <Icon sx={{ fontSize: 32 }} />
                   </Box>
-                  <Typography variant="h6" fontWeight={700} sx={{ mb: 1 }}>
+                  <Typography variant="h6" component="h3" fontWeight={700} sx={{ mb: 1 }}>
                     {values[i]?.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
@@ -158,7 +158,7 @@ export default async function HomePage() {
         <Box>
           <Typography
             variant="overline"
-            color="primary"
+            color="primary.onLight"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -166,6 +166,7 @@ export default async function HomePage() {
           </Typography>
           <Typography
             variant="h4"
+            component="h2"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
           >
@@ -207,13 +208,18 @@ export default async function HomePage() {
                 <Box sx={{ pb: i < storia.length - 1 ? 4 : 0 }}>
                   <Typography
                     variant="caption"
-                    color="primary"
+                    color="primary.onLight"
                     fontWeight={700}
                     sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
                   >
                     {item.anno}
                   </Typography>
-                  <Typography variant="subtitle1" fontWeight={700} sx={{ mt: 0.25, mb: 0.75 }}>
+                  <Typography
+                    variant="subtitle1"
+                    component="h3"
+                    fontWeight={700}
+                    sx={{ mt: 0.25, mb: 0.75 }}
+                  >
                     {item.titolo}
                   </Typography>
                   <Typography
@@ -236,7 +242,6 @@ export default async function HomePage() {
   if (isMember) {
     return (
       <>
-        <SiteHeader />
         <BirthdayBanner />
         <HeroSection />
         <PendingAvailabilityBanner count={pendingAvailabilities} />
@@ -252,7 +257,6 @@ export default async function HomePage() {
   // Home istituzionale per anonimi e GUEST
   return (
     <>
-      <SiteHeader />
       {appRole === "GUEST" && (
         <Container maxWidth="md" sx={{ pt: 2 }}>
           <GuestWelcomeBanner />
