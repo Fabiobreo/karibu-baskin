@@ -2,7 +2,12 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type { Theme } from "@mui/material/styles";
 import { lightTheme, darkTheme } from "@/theme";
-import { COLOR_MODE_COOKIE, type ColorMode, type ResolvedScheme } from "@/lib/colorMode";
+import {
+  COLOR_MODE_COOKIE,
+  COLOR_SCHEME_COOKIE,
+  type ColorMode,
+  type ResolvedScheme,
+} from "@/lib/colorMode";
 
 // Persistito in un cookie (non in localStorage) così il Server Component può
 // leggerlo e renderizzare il tema corretto al primo paint → niente hydration
@@ -88,6 +93,23 @@ export function ThemeContextProvider({
   }, []);
 
   const activeTheme = resolveTheme(mode, prefersDark);
+  const resolvedScheme: ResolvedScheme = activeTheme.palette.mode === "dark" ? "dark" : "light";
+
+  // `data-scheme` su <html> non e' solo un residuo pre-idratazione: la regola
+  // `html[data-scheme="dark"] body` in globals.css e' piu' specifica di quella
+  // di CssBaseline, quindi finche' l'attributo resta "dark" lo sfondo resta
+  // scuro anche dopo che il tema chiaro e' stato applicato (serviva un refresh
+  // per rimetterlo a posto). Va tenuto in sincrono ad ogni cambio.
+  useEffect(() => {
+    document.documentElement.dataset.scheme = resolvedScheme;
+    // Il cookie hint lo scrive solo la modalita' "system", come fa lo script
+    // bloccante in <head>: con una scelta esplicita il valore non deve essere
+    // sovrascritto, o al ritorno su "system" l'SSR ripartirebbe da un esito
+    // fasullo prima che lo script possa correggerlo.
+    if (mode === "system") {
+      document.cookie = `${COLOR_SCHEME_COOKIE}=${resolvedScheme}; path=/; max-age=31536000; samesite=lax`;
+    }
+  }, [resolvedScheme, mode]);
 
   return (
     <ThemeContext.Provider value={{ mode, setMode, activeTheme }}>{children}</ThemeContext.Provider>

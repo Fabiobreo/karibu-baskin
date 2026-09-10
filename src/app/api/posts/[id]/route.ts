@@ -6,7 +6,7 @@ import { PostUpdateSchema } from "@/lib/schemas/post";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
-import DOMPurify from "isomorphic-dompurify";
+import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 
@@ -104,7 +104,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
         where: { id },
         data: {
           ...(title ? { title } : {}),
-          ...(body ? { body: DOMPurify.sanitize(body) } : {}),
+          ...(body ? { body: sanitizePostHtml(body) } : {}),
           ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? null } : {}),
           publishedAt,
         },

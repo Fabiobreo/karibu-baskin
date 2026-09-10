@@ -7,7 +7,7 @@ import { generatePostSlug } from "@/lib/slugUtils";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
-import DOMPurify from "isomorphic-dompurify";
+import { sanitizePostHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
 import * as Sentry from "@sentry/nextjs";
 
@@ -55,13 +55,13 @@ export async function POST(req: NextRequest) {
   const { title, body, imageUrl, publish, poll } = parsed.data;
   const publishedAt = publish ? new Date() : null;
 
-  // Tutto dentro il try: anche la sanitizzazione (che carica jsdom) e la
-  // generazione dello slug (che interroga il DB) possono esplodere, e fuori dal
-  // try diventavano un 500 con pagina HTML illeggibile per il client.
+  // Tutto dentro il try: anche la sanitizzazione e la generazione dello slug
+  // (che interroga il DB) possono esplodere, e fuori dal try diventavano un 500
+  // con pagina HTML illeggibile per il client.
   let post;
   let slug: string;
   try {
-    const sanitizedBody = DOMPurify.sanitize(body);
+    const sanitizedBody = sanitizePostHtml(body);
     slug = await generatePostSlug(title);
     post = await prisma.post.create({
       data: {

@@ -13,11 +13,26 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-* richiesti da MUI/Emotion
+      // unsafe-* richiesti da MUI/Emotion; va.vercel-scripts.com e' lo script di
+      // Vercel Analytics, che senza questa voce veniva bloccato in silenzio.
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
       "style-src 'self' 'unsafe-inline'", // Emotion CSS-in-JS
       "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.public.blob.vercel-storage.com",
       "font-src 'self'",
-      "connect-src 'self' https://*.neon.tech https://*.blob.vercel-storage.com wss:",
+      // Gli endpoint *.ingest.sentry.io sono l'ingest del DSN: senza, il Sentry
+      // del browser raccoglie gli errori e poi si vede bloccare ogni POST.
+      // Le tre forme coprono progetti US/EU e DSN senza suffisso di regione.
+      [
+        "connect-src 'self'",
+        "https://*.neon.tech",
+        "https://*.blob.vercel-storage.com",
+        "https://*.ingest.sentry.io",
+        "https://*.ingest.us.sentry.io",
+        "https://*.ingest.de.sentry.io",
+        "wss:",
+      ].join(" "),
+      // Session Replay di Sentry gira in un worker creato da un blob.
+      "worker-src 'self' blob:",
       "frame-src https://maps.google.com https://www.google.com https://www.youtube-nocookie.com",
       "frame-ancestors 'none'",
     ].join("; "),
