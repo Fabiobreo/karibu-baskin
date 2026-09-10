@@ -38,6 +38,7 @@ import SessionRestrictionEditor, {
 import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
 import { readError } from "@/lib/fetchJson";
 import { formatRoleNumbers } from "@/lib/roleList";
+import { SITE_URL } from "@/lib/siteUrl";
 
 const DEFAULT_RESTRICTIONS: RestrictionValue = {
   allowedRoles: [],
@@ -134,7 +135,10 @@ export default function AllenamientoHero({
       })
     : "";
 
-  const [sessionUrl] = useState(() => (typeof window !== "undefined" ? window.location.href : ""));
+  // Costruito dai dati e non da window.location: sul server l'URL non esiste, e
+  // l'href di WhatsApp renderizzato senza link restava tale anche dopo
+  // l'idratazione (React non corregge gli attributi in caso di mismatch).
+  const sessionUrl = `${SITE_URL}/allenamento/${session.dateSlug ?? session.id}`;
 
   const [editOpen, setEditOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
