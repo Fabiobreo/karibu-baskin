@@ -291,7 +291,7 @@ function MatchupSlot({
               size="small"
               sx={{
                 bgcolor: winner === 1 ? team1.color : `${team1.color}22`,
-                color: winner === 1 ? "#fff" : "text.primary",
+                color: winner === 1 ? "common.white" : "text.primary",
                 fontWeight: winner === 1 ? 700 : 500,
                 border: "1px solid",
                 borderColor: team1.color,
@@ -306,7 +306,7 @@ function MatchupSlot({
               size="small"
               sx={{
                 bgcolor: winner === 2 ? team2.color : `${team2.color}22`,
-                color: winner === 2 ? "#fff" : "text.primary",
+                color: winner === 2 ? "common.white" : "text.primary",
                 fontWeight: winner === 2 ? 700 : 500,
                 border: "1px solid",
                 borderColor: team2.color,
@@ -391,7 +391,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
           py: 1.5,
           borderBottom: "1px solid",
           borderColor: "divider",
-          bgcolor: (theme) => (theme.palette.mode === "dark" ? "#000" : "grey.50"),
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "common.black" : "grey.50"),
         }}
       >
         <SportsBasketballIcon sx={{ fontSize: 18, color: "primary.main" }} />

@@ -8,6 +8,7 @@ import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import DOMPurify from "isomorphic-dompurify";
 import { Prisma } from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -164,7 +165,13 @@ export async function PUT(req: NextRequest, { params }: Params) {
       );
     }
     console.error("[posts] update", err);
-    return NextResponse.json({ error: "Errore durante il salvataggio del post" }, { status: 500 });
+    Sentry.captureException(err);
+    // Rotta coach/admin: meglio il messaggio vero di un generico errore interno.
+    const detail = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: `Errore durante il salvataggio del post: ${detail}` },
+      { status: 500 }
+    );
   }
 
   // Notifiche alla prima pubblicazione

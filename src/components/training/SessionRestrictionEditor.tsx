@@ -128,14 +128,14 @@ export default function SessionRestrictionEditor({
                 border: "1px solid",
                 borderColor: selected ? ROLE_COLORS[r] : "divider",
                 bgcolor: selected ? ROLE_COLORS[r] : "transparent",
-                color: selected ? "#fff" : "text.secondary",
+                color: selected ? "common.white" : "text.secondary",
                 fontWeight: 600,
                 fontSize: "0.75rem",
                 cursor: disabled ? "default" : "pointer",
                 transition: "all 0.15s",
                 "&:hover:not(:disabled)": {
                   borderColor: ROLE_COLORS[r],
-                  color: selected ? "#fff" : ROLE_COLORS[r],
+                  color: selected ? "common.white" : ROLE_COLORS[r],
                 },
               }}
             >
@@ -231,14 +231,14 @@ export default function SessionRestrictionEditor({
                     border: "1px solid",
                     borderColor: selected ? ROLE_COLORS[r] : "divider",
                     bgcolor: selected ? ROLE_COLORS[r] : "transparent",
-                    color: selected ? "#fff" : "text.secondary",
+                    color: selected ? "common.white" : "text.secondary",
                     fontWeight: 600,
                     fontSize: "0.75rem",
                     cursor: disabled ? "default" : "pointer",
                     transition: "all 0.15s",
                     "&:hover:not(:disabled)": {
                       borderColor: ROLE_COLORS[r],
-                      color: selected ? "#fff" : ROLE_COLORS[r],
+                      color: selected ? "common.white" : ROLE_COLORS[r],
                     },
                   }}
                 >

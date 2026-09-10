@@ -18,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
+import { brandColor, heroGradient } from "@/lib/heroStyles";
 
 export const metadata = buildMetadata({
   title: "Sponsor",
@@ -120,7 +121,7 @@ export default async function SponsorPage() {
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
                     ...onHover({
                       borderColor: "primary.main",
-                      boxShadow: `0 2px 12px ${alpha("#E65100", 0.1)}`,
+                      boxShadow: `0 2px 12px ${alpha(brandColor.orange, 0.1)}`,
                       transform: "translateY(-2px)",
                     }),
                   }}
@@ -229,7 +230,7 @@ export default async function SponsorPage() {
           {/* CTA contatto */}
           <Box
             sx={{
-              background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+              background: heroGradient.footer,
               borderRadius: 3,
               p: { xs: 3, md: 4 },
               display: "flex",
@@ -237,7 +238,7 @@ export default async function SponsorPage() {
               justifyContent: "space-between",
               flexWrap: "wrap",
               gap: 2,
-              color: "#fff",
+              color: "common.white",
             }}
           >
             <Box>

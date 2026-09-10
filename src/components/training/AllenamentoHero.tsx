@@ -367,7 +367,7 @@ export default function AllenamientoHero({
                     label={t("comingSoon")}
                     size="small"
                     sx={{
-                      bgcolor: "#6D4C41",
+                      bgcolor: "status.pending",
                       color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.72rem",
@@ -382,7 +382,7 @@ export default function AllenamientoHero({
                   label={t("registrationsClosed")}
                   size="small"
                   sx={{
-                    bgcolor: "#546E7A",
+                    bgcolor: "status.closed",
                     color: "common.white",
                     fontWeight: 700,
                     fontSize: "0.72rem",

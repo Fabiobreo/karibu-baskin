@@ -17,6 +17,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { QRCodeSVG } from "qrcode.react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
+import { socialBrandColor } from "@/lib/heroStyles";
 
 interface Props {
   sessionTitle: string;
@@ -56,15 +57,18 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
             dark
               ? {
                   borderColor: "rgba(255,255,255,0.5)",
-                  color: "#fff",
-                  "&:hover": { borderColor: "#fff", backgroundColor: "rgba(255,255,255,0.08)" },
+                  color: "common.white",
+                  "&:hover": {
+                    borderColor: "common.white",
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                  },
                 }
               : {
-                  borderColor: "#25D366",
-                  color: "#25D366",
+                  borderColor: socialBrandColor.whatsapp,
+                  color: socialBrandColor.whatsapp,
                   "&:hover": {
-                    borderColor: "#128C7E",
-                    color: "#128C7E",
+                    borderColor: socialBrandColor.whatsappDark,
+                    color: socialBrandColor.whatsappDark,
                     backgroundColor: "rgba(37,211,102,0.06)",
                   },
                 }
@@ -78,7 +82,9 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
             size="small"
             onClick={handleCopy}
             aria-label={t("copyLink")}
-            sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
+            sx={
+              dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } } : {}
+            }
           >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
@@ -89,7 +95,9 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
             size="small"
             onClick={() => setQrOpen(true)}
             aria-label={t("showQr")}
-            sx={dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "#fff" } } : {}}
+            sx={
+              dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } } : {}
+            }
           >
             <QrCode2Icon fontSize="small" />
           </IconButton>
@@ -113,7 +121,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
               display: "inline-flex",
               p: 2,
               borderRadius: 2,
-              backgroundColor: "#fff",
+              backgroundColor: "common.white",
               boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
               mb: 2,
             }}

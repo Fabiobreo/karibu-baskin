@@ -405,7 +405,7 @@ export default function UserEditDialog({
                     size="small"
                     sx={{
                       bgcolor: ROLE_COLORS[r],
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.72rem",
                     }}

@@ -7,6 +7,7 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
+import { socialBrandColor } from "@/lib/heroStyles";
 
 interface Props {
   playerName: string;
@@ -91,7 +92,7 @@ export default function PlayerShareButtons({
         startIcon={<ShareIcon sx={{ fontSize: 16 }} />}
         sx={{
           bgcolor: playerColor,
-          color: "#fff",
+          color: "common.white",
           fontWeight: 700,
           fontSize: "0.78rem",
           textTransform: "none",
@@ -109,7 +110,7 @@ export default function PlayerShareButtons({
           onClick={handleWhatsApp}
           sx={{
             bgcolor: "rgba(0,0,0,0.35)",
-            color: "#25D366",
+            color: socialBrandColor.whatsapp,
             border: "1px solid rgba(255,255,255,0.15)",
             "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
           }}
@@ -124,7 +125,7 @@ export default function PlayerShareButtons({
           onClick={handleCopy}
           sx={{
             bgcolor: "rgba(0,0,0,0.35)",
-            color: "#fff",
+            color: "common.white",
             border: "1px solid rgba(255,255,255,0.15)",
             "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
           }}

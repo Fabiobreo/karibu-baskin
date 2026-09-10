@@ -38,6 +38,7 @@ import LeaderCard from "./_components/LeaderCard";
 import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
+import { brandColor, heroText } from "@/lib/heroStyles";
 
 type Props = {
   params: Promise<{ season: string; slug: string }>;
@@ -359,7 +360,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           backgroundPosition: team.imageUrl ? "center" : undefined,
         }}
         sx={{
-          color: "#fff",
+          color: "common.white",
           py: { xs: 5, md: 7 },
           px: 2,
           position: "relative",
@@ -376,7 +377,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             width: 260,
             height: 260,
             borderRadius: "50%",
-            backgroundColor: alpha("#E65100", 0.1),
+            backgroundColor: alpha(brandColor.orange, 0.1),
             pointerEvents: "none",
           }}
         />
@@ -389,7 +390,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             width: 320,
             height: 320,
             borderRadius: "50%",
-            backgroundColor: alpha("#E65100", 0.06),
+            backgroundColor: alpha(brandColor.orange, 0.06),
             pointerEvents: "none",
           }}
         />
@@ -416,7 +417,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               sx={{
                 color: "rgba(255,255,255,0.65)",
                 fontWeight: 500,
-                "&:hover": { color: "#fff" },
+                "&:hover": { color: "common.white" },
               }}
             >
               {t("teamBreadcrumb")}
@@ -448,7 +449,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 justifyContent: "center",
                 flexShrink: 0,
                 boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
-                border: "3px solid #2A2A2A",
+                border: `3px solid ${brandColor.darkSoft}`,
               }}
             >
               <Typography
@@ -486,7 +487,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 {team.name}
               </Typography>
               {team.championship && (
-                <Typography variant="body1" sx={{ color: "#E0E0E0", mt: 0.5, fontWeight: 500 }}>
+                <Typography
+                  variant="body1"
+                  sx={{ color: heroText.secondary, mt: 0.5, fontWeight: 500 }}
+                >
                   {team.championship}
                 </Typography>
               )}
@@ -514,12 +518,12 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         borderRadius: 999,
                       }}
                     >
-                      <Typography fontWeight={900} sx={{ color: "#fff", fontSize: "1rem" }}>
+                      <Typography fontWeight={900} sx={{ color: "common.white", fontSize: "1rem" }}>
                         {wins}
                       </Typography>
                       <Typography
                         sx={{
-                          color: "#fff",
+                          color: "common.white",
                           fontSize: "0.7rem",
                           fontWeight: 700,
                           textTransform: "lowercase",
@@ -540,12 +544,15 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           borderRadius: 999,
                         }}
                       >
-                        <Typography fontWeight={900} sx={{ color: "#fff", fontSize: "1rem" }}>
+                        <Typography
+                          fontWeight={900}
+                          sx={{ color: "common.white", fontSize: "1rem" }}
+                        >
                           {draws}
                         </Typography>
                         <Typography
                           sx={{
-                            color: "#fff",
+                            color: "common.white",
                             fontSize: "0.7rem",
                             fontWeight: 700,
                             textTransform: "lowercase",
@@ -566,12 +573,12 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         borderRadius: 999,
                       }}
                     >
-                      <Typography fontWeight={900} sx={{ color: "#fff", fontSize: "1rem" }}>
+                      <Typography fontWeight={900} sx={{ color: "common.white", fontSize: "1rem" }}>
                         {losses}
                       </Typography>
                       <Typography
                         sx={{
-                          color: "#fff",
+                          color: "common.white",
                           fontSize: "0.7rem",
                           fontWeight: 700,
                           textTransform: "lowercase",
@@ -584,15 +591,15 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 )}
 
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <GroupsIcon sx={{ fontSize: 16, color: "#fff" }} />
-                  <Typography variant="body2" sx={{ color: "#fff", fontWeight: 600 }}>
+                  <GroupsIcon sx={{ fontSize: 16, color: "common.white" }} />
+                  <Typography variant="body2" sx={{ color: "common.white", fontWeight: 600 }}>
                     {t("athleteCount", { count: team.memberships.length })}
                   </Typography>
                 </Box>
               </Box>
 
               {team.description && (
-                <Typography variant="body2" sx={{ color: "#BDBDBD", mt: 2, maxWidth: 580 }}>
+                <Typography variant="body2" sx={{ color: heroText.muted, mt: 2, maxWidth: 580 }}>
                   {team.description}
                 </Typography>
               )}
@@ -948,7 +955,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                               height: 28,
                               borderRadius: "50%",
                               bgcolor: ROLE_COLORS[roleNum],
-                              color: "#fff",
+                              color: "common.white",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",

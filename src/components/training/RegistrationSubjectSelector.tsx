@@ -59,8 +59,8 @@ export default function RegistrationSubjectSelector({
                   fontWeight: subject === "self" ? 700 : 400,
                   borderColor: subject === "self" ? "primary.main" : undefined,
                   bgcolor: subject === "self" ? "primary.main" : undefined,
-                  color: subject === "self" ? "#fff" : undefined,
-                  "& .MuiChip-icon": { color: subject === "self" ? "#fff" : undefined },
+                  color: subject === "self" ? "common.white" : undefined,
+                  "& .MuiChip-icon": { color: subject === "self" ? "common.white" : undefined },
                 }
           }
         />
@@ -94,8 +94,8 @@ export default function RegistrationSubjectSelector({
                       fontWeight: isSelected ? 700 : 400,
                       borderColor: isSelected ? "primary.main" : undefined,
                       bgcolor: isSelected ? "primary.main" : undefined,
-                      color: isSelected ? "#fff" : undefined,
-                      "& .MuiChip-icon": { color: isSelected ? "#fff" : undefined },
+                      color: isSelected ? "common.white" : undefined,
+                      "& .MuiChip-icon": { color: isSelected ? "common.white" : undefined },
                     }
               }
             />

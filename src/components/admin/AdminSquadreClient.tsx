@@ -38,6 +38,7 @@ import { slugify } from "@/lib/slugUtils";
 import Link from "next/link";
 import ImageUploader from "@/components/common/ImageUploader";
 import { onHover } from "@/lib/hoverStyles";
+import { brandColor } from "@/lib/heroStyles";
 
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
@@ -504,11 +505,11 @@ export default function AdminSquadreClient({
                         cursor: "pointer",
                         border:
                           teamForm.color === c.value
-                            ? "3px solid #1A1A1A"
+                            ? `3px solid ${brandColor.dark}`
                             : "3px solid transparent",
                         boxShadow:
                           teamForm.color === c.value
-                            ? `0 0 0 2px #fff, 0 0 0 4px ${c.value}`
+                            ? `0 0 0 2px ${brandColor.white}, 0 0 0 4px ${c.value}`
                             : "0 1px 3px rgba(0,0,0,0.25)",
                         transition: "all 0.15s",
                         ...onHover({ transform: "scale(1.15)" }),

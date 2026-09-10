@@ -345,7 +345,7 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
                   p: { xs: 2, sm: 2.5 },
                   borderRadius: 2,
                   background: `linear-gradient(120deg, ${myTeam.color} 0%, ${myTeam.color}cc 100%)`,
-                  color: "#fff",
+                  color: "common.white",
                   display: "flex",
                   alignItems: "center",
                   gap: 2,

@@ -910,7 +910,7 @@ function MatchRowAndContext({
             size="small"
             sx={{
               backgroundColor: m.team.color ?? "primary.main",
-              color: "#fff",
+              color: "common.white",
               fontWeight: 700,
               fontSize: "0.7rem",
             }}
@@ -936,7 +936,7 @@ function MatchRowAndContext({
               size="small"
               sx={{
                 backgroundColor: RESULT_COLORS[m.result],
-                color: "#fff",
+                color: "common.white",
                 fontWeight: 700,
                 fontSize: "0.68rem",
               }}
@@ -1114,7 +1114,7 @@ function FlatMatchRow({
           size="small"
           sx={{
             backgroundColor: m.team.color ?? "primary.main",
-            color: "#fff",
+            color: "common.white",
             fontWeight: 700,
             fontSize: "0.7rem",
           }}
@@ -1149,7 +1149,7 @@ function FlatMatchRow({
             size="small"
             sx={{
               backgroundColor: RESULT_COLORS[m.result],
-              color: "#fff",
+              color: "common.white",
               fontWeight: 700,
               fontSize: "0.68rem",
             }}

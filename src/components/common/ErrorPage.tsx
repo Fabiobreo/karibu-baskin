@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { alpha } from "@mui/material/styles";
 import Image from "next/image";
 import Link from "next/link";
+import { brandColor, heroGradient } from "@/lib/heroStyles";
 
 interface Props {
   code?: string | number;
@@ -26,8 +27,8 @@ export default function ErrorPage({ code, title, description, showReset, onReset
         justifyContent: "center",
         textAlign: "center",
         px: 3,
-        background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-        color: "#fff",
+        background: heroGradient.dark,
+        color: "common.white",
         gap: 0,
       }}
     >
@@ -135,7 +136,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
           left: 0,
           right: 0,
           height: 3,
-          background: "linear-gradient(90deg, transparent, #E65100, transparent)",
+          background: `linear-gradient(90deg, transparent, ${brandColor.orange}, transparent)`,
           opacity: 0.6,
         }}
       />

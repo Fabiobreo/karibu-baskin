@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import {
@@ -244,12 +244,16 @@ function SessionRow({
             </Typography>
             {showInArrivo && (
               <Chip
-                icon={<HourglassEmptyIcon sx={{ fontSize: "0.75rem !important", color: "#fff" }} />}
+                icon={
+                  <HourglassEmptyIcon
+                    sx={{ fontSize: "0.75rem !important", color: "common.white" }}
+                  />
+                }
                 label={t("comingSoon")}
                 size="small"
                 sx={{
-                  bgcolor: "#6D4C41",
-                  color: "#fff",
+                  bgcolor: "status.pending",
+                  color: "common.white",
                   fontWeight: 700,
                   fontSize: "0.6rem",
                   height: 18,
@@ -259,12 +263,12 @@ function SessionRow({
             )}
             {showChiuse && (
               <Chip
-                icon={<LockIcon sx={{ fontSize: "0.7rem !important", color: "#fff" }} />}
+                icon={<LockIcon sx={{ fontSize: "0.7rem !important", color: "common.white" }} />}
                 label={t("registrationsClosed")}
                 size="small"
                 sx={{
-                  bgcolor: "#546E7A",
-                  color: "#fff",
+                  bgcolor: "status.closed",
+                  color: "common.white",
                   fontWeight: 700,
                   fontSize: "0.6rem",
                   height: 18,
@@ -322,7 +326,7 @@ function SessionRow({
               size="small"
               sx={{
                 bgcolor: myTeam.color,
-                color: "#fff",
+                color: "common.white",
                 fontWeight: 700,
                 fontSize: "0.68rem",
                 height: 20,
@@ -592,11 +596,21 @@ export default function AllenamentiClient({
   const [activeTab, setActiveTab] = useState(0);
 
   // Local sessions state so we can optimistically update after mutations
-  const [sessions, setSessions] = useState<SessionWithCount[]>(() => [
-    ...initInCorso,
-    ...initUpcoming,
-    ...initPast,
-  ]);
+  const initialSessions = useMemo(
+    () => [...initInCorso, ...initUpcoming, ...initPast],
+    [initInCorso, initUpcoming, initPast]
+  );
+  const [sessions, setSessions] = useState<SessionWithCount[]>(initialSessions);
+
+  // I dati dal server cambiano quando cambia la query (?all=1) o dopo un
+  // router.refresh(): risincronizziamo lo stato locale, altrimenti la lista
+  // resterebbe quella del primo render (serviva un refresh manuale).
+  const initialIds = initialSessions.map((s) => s.id).join(",");
+  const [syncedIds, setSyncedIds] = useState(initialIds);
+  if (initialIds !== syncedIds) {
+    setSyncedIds(initialIds);
+    setSessions(initialSessions);
+  }
 
   const now = new Date();
   const { inCorso, upcoming, past } = deriveSections(sessions, now);
@@ -861,7 +875,7 @@ export default function AllenamentiClient({
                 width: 10,
                 height: 10,
                 borderRadius: "50%",
-                bgcolor: "#2E7D32",
+                bgcolor: "status.live",
                 flexShrink: 0,
                 "@keyframes pulse": {
                   "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
@@ -874,7 +888,7 @@ export default function AllenamentiClient({
             <Typography
               variant="overline"
               fontWeight={700}
-              sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}
+              sx={{ letterSpacing: "0.1em", color: "status.liveText" }}
             >
               {t("live")}
             </Typography>

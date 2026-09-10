@@ -189,7 +189,7 @@ export default function UserFilters({
                       cursor: "pointer",
                       fontWeight: active ? 700 : 400,
                       bgcolor: active ? ROLE_COLORS[r] : undefined,
-                      color: active ? "#fff" : undefined,
+                      color: active ? "common.white" : undefined,
                       borderColor: active ? ROLE_COLORS[r] : undefined,
                     }}
                   />

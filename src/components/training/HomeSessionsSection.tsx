@@ -92,7 +92,7 @@ export default function HomeSessionsSection({
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                bgcolor: "#2E7D32",
+                bgcolor: "status.live",
                 flexShrink: 0,
                 "@keyframes pulse": {
                   "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
@@ -105,7 +105,7 @@ export default function HomeSessionsSection({
             <Typography
               variant="overline"
               fontWeight={700}
-              sx={{ letterSpacing: "0.1em", color: "#2E7D32" }}
+              sx={{ letterSpacing: "0.1em", color: "status.liveText" }}
             >
               {t("live")}
             </Typography>

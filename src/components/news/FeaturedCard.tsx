@@ -102,7 +102,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
             flexDirection: "column",
             justifyContent: "flex-end",
             p: { xs: 2.5, sm: 3, md: 4 },
-            color: "#fff",
+            color: "common.white",
           }}
         >
           <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
@@ -112,9 +112,9 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
               size="small"
               sx={{
                 bgcolor: "primary.main",
-                color: "#fff",
+                color: "common.white",
                 fontWeight: 700,
-                "& .MuiChip-icon": { color: "#fff" },
+                "& .MuiChip-icon": { color: "common.white" },
               }}
             />
             {post.poll && <PollChip closesAt={post.poll.closesAt} />}
@@ -125,7 +125,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
             component="h3"
             fontWeight={800}
             sx={{
-              color: "#fff",
+              color: "common.white",
               fontSize: { xs: "1.3rem", sm: "1.5rem", md: "1.75rem" },
               lineHeight: 1.2,
               mb: 1,

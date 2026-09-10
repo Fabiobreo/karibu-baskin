@@ -5,6 +5,7 @@ import { Box, Container, Typography } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
+import { heroGradient } from "@/lib/heroStyles";
 
 /**
  * Mostra un fatto casuale al mount — cambia ad ogni refresh di pagina.
@@ -28,8 +29,8 @@ export default function LoSapeviCard() {
   return (
     <Box
       sx={{
-        background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
-        color: "#fff",
+        background: heroGradient.footer,
+        color: "common.white",
         py: { xs: 4, md: 5 },
         px: 2,
       }}
@@ -55,7 +56,7 @@ export default function LoSapeviCard() {
               justifyContent: "center",
             }}
           >
-            <LightbulbIcon sx={{ fontSize: 22, color: "#fff" }} />
+            <LightbulbIcon sx={{ fontSize: 22, color: "common.white" }} />
           </Box>
 
           {/* Testo */}

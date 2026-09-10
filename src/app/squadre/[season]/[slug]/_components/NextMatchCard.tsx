@@ -12,6 +12,7 @@ import { contrastText } from "@/lib/colorUtils";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./types";
 import { onHover } from "@/lib/hoverStyles";
+import { brandColor } from "@/lib/heroStyles";
 
 export default async function NextMatchCard({
   match,
@@ -78,7 +79,7 @@ export default async function NextMatchCard({
         {/* ── BANNER SCURO IN ALTO con tile calendario ─────────────────────── */}
         <Box
           sx={{
-            background: `linear-gradient(120deg, #1A1A1A 0%, #1A1A1A 55%, ${teamColor} 135%)`,
+            background: `linear-gradient(120deg, ${brandColor.dark} 0%, ${brandColor.dark} 55%, ${teamColor} 135%)`,
             color: "common.white",
             px: { xs: 2, md: 3 },
             py: { xs: 2, md: 2.25 },
@@ -97,7 +98,7 @@ export default async function NextMatchCard({
               overflow: "hidden",
               minWidth: { xs: 64, md: 74 },
               textAlign: "center",
-              boxShadow: `0 4px 14px ${alpha("#000000", 0.35)}`,
+              boxShadow: `0 4px 14px ${alpha(brandColor.black, 0.35)}`,
             }}
           >
             <Box
@@ -248,7 +249,7 @@ export default async function NextMatchCard({
               flexDirection: "column",
               alignItems: "center",
               gap: 0.4,
-              bgcolor: isHomeMatch ? "match.win" : "#1565C0",
+              bgcolor: isHomeMatch ? "match.win" : "status.away",
               px: 1.5,
               py: 1,
               borderRadius: 1.5,
@@ -364,7 +365,7 @@ export default async function NextMatchCard({
                 fontSize: { xs: "0.85rem", md: "1rem" },
                 letterSpacing: "0.05em",
                 border: `3px solid ${teamColor}`,
-                boxShadow: `0 2px 8px ${alpha("#000000", 0.2)}`,
+                boxShadow: `0 2px 8px ${alpha(brandColor.black, 0.2)}`,
               }}
             >
               VS
@@ -397,7 +398,7 @@ export default async function NextMatchCard({
                 justifyContent: "center",
                 fontWeight: 900,
                 fontSize: { xs: "1.4rem", md: "1.7rem" },
-                boxShadow: `0 3px 10px ${alpha("#000000", 0.2)}`,
+                boxShadow: `0 3px 10px ${alpha(brandColor.black, 0.2)}`,
               }}
             >
               {themName[0]?.toUpperCase()}

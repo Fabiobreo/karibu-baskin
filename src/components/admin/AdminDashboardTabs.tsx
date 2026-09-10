@@ -201,7 +201,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           size="small"
                           sx={{
                             bgcolor: ROLE_COLORS[row.sportRole],
-                            color: "#fff",
+                            color: "common.white",
                             fontWeight: 700,
                             fontSize: "0.72rem",
                           }}
@@ -309,7 +309,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           size="small"
                           sx={{
                             bgcolor: ROLE_COLORS[row.sportRole],
-                            color: "#fff",
+                            color: "common.white",
                             fontWeight: 700,
                             fontSize: "0.68rem",
                           }}

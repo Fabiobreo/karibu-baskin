@@ -180,7 +180,7 @@ export default async function IlBaskinPage() {
                     variant="subtitle1"
                     component="h3"
                     fontWeight={700}
-                    sx={{ color: "#fff" }}
+                    sx={{ color: "common.white" }}
                   >
                     {r.label}
                   </Typography>
@@ -189,7 +189,7 @@ export default async function IlBaskinPage() {
                     size="small"
                     sx={{
                       backgroundColor: "rgba(255,255,255,0.2)",
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 600,
                       fontSize: "0.7rem",
                     }}

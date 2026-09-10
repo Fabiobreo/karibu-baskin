@@ -493,7 +493,7 @@ export default function RegistrationForm({
                             borderColor: "divider !important",
                             "&.Mui-selected": {
                               backgroundColor: ROLE_COLORS[r],
-                              color: "#fff",
+                              color: "common.white",
                               borderColor: `${ROLE_COLORS[r]} !important`,
                               "&:hover": { backgroundColor: ROLE_COLORS[r], opacity: 0.9 },
                             },
@@ -541,7 +541,7 @@ export default function RegistrationForm({
                     size="small"
                     sx={{
                       bgcolor: ROLE_COLORS[chosenRole.role],
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.78rem",
                     }}

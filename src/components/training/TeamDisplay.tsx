@@ -81,7 +81,7 @@ function RoleBadge({
         borderRadius: "16px",
         overflow: "hidden",
         bgcolor: ROLE_COLORS[role],
-        color: "#fff",
+        color: "common.white",
         fontSize: "0.8rem",
         lineHeight: 1,
         opacity: count === 0 ? 0.28 : 1,
@@ -152,7 +152,7 @@ export function MobileTeamTabs({
                     fontSize: "0.65rem",
                     fontWeight: 700,
                     bgcolor: tab === i ? m.color : "action.selected",
-                    color: tab === i ? "#fff" : "text.secondary",
+                    color: tab === i ? "common.white" : "text.secondary",
                   }}
                 />
               </Box>
@@ -237,13 +237,13 @@ export function AlignedTeamGrid({
           gap: 1,
         }}
       >
-        <Typography variant="h6" sx={{ color: "#fff", fontWeight: 700 }}>
+        <Typography variant="h6" sx={{ color: "common.white", fontWeight: 700 }}>
           {teamColorLabel(m.key)}
         </Typography>
         <Chip
           label={t("athletes", { count: allTeams[i].length })}
           size="small"
-          sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "#fff" }}
+          sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "common.white" }}
         />
       </Box>
     );
@@ -416,7 +416,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="subtitle2" sx={{ color: "#fff", fontWeight: 700 }}>
+                  <Typography variant="subtitle2" sx={{ color: "common.white", fontWeight: 700 }}>
                     {teamColorLabel(m.key)}
                   </Typography>
                   <Chip
@@ -427,7 +427,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                       fontSize: "0.65rem",
                       fontWeight: 700,
                       bgcolor: "rgba(255,255,255,0.3)",
-                      color: "#fff",
+                      color: "common.white",
                     }}
                   />
                 </Box>
@@ -438,7 +438,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                     disabled={saving}
                     onClick={() => moveTo(key)}
                     sx={{
-                      bgcolor: "#fff",
+                      bgcolor: "common.white",
                       color: m.color,
                       fontWeight: 700,
                       fontSize: "0.75rem",
@@ -472,7 +472,7 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
                             fontWeight: 600,
                             fontSize: "0.78rem",
                             bgcolor: isSelected ? m.color : `${ROLE_COLORS[role]}22`,
-                            color: isSelected ? "#fff" : "text.primary",
+                            color: isSelected ? "common.white" : "text.primary",
                             border: `1px solid ${isSelected ? m.color : ROLE_COLORS[role]}`,
                             boxShadow: isSelected ? `0 0 0 2px ${m.color}66` : "none",
                             cursor: "pointer",

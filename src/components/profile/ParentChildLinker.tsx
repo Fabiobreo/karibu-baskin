@@ -116,7 +116,7 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
                         size="small"
                         sx={{
                           bgcolor: ROLE_COLORS[child.sportRole],
-                          color: "#fff",
+                          color: "common.white",
                           fontWeight: 700,
                           fontSize: "0.7rem",
                         }}

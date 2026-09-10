@@ -33,6 +33,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import MapEmbed from "@/components/common/MapEmbed";
 import { onHover } from "@/lib/hoverStyles";
+import { heroGradient } from "@/lib/heroStyles";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
@@ -161,7 +162,7 @@ export default function ContattiPage() {
               px: 3.5,
               py: 1.4,
               borderRadius: 2,
-              color: "#fff",
+              color: "common.white",
               borderColor: "rgba(255,255,255,0.35)",
               backdropFilter: "blur(4px)",
               bgcolor: "rgba(255,255,255,0.06)",
@@ -528,7 +529,7 @@ export default function ContattiPage() {
                   justifyContent: "center",
                   width: { xs: "calc(33.333% - 11px)", sm: "calc(16.666% - 14px)" },
                   aspectRatio: "1",
-                  bgcolor: "#fff",
+                  bgcolor: "common.white",
                   border: "1px solid",
                   borderColor: "divider",
                   borderRadius: 2,
@@ -607,7 +608,7 @@ export default function ContattiPage() {
 
           <Box
             sx={{
-              background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+              background: heroGradient.footer,
               borderRadius: 3,
               p: { xs: 3, md: 4 },
               display: "flex",
@@ -615,7 +616,7 @@ export default function ContattiPage() {
               justifyContent: "space-between",
               flexWrap: "wrap",
               gap: 2,
-              color: "#fff",
+              color: "common.white",
             }}
           >
             <Box>

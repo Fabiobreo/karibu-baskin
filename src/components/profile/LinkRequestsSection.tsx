@@ -158,7 +158,7 @@ export default function LinkRequestsSection() {
                     sx={{
                       mt: 0.5,
                       bgcolor: ROLE_COLORS[req.child.sportRole],
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 700,
                       fontSize: "0.68rem",
                     }}

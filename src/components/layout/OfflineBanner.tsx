@@ -39,8 +39,8 @@ export default function OfflineBanner() {
     <Collapse in={visible}>
       <Box
         sx={{
-          bgcolor: offline ? "#B71C1C" : "#1B5E20",
-          color: "#fff",
+          bgcolor: offline ? "status.offline" : "status.online",
+          color: "common.white",
           py: 0.75,
           px: 2,
           display: "flex",

@@ -9,6 +9,7 @@ import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
 import DOMPurify from "isomorphic-dompurify";
 import { Prisma } from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 
 // GET — lista post pubblicati (pubblica)
 export async function GET(req: NextRequest) {
@@ -52,14 +53,16 @@ export async function POST(req: NextRequest) {
   }
 
   const { title, body, imageUrl, publish, poll } = parsed.data;
-  const sanitizedBody = DOMPurify.sanitize(body);
-  const slug = await generatePostSlug(title);
   const publishedAt = publish ? new Date() : null;
 
-  // Senza try/catch qualunque eccezione Prisma diventa un 500 con pagina HTML,
-  // e il client non ha piu' modo di dire cosa e' andato storto.
+  // Tutto dentro il try: anche la sanitizzazione (che carica jsdom) e la
+  // generazione dello slug (che interroga il DB) possono esplodere, e fuori dal
+  // try diventavano un 500 con pagina HTML illeggibile per il client.
   let post;
+  let slug: string;
   try {
+    const sanitizedBody = DOMPurify.sanitize(body);
+    slug = await generatePostSlug(title);
     post = await prisma.post.create({
       data: {
         slug,
@@ -99,7 +102,14 @@ export async function POST(req: NextRequest) {
       );
     }
     console.error("[posts] create", err);
-    return NextResponse.json({ error: "Errore durante la creazione del post" }, { status: 500 });
+    Sentry.captureException(err);
+    // Rotta riservata a coach/admin: il messaggio vero vale piu' di un generico
+    // "errore interno", altrimenti in produzione resta solo la pagina HTML 500.
+    const detail = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: `Errore durante la creazione del post: ${detail}` },
+      { status: 500 }
+    );
   }
 
   if (publish && publishedAt) {

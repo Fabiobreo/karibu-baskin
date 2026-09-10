@@ -36,6 +36,43 @@ type MatchPalette = {
   drawBg: string;
 };
 
+/**
+ * Stati che si presentano come pastiglia piena con etichetta bianca sopra.
+ * Il riempimento non segue il tema: deve restare abbastanza scuro da reggere
+ * il bianco in chiaro come in scuro, quindi i valori sono gli stessi nei due
+ * temi. Cambia solo `liveText`, che e' l'unico usato come testo sulle
+ * superfici del tema e in scuro va schiarito.
+ */
+type StatusPalette = {
+  /** Allenamento in corso: pallino pulsante e bordo della card. */
+  live: string;
+  /** Stesso stato, ma come TESTO ("IN CORSO") sulle superfici del tema. */
+  liveText: string;
+  /** Iscrizioni non ancora aperte. */
+  pending: string;
+  /** Iscrizioni chiuse. */
+  closed: string;
+  /** Banner "sei offline". */
+  offline: string;
+  /** Banner "di nuovo online". */
+  online: string;
+  /** Partita in trasferta: fa da contraltare a `match.win`, usato per la casa. */
+  away: string;
+};
+
+const sharedStatus = {
+  live: "#2E7D32",
+  pending: "#6D4C41",
+  closed: "#546E7A",
+  offline: "#B71C1C",
+  online: "#1B5E20",
+  away: "#1565C0",
+} as const;
+
+const lightStatus: StatusPalette = { ...sharedStatus, liveText: "#2E7D32" };
+// 8,04:1 su #121212, mentre il verde scuro si fermava a 3,35:1.
+const darkStatus: StatusPalette = { ...sharedStatus, liveText: "#66BB6A" };
+
 type AdminPalette = {
   /** Sezione "Attivita" della dashboard admin. */
   activity: string;
@@ -106,6 +143,7 @@ type AppBarPalette = {
 declare module "@mui/material/styles" {
   interface Palette {
     match: MatchPalette;
+    status: StatusPalette;
     admin: AdminPalette;
     stats: StatsPalette;
     medal: MedalPalette;
@@ -115,6 +153,7 @@ declare module "@mui/material/styles" {
   }
   interface PaletteOptions {
     match?: MatchPalette;
+    status?: StatusPalette;
     admin?: AdminPalette;
     stats?: StatsPalette;
     medal?: MedalPalette;
@@ -459,6 +498,7 @@ export const lightTheme = createTheme({
       secondary: "#666666",
     },
     match: lightMatch,
+    status: lightStatus,
     admin: lightAdmin,
     stats: lightStats,
     medal: lightMedal,
@@ -498,6 +538,7 @@ export const darkTheme = createTheme({
       secondary: "#AAAAAA",
     },
     match: darkMatch,
+    status: darkStatus,
     admin: darkAdmin,
     stats: darkStats,
     medal: darkMedal,

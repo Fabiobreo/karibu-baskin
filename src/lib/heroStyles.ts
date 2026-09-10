@@ -8,8 +8,10 @@
 
 export const heroGradient = {
   dark: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-  /** Variante corta, usata dal footer. */
+  /** Variante corta, usata dal footer e dalle fasce scure di fine pagina. */
   footer: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+  /** Fascia arancione piena (banner compleanni). */
+  orange: "linear-gradient(90deg, #E65100 0%, #FF8F00 100%)",
 } as const;
 
 /**
@@ -23,6 +25,23 @@ export const brandColor = {
   orange: "#E65100",
   white: "#FFFFFF",
   black: "#000000",
+  /** Il nero del marchio: fondo degli hero e dell'AppBar, non `#000`. */
+  dark: "#1A1A1A",
+  /** Un gradino sopra `dark`, per bordi e superfici staccate sul fondo scuro. */
+  darkSoft: "#2A2A2A",
+} as const;
+
+/**
+ * Testo sopra gli hero, che restano scuri in entrambi i temi: qui i token
+ * `text.*` non servono, perche' seguirebbero il tema corrente e in chiaro
+ * darebbero testo nero su fondo nero.
+ */
+export const heroText = {
+  primary: "#FFFFFF",
+  /** Sottotitoli e didascalie. */
+  secondary: "#E0E0E0",
+  /** Testo di servizio, il piu' smorzato che regga la soglia AA sul fondo hero. */
+  muted: "#BDBDBD",
 } as const;
 
 /**
@@ -49,4 +68,7 @@ export const socialBrandColor = {
   instagram: "#E1306C",
   facebook: "#1877F2",
   youtube: "#FF0000",
+  whatsapp: "#25D366",
+  /** Verde scuro di WhatsApp, per bordi e stati hover sulle superfici chiare. */
+  whatsappDark: "#128C7E",
 } as const;

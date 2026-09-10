@@ -196,7 +196,7 @@ export default async function HomePage() {
                       flexShrink: 0,
                     }}
                   >
-                    <StarIcon sx={{ color: "#fff", fontSize: 18 }} />
+                    <StarIcon sx={{ color: "common.white", fontSize: 18 }} />
                   </Box>
                   {i < storia.length - 1 && (
                     // Server Component: niente sx a funzione (non serializzabile) →

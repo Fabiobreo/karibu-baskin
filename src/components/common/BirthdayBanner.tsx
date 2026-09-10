@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { heroGradient } from "@/lib/heroStyles";
 
 export default async function BirthdayBanner() {
   const t = await getTranslations("home");
@@ -24,8 +25,8 @@ export default async function BirthdayBanner() {
   return (
     <Box
       sx={{
-        background: "linear-gradient(90deg, #E65100 0%, #FF8F00 100%)",
-        color: "#fff",
+        background: heroGradient.orange,
+        color: "common.white",
         py: { xs: 1.5, md: 2 },
         px: 2,
       }}

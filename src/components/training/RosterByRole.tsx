@@ -128,7 +128,9 @@ function AthletePill({
           flexShrink: 0,
         }}
       >
-        <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "0.68rem", lineHeight: 1 }}>
+        <Typography
+          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.68rem", lineHeight: 1 }}
+        >
           {initial}
         </Typography>
       </Box>
@@ -353,7 +355,7 @@ export default function RosterByRole({
         <Button
           size="small"
           onClick={cancelPending}
-          sx={{ color: "#fff", fontWeight: 700, ml: 0.5, minWidth: 0, p: "2px 8px" }}
+          sx={{ color: "common.white", fontWeight: 700, ml: 0.5, minWidth: 0, p: "2px 8px" }}
         >
           Annulla
         </Button>
@@ -608,7 +610,9 @@ export default function RosterByRole({
                           flexShrink: 0,
                         }}
                       >
-                        <Typography sx={{ color: "#fff", fontWeight: 800, fontSize: "0.68rem" }}>
+                        <Typography
+                          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.68rem" }}
+                        >
                           {reg.name[0]?.toUpperCase() ?? "?"}
                         </Typography>
                       </Box>
@@ -617,7 +621,7 @@ export default function RosterByRole({
                           px: 1,
                           fontSize: "0.82rem",
                           fontWeight: isOwn ? 700 : 500,
-                          color: isOwn ? "#fff" : "text.primary",
+                          color: isOwn ? "common.white" : "text.primary",
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -633,7 +637,7 @@ export default function RosterByRole({
                             mr: 0.5,
                             color: isOwn ? "rgba(255,255,255,0.6)" : "text.disabled",
                             "&:hover": {
-                              color: isOwn ? "#fff" : "error.main",
+                              color: isOwn ? "common.white" : "error.main",
                               bgcolor: "transparent",
                             },
                           }}

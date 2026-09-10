@@ -22,7 +22,7 @@ import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
 import { contrastText } from "@/lib/colorUtils";
-import { brandColor } from "@/lib/heroStyles";
+import { brandColor, heroGradient } from "@/lib/heroStyles";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
@@ -220,11 +220,11 @@ export default async function SquadrePage() {
           <Box
             sx={{
               mt: 8,
-              background: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+              background: heroGradient.footer,
               borderRadius: 3,
               p: { xs: 3, md: 5 },
               textAlign: "center",
-              color: "#fff",
+              color: "common.white",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",

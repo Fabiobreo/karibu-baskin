@@ -142,7 +142,10 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     flexShrink: 0,
                   }}
                 />
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#fff", minWidth: 0 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 700, color: "common.white", minWidth: 0 }}
+                >
                   {t.name}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -151,7 +154,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     size="small"
                     sx={{
                       bgcolor: "match.win",
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 800,
                       fontSize: "0.68rem",
                       height: 20,
@@ -163,7 +166,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       size="small"
                       sx={{
                         bgcolor: "match.draw",
-                        color: "#fff",
+                        color: "common.white",
                         fontWeight: 800,
                         fontSize: "0.68rem",
                         height: 20,
@@ -175,7 +178,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     size="small"
                     sx={{
                       bgcolor: "match.loss",
-                      color: "#fff",
+                      color: "common.white",
                       fontWeight: 800,
                       fontSize: "0.68rem",
                       height: 20,

@@ -69,7 +69,7 @@ export default async function SquadreArchivioPage() {
               sx={{
                 color: "rgba(255,255,255,0.65)",
                 fontWeight: 500,
-                "&:hover": { color: "#fff" },
+                "&:hover": { color: "common.white" },
               }}
             >
               {t("teamBreadcrumb")}

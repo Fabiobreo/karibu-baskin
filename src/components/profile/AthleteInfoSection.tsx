@@ -40,7 +40,7 @@ export default async function AthleteInfoSection({
               <Chip
                 label={roleLabel(sportRole)}
                 size="small"
-                sx={{ bgcolor: ROLE_COLORS[sportRole], color: "#fff", fontWeight: 700 }}
+                sx={{ bgcolor: ROLE_COLORS[sportRole], color: "common.white", fontWeight: 700 }}
               />
             </ProfileRow>
           )}

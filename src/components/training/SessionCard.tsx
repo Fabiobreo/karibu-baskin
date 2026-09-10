@@ -182,7 +182,7 @@ export default function SessionCard({
               borderColor: "divider",
             }),
           ...(live && {
-            outline: "2px solid #2E7D32",
+            outline: (theme) => `2px solid ${theme.palette.status.live}`,
             "@keyframes pulse-border": {
               "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
               "50%": { boxShadow: "0 0 0 10px rgba(46,125,50,0), 0 2px 8px rgba(0,0,0,0.15)" },
@@ -263,7 +263,7 @@ export default function SessionCard({
                 label={t("comingSoon")}
                 size="small"
                 sx={{
-                  bgcolor: "#6D4C41",
+                  bgcolor: "status.pending",
                   color: "common.white",
                   fontWeight: 700,
                   fontSize: "0.68rem",
@@ -276,7 +276,7 @@ export default function SessionCard({
                 label={t("registrationsClosed")}
                 size="small"
                 sx={{
-                  bgcolor: "#546E7A",
+                  bgcolor: "status.closed",
                   color: "common.white",
                   fontWeight: 700,
                   fontSize: "0.68rem",

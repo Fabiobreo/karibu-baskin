@@ -16,6 +16,7 @@ import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
+import { brandColor } from "@/lib/heroStyles";
 
 export const metadata: Metadata = buildMetadata({
   title: "Prossime partite",
@@ -174,7 +175,7 @@ export default async function PartitePage({ searchParams }: Props) {
                     width: 12,
                     height: 12,
                     borderRadius: "50%",
-                    bgcolor: team.color ?? "#E65100",
+                    bgcolor: team.color ?? brandColor.orange,
                     flexShrink: 0,
                   }}
                 />
@@ -194,7 +195,7 @@ export default async function PartitePage({ searchParams }: Props) {
                     fontWeight: 700,
                     fontSize: "0.68rem",
                     height: 20,
-                    bgcolor: alpha("#E65100", 0.1),
+                    bgcolor: alpha(brandColor.orange, 0.1),
                     color: "primary.main",
                   }}
                 />
@@ -217,7 +218,7 @@ export default async function PartitePage({ searchParams }: Props) {
                         sx={{
                           border: "1px solid",
                           borderColor: "divider",
-                          borderLeft: `4px solid ${team.color ?? "#E65100"}`,
+                          borderLeft: `4px solid ${team.color ?? brandColor.orange}`,
                           overflow: "hidden",
                           cursor: "pointer",
                           transition: "box-shadow 0.15s, border-color 0.15s",

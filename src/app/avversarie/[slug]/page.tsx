@@ -175,7 +175,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               sx={{
                 color: "rgba(255,255,255,0.65)",
                 fontWeight: 500,
-                "&:hover": { color: "#fff" },
+                "&:hover": { color: "common.white" },
               }}
             >
               {tMatches("resultsHeroChip")}
@@ -309,7 +309,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         label={`${totals.wins} ${tMatches("resultWinShort")}`}
                         sx={{
                           bgcolor: "match.win",
-                          color: "#fff",
+                          color: "common.white",
                           fontWeight: 700,
                           minWidth: 60,
                         }}
@@ -318,7 +318,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         label={`${totals.draws} ${tMatches("resultDrawShort")}`}
                         sx={{
                           bgcolor: "match.draw",
-                          color: "#fff",
+                          color: "common.white",
                           fontWeight: 700,
                           minWidth: 60,
                         }}
@@ -327,7 +327,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         label={`${totals.losses} ${tMatches("resultLossShort")}`}
                         sx={{
                           bgcolor: "match.loss",
-                          color: "#fff",
+                          color: "common.white",
                           fontWeight: 700,
                           minWidth: 60,
                         }}
@@ -376,7 +376,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 height: 28,
                                 borderRadius: "50%",
                                 bgcolor: MATCH_RESULT_META[m.result!].color,
-                                color: "#fff",
+                                color: "common.white",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -431,17 +431,17 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         <Chip
                           label={`${s.wins} ${tMatches("resultWinShort")}`}
                           size="small"
-                          sx={{ bgcolor: "match.win", color: "#fff", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.win", color: "common.white", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.draws} ${tMatches("resultDrawShort")}`}
                           size="small"
-                          sx={{ bgcolor: "match.draw", color: "#fff", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.draw", color: "common.white", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.losses} ${tMatches("resultLossShort")}`}
                           size="small"
-                          sx={{ bgcolor: "match.loss", color: "#fff", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.loss", color: "common.white", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.scored}–${s.conceded}`}
@@ -558,7 +558,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 size="small"
                                 sx={{
                                   bgcolor: MATCH_RESULT_META[m.result].color,
-                                  color: "#fff",
+                                  color: "common.white",
                                   fontWeight: 700,
                                   fontSize: "0.7rem",
                                   height: 20,
