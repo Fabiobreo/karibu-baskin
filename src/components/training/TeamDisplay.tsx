@@ -28,6 +28,7 @@ import { ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
+import QueryErrorState from "@/components/common/QueryErrorState";
 
 export interface TeamAthlete {
   id: string;
@@ -57,6 +58,15 @@ interface Props {
   // Stato squadre gestito dal parent
   teams: TeamsData | null;
   teamsLoading: boolean;
+  /** La lettura delle squadre è fallita. Senza questo, `teams === null` verrebbe
+   *  reso come "squadre non pubblicate", che è un'affermazione diversa e per lo
+   *  staff porterebbe a rigenerare squadre che invece esistono già. */
+  teamsLoadFailed?: boolean;
+  onTeamsRetry?: () => void;
+  /** Visitatore non autenticato: le squadre non gli vengono servite. Senza
+   *  questo, `teams === null` diventerebbe "squadre non pubblicate", che è
+   *  falso quando invece esistono e semplicemente non le stiamo mostrando. */
+  requiresLogin?: boolean;
   onTeamsGenerated: (teams: TeamsData) => void;
 }
 
@@ -516,6 +526,9 @@ export default function TeamDisplay({
   onExitEditMode,
   teams,
   teamsLoading,
+  teamsLoadFailed = false,
+  onTeamsRetry,
+  requiresLogin = false,
   onTeamsGenerated,
 }: Props) {
   const t = useTranslations("trainings");
@@ -563,6 +576,28 @@ export default function TeamDisplay({
     for (const id of current) if (!inTeams.has(id)) return true;
     return false;
   })();
+
+  if (requiresLogin) {
+    return (
+      <Box sx={{ py: 3, px: 3, textAlign: "center" }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          {t("teamsPrivate")}
+        </Typography>
+        <Link href="/login">
+          <Button size="small" variant="outlined">
+            {t("rosterPrivateCta")}
+          </Button>
+        </Link>
+      </Box>
+    );
+  }
+
+  // L'errore precede il caricamento: dopo che i tentativi si sono esauriti
+  // `teamsLoading` torna false e senza questo ramo si cadrebbe negli stati
+  // "nessuna squadra", che qui significherebbe il contrario del vero.
+  if (teamsLoadFailed) {
+    return <QueryErrorState message={t("teamsLoadError")} onRetry={onTeamsRetry} />;
+  }
 
   if (teamsLoading) {
     return (

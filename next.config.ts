@@ -9,6 +9,11 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  // Vercel redirige già a HTTPS, ma il redirect avviene dopo una prima richiesta
+  // in chiaro: è quella che HSTS protegge, dicendo al browser di non tentarla
+  // mai più. Niente `preload`: iscriversi alla lista dei browser è una scelta
+  // difficile da revocare e va fatta solo a dominio definitivo stabile.
+  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
   {
     key: "Content-Security-Policy",
     value: [
@@ -74,6 +79,13 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      {
+        // Il browser può tenere in cache lo script del service worker fino a 24
+        // ore: senza questo, una versione difettosa continuerebbe a essere
+        // reinstallata dai client anche dopo il deploy del fix.
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-store, max-age=0" }],
       },
     ];
   },

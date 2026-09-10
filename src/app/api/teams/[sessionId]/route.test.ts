@@ -37,6 +37,7 @@ vi.mock("@/lib/audit", () => ({
 
 import { GET, POST, DELETE } from "./route";
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 
@@ -46,6 +47,7 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
+const mockAuth = auth as unknown as Mock;
 const mockCreateTargeted = createTargetedAppNotifications as Mock;
 
 function makePost(body?: unknown): NextRequest {
@@ -232,11 +234,22 @@ describe("GET /api/teams/[sessionId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     p.trainingSession.findUnique.mockResolvedValue(null);
+    // Le squadre contengono nome e ruolo di ogni atleta: la lettura richiede
+    // una sessione, come GET /api/registrations.
+    mockAuth.mockResolvedValue({ user: { id: "u1", appRole: "ATHLETE" } });
   });
 
   function makeGet(): NextRequest {
     return new NextRequest("http://localhost/api/teams/sess-1");
   }
+
+  it("richiede l'autenticazione", async () => {
+    mockAuth.mockResolvedValue(null);
+    const res = await GET(makeGet(), mockParams);
+    expect(res.status).toBe(401);
+    // Nessuna query al database: il rifiuto arriva prima.
+    expect(p.trainingSession.findUnique).not.toHaveBeenCalled();
+  });
 
   it("restituisce 404 se la sessione non esiste", async () => {
     const res = await GET(makeGet(), mockParams);

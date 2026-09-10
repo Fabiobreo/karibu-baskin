@@ -17,9 +17,15 @@ vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
 }));
 
+vi.mock("@/lib/rateLimit", () => ({
+  checkRateLimit: vi.fn().mockReturnValue({ allowed: true, remaining: 9 }),
+  getClientIp: vi.fn().mockReturnValue("127.0.0.1"),
+}));
+
 import { GET, POST } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 type PrismaMock = {
   user: { findUnique: Mock };
@@ -27,6 +33,7 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
+const mockCheckRateLimit = checkRateLimit as Mock;
 
 const baseUser = {
   id: "user-1",
@@ -214,5 +221,46 @@ describe("POST /api/test-login", () => {
   it("cerca l'utente per email esatta", async () => {
     await POST(makePost({ email: "mario@example.com", password: "karibu-test" }));
     expect(p.user.findUnique).toHaveBeenCalledWith({ where: { email: "mario@example.com" } });
+  });
+});
+
+// La variabile da sola non basta: una `ENABLE_TEST_LOGIN=true` finita per
+// errore in produzione aprirebbe un accesso admin senza credenziali reali.
+describe("test-login · protezione", () => {
+  const origEnable = process.env.ENABLE_TEST_LOGIN;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 9 });
+    process.env.ENABLE_TEST_LOGIN = "true";
+    p.user.findUnique.mockResolvedValue(baseUser);
+    p.session.create.mockResolvedValue({});
+    p.session.findMany.mockResolvedValue([]);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    process.env.ENABLE_TEST_LOGIN = origEnable;
+  });
+
+  it("POST risponde 404 in produzione anche con ENABLE_TEST_LOGIN=true", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const res = await POST(makePost({ email: "mario@example.com", password: "karibu-test" }));
+    expect(res.status).toBe(404);
+    expect(p.session.create).not.toHaveBeenCalled();
+  });
+
+  it("GET non elenca sessioni ed email in produzione", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const res = await GET(makeGet());
+    expect(res.status).toBe(404);
+    expect(p.session.findMany).not.toHaveBeenCalled();
+  });
+
+  it("POST applica il rate limit prima di cercare l'utente", async () => {
+    mockCheckRateLimit.mockReturnValue({ allowed: false, remaining: 0 });
+    const res = await POST(makePost({ email: "mario@example.com", password: "karibu-test" }));
+    expect(res.status).toBe(429);
+    expect(p.user.findUnique).not.toHaveBeenCalled();
   });
 });

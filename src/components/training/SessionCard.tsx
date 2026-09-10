@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatRoleNumbers } from "@/lib/roleList";
 import {
   Box,
   Typography,
@@ -126,6 +127,7 @@ export default function SessionCard({
   const [teamsOpen, setTeamsOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const dateLocale = useActiveDateLocale();
+  const locale = useLocale();
   const t = useTranslations("trainings");
   const tCommon = useTranslations("common");
   const tRoles = useTranslations("roles");
@@ -419,7 +421,14 @@ export default function SessionCard({
                 {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
                   <Chip
                     icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
-                    label={t("openToAllRoles", { roles: s.openRoles.join(", ") })}
+                    label={t("openToAllRoles", {
+                      // `count` è obbligatorio: la stringa è al plurale ICU e
+                      // senza di esso next-intl rende un errore di formattazione
+                      // al posto dell'etichetta. `formatRoleNumbers` allinea la
+                      // resa a quella dell'hero, che localizza la congiunzione.
+                      count: s.openRoles.length,
+                      roles: formatRoleNumbers(s.openRoles, locale),
+                    })}
                     size="small"
                     sx={{
                       fontSize: chipFontSize,

@@ -57,33 +57,59 @@ export default function HeroSection() {
           alignItems: "center",
         }}
       >
-        {/* Titolo */}
+        {/* Titolo: un solo h1 che contiene marchio, disciplina e luogo.
+            Prima l'h1 era la sola parola "Karibu" e "Baskin" stava in un div
+            accanto: il segnale più forte che la pagina dà sul proprio
+            argomento non conteneva né lo sport né il territorio, e uno screen
+            reader annunciava come titolo una parola sola. Il trattamento su
+            due righe resta identico; la coda descrittiva è solo per chi non
+            vede, ed è vera (ripete il sottotitolo), non testo nascosto per i
+            motori. Gli spazi tra gli span servono al testo accessibile: nei
+            flex item non si vedono, ma senza si leggerebbe "KaribuBaskin". */}
         <Typography
           component="h1"
           sx={{
             fontWeight: 900,
             fontSize: { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
             lineHeight: 0.95,
-            color: "common.white",
-            letterSpacing: "-0.03em",
-            textShadow: "0 2px 24px rgba(0,0,0,0.5)",
-          }}
-        >
-          Karibu
-        </Typography>
-        <Typography
-          component="div"
-          sx={{
-            fontWeight: 900,
-            fontSize: { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
-            lineHeight: 0.95,
-            color: "primary.main",
             letterSpacing: "-0.03em",
             mb: 3.5,
-            textShadow: (theme) => `0 2px 32px ${alpha(theme.palette.primary.main, 0.5)}`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
-          Baskin
+          <Box
+            component="span"
+            sx={{ color: "common.white", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}
+          >
+            Karibu
+          </Box>{" "}
+          <Box
+            component="span"
+            sx={{
+              color: "primary.main",
+              textShadow: (theme) => `0 2px 32px ${alpha(theme.palette.primary.main, 0.5)}`,
+            }}
+          >
+            Baskin
+          </Box>{" "}
+          <Box
+            component="span"
+            sx={{
+              position: "absolute",
+              width: "1px",
+              height: "1px",
+              margin: "-1px",
+              padding: 0,
+              border: 0,
+              overflow: "hidden",
+              clipPath: "inset(50%)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t("heroTitleTail")}
+          </Box>
         </Typography>
 
         {/* Sottotitolo */}

@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { slugify } from "@/lib/slugUtils";
-import { notMinorFilter } from "@/lib/minors";
+import { notMinorFilter, notMinorFilterChild } from "@/lib/minors";
 
 // Ricerca globale pubblica su giocatori, squadre, avversarie, news ed eventi.
-// Privacy: esclude gli account GUEST e i MINORENNI REALI (età < 18 calcolata da
-// birthDate). Un atleta maggiorenne — anche se gestito come "figlio" senza
-// account — compare regolarmente. Chi non ha birthDate viene incluso (non si può
-// provare che sia minorenne).
+// Privacy: esclude gli account GUEST e i minorenni. Per gli `User` la minore età
+// si calcola da `birthDate` e chi non ce l'ha è trattato come adulto; per i
+// `Child` vale il default opposto — senza data di nascita si presume minorenne,
+// perché quel record esiste proprio perché l'atleta è gestito da un genitore.
+// Un `Child` con data di nascita che lo colloca sopra i 18 anni compare
+// regolarmente: è un adulto senza account, non un minore. Vedi @/lib/minors.
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "global-search", 40, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
@@ -29,7 +31,8 @@ export async function GET(req: NextRequest) {
       take: 5,
     }),
     prisma.child.findMany({
-      where: { AND: [nameMatch, notMinor, { slug: { not: null } }] },
+      // Regola dedicata ai Child: senza data di nascita si presume minorenne.
+      where: { AND: [nameMatch, notMinorFilterChild(), { slug: { not: null } }] },
       select: { id: true, name: true, slug: true, sportRole: true },
       take: 5,
     }),

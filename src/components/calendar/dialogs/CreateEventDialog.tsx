@@ -231,7 +231,9 @@ export default function CreateEventDialog({
       {/* Banner */}
       <Box
         sx={{
-          bgcolor: "primary.main",
+          // Contiene la data in bianco all'80% su testo piccolo: su
+          // `primary.main` restava sotto AA, su `primary.dark` no.
+          bgcolor: "primary.dark",
           px: 3,
           pt: 2.5,
           pb: 2,

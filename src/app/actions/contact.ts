@@ -1,6 +1,7 @@
 "use server";
 
 import { Resend } from "resend";
+import * as Sentry from "@sentry/nextjs";
 import { getLocale } from "next-intl/server";
 import ContactNotificationEmail from "@/emails/ContactNotificationEmail";
 import ContactConfirmationEmail from "@/emails/ContactConfirmationEmail";
@@ -57,6 +58,16 @@ export async function submitContactForm(
     return { error: err.rateLimit };
   }
 
+  // Honeypot (vedi ContactForm): compilato solo dai bot. Qui, a differenza del
+  // caso della chiave Resend mancante, rispondere `success` senza inviare è
+  // voluto: una persona non può riempire un campo che non vede, e segnalare
+  // l'errore insegnerebbe al bot a lasciare vuoto il campo trappola. Nessuna
+  // mail parte, quindi il form non può essere usato per inviarne a terzi.
+  const trap = (formData.get("kbhp") as string | null) ?? "";
+  if (trap.trim() !== "") {
+    return { success: true };
+  }
+
   const name = (formData.get("name") as string | null)?.trim() ?? "";
   const email = (formData.get("email") as string | null)?.trim() ?? "";
   const message = (formData.get("message") as string | null)?.trim() ?? "";
@@ -75,10 +86,16 @@ export async function submitContactForm(
     // solo in dev — mai in produzione, per non finire dati personali nei log/Sentry.
     if (process.env.NODE_ENV !== "production") {
       console.log("[ContactForm]", { name, email, message });
-    } else {
-      console.error("[ContactForm] RESEND_API_KEY mancante: messaggio non inviato");
+      return { success: true };
     }
-    return { success: true };
+    // In produzione la chiave DEVE esserci. Rispondere `success` scarterebbe il
+    // messaggio dicendo all'utente che è partito: /contatti è l'unico canale di
+    // ingresso del sito, e un errore silenzioso qui non lo intercetta nessuno.
+    // Sentry con livello fatal perché è un guasto di configurazione, non di runtime.
+    Sentry.captureMessage("[ContactForm] RESEND_API_KEY mancante: messaggio non inviato", {
+      level: "fatal",
+    });
+    return { error: err.sendError };
   }
 
   const resend = new Resend(apiKey);
@@ -94,6 +111,9 @@ export async function submitContactForm(
 
   if (error) {
     console.error("[ContactForm] Resend error", error);
+    // Il messaggio è perso: l'utente riceve un errore, ma qualcuno deve sapere
+    // che il canale contatti sta rifiutando invii.
+    Sentry.captureMessage(`[ContactForm] invio Resend fallito: ${error.name}`, { level: "error" });
     return { error: err.sendError };
   }
 

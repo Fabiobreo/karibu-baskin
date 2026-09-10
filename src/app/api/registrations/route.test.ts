@@ -38,7 +38,7 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
-import { POST, PATCH, DELETE } from "./route";
+import { GET, POST, PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -467,5 +467,87 @@ describe("DELETE /api/registrations (bulk per nome)", () => {
       where: { id: { in: ["sess-1", "sess-2"] } },
       data: { teams: expect.anything() },
     });
+  });
+});
+
+// La rosa di un allenamento è dato personale: nome, ruolo Baskin (che nel
+// baskin deriva dalla classificazione funzionale) e presenze di persone
+// identificabili, minori inclusi. Con /api/sessions che elenca tutte le
+// sessioni, una GET aperta permetteva di ricostruire l'anagrafica
+// dell'associazione senza autenticarsi.
+describe("GET /api/registrations", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue({ allowed: true });
+    mockAuth.mockResolvedValue({ user: { id: "u1", appRole: "ATHLETE" } });
+    p.registration.findMany.mockResolvedValue([]);
+  });
+
+  function makeGet(sessionId = "sess-1"): NextRequest {
+    return new NextRequest(`http://localhost/api/registrations?sessionId=${sessionId}`);
+  }
+
+  it("rifiuta le richieste anonime senza toccare il database", async () => {
+    mockAuth.mockResolvedValue(null);
+    const res = await GET(makeGet());
+    expect(res.status).toBe(401);
+    expect(p.registration.findMany).not.toHaveBeenCalled();
+  });
+
+  it("richiede sessionId", async () => {
+    const res = await GET(new NextRequest("http://localhost/api/registrations"));
+    expect(res.status).toBe(400);
+  });
+
+  it("applica il rate limit", async () => {
+    mockCheckRateLimit.mockReturnValue({ allowed: false });
+    const res = await GET(makeGet());
+    expect(res.status).toBe(429);
+  });
+
+  it("a un utente autenticato non staff non espone note né email anonime", async () => {
+    p.registration.findMany.mockResolvedValue([
+      {
+        id: "r1",
+        sessionId: "sess-1",
+        name: "Alice",
+        role: 1,
+        userId: "u9",
+        childId: null,
+        note: "allergica alle noci",
+        anonymousEmail: "alice@example.com",
+        user: { slug: "alice" },
+        child: null,
+      },
+    ]);
+    const res = await GET(makeGet());
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json[0].name).toBe("Alice");
+    expect(json[0].userSlug).toBe("alice");
+    expect(json[0].note).toBeUndefined();
+    expect(json[0].anonymousEmail).toBeUndefined();
+  });
+
+  it("allo staff espone note e email anonime", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "c1", appRole: "COACH" } });
+    p.registration.findMany.mockResolvedValue([
+      {
+        id: "r1",
+        sessionId: "sess-1",
+        name: "Alice",
+        role: 1,
+        userId: null,
+        childId: null,
+        note: "allergica alle noci",
+        anonymousEmail: "alice@example.com",
+        user: null,
+        child: null,
+      },
+    ]);
+    const res = await GET(makeGet());
+    const json = await res.json();
+    expect(json[0].note).toBe("allergica alle noci");
+    expect(json[0].anonymousEmail).toBe("alice@example.com");
   });
 });

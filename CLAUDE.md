@@ -146,7 +146,7 @@ src/
 │   └── LocaleContext.tsx                  # Lingua it/en (cookie karibu-locale) — useLocaleSwitch()
 ├── i18n/                                  # next-intl (cookie-based)
 │   ├── locales.ts                         # LOCALES, DEFAULT_LOCALE, LOCALE_COOKIE, isValidLocale
-│   ├── request.ts                         # getRequestConfig (cookie → Accept-Language → it)
+│   ├── request.ts                         # getRequestConfig (cookie → it, niente Accept-Language)
 │   └── messages/it.json, en.json          # Dizionari traduzioni
 ├── emails/                                # Template React Email
 │   ├── ContactConfirmationEmail.tsx       # Conferma all'utente
@@ -356,7 +356,7 @@ Multilingua **it/en** con [next-intl](https://next-intl.dev), strategia **cookie
 **File chiave (`src/i18n/`):**
 
 - `locales.ts` — `LOCALES = ["it","en"]`, `DEFAULT_LOCALE = "it"`, `LOCALE_COOKIE = "karibu-locale"`, helper `isValidLocale()`
-- `request.ts` — `getRequestConfig`: legge la lingua dal cookie, fallback su `Accept-Language` del browser, poi su `it`. Carica `messages/<locale>.json`
+- `request.ts` — `getRequestConfig`: legge la lingua dal cookie, altrimenti `it`. Carica `messages/<locale>.json`. **Nessun fallback su `Accept-Language`**, di proposito: senza prefissi negli URL, lo stesso indirizzo cambierebbe lingua a seconda di chi lo chiede, e i motori vedrebbero contenuti inglesi con metadati italiani. Un URL senza cookie è sempre italiano; l'inglese è una preferenza esplicita (selettore di lingua). Test in `request.test.ts`
 - `messages/it.json` + `messages/en.json` — dizionari delle traduzioni
 
 **Wiring:**
@@ -410,13 +410,16 @@ NEXT_PUBLIC_SENTRY_DSN=           # Sentry: DSN client (error monitoring)
 
 ## Offline / PWA
 
-Service worker (`public/sw.js`) con 3 strategie (versione `karibu-v7`):
+Service worker (`public/sw.js`, versione `karibu-v11`), registrato **solo in produzione** da `ServiceWorkerRegistrar` (per provarlo in locale: `NEXT_PUBLIC_ENABLE_SW_IN_DEV=true`). Strategie, regole e **procedura di emergenza (kill switch)** in [`docs/workflows/service-worker.md`](docs/workflows/service-worker.md). In sintesi:
 
-- **Cache-first:** asset statici (`/logo.png`, `/_next/static/*`, ecc.)
-- **Network-first + cache fallback:** pagine HTML (fallback su `/offline.html` se mai visitata)
-- **Network-first + cache fallback:** GET su `/api/sessions`, `/api/teams/`, `/api/matches`, `/api/competitive-teams`, `/api/events`, `/api/calendar` — cache usata solo se offline (era stale-while-revalidate, rimossa per evitare dati obsoleti)
+- **Rete pura, mai in cache:** `/admin`, `/profilo`, `/notifiche` (HTML con dati personali) e le API non elencate sotto
+- **Cache-first:** `/_next/static/*` (hash nel nome, immutabile) e asset statici
+- **Network-first + cache:** navigazioni (poi `/offline.html`) e GET su `/api/sessions`, `/api/teams/`, `/api/matches`, `/api/competitive-teams`, `/api/events`, `/api/calendar` (poi errore)
+- **Script, stili, font, media:** network-first + cache, **mai** `/offline.html` (HTML consegnato al posto di JS causa ChunkLoadError)
 
-Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/squadre`, `/contatti`, `/sponsor`. (Mai precachare un redirect come `/la-squadra` → `cache.add` può salvare una risposta "redirected" che rompe il match nel SW.)
+Tre regole da non violare: il worker **non inventa risposte** (niente 503 sintetici, l'errore si propaga: una risposta finta viene scambiata per valida e rende stati vuoti falsi); le scritture in cache stanno in `event.waitUntil` e **non possono alterare la risposta**; niente `skipWaiting()` automatico, l'aggiornamento lo accetta l'utente da `SwUpdateToast`. Il logout svuota le cache di pagine e API (`purgeServiceWorkerCaches` in `@/lib/swCachePurge`). Alzare `VERSION` cancella dai dispositivi le cache delle versioni precedenti. Test in `src/lib/serviceWorker.test.ts`.
+
+Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/squadre`, `/contatti`, `/sponsor`. (Mai precachare un redirect come `/la-squadra`: una risposta "redirected" salvata in cache non combacia più in lettura.)
 
 ## Pagina allenamento (`/allenamento/[sessionId]`)
 
@@ -492,7 +495,7 @@ Dal giugno 2026 il progetto usa **Prisma Migrate** (non più `db push`). Lo stor
 - **Build script:** `prisma migrate deploy` nel build applica al DB di produzione le migration committate non ancora applicate. **Mai più `db push` in prod** (rischio data-loss silenzioso): ogni cambiamento di schema passa da una migration. Vedi [Workflow migrazioni](#workflow-migrazioni-db)
 - **TypeScript strict:** abilitato — nessuna eccezione; risolvere tutti gli errori prima del push
 - **Turbopack cache corrotta:** se si vedono errori `.sst` nei log, usare `npm run dev:clean`
-- **Mock users:** `prisma/seed.ts` crea utenti di test (es. `npx tsx prisma/seed.ts 15`) — ricordarsi di pulirli prima di andare in produzione
+- **Mock users:** `prisma/seed.ts` crea utenti di test (es. `npx tsx prisma/seed.ts 15`) e `prisma/scripts/simulate-trueskill.ts` utenti `@sim.test` e squadre "(sim)". Prima di andare in produzione eseguire `npm run db:check-seed` con `DATABASE_URL` puntato al DB di produzione: esce con codice 1 se trova utenti di prova, figli `mock-*`, squadre di simulazione o post segnaposto (`lorem`). Contro il DB di sviluppo è normale che fallisca
 - **`NextResponse.cookies.set()` bug Turbopack:** non usarlo per impostare cookie di sessione — usare `res.headers.set("Set-Cookie", ...)` con stringa manuale
 - **`Prisma.DbNull`:** usare `Prisma.DbNull` (importato da `@prisma/client`) per settare a null campi JSON nullable — `null` TypeScript non funziona con Prisma per i Json field
 - **`router.refresh()` e stato locale:** `router.refresh()` riesegue i Server Component ma non reinizializza lo stato React locale derivato dalle props; aggiornare direttamente lo stato locale dopo le mutazioni API quando serve reattività immediata

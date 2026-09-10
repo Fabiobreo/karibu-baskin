@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
 import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -80,8 +81,9 @@ export default function HomeSessionsSection({
     }
   }
 
-  if (inCorso.length === 0 && upcoming.length === 0) return null;
-
+  // Nessun `return null` quando entrambe le liste sono vuote: quel caso ha il
+  // suo stato dedicato qui sotto. Uscire in anticipo lasciava vuoto il
+  // contenitore #allenamenti, e la CTA della hero ci scorreva sopra.
   return (
     <>
       {inCorso.length > 0 && (
@@ -129,6 +131,46 @@ export default function HomeSessionsSection({
               </Grid>
             ))}
           </Grid>
+        </Box>
+      )}
+
+      {/* Nessun allenamento nella finestra della home (vedi page.tsx). Senza
+          questo blocco la sezione spariva del tutto e la CTA "Prossimi
+          allenamenti" della hero scorreva verso un contenitore vuoto. */}
+      {inCorso.length === 0 && upcoming.length === 0 && (
+        <Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
+            <SportsBasketballIcon sx={{ color: "primary.main", fontSize: 32 }} />
+            <Box>
+              <Typography
+                variant="overline"
+                color="primary.onLight"
+                fontWeight={700}
+                sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
+              >
+                {t("gym")}
+              </Typography>
+              <Typography
+                variant="h5"
+                component="h2"
+                fontWeight={800}
+                sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
+              >
+                {t("next")}
+              </Typography>
+            </Box>
+          </Box>
+          <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 560 }}>
+            {t("homeNoneSoon")}
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            <Link href="/contatti">
+              <Button variant="contained">{t("homeNoneSoonCta")}</Button>
+            </Link>
+            <Link href="/calendario">
+              <Button variant="outlined">{t("homeSeeCalendar")}</Button>
+            </Link>
+          </Box>
         </Box>
       )}
 

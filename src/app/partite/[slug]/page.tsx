@@ -594,7 +594,8 @@ export default async function MatchDetailPage({ params }: Props) {
                         size="small"
                         sx={{
                           fontWeight: 800,
-                          bgcolor: "primary.main",
+                          // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
+                          bgcolor: "primary.dark",
                           color: "common.white",
                           letterSpacing: "0.05em",
                           height: 26,

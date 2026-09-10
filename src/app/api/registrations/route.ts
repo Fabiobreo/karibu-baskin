@@ -8,10 +8,30 @@ import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { logAudit } from "@/lib/audit";
 
+/**
+ * Elenco degli iscritti a un allenamento.
+ *
+ * Richiede l'autenticazione. Senza, l'endpoint era una fonte aperta:
+ * `/api/sessions` elenca tutte le sessioni con il loro id, e da lì si
+ * ricostruiva l'anagrafica dell'associazione — nome, ruolo Baskin e presenze di
+ * ogni persona, minori inclusi. Nel baskin il ruolo 1-5 deriva dalla
+ * classificazione funzionale dell'atleta, quindi non è una statistica sportiva
+ * qualunque. La rosa resta visibile a chi fa parte del gruppo, non al web.
+ */
 export async function GET(req: NextRequest) {
+  const rl = checkRateLimit(getClientIp(req), "get-registrations", 60, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+  }
+
   const sessionId = req.nextUrl.searchParams.get("sessionId");
   if (!sessionId) {
     return NextResponse.json({ error: "sessionId richiesto" }, { status: 400 });
+  }
+
+  const authSession = await auth();
+  if (!authSession?.user) {
+    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
   const registrations = await prisma.registration.findMany({
@@ -21,8 +41,7 @@ export async function GET(req: NextRequest) {
   });
 
   // note e anonymousEmail sono dati sensibili: visibili solo allo staff.
-  const authSession = await auth();
-  const appRole = authSession?.user?.appRole as import("@prisma/client").AppRole | undefined;
+  const appRole = authSession.user.appRole as import("@prisma/client").AppRole | undefined;
   const isStaff = !!appRole && (appRole === "COACH" || appRole === "ADMIN");
 
   return NextResponse.json(

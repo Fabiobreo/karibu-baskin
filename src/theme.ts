@@ -442,6 +442,12 @@ function buildComponents(mode: "light" | "dark") {
     MuiChip: {
       styleOverrides: {
         root: { fontWeight: 600, borderRadius: 6 },
+        // Chip `color="primary"` pieno (es. "Sondaggio"): etichetta bianca su
+        // #E65100 fa 3,79:1, sotto AA. Stesso rimedio dei bottoni contained:
+        // riempimento con l'arancione scuro, 5,60:1 in entrambi i temi.
+        filledPrimary: { backgroundColor: ORANGE_ON_LIGHT },
+        // L'outlined e' testo sulla superficie: arancione accessibile.
+        outlinedPrimary: { color: orangeText },
       },
     },
     MuiAppBar: {

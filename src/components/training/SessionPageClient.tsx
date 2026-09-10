@@ -98,13 +98,24 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
   const queryClient = useQueryClient();
   const regQueryKey = ["registrations", realSessionId] as const;
 
-  const { data: registrations = [] } = useQuery<Registration[]>({
+  // `registrations = []` come default è comodo ma pericoloso: quando la lettura
+  // fallisce, la lista vuota viene resa come "nessun iscritto", che è
+  // un'affermazione diversa da "non lo so" e porta lo staff a conclusioni
+  // sbagliate. `isError` viaggia fino al roster per tenerli distinti.
+  const {
+    data: registrations = [],
+    isError: registrationsFailed,
+    refetch: refetchRegistrations,
+  } = useQuery<Registration[]>({
     queryKey: regQueryKey,
     queryFn: () =>
       fetch(`/api/registrations?sessionId=${realSessionId}`).then((r) =>
         r.ok ? r.json() : Promise.reject(new Error("fetch failed"))
       ),
-    enabled: !!realSessionId,
+    // La rosa è riservata a chi è autenticato (vedi GET /api/registrations):
+    // per gli anonimi non chiediamo nemmeno, così non generiamo 401 a vuoto e
+    // il roster mostra l'invito ad accedere invece di una lista vuota.
+    enabled: !!realSessionId && !!currentUser,
     refetchOnWindowFocus: true,
     refetchInterval: refreshInterval === 0 ? false : refreshInterval,
     staleTime: isEnded ? Infinity : 0,
@@ -118,11 +129,12 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
   const {
     data: teamsRaw,
     isLoading: teamsLoading,
+    isError: teamsFailed,
     refetch: refetchTeams,
   } = useQuery<TeamsData>({
     queryKey: teamsQueryKey,
     queryFn: () => fetcher(`/api/teams/${realSessionId}`),
-    enabled: !!realSessionId,
+    enabled: !!realSessionId && !!currentUser,
     refetchOnWindowFocus: true,
     refetchInterval: refreshInterval === 0 ? false : refreshInterval,
   });
@@ -293,6 +305,11 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
     isEnded,
     onUnregistered: refreshSecondary,
     onAttendanceChanged: invalidateRegistrations,
+    loadFailed: registrationsFailed,
+    onRetry: () => void refetchRegistrations(),
+    // `undefined` = ancora in caricamento, `null` = anonimo confermato.
+    requiresLogin: currentUser === null,
+    totalCount: session?._count.registrations ?? 0,
   };
 
   const teamDisplayProps = {
@@ -308,6 +325,9 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
     onExitEditMode: () => setEditingTeams(false),
     teams,
     teamsLoading,
+    teamsLoadFailed: teamsFailed,
+    onTeamsRetry: () => void refetchTeams(),
+    requiresLogin: currentUser === null,
     onTeamsGenerated: (newTeams: TeamsData) => queryClient.setQueryData(teamsQueryKey, newTeams),
   };
 

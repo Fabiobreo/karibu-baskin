@@ -38,6 +38,7 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
 import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import Image from "next/image";
@@ -96,6 +97,17 @@ function ThemeModeIcon({ mode }: { mode: ColorMode }) {
 export default function SiteHeader() {
   const t = useTranslations("nav");
   const router = useRouter();
+
+  /**
+   * Uscire deve lasciare pulito anche il dispositivo: il service worker tiene in
+   * cache pagine e risposte API che, su un account loggato, sono personalizzate.
+   * La pulizia ha un timeout interno e non può bloccare il logout.
+   */
+  async function handleSignOut() {
+    await purgeServiceWorkerCaches();
+    await signOut({ callbackUrl: "/" });
+  }
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [partiteAnchor, setPartiteAnchor] = useState<null | HTMLElement>(null);
@@ -239,6 +251,7 @@ export default function SiteHeader() {
                   component={Link}
                   href={link.href}
                   size="small"
+                  aria-current={active ? "page" : undefined}
                   aria-label={link.iconOnly ? t(link.key) : undefined}
                   sx={{
                     color: active
@@ -294,6 +307,7 @@ export default function SiteHeader() {
                   component={Link}
                   href={pl.href}
                   selected={pathname === pl.href}
+                  aria-current={pathname === pl.href ? "page" : undefined}
                   onClick={() => setPartiteAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === pl.href ? 700 : 400 }}
                 >
@@ -336,6 +350,7 @@ export default function SiteHeader() {
                   component={Link}
                   href={sl.href}
                   selected={pathname === sl.href}
+                  aria-current={pathname === sl.href ? "page" : undefined}
                   onClick={() => setSquadreAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === sl.href ? 700 : 400 }}
                 >
@@ -378,6 +393,7 @@ export default function SiteHeader() {
                   component={bl.disabled ? "li" : Link}
                   href={bl.disabled ? undefined : bl.href}
                   selected={pathname === bl.href}
+                  aria-current={pathname === bl.href ? "page" : undefined}
                   disabled={bl.disabled}
                   onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === bl.href ? 700 : 400, gap: 1 }}
@@ -440,6 +456,7 @@ export default function SiteHeader() {
                   component={Link}
                   href={cl.href}
                   selected={pathname === cl.href}
+                  aria-current={pathname === cl.href ? "page" : undefined}
                   onClick={() => setContattiAnchor(null)}
                   sx={{ fontSize: "0.9rem", fontWeight: pathname === cl.href ? 700 : 400 }}
                 >
@@ -488,7 +505,7 @@ export default function SiteHeader() {
                       width: 34,
                       height: 34,
                       fontSize: "0.8rem",
-                      bgcolor: "primary.main",
+                      bgcolor: "primary.dark",
                       cursor: "pointer",
                     }}
                   >
@@ -552,7 +569,7 @@ export default function SiteHeader() {
                   <MenuItem
                     onClick={() => {
                       setMenuAnchor(null);
-                      signOut({ callbackUrl: "/" });
+                      void handleSignOut();
                     }}
                     sx={{ color: "error.main" }}
                   >
@@ -659,6 +676,7 @@ export default function SiteHeader() {
             return (
               <ListItem key={link.href} disablePadding>
                 <ListItemButton
+                  aria-current={active ? "page" : undefined}
                   onClick={() => {
                     setDrawerOpen(false);
                     router.push(link.href);
@@ -721,6 +739,7 @@ export default function SiteHeader() {
                 return (
                   <ListItem key={link.href} disablePadding>
                     <ListItemButton
+                      aria-current={active ? "page" : undefined}
                       onClick={() => {
                         setDrawerOpen(false);
                         router.push(link.href);
@@ -788,6 +807,7 @@ export default function SiteHeader() {
                 return (
                   <ListItem key={link.href} disablePadding>
                     <ListItemButton
+                      aria-current={active ? "page" : undefined}
                       onClick={() => {
                         setDrawerOpen(false);
                         router.push(link.href);
@@ -855,6 +875,7 @@ export default function SiteHeader() {
                 return (
                   <ListItem key={link.href} disablePadding>
                     <ListItemButton
+                      aria-current={active ? "page" : undefined}
                       disabled={link.disabled}
                       onClick={() => {
                         if (link.disabled) return;
@@ -942,6 +963,7 @@ export default function SiteHeader() {
                 return (
                   <ListItem key={link.href} disablePadding>
                     <ListItemButton
+                      aria-current={active ? "page" : undefined}
                       onClick={() => {
                         setDrawerOpen(false);
                         router.push(link.href);
@@ -1052,7 +1074,7 @@ export default function SiteHeader() {
               <ListItemButton
                 onClick={() => {
                   setDrawerOpen(false);
-                  signOut({ callbackUrl: "/" });
+                  void handleSignOut();
                 }}
                 sx={{ py: 1.25, color: "error.main" }}
               >

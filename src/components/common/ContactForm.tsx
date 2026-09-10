@@ -61,6 +61,23 @@ export default function ContactForm() {
           {state.error}
         </Alert>
       )}
+      {/* Honeypot anti-spam. Un umano non lo vede né ci arriva con il tab; un
+          bot che compila ogni campo sì. Fuori schermo e non `display: none`,
+          perché molti bot saltano i campi nascosti in quel modo. Nome non
+          semantico: un nome come "website" o "company" attirerebbe l'autofill
+          del browser e scarterebbe il messaggio di una persona vera. */}
+      <Box
+        aria-hidden="true"
+        sx={{
+          position: "absolute",
+          left: "-10000px",
+          width: "1px",
+          height: "1px",
+          overflow: "hidden",
+        }}
+      >
+        <input type="text" name="kbhp" tabIndex={-1} autoComplete="off" defaultValue="" />
+      </Box>
       <TextField
         name="name"
         label={t("formName")}

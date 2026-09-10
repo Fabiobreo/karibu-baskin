@@ -80,21 +80,29 @@ export default function BottomNav() {
           },
         }}
       >
-        <BottomNavigationAction label={t("home")} value="/" icon={<HomeIcon fontSize="small" />} />
+        <BottomNavigationAction
+          label={t("home")}
+          value="/"
+          aria-current={active === "/" ? "page" : undefined}
+          icon={<HomeIcon fontSize="small" />}
+        />
         <BottomNavigationAction
           label={t("trainings")}
           value="/allenamenti"
+          aria-current={active === "/allenamenti" ? "page" : undefined}
           icon={<SportsBasketballIcon fontSize="small" />}
         />
         <BottomNavigationAction
           label={t("calendar")}
           value="/calendario"
+          aria-current={active === "/calendario" ? "page" : undefined}
           icon={<CalendarMonthIcon fontSize="small" />}
         />
         {status === "authenticated" && (
           <BottomNavigationAction
             label={t("notifications")}
             value="/notifiche"
+            aria-current={active === "/notifiche" ? "page" : undefined}
             icon={
               <Badge
                 badgeContent={visibleCount}
@@ -112,6 +120,7 @@ export default function BottomNav() {
             status === "authenticated" ? (user?.name?.split(" ")[0] ?? t("profile")) : t("login")
           }
           value="/profilo"
+          aria-current={active === "/profilo" ? "page" : undefined}
           onClick={() => {
             if (status === "unauthenticated") router.push("/login");
           }}

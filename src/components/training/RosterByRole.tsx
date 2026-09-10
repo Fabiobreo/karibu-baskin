@@ -23,6 +23,7 @@ import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { readError } from "@/lib/fetchJson";
+import QueryErrorState from "@/components/common/QueryErrorState";
 
 interface Registration {
   id: string;
@@ -48,6 +49,14 @@ interface Props {
   isEnded?: boolean;
   onUnregistered?: () => void;
   onAttendanceChanged?: () => void;
+  /** La lettura degli iscritti è fallita: senza questo, `registrations` vuoto
+   *  verrebbe reso come "nessun iscritto", che è un'affermazione diversa. */
+  loadFailed?: boolean;
+  onRetry?: () => void;
+  /** Visitatore non autenticato: i nomi non gli vengono serviti, ma il numero
+   *  di iscritti sì, perché è l'informazione utile e non identifica nessuno. */
+  requiresLogin?: boolean;
+  totalCount?: number;
 }
 
 // ── Icona stato presenza ──────────────────────────────────────────────────────
@@ -255,6 +264,10 @@ export default function RosterByRole({
   isEnded,
   onUnregistered,
   onAttendanceChanged,
+  loadFailed = false,
+  onRetry,
+  requiresLogin = false,
+  totalCount = 0,
 }: Props) {
   const t = useTranslations("trainings");
   const { roleLabel } = useEntityLabels();
@@ -465,12 +478,17 @@ export default function RosterByRole({
         <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
           {t("roster")}
         </Typography>
-        <Chip
-          label={t("athletes", { count: athleteRegs.length })}
-          size="small"
-          sx={{ fontWeight: 600 }}
-        />
-        {coachRegs.length > 0 && (
+        {/* Nessun conteggio se la lettura è fallita: "0 atleti" accanto al
+            messaggio di errore sarebbe una contraddizione, e il numero è
+            proprio l'informazione che non abbiamo. */}
+        {!loadFailed && (
+          <Chip
+            label={t("athletes", { count: requiresLogin ? totalCount : athleteRegs.length })}
+            size="small"
+            sx={{ fontWeight: 600 }}
+          />
+        )}
+        {!loadFailed && !requiresLogin && coachRegs.length > 0 && (
           <Chip
             label={t("coachCount", { count: coachRegs.length })}
             size="small"
@@ -491,7 +509,20 @@ export default function RosterByRole({
       </Box>
 
       {/* Body */}
-      {registrations.length === 0 ? (
+      {requiresLogin ? (
+        <Box sx={{ px: 2, py: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Typography color="text.secondary">{t("rosterPrivate")}</Typography>
+          <Box>
+            <Link href="/login">
+              <Button size="small" variant="outlined">
+                {t("rosterPrivateCta")}
+              </Button>
+            </Link>
+          </Box>
+        </Box>
+      ) : loadFailed ? (
+        <QueryErrorState message={t("rosterLoadError")} onRetry={onRetry} compact />
+      ) : registrations.length === 0 ? (
         <Typography color="text.secondary" sx={{ px: 2, py: 2.5 }}>
           {t("noAthletes")}
         </Typography>

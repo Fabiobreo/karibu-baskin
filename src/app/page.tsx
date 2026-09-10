@@ -47,8 +47,16 @@ export default async function HomePage() {
   const isMember =
     appRole === "ATHLETE" || appRole === "PARENT" || appRole === "COACH" || appRole === "ADMIN";
 
+  // Finestra della home. Oltre questa soglia una sessione non è "il prossimo
+  // allenamento" per chi visita: in estate l'unica data futura può essere a
+  // nove mesi, e una card "Tra 271 giorni · 0 iscritti" come prima cosa sotto
+  // la hero dice che la squadra è ferma. Fuori finestra la sezione mostra un
+  // invito a scriverci (vedi HomeSessionsSection). Il calendario resta completo.
+  const HOME_WINDOW_DAYS = 45;
+  const horizon = new Date(startOfToday.getTime() + HOME_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
   const rawSessions = await prisma.trainingSession.findMany({
-    where: { date: { gte: startOfToday } },
+    where: { date: { gte: startOfToday, lte: horizon } },
     orderBy: { date: "asc" },
     include: {
       _count: { select: { registrations: true } },

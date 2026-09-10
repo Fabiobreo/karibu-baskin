@@ -32,7 +32,8 @@
     "copied": "Copiato negli appunti",
     "paginationRows": "{from}–{to} di {count}",
     "rowsPerPage": "Righe:",
-    "seasonNotStarted": "La stagione {active} non è ancora iniziata. Di seguito la {shown}."
+    "seasonNotStarted": "La stagione {active} non è ancora iniziata. Di seguito la {shown}.",
+    "loadFailed": "Non è stato possibile caricare i dati. Controlla la connessione."
   },
   "roles": {
     "role": "Ruolo {n}",
@@ -1200,7 +1201,15 @@
     "teamsNotPublishedPast": "Squadre non pubblicate",
     "teamsNotPublishedPastDesc": "Per questo allenamento non sono state pubblicate le squadre.",
     "staffCanRegisterAnyway": "Le iscrizioni sono chiuse, ma come staff puoi iscriverti comunque.",
-    "onlyRoles": "{count, plural, one {Solo ruolo {roles}} other {Solo ruoli {roles}}}"
+    "onlyRoles": "{count, plural, one {Solo ruolo {roles}} other {Solo ruoli {roles}}}",
+    "rosterLoadError": "Non è stato possibile caricare gli iscritti.",
+    "teamsLoadError": "Non è stato possibile caricare le squadre.",
+    "rosterPrivate": "La lista degli iscritti è riservata ai membri del Karibu. Accedi per vederla.",
+    "rosterPrivateCta": "Accedi",
+    "teamsPrivate": "Le squadre di questo allenamento sono riservate ai membri del Karibu.",
+    "homeNoneSoon": "Nessun allenamento in programma nelle prossime settimane. Vuoi venire a provare? Scrivici e ti diciamo quando si riparte.",
+    "homeNoneSoonCta": "Vieni a provare",
+    "homeSeeCalendar": "Vedi il calendario"
   },
   "home": {
     "heroSubtitle": "Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.",
@@ -1258,7 +1267,8 @@
         "titolo": "10 anni e due squadre",
         "testo": "Raggiungiamo i 10 anni di attività con oltre 80 iscritti e organizziamo la \"Karibu Ten League\", un torneo celebrativo con 6 squadre partecipanti. Un traguardo che celebra la crescita dell'associazione e apre una nuova era: quella dei Montekki e dei Kapuleti."
       }
-    ]
+    ],
+    "heroTitleTail": "sport inclusivo a Montecchio Maggiore"
   },
   "install": {
     "title": "Installa l'app",

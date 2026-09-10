@@ -1,5 +1,5 @@
 /**
- * Endpoint di login per test — attivo SOLO se ENABLE_TEST_LOGIN=true.
+ * Endpoint di login per test — attivo SOLO se ENABLE_TEST_LOGIN=true e fuori produzione.
  * Crea una sessione database nel formato Auth.js v5, poi imposta il cookie.
  * Non usare mai in produzione.
  *
@@ -10,6 +10,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { randomUUID } from "crypto";
 import { auth } from "@/lib/authjs";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+
+/**
+ * Doppio cancello: variabile esplicita *e* ambiente non di produzione.
+ *
+ * L'endpoint crea sessioni valide un anno per qualunque email con una sola
+ * password condivisa, e il GET elenca sessioni ed email. Con la sola variabile,
+ * un `ENABLE_TEST_LOGIN=true` finito per errore in un environment Vercel
+ * aprirebbe un accesso admin completo senza credenziali reali. Con il controllo
+ * su `NODE_ENV`, in una build di produzione la rotta risponde 404 in ogni caso.
+ * L'e2e non ne risente: Playwright avvia `npm run dev`.
+ */
+function isTestLoginEnabled(): boolean {
+  return process.env.ENABLE_TEST_LOGIN === "true" && process.env.NODE_ENV !== "production";
+}
 
 // Nomi cookie che Auth.js v5 può usare (in ordine di priorità)
 const POSSIBLE_COOKIE_NAMES = [
@@ -28,7 +43,7 @@ function getSessionCookieName(): string {
 
 // ── GET: diagnostica ──────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
-  if (process.env.ENABLE_TEST_LOGIN !== "true") {
+  if (!isTestLoginEnabled()) {
     return NextResponse.json({ error: "Non disponibile" }, { status: 404 });
   }
 
@@ -90,8 +105,14 @@ export async function GET(req: NextRequest) {
 
 // ── POST: esegue il login ─────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  if (process.env.ENABLE_TEST_LOGIN !== "true") {
+  if (!isTestLoginEnabled()) {
     return NextResponse.json({ error: "Non disponibile" }, { status: 404 });
+  }
+
+  // Password unica e condivisa: senza limite si prova per forza bruta.
+  const rl = checkRateLimit(getClientIp(req), "test-login", 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   }
 
   const body = (await req.json().catch(() => ({}))) as { email?: string; password?: string };

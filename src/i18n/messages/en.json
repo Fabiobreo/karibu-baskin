@@ -32,7 +32,8 @@
     "copied": "Copied to clipboard",
     "paginationRows": "{from}–{to} of {count}",
     "rowsPerPage": "Rows:",
-    "seasonNotStarted": "The {active} season has not started yet. Showing {shown} below."
+    "seasonNotStarted": "The {active} season has not started yet. Showing {shown} below.",
+    "loadFailed": "Could not load the data. Check your connection."
   },
   "roles": {
     "role": "Role {n}",
@@ -1200,7 +1201,15 @@
     "teamsNotPublishedPast": "Teams not published",
     "teamsNotPublishedPastDesc": "No teams were published for this training.",
     "staffCanRegisterAnyway": "Registrations are closed, but as staff you can still sign up.",
-    "onlyRoles": "{count, plural, one {Role {roles} only} other {Roles {roles} only}}"
+    "onlyRoles": "{count, plural, one {Role {roles} only} other {Roles {roles} only}}",
+    "rosterLoadError": "Could not load the registered athletes.",
+    "teamsLoadError": "Could not load the teams.",
+    "rosterPrivate": "The list of registered athletes is reserved for Karibu members. Sign in to see it.",
+    "rosterPrivateCta": "Sign in",
+    "teamsPrivate": "The teams for this session are reserved for Karibu members.",
+    "homeNoneSoon": "No training sessions scheduled in the coming weeks. Want to give it a try? Write to us and we will let you know when we start again.",
+    "homeNoneSoonCta": "Come and try",
+    "homeSeeCalendar": "See the calendar"
   },
   "home": {
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",
@@ -1258,7 +1267,8 @@
         "titolo": "10 years and two teams",
         "testo": "We reach 10 years of activity with over 80 members and organise the \"Karibu Ten League\", a celebratory tournament with 6 participating teams. A milestone that celebrates the growth of the association and opens a new era: that of the Montekki and the Kapuleti."
       }
-    ]
+    ],
+    "heroTitleTail": "inclusive sport in Montecchio Maggiore"
   },
   "install": {
     "title": "Install the app",

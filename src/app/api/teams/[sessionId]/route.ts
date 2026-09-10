@@ -17,6 +17,15 @@ export async function GET(
 ) {
   const rl = checkRateLimit(getClientIp(req), "get-teams", 60, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
+
+  // Le squadre contengono gli stessi dati della rosa (nome e ruolo di ogni
+  // atleta): stessa protezione di GET /api/registrations, altrimenti chiudere
+  // quello lascerebbe aperta la porta accanto.
+  const viewer = await auth();
+  if (!viewer?.user) {
+    return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+  }
+
   const { sessionId } = await params;
   const session = await prisma.trainingSession.findUnique({
     where: { id: sessionId },

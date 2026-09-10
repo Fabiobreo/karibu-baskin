@@ -111,7 +111,8 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
               label={featuredLabel}
               size="small"
               sx={{
-                bgcolor: "primary.main",
+                // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
+                bgcolor: "primary.dark",
                 color: "common.white",
                 fontWeight: 700,
                 "& .MuiChip-icon": { color: "common.white" },

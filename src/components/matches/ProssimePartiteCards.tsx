@@ -101,7 +101,8 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     sx={(theme) => ({
                       mb: 1,
                       fontWeight: 700,
-                      bgcolor: "primary.main",
+                      // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
+                      bgcolor: "primary.dark",
                       color: "common.white",
                       animation: "karibuPulse 1.6s ease-in-out infinite",
                       "@keyframes karibuPulse": {

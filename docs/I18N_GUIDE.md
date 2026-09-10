@@ -185,8 +185,8 @@ Per aggiungere/modificare un contenuto lungo, edita questi file (sezione `_IT` e
 
 ## 6. Lo switcher di lingua
 
-- Componente: `src/components/LanguageSwitcher.tsx` (toggle `IT | EN`, prop `onDark` per superfici scure).
-- Default lingua: auto-detect da `Accept-Language` del browser, fallback `it`; una volta scelta manualmente vince il cookie `karibu-locale`.
+- Componente: `src/components/layout/LanguageSwitcher.tsx` (toggle `IT | EN`, prop `onDark` per superfici scure).
+- Default lingua: sempre `it`; la sceglie solo il cookie `karibu-locale`, impostato dallo switcher. **Nessun auto-detect da `Accept-Language`**, di proposito: senza prefissi negli URL, lo stesso indirizzo cambierebbe lingua a seconda di chi lo chiede e i motori di ricerca vedrebbero contenuti inglesi con metadati italiani. Un visitatore con il browser in inglese vede l'italiano finché non preme EN.
 - Logica: `src/context/LocaleContext.tsx` + `src/i18n/request.ts`.
 
 ---

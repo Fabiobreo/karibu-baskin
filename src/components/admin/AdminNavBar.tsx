@@ -113,6 +113,9 @@ export default function AdminNavBar() {
                 label={item.label}
                 component={Link}
                 href={item.href}
+                // Sono link di navigazione, non tab di un pannello: la voce
+                // corrente va annunciata come pagina, non solo evidenziata.
+                aria-current={active === item.href ? "page" : undefined}
               />
             ))}
           </Tabs>

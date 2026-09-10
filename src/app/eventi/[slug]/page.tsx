@@ -213,7 +213,8 @@ export default async function EventoPage({ params }: Props) {
               sx={{
                 fontWeight: 700,
                 mb: 1,
-                bgcolor: "primary.main",
+                // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
+                bgcolor: "primary.dark",
                 color: "primary.contrastText",
               }}
             />
