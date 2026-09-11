@@ -9,15 +9,25 @@ function scrollToAllenamenti() {
   document.getElementById("allenamenti")?.scrollIntoView({ behavior: "smooth" });
 }
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  /**
+   * Account in attesa di conferma (GUEST): hero più bassa, così la card "I tuoi
+   * primi passi" che la sormonta si vede senza scorrere, saluto per nome e CTA
+   * su quello che si può fare subito. `null` = nome non disponibile.
+   */
+  guest?: { firstName: string | null };
+}
+
+export default function HeroSection({ guest }: HeroSectionProps) {
   const t = useTranslations("home");
+  const tGuest = useTranslations("guestOnboarding");
   return (
     <Box
       sx={{
         position: "relative",
         // Non a tutta altezza: cosi' il bordo della sezione sotto si intravede
         // senza scorrere, e l'indicatore "scorri" non serve piu'.
-        minHeight: { xs: "82svh", md: "80vh" },
+        minHeight: guest ? { xs: "64svh", md: "62vh" } : { xs: "82svh", md: "80vh" },
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -50,7 +60,9 @@ export default function HeroSection() {
         sx={{
           position: "relative",
           zIndex: 1,
-          py: { xs: 8, md: 12 },
+          // Con la card sovrapposta serve spazio sotto le CTA.
+          pt: { xs: 8, md: 12 },
+          pb: guest ? { xs: 12, md: 16 } : { xs: 8, md: 12 },
           textAlign: "center",
           display: "flex",
           flexDirection: "column",
@@ -66,14 +78,31 @@ export default function HeroSection() {
             vede, ed è vera (ripete il sottotitolo), non testo nascosto per i
             motori. Gli spazi tra gli span servono al testo accessibile: nei
             flex item non si vedono, ma senza si leggerebbe "KaribuBaskin". */}
+        {guest && (
+          <Typography
+            sx={{
+              color: "common.white",
+              fontWeight: 700,
+              fontSize: { xs: "1.1rem", md: "1.35rem" },
+              mb: 1.5,
+              textShadow: "0 1px 8px rgba(0,0,0,0.5)",
+            }}
+          >
+            {guest.firstName
+              ? tGuest("heroGreeting", { name: guest.firstName })
+              : tGuest("heroGreetingNoName")}
+          </Typography>
+        )}
         <Typography
           component="h1"
           sx={{
             fontWeight: 900,
-            fontSize: { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
+            fontSize: guest
+              ? { xs: "3rem", sm: "4rem", md: "5rem" }
+              : { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
             lineHeight: 0.95,
             letterSpacing: "-0.03em",
-            mb: 3.5,
+            mb: guest ? 2.5 : 3.5,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -119,12 +148,12 @@ export default function HeroSection() {
             fontWeight: 400,
             fontSize: { xs: "1rem", md: "1.15rem" },
             lineHeight: 1.65,
-            mb: 5,
+            mb: guest ? 4 : 5,
             maxWidth: 480,
             textShadow: "0 1px 8px rgba(0,0,0,0.4)",
           }}
         >
-          {t("heroSubtitle")}
+          {guest ? tGuest("heroSubtitle") : t("heroSubtitle")}
         </Typography>
 
         {/* CTA */}
@@ -145,9 +174,9 @@ export default function HeroSection() {
               },
             }}
           >
-            {t("upcomingTrainings")}
+            {guest ? tGuest("heroCtaTrainings") : t("upcomingTrainings")}
           </Button>
-          <Link href="/il-baskin" style={{ textDecoration: "none" }}>
+          <Link href={guest ? "/profilo/ruolo" : "/il-baskin"} style={{ textDecoration: "none" }}>
             <Button
               variant="outlined"
               size="large"
@@ -167,7 +196,7 @@ export default function HeroSection() {
                 },
               }}
             >
-              {t("whatIsBaskin")}
+              {guest ? tGuest("heroCtaRole") : t("whatIsBaskin")}
             </Button>
           </Link>
         </Box>

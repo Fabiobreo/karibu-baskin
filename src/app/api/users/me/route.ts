@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { deleteImage } from "@/lib/blob";
-import { z } from "zod";
+import { MeUpdateSchema } from "@/lib/schemas/me";
+import { setOwnName } from "@/lib/userName";
 
 // GET /api/users/me — profilo dell'utente loggato
 export async function GET() {
@@ -50,10 +51,6 @@ export async function GET() {
   });
 }
 
-const MeUpdateSchema = z.object({
-  customImage: z.string().url().nullable().optional(),
-});
-
 // PUT /api/users/me — aggiorna dati profilo dell'utente loggato
 export async function PUT(req: Request) {
   const session = await auth();
@@ -70,27 +67,42 @@ export async function PUT(req: Request) {
     );
   }
 
-  const { customImage } = parsed.data;
+  const { customImage, name } = parsed.data;
+  const userId = session.user.id;
 
-  if (customImage !== undefined) {
-    // Recupera la vecchia immagine per eliminare il Blob orfano
-    const current = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { customImage: true },
-    });
-    // Se si sta rimuovendo (null) o sostituendo, elimina il vecchio file
-    if (current?.customImage && current.customImage !== customImage) {
-      deleteImage(current.customImage).catch((e) => console.error("[blob] delete old avatar", e));
+  try {
+    // Nome inserito dall'utente (magic link, o correzione dal profilo): regole
+    // su Google, slug e notifica allo staff stanno tutte in setOwnName.
+    if (name !== undefined) {
+      const result = await setOwnName(userId, name);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: result.status });
+      }
     }
+
+    if (customImage !== undefined) {
+      // Recupera la vecchia immagine per eliminare il Blob orfano
+      const current = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { customImage: true },
+      });
+      // Se si sta rimuovendo (null) o sostituendo, elimina il vecchio file
+      if (current?.customImage && current.customImage !== customImage) {
+        deleteImage(current.customImage).catch((e) => console.error("[blob] delete old avatar", e));
+      }
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(customImage !== undefined && { customImage }),
+      },
+      select: { id: true, name: true, customImage: true },
+    });
+
+    return NextResponse.json(user);
+  } catch (err) {
+    console.error("[users/me] PUT", err);
+    return NextResponse.json({ error: "Errore nel salvataggio del profilo" }, { status: 500 });
   }
-
-  const user = await prisma.user.update({
-    where: { id: session.user.id },
-    data: {
-      ...(customImage !== undefined && { customImage }),
-    },
-    select: { id: true, customImage: true },
-  });
-
-  return NextResponse.json(user);
 }

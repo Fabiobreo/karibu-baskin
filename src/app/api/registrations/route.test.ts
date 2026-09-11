@@ -38,11 +38,16 @@ vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
 }));
 
+vi.mock("@/lib/userName", () => ({
+  setOwnName: vi.fn().mockResolvedValue({ ok: true, name: "Anna Bianchi" }),
+}));
+
 import { GET, POST, PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { setOwnName } from "@/lib/userName";
 
 type PrismaMock = {
   registration: {
@@ -62,6 +67,7 @@ const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
 const mockCheckRateLimit = checkRateLimit as Mock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
+const mockSetOwnName = setOwnName as Mock;
 
 const FUTURE_END = new Date(Date.now() + 4 * 60 * 60 * 1000);
 const PAST_END = new Date(Date.now() - 1000);
@@ -266,6 +272,46 @@ describe("POST /api/registrations", () => {
       expect(res.status).toBe(409);
       const json = await res.json();
       expect(json.error).toContain("tramite il tuo genitore");
+    });
+
+    describe("account senza nome (magic link)", () => {
+      beforeEach(() => {
+        p.user.findUnique.mockResolvedValue({
+          name: null,
+          appRole: "GUEST",
+          sportRole: null,
+          sportRoleSuggested: null,
+        });
+        mockSetOwnName.mockResolvedValue({ ok: true, name: "Anna Bianchi" });
+      });
+
+      it("usa il nome del form e lo salva sul profilo", async () => {
+        const res = await POST(
+          makePost({ sessionId: "sess-1", role: 3, name: "  Anna  Bianchi " })
+        );
+        expect(res.status).toBe(201);
+        expect(mockSetOwnName).toHaveBeenCalledWith("user-1", "Anna Bianchi");
+        expect(p.registration.create.mock.calls[0][0].data.name).toBe("Anna Bianchi");
+      });
+
+      it("400 con un messaggio chiaro se il nome manca", async () => {
+        const res = await POST(makePost({ sessionId: "sess-1", role: 3 }));
+        expect(res.status).toBe(400);
+        expect((await res.json()).error).toContain("nome e cognome");
+        expect(p.registration.create).not.toHaveBeenCalled();
+      });
+
+      it("con un nome già salvato ignora quello del form", async () => {
+        p.user.findUnique.mockResolvedValue({
+          name: "Fabio",
+          appRole: "ATHLETE",
+          sportRole: 3,
+          sportRoleSuggested: null,
+        });
+        await POST(makePost({ sessionId: "sess-1", role: 3, name: "Altro" }));
+        expect(mockSetOwnName).not.toHaveBeenCalled();
+        expect(p.registration.create.mock.calls[0][0].data.name).toBe("Fabio");
+      });
     });
   });
 

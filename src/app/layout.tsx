@@ -18,6 +18,7 @@ import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
 import CookieBanner from "@/components/layout/CookieBanner";
 import InstallPrompt from "@/components/layout/InstallPrompt";
+import MissingNameDialog from "@/components/layout/MissingNameDialog";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -161,6 +162,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <SwUpdateToast />
                 <CookieBanner />
                 <InstallPrompt />
+                {/* Chi entra col magic link non ha un nome: glielo chiediamo
+                    su qualunque pagina arrivi, prima di tutto il resto. */}
+                {session?.user && !session.user.name?.trim() && (
+                  <MissingNameDialog email={session.user.email ?? null} />
+                )}
               </ToastProvider>
             </Providers>
           </NextIntlClientProvider>

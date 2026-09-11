@@ -13,6 +13,7 @@ import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
 import { mixedMatchError } from "@/lib/matches/mixedTeam";
+import { buildLoanLookup, isLoanParticipation } from "@/lib/rating/loanDetection";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -108,6 +109,22 @@ export async function PUT(req: Request, { params }: Params) {
     deleteImage(previous.imageUrl).catch((e) => console.error("[blob] delete match image", e));
   }
 
+  // Cambio della nostra squadra: la nuova deve esistere, e da lì in poi i
+  // controlli (Karibu, partita contro se stessa) guardano quella.
+  const finalTeamId = body.teamId ?? previous.teamId;
+  const teamChanged = finalTeamId !== previous.teamId;
+  let finalTeamIsMixed = !!previous.team?.isMixed;
+  if (teamChanged) {
+    const newTeam = await prisma.competitiveTeam.findUnique({
+      where: { id: finalTeamId },
+      select: { isMixed: true },
+    });
+    if (!newTeam) {
+      return NextResponse.json({ error: "Squadra non trovata" }, { status: 400 });
+    }
+    finalTeamIsMixed = newTeam.isMixed;
+  }
+
   // Validazione XOR opponentId / opponentTeamId
   // Calcola lo stato finale (se non specificato, usa il precedente)
   const finalOpponentId = body.opponentId !== undefined ? body.opponentId : previous.opponentId;
@@ -119,7 +136,7 @@ export async function PUT(req: Request, { params }: Params) {
       { status: 400 }
     );
   }
-  if (finalOpponentTeamId && finalOpponentTeamId === previous.teamId) {
+  if (finalOpponentTeamId && finalOpponentTeamId === finalTeamId) {
     return NextResponse.json(
       { error: "Una squadra non può giocare contro se stessa" },
       { status: 400 }
@@ -146,7 +163,7 @@ export async function PUT(req: Request, { params }: Params) {
       )?.isMixed ?? false)
     : false;
   const mixedError = mixedMatchError({
-    involvesMixed: !!previous.team?.isMixed || opponentTeamIsMixed,
+    involvesMixed: finalTeamIsMixed || opponentTeamIsMixed,
     matchType: finalMatchType,
     groupId: "groupId" in body ? body.groupId : previous.groupId,
   });
@@ -182,7 +199,7 @@ export async function PUT(req: Request, { params }: Params) {
     const matchDate = body.date ? new Date(body.date) : (previous?.date ?? new Date());
     const [teamRec, oppExtRec, oppIntRec] = await Promise.all([
       prisma.competitiveTeam.findUnique({
-        where: { id: previous.teamId },
+        where: { id: finalTeamId },
         select: { name: true },
       }),
       finalOpponentId
@@ -204,62 +221,104 @@ export async function PUT(req: Request, { params }: Params) {
     }
   }
 
-  const match = await prisma.match.update({
-    where: { id: matchId },
-    data: {
-      ...(slugToSet !== undefined && { slug: slugToSet }),
-      ...(body.date !== undefined && { date: new Date(body.date) }),
-      ...(body.isHome !== undefined && { isHome: body.isHome }),
-      ...(body.venue !== undefined && { venue: body.venue?.trim() || null }),
-      matchType: finalMatchType,
-      ...(body.ourScore !== undefined && { ourScore: body.ourScore }),
-      ...(body.theirScore !== undefined && { theirScore: body.theirScore }),
-      result: resolvedResult,
-      ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
-      ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
-      // Aggiorna opponentId/opponentTeamId in modo coerente (uno solo non-null)
-      ...(body.opponentId !== undefined || body.opponentTeamId !== undefined
-        ? {
-            opponentId: finalOpponentId ?? null,
-            opponentTeamId: finalOpponentTeamId ?? null,
-          }
-        : {}),
-      ...("matchday" in body && { matchday: body.matchday ?? null }),
-      // Le amichevoli interne non hanno gironi
-      ...("groupId" in body && { groupId: finalOpponentTeamId ? null : (body.groupId ?? null) }),
-      // Profilo avversario post-partita (Fase 3)
-      ...(body.opponentProfile !== undefined && {
-        opponentProfile:
-          body.opponentProfile !== null
-            ? (body.opponentProfile as Prisma.InputJsonValue)
-            : Prisma.DbNull,
+  const match = await prisma.match
+    .update({
+      where: { id: matchId },
+      data: {
+        ...(slugToSet !== undefined && { slug: slugToSet }),
+        ...(teamChanged && { teamId: finalTeamId }),
+        ...(body.date !== undefined && { date: new Date(body.date) }),
+        ...(body.isHome !== undefined && { isHome: body.isHome }),
+        ...(body.venue !== undefined && { venue: body.venue?.trim() || null }),
+        matchType: finalMatchType,
+        ...(body.ourScore !== undefined && { ourScore: body.ourScore }),
+        ...(body.theirScore !== undefined && { theirScore: body.theirScore }),
+        result: resolvedResult,
+        ...(body.notes !== undefined && { notes: body.notes?.trim() || null }),
+        ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
+        // Aggiorna opponentId/opponentTeamId in modo coerente (uno solo non-null)
+        ...(body.opponentId !== undefined || body.opponentTeamId !== undefined
+          ? {
+              opponentId: finalOpponentId ?? null,
+              opponentTeamId: finalOpponentTeamId ?? null,
+            }
+          : {}),
+        ...("matchday" in body && { matchday: body.matchday ?? null }),
+        // Le amichevoli interne non hanno gironi
+        ...("groupId" in body && { groupId: finalOpponentTeamId ? null : (body.groupId ?? null) }),
+        // Profilo avversario post-partita (Fase 3)
+        ...(body.opponentProfile !== undefined && {
+          opponentProfile:
+            body.opponentProfile !== null
+              ? (body.opponentProfile as Prisma.InputJsonValue)
+              : Prisma.DbNull,
+        }),
+      },
+      select: {
+        id: true,
+        slug: true,
+        date: true,
+        isHome: true,
+        venue: true,
+        matchType: true,
+        ourScore: true,
+        theirScore: true,
+        result: true,
+        notes: true,
+        imageUrl: true,
+        matchday: true,
+        groupId: true,
+        teamId: true,
+        opponentId: true,
+        opponentTeamId: true,
+        opponentProfile: true,
+        createdAt: true,
+        team: { select: { id: true, name: true, season: true, color: true, championship: true } },
+        opponent: { select: { id: true, name: true, city: true } },
+        opponentTeam: { select: { id: true, name: true, season: true, color: true } },
+        group: { select: { id: true, name: true } },
+      },
+    })
+    .catch((err: unknown) => {
+      // Partita cancellata nel frattempo (P2025) o riferimento a un girone o
+      // un'avversaria che non esiste più (P2003).
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        (err.code === "P2025" || err.code === "P2003")
+      ) {
+        return null;
+      }
+      throw err;
+    });
+  if (!match) {
+    return NextResponse.json(
+      { error: "Partita, girone o avversaria non trovati" },
+      { status: 400 }
+    );
+  }
+
+  // Le convocazioni della vecchia squadra passano alla nuova (i record senza
+  // teamId valgono già per match.teamId), ricalcolando chi è in prestito:
+  // senza, resterebbero agganciate a una squadra che non gioca più la partita.
+  if (teamChanged) {
+    const [loanLookup, callups] = await Promise.all([
+      buildLoanLookup(matchId, finalTeamId),
+      prisma.matchCallup.findMany({
+        where: { matchId, OR: [{ teamId: previous.teamId }, { teamId: null }] },
+        select: { id: true, userId: true, childId: true },
       }),
-    },
-    select: {
-      id: true,
-      slug: true,
-      date: true,
-      isHome: true,
-      venue: true,
-      matchType: true,
-      ourScore: true,
-      theirScore: true,
-      result: true,
-      notes: true,
-      imageUrl: true,
-      matchday: true,
-      groupId: true,
-      teamId: true,
-      opponentId: true,
-      opponentTeamId: true,
-      opponentProfile: true,
-      createdAt: true,
-      team: { select: { id: true, name: true, season: true, color: true, championship: true } },
-      opponent: { select: { id: true, name: true, city: true } },
-      opponentTeam: { select: { id: true, name: true, season: true, color: true } },
-      group: { select: { id: true, name: true } },
-    },
-  });
+    ]);
+    if (loanLookup && callups.length > 0) {
+      await prisma.$transaction(
+        callups.map((c) =>
+          prisma.matchCallup.update({
+            where: { id: c.id },
+            data: { teamId: finalTeamId, isLoan: isLoanParticipation(loanLookup, c) },
+          })
+        )
+      );
+    }
+  }
 
   // Ricalcola i rating TrueSkill quando il risultato viene impostato o modificato
   // (segnale secondario W/L campionato). Fire-and-forget: non blocca la risposta.

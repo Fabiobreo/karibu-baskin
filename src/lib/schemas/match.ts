@@ -69,6 +69,7 @@ export const MatchCreateSchema = MatchBaseSchema.extend({
   });
 
 export const MatchUpdateSchema = MatchBaseSchema.extend({
+  teamId: z.string().min(1).optional(),
   date: z.string().min(1).optional(),
   opponentId: z.string().min(1).nullable().optional(),
   opponentTeamId: z.string().min(1).nullable().optional(),

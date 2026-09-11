@@ -8,6 +8,7 @@ import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { generateUserSlug } from "@/lib/slugUtils";
+import { newUserPushBody } from "@/lib/userName";
 import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS } from "@/lib/sessionPolicy";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -114,15 +115,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           })
           .catch((err) => console.error("[authjs] createUser slug generation failed:", err));
       }
-      // Notifica admin quando un nuovo utente si registra
-      sendPushToAll(
-        {
-          title: "👤 Nuovo utente",
-          body: `${user.name ?? user.email} si è registrato ed è in attesa di conferma.`,
-          url: "/admin/utenti",
-        },
-        true // solo admin
-      ).catch(() => {});
+      // Notifica lo staff del nuovo account. Col magic link il nome non c'è
+      // ancora (solo l'email): la notifica parte quando l'utente lo inserisce,
+      // da setOwnName, così lo staff legge un nome e non un indirizzo.
+      if (user.name?.trim()) {
+        sendPushToAll(
+          { title: "👤 Nuovo utente", body: newUserPushBody(user.name), url: "/admin/utenti" },
+          true // solo admin
+        ).catch(() => {});
+      }
     },
   },
   pages: {

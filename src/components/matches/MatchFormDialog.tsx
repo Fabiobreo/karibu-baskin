@@ -157,8 +157,18 @@ export default function MatchFormDialog({
   const teamsForForm = teams.filter(
     (t) => t.season === seasonForDate(watchDate ?? "") && (karibuAllowed || !t.isMixed)
   );
-  const displayTeams =
+  const seasonOrAllTeams =
     teamsForForm.length > 0 ? teamsForForm : teams.filter((t) => karibuAllowed || !t.isMixed);
+  // La squadra selezionata resta sempre tra le scelte, anche se la data cade in
+  // un'altra stagione (es. un torneo di fine agosto, prima di settembre): senza,
+  // la Select di una partita in modifica si apriva vuota.
+  const selectedTeam = teams.find((t) => t.id === watchTeamId);
+  const displayTeams =
+    selectedTeam &&
+    (karibuAllowed || !selectedTeam.isMixed) &&
+    !seasonOrAllTeams.some((t) => t.id === selectedTeam.id)
+      ? [selectedTeam, ...seasonOrAllTeams]
+      : seasonOrAllTeams;
   const hasDate = !!watchDate;
   const [error, setError] = useState("");
   const [opponentValue, setOpponentValue] = useState<OpponentOpt | null>(null);
@@ -217,6 +227,25 @@ export default function MatchFormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [karibuAllowed, watchTeamId]);
 
+  // Cambiando la nostra squadra, quello che valeva solo per la precedente si
+  // azzera: il girone (le squadre sono iscritte ai gironi una per una) e
+  // l'avversaria interna, se è la squadra appena scelta.
+  const watchGroupId = watch("groupId");
+  useEffect(() => {
+    if (!watchTeamId) return;
+    if (
+      watchGroupId &&
+      !groups.some((g) => g.id === watchGroupId && g.competitiveTeamIds.includes(watchTeamId))
+    ) {
+      setValue("groupId", "");
+    }
+    if (opponentValue?.kind === "internal" && opponentValue.id === watchTeamId) {
+      setOpponentValue(null);
+      setOpponentInput("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchTeamId]);
+
   useEffect(() => {
     if (!open) return;
     setError("");
@@ -237,32 +266,28 @@ export default function MatchFormDialog({
       });
       setImageUrl(editMatch.imageUrl ?? null);
 
-      if (editMatch.opponentTeamId) {
-        const t = teams.find((x) => x.id === editMatch.opponentTeamId);
-        if (t) {
-          setOpponentValue({
+      // Sempre un valore esplicito: senza il ramo null restava l'avversario
+      // della partita aperta in precedenza.
+      const t = editMatch.opponentTeamId
+        ? teams.find((x) => x.id === editMatch.opponentTeamId)
+        : undefined;
+      const o = editMatch.opponentId
+        ? opponents.find((x) => x.id === editMatch.opponentId)
+        : undefined;
+      const opt: OpponentOpt | null = t
+        ? {
             kind: "internal",
             id: t.id,
             name: t.name,
             season: t.season,
             isMixed: !!t.isMixed,
             groupKey: "internal",
-          });
-        }
-      } else if (editMatch.opponentId) {
-        const o = opponents.find((x) => x.id === editMatch.opponentId);
-        if (o) {
-          setOpponentValue({
-            kind: "external",
-            id: o.id,
-            name: o.name,
-            city: o.city,
-            groupKey: "external",
-          });
-        }
-      } else {
-        setOpponentValue(null);
-      }
+          }
+        : o
+          ? { kind: "external", id: o.id, name: o.name, city: o.city, groupKey: "external" }
+          : null;
+      setOpponentValue(opt);
+      setOpponentInput(opt?.name ?? "");
     } else {
       resetMatchForm(defaultMatchValues);
       setOpponentValue(null);
@@ -469,7 +494,8 @@ export default function MatchFormDialog({
                           }}
                         />
                         {t.name}
-                        {teamsForForm.length === 0 && ` · ${t.season}`}
+                        {(teamsForForm.length === 0 || !teamsForForm.includes(t)) &&
+                          ` · ${t.season}`}
                         {t.isMixed && (
                           <Typography component="span" variant="caption" color="text.secondary">
                             tutta la squadra
@@ -497,9 +523,10 @@ export default function MatchFormDialog({
                 setOpponentError(null);
               }}
               inputValue={opponentInput}
-              onInputChange={(_, val, reason) => {
-                if (reason !== "reset") setOpponentInput(val);
-              }}
+              // Anche il reason "reset" va accolto: è con quello che MUI scrive
+              // nel campo il nome dell'avversario scelto. Ignorandolo, in
+              // modifica il campo restava vuoto pur avendo un valore.
+              onInputChange={(_, val) => setOpponentInput(val)}
               options={opponentOptions}
               groupBy={(opt) => {
                 if (opt.kind === "external") return "Squadre avversarie";

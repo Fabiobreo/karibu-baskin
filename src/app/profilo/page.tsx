@@ -28,7 +28,8 @@ import NotificationPrefsPanel from "@/components/profile/NotificationPrefsPanel"
 import { mergePrefs } from "@/lib/notifications/notifPrefs";
 import LinkRequestsSection from "@/components/profile/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/training/ClaimAnonymousCard";
-import GuestWelcomeBanner from "@/components/common/GuestWelcomeBanner";
+import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
+import ProfileNameEditor from "@/components/profile/ProfileNameEditor";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import AthleteInfoSection from "@/components/profile/AthleteInfoSection";
 import AttendanceSection from "@/components/profile/AttendanceSection";
@@ -108,6 +109,9 @@ export default async function ProfiloPage() {
         select: { session: { select: { date: true } } },
       },
       _count: { select: { registrations: true } },
+      // Con Google il nome arriva da lì e viene riscritto a ogni accesso: si
+      // modifica dal profilo solo senza account Google (magic link).
+      accounts: { where: { provider: "google" }, select: { id: true }, take: 1 },
     },
   });
 
@@ -287,9 +291,7 @@ export default async function ProfiloPage() {
             customImage={user.customImage ?? null}
           />
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h6" fontWeight={700} noWrap>
-              {user.name ?? "—"}
-            </Typography>
+            <ProfileNameEditor name={user.name} editable={user.accounts.length === 0} />
             <Typography variant="body2" color="text.secondary" noWrap>
               {user.email}
             </Typography>
@@ -470,7 +472,11 @@ export default async function ProfiloPage() {
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {user.appRole === "GUEST" && (
           <Box sx={{ mb: 3 }}>
-            <GuestWelcomeBanner />
+            {/* Stessa card della home: finché lo staff non conferma, il
+                profilo mostra a che punto è l'utente e cosa può già fare. */}
+            <Suspense fallback={null}>
+              <GuestOnboardingSection userId={user.id} />
+            </Suspense>
           </Box>
         )}
 

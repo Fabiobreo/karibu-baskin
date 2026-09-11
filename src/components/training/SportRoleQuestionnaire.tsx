@@ -127,16 +127,16 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
       )}
       {initialSuggested && (
         <Box
-          sx={(theme) => ({
+          sx={{
             mb: 2,
             p: 1.5,
-            bgcolor: alpha(theme.palette.info.main, 0.08),
+            bgcolor: "action.hover",
             border: "1px solid",
-            borderColor: alpha(theme.palette.info.main, 0.3),
+            borderColor: "divider",
             borderRadius: 1,
-          })}
+          }}
         >
-          <Typography variant="caption" color="info.main" fontWeight={600}>
+          <Typography variant="caption" color="text.secondary" fontWeight={600}>
             {t("previousAnswer", {
               role: sportRoleLabel(initialSuggested.role, initialSuggested.variant ?? null),
             })}

@@ -97,9 +97,6 @@ export default function UsersTable({
                 Utente
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={{ display: { xs: "none", md: "table-cell" }, minWidth: 200 }}>
-              Email
-            </TableCell>
             <TableCell>
               <TableSortLabel
                 active={sortBy === "appRole"}
@@ -119,7 +116,7 @@ export default function UsersTable({
               </TableSortLabel>
             </TableCell>
             <TableCell align="center">Squadra</TableCell>
-            <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
+            <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
               <Tooltip title={SKILL_COLUMN_HINT}>
                 <Box
                   component="span"
@@ -129,7 +126,7 @@ export default function UsersTable({
                 </Box>
               </Tooltip>
             </TableCell>
-            <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+            <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
               Genere
             </TableCell>
             <TableCell align="center">Azioni</TableCell>
@@ -140,8 +137,11 @@ export default function UsersTable({
             if (row.kind !== "user") return null;
             return (
               <TableRow key={`user-${row.id}`} hover>
-                {/* Nome */}
-                <TableCell>
+                {/* Nome + email. L'email sta sotto il nome e non in una colonna
+                    sua: con otto colonne la tabella superava la larghezza del
+                    pannello e le azioni finivano fuori vista. Una riga sola,
+                    troncata, col valore intero in hover. */}
+                <TableCell sx={{ maxWidth: 280 }}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                     <Avatar
                       src={row.image ?? undefined}
@@ -153,28 +153,18 @@ export default function UsersTable({
                       <Typography variant="body2" fontWeight={600} noWrap>
                         {row.name ?? "—"}
                       </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        noWrap
+                        title={row.email ?? undefined}
+                        sx={{ display: "block" }}
+                      >
+                        {row.email}
+                      </Typography>
                       <AthleteStatusChip status={row.athleteStatus} />
                     </Box>
                   </Box>
-                </TableCell>
-
-                {/* Email — una riga sola: andando a capo raddoppiava l'altezza
-                    di ogni riga della tabella. Il valore intero resta in hover. */}
-                <TableCell
-                  sx={{
-                    display: { xs: "none", md: "table-cell" },
-                    maxWidth: 260,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    noWrap
-                    title={row.email ?? undefined}
-                    sx={{ display: "block" }}
-                  >
-                    {row.email}
-                  </Typography>
                 </TableCell>
 
                 {/* Ruolo utente */}
@@ -279,12 +269,12 @@ export default function UsersTable({
                 </TableCell>
 
                 {/* Skill (TrueSkill) — solo COACH/ADMIN */}
-                <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
+                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
                   <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
                 </TableCell>
 
                 {/* Genere */}
-                <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
+                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
                   {row.gender ? (
                     <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                   ) : (
@@ -324,7 +314,7 @@ export default function UsersTable({
 
           {rows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={8} align="center" sx={{ py: 4, color: "text.secondary" }}>
+              <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
                 {activeFilterCount > 0
                   ? "Nessun risultato corrisponde ai filtri selezionati."
                   : "Nessun utente trovato."}

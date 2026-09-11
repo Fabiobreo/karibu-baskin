@@ -11,7 +11,17 @@ vi.mock("@/lib/db", () => ({
     },
     competitiveTeam: { findUnique: vi.fn() },
     opposingTeam: { findUnique: vi.fn() },
+    matchCallup: { findMany: vi.fn(), update: vi.fn() },
+    $transaction: vi.fn(),
   },
+}));
+
+vi.mock("@/lib/rating/loanDetection", () => ({
+  buildLoanLookup: vi.fn(),
+  isLoanParticipation: (
+    lookup: { memberUserIds: Set<string> },
+    player: { userId?: string | null }
+  ) => !!player.userId && !lookup.memberUserIds.has(player.userId),
 }));
 
 vi.mock("@/lib/apiAuth", () => ({
@@ -44,17 +54,21 @@ import { prisma } from "@/lib/db";
 import { isAdminUser, isMember } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { buildLoanLookup } from "@/lib/rating/loanDetection";
 
 type PrismaMock = {
   match: { findUnique: Mock; update: Mock; delete: Mock };
   competitiveTeam: { findUnique: Mock };
   opposingTeam: { findUnique: Mock };
+  matchCallup: { findMany: Mock; update: Mock };
+  $transaction: Mock;
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
 const mockIsMember = isMember as Mock;
 const mockSendPush = sendPushToAll as Mock;
 const mockCreateNotif = createAppNotification as Mock;
+const mockBuildLoanLookup = buildLoanLookup as Mock;
 
 const baseMatch = {
   id: "match-1",
@@ -320,6 +334,99 @@ describe("PUT /api/matches/[matchId]", () => {
     await PUT(req, makeParams("match-1"));
     await new Promise((r) => setTimeout(r, 0));
     expect(mockSendPush).not.toHaveBeenCalled();
+  });
+
+  describe("cambio della nostra squadra", () => {
+    function putTeam(body: object) {
+      return PUT(
+        new Request("http://localhost", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        makeParams("match-1")
+      );
+    }
+
+    beforeEach(() => {
+      mockIsAdmin.mockResolvedValue(true);
+      p.competitiveTeam.findUnique.mockResolvedValue({ name: "Karibu B", isMixed: false });
+      p.matchCallup.findMany.mockResolvedValue([]);
+      p.matchCallup.update.mockImplementation((args: unknown) => args);
+      p.$transaction.mockResolvedValue([]);
+      mockBuildLoanLookup.mockResolvedValue({
+        match: { teamId: "team-2", teamSeason: "2025-26" },
+        memberUserIds: new Set(["u-member"]),
+        memberChildIds: new Set(),
+      });
+    });
+
+    it("salva il nuovo teamId (prima veniva scartato dallo schema)", async () => {
+      const res = await putTeam({ teamId: "team-2" });
+      expect(res.status).toBe(200);
+      expect(p.match.update.mock.calls[0][0].data.teamId).toBe("team-2");
+    });
+
+    it("non tocca teamId se la squadra non cambia", async () => {
+      await putTeam({ teamId: "team-1", isHome: false });
+      expect(p.match.update.mock.calls[0][0].data).not.toHaveProperty("teamId");
+      expect(p.matchCallup.findMany).not.toHaveBeenCalled();
+    });
+
+    it("sposta le convocazioni sulla nuova squadra ricalcolando i prestiti", async () => {
+      p.matchCallup.findMany.mockResolvedValue([
+        { id: "c1", userId: "u-member", childId: null },
+        { id: "c2", userId: "u-other", childId: null },
+      ]);
+      await putTeam({ teamId: "team-2" });
+      expect(p.matchCallup.findMany.mock.calls[0][0].where).toEqual({
+        matchId: "match-1",
+        OR: [{ teamId: "team-1" }, { teamId: null }],
+      });
+      expect(p.matchCallup.update.mock.calls.map((c) => c[0])).toEqual([
+        { where: { id: "c1" }, data: { teamId: "team-2", isLoan: false } },
+        { where: { id: "c2" }, data: { teamId: "team-2", isLoan: true } },
+      ]);
+      expect(p.$transaction).toHaveBeenCalledOnce();
+    });
+
+    it("400 se la nuova squadra non esiste", async () => {
+      p.competitiveTeam.findUnique.mockResolvedValue(null);
+      const res = await putTeam({ teamId: "ghost" });
+      expect(res.status).toBe(400);
+      expect(p.match.update).not.toHaveBeenCalled();
+    });
+
+    it("400 se la nuova squadra è l'avversaria interna", async () => {
+      p.match.findUnique.mockResolvedValue({
+        result: null,
+        slug: baseMatch.slug,
+        teamId: "team-1",
+        opponentId: null,
+        opponentTeamId: "team-2",
+        matchType: "FRIENDLY",
+        date: baseMatch.date,
+      });
+      const res = await putTeam({ teamId: "team-2" });
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toContain("contro se stessa");
+    });
+
+    it("400 se si passa alla Karibu in una partita di campionato", async () => {
+      p.match.findUnique.mockResolvedValue({
+        result: null,
+        slug: baseMatch.slug,
+        teamId: "team-1",
+        opponentId: "opp-1",
+        opponentTeamId: null,
+        matchType: "LEAGUE",
+        date: baseMatch.date,
+      });
+      p.competitiveTeam.findUnique.mockResolvedValue({ name: "Karibu", isMixed: true });
+      const res = await putTeam({ teamId: "karibu-2025-26" });
+      expect(res.status).toBe(400);
+      expect(p.match.update).not.toHaveBeenCalled();
+    });
   });
 });
 

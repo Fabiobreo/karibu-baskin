@@ -59,6 +59,8 @@ export interface UseRegistrationFormReturn {
   setChosenRole: (r: SportRoleResult | null) => void;
   anonymousName: string;
   setAnonymousName: (s: string) => void;
+  /** true se il form deve chiedere il nome (anonimi, o account senza nome). */
+  needsOwnName: boolean;
   anonymousEmail: string;
   setAnonymousEmail: (s: string) => void;
   note: string;
@@ -140,10 +142,25 @@ export function useRegistrationForm({
       : (selectedChild?.sportRoleVariant ?? null);
   const hasConfirmedRole = confirmedRole !== null;
 
-  const [phase, setPhase] = useState<Phase>(hasConfirmedRole ? "confirm" : "questionnaire");
-  const [chosenRole, setChosenRole] = useState<SportRoleResult | null>(
-    confirmedRole ? { role: confirmedRole, variant: confirmedVariant ?? undefined } : null
-  );
+  // Ruolo di partenza: quello confermato o, per sé stessi, quello suggerito dal
+  // questionario (anche fatto fuori da qui, in /profilo/ruolo). Con un
+  // suggerimento si parte dal riepilogo: rifare le domande a ogni iscrizione
+  // era inutile, e "Rifai il questionario" resta a portata di mano.
+  function startingRole(): SportRoleResult | null {
+    if (confirmedRole !== null) {
+      return { role: confirmedRole, variant: confirmedVariant ?? undefined };
+    }
+    if (subject === "self" && currentUser?.sportRoleSuggested != null) {
+      return {
+        role: currentUser.sportRoleSuggested,
+        variant: currentUser.sportRoleSuggestedVariant ?? undefined,
+      };
+    }
+    return null;
+  }
+
+  const [phase, setPhase] = useState<Phase>(startingRole() ? "confirm" : "questionnaire");
+  const [chosenRole, setChosenRole] = useState<SportRoleResult | null>(startingRole);
 
   // Quando arrivano i figli (fetch asincrona), seleziona automaticamente il primo disponibile
   useEffect(() => {
@@ -161,13 +178,12 @@ export function useRegistrationForm({
   // Ricalcola quando cambia il soggetto o arriva currentUser
   useEffect(() => {
     if (currentUser === undefined) return;
-    const r = subject === "self" ? currentUser?.sportRole : selectedChild?.sportRole;
-    const v = subject === "self" ? currentUser?.sportRoleVariant : selectedChild?.sportRoleVariant;
-    if (r != null) {
+    const start = startingRole();
+    if (start) {
       // Transizione questionnaire → confirm solo se l'utente non ha già navigato
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase((prev) => (prev === "questionnaire" ? "confirm" : prev));
-      setChosenRole({ role: r, variant: v ?? undefined });
+      setChosenRole(start);
     } else {
       setPhase("questionnaire");
       setChosenRole(null);
@@ -175,6 +191,10 @@ export function useRegistrationForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subject, currentUser]);
 
+  // Nome da chiedere nel form: agli anonimi, e a chi ha un account senza nome
+  // (magic link, se il dialog del primo accesso è stato saltato). Per loro il
+  // server lo salva anche sul profilo.
+  const needsOwnName = !currentUser || (subject === "self" && !currentUser.name?.trim());
   const [anonymousName, setAnonymousName] = useState("");
   const [anonymousEmail, setAnonymousEmail] = useState("");
   const [note, setNote] = useState("");
@@ -268,8 +288,8 @@ export function useRegistrationForm({
     if (!isCoachRegistration && !chosenRole) return;
 
     const isAnon = !currentUser;
-    const name = isAnon ? anonymousName.trim() : null;
-    if (isAnon && !name) {
+    const name = needsOwnName ? anonymousName.trim() : null;
+    if (needsOwnName && !name) {
       showToast({ message: t("enterName"), severity: "warning" });
       return;
     }
@@ -277,11 +297,11 @@ export function useRegistrationForm({
     const submittedSubject = subject;
     const roleToSend = isCoachRegistration ? (currentUser?.sportRole ?? 1) : chosenRole!.role;
     const displayName =
-      subject !== "self" ? selectedChild?.name : (currentUser?.name ?? name ?? "Atleta");
+      subject !== "self" ? selectedChild?.name : currentUser?.name?.trim() || name || "Atleta";
 
     const body: Record<string, unknown> = { sessionId, role: roleToSend };
     if (isCoachRegistration) body.registeredAsCoach = true;
-    if (isAnon) body.name = name;
+    if (needsOwnName) body.name = name;
     if (isAnon && anonymousEmail.trim()) body.anonymousEmail = anonymousEmail.trim();
     if (!isCoachRegistration && chosenRole?.variant) body.roleVariant = chosenRole.variant;
     if (subject !== "self") body.childId = subject;
@@ -315,6 +335,7 @@ export function useRegistrationForm({
     setChosenRole,
     anonymousName,
     setAnonymousName,
+    needsOwnName,
     anonymousEmail,
     setAnonymousEmail,
     note,

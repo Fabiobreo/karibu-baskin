@@ -12,7 +12,8 @@ import LatestNewsHero from "@/components/news/LatestNewsHero";
 import LoSapeviCard from "@/components/common/LoSapeviCard";
 import ProssimePartiteHome from "@/components/matches/ProssimePartiteHome";
 import BirthdayBanner from "@/components/common/BirthdayBanner";
-import GuestWelcomeBanner from "@/components/common/GuestWelcomeBanner";
+import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
+import GuestOnboardingSkeleton from "@/components/common/GuestOnboardingSkeleton";
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -235,15 +236,32 @@ export default async function HomePage() {
     );
   }
 
-  // Home istituzionale per anonimi e GUEST
+  // Account in attesa di conferma: non è un visitatore da convincere (si è
+  // appena iscritto) né ancora un tesserato. Hero col suo nome, poi i primi
+  // passi e subito gli allenamenti, l'unica cosa che può già fare. Niente
+  // "Unisciti a noi": l'ha appena fatto.
+  if (appRole === "GUEST" && userId) {
+    const firstName = userSession?.user?.name?.trim().split(/\s+/)[0] || null;
+    return (
+      <>
+        <JsonLd data={organizationJsonLd()} />
+        <HeroSection guest={{ firstName }} />
+        <Suspense fallback={<GuestOnboardingSkeleton />}>
+          <GuestOnboardingSection userId={userId} overlapHero />
+        </Suspense>
+        {sessionsBlock}
+        {matchesBlock}
+        {newsBlock}
+        <LoSapeviCard />
+        {chiSiamoBlock}
+      </>
+    );
+  }
+
+  // Home istituzionale per gli anonimi
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
-      {appRole === "GUEST" && (
-        <Container maxWidth="md" sx={{ pt: 2 }}>
-          <GuestWelcomeBanner />
-        </Container>
-      )}
       <HeroSection />
 
       {newsBlock}

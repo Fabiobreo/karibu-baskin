@@ -75,6 +75,7 @@ export default function RegistrationForm({
     setChosenRole,
     anonymousName,
     setAnonymousName,
+    needsOwnName,
     anonymousEmail,
     setAnonymousEmail,
     note,
@@ -402,6 +403,23 @@ export default function RegistrationForm({
               </Box>
             )}
 
+            {/* Account senza nome (magic link): senza, la rotta rifiuterebbe
+                l'iscrizione. Il nome finisce anche nel profilo. */}
+            {currentUser && needsOwnName && (
+              <TextField
+                label={t("fullName")}
+                value={anonymousName}
+                onChange={(e) => setAnonymousName(e.target.value)}
+                fullWidth
+                size="small"
+                autoComplete="name"
+                slotProps={{ htmlInput: { maxLength: 60 } }}
+                sx={{ mb: 2 }}
+                disabled={loading}
+                helperText={t("ownNameHelper")}
+              />
+            )}
+
             {/* Campo nome e email per anonimi */}
             {!currentUser && (
               <>
@@ -617,7 +635,7 @@ export default function RegistrationForm({
                       fullWidth
                       onClick={handleSubmit}
                       disabled={
-                        loading || isDuplicateName || (!currentUser && !anonymousName.trim())
+                        loading || isDuplicateName || (needsOwnName && !anonymousName.trim())
                       }
                       startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
                     >

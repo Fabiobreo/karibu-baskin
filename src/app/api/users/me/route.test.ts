@@ -3,19 +3,24 @@ import type { Mock } from "vitest";
 
 vi.mock("@/lib/db", () => ({
   prisma: {
-    user: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn(), update: vi.fn() },
   },
 }));
+
+vi.mock("@/lib/userName", () => ({ setOwnName: vi.fn() }));
+vi.mock("@/lib/blob", () => ({ deleteImage: vi.fn().mockResolvedValue(undefined) }));
 
 vi.mock("@/lib/authjs", () => ({
   auth: vi.fn().mockResolvedValue(null),
 }));
 
-import { GET } from "./route";
+import { GET, PUT } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
+import { setOwnName } from "@/lib/userName";
 
-type PrismaMock = { user: { findUnique: Mock } };
+type PrismaMock = { user: { findUnique: Mock; update: Mock } };
+const mockSetOwnName = setOwnName as Mock;
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
 
@@ -105,5 +110,48 @@ describe("GET /api/users/me", () => {
     expect(p.user.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "user-1" } })
     );
+  });
+});
+
+describe("PUT /api/users/me (nome)", () => {
+  function put(body: unknown) {
+    return PUT(
+      new Request("http://localhost/api/users/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockSetOwnName.mockResolvedValue({ ok: true, name: "Anna Bianchi" });
+    p.user.update.mockResolvedValue({ id: "user-1", name: "Anna Bianchi", customImage: null });
+  });
+
+  it("401 senza sessione", async () => {
+    mockAuth.mockResolvedValue(null);
+    expect((await put({ name: "Anna Bianchi" })).status).toBe(401);
+    expect(mockSetOwnName).not.toHaveBeenCalled();
+  });
+
+  it("passa il nome ripulito a setOwnName", async () => {
+    const res = await put({ name: "  Anna   Bianchi " });
+    expect(res.status).toBe(200);
+    expect(mockSetOwnName).toHaveBeenCalledWith("user-1", "Anna Bianchi");
+  });
+
+  it("400 con un nome troppo corto", async () => {
+    expect((await put({ name: "A" })).status).toBe(400);
+    expect(mockSetOwnName).not.toHaveBeenCalled();
+  });
+
+  it("riporta il rifiuto di setOwnName (nome gestito da Google)", async () => {
+    mockSetOwnName.mockResolvedValue({ ok: false, status: 403, error: "Google" });
+    const res = await put({ name: "Anna Bianchi" });
+    expect(res.status).toBe(403);
+    expect(p.user.update).not.toHaveBeenCalled();
   });
 });

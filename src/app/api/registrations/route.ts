@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { PersonNameSchema } from "@/lib/schemas/me";
+import { setOwnName } from "@/lib/userName";
 import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { isMemberRole } from "@/lib/authRoles";
@@ -279,9 +281,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const name = user.name?.trim() || (bodyName?.trim() ?? "");
+    // Account senza nome (magic link): il nome arriva dal form e si salva
+    // anche sul profilo, così la prossima volta non serve e lo staff lo vede.
+    let name = user.name?.trim() ?? "";
     if (!name) {
-      return NextResponse.json({ error: "Nome utente non disponibile" }, { status: 400 });
+      const parsedName = PersonNameSchema.safeParse(bodyName ?? "");
+      if (!parsedName.success) {
+        return NextResponse.json({ error: "Inserisci il tuo nome e cognome" }, { status: 400 });
+      }
+      name = parsedName.data;
+      const saved = await setOwnName(userId, name);
+      if (!saved.ok) {
+        return NextResponse.json({ error: saved.error }, { status: saved.status });
+      }
     }
 
     const existing = await prisma.registration.findFirst({ where: { sessionId, userId } });
