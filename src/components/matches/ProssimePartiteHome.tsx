@@ -11,26 +11,28 @@ const DAYS_AHEAD = 14;
 const IMMINENT_HOURS = 48;
 
 export default async function ProssimePartiteHome() {
-  const t = await getTranslations("matches");
   const now = new Date();
   const limit = new Date(now.getTime() + DAYS_AHEAD * 24 * 60 * 60 * 1000);
   const imminentLimit = new Date(now.getTime() + IMMINENT_HOURS * 60 * 60 * 1000);
 
-  const matches = await prisma.match.findMany({
-    where: { date: { gte: now, lte: limit } },
-    orderBy: { date: "asc" },
-    take: 3,
-    select: {
-      id: true,
-      slug: true,
-      date: true,
-      isHome: true,
-      venue: true,
-      team: { select: { id: true, name: true, color: true } },
-      opponent: { select: { id: true, name: true } },
-      opponentTeam: { select: { id: true, name: true } },
-    },
-  });
+  const [t, matches] = await Promise.all([
+    getTranslations("matches"),
+    prisma.match.findMany({
+      where: { date: { gte: now, lte: limit } },
+      orderBy: { date: "asc" },
+      take: 3,
+      select: {
+        id: true,
+        slug: true,
+        date: true,
+        isHome: true,
+        venue: true,
+        team: { select: { id: true, name: true, color: true } },
+        opponent: { select: { id: true, name: true } },
+        opponentTeam: { select: { id: true, name: true } },
+      },
+    }),
+  ]);
 
   if (matches.length === 0) return null;
 

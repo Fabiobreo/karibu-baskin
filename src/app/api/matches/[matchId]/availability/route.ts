@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { AvailabilitySchema } from "@/lib/schemas";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -30,7 +31,12 @@ export async function PUT(req: Request, { params }: Params) {
 
   const match = await prisma.match.findUnique({
     where: { id: matchId },
-    select: { id: true, date: true, teamId: true, opponentTeamId: true },
+    select: {
+      id: true,
+      date: true,
+      team: { select: { id: true, season: true, isMixed: true } },
+      opponentTeam: { select: { id: true, season: true, isMixed: true } },
+    },
   });
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
 
@@ -41,7 +47,10 @@ export async function PUT(req: Request, { params }: Params) {
     );
   }
 
-  const teamIds = [match.teamId, match.opponentTeamId].filter((x): x is string => !!x);
+  // Per la Karibu di stagione valgono le rose di tutte le squadre della stagione.
+  const teamIds = await rosterTeamIds(
+    [match.team, match.opponentTeam].filter((t): t is NonNullable<typeof t> => !!t)
+  );
 
   if (childId) {
     // Verifica che il childId appartenga al genitore loggato

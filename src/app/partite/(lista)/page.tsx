@@ -30,12 +30,15 @@ export const revalidate = 3600;
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function PartitePage({ searchParams }: Props) {
-  const sp = await searchParams;
   // Nessuna ricaduta qui: le "prossime partite" di una stagione conclusa non
   // esistono, quindi si resta sulla stagione attiva del sito.
-  const { activeSeason, seasons } = await getActiveSeason("teams");
+  const [sp, { activeSeason, seasons }, t, locale] = await Promise.all([
+    searchParams,
+    getActiveSeason("teams"),
+    getTranslations("matches"),
+    getLocale(),
+  ]);
   const season = sp.season ?? activeSeason;
-  const [t, locale] = await Promise.all([getTranslations("matches"), getLocale()]);
   const dateLocale = getDateFnsLocale(locale);
   const matchTypeLabel = (type: string) =>
     ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[

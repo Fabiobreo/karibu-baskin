@@ -63,14 +63,15 @@ async function loadComparePlayer(
     _count: { select: { matchMvps: true } },
   };
 
-  const user = await prisma.user.findFirst({
-    where: { OR: [{ slug: key }, { id: key }] },
-    select: { ...sel, image: true, customImage: true, appRole: true },
-  });
-  const child =
-    user && user.appRole !== "GUEST"
-      ? null
-      : await prisma.child.findFirst({ where: { OR: [{ slug: key }, { id: key }] }, select: sel });
+  // Utente e figlio in parallelo: il figlio conta solo se l'utente non c'è (o è GUEST).
+  const [user, childMatch] = await Promise.all([
+    prisma.user.findFirst({
+      where: { OR: [{ slug: key }, { id: key }] },
+      select: { ...sel, image: true, customImage: true, appRole: true },
+    }),
+    prisma.child.findFirst({ where: { OR: [{ slug: key }, { id: key }] }, select: sel }),
+  ]);
+  const child = user && user.appRole !== "GUEST" ? null : childMatch;
 
   const row = child ?? (user && user.appRole !== "GUEST" ? user : null);
   if (!row) return null;
@@ -130,9 +131,12 @@ function CompareHeader({ p }: { p: ComparePlayer }) {
 }
 
 export default async function ConfrontaPage({ searchParams }: Props) {
-  const viewerIsMember = isMemberRole((await auth())?.user?.appRole);
-  const t = await getTranslations("players");
-  const { a, b } = await searchParams;
+  const [session, t, { a, b }] = await Promise.all([
+    auth(),
+    getTranslations("players"),
+    searchParams,
+  ]);
+  const viewerIsMember = isMemberRole(session?.user?.appRole);
 
   const [pa, pb] = await Promise.all([
     a ? loadComparePlayer(a, viewerIsMember) : Promise.resolve(null),

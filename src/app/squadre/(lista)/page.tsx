@@ -47,6 +47,8 @@ export default async function SquadrePage() {
   ];
   const [teams, { activeSeason, displaySeason, isFallback }] = await Promise.all([
     prisma.competitiveTeam.findMany({
+      // La Karibu di stagione è solo una scelta dello staff: niente pagina pubblica.
+      where: { isMixed: false },
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: { _count: { select: { memberships: true, matches: true } } },
     }),

@@ -20,7 +20,7 @@ import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
 import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { onHover } from "@/lib/hoverStyles";
 
 export const revalidate = 30;
@@ -204,7 +204,7 @@ export default async function AdminPage() {
 
       <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
 
-      <AdminNotificationSender currentSeason={getCurrentSeason()} />
+      <AdminNotificationSender currentSeason={await getCurrentSeasonLabel()} />
     </Box>
   );
 }

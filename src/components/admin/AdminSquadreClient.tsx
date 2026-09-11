@@ -39,6 +39,7 @@ import Link from "next/link";
 import ImageUploader from "@/components/common/ImageUploader";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor } from "@/lib/heroStyles";
+import { readError } from "@/lib/fetchJson";
 
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
@@ -246,7 +247,7 @@ export default function AdminSquadreClient({
         body: JSON.stringify({ ...teamForm, season: editTeam ? editTeam.season : activeSeason }),
       });
       if (!res.ok) {
-        setTeamError("Errore nel salvataggio");
+        setTeamError(await readError(res));
         return;
       }
       setTeamDialog(false);

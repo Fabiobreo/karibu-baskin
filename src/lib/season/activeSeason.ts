@@ -1,5 +1,34 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db";
-import { resolveActiveSeason, type ActiveSeason } from "@/lib/season/seasonUtils";
+import {
+  pickCurrentSeason,
+  resolveActiveSeason,
+  type ActiveSeason,
+} from "@/lib/season/seasonUtils";
+
+/**
+ * Stagioni marcate `isCurrent` dallo staff (di norma zero o una). In cache per
+ * richiesta: layout e pagina la chiedono entrambi, la query parte una volta.
+ */
+const loadMarkedSeasons = cache(async (): Promise<string[]> => {
+  const rows = await prisma.season.findMany({
+    where: { isCurrent: true },
+    select: { label: true },
+    orderBy: { label: "desc" },
+  });
+  return rows.map((r) => r.label);
+});
+
+/**
+ * La stagione corrente del sito: quella segnata "in corso" da /admin/squadre
+ * o, se nessuna lo è, quella del calendario (cambio al 1° settembre). È l'unica
+ * definizione: le pagine server la chiedono qui, i componenti client la
+ * ricevono come prop. Per la stagione di una data precisa (una partita, un
+ * allenamento) si usa invece `getCurrentSeason(date)`.
+ */
+export async function getCurrentSeasonLabel(): Promise<string> {
+  return pickCurrentSeason(await loadMarkedSeasons());
+}
 
 /**
  * Cosa conta come "stagione con dati" dipende dalla pagina: /marcatori vive di
@@ -23,7 +52,8 @@ async function seasonsWithData(source: SeasonDataSource): Promise<string[]> {
       ? { matches: { some: { playerStats: { some: {} } } } }
       : source === "results"
         ? { matches: { some: { result: { not: null } } } }
-        : {};
+        : // La sola Karibu di stagione non rende "popolata" una stagione su /squadre.
+          { isMixed: false };
 
   const rows = await prisma.competitiveTeam.findMany({
     where,
@@ -40,17 +70,10 @@ async function seasonsWithData(source: SeasonDataSource): Promise<string[]> {
  * quando la attiva è ancora vuota) e l'elenco stagioni per i chip filtro.
  */
 export async function getActiveSeason(source: SeasonDataSource = "teams"): Promise<ActiveSeason> {
-  const [marked, withData] = await Promise.all([
-    prisma.season.findMany({
-      where: { isCurrent: true },
-      select: { label: true },
-      orderBy: { label: "desc" },
-    }),
-    seasonsWithData(source),
-  ]);
+  const [marked, withData] = await Promise.all([loadMarkedSeasons(), seasonsWithData(source)]);
 
   return resolveActiveSeason({
-    markedSeasons: marked.map((s) => s.label),
+    markedSeasons: marked,
     seasonsWithData: withData,
   });
 }

@@ -74,6 +74,7 @@ export default function ConvocazioniClient({
   const {
     selectionByTeam,
     isSelected,
+    selectedElsewhere,
     toggle,
     selectAll,
     clearAll,
@@ -262,6 +263,7 @@ export default function ConvocazioniClient({
           {isMulti
             ? "Amichevole interna: convoca i giocatori per ciascuna squadra"
             : `Stagione ${activeTeam.season}`}
+          {teams.some((t) => t.isMixed) && ". Karibu gioca con tutti i giocatori della stagione"}
           {". Presenze calcolate sulle ultime 2 settimane"}
           {windowEligibleSessions > 0
             ? ` (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento gestito" : "allenamenti gestiti"})`
@@ -314,6 +316,7 @@ export default function ConvocazioniClient({
         rows={sorted}
         roleFilter={roleFilter}
         isSelected={isSelected}
+        selectedElsewhere={isMulti ? selectedElsewhere : undefined}
         onToggle={toggle}
       />
 

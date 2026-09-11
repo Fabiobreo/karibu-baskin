@@ -14,6 +14,9 @@ vi.mock("@/lib/db", () => ({
     teamMembership: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    competitiveTeam: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     matchAvailability: {
       findMany: vi.fn().mockResolvedValue([]),
     },
@@ -158,6 +161,29 @@ describe("PUT /api/matches/[matchId]/callups", () => {
     expect(json.ok).toBe(true);
     expect(json.total).toBe(3);
     expect(p.$transaction).toHaveBeenCalledOnce();
+  });
+
+  it("toglie i convocati dall'altro lato prima di inserirli (amichevole interna / Karibu)", async () => {
+    mockIsCoach.mockResolvedValue(true);
+    p.match.findUnique.mockResolvedValue({
+      teamId: "team-1",
+      opponentTeamId: "mix",
+      team: { id: "team-1", season: "2025-26", isMixed: false },
+      opponentTeam: { id: "mix", season: "2025-26", isMixed: true },
+    });
+    const req = new Request("http://localhost/api/matches/match-1/callups", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamId: "mix", userIds: ["user-1"], childIds: ["child-1"] }),
+    });
+    const res = await PUT(req, makeParams("match-1"));
+    expect(res.status).toBe(200);
+    const deletes = p.matchCallup.deleteMany.mock.calls.map((c) => c[0].where);
+    expect(deletes).toContainEqual({ matchId: "match-1", teamId: "mix" });
+    expect(deletes).toContainEqual({
+      matchId: "match-1",
+      OR: [{ userId: { in: ["user-1"] } }, { childId: { in: ["child-1"] } }],
+    });
   });
 
   it("accetta lista vuota (rimuove tutti i convocati)", async () => {

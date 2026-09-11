@@ -109,8 +109,11 @@ function buildMatchdays(group: GroupWithData): MatchdayBucket[] {
 }
 
 export default async function ClassifichePage() {
-  const [t, tCommon] = await Promise.all([getTranslations("standings"), getTranslations("common")]);
-  const { activeSeason, displaySeason, isFallback } = await getActiveSeason("groups");
+  const [t, tCommon, { activeSeason, displaySeason, isFallback }] = await Promise.all([
+    getTranslations("standings"),
+    getTranslations("common"),
+    getActiveSeason("groups"),
+  ]);
   const currentGroups = await groupsQuery(displaySeason);
   const hasCurrentGroups = currentGroups.length > 0;
 

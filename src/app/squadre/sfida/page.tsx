@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { isMemberRole } from "@/lib/authRoles";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { runSimulation } from "@/lib/rating/simulatorServer";
 import { simPlayerKey } from "@/lib/rating/simulatorShared";
 import type { SimResult } from "@/lib/rating/matchSimulator";
@@ -36,39 +37,37 @@ export default async function SfidaPage({ searchParams }: Props) {
   const t = await getTranslations("simulator");
   const sp = await searchParams;
 
-  const currentSeason =
-    (await prisma.season.findFirst({ where: { isCurrent: true } }))?.label ?? null;
+  const currentSeason = await getCurrentSeasonLabel();
 
   // Nessun ratingMu in questa query: il TrueSkill è visibile solo allo staff e
   // la simulazione avviene sul server (runSimulation), quindi il client non ne
   // ha bisogno e non deve riceverlo.
-  const teamsRaw = currentSeason
-    ? await prisma.competitiveTeam.findMany({
-        where: { season: currentSeason },
-        orderBy: { name: "asc" },
+  const teamsRaw = await prisma.competitiveTeam.findMany({
+    // La Karibu non ha rosa propria da cui partire.
+    where: { season: currentSeason, isMixed: false },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      memberships: {
         select: {
-          id: true,
-          name: true,
-          memberships: {
+          user: {
             select: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                  customImage: true,
-                  sportRole: true,
-                  gender: true,
-                },
-              },
-              child: {
-                select: { id: true, name: true, sportRole: true, gender: true },
-              },
+              id: true,
+              name: true,
+              image: true,
+              customImage: true,
+              sportRole: true,
+              gender: true,
             },
           },
+          child: {
+            select: { id: true, name: true, sportRole: true, gender: true },
+          },
         },
-      })
-    : [];
+      },
+    },
+  });
 
   const teams: SimTeam[] = teamsRaw
     .map((team) => ({

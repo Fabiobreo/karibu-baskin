@@ -21,7 +21,6 @@ import { ROLE_COLORS } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { formatBirthDate, type ChildData } from "@/components/profile/childLinkerShared";
 import ChildAddDialog from "@/components/profile/dialogs/ChildAddDialog";
@@ -31,8 +30,17 @@ import ChildLinkDialog from "@/components/profile/dialogs/ChildLinkDialog";
 // Re-export per i consumer esistenti (es. pagina profilo)
 export type { ChildData } from "@/components/profile/childLinkerShared";
 
+interface ParentChildLinkerProps {
+  initialChildren: ChildData[];
+  /** Stagione in corso (flag dello staff, o calendario), per le squadre dei figli. */
+  currentSeason: string;
+}
+
 /** Lista figli del genitore + azioni: aggiungi, modifica, collega/scollega account, elimina. */
-export default function ParentChildLinker({ initialChildren }: { initialChildren: ChildData[] }) {
+export default function ParentChildLinker({
+  initialChildren,
+  currentSeason,
+}: ParentChildLinkerProps) {
   const [children, setChildren] = useState<ChildData[]>(initialChildren);
 
   const [addOpen, setAddOpen] = useState(false);
@@ -76,8 +84,6 @@ export default function ParentChildLinker({ initialChildren }: { initialChildren
       setDeletingId(null);
     }
   }
-
-  const currentSeason = getCurrentSeason();
 
   return (
     <Box>

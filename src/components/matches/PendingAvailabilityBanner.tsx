@@ -2,14 +2,19 @@ import Link from "next/link";
 import { Alert, Button, Container } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import { getTranslations } from "next-intl/server";
+import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
 
 /**
  * Banner "Hai N disponibilità da confermare" — Server Component.
- * Il conteggio arriva da countPendingAvailabilities() in @/lib/matches/availabilityPending.
+ * Calcola da sé il conteggio, così la home lo avvolge in `<Suspense>` senza
+ * aspettarlo prima di mandare la pagina.
  */
-export default async function PendingAvailabilityBanner({ count }: { count: number }) {
+export default async function PendingAvailabilityBanner({ userId }: { userId: string }) {
+  const [count, t] = await Promise.all([
+    countPendingAvailabilities(userId),
+    getTranslations("profile"),
+  ]);
   if (count <= 0) return null;
-  const t = await getTranslations("profile");
 
   return (
     <Container maxWidth="md" sx={{ pt: 2 }}>

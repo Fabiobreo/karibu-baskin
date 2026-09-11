@@ -6,7 +6,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Link from "next/link";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
 
 export const revalidate = 60;
@@ -101,7 +101,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
 
   const session = await auth();
   const isAdmin = session?.user?.appRole === "ADMIN";
-  const currentSeason = getCurrentSeason();
+  const currentSeason = await getCurrentSeasonLabel();
 
   const [users, total, childEntries, teams, pendingGuests] = await Promise.all([
     prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
@@ -133,7 +133,8 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       },
     }),
     prisma.competitiveTeam.findMany({
-      where: { season: currentSeason },
+      // La Karibu di stagione non ha una rosa a cui assegnare gli atleti.
+      where: { season: currentSeason, isMixed: false },
       select: { id: true, name: true, season: true, color: true },
       orderBy: { name: "asc" },
     }),
@@ -165,6 +166,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           childEntries={childEntries}
           initialTeams={teams}
           isAdmin={isAdmin}
+          currentSeason={currentSeason}
           serverTotal={total}
           serverPage={page}
           serverLimit={limit}

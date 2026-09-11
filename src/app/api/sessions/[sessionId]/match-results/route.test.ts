@@ -72,6 +72,23 @@ describe("GET /api/sessions/[sessionId]/match-results", () => {
     expect(json[0].scoreA).toBe(10);
   });
 
+  it("non restituisce mai i roster congelati, e le note solo allo staff", async () => {
+    p.trainingMatchResult.findMany.mockResolvedValue([]);
+    const req = () => new NextRequest("http://localhost/api/sessions/s1/match-results");
+
+    mockIsCoach.mockResolvedValueOnce(false);
+    await GET(req(), CTX("s1"));
+    const publicSelect = p.trainingMatchResult.findMany.mock.calls[0][0].select;
+    expect(publicSelect).not.toHaveProperty("rostersSnapshot");
+    expect(publicSelect.notes).toBe(false);
+
+    mockIsCoach.mockResolvedValueOnce(true);
+    await GET(req(), CTX("s1"));
+    const staffSelect = p.trainingMatchResult.findMany.mock.calls[1][0].select;
+    expect(staffSelect).not.toHaveProperty("rostersSnapshot");
+    expect(staffSelect.notes).toBe(true);
+  });
+
   it("restituisce array vuoto se nessun risultato", async () => {
     p.trainingMatchResult.findMany.mockResolvedValue([]);
     const req = new NextRequest("http://localhost/api/sessions/s1/match-results");

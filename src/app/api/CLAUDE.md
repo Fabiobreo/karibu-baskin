@@ -35,6 +35,10 @@ Ogni `route.ts` deve seguire questo ordine:
 - Uno schema `XxxCreateSchema` e uno `XxxUpdateSchema` (i campi sono `.optional()` nell'update).
 - Per body JSON malformato: `await req.json().catch(() => null)` poi safeParse.
 
+## Chi può leggere cosa
+
+Ogni rotta con una GET è classificata in `src/app/api/routeAccess.test.ts` (public, authenticated, self, member, staff, admin, cron, dev). **Una nuova GET va aggiunta lì**, altrimenti il test fallisce. Il test controlla anche che le GET pubbliche non selezionino email, rating, `rostersSnapshot` o `opponentProfile`, che usino `birthDate` solo passando da `@/lib/minors`, e che non restituiscano record interi di modelli non dichiarati sicuri: in quel caso usare `select` o `omit`, o documentare l'eccezione nel test con il motivo.
+
 ## Test
 
 - Tutte le route con logica non banale devono avere `route.test.ts` accanto (Vitest).

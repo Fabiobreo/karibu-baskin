@@ -114,6 +114,19 @@ describe("PUT /api/competitive-teams/[teamId]", () => {
     expect(data.name).toBe("Karibu B");
   });
 
+  it("non modifica la Karibu di stagione", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    p.competitiveTeam.findUnique.mockResolvedValueOnce({ imageUrl: null, isMixed: true });
+    const req = new Request("http://localhost", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Altro nome" }),
+    });
+    const res = await PUT(req, makeParams("karibu-2025-26"));
+    expect(res.status).toBe(400);
+    expect(p.competitiveTeam.update).not.toHaveBeenCalled();
+  });
+
   it("permette di azzerare il colore con null", async () => {
     mockIsAdmin.mockResolvedValue(true);
     p.competitiveTeam.update.mockResolvedValue({ ...baseTeam, color: null });
@@ -164,6 +177,14 @@ describe("DELETE /api/competitive-teams/[teamId]", () => {
     const res = await DELETE(new Request("http://localhost"), makeParams("team-1"));
     expect(res.status).toBe(204);
     expect(p.competitiveTeam.delete).toHaveBeenCalledWith({ where: { id: "team-1" } });
+  });
+
+  it("non elimina la Karibu di stagione (cancellerebbe le sue partite)", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    p.competitiveTeam.findUnique.mockResolvedValueOnce({ imageUrl: null, isMixed: true });
+    const res = await DELETE(new Request("http://localhost"), makeParams("karibu-2025-26"));
+    expect(res.status).toBe(400);
+    expect(p.competitiveTeam.delete).not.toHaveBeenCalled();
   });
 
   it("restituisce 404 se la squadra non esiste (P2025)", async () => {

@@ -22,7 +22,7 @@ import EntityHero from "@/components/common/EntityHero";
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { buildMetadata } from "@/lib/seo";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
@@ -56,13 +56,26 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function OpposingTeamPublicPage({ params }: Params) {
   const { slug } = await params;
-  const [t, tMatches, locale, { matchResultShort }, session] = await Promise.all([
-    getTranslations("teams"),
-    getTranslations("matches"),
-    getLocale(),
-    getEntityLabels(),
-    auth(),
-  ]);
+  const [t, tMatches, locale, { matchResultShort }, session, currentSeason, team] =
+    await Promise.all([
+      getTranslations("teams"),
+      getTranslations("matches"),
+      getLocale(),
+      getEntityLabels(),
+      auth(),
+      getCurrentSeasonLabel(),
+      prisma.opposingTeam.findUnique({
+        where: { slug },
+        include: {
+          matches: {
+            orderBy: { date: "desc" },
+            include: {
+              team: { select: { id: true, name: true, season: true, color: true } },
+            },
+          },
+        },
+      }),
+    ]);
   const isStaff = session?.user?.appRole === "COACH" || session?.user?.appRole === "ADMIN";
   const dateLocale = getDateFnsLocale(locale);
   const matchTypeLabel = (type: string) =>
@@ -71,17 +84,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
       TOURNAMENT: tMatches("typeTournament"),
       FRIENDLY: tMatches("typeFriendly"),
     })[type] ?? type;
-  const team = await prisma.opposingTeam.findUnique({
-    where: { slug },
-    include: {
-      matches: {
-        orderBy: { date: "desc" },
-        include: {
-          team: { select: { id: true, name: true, season: true, color: true } },
-        },
-      },
-    },
-  });
   if (!team) notFound();
 
   // Aggrega per stagione
@@ -124,7 +126,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   }
   const seasons = Array.from(seasonsMap.values()).sort((a, b) => b.season.localeCompare(a.season));
 
-  const currentSeason = getCurrentSeason();
   const seasonsPlayed = seasons.map((s) => s.season);
   const lastSeason = seasonsPlayed[0]; // seasons sono ordinate desc
   const playedInCurrentSeason = seasonsPlayed.includes(currentSeason);

@@ -12,6 +12,7 @@ import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { mixedMatchError } from "@/lib/matches/mixedTeam";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -20,8 +21,11 @@ export async function GET(req: Request, { params }: Params) {
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { matchId } = await params;
 
+  // La scheda dello staff sull'avversario (valutazioni e note) non esce dalle
+  // GET: il pannello admin la legge lato server.
   const match = await prisma.match.findUnique({
     where: { id: matchId },
+    omit: { opponentProfile: true },
     include: {
       team: { select: { id: true, name: true, season: true, color: true, championship: true } },
       opponent: { select: { id: true, name: true, city: true } },
@@ -89,8 +93,10 @@ export async function PUT(req: Request, { params }: Params) {
       opponentId: true,
       opponentTeamId: true,
       matchType: true,
+      groupId: true,
       date: true,
       imageUrl: true,
+      team: { select: { isMixed: true } },
     },
   });
   if (!previous) {
@@ -130,6 +136,21 @@ export async function PUT(req: Request, { params }: Params) {
       { status: 400 }
     );
   }
+  // Karibu di stagione su uno dei due lati: niente campionato, niente gironi.
+  const opponentTeamIsMixed = finalOpponentTeamId
+    ? ((
+        await prisma.competitiveTeam.findUnique({
+          where: { id: finalOpponentTeamId },
+          select: { isMixed: true },
+        })
+      )?.isMixed ?? false)
+    : false;
+  const mixedError = mixedMatchError({
+    involvesMixed: !!previous.team?.isMixed || opponentTeamIsMixed,
+    matchType: finalMatchType,
+    groupId: "groupId" in body ? body.groupId : previous.groupId,
+  });
+  if (mixedError) return NextResponse.json({ error: mixedError }, { status: 400 });
 
   // 2.3 — Auto-derive result from scores (takes precedence over explicit result field)
   const incomingOur = body.ourScore !== undefined ? body.ourScore : previous?.ourScore;

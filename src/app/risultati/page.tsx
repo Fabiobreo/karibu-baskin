@@ -28,16 +28,23 @@ export const revalidate = 3600;
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function RisultatiPage({ searchParams }: Props) {
-  const sp = await searchParams;
-  const [t, tCommon, locale, { matchResultLabel }] = await Promise.all([
+  // Stagione attiva del sito: con la stagione appena aperta e ancora senza
+  // partite giocate si ricade sull'ultima popolata, dicendolo.
+  const [
+    sp,
+    t,
+    tCommon,
+    locale,
+    { matchResultLabel },
+    { activeSeason, displaySeason, isFallback, seasons },
+  ] = await Promise.all([
+    searchParams,
     getTranslations("matches"),
     getTranslations("common"),
     getLocale(),
     getEntityLabels(),
+    getActiveSeason("results"),
   ]);
-  // Stagione attiva del sito: con la stagione appena aperta e ancora senza
-  // partite giocate si ricade sull'ultima popolata, dicendolo.
-  const { activeSeason, displaySeason, isFallback, seasons } = await getActiveSeason("results");
   const season = sp.season ?? displaySeason;
   const showFallbackNotice = !sp.season && isFallback;
   const dateLocale = getDateFnsLocale(locale);

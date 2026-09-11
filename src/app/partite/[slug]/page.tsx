@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
 import { computeStandings } from "@/lib/season/standings";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import MatchTabellinoButton from "@/components/matches/MatchTabellinoButton";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
@@ -51,9 +52,18 @@ async function getMatch(slug: string) {
   const match = await prisma.match.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
     include: {
-      team: { select: { id: true, name: true, color: true, season: true, championship: true } },
+      team: {
+        select: {
+          id: true,
+          name: true,
+          color: true,
+          season: true,
+          championship: true,
+          isMixed: true,
+        },
+      },
       opponent: { select: { id: true, name: true, city: true, slug: true } },
-      opponentTeam: { select: { id: true, name: true, color: true, season: true } },
+      opponentTeam: { select: { id: true, name: true, color: true, season: true, isMixed: true } },
       group: { select: { id: true, name: true, championship: true } },
       playerStats: {
         include: {
@@ -191,6 +201,83 @@ export default async function MatchDetailPage({ params }: Props) {
       ? { opponentTeamId: match.opponentTeamId }
       : null;
 
+  const hasScore = match.ourScore !== null && match.theirScore !== null;
+  // eslint-disable-next-line react-hooks/purity -- Server Component, renders once
+  const now = Date.now();
+  const isUpcoming = !hasScore && new Date(match.date).getTime() > now;
+  const isImminent = isUpcoming && new Date(match.date).getTime() - now <= 48 * 60 * 60 * 1000;
+
+  // Disponibilità self-service: per partite future, mostra i toggle a chi è
+  // membro di una delle squadre della partita (o genitore di un figlio membro).
+  // Tre query in fila: parte nel Promise.all qui sotto, insieme alle altre.
+  async function loadAvailabilityEntities(): Promise<MatchAvailabilityEntity[]> {
+    if (!match || !session?.user?.id || !isUpcoming) return [];
+    const uid = session.user.id;
+    // La Karibu di stagione schiera i tesserati di tutte le squadre della stagione:
+    // chi è in una di queste risponde per la Karibu, e figura con il suo nome.
+    const sideTeams = [match.team, match.opponentTeam].filter(
+      (t): t is NonNullable<typeof t> => !!t
+    );
+    const mixedSide = sideTeams.find((t) => t.isMixed) ?? null;
+    const teamIds = await rosterTeamIds(sideTeams);
+    const memberships = (
+      await prisma.teamMembership.findMany({
+        where: {
+          teamId: { in: teamIds },
+          OR: [{ userId: uid }, { child: { parentId: uid } }],
+        },
+        select: {
+          user: { select: { id: true, name: true } },
+          child: { select: { id: true, name: true } },
+          team: { select: { id: true, name: true, color: true } },
+        },
+      })
+    ).map((m) => ({
+      ...m,
+      team: sideTeams.some((t) => t.id === m.team.id) || !mixedSide ? m.team : mixedSide,
+    }));
+    if (memberships.length === 0) return [];
+    const uIds = memberships.map((m) => m.user?.id).filter((x): x is string => !!x);
+    const cIds = memberships.map((m) => m.child?.id).filter((x): x is string => !!x);
+    const avails = await prisma.matchAvailability.findMany({
+      where: {
+        matchId: match.id,
+        OR: [
+          uIds.length > 0 ? { userId: { in: uIds } } : null,
+          cIds.length > 0 ? { childId: { in: cIds } } : null,
+        ].filter((x): x is NonNullable<typeof x> => x !== null),
+      },
+      select: { userId: true, childId: true, available: true },
+    });
+    const byUser = new Map(avails.filter((a) => a.userId).map((a) => [a.userId!, a.available]));
+    const byChild = new Map(avails.filter((a) => a.childId).map((a) => [a.childId!, a.available]));
+    return memberships
+      .map((m): MatchAvailabilityEntity | null => {
+        if (m.user) {
+          return {
+            kind: "user",
+            id: m.user.id,
+            name: m.user.name ?? "—",
+            teamName: m.team.name,
+            teamColor: m.team.color,
+            available: byUser.get(m.user.id) ?? null,
+          };
+        }
+        if (m.child) {
+          return {
+            kind: "child",
+            id: m.child.id,
+            name: m.child.name,
+            teamName: m.team.name,
+            teamColor: m.team.color,
+            available: byChild.get(m.child.id) ?? null,
+          };
+        }
+        return null;
+      })
+      .filter((e): e is MatchAvailabilityEntity => e !== null);
+  }
+
   const [
     prevMatchesRaw,
     ourGroupMatchesRaw,
@@ -198,6 +285,7 @@ export default async function MatchDetailPage({ params }: Props) {
     opposingTeamsForEdit,
     internalTeamsForEdit,
     groupsForEdit,
+    availabilityEntities,
   ] = await Promise.all([
     opponentWhere
       ? prisma.match.findMany({
@@ -260,6 +348,7 @@ export default async function MatchDetailPage({ params }: Props) {
           select: { id: true, name: true, championship: true, season: true },
         })
       : Promise.resolve([]),
+    loadAvailabilityEntities(),
   ]);
 
   const groupStandings =
@@ -287,73 +376,6 @@ export default async function MatchDetailPage({ params }: Props) {
   const isStaff = isStaffEarly;
 
   const meta = match.result ? MATCH_RESULT_META[match.result] : null;
-  const hasScore = match.ourScore !== null && match.theirScore !== null;
-  // eslint-disable-next-line react-hooks/purity -- Server Component, renders once
-  const now = Date.now();
-  const isUpcoming = !hasScore && new Date(match.date).getTime() > now;
-  const isImminent = isUpcoming && new Date(match.date).getTime() - now <= 48 * 60 * 60 * 1000;
-
-  // Disponibilità self-service: per partite future, mostra i toggle a chi è
-  // membro di una delle squadre della partita (o genitore di un figlio membro).
-  let availabilityEntities: MatchAvailabilityEntity[] = [];
-  if (session?.user?.id && isUpcoming) {
-    const uid = session.user.id;
-    const teamIds = [match.team.id, match.opponentTeamId].filter((x): x is string => !!x);
-    const memberships = await prisma.teamMembership.findMany({
-      where: {
-        teamId: { in: teamIds },
-        OR: [{ userId: uid }, { child: { parentId: uid } }],
-      },
-      select: {
-        user: { select: { id: true, name: true } },
-        child: { select: { id: true, name: true } },
-        team: { select: { name: true, color: true } },
-      },
-    });
-    if (memberships.length > 0) {
-      const uIds = memberships.map((m) => m.user?.id).filter((x): x is string => !!x);
-      const cIds = memberships.map((m) => m.child?.id).filter((x): x is string => !!x);
-      const avails = await prisma.matchAvailability.findMany({
-        where: {
-          matchId: match.id,
-          OR: [
-            uIds.length > 0 ? { userId: { in: uIds } } : null,
-            cIds.length > 0 ? { childId: { in: cIds } } : null,
-          ].filter((x): x is NonNullable<typeof x> => x !== null),
-        },
-        select: { userId: true, childId: true, available: true },
-      });
-      const byUser = new Map(avails.filter((a) => a.userId).map((a) => [a.userId!, a.available]));
-      const byChild = new Map(
-        avails.filter((a) => a.childId).map((a) => [a.childId!, a.available])
-      );
-      availabilityEntities = memberships
-        .map((m): MatchAvailabilityEntity | null => {
-          if (m.user) {
-            return {
-              kind: "user",
-              id: m.user.id,
-              name: m.user.name ?? "—",
-              teamName: m.team.name,
-              teamColor: m.team.color,
-              available: byUser.get(m.user.id) ?? null,
-            };
-          }
-          if (m.child) {
-            return {
-              kind: "child",
-              id: m.child.id,
-              name: m.child.name,
-              teamName: m.team.name,
-              teamColor: m.team.color,
-              available: byChild.get(m.child.id) ?? null,
-            };
-          }
-          return null;
-        })
-        .filter((e): e is MatchAvailabilityEntity => e !== null);
-    }
-  }
 
   const heroBg = match.result
     ? RESULT_GRADIENT[match.result]
@@ -517,23 +539,36 @@ export default async function MatchDetailPage({ params }: Props) {
                 flexWrap: "wrap",
               }}
             >
-              <Link
-                href={`/squadre/${teamSeasonParam}/${teamSlug}`}
-                style={{ textDecoration: "none" }}
-              >
+              {match.team.isMixed ? (
+                // La Karibu di stagione non ha una pagina pubblica: solo l'etichetta.
                 <Chip
                   label={match.team.name}
                   size="small"
                   sx={{
                     bgcolor: match.team.color ?? "primary.main",
-                    // Il colore squadra arriva dal DB: l'etichetta lo segue.
                     color: match.team.color ? contrastText(match.team.color) : "common.white",
                     fontWeight: 700,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 0.85 },
                   }}
                 />
-              </Link>
+              ) : (
+                <Link
+                  href={`/squadre/${teamSeasonParam}/${teamSlug}`}
+                  style={{ textDecoration: "none" }}
+                >
+                  <Chip
+                    label={match.team.name}
+                    size="small"
+                    sx={{
+                      bgcolor: match.team.color ?? "primary.main",
+                      // Il colore squadra arriva dal DB: l'etichetta lo segue.
+                      color: match.team.color ? contrastText(match.team.color) : "common.white",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      "&:hover": { opacity: 0.85 },
+                    }}
+                  />
+                </Link>
+              )}
               {match.group?.name && (
                 <Typography
                   variant="caption"

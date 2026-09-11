@@ -137,9 +137,29 @@ export async function PUT(req: Request, { params }: Params) {
     select: { userId: true, childId: true },
   });
 
+  // Un giocatore gioca per un solo lato. Nelle amichevoli interne (e ancor più
+  // con la Karibu di stagione, che condivide i giocatori con le altre) chi viene
+  // convocato qui va tolto dall'altro lato: senza, il vincolo unico
+  // (matchId, giocatore) farebbe saltare in silenzio l'inserimento.
+  const movedFromOtherSide =
+    userIds.length > 0 || childIds.length > 0
+      ? [
+          prisma.matchCallup.deleteMany({
+            where: {
+              matchId,
+              OR: [
+                ...(userIds.length > 0 ? [{ userId: { in: userIds } }] : []),
+                ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
+              ],
+            },
+          }),
+        ]
+      : [];
+
   // Sostituisci i convocati per il lato selezionato
   await prisma.$transaction([
     prisma.matchCallup.deleteMany({ where: deleteWhere }),
+    ...movedFromOtherSide,
     prisma.matchCallup.createMany({
       data: [
         ...userIds.map((userId) => ({

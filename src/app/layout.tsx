@@ -20,6 +20,7 @@ import CookieBanner from "@/components/layout/CookieBanner";
 import InstallPrompt from "@/components/layout/InstallPrompt";
 import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { SITE_URL } from "@/lib/siteUrl";
 import "./globals.css";
 
@@ -105,7 +106,7 @@ export async function generateViewport(): Promise<Viewport> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
+  const [session, currentSeason] = await Promise.all([auth(), getCurrentSeasonLabel()]);
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -142,7 +143,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Providers session={session} colorMode={colorMode} colorScheme={colorScheme}>
               <ToastProvider>
                 <SkipToContent />
-                <SiteHeader />
+                <SiteHeader currentSeason={currentSeason} />
                 {/* tabIndex -1: senza, lo skip link sposta solo lo scroll e il
                     focus resta sul body. */}
                 <Box

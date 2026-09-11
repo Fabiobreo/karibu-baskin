@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { isMember } from "@/lib/apiAuth";
+import { isMinorChild } from "@/lib/minors";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ childId: string }> }) {
   const rl = checkRateLimit(getClientIp(req), "child-season-stats", 60, 60_000);
@@ -8,8 +10,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ chil
   const { childId } = await params;
   const season = req.nextUrl.searchParams.get("season") ?? null;
 
-  const child = await prisma.child.findUnique({ where: { id: childId }, select: { id: true } });
-  if (!child) return NextResponse.json({ error: "Figlio non trovato" }, { status: 404 });
+  const child = await prisma.child.findUnique({
+    where: { id: childId },
+    select: { id: true, birthDate: true },
+  });
+  // Come il profilo pubblico: un minore, per chi non è tesserato, non esiste.
+  if (!child || (isMinorChild(child.birthDate) && !(await isMember()))) {
+    return NextResponse.json({ error: "Figlio non trovato" }, { status: 404 });
+  }
 
   const stats = await prisma.playerMatchStats.findMany({
     where: {

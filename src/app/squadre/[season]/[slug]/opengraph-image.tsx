@@ -19,7 +19,7 @@ export default async function OgImage({ params }: Props) {
   const season = parseSeasonParam(seasonParam);
 
   const teams = await prisma.competitiveTeam.findMany({
-    where: { season },
+    where: { season, isMixed: false },
     select: { name: true, color: true, championship: true, memberships: { select: { id: true } } },
   });
   const team = teams.find((t) => slugify(t.name) === slug);

@@ -17,21 +17,17 @@ const NAV_ITEMS: { label: string; href: string; exact?: boolean }[] = [
   { label: "Gironi", href: "/admin/gironi" },
 ];
 
-// L'arancione scuro del brand, fisso in entrambi i temi come lo e' l'AppBar:
-// e' colore di chrome, non una superficie di contenuto. Il bianco sopra fa
-// 5,60:1, quindi le etichette restano leggibili senza scale di opacita'.
-const ADMIN_BAND = "#BF360C";
-const ADMIN_BAND_SELECTED = "rgba(0,0,0,0.22)";
-
 /**
  * Barra di navigazione persistente del pannello admin.
  *
  * Cinque etichette (Allenamenti, Partite, Eventi, News, Squadre) sono identiche
  * a quelle del menu pubblico trenta pixel più sopra e portano altrove, e niente
  * diceva di essere passati in area gestione. La barra ora si dichiara: banda
- * arancione piena, che non si confonde ne' col menu pubblico scuro ne' col
- * corpo della pagina, ed etichetta "Amministrazione" a sinistra. Le voci
- * restano corte, che e' quello che serve a una barra scrollabile.
+ * tinta d'arancione (`palette.adminBand`), che non si confonde ne' col menu
+ * pubblico scuro ne' col corpo della pagina, ed etichetta "Amministrazione" a
+ * sinistra. La banda piena #BF360C di prima era un arancione diverso da quello
+ * del brand e in dark diventava la superficie piu' vistosa della pagina. Le
+ * voci restano corte, che e' quello che serve a una barra scrollabile.
  */
 export default function AdminNavBar() {
   const pathname = usePathname();
@@ -46,7 +42,12 @@ export default function AdminNavBar() {
     <Box
       component="nav"
       aria-label="Navigazione pannello amministrazione"
-      sx={{ bgcolor: ADMIN_BAND, color: "common.white" }}
+      sx={{
+        bgcolor: "adminBand.bg",
+        color: "adminBand.text",
+        borderBottom: 1,
+        borderColor: "adminBand.border",
+      }}
     >
       <Container maxWidth="lg" disableGutters sx={{ px: { xs: 1, sm: 2 } }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 2 } }}>
@@ -59,7 +60,7 @@ export default function AdminNavBar() {
               pl: { xs: 0.5, sm: 0 },
             }}
           >
-            <ShieldIcon sx={{ fontSize: 18, color: "common.white" }} />
+            <ShieldIcon sx={{ fontSize: 18, color: "adminBand.accent" }} />
             <Typography
               variant="caption"
               sx={{
@@ -67,7 +68,7 @@ export default function AdminNavBar() {
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 fontSize: "0.65rem",
-                color: "common.white",
+                color: "adminBand.accent",
                 display: { xs: "none", md: "block" },
               }}
             >
@@ -85,23 +86,22 @@ export default function AdminNavBar() {
               flex: 1,
               minWidth: 0,
               minHeight: 44,
-              "& .MuiTabs-indicator": { backgroundColor: "common.white", height: 3 },
-              "& .MuiTabs-scrollButtons": { color: "common.white" },
+              "& .MuiTabs-indicator": { backgroundColor: "adminBand.indicator", height: 3 },
+              "& .MuiTabs-scrollButtons": { color: "adminBand.text" },
               "& .MuiTab-root": {
                 minHeight: 44,
                 textTransform: "none",
                 fontWeight: 600,
                 fontSize: "0.85rem",
                 px: 1.75,
-                // Tutte le etichette a bianco pieno: la selezionata si
-                // distingue per peso e riempimento, non abbassando il
-                // contrasto delle altre.
-                color: "common.white",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.12)" },
+                // Etichette a contrasto pieno (MUI le metterebbe su
+                // text.secondary): la selezionata si distingue per colore,
+                // peso e sottolineatura, non abbassando il contrasto delle altre.
+                color: "adminBand.text",
+                "&:hover": { bgcolor: "adminBand.hover" },
                 "&.Mui-selected": {
-                  color: "common.white",
+                  color: "adminBand.accent",
                   fontWeight: 800,
-                  bgcolor: ADMIN_BAND_SELECTED,
                 },
               },
             }}

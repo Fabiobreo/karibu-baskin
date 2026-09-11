@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
-import { sendPushToAll } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { sendPushToUsers } from "@/lib/notifications/webpush";
+import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 
 // Vercel Cron — ogni giorno alle 08:00 UTC
 export async function GET(req: NextRequest) {
@@ -47,9 +47,20 @@ export async function GET(req: NextRequest) {
       ? `Oggi ${celebrants[0].name ?? "un compagno di squadra"} compie gli anni. Fai gli auguri!`
       : `Oggi festeggiano: ${names}. Fai gli auguri!`;
 
-  sendPushToAll({ title, body, url: "/" }).catch(console.error);
+  // Nome e compleanno sono dati nominativi dei tesserati, spesso di minori: gli
+  // auguri vanno solo ai tesserati. Non a tutti i dispositivi iscritti alle
+  // push (ci sono anche iscrizioni anonime) né agli account ancora GUEST.
+  const members = await prisma.user.findMany({
+    where: { appRole: { in: ["ATHLETE", "PARENT", "COACH", "ADMIN"] } },
+    select: { id: true },
+  });
+  const memberIds = members.map((m) => m.id);
 
-  createAppNotification({ type: "BIRTHDAY", title, body, url: "/" }).catch(console.error);
+  sendPushToUsers(memberIds, { title, body, url: "/" }).catch(console.error);
+
+  createTargetedAppNotifications(memberIds, { type: "BIRTHDAY", title, body, url: "/" }).catch(
+    console.error
+  );
 
   return NextResponse.json({ sent: celebrants.length, names });
 }

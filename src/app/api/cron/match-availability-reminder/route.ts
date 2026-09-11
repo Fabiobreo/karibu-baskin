@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { MIN_CALLUPS } from "@/lib/constants";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 
 // Vercel Cron — eseguito giornalmente.
 // Notifica i giocatori (User o genitori di Child) membri di una squadra che ha
@@ -35,11 +36,9 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       date: true,
-      teamId: true,
-      opponentTeamId: true,
-      team: { select: { name: true } },
+      team: { select: { id: true, name: true, season: true, isMixed: true } },
       opponent: { select: { name: true } },
-      opponentTeam: { select: { name: true } },
+      opponentTeam: { select: { id: true, name: true, season: true, isMixed: true } },
       _count: { select: { callups: true } },
     },
   });
@@ -53,7 +52,10 @@ export async function GET(req: NextRequest) {
   let matchesNotified = 0;
 
   for (const m of pending) {
-    const teamIds = [m.teamId, m.opponentTeamId].filter((x): x is string => !!x);
+    // Per la Karibu di stagione si sollecitano i tesserati di tutta la stagione.
+    const teamIds = await rosterTeamIds(
+      [m.team, m.opponentTeam].filter((t): t is NonNullable<typeof t> => !!t)
+    );
 
     const [memberships, availabilities] = await Promise.all([
       prisma.teamMembership.findMany({

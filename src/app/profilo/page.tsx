@@ -1,4 +1,5 @@
-import { getTranslations, getLocale } from "next-intl/server";
+import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -12,6 +13,7 @@ import {
   Stack,
   Button,
   Badge,
+  Skeleton,
   Link as MuiLink,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -31,14 +33,11 @@ import ProfileTabs from "@/components/profile/ProfileTabs";
 import AthleteInfoSection from "@/components/profile/AthleteInfoSection";
 import AttendanceSection from "@/components/profile/AttendanceSection";
 import GdprSection from "@/components/profile/GdprSection";
-import { countPendingAvailabilities } from "@/lib/matches/availabilityPending";
+import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
-import { loadBadgeInput, type PlayerRef } from "@/lib/rating/badgeService";
-import { computeBadgeState } from "@/lib/rating/badges";
-import { getBadgeI18n } from "@/lib/rating/badgeLabels";
-import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeShowcase";
-import type { LockedBadge } from "@/lib/rating/badges";
+import ProfileBadges from "@/components/profile/ProfileBadges";
 import { buildMetadata } from "@/lib/seo";
 import PageHero from "@/components/common/PageHero";
 import NextTrainingCard, {
@@ -67,41 +66,15 @@ const APP_ROLE_CHIP_COLOR: Record<
   ADMIN: "error",
 };
 
+// Le attese indipendenti vanno in parallelo, e i badge (la parte più costosa:
+// statistiche, MVP e rose di ogni giocatore) arrivano in streaming dentro
+// `<Suspense>`. Il controllo di sessione resta prima di tutto, così `redirect`
+// è un vero redirect HTTP e non uno lato client a stream già partito.
 export default async function ProfiloPage() {
-  const t = await getTranslations("profile");
-  const locale = await getLocale();
-  const badgeI18n = await getBadgeI18n();
-  const session = await auth();
+  const [t, session] = await Promise.all([getTranslations("profile"), auth()]);
   if (!session?.user?.id) redirect("/login");
 
-  const dateFmt = new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "it-IT", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
-  // Costruisce la vista badge (sbloccati + prossimi) di un giocatore.
-  async function buildBadgeView(
-    ref: PlayerRef
-  ): Promise<{ earned: EarnedBadgeView[]; locked: LockedBadge[] }> {
-    const input = await loadBadgeInput(ref);
-    const { earned, locked } = computeBadgeState(input);
-    const rows = await prisma.earnedBadge.findMany({
-      where: ref.userId ? { userId: ref.userId } : { childId: ref.childId },
-      select: { badgeId: true, unlockedAt: true },
-    });
-    const unlockedMap = new Map(rows.map((r) => [r.badgeId, r.unlockedAt]));
-    const earnedView: EarnedBadgeView[] = earned.map((b) => {
-      const at = unlockedMap.get(b.id);
-      return {
-        ...badgeI18n.translate(b),
-        unlockedAtLabel: at ? t("unlockedOn", { date: dateFmt.format(at) }) : null,
-      };
-    });
-    return { earned: earnedView, locked: locked.map((b) => badgeI18n.translate(b)) };
-  }
-
-  const user = await prisma.user.findUnique({
+  const userQuery = prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
       children: {
@@ -138,15 +111,19 @@ export default async function ProfiloPage() {
     },
   });
 
-  if (!user) redirect("/login");
+  const [user, pendingAvailabilities, currentSeason] = await Promise.all([
+    userQuery,
+    countPendingAvailabilities(session.user.id),
+    getCurrentSeasonLabel(),
+  ]);
 
-  const pendingAvailabilities = await countPendingAvailabilities(user.id);
+  if (!user) redirect("/login");
 
   // ── Prossimo allenamento ──────────────────────────────────────────────────
   // È il motivo principale per cui un atleta apre il sito, e nel profilo non
   // c'era. Per un genitore le righe sono quelle dei figli collegati.
   const childIds = user.children.map((c) => c.id);
-  const nextSession = await prisma.trainingSession.findFirst({
+  const nextSessionQuery = prisma.trainingSession.findFirst({
     where: { date: { gte: new Date() } },
     orderBy: { date: "asc" },
     select: {
@@ -171,27 +148,9 @@ export default async function ProfiloPage() {
     },
   });
 
-  const effectiveRole = session.user.appRole as AppRole;
-  const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
-  const isAthlete =
-    effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
-
-  const currentSeason = getCurrentSeason();
-  const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
-
-  // Presenze per stagione
-  const attendanceBySeason = user.registrations.reduce<Record<string, number>>((acc, reg) => {
-    const season = getCurrentSeason(reg.session.date);
-    acc[season] = (acc[season] ?? 0) + 1;
-    return acc;
-  }, {});
-  const attendanceSeasons = Object.entries(attendanceBySeason).sort(([a], [b]) =>
-    b.localeCompare(a)
-  );
-
   // Iscrizioni anonime con stesso nome (per proposta di collegamento)
-  const anonymousMatches = user.name
-    ? await prisma.registration.findMany({
+  const anonymousMatchesQuery = user.name
+    ? prisma.registration.findMany({
         where: {
           userId: null,
           childId: null,
@@ -204,6 +163,28 @@ export default async function ProfiloPage() {
         },
       })
     : [];
+
+  const [nextSession, anonymousMatches] = await Promise.all([
+    nextSessionQuery,
+    anonymousMatchesQuery,
+  ]);
+
+  const effectiveRole = session.user.appRole as AppRole;
+  const isParent = effectiveRole === "PARENT" || effectiveRole === "ADMIN";
+  const isAthlete =
+    effectiveRole === "ATHLETE" || effectiveRole === "COACH" || effectiveRole === "ADMIN";
+
+  const currentTeams = user.teamMemberships.filter((m) => m.team.season === currentSeason);
+
+  // Presenze per stagione
+  const attendanceBySeason = user.registrations.reduce<Record<string, number>>((acc, reg) => {
+    const season = getCurrentSeason(reg.session.date);
+    acc[season] = (acc[season] ?? 0) + 1;
+    return acc;
+  }, {});
+  const attendanceSeasons = Object.entries(attendanceBySeason).sort(([a], [b]) =>
+    b.localeCompare(a)
+  );
 
   let nextTraining: NextTrainingInfo | null = null;
   let trainingSubjects: TrainingSubject[] = [];
@@ -267,16 +248,8 @@ export default async function ProfiloPage() {
     }
   }
 
-  // Badge dell'utente (solo atleti) e dei figli (per il tab Famiglia)
-  const userBadges = isAthlete ? await buildBadgeView({ userId: user.id }) : null;
-  const childBadges = isParent
-    ? await Promise.all(
-        user.children.map(async (c) => ({
-          name: c.name,
-          ...(await buildBadgeView({ childId: c.id })),
-        }))
-      )
-    : [];
+  // Segnaposto dei badge: stesso Paper outlined di BadgeShowcase.
+  const badgesSkeleton = <Skeleton variant="rounded" height={180} sx={{ mb: 3 }} />;
 
   // ── Contenuto tab "Profilo": card principale + dati atleta + presenze ──
   const profileTab = (
@@ -387,15 +360,17 @@ export default async function ProfiloPage() {
         />
       )}
 
-      {userBadges && (
+      {/* Badge dell'utente (solo atleti) */}
+      {isAthlete && (
         <Box sx={{ mb: 3 }}>
-          <BadgeShowcase
-            earned={userBadges.earned}
-            locked={userBadges.locked}
-            title={t("achievements")}
-            nextTitle={t("nextAchievements")}
-            emptyLabel={t("noAchievementsYet")}
-          />
+          <Suspense fallback={badgesSkeleton}>
+            <ProfileBadges
+              player={{ userId: user.id }}
+              title={t("achievements")}
+              nextTitle={t("nextAchievements")}
+              emptyLabel={t("noAchievementsYet")}
+            />
+          </Suspense>
           <Box sx={{ mt: -1.5, textAlign: "right" }}>
             <Link href="/profilo/traguardi" style={{ textDecoration: "none" }}>
               <Button
@@ -424,24 +399,27 @@ export default async function ProfiloPage() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t("linkChildDesc")}
       </Typography>
-      <ParentChildLinker initialChildren={user.children as ChildData[]} />
+      <ParentChildLinker
+        initialChildren={user.children as ChildData[]}
+        currentSeason={currentSeason}
+      />
     </Paper>
   ) : null;
 
+  // Badge dei figli (tab Famiglia). Senza `emptyLabel` BadgeShowcase non
+  // mostra nulla per un figlio senza badge né traguardi vicini.
   const childBadgesTab =
-    childBadges.length > 0 ? (
+    isParent && user.children.length > 0 ? (
       <>
-        {childBadges
-          .filter((cb) => cb.earned.length > 0 || cb.locked.length > 0)
-          .map((cb) => (
-            <BadgeShowcase
-              key={cb.name}
-              earned={cb.earned}
-              locked={cb.locked}
-              title={t("childAchievements", { name: cb.name })}
+        {user.children.map((c) => (
+          <Suspense key={c.id} fallback={badgesSkeleton}>
+            <ProfileBadges
+              player={{ childId: c.id }}
+              title={t("childAchievements", { name: c.name })}
               nextTitle={t("nextAchievements")}
             />
-          ))}
+          </Suspense>
+        ))}
       </>
     ) : null;
 

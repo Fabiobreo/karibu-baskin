@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { getCurrentSeason, getSeasonStartDate, resolveActiveSeason } from "./seasonUtils";
+import {
+  getCurrentSeason,
+  getSeasonStartDate,
+  pickCurrentSeason,
+  resolveActiveSeason,
+} from "./seasonUtils";
 
 describe("getCurrentSeason()", () => {
   it("agosto → stagione anno precedente (es. ago 2025 → '2024-25')", () => {
@@ -58,6 +63,21 @@ describe("getSeasonStartDate()", () => {
     const d = getSeasonStartDate(new Date(2025, 6, 31));
     expect(d.getFullYear()).toBe(2024);
     expect(d.getMonth()).toBe(7);
+  });
+});
+
+describe("pickCurrentSeason()", () => {
+  it("la stagione segnata dallo staff vince sul calendario, anche prima di settembre", () => {
+    expect(pickCurrentSeason(["2026-27"], new Date(2026, 7, 20))).toBe("2026-27");
+  });
+
+  it("la stagione segnata vince anche se il calendario è già passato alla nuova", () => {
+    expect(pickCurrentSeason(["2025-26"], new Date(2026, 8, 11))).toBe("2025-26");
+  });
+
+  it("nessuna stagione segnata: ripiego sul calendario (cambio al 1° settembre)", () => {
+    expect(pickCurrentSeason([], new Date(2026, 7, 31))).toBe("2025-26");
+    expect(pickCurrentSeason([], new Date(2026, 8, 1))).toBe("2026-27");
   });
 });
 

@@ -25,11 +25,14 @@ export default function ConvocazioniTable({
   rows,
   roleFilter,
   isSelected,
+  selectedElsewhere,
   onToggle,
 }: {
   rows: ConvocazioneStatRow[];
   roleFilter: number | null;
   isSelected: (row: ConvocazioneStatRow) => boolean;
+  /** Amichevole interna: squadra per cui il giocatore è già convocato (selezionarlo lo sposta). */
+  selectedElsewhere?: (row: ConvocazioneStatRow) => string | null;
   onToggle: (row: ConvocazioneStatRow) => void;
 }) {
   if (rows.length === 0) {
@@ -84,6 +87,7 @@ export default function ConvocazioniTable({
           <TableBody>
             {rows.map((row) => {
               const selected = isSelected(row);
+              const elsewhere = selected ? null : (selectedElsewhere?.(row) ?? null);
               const role = row.candidate.sportRole;
               const variant = row.candidate.sportRoleVariant;
               return (
@@ -156,6 +160,29 @@ export default function ConvocazioniTable({
                                   fontSize: "0.58rem",
                                   height: 16,
                                   "& .MuiChip-icon": { color: "secondary.contrastText" },
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                          {row.fromTeam && (
+                            <Chip
+                              label={row.fromTeam}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontWeight: 600, fontSize: "0.58rem", height: 16 }}
+                            />
+                          )}
+                          {elsewhere && (
+                            <Tooltip title="Selezionandolo lo sposti in questa squadra">
+                              <Chip
+                                label={`Convocato con ${elsewhere}`}
+                                size="small"
+                                sx={{
+                                  bgcolor: "action.selected",
+                                  color: "text.secondary",
+                                  fontWeight: 700,
+                                  fontSize: "0.58rem",
+                                  height: 16,
                                 }}
                               />
                             </Tooltip>

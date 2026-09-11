@@ -2,16 +2,22 @@ import { prisma } from "@/lib/db";
 import AdminPartiteClient from "@/components/admin/AdminPartiteClient";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matches/matchCoverage";
+import { ensureClubTeam } from "@/lib/matches/mixedTeam";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Partite | Admin" };
 export const revalidate = 30;
 
 export default async function AdminPartitePage() {
+  // La Karibu della stagione in corso c'è sempre: il form la propone per
+  // amichevoli e tornei.
+  await ensureClubTeam(await getCurrentSeasonLabel());
+
   const [teams, opposingTeams, matches, groups] = await Promise.all([
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
-      select: { id: true, name: true, season: true, color: true },
+      select: { id: true, name: true, season: true, color: true, isMixed: true },
     }),
     prisma.opposingTeam.findMany({
       orderBy: { name: "asc" },

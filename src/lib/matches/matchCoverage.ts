@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ROLE_GROUPS, roleGroupOf, type RoleGroupKey } from "@/lib/constants";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 
 export interface GroupCoverage {
   groupKey: RoleGroupKey;
@@ -25,13 +26,16 @@ export interface MatchCoverage {
 export async function computeMatchCoverage(matchId: string): Promise<MatchCoverage | null> {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
-    select: { teamId: true },
+    select: { team: { select: { id: true, season: true, isMixed: true } } },
   });
   if (!match) return null;
 
+  // Karibu di stagione: la rosa è l'unione delle squadre della stagione.
+  const teamIds = await rosterTeamIds([match.team]);
+
   const [memberships, availabilities] = await Promise.all([
     prisma.teamMembership.findMany({
-      where: { teamId: match.teamId },
+      where: { teamId: { in: teamIds } },
       select: {
         userId: true,
         childId: true,
@@ -57,9 +61,13 @@ export async function computeMatchCoverageBatch(
 
   const matches = await prisma.match.findMany({
     where: { id: { in: matchIds } },
-    select: { id: true, teamId: true },
+    select: { id: true, team: { select: { id: true, season: true, isMixed: true } } },
   });
-  const teamIds = Array.from(new Set(matches.map((m) => m.teamId)));
+  // Rose da leggere per ogni partita: la squadra stessa, o per la Karibu tutte
+  // le squadre della sua stagione.
+  const rosterByMatch = new Map<string, string[]>();
+  for (const m of matches) rosterByMatch.set(m.id, await rosterTeamIds([m.team]));
+  const teamIds = Array.from(new Set([...rosterByMatch.values()].flat()));
 
   const [memberships, availabilities] = await Promise.all([
     prisma.teamMembership.findMany({
@@ -93,7 +101,9 @@ export async function computeMatchCoverageBatch(
   }
 
   for (const match of matches) {
-    const teamMemberships = membershipsByTeam.get(match.teamId) ?? [];
+    const teamMemberships = (rosterByMatch.get(match.id) ?? []).flatMap(
+      (tid) => membershipsByTeam.get(tid) ?? []
+    );
     const avail = availByMatch.get(match.id) ?? [];
     result.set(match.id, buildCoverage(match.id, teamMemberships, avail));
   }
@@ -123,7 +133,12 @@ function buildCoverage(
   const rosterByGroup = new Map<RoleGroupKey, number>();
   const availByGroup = new Map<RoleGroupKey, number>();
 
+  // Chi è tesserato in due squadre compare due volte nella rosa di la Karibu.
+  const seen = new Set<string>();
   for (const m of memberships) {
+    const key = m.userId ? `u:${m.userId}` : `c:${m.childId}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     const role = m.user?.sportRole ?? m.child?.sportRole ?? null;
     const groupKey = roleGroupOf(role);
     if (!groupKey) continue;

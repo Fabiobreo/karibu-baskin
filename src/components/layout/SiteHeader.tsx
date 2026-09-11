@@ -51,7 +51,6 @@ import GlobalSearch from "@/components/layout/GlobalSearch";
 import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { alpha } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { slugify } from "@/lib/slugUtils";
 import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
@@ -94,7 +93,12 @@ function ThemeModeIcon({ mode }: { mode: ColorMode }) {
   return <SettingsBrightnessIcon fontSize="small" />;
 }
 
-export default function SiteHeader() {
+interface SiteHeaderProps {
+  /** Stagione in corso (flag dello staff, o calendario): arriva dal layout. */
+  currentSeason: string;
+}
+
+export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   const t = useTranslations("nav");
   const router = useRouter();
 
@@ -141,7 +145,6 @@ export default function SiteHeader() {
     queryKey: ["competitive-teams"],
     queryFn: () => fetch("/api/competitive-teams").then((r) => r.json()),
   });
-  const currentSeason = getCurrentSeason();
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
   const squadreLinks = [
     { label: t("whoWeAre"), href: "/squadre" },

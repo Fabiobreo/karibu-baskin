@@ -10,7 +10,10 @@ export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-competitive-teams", 30, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
 
+  // La squadra Karibu di stagione è nascosta: la vede solo lo staff, nel form
+  // delle amichevoli e dei tornei (vedi @/lib/matches/mixedTeam).
   const teams = await prisma.competitiveTeam.findMany({
+    where: { isMixed: false },
     orderBy: [{ season: "desc" }, { name: "asc" }],
     include: {
       _count: { select: { memberships: true, matches: true } },
@@ -34,8 +37,9 @@ export async function POST(req: Request) {
   }
   const body = parsed.data;
 
+  // La Karibu di stagione nasce da sola e non conta nel limite.
   const existingCount = await prisma.competitiveTeam.count({
-    where: { season: body.season },
+    where: { season: body.season, isMixed: false },
   });
   if (existingCount >= 2) {
     return NextResponse.json({ error: "Massimo 2 squadre per stagione" }, { status: 409 });

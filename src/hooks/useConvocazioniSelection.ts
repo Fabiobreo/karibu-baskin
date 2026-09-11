@@ -10,9 +10,20 @@ export interface TeamSelectionState {
   childIds: Set<string>;
 }
 
+function has(sel: TeamSelectionState | undefined, row: ConvocazioneStatRow): boolean {
+  if (!sel) return false;
+  return row.candidate.kind === "user"
+    ? sel.userIds.has(row.candidate.id)
+    : sel.childIds.has(row.candidate.id);
+}
+
 /**
  * Stato di selezione dei convocati per squadra (amichevoli interne = 2 squadre).
  * Espone toggle/selectAll/clearAll relativi alla squadra attiva.
+ *
+ * Un giocatore gioca per un solo lato. Con la Karibu di stagione lo stesso
+ * giocatore è candidato su entrambi (es. Montekki vs Karibu): selezionarlo su
+ * un lato lo toglie dall'altro, e "Tutti" salta chi è già convocato altrove.
  */
 export function useConvocazioniSelection(
   teams: TeamCallupContext[],
@@ -35,59 +46,70 @@ export function useConvocazioniSelection(
   };
 
   function isSelected(row: ConvocazioneStatRow): boolean {
-    return row.candidate.kind === "user"
-      ? activeSelection.userIds.has(row.candidate.id)
-      : activeSelection.childIds.has(row.candidate.id);
+    return has(activeSelection, row);
   }
 
-  function updateActiveSelection(updater: (curr: TeamSelectionState) => TeamSelectionState) {
+  /** Nome dell'altra squadra per cui il giocatore è già convocato, se c'è. */
+  function selectedElsewhere(row: ConvocazioneStatRow): string | null {
+    for (const t of teams) {
+      if (t.id !== activeTeam.id && has(selectionByTeam.get(t.id), row)) return t.name;
+    }
+    return null;
+  }
+
+  function toggle(row: ConvocazioneStatRow) {
+    const { kind, id } = row.candidate;
     setSelectionByTeam((prev) => {
-      const next = new Map(prev);
-      const curr = next.get(activeTeam.id) ?? {
-        userIds: new Set<string>(),
-        childIds: new Set<string>(),
-      };
-      next.set(activeTeam.id, updater(curr));
+      const adding = !has(prev.get(activeTeam.id), row);
+      const next = new Map<string, TeamSelectionState>();
+      for (const [teamId, sel] of prev) {
+        const userIds = new Set(sel.userIds);
+        const childIds = new Set(sel.childIds);
+        const ids = kind === "user" ? userIds : childIds;
+        if (teamId === activeTeam.id) {
+          if (adding) ids.add(id);
+          else ids.delete(id);
+        } else if (adding) {
+          ids.delete(id);
+        }
+        next.set(teamId, { userIds, childIds });
+      }
+      if (!next.has(activeTeam.id) && adding) {
+        next.set(activeTeam.id, {
+          userIds: new Set(kind === "user" ? [id] : []),
+          childIds: new Set(kind === "child" ? [id] : []),
+        });
+      }
       return next;
     });
   }
 
-  function toggle(row: ConvocazioneStatRow) {
-    if (row.candidate.kind === "user") {
-      updateActiveSelection((curr) => {
-        const nextUserIds = new Set(curr.userIds);
-        if (nextUserIds.has(row.candidate.id)) nextUserIds.delete(row.candidate.id);
-        else nextUserIds.add(row.candidate.id);
-        return { userIds: nextUserIds, childIds: curr.childIds };
-      });
-    } else {
-      updateActiveSelection((curr) => {
-        const nextChildIds = new Set(curr.childIds);
-        if (nextChildIds.has(row.candidate.id)) nextChildIds.delete(row.candidate.id);
-        else nextChildIds.add(row.candidate.id);
-        return { userIds: curr.userIds, childIds: nextChildIds };
-      });
-    }
-  }
-
   function selectAll() {
-    // "Tutti" seleziona solo i disponibili (esclude chi ha marcato Non disponibile)
-    updateActiveSelection(() => ({
-      userIds: new Set(
-        activeTeam.stats
-          .filter((s) => s.candidate.kind === "user" && s.availability !== false)
-          .map((s) => s.candidate.id)
-      ),
-      childIds: new Set(
-        activeTeam.stats
-          .filter((s) => s.candidate.kind === "child" && s.availability !== false)
-          .map((s) => s.candidate.id)
-      ),
-    }));
+    // "Tutti" seleziona solo i disponibili (esclude chi ha marcato Non
+    // disponibile) e non ruba all'altra squadra chi vi è già convocato.
+    const pickable = activeTeam.stats.filter(
+      (s) => s.availability !== false && selectedElsewhere(s) === null
+    );
+    setSelectionByTeam((prev) => {
+      const next = new Map(prev);
+      next.set(activeTeam.id, {
+        userIds: new Set(
+          pickable.filter((s) => s.candidate.kind === "user").map((s) => s.candidate.id)
+        ),
+        childIds: new Set(
+          pickable.filter((s) => s.candidate.kind === "child").map((s) => s.candidate.id)
+        ),
+      });
+      return next;
+    });
   }
 
   function clearAll() {
-    updateActiveSelection(() => ({ userIds: new Set(), childIds: new Set() }));
+    setSelectionByTeam((prev) => {
+      const next = new Map(prev);
+      next.set(activeTeam.id, { userIds: new Set(), childIds: new Set() });
+      return next;
+    });
   }
 
   const totalSelectedActive = activeSelection.userIds.size + activeSelection.childIds.size;
@@ -100,6 +122,7 @@ export function useConvocazioniSelection(
     selectionByTeam,
     activeSelection,
     isSelected,
+    selectedElsewhere,
     toggle,
     selectAll,
     clearAll,

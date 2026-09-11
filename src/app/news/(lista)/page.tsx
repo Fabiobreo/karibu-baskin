@@ -21,24 +21,27 @@ export const metadata = buildMetadata({
 export const revalidate = 60;
 
 export default async function NewsPage() {
-  const [t, locale] = await Promise.all([getTranslations("pages"), getLocale()]);
+  const [t, locale, session, posts] = await Promise.all([
+    getTranslations("pages"),
+    getLocale(),
+    auth(),
+    prisma.post.findMany({
+      where: { publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        body: true,
+        imageUrl: true,
+        publishedAt: true,
+        author: { select: { name: true } },
+        poll: { select: { id: true, question: true, closesAt: true } },
+      },
+    }),
+  ]);
   const dateLocale = getDateFnsLocale(locale);
-  const session = await auth();
   const isStaff = !!session?.user && hasRole(session.user.appRole, "COACH");
-  const posts = await prisma.post.findMany({
-    where: { publishedAt: { not: null } },
-    orderBy: { publishedAt: "desc" },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      body: true,
-      imageUrl: true,
-      publishedAt: true,
-      author: { select: { name: true } },
-      poll: { select: { id: true, question: true, closesAt: true } },
-    },
-  });
 
   return (
     <>

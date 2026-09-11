@@ -37,7 +37,8 @@ export async function GET(req: NextRequest) {
       take: 5,
     }),
     prisma.competitiveTeam.findMany({
-      where: { name: { contains: q, mode: "insensitive" } },
+      // La Karibu di stagione non ha una pagina pubblica da linkare.
+      where: { name: { contains: q, mode: "insensitive" }, isMixed: false },
       select: { id: true, name: true, season: true },
       orderBy: { season: "desc" },
       take: 5,

@@ -20,7 +20,6 @@ import { ROLE_COLORS, ROLES } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { signIn } from "next-auth/react";
 import { useRegistrationForm } from "@/hooks/useRegistrationForm";
 import RegistrationSubjectSelector from "@/components/training/RegistrationSubjectSelector";
@@ -46,6 +45,8 @@ interface Props {
   currentUser?: import("@/hooks/useRegistrationForm").CurrentUser | null;
   parentChildren?: import("@/hooks/useRegistrationForm").ChildInfo[];
   restrictions?: SessionRestrictions & { restrictTeamName?: string | null };
+  /** Stagione in corso (flag dello staff, o calendario): filtra il badge squadra. */
+  currentSeason: string;
 }
 
 export default function RegistrationForm({
@@ -59,6 +60,7 @@ export default function RegistrationForm({
   currentUser,
   parentChildren = [],
   restrictions,
+  currentSeason,
 }: Props) {
   const t = useTranslations("trainings");
   const { roleLabel, sportRoleLabel } = useEntityLabels();
@@ -344,7 +346,7 @@ export default function RegistrationForm({
                             : t("athlete")}
                     </Typography>
                     {currentUser.teamMemberships
-                      .filter((m) => m.teamSeason === getCurrentSeason())
+                      .filter((m) => m.teamSeason === currentSeason)
                       .map((m) => (
                         <Chip
                           key={m.teamId}
@@ -374,11 +376,11 @@ export default function RegistrationForm({
                   <Typography variant="body2" fontWeight={600}>
                     {selectedChild.name}
                   </Typography>
-                  {selectedChild.teamMemberships.filter((m) => m.teamSeason === getCurrentSeason())
+                  {selectedChild.teamMemberships.filter((m) => m.teamSeason === currentSeason)
                     .length > 0 && (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
                       {selectedChild.teamMemberships
-                        .filter((m) => m.teamSeason === getCurrentSeason())
+                        .filter((m) => m.teamSeason === currentSeason)
                         .map((m) => (
                           <Chip
                             key={m.teamId}

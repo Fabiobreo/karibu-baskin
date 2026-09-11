@@ -65,6 +65,11 @@ describe("GET /api/competitive-teams", () => {
     const json = await res.json();
     expect(json).toEqual([]);
   });
+
+  it("esclude la Karibu di stagione", async () => {
+    await GET(new NextRequest("http://localhost/api/competitive-teams"));
+    expect(p.competitiveTeam.findMany.mock.calls[0][0].where).toEqual({ isMixed: false });
+  });
 });
 
 describe("POST /api/competitive-teams", () => {
@@ -147,6 +152,32 @@ describe("POST /api/competitive-teams", () => {
     const res = await POST(req);
     expect(res.status).toBe(201);
     expect(p.competitiveTeam.create).toHaveBeenCalledOnce();
+  });
+
+  it("la Karibu di stagione non conta nel limite di 2", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const req = new Request("http://localhost/api/competitive-teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Montekki", season: "2025-26" }),
+    });
+    await POST(req);
+    expect(p.competitiveTeam.count.mock.calls[0][0].where).toEqual({
+      season: "2025-26",
+      isMixed: false,
+    });
+  });
+
+  it("non si può creare a mano una Karibu di stagione", async () => {
+    mockIsAdmin.mockResolvedValue(true);
+    const req = new Request("http://localhost/api/competitive-teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Karibu", season: "2025-26", isMixed: true }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(201);
+    expect(p.competitiveTeam.create.mock.calls[0][0].data.isMixed).toBeUndefined();
   });
 
   it("restituisce 400 per JSON non valido", async () => {

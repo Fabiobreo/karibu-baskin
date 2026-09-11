@@ -27,55 +27,59 @@ export const revalidate = 3600;
 type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function MarcatoriPage({ searchParams }: Props) {
-  const [t, tCommon] = await Promise.all([getTranslations("scorers"), getTranslations("common")]);
-  const viewerIsMember = isMemberRole((await auth())?.user?.appRole);
-  const sp = await searchParams;
-  const seasonFilter = sp.season ?? null;
-
   // Stagione attiva del sito + stagioni con statistiche (per i chip). Senza
   // filtro esplicito si mostra la stagione da visualizzare, che ricade
   // sull'ultima popolata quando la attiva non è ancora iniziata.
-  const {
-    activeSeason: siteSeason,
-    displaySeason,
-    isFallback,
-    seasons: chipSeasons,
-    hasAnyData,
-  } = await getActiveSeason("playerStats");
+  const [
+    t,
+    tCommon,
+    session,
+    sp,
+    { activeSeason: siteSeason, displaySeason, isFallback, seasons: chipSeasons, hasAnyData },
+  ] = await Promise.all([
+    getTranslations("scorers"),
+    getTranslations("common"),
+    auth(),
+    searchParams,
+    getActiveSeason("playerStats"),
+  ]);
+  const viewerIsMember = isMemberRole(session?.user?.appRole);
+  const seasonFilter = sp.season ?? null;
   const activeSeason = seasonFilter ?? displaySeason;
   // La riga di ricaduta si mostra solo quando l'utente non ha scelto lui la stagione.
   const showFallbackNotice = !seasonFilter && isFallback;
 
-  // Player stats per la stagione, separati per "prestito" vs principale
-  // così possiamo mostrare la breakdown X (+Y) in tabella.
-  const allStats = await prisma.playerMatchStats.groupBy({
-    by: ["userId", "childId", "isLoan"],
-    where: {
-      OR: [{ userId: { not: null } }, { childId: { not: null } }],
-      match: { team: { season: activeSeason } },
-    },
-    _sum: {
-      points: true,
-      twoPointers: true,
-      threePointers: true,
-      freeThrows: true,
-      fouls: true,
-      illegalFouls: true,
-      shotsAttempted: true,
-    },
-    _count: { matchId: true },
-  });
-
-  // Conteggio premi MVP per giocatore nella stagione attiva (non splittato
-  // prestito/principale: il modello MatchMvp non traccia isLoan).
-  const mvpRows = await prisma.matchMvp.groupBy({
-    by: ["userId", "childId"],
-    where: {
-      OR: [{ userId: { not: null } }, { childId: { not: null } }],
-      match: { team: { season: activeSeason } },
-    },
-    _count: { _all: true },
-  });
+  const [allStats, mvpRows] = await Promise.all([
+    // Player stats per la stagione, separati per "prestito" vs principale
+    // così possiamo mostrare la breakdown X (+Y) in tabella.
+    prisma.playerMatchStats.groupBy({
+      by: ["userId", "childId", "isLoan"],
+      where: {
+        OR: [{ userId: { not: null } }, { childId: { not: null } }],
+        match: { team: { season: activeSeason } },
+      },
+      _sum: {
+        points: true,
+        twoPointers: true,
+        threePointers: true,
+        freeThrows: true,
+        fouls: true,
+        illegalFouls: true,
+        shotsAttempted: true,
+      },
+      _count: { matchId: true },
+    }),
+    // Conteggio premi MVP per giocatore nella stagione attiva (non splittato
+    // prestito/principale: il modello MatchMvp non traccia isLoan).
+    prisma.matchMvp.groupBy({
+      by: ["userId", "childId"],
+      where: {
+        OR: [{ userId: { not: null } }, { childId: { not: null } }],
+        match: { team: { season: activeSeason } },
+      },
+      _count: { _all: true },
+    }),
+  ]);
   const mvpByPlayer = new Map<string, number>();
   for (const m of mvpRows) {
     const k = m.userId ? `u:${m.userId}` : m.childId ? `c:${m.childId}` : null;

@@ -27,10 +27,9 @@ export default async function AdminMetrichePage() {
   const { community: c, training: t, matches: p, engagement: e } = m;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       <AdminPageHeader
         title="Metriche"
-        subtitle={`Come viene usato il gestionale. Allenamenti, partite e sondaggi degli ultimi ${METRICS_WINDOW_DAYS} giorni.`}
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Metriche" }]}
       />
 
@@ -115,13 +114,6 @@ export default async function AdminMetrichePage() {
           caption="Ci sarò, forse o no, sugli eventi del periodo."
         />
       </MetricSection>
-
-      <Typography variant="caption" color="text.secondary" sx={{ maxWidth: "70ch" }}>
-        Non misurabile da qui: i messaggi del form contatti (arrivano solo per email), chi apre un
-        form senza inviarlo, le installazioni dell&apos;app e la lingua scelta. Il piano Vercel
-        attuale non registra eventi personalizzati; le visite alle pagine restano nella sezione
-        Analytics di Vercel.
-      </Typography>
     </Box>
   );
 }

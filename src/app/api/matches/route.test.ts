@@ -222,12 +222,52 @@ describe("POST /api/matches", () => {
     expect(data.slug).toBe("karibu-vs-avversario-2026-01-15");
   });
 
-  it("crea la partita senza slug se team o avversario non trovati", async () => {
+  it("crea la partita senza slug se l'avversario non è trovato", async () => {
     mockIsAdminUser.mockResolvedValue(true);
-    p.competitiveTeam.findUnique.mockResolvedValue(null);
+    p.opposingTeam.findUnique.mockResolvedValue(null);
     const res = await POST(makePost(validBody));
     expect(res.status).toBe(201);
     const data = p.match.create.mock.calls[0][0].data;
     expect(data.slug).toBeNull();
+  });
+
+  it("restituisce 404 se la squadra non esiste", async () => {
+    mockIsAdminUser.mockResolvedValue(true);
+    p.competitiveTeam.findUnique.mockResolvedValue(null);
+    const res = await POST(makePost(validBody));
+    expect(res.status).toBe(404);
+    expect(p.match.create).not.toHaveBeenCalled();
+  });
+
+  describe("Karibu di stagione", () => {
+    beforeEach(() => {
+      mockIsAdminUser.mockResolvedValue(true);
+      p.competitiveTeam.findUnique.mockResolvedValue({ name: "Karibu", isMixed: true });
+    });
+
+    it("senza tipo indicato crea un'amichevole, non una partita di campionato", async () => {
+      const { matchType: _omitted, ...withoutType } = validBody;
+      const res = await POST(makePost(withoutType));
+      expect(res.status).toBe(201);
+      expect(p.match.create.mock.calls[0][0].data.matchType).toBe("FRIENDLY");
+    });
+
+    it("può giocare un torneo", async () => {
+      const res = await POST(makePost({ ...validBody, matchType: "TOURNAMENT" }));
+      expect(res.status).toBe(201);
+      expect(p.match.create.mock.calls[0][0].data.matchType).toBe("TOURNAMENT");
+    });
+
+    it("rifiuta il campionato", async () => {
+      const res = await POST(makePost({ ...validBody, matchType: "LEAGUE" }));
+      expect(res.status).toBe(400);
+      expect(p.match.create).not.toHaveBeenCalled();
+    });
+
+    it("rifiuta un girone", async () => {
+      const res = await POST(makePost({ ...validBody, matchType: "FRIENDLY", groupId: "g1" }));
+      expect(res.status).toBe(400);
+      expect(p.match.create).not.toHaveBeenCalled();
+    });
   });
 });

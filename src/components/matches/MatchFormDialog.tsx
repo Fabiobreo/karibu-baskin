@@ -39,6 +39,8 @@ export type MatchFormTeam = {
   name: string;
   season: string;
   color: string | null;
+  /** Karibu di stagione (tutti i giocatori): solo amichevoli e tornei, niente girone. */
+  isMixed?: boolean;
 };
 export type MatchFormOpposingTeam = { id: string; name: string; city: string | null };
 export type MatchFormGroup = {
@@ -110,6 +112,7 @@ type OpponentOpt =
       id: string;
       name: string;
       season: string;
+      isMixed: boolean;
       groupKey: "internal";
     }
   | { kind: "new"; name: string; groupKey: "new" };
@@ -149,8 +152,13 @@ export default function MatchFormDialog({
   });
   const watchDate = watch("date");
   const watchTeamId = watch("teamId");
-  const teamsForForm = teams.filter((t) => t.season === seasonForDate(watchDate ?? ""));
-  const displayTeams = teamsForForm.length > 0 ? teamsForForm : teams;
+  const watchMatchType = watch("matchType");
+  const karibuAllowed = watchMatchType !== "LEAGUE";
+  const teamsForForm = teams.filter(
+    (t) => t.season === seasonForDate(watchDate ?? "") && (karibuAllowed || !t.isMixed)
+  );
+  const displayTeams =
+    teamsForForm.length > 0 ? teamsForForm : teams.filter((t) => karibuAllowed || !t.isMixed);
   const hasDate = !!watchDate;
   const [error, setError] = useState("");
   const [opponentValue, setOpponentValue] = useState<OpponentOpt | null>(null);
@@ -161,7 +169,7 @@ export default function MatchFormDialog({
 
   // Internal opponents filtered by season (same logic as "Nostra squadra").
   // Falls back to all teams only when no date is set (field is disabled in that case anyway).
-  const internalOpponentTeams = teamsForForm.length > 0 ? teamsForForm : teams;
+  const internalOpponentTeams = displayTeams;
 
   const opponentOptions: OpponentOpt[] = [
     ...opponents.map(
@@ -181,12 +189,33 @@ export default function MatchFormDialog({
           id: t.id,
           name: t.name,
           season: t.season,
+          isMixed: !!t.isMixed,
           groupKey: "internal",
         })
       ),
   ];
 
   const isInternal = opponentValue?.kind === "internal";
+  // Karibu su uno dei due lati: niente campionato, niente girone.
+  const involvesMixed =
+    !!teams.find((t) => t.id === watchTeamId)?.isMixed ||
+    (opponentValue?.kind === "internal" && opponentValue.isMixed);
+
+  // Un'amichevole interna è sempre un'amichevole: il tipo si allinea, così la
+  // Karibu resta disponibile anche come avversaria interna.
+  useEffect(() => {
+    if (isInternal && watchMatchType === "LEAGUE") setValue("matchType", "FRIENDLY");
+  }, [isInternal, watchMatchType, setValue]);
+
+  // Passando al campionato la Karibu esce dalle scelte: se era selezionata, si
+  // torna alla prima squadra della stagione.
+  useEffect(() => {
+    if (karibuAllowed) return;
+    if (teams.find((t) => t.id === watchTeamId)?.isMixed) {
+      setValue("teamId", displayTeams[0]?.id ?? "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [karibuAllowed, watchTeamId]);
 
   useEffect(() => {
     if (!open) return;
@@ -216,6 +245,7 @@ export default function MatchFormDialog({
             id: t.id,
             name: t.name,
             season: t.season,
+            isMixed: !!t.isMixed,
             groupKey: "internal",
           });
         }
@@ -295,7 +325,7 @@ export default function MatchFormDialog({
       notes: values.notes || null,
       imageUrl: imageUrl ?? null,
       matchday: values.matchday !== "" ? Number(values.matchday) : null,
-      groupId: internal ? null : values.groupId || null,
+      groupId: internal || involvesMixed ? null : values.groupId || null,
     };
 
     const method = editMatch ? "PUT" : "POST";
@@ -337,11 +367,15 @@ export default function MatchFormDialog({
                   const newDate = e.target.value;
                   field.onChange(newDate);
                   const newSeason = seasonForDate(newDate);
-                  const validTeams = teams.filter((t) => t.season === newSeason);
+                  const validTeams = teams.filter(
+                    (t) => t.season === newSeason && (karibuAllowed || !t.isMixed)
+                  );
                   // eslint-disable-next-line react-hooks/incompatible-library
                   const currentTeamId = watch("teamId");
-                  if (!validTeams.some((t) => t.id === currentTeamId) && validTeams[0]) {
-                    setValue("teamId", validTeams[0].id);
+                  // Di default una squadra con la sua rosa, non la Karibu.
+                  const firstTeam = validTeams.find((t) => !t.isMixed) ?? validTeams[0];
+                  if (!validTeams.some((t) => t.id === currentTeamId) && firstTeam) {
+                    setValue("teamId", firstTeam.id);
                   }
                   // Clear internal opponent when it no longer belongs to the new season
                   setOpponentValue((prev) => {
@@ -358,6 +392,63 @@ export default function MatchFormDialog({
               />
             )}
           />
+
+          {/* Il tipo viene prima della squadra: decide se tra le squadre c'è Karibu. */}
+          <Box>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Controller
+                name="matchType"
+                control={control}
+                render={({ field }) => (
+                  <FormControl sx={{ flex: 1 }} disabled={isInternal}>
+                    <InputLabel>Tipo</InputLabel>
+                    <Select {...field} label="Tipo">
+                      {(Object.keys(MATCH_TYPE_LABELS) as MatchType[]).map((k) => (
+                        <MenuItem key={k} value={k} disabled={involvesMixed && k === "LEAGUE"}>
+                          {MATCH_TYPE_LABELS[k]}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              <Controller
+                name="isHome"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    }
+                    label={
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        {field.value ? (
+                          <HomeIcon fontSize="small" />
+                        ) : (
+                          <FlightIcon fontSize="small" />
+                        )}
+                        <Typography variant="body2">
+                          {field.value ? "Casa" : "Trasferta"}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                )}
+              />
+            </Box>
+            {!karibuAllowed && teams.some((t) => t.isMixed) && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 0.75 }}
+              >
+                Per giocare come Karibu, con tutta la squadra, scegli Amichevole o Torneo.
+              </Typography>
+            )}
+          </Box>
 
           <Controller
             name="teamId"
@@ -379,6 +470,11 @@ export default function MatchFormDialog({
                         />
                         {t.name}
                         {teamsForForm.length === 0 && ` · ${t.season}`}
+                        {t.isMixed && (
+                          <Typography component="span" variant="caption" color="text.secondary">
+                            tutta la squadra
+                          </Typography>
+                        )}
                       </Box>
                     </MenuItem>
                   ))}
@@ -459,7 +555,7 @@ export default function MatchFormDialog({
                       >
                         <Typography variant="body2">{opt.name}</Typography>
                         <Chip
-                          label="interna"
+                          label={opt.isMixed ? "tutti i giocatori" : "interna"}
                           size="small"
                           color="primary"
                           sx={{ fontSize: "0.62rem", height: 18, fontWeight: 700 }}
@@ -513,49 +609,6 @@ export default function MatchFormDialog({
             )}
           </Box>
 
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Controller
-              name="matchType"
-              control={control}
-              render={({ field }) => (
-                <FormControl sx={{ flex: 1 }} disabled={isInternal}>
-                  <InputLabel>Tipo</InputLabel>
-                  <Select {...field} label="Tipo">
-                    {(Object.keys(MATCH_TYPE_LABELS) as MatchType[]).map((k) => (
-                      <MenuItem key={k} value={k}>
-                        {MATCH_TYPE_LABELS[k]}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
-            <Controller
-              name="isHome"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={field.value}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                    />
-                  }
-                  label={
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      {field.value ? (
-                        <HomeIcon fontSize="small" />
-                      ) : (
-                        <FlightIcon fontSize="small" />
-                      )}
-                      <Typography variant="body2">{field.value ? "Casa" : "Trasferta"}</Typography>
-                    </Box>
-                  }
-                />
-              )}
-            />
-          </Box>
-
           <TextField
             label="Campo / Palestra"
             {...register("venue")}
@@ -564,6 +617,7 @@ export default function MatchFormDialog({
           />
 
           {!isInternal &&
+            !involvesMixed &&
             groups.filter((g) => !watch("teamId") || g.competitiveTeamIds.includes(watch("teamId")))
               .length > 0 && (
               <Box sx={{ display: "flex", gap: 2 }}>

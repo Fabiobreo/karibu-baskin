@@ -2,6 +2,10 @@
  * Restituisce la stringa stagione (es. "2025-26") per una data.
  * La stagione inizia a settembre (mese indice 8).
  * Aug 2025 → "2024-25", Sep 2025 → "2025-26"
+ *
+ * Va bene per la stagione di una data precisa (una partita, un allenamento).
+ * Per "la stagione in corso" del sito usare `getCurrentSeasonLabel()` in
+ * `./activeSeason`, che rispetta la stagione segnata dallo staff.
  */
 export function getCurrentSeason(date: Date | string = new Date()): string {
   const d = typeof date === "string" ? new Date(date) : date;
@@ -50,12 +54,17 @@ export interface ActiveSeason {
   hasAnyData: boolean;
 }
 
+/** La stagione marcata dallo staff o, in mancanza, quella del calendario. */
+export function pickCurrentSeason(markedSeasons: string[], now: Date = new Date()): string {
+  return markedSeasons[0] ?? getCurrentSeason(now);
+}
+
 export function resolveActiveSeason({
   markedSeasons,
   seasonsWithData,
   now,
 }: ResolveActiveSeasonInput): ActiveSeason {
-  const activeSeason = markedSeasons[0] ?? getCurrentSeason(now ?? new Date());
+  const activeSeason = pickCurrentSeason(markedSeasons, now);
   const withData = seasonsWithData.filter((s) => !!s);
 
   // La stagione attiva è sempre rappresentata fra i chip, anche se non ha dati:

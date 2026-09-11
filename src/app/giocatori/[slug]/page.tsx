@@ -38,7 +38,7 @@ import { slugify } from "@/lib/slugUtils";
 import { isMinor, isMinorChild } from "@/lib/minors";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { buildMetadata } from "@/lib/seo";
@@ -126,14 +126,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null; // es. "2025-26"
 
-  const [t, tTeams, locale] = await Promise.all([
-    getTranslations("players"),
-    getTranslations("teams"),
-    getLocale(),
-  ]);
-  const { roleLabel, sportRoleLabel, genderLabel, matchResultLabel } = await getEntityLabels();
-  const dateLocale = getDateFnsLocale(locale);
-
   // Relazioni comuni a User e Child (stesse `include` → stessa forma dei dati).
   const relationSelect = {
     teamMemberships: {
@@ -162,39 +154,59 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     },
   };
 
-  // Cerca per slug (es. "mario-rossi"), con fallback su ID (per link esistenti)
-  const userRow = await prisma.user.findFirst({
-    where: { OR: [{ slug }, { id: slug }] },
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      customImage: true,
-      sportRole: true,
-      sportRoleVariant: true,
-      gender: true,
-      birthDate: true,
-      appRole: true,
-      ...relationSelect,
-    },
-  });
+  // Tutto quello che non dipende dal giocatore parte insieme alla sua ricerca:
+  // prima erano sette attese in fila, e con il database a freddo si sommavano.
+  // La ricerca tra i figli parte anche lei subito (è una query leggera) e il
+  // risultato si usa solo se tra gli utenti non c'è, o è un GUEST.
+  const [
+    t,
+    tTeams,
+    locale,
+    { roleLabel, sportRoleLabel, genderLabel, matchResultLabel },
+    currentSeason,
+    badgeI18n,
+    userRow,
+    childMatch,
+  ] = await Promise.all([
+    getTranslations("players"),
+    getTranslations("teams"),
+    getLocale(),
+    getEntityLabels(),
+    getCurrentSeasonLabel(),
+    getBadgeI18n(),
+    // Cerca per slug (es. "mario-rossi"), con fallback su ID (per link esistenti)
+    prisma.user.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        customImage: true,
+        sportRole: true,
+        sportRoleVariant: true,
+        gender: true,
+        birthDate: true,
+        appRole: true,
+        ...relationSelect,
+      },
+    }),
+    prisma.child.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
+      select: {
+        id: true,
+        name: true,
+        sportRole: true,
+        sportRoleVariant: true,
+        gender: true,
+        birthDate: true,
+        ...relationSelect,
+      },
+    }),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
 
-  // Se non è un utente (o è un GUEST), prova tra i figli senza account.
-  const childRow =
-    userRow && userRow.appRole !== "GUEST"
-      ? null
-      : await prisma.child.findFirst({
-          where: { OR: [{ slug }, { id: slug }] },
-          select: {
-            id: true,
-            name: true,
-            sportRole: true,
-            sportRoleVariant: true,
-            gender: true,
-            birthDate: true,
-            ...relationSelect,
-          },
-        });
+  // Se non è un utente (o è un GUEST), vale il figlio senza account.
+  const childRow = userRow && userRow.appRole !== "GUEST" ? null : childMatch;
 
   if ((!userRow || userRow.appRole === "GUEST") && !childRow) notFound();
 
@@ -239,7 +251,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         sportRoleHistory: userRow!.sportRoleHistory,
       };
 
-  const currentSeason = getCurrentSeason();
   const currentTeams = player.teamMemberships.filter((m) => m.team.season === currentSeason);
   // Squadra da usare come genitore nel breadcrumb: quella della stagione in
   // corso, altrimenti la piu' recente a cui il giocatore e' appartenuto.
@@ -264,11 +275,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     rank: 1 | 2 | 3;
     points: number;
   };
-  const medals: Medal[] = [];
   // Il "top scorer" è calcolato PER RUOLO: confrontare i punti totali tra ruoli
   // diversi (es. R1 vs R5) non sarebbe equo. Serve quindi il ruolo del giocatore.
   const subjectRole = player.sportRole;
-  if (teamSeasonPairs.length > 0 && subjectRole != null) {
+  async function loadMedals(): Promise<Medal[]> {
+    const medals: Medal[] = [];
+    if (teamSeasonPairs.length === 0 || subjectRole == null) return medals;
     // Fetch di tutti i playerStats per le (team, season) del giocatore, esclusi i prestiti.
     // Le partite del team in quella stagione vengono filtrate via match.team.season.
     const allRelevantStats = await prisma.playerMatchStats.findMany({
@@ -356,8 +368,18 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       });
     }
     // Ordina: stagione più recente prima, rank migliore prima
-    medals.sort((a, b) => b.season.localeCompare(a.season) || a.rank - b.rank);
+    return medals.sort((a, b) => b.season.localeCompare(a.season) || a.rank - b.rank);
   }
+
+  // Medaglie e data di sblocco dei badge (da EarnedBadge, per "Sbloccato il …")
+  // dipendono solo dal giocatore: partono insieme.
+  const [medals, earnedBadgeRows] = await Promise.all([
+    loadMedals(),
+    prisma.earnedBadge.findMany({
+      where: childRow ? { childId: player.id } : { userId: player.id },
+      select: { badgeId: true, unlockedAt: true },
+    }),
+  ]);
 
   const { earned: earnedBadges, locked: lockedBadges } = computeBadgeState({
     matchStats: player.matchStats.map((ms) => ({
@@ -378,13 +400,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     sportRole: player.sportRole,
   });
 
-  // Data di sblocco dei badge (da EarnedBadge), per mostrare "Sbloccato il …".
-  const earnedBadgeRows = await prisma.earnedBadge.findMany({
-    where: childRow ? { childId: player.id } : { userId: player.id },
-    select: { badgeId: true, unlockedAt: true },
-  });
   const unlockedAtMap = new Map(earnedBadgeRows.map((r) => [r.badgeId, r.unlockedAt]));
-  const badgeI18n = await getBadgeI18n();
   const earnedBadgesView: EarnedBadgeView[] = earnedBadges.map((b) => {
     const at = unlockedAtMap.get(b.id);
     return {

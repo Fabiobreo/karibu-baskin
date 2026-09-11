@@ -17,21 +17,24 @@ export type PostItem = {
 };
 
 export default async function LatestNewsHero() {
-  const posts = await prisma.post.findMany({
-    where: { publishedAt: { not: null } },
-    orderBy: { publishedAt: "desc" },
-    take: 4,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      body: true,
-      imageUrl: true,
-      publishedAt: true,
-      poll: { select: { id: true, closesAt: true } },
-    },
-  });
-  const [t, tm] = await Promise.all([getTranslations("home"), getTranslations("matches")]);
+  const [posts, t, tm] = await Promise.all([
+    prisma.post.findMany({
+      where: { publishedAt: { not: null } },
+      orderBy: { publishedAt: "desc" },
+      take: 4,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        body: true,
+        imageUrl: true,
+        publishedAt: true,
+        poll: { select: { id: true, closesAt: true } },
+      },
+    }),
+    getTranslations("home"),
+    getTranslations("matches"),
+  ]);
 
   if (posts.length === 0) return null;
 

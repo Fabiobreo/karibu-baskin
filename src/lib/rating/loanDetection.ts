@@ -6,6 +6,7 @@
 // `isLoan` automaticamente al salvataggio, e dallo script di backfill.
 
 import { prisma } from "@/lib/db";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 
 export type LoanLookup = {
   match: { teamId: string; teamSeason: string };
@@ -29,20 +30,26 @@ export async function buildLoanLookup(
     select: {
       teamId: true,
       opponentTeamId: true,
-      team: { select: { season: true } },
-      opponentTeam: { select: { season: true } },
+      team: { select: { id: true, season: true, isMixed: true } },
+      opponentTeam: { select: { id: true, season: true, isMixed: true } },
     },
   });
   if (!match) return null;
 
   const effectiveTeamId = targetTeamId ?? match.teamId;
-  const effectiveSeason =
-    effectiveTeamId === match.opponentTeamId
-      ? (match.opponentTeam?.season ?? match.team.season)
-      : match.team.season;
+  const effectiveTeam =
+    effectiveTeamId === match.opponentTeamId && match.opponentTeam
+      ? match.opponentTeam
+      : match.team;
+  const effectiveSeason = effectiveTeam.season;
 
+  // La Karibu di stagione schiera i tesserati di tutta la stagione: per lei nessun
+  // giocatore della stagione è in prestito.
   const memberships = await prisma.teamMembership.findMany({
-    where: { team: { id: effectiveTeamId, season: effectiveSeason } },
+    where: {
+      teamId: { in: await rosterTeamIds([effectiveTeam]) },
+      team: { season: effectiveSeason },
+    },
     select: { userId: true, childId: true },
   });
 

@@ -140,6 +140,43 @@ type AppBarPalette = {
   to: string;
 };
 
+/**
+ * Barra di navigazione del pannello admin. Una tinta arancione, non una banda
+ * piena: si distingue sia dall'header scuro sia dal corpo della pagina, ma
+ * segue il tema invece di restare un blocco saturo anche in dark.
+ */
+type AdminBandPalette = {
+  bg: string;
+  border: string;
+  /** Voci non selezionate. */
+  text: string;
+  /** Voce selezionata, etichetta "Amministrazione" e icona. */
+  accent: string;
+  /** Sottolineatura della voce selezionata (elemento grafico, soglia 3:1). */
+  indicator: string;
+  hover: string;
+};
+
+// 4,76:1 per l'accento sulla tinta, 3,22:1 per l'indicatore.
+const lightAdminBand: AdminBandPalette = {
+  bg: "#FBE9E0",
+  border: "#F3CDB8",
+  text: DARK,
+  accent: ORANGE_ON_LIGHT,
+  indicator: ORANGE,
+  hover: "rgba(191,54,12,0.08)",
+};
+
+// 6,98:1 per l'accento sulla tinta scura.
+const darkAdminBand: AdminBandPalette = {
+  bg: "#2B1D16",
+  border: "#4A2E20",
+  text: "#F0F0F0",
+  accent: ORANGE_ON_DARK,
+  indicator: ORANGE_ON_DARK,
+  hover: "rgba(255,138,80,0.10)",
+};
+
 declare module "@mui/material/styles" {
   interface Palette {
     match: MatchPalette;
@@ -150,6 +187,7 @@ declare module "@mui/material/styles" {
     heroGradient: HeroGradientPalette;
     focusRing: FocusRingPalette;
     appBar: AppBarPalette;
+    adminBand: AdminBandPalette;
   }
   interface PaletteOptions {
     match?: MatchPalette;
@@ -160,6 +198,7 @@ declare module "@mui/material/styles" {
     heroGradient?: HeroGradientPalette;
     focusRing?: FocusRingPalette;
     appBar?: AppBarPalette;
+    adminBand?: AdminBandPalette;
   }
 
   // Arancione da usare per TESTO e link. Vedi ORANGE_ON_LIGHT / ORANGE_ON_DARK.
@@ -364,11 +403,15 @@ function buildComponents(mode: "light" | "dark") {
     },
     MuiOutlinedInput: {
       styleOverrides: {
-        // L'elemento che prende il focus e' l'<input> interno, ma l'anello va
-        // disegnato attorno al bordo visibile. `.MuiInputBase-input:focus`
-        // azzera comunque l'outline sull'input, quindi la regola globale li'
-        // non basterebbe.
-        root: { "&:has(:focus-visible)": focusRingStyles },
+        // Niente anello di focus sui campi: in un campo di testo `:focus-visible`
+        // scatta anche al click (per il browser l'input li' e' sempre da
+        // tastiera), e l'anello si sommava al bordo del campo a ogni click, con
+        // un triplo contorno. Il campo ha gia' il suo indicatore, il bordo a 2px
+        // di `.Mui-focused`: gli diamo l'arancione accessibile del tema (5,60:1
+        // in chiaro, 7,15:1 in scuro) invece di `primary.main` (3,7:1 in scuro).
+        root: {
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: orangeText },
+        },
       },
     },
     MuiButton: {
@@ -511,6 +554,7 @@ export const lightTheme = createTheme({
     heroGradient,
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
+    adminBand: lightAdminBand,
   },
   typography: sharedTypography,
   shape: sharedShape,
@@ -551,6 +595,7 @@ export const darkTheme = createTheme({
     heroGradient,
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
+    adminBand: darkAdminBand,
   },
   typography: sharedTypography,
   shape: sharedShape,

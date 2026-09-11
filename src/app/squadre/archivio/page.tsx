@@ -18,6 +18,7 @@ import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { getActiveSeason } from "@/lib/season/activeSeason";
 
 export const metadata: Metadata = buildMetadata({
   title: "Archivio squadre",
@@ -29,17 +30,19 @@ export const revalidate = 3600;
 
 export default async function SquadreArchivioPage() {
   const t = await getTranslations("teams");
-  const [teams, seasonRecords] = await Promise.all([
+  const [teams, { displaySeason }] = await Promise.all([
     prisma.competitiveTeam.findMany({
+      where: { isMixed: false },
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: { _count: { select: { memberships: true, matches: true } } },
     }),
-    prisma.season.findMany(),
+    getActiveSeason("teams"),
   ]);
 
-  const currentSeason = seasonRecords.find((s) => s.isCurrent)?.label ?? null;
-
-  const pastTeams = currentSeason ? teams.filter((t) => t.season < currentSeason) : teams;
+  // Archivio = le stagioni prima di quella mostrata su /squadre (la corrente,
+  // o l'ultima popolata se la corrente non ha ancora squadre): stessa regola
+  // del link "archivio" di quella pagina, così nessuna stagione sparisce.
+  const pastTeams = teams.filter((t) => t.season < displaySeason);
 
   const seasons = [...new Set(pastTeams.map((t) => t.season))].sort((a, b) => b.localeCompare(a));
 

@@ -31,6 +31,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [teams, players, sessions, matches, opposingTeams, posts, events] = await Promise.all([
     prisma.competitiveTeam.findMany({
+      // La Karibu di stagione non ha una pagina pubblica.
+      where: { isMixed: false },
       select: { name: true, season: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),

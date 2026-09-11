@@ -56,9 +56,14 @@ interface Registration {
 interface SessionPageClientProps {
   /** Dati dell'allenamento gia letti lato server: evitano lo skeleton sul titolo. */
   initialSession: Session | null;
+  /** Stagione in corso (flag dello staff, o calendario), per il badge squadra nel form. */
+  currentSeason: string;
 }
 
-export default function SessionPageClient({ initialSession }: SessionPageClientProps) {
+export default function SessionPageClient({
+  initialSession,
+  currentSeason,
+}: SessionPageClientProps) {
   const t = useTranslations("trainings");
   const { teamColorLabel } = useEntityLabels();
   const { session: sessionParam } = useParams<{ session: string }>();
@@ -524,6 +529,7 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
                             registeredChildIds={registrations.map((r) => r.childId)}
                             currentUser={currentUser}
                             parentChildren={parentChildren}
+                            currentSeason={currentSeason}
                             restrictions={
                               session
                                 ? {

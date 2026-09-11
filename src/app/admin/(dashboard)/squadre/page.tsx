@@ -9,6 +9,8 @@ export const revalidate = 60;
 export default async function AdminSquadrePage() {
   const [teams, seasons] = await Promise.all([
     prisma.competitiveTeam.findMany({
+      // La Karibu di stagione è nascosta: nasce da sola e non si gestisce qui.
+      where: { isMixed: false },
       orderBy: [{ season: "desc" }, { name: "asc" }],
       include: {
         _count: { select: { memberships: true, matches: true } },

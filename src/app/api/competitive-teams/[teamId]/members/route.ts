@@ -28,10 +28,18 @@ export async function POST(req: Request, { params }: Params) {
   // Blocco: un atleta può essere in una sola squadra per stagione
   const targetTeam = await prisma.competitiveTeam.findUnique({
     where: { id: teamId },
-    select: { season: true },
+    select: { season: true, isMixed: true },
   });
   if (!targetTeam) {
     return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
+  }
+  if (targetTeam.isMixed) {
+    return NextResponse.json(
+      {
+        error: "Karibu non ha una rosa propria: gioca con tutti i giocatori della stagione",
+      },
+      { status: 400 }
+    );
   }
   const existing = await prisma.teamMembership.findFirst({
     where: {

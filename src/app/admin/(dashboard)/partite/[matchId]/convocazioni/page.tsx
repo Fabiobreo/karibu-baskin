@@ -7,6 +7,7 @@ import {
   buildLoanPool,
   WINDOW_DAYS_FOR_PRESENCES,
 } from "@/lib/matches/callupContext";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import ConvocazioniClient from "@/components/matches/ConvocazioniClient";
 import MatchQualitySection from "@/components/matches/MatchQualitySection";
 import { computeMatchQuality } from "@/lib/matches/matchQuality";
@@ -27,9 +28,11 @@ export default async function ConvocazioniPage({ params }: Params) {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
     include: {
-      team: { select: { id: true, name: true, season: true, color: true } },
+      team: { select: { id: true, name: true, season: true, color: true, isMixed: true } },
       opponent: { select: { id: true, name: true, ratingMu: true } },
-      opponentTeam: { select: { id: true, name: true, season: true, color: true } },
+      opponentTeam: {
+        select: { id: true, name: true, season: true, color: true, isMixed: true },
+      },
       callups: {
         select: {
           userId: true,
@@ -59,6 +62,7 @@ export default async function ConvocazioniPage({ params }: Params) {
     teamName: match.team.name,
     teamColor: match.team.color,
     teamSeason: match.team.season,
+    teamIsMixed: match.team.isMixed,
     matchId,
     now,
   });
@@ -69,15 +73,17 @@ export default async function ConvocazioniPage({ params }: Params) {
         teamName: match.opponentTeam.name,
         teamColor: match.opponentTeam.color,
         teamSeason: match.opponentTeam.season,
+        teamIsMixed: match.opponentTeam.isMixed,
         matchId,
         now,
       })
     : null;
 
   // Pool prestiti: giocatori di altre squadre della stessa stagione, esclusi i
-  // tesserati delle squadre che partecipano alla partita.
-  const participantTeamIds = [match.team.id, match.opponentTeam?.id].filter(
-    (x): x is string => !!x
+  // tesserati delle squadre che partecipano alla partita. Se gioca la Karibu
+  // tutta la stagione è già tra i candidati, e il pool resta vuoto.
+  const participantTeamIds = await rosterTeamIds(
+    [match.team, match.opponentTeam].filter((t): t is NonNullable<typeof t> => !!t)
   );
   const loanPool = await buildLoanPool(match.team.season, participantTeamIds);
 

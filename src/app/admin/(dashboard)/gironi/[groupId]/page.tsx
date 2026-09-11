@@ -72,6 +72,8 @@ export default async function AdminGironeWorkspacePage({ params }: Params) {
       select: { id: true, name: true, slug: true, city: true },
     }),
     prisma.competitiveTeam.findMany({
+      // La Karibu di stagione non entra nei gironi.
+      where: { isMixed: false },
       orderBy: [{ season: "desc" }, { name: "asc" }],
       select: { id: true, name: true, season: true, color: true },
     }),

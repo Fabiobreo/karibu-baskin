@@ -56,7 +56,8 @@ function parseSeasonParam(s: string): string {
 
 async function getTeam(season: string, slug: string) {
   const teams = await prisma.competitiveTeam.findMany({
-    where: { season },
+    // La Karibu di stagione non ha una pagina pubblica: il suo URL risponde 404.
+    where: { season, isMixed: false },
     include: {
       memberships: {
         orderBy: [{ isCaptain: "desc" }, { createdAt: "asc" }],
@@ -164,16 +165,19 @@ export async function generateMetadata({
 export const revalidate = 3600;
 
 export default async function TeamProfilePage({ params, searchParams }: Props) {
-  const { season: seasonParam, slug } = await params;
-  const sp = await searchParams;
+  const [{ season: seasonParam, slug }, sp] = await Promise.all([params, searchParams]);
   const includeFriendlies = sp.amichevoli === "1";
   const season = parseSeasonParam(seasonParam);
-  const team = await getTeam(season, slug);
+  const [team, session, t] = await Promise.all([
+    getTeam(season, slug),
+    auth(),
+    getTranslations("teams"),
+  ]);
   if (!team) notFound();
 
   // Tutela dei minori: chi non è tesserato non vede i minori nella rosa né nei
   // tabellini; il numero totale di atleti resta, perché non identifica nessuno.
-  const viewerIsMember = isMemberRole((await auth())?.user?.appRole);
+  const viewerIsMember = isMemberRole(session?.user?.appRole);
   const totalMembers = team.memberships.length;
   team.memberships = publicSubjects(team.memberships, viewerIsMember);
   const hiddenMinors = totalMembers - team.memberships.length;
@@ -181,8 +185,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   for (const m of team.opponentInMatches) {
     m.playerStats = publicSubjects(m.playerStats, viewerIsMember);
   }
-
-  const t = await getTranslations("teams");
 
   const now = new Date();
   const teamColor = team.color ?? "#E65100";

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import SessionPageClient, { type Session } from "@/components/training/SessionPageClient";
 
 export const dynamic = "force-dynamic";
@@ -16,13 +17,16 @@ export default async function AllenamentoPage({
 }) {
   const { session: sessionParam } = await params;
 
-  const training = await prisma.trainingSession.findFirst({
-    where: { OR: [{ id: sessionParam }, { dateSlug: sessionParam }] },
-    include: {
-      _count: { select: { registrations: true } },
-      restrictTeam: { select: { id: true, name: true, color: true } },
-    },
-  });
+  const [training, currentSeason] = await Promise.all([
+    prisma.trainingSession.findFirst({
+      where: { OR: [{ id: sessionParam }, { dateSlug: sessionParam }] },
+      include: {
+        _count: { select: { registrations: true } },
+        restrictTeam: { select: { id: true, name: true, color: true } },
+      },
+    }),
+    getCurrentSeasonLabel(),
+  ]);
 
   if (!training) notFound();
 
@@ -43,5 +47,5 @@ export default async function AllenamentoPage({
     _count: training._count,
   };
 
-  return <SessionPageClient initialSession={initialSession} />;
+  return <SessionPageClient initialSession={initialSession} currentSeason={currentSeason} />;
 }

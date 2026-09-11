@@ -75,48 +75,51 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function NewsSlugPage({ params }: Props) {
-  const [t, locale] = await Promise.all([getTranslations("pages"), getLocale()]);
-  const dateLocale = getDateFnsLocale(locale);
   const { slug } = await params;
-  const session = await auth();
+  const [t, locale, session, post] = await Promise.all([
+    getTranslations("pages"),
+    getLocale(),
+    auth(),
+    prisma.post.findFirst({
+      where: { slug, publishedAt: { not: null } },
+      include: {
+        author: { select: { name: true } },
+        poll: {
+          include: { options: { orderBy: { order: "asc" } } },
+        },
+      },
+    }),
+  ]);
+  const dateLocale = getDateFnsLocale(locale);
   const userId = session?.user?.id ?? null;
   const isStaff = !!session?.user && hasRole(session.user.appRole, "COACH");
-
-  const post = await prisma.post.findFirst({
-    where: { slug, publishedAt: { not: null } },
-    include: {
-      author: { select: { name: true } },
-      poll: {
-        include: { options: { orderBy: { order: "asc" } } },
-      },
-    },
-  });
 
   if (!post) notFound();
 
   const now = new Date();
   const pollClosed = post.poll?.closesAt ? post.poll.closesAt <= now : false;
 
-  // Conteggi voti: visibili a tutti se poll chiuso, oppure sempre per lo staff (anteprima)
-  let voteCounts: Record<string, number> | null = null;
-  if (post.poll && (pollClosed || isStaff)) {
-    const counts = await prisma.pollVote.groupBy({
-      by: ["optionId"],
-      where: { pollId: post.poll.id },
-      _count: { optionId: true },
-    });
-    voteCounts = Object.fromEntries(counts.map((c) => [c.optionId, c._count.optionId]));
-  }
-
-  // Voti dell'utente corrente
-  let userVoteOptionIds: string[] = [];
-  if (userId && post.poll) {
-    const votes = await prisma.pollVote.findMany({
-      where: { pollId: post.poll.id, userId },
-      select: { optionId: true },
-    });
-    userVoteOptionIds = votes.map((v) => v.optionId);
-  }
+  const [counts, votes] = await Promise.all([
+    // Conteggi voti: visibili a tutti se poll chiuso, oppure sempre per lo staff (anteprima)
+    post.poll && (pollClosed || isStaff)
+      ? prisma.pollVote.groupBy({
+          by: ["optionId"],
+          where: { pollId: post.poll.id },
+          _count: { optionId: true },
+        })
+      : null,
+    // Voti dell'utente corrente
+    userId && post.poll
+      ? prisma.pollVote.findMany({
+          where: { pollId: post.poll.id, userId },
+          select: { optionId: true },
+        })
+      : [],
+  ]);
+  const voteCounts: Record<string, number> | null = counts
+    ? Object.fromEntries(counts.map((c) => [c.optionId, c._count.optionId]))
+    : null;
+  const userVoteOptionIds: string[] = votes.map((v) => v.optionId);
 
   return (
     <>

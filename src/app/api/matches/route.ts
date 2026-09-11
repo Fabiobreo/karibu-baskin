@@ -7,6 +7,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import type { MatchResult } from "@prisma/client";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { mixedMatchError } from "@/lib/matches/mixedTeam";
 
 export async function GET(req: NextRequest) {
   const rl = checkRateLimit(getClientIp(req), "get-matches", 30, 60_000);
@@ -15,9 +16,12 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const teamId = searchParams.get("teamId");
 
+  // La scheda dello staff sull'avversario (valutazioni e note) non esce dalle
+  // GET: il pannello admin la legge lato server.
   const matches = await prisma.match.findMany({
     where: teamId ? { OR: [{ teamId }, { opponentTeamId: teamId }] } : undefined,
     orderBy: { date: "desc" },
+    omit: { opponentProfile: true },
     include: {
       team: { select: { id: true, name: true, season: true, color: true } },
       opponent: { select: { id: true, name: true, city: true } },
@@ -69,7 +73,10 @@ export async function POST(req: Request) {
 
   // Fetch nomi per la generazione dello slug (sia avversario esterno che interno)
   const [team, opponentExt, opponentInt] = await Promise.all([
-    prisma.competitiveTeam.findUnique({ where: { id: body.teamId }, select: { name: true } }),
+    prisma.competitiveTeam.findUnique({
+      where: { id: body.teamId },
+      select: { name: true, isMixed: true },
+    }),
     body.opponentId
       ? prisma.opposingTeam.findUnique({
           where: { id: body.opponentId },
@@ -79,16 +86,27 @@ export async function POST(req: Request) {
     body.opponentTeamId
       ? prisma.competitiveTeam.findUnique({
           where: { id: body.opponentTeamId },
-          select: { name: true },
+          select: { name: true, isMixed: true },
         })
       : Promise.resolve(null),
   ]);
-  const opponentName = opponentExt?.name ?? opponentInt?.name ?? null;
-  const slug =
-    team && opponentName ? await generateMatchSlug(team.name, opponentName, matchDate) : null;
+  if (!team) return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
 
-  // Le partite interne sono sempre amichevoli (lo schema lo richiede)
-  const resolvedMatchType = body.opponentTeamId ? "FRIENDLY" : (body.matchType ?? "LEAGUE");
+  // Le partite interne sono sempre amichevoli (lo schema lo richiede); una
+  // Karibu di stagione senza tipo indicato gioca un'amichevole, mai il campionato.
+  const involvesMixed = team.isMixed || !!opponentInt?.isMixed;
+  const resolvedMatchType = body.opponentTeamId
+    ? "FRIENDLY"
+    : (body.matchType ?? (involvesMixed ? "FRIENDLY" : "LEAGUE"));
+  const mixedError = mixedMatchError({
+    involvesMixed,
+    matchType: resolvedMatchType,
+    groupId: body.groupId,
+  });
+  if (mixedError) return NextResponse.json({ error: mixedError }, { status: 400 });
+
+  const opponentName = opponentExt?.name ?? opponentInt?.name ?? null;
+  const slug = opponentName ? await generateMatchSlug(team.name, opponentName, matchDate) : null;
 
   const match = await prisma.match.create({
     data: {

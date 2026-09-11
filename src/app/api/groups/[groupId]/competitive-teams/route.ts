@@ -34,6 +34,17 @@ export async function POST(req: NextRequest, { params }: Params) {
     );
   }
 
+  const team = await prisma.competitiveTeam.findUnique({
+    where: { id: parsed.data.competitiveTeamId },
+    select: { isMixed: true },
+  });
+  if (team?.isMixed) {
+    return NextResponse.json(
+      { error: "Karibu (tutta la squadra) non si iscrive ai gironi" },
+      { status: 400 }
+    );
+  }
+
   try {
     const created = await prisma.groupCompetitiveTeam.create({
       data: { groupId: realGroupId, competitiveTeamId: parsed.data.competitiveTeamId },

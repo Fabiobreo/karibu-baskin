@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
 import {
@@ -20,13 +21,28 @@ const MatchResultSchema = z.object({
 });
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
+  const rl = checkRateLimit(getClientIp(req), "get-match-results", 60, 60_000);
+  if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
   const { sessionId } = await params;
+  // Solo i punteggi: `rostersSnapshot` contiene nome e id di ogni giocatore
+  // (minori compresi) e serve soltanto al ricalcolo TrueSkill, quindi non esce
+  // mai da qui. Le note sono dello staff.
+  const staff = await isCoachOrAdmin();
   const results = await prisma.trainingMatchResult.findMany({
     where: { sessionId },
     orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      sessionId: true,
+      matchup: true,
+      scoreA: true,
+      scoreB: true,
+      notes: staff,
+      createdAt: true,
+    },
   });
   return NextResponse.json(results);
 }

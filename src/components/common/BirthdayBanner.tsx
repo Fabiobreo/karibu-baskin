@@ -5,15 +5,17 @@ import { getTranslations } from "next-intl/server";
 import { heroGradient } from "@/lib/heroStyles";
 
 export default async function BirthdayBanner() {
-  const t = await getTranslations("home");
   const now = new Date();
   const todayMonth = now.getMonth() + 1;
   const todayDay = now.getDate();
 
-  const users = await prisma.user.findMany({
-    where: { birthDate: { not: null }, appRole: { not: "GUEST" }, slug: { not: null } },
-    select: { name: true, slug: true, birthDate: true },
-  });
+  const [t, users] = await Promise.all([
+    getTranslations("home"),
+    prisma.user.findMany({
+      where: { birthDate: { not: null }, appRole: { not: "GUEST" }, slug: { not: null } },
+      select: { name: true, slug: true, birthDate: true },
+    }),
+  ]);
 
   const celebrants = users.filter((u) => {
     const d = new Date(u.birthDate!);

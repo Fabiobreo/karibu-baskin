@@ -50,6 +50,8 @@ export default async function AdminRosaPage({ params }: Params) {
     },
   });
   if (!team) notFound();
+  // La Karibu di stagione non ha una rosa propria da gestire.
+  if (team.isMixed) redirect("/admin/squadre");
 
   const [users, children, otherTeams] = await Promise.all([
     prisma.user.findMany({

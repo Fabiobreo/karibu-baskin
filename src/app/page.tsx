@@ -1,13 +1,12 @@
-import { prisma } from "@/lib/db";
+import { Suspense } from "react";
 import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
-import HomeSessionsSection from "@/components/training/HomeSessionsSection";
+import HomeSessions from "@/components/training/HomeSessions";
+import HomeSectionSkeleton from "@/components/common/HomeSectionSkeleton";
 import JoinUsCta from "@/components/common/JoinUsCta";
 import JsonLd from "@/components/common/JsonLd";
 import { organizationJsonLd } from "@/lib/structuredData";
-import type { SessionWithCount } from "@/components/training/SessionCard";
-import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/common/HeroSection";
 import LatestNewsHero from "@/components/news/LatestNewsHero";
 import LoSapeviCard from "@/components/common/LoSapeviCard";
@@ -15,7 +14,6 @@ import ProssimePartiteHome from "@/components/matches/ProssimePartiteHome";
 import BirthdayBanner from "@/components/common/BirthdayBanner";
 import GuestWelcomeBanner from "@/components/common/GuestWelcomeBanner";
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
-import { countPendingAvailabilities } from "@/lib/matches/availabilityPending";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -34,15 +32,17 @@ export const revalidate = 0;
 type StoriaItem = { anno: string; titolo: string; testo: string };
 type ValueItem = { title: string; body: string };
 
+// Prima di mandare HTML la pagina aspetta solo la sessione (serve a scegliere
+// quale home mostrare). Ogni sezione con dati fa le sue query dentro un
+// `<Suspense>`: le boundary partono in parallelo e ognuna arriva in streaming
+// appena pronta, mentre hero e testi statici sono subito a schermo. Senza,
+// le query andavano in fila e la pagina compariva tutta insieme alla fine,
+// lentissima quando il database era sospeso (avvio a freddo Neon).
 export default async function HomePage() {
-  const t = await getTranslations("home");
+  const [t, userSession] = await Promise.all([getTranslations("home"), auth()]);
   const storia = t.raw("storia") as StoriaItem[];
   const values = t.raw("values") as ValueItem[];
 
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
   const appRole = userSession?.user?.appRole ?? null;
   const isStaff = appRole === "COACH" || appRole === "ADMIN";
@@ -50,67 +50,26 @@ export default async function HomePage() {
   const isMember =
     appRole === "ATHLETE" || appRole === "PARENT" || appRole === "COACH" || appRole === "ADMIN";
 
-  // Finestra della home. Oltre questa soglia una sessione non è "il prossimo
-  // allenamento" per chi visita: in estate l'unica data futura può essere a
-  // nove mesi, e una card "Tra 271 giorni · 0 iscritti" come prima cosa sotto
-  // la hero dice che la squadra è ferma. Fuori finestra la sezione mostra un
-  // invito a scriverci (vedi HomeSessionsSection). Il calendario resta completo.
-  const HOME_WINDOW_DAYS = 45;
-  const horizon = new Date(startOfToday.getTime() + HOME_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-
-  const rawSessions = await prisma.trainingSession.findMany({
-    where: { date: { gte: startOfToday, lte: horizon } },
-    orderBy: { date: "asc" },
-    include: {
-      _count: { select: { registrations: true } },
-      restrictTeam: { select: { id: true, name: true, color: true } },
-    },
-  });
-
-  // Le squadre generate contengono nome, ruolo e genere di ogni atleta, minori
-  // compresi: nella home pubblica non devono finire nel payload della pagina.
-  const sessions = rawSessions.map((s) => ({
-    ...s,
-    teams: isMember ? parseTeamsData(s.teams) : null,
-  })) satisfies SessionWithCount[];
-
-  const inCorso = sessions.filter((s) => {
-    const start = new Date(s.date);
-    const end = s.endTime ? new Date(s.endTime) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
-    return now >= start && now <= end;
-  });
-
-  const allUpcoming = sessions.filter((s) => new Date(s.date) > now);
-
-  // Mostra 2 prossimi se stesso giorno, altrimenti solo 1
-  const first = allUpcoming[0] ?? null;
-  const second = allUpcoming[1] ?? null;
-  const sameDay =
-    first && second && new Date(first.date).toDateString() === new Date(second.date).toDateString();
-  const upcoming = sameDay ? [first, second] : first ? [first] : [];
-
-  // Recupera le iscrizioni dell'utente per le sessioni visibili
-  let registrationIdBySession: Record<string, string> = {};
-  const visibleIds = [...inCorso, ...upcoming].map((s) => s.id);
-  if (userId && visibleIds.length > 0) {
-    const regs = await prisma.registration.findMany({
-      where: { userId, sessionId: { in: visibleIds } },
-      select: { id: true, sessionId: true },
-    });
-    registrationIdBySession = Object.fromEntries(regs.map((r) => [r.sessionId, r.id]));
-  }
-
-  const pendingAvailabilities = isMember && userId ? await countPendingAvailabilities(userId) : 0;
-
+  // Il Container #allenamenti resta fuori dal Suspense: è l'ancora della CTA
+  // della hero e deve esistere prima che arrivino i dati.
   const sessionsBlock = (
     <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-      <HomeSessionsSection
-        inCorso={inCorso}
-        upcoming={upcoming}
-        registrationIdBySession={registrationIdBySession}
-        isStaff={isStaff}
-      />
+      <Suspense fallback={<HomeSectionSkeleton variant="sessions" />}>
+        <HomeSessions userId={userId} isMember={isMember} isStaff={isStaff} />
+      </Suspense>
     </Container>
+  );
+
+  const matchesBlock = (
+    <Suspense fallback={<HomeSectionSkeleton variant="matches" />}>
+      <ProssimePartiteHome />
+    </Suspense>
+  );
+
+  const newsBlock = (
+    <Suspense fallback={<HomeSectionSkeleton variant="news" />}>
+      <LatestNewsHero />
+    </Suspense>
   );
 
   // ── Chi siamo (valori + storia) — mostrato in fondo a tutti ──────────────
@@ -256,12 +215,20 @@ export default async function HomePage() {
     return (
       <>
         <JsonLd data={organizationJsonLd()} />
-        <BirthdayBanner />
+        {/* Banner che il più delle volte non c'è: niente skeleton, compaiono
+            solo se servono. */}
+        <Suspense fallback={null}>
+          <BirthdayBanner />
+        </Suspense>
         <HeroSection />
-        <PendingAvailabilityBanner count={pendingAvailabilities} />
+        {userId && (
+          <Suspense fallback={null}>
+            <PendingAvailabilityBanner userId={userId} />
+          </Suspense>
+        )}
         {sessionsBlock}
-        <ProssimePartiteHome />
-        <LatestNewsHero />
+        {matchesBlock}
+        {newsBlock}
         <LoSapeviCard />
         {chiSiamoBlock}
       </>
@@ -279,9 +246,9 @@ export default async function HomePage() {
       )}
       <HeroSection />
 
-      <LatestNewsHero />
+      {newsBlock}
 
-      <ProssimePartiteHome />
+      {matchesBlock}
 
       {sessionsBlock}
 

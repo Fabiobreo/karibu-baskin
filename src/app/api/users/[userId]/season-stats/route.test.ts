@@ -9,7 +9,13 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/lib/apiAuth", () => ({
+  // Tesserato per default: i casi dei non tesserati lo dicono esplicitamente.
+  isMember: vi.fn().mockResolvedValue(true),
+}));
+
 import { GET } from "./route";
+import { isMember } from "@/lib/apiAuth";
 import { prisma } from "@/lib/db";
 
 type PrismaMock = {
@@ -17,6 +23,7 @@ type PrismaMock = {
   playerMatchStats: { findMany: Mock };
 };
 const p = prisma as unknown as PrismaMock;
+const mockIsMember = isMember as Mock;
 
 function makeGET(
   userId: string,
@@ -146,5 +153,21 @@ describe("GET /api/users/[userId]/season-stats", () => {
     expect(p.playerMatchStats.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: "u1" } })
     );
+  });
+
+  it("un utente minorenne: 404 per chi non è tesserato", async () => {
+    mockIsMember.mockResolvedValueOnce(false);
+    p.user.findUnique.mockResolvedValue({ id: "u1", birthDate: new Date() });
+    const res = await GET(...makeGET("u1"));
+    expect(res.status).toBe(404);
+    expect(p.playerMatchStats.findMany).not.toHaveBeenCalled();
+  });
+
+  it("un utente senza data di nascita conta come adulto", async () => {
+    mockIsMember.mockResolvedValueOnce(false);
+    p.user.findUnique.mockResolvedValue({ id: "u1", birthDate: null });
+    p.playerMatchStats.findMany.mockResolvedValue([]);
+    const res = await GET(...makeGET("u1"));
+    expect(res.status).toBe(200);
   });
 });

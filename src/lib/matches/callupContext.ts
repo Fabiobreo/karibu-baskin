@@ -5,6 +5,7 @@
 
 import { prisma } from "@/lib/db";
 import { computeCandidateStats } from "@/lib/matches/callupStats";
+import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import type {
   CandidateInput,
   SessionEligibilityInput,
@@ -17,6 +18,7 @@ export interface TeamCallupContext {
   name: string;
   color: string | null;
   season: string;
+  isMixed: boolean;
   stats: Array<{
     candidate: CandidateInput;
     presences: number;
@@ -26,6 +28,7 @@ export interface TeamCallupContext {
     daysSinceLastCallup: number | null;
     availability: boolean | null; // true=disponibile, false=non disponibile, null=non risposto
     loanFrom?: string | null; // se valorizzato, è un prestito: nome della squadra di provenienza
+    fromTeam?: string | null; // Karibu di stagione: squadra (o squadre) in cui il giocatore è tesserato
   }>;
   initialSelectedUserIds: string[];
   initialSelectedChildIds: string[];
@@ -44,6 +47,8 @@ interface BuildArgs {
   teamName: string;
   teamColor: string | null;
   teamSeason: string;
+  /** Karibu di stagione: i candidati sono i tesserati di tutte le squadre della stagione. */
+  teamIsMixed?: boolean;
   matchId: string;
   now: Date;
 }
@@ -53,10 +58,14 @@ export async function buildTeamCallupContext({
   teamName,
   teamColor,
   teamSeason,
+  teamIsMixed = false,
   matchId,
   now,
 }: BuildArgs): Promise<TeamCallupContext> {
   const windowStart = new Date(now.getTime() - WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  // Rose da cui pescare i candidati: la squadra stessa, o per la Karibu tutte
+  // le squadre non Karibu della sua stagione.
+  const rosterIds = await rosterTeamIds([{ id: teamId, season: teamSeason, isMixed: teamIsMixed }]);
 
   // Convocazioni esistenti per QUESTO lato (teamId esplicito).
   // I record legacy con teamId NULL sono semanticamente "lato match.teamId" —
@@ -77,8 +86,10 @@ export async function buildTeamCallupContext({
 
   const [memberships, windowSessions, allUserMemberships, allChildMemberships] = await Promise.all([
     prisma.teamMembership.findMany({
-      where: { teamId },
+      where: { teamId: { in: rosterIds } },
+      orderBy: { createdAt: "asc" },
       include: {
+        team: { select: { name: true } },
         user: {
           select: {
             id: true,
@@ -119,17 +130,29 @@ export async function buildTeamCallupContext({
       },
     }),
     prisma.teamMembership.findMany({
-      where: { teamId, userId: { not: null } },
+      where: { teamId: { in: rosterIds }, userId: { not: null } },
       select: { userId: true },
     }),
     prisma.teamMembership.findMany({
-      where: { teamId, childId: { not: null } },
+      where: { teamId: { in: rosterIds }, childId: { not: null } },
       select: { childId: true },
     }),
   ]);
 
-  const rosterUserIds = allUserMemberships.map((m) => m.userId!).filter(Boolean);
-  const rosterChildIds = allChildMemberships.map((m) => m.childId!).filter(Boolean);
+  const rosterUserIds = [...new Set(allUserMemberships.map((m) => m.userId!).filter(Boolean))];
+  const rosterChildIds = [...new Set(allChildMemberships.map((m) => m.childId!).filter(Boolean))];
+
+  // Karibu di stagione: per ogni giocatore le squadre di provenienza (può essere
+  // tesserato in più d'una). Per una squadra normale resta vuota.
+  const fromTeamsByKey = new Map<string, string[]>();
+  if (teamIsMixed) {
+    for (const m of memberships) {
+      const key = m.userId ? `user-${m.userId}` : `child-${m.childId}`;
+      const arr = fromTeamsByKey.get(key) ?? [];
+      if (!arr.includes(m.team.name)) arr.push(m.team.name);
+      fromTeamsByKey.set(key, arr);
+    }
+  }
 
   const [allMembershipsOfRosterUsers, allMembershipsOfRosterChildren] = await Promise.all([
     rosterUserIds.length > 0
@@ -161,8 +184,19 @@ export async function buildTeamCallupContext({
     teamIdsByChildId.set(m.childId, arr);
   }
 
+  // Chi è tesserato in due squadre della stagione compare una volta sola nella
+  // rosa di la Karibu.
+  const seenCandidates = new Set<string>();
   const candidates: CandidateInput[] = memberships
+    .filter((m) => {
+      const key = m.userId ? `user-${m.userId}` : `child-${m.childId}`;
+      if (seenCandidates.has(key)) return false;
+      seenCandidates.add(key);
+      return true;
+    })
     .map((m): CandidateInput | null => {
+      // Il capitano lo è della sua squadra, non della Karibu.
+      const isCaptain = teamIsMixed ? false : m.isCaptain;
       if (m.userId && m.user) {
         return {
           kind: "user",
@@ -171,7 +205,7 @@ export async function buildTeamCallupContext({
           image: m.user.image,
           sportRole: m.user.sportRole,
           sportRoleVariant: m.user.sportRoleVariant,
-          isCaptain: m.isCaptain,
+          isCaptain,
           teamIds: teamIdsByUserId.get(m.userId) ?? [teamId],
           ratingMu: m.user.ratingMu,
           gender: m.user.gender,
@@ -186,7 +220,7 @@ export async function buildTeamCallupContext({
           image: null,
           sportRole: m.child.sportRole,
           sportRoleVariant: m.child.sportRoleVariant,
-          isCaptain: m.isCaptain,
+          isCaptain,
           teamIds: teamIdsByChildId.get(m.childId) ?? [teamId],
           ratingMu: m.child.ratingMu,
           gender: m.child.gender,
@@ -403,6 +437,7 @@ export async function buildTeamCallupContext({
     name: teamName,
     color: teamColor,
     season: teamSeason,
+    isMixed: teamIsMixed,
     stats: [
       ...stats.map((s) => ({
         candidate: s.candidate,
@@ -417,6 +452,7 @@ export async function buildTeamCallupContext({
             ? (availByUserId.get(s.candidate.id) ?? false)
             : (availByChildId.get(s.candidate.id) ?? false),
         loanFrom: null as string | null,
+        fromTeam: fromTeamsByKey.get(`${s.candidate.kind}-${s.candidate.id}`)?.join(", ") ?? null,
       })),
       ...loanStatRows,
     ],

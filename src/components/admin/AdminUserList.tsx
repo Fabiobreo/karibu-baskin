@@ -16,7 +16,6 @@ import {
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_HIERARCHY } from "@/lib/authRoles";
 import { useToast } from "@/context/ToastContext";
-import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import UserFilters from "@/components/admin/userList/UserFilters";
 import UsersTable from "@/components/admin/userList/UsersTable";
 import UsersMobileCards from "@/components/admin/userList/UsersMobileCards";
@@ -44,11 +43,14 @@ export default function AdminUserList({
   serverPage = 1,
   serverLimit = DEFAULT_ROWS_PER_PAGE,
   currentFilters = {},
+  currentSeason,
 }: {
   users: UserEntry[];
   childEntries: ChildEntry[];
   initialTeams?: TeamInfo[];
   isAdmin?: boolean;
+  /** Stagione in corso (flag dello staff, o calendario), dal Server Component. */
+  currentSeason: string;
   serverTotal?: number;
   serverPage?: number;
   serverLimit?: number;
@@ -159,7 +161,6 @@ export default function AdminUserList({
   const { showToast } = useToast();
 
   const availableTeams = initialTeams;
-  const currentSeason = getCurrentSeason();
 
   const userCount = serverDriven ? (serverTotal ?? initialUsers.length) : initialUsers.length;
   const childCount = initialChildren.length;

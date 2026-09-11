@@ -63,10 +63,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EventoPage({ params }: Props) {
   const { slug } = await params;
-  const [t, locale, ev] = await Promise.all([
+  const [t, locale, ev, session] = await Promise.all([
     getTranslations("events"),
     getLocale(),
     findEvent(slug),
+    auth(),
   ]);
   if (!ev) notFound();
 
@@ -78,20 +79,20 @@ export default async function EventoPage({ params }: Props) {
   const isPast = isEventPast(ev);
 
   // Sessione + figli per il RSVP
-  const session = await auth();
   const userId = session?.user?.id ?? null;
-  const children = userId
-    ? await prisma.child.findMany({
-        where: { parentId: userId },
-        orderBy: { createdAt: "asc" },
-        select: { id: true, name: true },
-      })
-    : [];
-
   const optionIds = ev.options.map((o) => o.id);
 
-  // Conteggi + risposte proprie (status/note) + selezioni opzioni proprie
-  const [grouped, mine, mySelections] = await Promise.all([
+  // Figli + conteggi + risposte proprie (status/note) + selezioni opzioni
+  // proprie, tutto insieme: le righe dei figli si filtrano sulla relazione
+  // (`child.parentId`) invece di aspettare prima la lista dei loro id.
+  const [children, grouped, mine, mySelections] = await Promise.all([
+    userId
+      ? prisma.child.findMany({
+          where: { parentId: userId },
+          orderBy: { createdAt: "asc" },
+          select: { id: true, name: true },
+        })
+      : [],
     prisma.eventAttendance.groupBy({
       by: ["status"],
       where: { eventId: ev.id },
@@ -101,7 +102,7 @@ export default async function EventoPage({ params }: Props) {
       ? prisma.eventAttendance.findMany({
           where: {
             eventId: ev.id,
-            OR: [{ userId }, { childId: { in: children.map((c) => c.id) } }],
+            OR: [{ userId }, { child: { parentId: userId } }],
           },
           select: { userId: true, childId: true, status: true, note: true },
         })
@@ -110,7 +111,7 @@ export default async function EventoPage({ params }: Props) {
       ? prisma.eventOptionSelection.findMany({
           where: {
             optionId: { in: optionIds },
-            OR: [{ userId }, { childId: { in: children.map((c) => c.id) } }],
+            OR: [{ userId }, { child: { parentId: userId } }],
           },
           select: { optionId: true, userId: true, childId: true },
         })

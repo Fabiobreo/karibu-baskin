@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { isAdminUser, isMember } from "@/lib/apiAuth";
+import { isAdminUser, isCoachOrAdmin, isMember } from "@/lib/apiAuth";
 import { publicSubjects } from "@/lib/minors";
 import { CompetitiveTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
@@ -10,6 +10,10 @@ import { logAudit } from "@/lib/audit";
 import { deleteImage } from "@/lib/blob";
 
 type Params = { params: Promise<{ teamId: string }> };
+
+// La Karibu di stagione (vedi @/lib/matches/mixedTeam) è gestita dall'app.
+const KARIBU_LOCKED =
+  "La squadra Karibu della stagione è automatica: non si modifica né si elimina";
 
 export async function GET(req: Request, { params }: Params) {
   const rl = checkRateLimit(getClientIp(req), "get-competitive-team", 60, 60_000);
@@ -54,7 +58,10 @@ export async function GET(req: Request, { params }: Params) {
     },
   });
 
-  if (!team) return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
+  // La Karibu di stagione non ha una pagina pubblica: esiste solo per lo staff.
+  if (!team || (team.isMixed && !(await isCoachOrAdmin()))) {
+    return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
+  }
   // Tutela dei minori: chi non è tesserato non li vede, e birthDate non esce
   // mai (serve solo a decidere). Vedi publicSubjects in @/lib/minors.
   return NextResponse.json({
@@ -80,15 +87,17 @@ export async function PUT(req: Request, { params }: Params) {
   }
   const body = parsed.data;
 
+  const current = await prisma.competitiveTeam.findUnique({
+    where: { id: teamId },
+    select: { imageUrl: true, isMixed: true },
+  });
+  if (current?.isMixed) {
+    return NextResponse.json({ error: KARIBU_LOCKED }, { status: 400 });
+  }
+
   // Gestione immagine: elimina la vecchia se viene sostituita o rimossa
-  if (body.imageUrl !== undefined) {
-    const current = await prisma.competitiveTeam.findUnique({
-      where: { id: teamId },
-      select: { imageUrl: true },
-    });
-    if (current?.imageUrl && current.imageUrl !== body.imageUrl) {
-      deleteImage(current.imageUrl).catch((e) => console.error("[blob] delete team image", e));
-    }
+  if (body.imageUrl !== undefined && current?.imageUrl && current.imageUrl !== body.imageUrl) {
+    deleteImage(current.imageUrl).catch((e) => console.error("[blob] delete team image", e));
   }
 
   try {
@@ -132,8 +141,12 @@ export async function DELETE(_req: Request, { params }: Params) {
   // Recupera l'URL immagine prima di eliminare per fare cleanup su Blob
   const team = await prisma.competitiveTeam.findUnique({
     where: { id: teamId },
-    select: { imageUrl: true },
+    select: { imageUrl: true, isMixed: true },
   });
+  // Eliminarla cancellerebbe a cascata le sue partite; e rinascerebbe subito.
+  if (team?.isMixed) {
+    return NextResponse.json({ error: KARIBU_LOCKED }, { status: 400 });
+  }
 
   try {
     await prisma.competitiveTeam.delete({ where: { id: teamId } });

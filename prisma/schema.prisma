@@ -341,6 +341,11 @@ model CompetitiveTeam {
   color        String? // colore hex (es. "#E65100")
   description  String?  @db.Text
   imageUrl     String? // copertina squadra (Vercel Blob)
+  // true = squadra "Karibu" della stagione (id `karibu-<stagione>`), creata
+  // dall'app: nessuna rosa propria, gioca con tutti i giocatori della stagione,
+  // solo amichevoli e tornei. Nascosta ovunque tranne che nel form partita dello
+  // staff. Il nome del campo è storico. Vedi src/lib/matches/mixedTeam.ts.
+  isMixed      Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   memberships        TeamMembership[]
