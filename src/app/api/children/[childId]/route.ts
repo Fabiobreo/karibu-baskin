@@ -20,7 +20,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const child = await prisma.child.findUnique({ where: { id: childId } });
+  const child = await prisma.child.findUnique({
+    where: { id: childId },
+    // Il TrueSkill è visibile solo allo staff (KB-40): nessuna risposta di
+    // questa rotta lo restituisce, nemmeno al genitore.
+    omit: { ratingMu: true, ratingSigma: true },
+  });
   if (!child) {
     return NextResponse.json({ error: "Figlio non trovato" }, { status: 404 });
   }
@@ -169,6 +174,7 @@ export async function PATCH(
       select: { userId: true, name: true },
     });
     const updated = await prisma.child.update({
+      omit: { ratingMu: true, ratingSigma: true },
       where: { id: childId },
       data: { userId: null },
     });
@@ -208,6 +214,7 @@ export async function PATCH(
   const isCategoryChange = roleChangedToNew && child.sportRole !== null;
 
   const updated = await prisma.child.update({
+    omit: { ratingMu: true, ratingSigma: true },
     where: { id: childId },
     data: {
       ...(trimmedName !== undefined && { name: trimmedName }),
@@ -245,7 +252,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
 
-  const child = await prisma.child.findUnique({ where: { id: childId } });
+  const child = await prisma.child.findUnique({
+    where: { id: childId },
+    // Il TrueSkill è visibile solo allo staff (KB-40): nessuna risposta di
+    // questa rotta lo restituisce, nemmeno al genitore.
+    omit: { ratingMu: true, ratingSigma: true },
+  });
   if (!child) {
     return NextResponse.json({ error: "Figlio non trovato" }, { status: 404 });
   }

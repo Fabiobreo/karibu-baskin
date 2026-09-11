@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { isCoachOrAdmin, isMember } from "@/lib/apiAuth";
+import { publicSubjects } from "@/lib/minors";
 import { CallupsSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
@@ -22,9 +23,12 @@ export async function GET(_req: Request, { params }: Params) {
           sportRole: true,
           sportRoleVariant: true,
           slug: true,
+          birthDate: true,
         },
       },
-      child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+      child: {
+        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, birthDate: true },
+      },
     },
   });
   // Normalizza teamId: per i record legacy (null) restituisci match.teamId
@@ -34,7 +38,9 @@ export async function GET(_req: Request, { params }: Params) {
   });
   const fallbackTeamId = match?.teamId ?? null;
   const normalized = callups.map((c) => ({ ...c, teamId: c.teamId ?? fallbackTeamId }));
-  return NextResponse.json(normalized);
+  // Tutela dei minori: chi non è tesserato non li vede, e birthDate non esce
+  // mai (serve solo a decidere). Vedi publicSubjects in @/lib/minors.
+  return NextResponse.json(publicSubjects(normalized, await isMember()));
 }
 
 // PUT — sostituisce i convocati per la partita (batch)

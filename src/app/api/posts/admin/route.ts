@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { staffGuard } from "@/lib/apiAuth";
 
 // GET — lista tutti i post inclusi bozze (coach+)
 export async function GET() {
-  if (!(await isCoachOrAdmin())) {
-    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  const denied = await staffGuard();
+  if (denied) {
+    return denied;
   }
 
   const posts = await prisma.post.findMany({

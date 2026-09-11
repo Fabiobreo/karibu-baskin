@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isAdminUser, isMember } from "@/lib/apiAuth";
+import { publicSubjects } from "@/lib/minors";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { MatchUpdateSchema, deriveResult } from "@/lib/schemas";
@@ -28,16 +29,36 @@ export async function GET(req: Request, { params }: Params) {
       playerStats: {
         include: {
           user: {
-            select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true },
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              birthDate: true,
+            },
           },
-          child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+          child: {
+            select: {
+              id: true,
+              name: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              birthDate: true,
+            },
+          },
         },
       },
     },
   });
 
   if (!match) return NextResponse.json({ error: "Partita non trovata" }, { status: 404 });
-  return NextResponse.json(match);
+  // Tutela dei minori, come nella GET delle statistiche: birthDate serve solo a
+  // decidere e publicSubjects la toglie sempre.
+  return NextResponse.json({
+    ...match,
+    playerStats: publicSubjects(match.playerStats, await isMember()),
+  });
 }
 
 export async function PUT(req: Request, { params }: Params) {

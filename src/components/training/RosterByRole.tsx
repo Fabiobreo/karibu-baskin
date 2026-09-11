@@ -11,6 +11,7 @@ import {
   IconButton,
   Tooltip,
   Button,
+  Skeleton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -55,7 +56,9 @@ interface Props {
   onRetry?: () => void;
   /** Visitatore non autenticato: i nomi non gli vengono serviti, ma il numero
    *  di iscritti sì, perché è l'informazione utile e non identifica nessuno. */
-  requiresLogin?: boolean;
+  restricted?: false | "anonymous" | "guest";
+  /** Non si sa ancora chi guarda, o la rosa sta arrivando: nessuno stato vuoto. */
+  loading?: boolean;
   totalCount?: number;
 }
 
@@ -266,7 +269,8 @@ export default function RosterByRole({
   onAttendanceChanged,
   loadFailed = false,
   onRetry,
-  requiresLogin = false,
+  restricted = false,
+  loading = false,
   totalCount = 0,
 }: Props) {
   const t = useTranslations("trainings");
@@ -481,14 +485,14 @@ export default function RosterByRole({
         {/* Nessun conteggio se la lettura è fallita: "0 atleti" accanto al
             messaggio di errore sarebbe una contraddizione, e il numero è
             proprio l'informazione che non abbiamo. */}
-        {!loadFailed && (
+        {!loadFailed && !loading && (
           <Chip
-            label={t("athletes", { count: requiresLogin ? totalCount : athleteRegs.length })}
+            label={t("athletes", { count: restricted ? totalCount : athleteRegs.length })}
             size="small"
             sx={{ fontWeight: 600 }}
           />
         )}
-        {!loadFailed && !requiresLogin && coachRegs.length > 0 && (
+        {!loadFailed && !restricted && coachRegs.length > 0 && (
           <Chip
             label={t("coachCount", { count: coachRegs.length })}
             size="small"
@@ -509,16 +513,25 @@ export default function RosterByRole({
       </Box>
 
       {/* Body */}
-      {requiresLogin ? (
+      {loading ? (
+        <Box sx={{ px: 2, py: 2.5 }}>
+          <Skeleton variant="text" width="55%" />
+          <Skeleton variant="text" width="35%" />
+        </Box>
+      ) : restricted ? (
         <Box sx={{ px: 2, py: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <Typography color="text.secondary">{t("rosterPrivate")}</Typography>
-          <Box>
-            <Link href="/login">
-              <Button size="small" variant="outlined">
-                {t("rosterPrivateCta")}
-              </Button>
-            </Link>
-          </Box>
+          <Typography color="text.secondary">
+            {restricted === "guest" ? t("rosterPrivateGuest") : t("rosterPrivate")}
+          </Typography>
+          {restricted === "anonymous" && (
+            <Box>
+              <Link href="/login">
+                <Button size="small" variant="outlined">
+                  {t("rosterPrivateCta")}
+                </Button>
+              </Link>
+            </Box>
+          )}
         </Box>
       ) : loadFailed ? (
         <QueryErrorState message={t("rosterLoadError")} onRetry={onRetry} compact />

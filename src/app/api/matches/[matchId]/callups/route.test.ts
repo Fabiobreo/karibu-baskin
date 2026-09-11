@@ -23,6 +23,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
+  isMember: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock("@/lib/authjs", () => ({

@@ -3,8 +3,9 @@ import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { generateTeams } from "@/lib/season/teamGenerator";
+import { generateTeams, withoutRatings } from "@/lib/season/teamGenerator";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { isMemberRole } from "@/lib/authRoles";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { auth } from "@/lib/authjs";
@@ -25,6 +26,9 @@ export async function GET(
   if (!viewer?.user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
+  if (!isMemberRole(viewer.user.appRole)) {
+    return NextResponse.json({ error: "Riservato ai tesserati" }, { status: 403 });
+  }
 
   const { sessionId } = await params;
   const session = await prisma.trainingSession.findUnique({
@@ -35,7 +39,8 @@ export async function GET(
   if (!session) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!session.teams) return NextResponse.json({ teamA: [], teamB: [], generated: false });
 
-  return NextResponse.json({ ...(session.teams as object), generated: true });
+  // Squadre salvate prima di KB-40 possono contenere ancora il rating.
+  return NextResponse.json({ ...withoutRatings(session.teams as object), generated: true });
 }
 
 // POST — crea squadre e le salva in DB (solo admin)
@@ -89,7 +94,7 @@ export async function POST(
 
   await prisma.trainingSession.update({
     where: { id: sessionId },
-    data: { teams: { ...teams, coaches, generated: true } as object },
+    data: { teams: { ...withoutRatings(teams), coaches, generated: true } as object },
   });
 
   // Notifica push solo agli iscritti all'allenamento (fire-and-forget)
@@ -134,7 +139,7 @@ export async function POST(
     }).catch((err) => console.error("[audit] generate teams", err));
   }
 
-  return NextResponse.json({ ...teams, coaches, generated: true });
+  return NextResponse.json({ ...withoutRatings(teams), coaches, generated: true });
 }
 
 // PUT — aggiorna le squadre (spostamento manuale giocatori, solo staff)

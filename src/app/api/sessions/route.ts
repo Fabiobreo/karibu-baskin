@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { isCoachOrAdmin, isMember } from "@/lib/apiAuth";
+import { withoutRatings } from "@/lib/season/teamGenerator";
 import { SessionCreateSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { auth } from "@/lib/authjs";
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const now = new Date();
 
-  const sessions = await prisma.trainingSession.findMany({
+  const rawSessions = await prisma.trainingSession.findMany({
     where: upcoming ? { date: { gte: now } } : undefined,
     orderBy: { date: upcoming ? "asc" : "desc" },
     ...(usePagination && { skip: (page - 1) * limit, take: limit }),
@@ -41,6 +42,14 @@ export async function GET(req: NextRequest) {
       restrictTeam: { select: { id: true, name: true, color: true } },
     },
   });
+
+  // Le squadre generate contengono nome, ruolo e genere di ogni atleta, minori
+  // compresi: solo per i tesserati, e mai con il rating (KB-05, KB-40).
+  const viewerIsMember = await isMember();
+  const sessions = rawSessions.map((s) => ({
+    ...s,
+    teams: viewerIsMember && s.teams ? withoutRatings(s.teams as object) : null,
+  }));
 
   if (usePagination) {
     const total = await prisma.trainingSession.count({

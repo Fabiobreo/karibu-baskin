@@ -16,6 +16,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
+  isMember: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock("@/lib/authjs", () => ({
@@ -266,5 +267,34 @@ describe("DELETE /api/sessions/[sessionId]", () => {
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json.error).toMatch(/non trovato/i);
+  });
+});
+
+describe("GET /api/sessions/[sessionId] · squadre", () => {
+  const withTeams = {
+    ...baseSession,
+    teams: {
+      teamA: [{ id: "r1", name: "Alice", role: 1, gender: "FEMALE", rating: 30.4 }],
+      teamB: [{ id: "r2", name: "Bruno", role: 2, gender: "MALE", rating: 21.9 }],
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    p.trainingSession.findFirst.mockResolvedValue(withTeams);
+  });
+
+  it("chi non è tesserato non riceve le squadre", async () => {
+    const { isMember } = await import("@/lib/apiAuth");
+    vi.mocked(isMember).mockResolvedValueOnce(false);
+    const json = await (await GET(...makeGet("sess-abc"))).json();
+    expect(json.teams).toBeNull();
+    expect(JSON.stringify(json)).not.toContain("Alice");
+  });
+
+  it("un tesserato riceve le squadre, ma senza rating", async () => {
+    const json = await (await GET(...makeGet("sess-abc"))).json();
+    expect(json.teams.teamB[0]).toEqual({ id: "r2", name: "Bruno", role: 2, gender: "MALE" });
+    expect(JSON.stringify(json)).not.toContain("rating");
   });
 });

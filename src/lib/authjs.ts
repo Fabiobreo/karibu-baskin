@@ -8,6 +8,7 @@ import type { AppRole } from "@prisma/client";
 import type { Adapter } from "next-auth/adapters";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { generateUserSlug } from "@/lib/slugUtils";
+import { SESSION_MAX_AGE_SECONDS, SESSION_UPDATE_AGE_SECONDS } from "@/lib/sessionPolicy";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -33,7 +34,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       normalizeIdentifier: (identifier) => identifier.trim().toLowerCase(),
     }),
   ],
-  session: { strategy: "database", maxAge: 60 * 60 * 24 * 365 }, // 1 anno
+  // 90 giorni con rinnovo a scorrimento (vedi @/lib/sessionPolicy). Prima era
+  // un anno fisso, uguale per tutti i ruoli, COACH e ADMIN compresi (KB-16).
+  session: {
+    strategy: "database",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    updateAge: SESSION_UPDATE_AGE_SECONDS,
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
       // Ad ogni accesso Google aggiorna nome e foto profilo nel DB.

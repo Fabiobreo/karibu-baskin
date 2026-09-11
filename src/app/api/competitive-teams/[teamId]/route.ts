@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isAdminUser, isMember } from "@/lib/apiAuth";
+import { publicSubjects } from "@/lib/minors";
 import { CompetitiveTeamUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
@@ -29,10 +30,18 @@ export async function GET(req: Request, { params }: Params) {
               sportRole: true,
               sportRoleVariant: true,
               gender: true,
+              birthDate: true,
             },
           },
           child: {
-            select: { id: true, name: true, sportRole: true, sportRoleVariant: true, gender: true },
+            select: {
+              id: true,
+              name: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              gender: true,
+              birthDate: true,
+            },
           },
         },
       },
@@ -46,7 +55,12 @@ export async function GET(req: Request, { params }: Params) {
   });
 
   if (!team) return NextResponse.json({ error: "Squadra non trovata" }, { status: 404 });
-  return NextResponse.json(team);
+  // Tutela dei minori: chi non è tesserato non li vede, e birthDate non esce
+  // mai (serve solo a decidere). Vedi publicSubjects in @/lib/minors.
+  return NextResponse.json({
+    ...team,
+    memberships: publicSubjects(team.memberships, await isMember()),
+  });
 }
 
 export async function PUT(req: Request, { params }: Params) {

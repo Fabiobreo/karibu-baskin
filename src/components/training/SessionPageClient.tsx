@@ -18,7 +18,7 @@ import TeamsHeader from "@/components/training/TeamsHeader";
 import SectionErrorBoundary from "@/components/common/SectionErrorBoundary";
 import { TEAM_META } from "@/lib/constants";
 import { sessionEndDate } from "@/lib/dateUtils";
-import { hasRole } from "@/lib/authRoles";
+import { hasRole, isMemberRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
@@ -96,6 +96,13 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
   const refreshInterval = !session ? 60_000 : isEnded ? 0 : isToday ? 30_000 : 120_000;
 
   const queryClient = useQueryClient();
+  // Rosa e squadre sono per i tesserati: un GUEST è autenticato ma non è del
+  // Karibu. Finché /api/users/me non risponde (currentUser === undefined) non si
+  // sa ancora chi guarda: è uno stato di caricamento, non una rosa vuota.
+  const canSeeRoster = !!currentUser && isMemberRole(currentUser.appRole);
+  const rosterRestriction: false | "anonymous" | "guest" =
+    currentUser === null ? "anonymous" : currentUser && !canSeeRoster ? "guest" : false;
+
   const regQueryKey = ["registrations", realSessionId] as const;
 
   // `registrations = []` come default è comodo ma pericoloso: quando la lettura
@@ -105,6 +112,7 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
   const {
     data: registrations = [],
     isError: registrationsFailed,
+    isPending: registrationsPending,
     refetch: refetchRegistrations,
   } = useQuery<Registration[]>({
     queryKey: regQueryKey,
@@ -115,7 +123,7 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
     // La rosa è riservata a chi è autenticato (vedi GET /api/registrations):
     // per gli anonimi non chiediamo nemmeno, così non generiamo 401 a vuoto e
     // il roster mostra l'invito ad accedere invece di una lista vuota.
-    enabled: !!realSessionId && !!currentUser,
+    enabled: !!realSessionId && canSeeRoster,
     refetchOnWindowFocus: true,
     refetchInterval: refreshInterval === 0 ? false : refreshInterval,
     staleTime: isEnded ? Infinity : 0,
@@ -134,7 +142,7 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
   } = useQuery<TeamsData>({
     queryKey: teamsQueryKey,
     queryFn: () => fetcher(`/api/teams/${realSessionId}`),
-    enabled: !!realSessionId && !!currentUser,
+    enabled: !!realSessionId && canSeeRoster,
     refetchOnWindowFocus: true,
     refetchInterval: refreshInterval === 0 ? false : refreshInterval,
   });
@@ -308,7 +316,8 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
     loadFailed: registrationsFailed,
     onRetry: () => void refetchRegistrations(),
     // `undefined` = ancora in caricamento, `null` = anonimo confermato.
-    requiresLogin: currentUser === null,
+    restricted: rosterRestriction,
+    loading: currentUser === undefined || (canSeeRoster && registrationsPending),
     totalCount: session?._count.registrations ?? 0,
   };
 
@@ -324,10 +333,10 @@ export default function SessionPageClient({ initialSession }: SessionPageClientP
     editMode: editingTeams,
     onExitEditMode: () => setEditingTeams(false),
     teams,
-    teamsLoading,
+    teamsLoading: teamsLoading || currentUser === undefined,
     teamsLoadFailed: teamsFailed,
     onTeamsRetry: () => void refetchTeams(),
-    requiresLogin: currentUser === null,
+    restricted: rosterRestriction,
     onTeamsGenerated: (newTeams: TeamsData) => queryClient.setQueryData(teamsQueryKey, newTeams),
   };
 

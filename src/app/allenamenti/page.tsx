@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
+import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import { Container, Typography } from "@mui/material";
 import AllenamentiClient from "@/components/training/AllenamentiClient";
@@ -28,6 +29,8 @@ export default async function AllenamentiPage({
   const userSession = await auth();
   const userId = userSession?.user?.id ?? null;
   const isStaff = userSession?.user?.appRole === "COACH" || userSession?.user?.appRole === "ADMIN";
+  // Le squadre contengono i nominativi degli atleti: solo per i tesserati.
+  const isMember = isMemberRole(userSession?.user?.appRole);
 
   // Di default solo la stagione corrente; ?all=1 carica anche le stagioni precedenti
   const { all } = await searchParams;
@@ -50,7 +53,7 @@ export default async function AllenamentiPage({
 
   const sessions = rawSessions.map((s) => ({
     ...s,
-    teams: parseTeamsData(s.teams),
+    teams: isMember ? parseTeamsData(s.teams) : null,
   }));
 
   const inCorso = sessions.filter((s) => {

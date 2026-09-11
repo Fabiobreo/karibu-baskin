@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { isMemberRole } from "@/lib/authRoles";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -11,7 +12,7 @@ import { logAudit } from "@/lib/audit";
 /**
  * Elenco degli iscritti a un allenamento.
  *
- * Richiede l'autenticazione. Senza, l'endpoint era una fonte aperta:
+ * Richiede un tesserato (ATHLETE o superiore). Senza, l'endpoint era una fonte aperta:
  * `/api/sessions` elenca tutte le sessioni con il loro id, e da lì si
  * ricostruiva l'anagrafica dell'associazione — nome, ruolo Baskin e presenze di
  * ogni persona, minori inclusi. Nel baskin il ruolo 1-5 deriva dalla
@@ -32,6 +33,11 @@ export async function GET(req: NextRequest) {
   const authSession = await auth();
   if (!authSession?.user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
+  }
+  // Autenticato non vuol dire tesserato: il login è aperto a qualunque account
+  // Google, e un nuovo accesso nasce GUEST.
+  if (!isMemberRole(authSession.user.appRole)) {
+    return NextResponse.json({ error: "Riservato ai tesserati" }, { status: 403 });
   }
 
   const registrations = await prisma.registration.findMany({

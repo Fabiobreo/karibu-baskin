@@ -551,3 +551,18 @@ describe("GET /api/registrations", () => {
     expect(json[0].anonymousEmail).toBe("alice@example.com");
   });
 });
+
+describe("GET /api/registrations · ospiti", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue({ allowed: true });
+    p.registration.findMany.mockResolvedValue([]);
+  });
+
+  it("rifiuta un GUEST: autenticato non vuol dire tesserato", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "g1", appRole: "GUEST" } });
+    const res = await GET(new NextRequest("http://localhost/api/registrations?sessionId=sess-1"));
+    expect(res.status).toBe(403);
+    expect(p.registration.findMany).not.toHaveBeenCalled();
+  });
+});

@@ -67,3 +67,52 @@ export function isMinor(birthDate: Date | string | null | undefined, now: Date =
   if (Number.isNaN(d.getTime())) return false;
   return d > adultCutoffDate(now);
 }
+
+// ── Superfici pubbliche ─────────────────────────────────────────────────────
+
+interface BirthDated {
+  birthDate?: Date | string | null;
+}
+
+/**
+ * Record che riferisce un giocatore come User o come Child: statistiche,
+ * convocazioni, MVP, appartenenze a una squadra.
+ */
+export interface PlayerSubject {
+  user?: BirthDated | null;
+  child?: BirthDated | null;
+}
+
+/** Minore secondo la regola del tipo di soggetto (vedi l'intestazione del file). */
+export function isMinorSubject(s: PlayerSubject, now: Date = new Date()): boolean {
+  if (s.child) return isMinorChild(s.child.birthDate, now);
+  if (s.user) return isMinor(s.user.birthDate, now);
+  return false;
+}
+
+function withoutBirthDate<U extends BirthDated | null | undefined>(u: U): U {
+  if (!u) return u;
+  const copy = { ...u } as BirthDated;
+  delete copy.birthDate;
+  return copy as U;
+}
+
+/**
+ * Prepara una lista di giocatori per una superficie visibile al pubblico.
+ *
+ * Due operazioni, entrambe necessarie:
+ * - per chi non è tesserato toglie i minori (il ruolo Baskin degli adulti resta);
+ * - per tutti toglie `birthDate`. La data di nascita viene letta solo per
+ *   decidere chi è minore: se restasse nell'oggetto, passando a un componente
+ *   client finirebbe nel payload della pagina, e le date di nascita di tutti
+ *   i giocatori, adulti compresi, arriverebbero al browser.
+ */
+export function publicSubjects<T extends PlayerSubject>(
+  items: T[],
+  viewerIsMember: boolean,
+  now: Date = new Date()
+): T[] {
+  return items
+    .filter((s) => viewerIsMember || !isMinorSubject(s, now))
+    .map((s) => ({ ...s, user: withoutBirthDate(s.user), child: withoutBirthDate(s.child) }) as T);
+}

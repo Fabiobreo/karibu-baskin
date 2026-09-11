@@ -14,6 +14,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isCoachOrAdmin: vi.fn().mockResolvedValue(false),
+  isMember: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock("@/lib/notifications/sessionNotify", () => ({
@@ -278,5 +279,36 @@ describe("POST /api/sessions", () => {
     expect(res.status).toBe(409);
     const json = await res.json();
     expect(json.error).toMatch(/allenamento/i);
+  });
+});
+
+// Le squadre generate contengono nome, ruolo e genere di ogni atleta, minori
+// compresi: l'elenco pubblico non deve esporle, e il rating non esce mai.
+describe("GET /api/sessions · squadre", () => {
+  const withTeams = {
+    ...baseSession,
+    teams: {
+      teamA: [{ id: "r1", name: "Alice", role: 1, gender: "FEMALE", rating: 30.4 }],
+      teamB: [{ id: "r2", name: "Bruno", role: 2, gender: "MALE", rating: 21.9 }],
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    p.trainingSession.findMany.mockResolvedValue([withTeams]);
+  });
+
+  it("chi non è tesserato non riceve le squadre", async () => {
+    const { isMember } = await import("@/lib/apiAuth");
+    vi.mocked(isMember).mockResolvedValueOnce(false);
+    const json = await (await GET(makeGet())).json();
+    expect(json[0].teams).toBeNull();
+    expect(JSON.stringify(json)).not.toContain("Alice");
+  });
+
+  it("un tesserato riceve le squadre, ma senza rating", async () => {
+    const json = await (await GET(makeGet())).json();
+    expect(json[0].teams.teamA[0]).toEqual({ id: "r1", name: "Alice", role: 1, gender: "FEMALE" });
+    expect(JSON.stringify(json)).not.toContain("rating");
   });
 });

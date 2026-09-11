@@ -32,7 +32,12 @@ export default function NotificationBell() {
           "&:hover": { color: "common.white" },
         }}
       >
-        <Badge badgeContent={visibleCount} color="error" max={99} invisible={visibleCount === 0}>
+        <Badge
+          badgeContent={visibleCount > 0 ? visibleCount : undefined}
+          color="error"
+          max={99}
+          invisible={visibleCount === 0}
+        >
           {visibleCount > 0 ? (
             <NotificationsIcon fontSize="small" />
           ) : (

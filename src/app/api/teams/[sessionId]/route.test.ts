@@ -322,3 +322,39 @@ describe("DELETE /api/teams/[sessionId]", () => {
     expect(json.error).toMatch(/non trovato/i);
   });
 });
+
+describe("GET /api/teams/[sessionId] · ospiti", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("rifiuta un GUEST: autenticato non vuol dire tesserato", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "g1", appRole: "GUEST" } });
+    const res = await GET(new NextRequest("http://localhost/api/teams/sess-1"), mockParams);
+    expect(res.status).toBe(403);
+    expect(p.trainingSession.findUnique).not.toHaveBeenCalled();
+  });
+});
+
+// KB-40: il TrueSkill è visibile solo allo staff. Le squadre salvate prima della
+// correzione contengono ancora il rating per atleta: la GET deve toglierlo.
+describe("GET /api/teams/[sessionId] · rating", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("non restituisce il rating degli atleti, nemmeno per squadre salvate con il rating", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "u1", appRole: "ATHLETE" } });
+    p.trainingSession.findUnique.mockResolvedValue({
+      teams: {
+        teamA: [{ id: "r1", name: "Alice", role: 1, rating: 31.2 }],
+        teamB: [{ id: "r2", name: "Bob", role: 2, rating: 22.7 }],
+      },
+    });
+    const res = await GET(new NextRequest("http://localhost/api/teams/sess-1"), mockParams);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.teamA[0]).toEqual({ id: "r1", name: "Alice", role: 1 });
+    expect(JSON.stringify(json)).not.toContain("rating");
+  });
+});

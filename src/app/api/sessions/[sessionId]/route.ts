@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { isCoachOrAdmin, isMember } from "@/lib/apiAuth";
+import { withoutRatings } from "@/lib/season/teamGenerator";
 import { SessionUpdateSchema } from "@/lib/schemas";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
@@ -27,7 +28,13 @@ export async function GET(
   if (!session) {
     return NextResponse.json({ error: "Allenamento non trovato" }, { status: 404 });
   }
-  return NextResponse.json(session);
+  // Le squadre generate contengono nome, ruolo e genere di ogni atleta, minori
+  // compresi: solo per i tesserati, e mai con il rating (KB-05, KB-40).
+  const viewerIsMember = await isMember();
+  return NextResponse.json({
+    ...session,
+    teams: viewerIsMember && session.teams ? withoutRatings(session.teams as object) : null,
+  });
 }
 
 export async function PATCH(

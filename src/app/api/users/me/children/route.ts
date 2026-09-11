@@ -14,6 +14,9 @@ export async function GET() {
   const children = await prisma.child.findMany({
     where: { parentId: session.user.id },
     orderBy: { createdAt: "asc" },
+    // Il TrueSkill è visibile solo allo staff: un genitore non riceve il rating
+    // del figlio (vedi KB-40).
+    omit: { ratingMu: true, ratingSigma: true },
     include: {
       teamMemberships: {
         select: {

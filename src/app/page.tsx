@@ -3,6 +3,9 @@ import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
 import HomeSessionsSection from "@/components/training/HomeSessionsSection";
+import JoinUsCta from "@/components/common/JoinUsCta";
+import JsonLd from "@/components/common/JsonLd";
+import { organizationJsonLd } from "@/lib/structuredData";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { parseTeamsData } from "@/lib/schemas";
 import HeroSection from "@/components/common/HeroSection";
@@ -64,9 +67,11 @@ export default async function HomePage() {
     },
   });
 
+  // Le squadre generate contengono nome, ruolo e genere di ogni atleta, minori
+  // compresi: nella home pubblica non devono finire nel payload della pagina.
   const sessions = rawSessions.map((s) => ({
     ...s,
-    teams: parseTeamsData(s.teams),
+    teams: isMember ? parseTeamsData(s.teams) : null,
   })) satisfies SessionWithCount[];
 
   const inCorso = sessions.filter((s) => {
@@ -250,6 +255,7 @@ export default async function HomePage() {
   if (isMember) {
     return (
       <>
+        <JsonLd data={organizationJsonLd()} />
         <BirthdayBanner />
         <HeroSection />
         <PendingAvailabilityBanner count={pendingAvailabilities} />
@@ -265,6 +271,7 @@ export default async function HomePage() {
   // Home istituzionale per anonimi e GUEST
   return (
     <>
+      <JsonLd data={organizationJsonLd()} />
       {appRole === "GUEST" && (
         <Container maxWidth="md" sx={{ pt: 2 }}>
           <GuestWelcomeBanner />
@@ -281,6 +288,8 @@ export default async function HomePage() {
       <LoSapeviCard />
 
       {chiSiamoBlock}
+
+      <JoinUsCta />
     </>
   );
 }

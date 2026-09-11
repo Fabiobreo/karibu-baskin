@@ -418,7 +418,8 @@
     "consecutive": "In a row",
     "simChallengeTitle": "Match Simulator",
     "simChallengeDesc": "Build two lineups from the squad and find out who would win.",
-    "simChallengeCta": "Play"
+    "simChallengeCta": "Play",
+    "minorsHidden": "{count, plural, one {# underage athlete is not shown, to protect minors.} other {# underage athletes are not shown, to protect minors.}}"
   },
   "simulator": {
     "heroChip": "Just for fun",
@@ -447,7 +448,8 @@
     "shareCopied": "Challenge link copied!",
     "emptyTitle": "No squad available",
     "emptyDesc": "The current season's teams don't have any players yet.",
-    "ruleGenderMix": "One woman and one man among roles 4 and 5"
+    "ruleGenderMix": "One woman and one man among roles 4 and 5",
+    "simulateError": "Could not simulate the match. Please try again."
   },
   "players": {
     "notFound": "Player not found",
@@ -526,7 +528,8 @@
     "rowsPerPage": "Rows:",
     "searchPlayer": "Search player…",
     "all": "All",
-    "emptySeasonDesc": "Stats will show up after the first official matches of the season."
+    "emptySeasonDesc": "Stats will show up after the first official matches of the season.",
+    "minorsHidden": "To protect minors, the public leaderboard does not show underage athletes."
   },
   "badges": {
     "esordiente": {
@@ -765,7 +768,13 @@
     "needsRoleToRegister": "You need a Baskin role to sign up from here: open the training and fill in the questionnaire.",
     "registerDone": "You are signed up",
     "unregisterDone": "Sign-up cancelled",
-    "attendanceEmpty": "No attendance recorded yet."
+    "attendanceEmpty": "No attendance recorded yet.",
+    "signOutEverywhere": "Sign out of all devices",
+    "signOutEverywhereNote": "Lost your phone or used a shared computer? Close access on every device at once.",
+    "signOutEverywhereTitle": "Sign out of all devices?",
+    "signOutEverywhereConfirm": "You will be signed out everywhere, including this device. To get back in, just sign in again.",
+    "signOutEverywhereCancel": "Cancel",
+    "signOutEverywhereError": "Could not sign out of your devices. Please try again."
   },
   "guestWelcome": {
     "title": "Welcome to Karibu Baskin!",
@@ -1209,7 +1218,9 @@
     "teamsPrivate": "The teams for this session are reserved for Karibu members.",
     "homeNoneSoon": "No training sessions scheduled in the coming weeks. Want to give it a try? Write to us and we will let you know when we start again.",
     "homeNoneSoonCta": "Come and try",
-    "homeSeeCalendar": "See the calendar"
+    "homeSeeCalendar": "See the calendar",
+    "rosterPrivateGuest": "The list of registered athletes is visible to Karibu members.",
+    "teamsPrivateGuest": "The teams for this session are visible to Karibu members."
   },
   "home": {
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",
@@ -1268,7 +1279,11 @@
         "testo": "We reach 10 years of activity with over 80 members and organise the \"Karibu Ten League\", a celebratory tournament with 6 participating teams. A milestone that celebrates the growth of the association and opens a new era: that of the Montekki and the Kapuleti."
       }
     ],
-    "heroTitleTail": "inclusive sport in Montecchio Maggiore"
+    "heroTitleTail": "inclusive sport in Montecchio Maggiore",
+    "joinTitle": "Want to try Baskin?",
+    "joinBody": "Baskin is for everyone, whatever your ability. Write to us and we will tell you when and where to come to your first training session.",
+    "joinCta": "Write to us",
+    "joinLearn": "Discover Baskin"
   },
   "install": {
     "title": "Install the app",

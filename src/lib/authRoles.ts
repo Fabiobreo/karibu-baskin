@@ -22,3 +22,15 @@ export function canManageSessions(role: AppRole): boolean {
 export function canRegister(role: AppRole): boolean {
   return hasRole(role, "GUEST");
 }
+
+/**
+ * Tesserato del Karibu: ATHLETE o superiore.
+ *
+ * Il login è aperto a chiunque abbia un account Google e un nuovo accesso nasce
+ * GUEST (default dello schema): "autenticato" non vuol dire "del Karibu". I dati
+ * nominativi dei tesserati, e in particolare quelli dei minori, vanno ai membri,
+ * non agli ospiti né ai visitatori anonimi.
+ */
+export function isMemberRole(role: AppRole | string | null | undefined): boolean {
+  return !!role && role in ROLE_HIERARCHY && hasRole(role as AppRole, "ATHLETE");
+}

@@ -224,3 +224,27 @@ function pairKey(x: Athlete, y: Athlete, seed: number): string {
   const ids = [x.id, y.id].sort();
   return `${seed}:${ids[0]}:${ids[1]}`;
 }
+
+/**
+ * Squadre senza il rating dei singoli atleti.
+ *
+ * `generateTeams` riceve il TrueSkill per bilanciare le squadre e lo lascia
+ * negli oggetti atleta. Quelle squadre vengono salvate sull'allenamento e
+ * servite a ogni tesserato dalla GET, mentre il rating è visibile solo allo
+ * staff (KB-40). Va quindi tolto sia al salvataggio sia in lettura, per le
+ * squadre già salvate prima di questa correzione.
+ */
+export function withoutRatings<T extends object>(teams: T): T {
+  const out: Record<string, unknown> = { ...(teams as Record<string, unknown>) };
+  for (const key of ["teamA", "teamB", "teamC"]) {
+    const list = out[key];
+    if (!Array.isArray(list)) continue;
+    out[key] = list.map((athlete: unknown) => {
+      if (!athlete || typeof athlete !== "object") return athlete;
+      const copy = { ...(athlete as Record<string, unknown>) };
+      delete copy.rating;
+      return copy;
+    });
+  }
+  return out as T;
+}

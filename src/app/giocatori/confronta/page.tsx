@@ -2,6 +2,9 @@ import { Container, Box, Typography, Paper, Avatar, Chip, Divider } from "@mui/m
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/authjs";
+import { isMemberRole } from "@/lib/authRoles";
+import { isMinor, isMinorChild } from "@/lib/minors";
 import PageHero from "@/components/common/PageHero";
 import ComparePicker from "@/components/common/ComparePicker";
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
@@ -37,12 +40,16 @@ type ComparePlayer = {
   trend: number[];
 };
 
-async function loadComparePlayer(key: string): Promise<ComparePlayer | null> {
+async function loadComparePlayer(
+  key: string,
+  viewerIsMember: boolean
+): Promise<ComparePlayer | null> {
   const sel = {
     id: true,
     name: true,
     slug: true,
     sportRole: true,
+    birthDate: true,
     matchStats: {
       orderBy: { match: { date: "asc" as const } },
       select: {
@@ -67,6 +74,9 @@ async function loadComparePlayer(key: string): Promise<ComparePlayer | null> {
 
   const row = child ?? (user && user.appRole !== "GUEST" ? user : null);
   if (!row) return null;
+  // Tutela dei minori: per chi non è tesserato un minore non è confrontabile.
+  const minor = child ? isMinorChild(row.birthDate) : isMinor(row.birthDate);
+  if (minor && !viewerIsMember) return null;
 
   const stats = row.matchStats;
   const matches = stats.length;
@@ -120,12 +130,13 @@ function CompareHeader({ p }: { p: ComparePlayer }) {
 }
 
 export default async function ConfrontaPage({ searchParams }: Props) {
+  const viewerIsMember = isMemberRole((await auth())?.user?.appRole);
   const t = await getTranslations("players");
   const { a, b } = await searchParams;
 
   const [pa, pb] = await Promise.all([
-    a ? loadComparePlayer(a) : Promise.resolve(null),
-    b ? loadComparePlayer(b) : Promise.resolve(null),
+    a ? loadComparePlayer(a, viewerIsMember) : Promise.resolve(null),
+    b ? loadComparePlayer(b, viewerIsMember) : Promise.resolve(null),
   ]);
 
   const metrics: {

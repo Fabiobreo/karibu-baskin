@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Box, Button, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
+import SignOutEverywhereButton from "@/components/profile/SignOutEverywhereButton";
 
 /** Sezione Privacy del profilo: export dati (art. 20) e richiesta cancellazione (art. 17). */
 export default async function GdprSection({ email }: { email: string }) {
@@ -18,6 +19,14 @@ export default async function GdprSection({ email }: { email: string }) {
             {t("downloadData")}
           </Button>
         </a>
+      </Box>
+
+      {/* Sessioni attive: esci da tutti i dispositivi (telefono perso, PC condiviso) */}
+      <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
+        <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
+          {t("signOutEverywhereNote")}
+        </Typography>
+        <SignOutEverywhereButton />
       </Box>
 
       {/* Eliminazione account (GDPR art. 17) */}

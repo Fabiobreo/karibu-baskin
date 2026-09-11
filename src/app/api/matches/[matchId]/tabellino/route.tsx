@@ -2,9 +2,15 @@ import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/db";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { publicSubjects } from "@/lib/minors";
 
 // Node runtime (default) — necessario perché usiamo Prisma.
 export const dynamic = "force-dynamic";
+
+// L'immagine è fatta per essere condivisa sui social ed è servita con cache CDN
+// pubblica, uguale per chiunque la chieda: per questo non contiene mai i nomi
+// dei minori, a prescindere da chi la genera (tutela dei minori, @/lib/minors).
+const TOP_SCORERS = 5;
 
 const WIDTH = 1080;
 const HEIGHT = 1350;
@@ -38,6 +44,19 @@ const RESULT_META: Record<
 
 type Params = { params: Promise<{ matchId: string }> };
 
+// Stella disegnata in SVG: il font di default di Satori non ha il glifo ★ e al
+// suo posto l'immagine mostrava un riquadro vuoto.
+function Star() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24">
+      <path
+        fill="#FFD54F"
+        d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21.2l1.6-7L2 9.5l7.1-.6z"
+      />
+    </svg>
+  );
+}
+
 export async function GET(_req: Request, { params }: Params) {
   const { matchId } = await params;
 
@@ -47,18 +66,19 @@ export async function GET(_req: Request, { params }: Params) {
       team: { select: { name: true, color: true } },
       opponent: { select: { name: true } },
       opponentTeam: { select: { name: true } },
+      // Niente `take`: i minori si scartano dopo, e il limite vale sugli adulti.
       playerStats: {
+        where: { points: { gt: 0 } },
         orderBy: { points: "desc" },
-        take: 5,
         include: {
-          user: { select: { name: true, sportRole: true } },
-          child: { select: { name: true, sportRole: true } },
+          user: { select: { name: true, sportRole: true, birthDate: true } },
+          child: { select: { name: true, sportRole: true, birthDate: true } },
         },
       },
       mvps: {
         include: {
-          user: { select: { name: true } },
-          child: { select: { name: true } },
+          user: { select: { name: true, birthDate: true } },
+          child: { select: { name: true, birthDate: true } },
         },
         orderBy: { createdAt: "asc" },
       },
@@ -75,15 +95,15 @@ export async function GET(_req: Request, { params }: Params) {
   const background =
     meta?.gradient ?? "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)";
 
-  const topScorers = match.playerStats
-    .filter((s) => s.points > 0)
+  const topScorers = publicSubjects(match.playerStats, false)
+    .slice(0, TOP_SCORERS)
     .map((s) => ({
       name: (s.user?.name ?? s.child?.name ?? "—").split(" ")[0],
       lastName: (s.user?.name ?? s.child?.name ?? "").split(" ").slice(1).join(" ") || "",
       points: s.points,
     }));
 
-  const mvps = match.mvps
+  const mvps = publicSubjects(match.mvps, false)
     .map((m) => m.user?.name ?? m.child?.name ?? null)
     .filter((n): n is string => !!n);
 
@@ -313,9 +333,13 @@ export async function GET(_req: Request, { params }: Params) {
               letterSpacing: 4,
               marginBottom: 10,
               display: "flex",
+              alignItems: "center",
+              gap: 12,
             }}
           >
-            ★ MVP ★
+            <Star />
+            MVP
+            <Star />
           </div>
           <div
             style={{

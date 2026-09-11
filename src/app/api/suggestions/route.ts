@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { staffGuard } from "@/lib/apiAuth";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { SuggestionCreateSchema, SUGGESTION_STATUSES } from "@/lib/schemas/suggestion";
 
@@ -26,8 +26,9 @@ const ADMIN_SELECT = {
 } as const;
 
 export async function GET(req: NextRequest) {
-  if (!(await isCoachOrAdmin())) {
-    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  const denied = await staffGuard();
+  if (denied) {
+    return denied;
   }
   const statusParam = req.nextUrl.searchParams.get("status");
   const status = SUGGESTION_STATUSES.find((s) => s === statusParam);

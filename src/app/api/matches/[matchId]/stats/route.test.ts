@@ -25,6 +25,7 @@ vi.mock("@/lib/notifications/appNotifications", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
+  isMember: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock("@/lib/authjs", () => ({
@@ -218,5 +219,56 @@ describe("PUT /api/matches/[matchId]/stats", () => {
     const json = await res.json();
     expect(json).toEqual([]);
     expect(p.playerMatchStats.upsert).not.toHaveBeenCalled();
+  });
+});
+
+// Tutela dei minori: chi non è tesserato non li vede, e la data di nascita non
+// esce mai dall'API, nemmeno per gli adulti (serve solo a decidere).
+describe("GET /api/matches/[matchId]/stats · tutela dei minori", () => {
+  const adult = {
+    ...stat1,
+    id: "s-adult",
+    user: { ...stat1.user, birthDate: new Date("1990-01-01") },
+  };
+  const minor = {
+    ...stat1,
+    id: "s-minor",
+    userId: "user-2",
+    user: { ...stat1.user, id: "user-2", birthDate: new Date("2013-01-01") },
+  };
+  const childNoDate = {
+    ...stat1,
+    id: "s-child",
+    userId: null,
+    childId: "child-1",
+    user: null,
+    child: { id: "child-1", name: "Figlio", sportRole: 2, sportRoleVariant: null, birthDate: null },
+  };
+
+  async function getAs(member: boolean) {
+    const { isMember } = await import("@/lib/apiAuth");
+    (isMember as Mock).mockResolvedValue(member);
+    p.playerMatchStats.findMany.mockResolvedValue([adult, minor, childNoDate]);
+    const res = await GET(new Request("http://localhost"), makeParams("match-1"));
+    return res.json();
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("per chi non è tesserato toglie i minori, figli senza data compresi", async () => {
+    const json = await getAs(false);
+    expect(json.map((s: { id: string }) => s.id)).toEqual(["s-adult"]);
+  });
+
+  it("per un tesserato restituisce tutti", async () => {
+    expect(await getAs(true)).toHaveLength(3);
+  });
+
+  it("non restituisce mai la data di nascita", async () => {
+    for (const member of [true, false]) {
+      expect(JSON.stringify(await getAs(member))).not.toContain("birthDate");
+    }
   });
 });

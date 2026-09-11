@@ -66,7 +66,7 @@ interface Props {
   /** Visitatore non autenticato: le squadre non gli vengono servite. Senza
    *  questo, `teams === null` diventerebbe "squadre non pubblicate", che è
    *  falso quando invece esistono e semplicemente non le stiamo mostrando. */
-  requiresLogin?: boolean;
+  restricted?: false | "anonymous" | "guest";
   onTeamsGenerated: (teams: TeamsData) => void;
 }
 
@@ -528,7 +528,7 @@ export default function TeamDisplay({
   teamsLoading,
   teamsLoadFailed = false,
   onTeamsRetry,
-  requiresLogin = false,
+  restricted = false,
   onTeamsGenerated,
 }: Props) {
   const t = useTranslations("trainings");
@@ -577,17 +577,19 @@ export default function TeamDisplay({
     return false;
   })();
 
-  if (requiresLogin) {
+  if (restricted) {
     return (
       <Box sx={{ py: 3, px: 3, textAlign: "center" }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          {t("teamsPrivate")}
+          {restricted === "guest" ? t("teamsPrivateGuest") : t("teamsPrivate")}
         </Typography>
-        <Link href="/login">
-          <Button size="small" variant="outlined">
-            {t("rosterPrivateCta")}
-          </Button>
-        </Link>
+        {restricted === "anonymous" && (
+          <Link href="/login">
+            <Button size="small" variant="outlined">
+              {t("rosterPrivateCta")}
+            </Button>
+          </Link>
+        )}
       </Box>
     );
   }

@@ -14,6 +14,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
+import InsightsIcon from "@mui/icons-material/Insights";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
 import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
@@ -160,6 +161,7 @@ export default async function AdminPage() {
         </NavSection>
 
         <NavSection title="Strumenti">
+          <NavLink href="/admin/metriche" icon={<InsightsIcon />} label="Metriche" />
           <NavLink href="/admin/sviluppo" icon={<TrendingUpIcon />} label="Sviluppo giocatori" />
           <NavLink href="/admin/esporta" icon={<DownloadIcon />} label="Esporta CSV" />
           <NavLink

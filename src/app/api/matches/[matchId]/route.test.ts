@@ -16,6 +16,7 @@ vi.mock("@/lib/db", () => ({
 
 vi.mock("@/lib/apiAuth", () => ({
   isAdminUser: vi.fn().mockResolvedValue(false),
+  isMember: vi.fn().mockResolvedValue(false),
 }));
 
 vi.mock("@/lib/notifications/webpush", () => ({
@@ -40,7 +41,7 @@ vi.mock("@/lib/audit", () => ({
 
 import { GET, PUT, DELETE } from "./route";
 import { prisma } from "@/lib/db";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isAdminUser, isMember } from "@/lib/apiAuth";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 
@@ -51,6 +52,7 @@ type PrismaMock = {
 };
 const p = prisma as unknown as PrismaMock;
 const mockIsAdmin = isAdminUser as Mock;
+const mockIsMember = isMember as Mock;
 const mockSendPush = sendPushToAll as Mock;
 const mockCreateNotif = createAppNotification as Mock;
 
@@ -102,6 +104,42 @@ describe("GET /api/matches/[matchId]", () => {
     p.match.findUnique.mockResolvedValue(null);
     const res = await GET(new Request("http://localhost"), makeParams("missing"));
     expect(res.status).toBe(404);
+  });
+
+  describe("tutela dei minori", () => {
+    const stats = [
+      {
+        id: "s1",
+        points: 8,
+        user: { id: "u1", name: "Adulto", birthDate: new Date("1990-01-01") },
+        child: null,
+      },
+      { id: "s2", points: 6, user: null, child: { id: "c1", name: "Figlio", birthDate: null } },
+      {
+        id: "s3",
+        points: 4,
+        user: { id: "u2", name: "Minore", birthDate: new Date() },
+        child: null,
+      },
+    ];
+
+    beforeEach(() => {
+      p.match.findUnique.mockResolvedValue({ ...fullMatch, playerStats: stats });
+    });
+
+    it("chi non è tesserato vede solo gli adulti, senza birthDate", async () => {
+      mockIsMember.mockResolvedValue(false);
+      const json = await (await GET(new Request("http://localhost"), makeParams("match-1"))).json();
+      expect(json.playerStats.map((s: { id: string }) => s.id)).toEqual(["s1"]);
+      expect(JSON.stringify(json)).not.toContain("birthDate");
+    });
+
+    it("il tesserato vede tutti, sempre senza birthDate", async () => {
+      mockIsMember.mockResolvedValue(true);
+      const json = await (await GET(new Request("http://localhost"), makeParams("match-1"))).json();
+      expect(json.playerStats).toHaveLength(3);
+      expect(JSON.stringify(json)).not.toContain("birthDate");
+    });
   });
 });
 

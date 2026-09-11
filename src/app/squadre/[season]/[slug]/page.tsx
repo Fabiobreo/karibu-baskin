@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/authjs";
+import { isMemberRole } from "@/lib/authRoles";
+import { publicSubjects } from "@/lib/minors";
 import {
   Box,
   Container,
@@ -67,6 +70,7 @@ async function getTeam(season: string, slug: string) {
               sportRoleVariant: true,
               gender: true,
               slug: true,
+              birthDate: true,
             },
           },
           child: {
@@ -77,6 +81,7 @@ async function getTeam(season: string, slug: string) {
               sportRole: true,
               sportRoleVariant: true,
               gender: true,
+              birthDate: true,
             },
           },
         },
@@ -95,8 +100,8 @@ async function getTeam(season: string, slug: string) {
               freeThrows: true,
               fouls: true,
               isLoan: true,
-              user: { select: { id: true, name: true, image: true, slug: true } },
-              child: { select: { id: true, name: true, slug: true } },
+              user: { select: { id: true, name: true, image: true, slug: true, birthDate: true } },
+              child: { select: { id: true, name: true, slug: true, birthDate: true } },
             },
           },
         },
@@ -118,8 +123,8 @@ async function getTeam(season: string, slug: string) {
               freeThrows: true,
               fouls: true,
               isLoan: true,
-              user: { select: { id: true, name: true, image: true, slug: true } },
-              child: { select: { id: true, name: true, slug: true } },
+              user: { select: { id: true, name: true, image: true, slug: true, birthDate: true } },
+              child: { select: { id: true, name: true, slug: true, birthDate: true } },
             },
           },
         },
@@ -165,6 +170,17 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   const season = parseSeasonParam(seasonParam);
   const team = await getTeam(season, slug);
   if (!team) notFound();
+
+  // Tutela dei minori: chi non è tesserato non vede i minori nella rosa né nei
+  // tabellini; il numero totale di atleti resta, perché non identifica nessuno.
+  const viewerIsMember = isMemberRole((await auth())?.user?.appRole);
+  const totalMembers = team.memberships.length;
+  team.memberships = publicSubjects(team.memberships, viewerIsMember);
+  const hiddenMinors = totalMembers - team.memberships.length;
+  for (const m of team.matches) m.playerStats = publicSubjects(m.playerStats, viewerIsMember);
+  for (const m of team.opponentInMatches) {
+    m.playerStats = publicSubjects(m.playerStats, viewerIsMember);
+  }
 
   const t = await getTranslations("teams");
 
@@ -593,7 +609,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <GroupsIcon sx={{ fontSize: 16, color: "common.white" }} />
                   <Typography variant="body2" sx={{ color: "common.white", fontWeight: 600 }}>
-                    {t("athleteCount", { count: team.memberships.length })}
+                    {t("athleteCount", { count: totalMembers })}
                   </Typography>
                 </Box>
               </Box>
@@ -937,6 +953,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {t("rosterCount", { count: team.memberships.length })}
               </Typography>
+              {hiddenMinors > 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
+                  {t("minorsHidden", { count: hiddenMinors })}
+                </Typography>
+              )}
 
               <Stack spacing={3}>
                 {sortedRoles.map((role) => {

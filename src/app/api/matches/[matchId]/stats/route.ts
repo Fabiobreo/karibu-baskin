@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { isAdminUser } from "@/lib/apiAuth";
+import { isAdminUser, isMember } from "@/lib/apiAuth";
+import { publicSubjects } from "@/lib/minors";
 import { PlayerStatsBatchSchema, computePoints } from "@/lib/schemas";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
@@ -18,12 +19,23 @@ export async function GET(_req: Request, { params }: Params) {
     where: { matchId },
     include: {
       user: {
-        select: { id: true, name: true, image: true, sportRole: true, sportRoleVariant: true },
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          sportRole: true,
+          sportRoleVariant: true,
+          birthDate: true,
+        },
       },
-      child: { select: { id: true, name: true, sportRole: true, sportRoleVariant: true } },
+      child: {
+        select: { id: true, name: true, sportRole: true, sportRoleVariant: true, birthDate: true },
+      },
     },
   });
-  return NextResponse.json(stats);
+  // Tutela dei minori: chi non è tesserato non li vede, e birthDate non esce
+  // mai (serve solo a decidere). Vedi publicSubjects in @/lib/minors.
+  return NextResponse.json(publicSubjects(stats, await isMember()));
 }
 
 // Upsert batch: riceve array di stats per la partita

@@ -1,4 +1,8 @@
 import { prisma } from "@/lib/db";
+import JsonLd from "@/components/common/JsonLd";
+import { sportsEventJsonLd } from "@/lib/structuredData";
+import { isMemberRole } from "@/lib/authRoles";
+import { publicSubjects } from "@/lib/minors";
 import { auth } from "@/lib/authjs";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -61,10 +65,18 @@ async function getMatch(slug: string) {
               slug: true,
               sportRole: true,
               sportRoleVariant: true,
+              birthDate: true,
             },
           },
           child: {
-            select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              birthDate: true,
+            },
           },
         },
         orderBy: { points: "desc" },
@@ -79,10 +91,18 @@ async function getMatch(slug: string) {
               slug: true,
               sportRole: true,
               sportRoleVariant: true,
+              birthDate: true,
             },
           },
           child: {
-            select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              birthDate: true,
+            },
           },
         },
         orderBy: { id: "asc" },
@@ -90,9 +110,18 @@ async function getMatch(slug: string) {
       mvps: {
         include: {
           user: {
-            select: { id: true, name: true, image: true, slug: true, sportRole: true },
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              slug: true,
+              sportRole: true,
+              birthDate: true,
+            },
           },
-          child: { select: { id: true, name: true, slug: true, sportRole: true } },
+          child: {
+            select: { id: true, name: true, slug: true, sportRole: true, birthDate: true },
+          },
         },
         orderBy: { createdAt: "asc" },
       },
@@ -136,6 +165,14 @@ export default async function MatchDetailPage({ params }: Props) {
   ]);
   const dateLocale = getDateFnsLocale(locale);
   if (!match) notFound();
+
+  // Tutela dei minori: tabellino, convocati e MVP senza minori per chi non è
+  // tesserato. publicSubjects toglie comunque birthDate, perché questi dati
+  // passano a un componente client e finirebbero nel payload della pagina.
+  const viewerIsMember = isMemberRole(session?.user?.appRole);
+  match.playerStats = publicSubjects(match.playerStats, viewerIsMember);
+  match.callups = publicSubjects(match.callups, viewerIsMember);
+  match.mvps = publicSubjects(match.mvps, viewerIsMember);
 
   const matchTypeLabel = (type: string) =>
     ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
@@ -329,6 +366,16 @@ export default async function MatchDetailPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={sportsEventJsonLd({
+          slug: match.slug ?? match.id,
+          date: match.date,
+          ourTeam: match.team.name,
+          opponent: opponentName,
+          isHome: match.isHome,
+          venue: match.venue,
+        })}
+      />
       <Box
         style={{
           backgroundImage: match.imageUrl

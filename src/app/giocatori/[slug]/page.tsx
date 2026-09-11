@@ -35,7 +35,9 @@ import BadgeShowcase, { type EarnedBadgeView } from "@/components/rating/BadgeSh
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
 import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { slugify } from "@/lib/slugUtils";
-import { isMinor } from "@/lib/minors";
+import { isMinor, isMinorChild } from "@/lib/minors";
+import { auth } from "@/lib/authjs";
+import { isMemberRole } from "@/lib/authRoles";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
@@ -76,6 +78,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const isChild = !userRow;
+  // Profilo di un minore visto da chi non è tesserato: la pagina risponde 404
+  // (vedi sotto), e il titolo non deve anticipare il nome.
+  const minorProfile = isChild ? isMinorChild(p.birthDate) : isMinor(p.birthDate);
+  if (minorProfile && !isMemberRole((await auth())?.user?.appRole)) {
+    return buildMetadata({
+      title: "Giocatore non trovato",
+      description: "Questo giocatore non esiste o non ha un profilo pubblico.",
+      path: `/giocatori/${slug}`,
+      noindex: true,
+    });
+  }
   const totalPoints = p.matchStats.reduce((s, m) => s + m.points, 0);
   const matchesPlayed = p.matchStats.length;
   const avgPoints = matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : null;
@@ -184,6 +197,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         });
 
   if ((!userRow || userRow.appRole === "GUEST") && !childRow) notFound();
+
+  // Tutela dei minori: il profilo pubblico di un minore non esiste per chi non
+  // è tesserato. La famiglia ritrova gli stessi dati in /profilo, lo staff
+  // nell'area admin.
+  const isMinorProfile = childRow ? isMinorChild(childRow.birthDate) : isMinor(userRow!.birthDate);
+  if (isMinorProfile && !isMemberRole((await auth())?.user?.appRole)) notFound();
 
   // Vista unificata: stesso shape per User e Child (i figli non hanno immagine).
   const player = childRow

@@ -58,7 +58,9 @@ export default function Providers({
           </ThemeContextProvider>
         </LocaleContextProvider>
       </SessionProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* Solo in sviluppo: la condizione e' costante in build, e il bundler
+          elimina i devtools dal pacchetto di produzione (KB-25). */}
+      {process.env.NODE_ENV === "development" && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

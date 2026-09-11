@@ -1,4 +1,7 @@
 import { prisma } from "@/lib/db";
+import { auth } from "@/lib/authjs";
+import { isMemberRole } from "@/lib/authRoles";
+import { isMinor, isMinorChild } from "@/lib/minors";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
@@ -25,6 +28,7 @@ type Props = { searchParams: Promise<Record<string, string | undefined>> };
 
 export default async function MarcatoriPage({ searchParams }: Props) {
   const [t, tCommon] = await Promise.all([getTranslations("scorers"), getTranslations("common")]);
+  const viewerIsMember = isMemberRole((await auth())?.user?.appRole);
   const sp = await searchParams;
   const seasonFilter = sp.season ?? null;
 
@@ -101,13 +105,21 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             slug: true,
             sportRole: true,
             sportRoleVariant: true,
+            birthDate: true,
           },
         })
       : [],
     childIds.length > 0
       ? prisma.child.findMany({
           where: { id: { in: childIds } },
-          select: { id: true, name: true, slug: true, sportRole: true, sportRoleVariant: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            birthDate: true,
+          },
         })
       : [],
     prisma.teamMembership.findMany({
@@ -137,8 +149,24 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     sportRoleVariant: string | null;
   };
   const playerMap = new Map<string, PlayerInfo>();
-  for (const u of users) playerMap.set(`u:${u.id}`, { ...u, kind: "user" });
-  for (const c of children) playerMap.set(`c:${c.id}`, { ...c, kind: "child", image: null });
+  // Tutela dei minori: per chi non è tesserato la classifica non li mostra.
+  // birthDate non arriva al client: le righe della tabella sono costruite campo
+  // per campo più sotto.
+  let hiddenMinors = 0;
+  for (const u of users) {
+    if (!viewerIsMember && isMinor(u.birthDate)) {
+      hiddenMinors++;
+      continue;
+    }
+    playerMap.set(`u:${u.id}`, { ...u, kind: "user" });
+  }
+  for (const c of children) {
+    if (!viewerIsMember && isMinorChild(c.birthDate)) {
+      hiddenMinors++;
+      continue;
+    }
+    playerMap.set(`c:${c.id}`, { ...c, kind: "child", image: null });
+  }
 
   const teamsByPlayer = new Map<string, { id: string; name: string; color: string | null }[]>();
   for (const m of memberships) {
@@ -331,6 +359,15 @@ export default async function MarcatoriPage({ searchParams }: Props) {
               })}
             </Typography>
             <ClassificaInternaTable rows={statRows} />
+            {hiddenMinors > 0 && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 1.5 }}
+              >
+                {t("minorsHidden")}
+              </Typography>
+            )}
           </>
         ) : hasAnyData ? (
           <EmptyState

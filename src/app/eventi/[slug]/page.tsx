@@ -8,6 +8,8 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { format } from "date-fns";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
+import JsonLd from "@/components/common/JsonLd";
+import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
 import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
 import { isEventPast } from "@/lib/events";
@@ -162,6 +164,17 @@ export default async function EventoPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={eventJsonLd({
+          name: ev.title,
+          slug: ev.slug ?? ev.id,
+          startDate: ev.date,
+          endDate: ev.endDate,
+          location: ev.location,
+          description: ev.description,
+          imageUrl: ev.imageUrl,
+        })}
+      />
       {/* Hero copertina */}
       <Box
         sx={{

@@ -105,7 +105,7 @@ export default function BottomNav() {
             aria-current={active === "/notifiche" ? "page" : undefined}
             icon={
               <Badge
-                badgeContent={visibleCount}
+                badgeContent={visibleCount > 0 ? visibleCount : undefined}
                 color="error"
                 max={99}
                 invisible={visibleCount === 0}

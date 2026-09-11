@@ -4,6 +4,10 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
+import { isMemberRole } from "@/lib/authRoles";
+import { runSimulation } from "@/lib/rating/simulatorServer";
+import { simPlayerKey } from "@/lib/rating/simulatorShared";
+import type { SimResult } from "@/lib/rating/matchSimulator";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
@@ -18,15 +22,26 @@ export const metadata: Metadata = buildMetadata({
 });
 export const revalidate = 0;
 
-export default async function SfidaPage() {
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+const firstParam = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+export default async function SfidaPage({ searchParams }: Props) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  // Il login è aperto a qualunque account Google (nasce GUEST): la pagina
+  // mostra nomi e rose dei tesserati, minori compresi.
+  if (!isMemberRole(session.user.appRole)) redirect("/");
 
   const t = await getTranslations("simulator");
+  const sp = await searchParams;
 
   const currentSeason =
     (await prisma.season.findFirst({ where: { isCurrent: true } }))?.label ?? null;
 
+  // Nessun ratingMu in questa query: il TrueSkill è visibile solo allo staff e
+  // la simulazione avviene sul server (runSimulation), quindi il client non ne
+  // ha bisogno e non deve riceverlo.
   const teamsRaw = currentSeason
     ? await prisma.competitiveTeam.findMany({
         where: { season: currentSeason },
@@ -43,12 +58,11 @@ export default async function SfidaPage() {
                   image: true,
                   customImage: true,
                   sportRole: true,
-                  ratingMu: true,
                   gender: true,
                 },
               },
               child: {
-                select: { id: true, name: true, sportRole: true, ratingMu: true, gender: true },
+                select: { id: true, name: true, sportRole: true, gender: true },
               },
             },
           },
@@ -69,7 +83,6 @@ export default async function SfidaPage() {
               name: m.user.name ?? "—",
               image: m.user.customImage ?? m.user.image ?? null,
               sportRole: m.user.sportRole,
-              mu: m.user.ratingMu,
               gender: m.user.gender,
               teamName: team.name,
             };
@@ -81,7 +94,6 @@ export default async function SfidaPage() {
               name: m.child.name,
               image: null,
               sportRole: m.child.sportRole,
-              mu: m.child.ratingMu,
               gender: m.child.gender,
               teamName: team.name,
             };
@@ -92,6 +104,25 @@ export default async function SfidaPage() {
         .sort((a, b) => (a.sportRole ?? 99) - (b.sportRole ?? 99) || a.name.localeCompare(b.name)),
     }))
     .filter((team) => team.roster.length > 0);
+
+  // Link "sfida" condiviso (?a=&b=&s=): formazioni filtrate sulle rose della
+  // stagione e, se entrambe valide, risultato calcolato qui. Il client parte già
+  // simulato senza effetti al mount.
+  const rosterKeys = new Set(
+    teams.flatMap((tm) => tm.roster.map((p) => simPlayerKey(p.kind, p.id)))
+  );
+  const parseKeys = (v: string | undefined) =>
+    v ? v.split(",").filter((k) => rosterKeys.has(k)) : [];
+  const selA = parseKeys(firstParam(sp.a));
+  const selB = parseKeys(firstParam(sp.b));
+  const nonceParsed = Number(firstParam(sp.s) ?? 0);
+  const nonce = Number.isInteger(nonceParsed) && nonceParsed >= 0 ? nonceParsed : 0;
+
+  let initialResult: SimResult | null = null;
+  if (selA.length > 0 && selB.length > 0) {
+    const outcome = await runSimulation(selA, selB, nonce);
+    if (outcome.ok) initialResult = outcome.result;
+  }
 
   return (
     <>
@@ -105,7 +136,7 @@ export default async function SfidaPage() {
             message={t("emptyDesc")}
           />
         ) : (
-          <MatchSimulator teams={teams} />
+          <MatchSimulator teams={teams} initial={{ selA, selB, nonce, result: initialResult }} />
         )}
       </Container>
     </>

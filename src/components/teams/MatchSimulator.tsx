@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Box,
   Paper,
@@ -11,16 +11,20 @@ import {
   IconButton,
   Stack,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import CloseIcon from "@mui/icons-material/Close";
-import { useSearchParams } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
-import { simulateMatch, type SimResult } from "@/lib/rating/matchSimulator";
+import { readError } from "@/lib/fetchJson";
+import type { SimResult } from "@/lib/rating/matchSimulator";
+import { simPlayerKey } from "@/lib/rating/simulatorShared";
+import type { SimulateInput } from "@/lib/schemas/simulator";
 import {
   validateLineup,
   canAddToLineup,
@@ -31,13 +35,19 @@ import SimulatorResult from "@/components/teams/SimulatorResult";
 import SimulatorChecklist from "@/components/teams/SimulatorChecklist";
 import SimulatorPool from "@/components/teams/SimulatorPool";
 
+/**
+ * Giocatore selezionabile nel simulatore.
+ *
+ * Nessun campo di rating: il TrueSkill è visibile solo allo staff, e la
+ * simulazione avviene sul server (`POST /api/simulator`). Il client sceglie chi
+ * schierare e riceve solo probabilità e punteggio.
+ */
 export interface SimPlayer {
   id: string;
   kind: "user" | "child";
   name: string;
   image: string | null;
   sportRole: number | null;
-  mu: number | null;
   gender: "MALE" | "FEMALE" | null;
   teamName: string;
 }
@@ -48,29 +58,51 @@ export interface SimTeam {
   roster: SimPlayer[];
 }
 
-interface MatchSimulatorProps {
-  teams: SimTeam[];
+/** Stato iniziale calcolato dal server a partire da un link "sfida" condiviso. */
+export interface SimInitialState {
+  selA: string[];
+  selB: string[];
+  nonce: number;
+  result: SimResult | null;
 }
 
-const keyOf = (p: SimPlayer) => `${p.kind}-${p.id}`;
+interface MatchSimulatorProps {
+  teams: SimTeam[];
+  initial?: SimInitialState;
+}
+
+const keyOf = (p: SimPlayer) => simPlayerKey(p.kind, p.id);
 
 /** Ordina per ruolo crescente (senza ruolo in fondo), poi per nome. */
 const byRoleThenName = (a: SimPlayer, b: SimPlayer) =>
   (a.sportRole ?? 99) - (b.sportRole ?? 99) || a.name.localeCompare(b.name);
 
-export default function MatchSimulator({ teams }: MatchSimulatorProps) {
+const EMPTY_INITIAL: SimInitialState = { selA: [], selB: [], nonce: 0, result: null };
+
+export default function MatchSimulator({ teams, initial = EMPTY_INITIAL }: MatchSimulatorProps) {
   const t = useTranslations("simulator");
   const { showToast } = useToast();
-  const searchParams = useSearchParams();
 
-  // Stato iniziale derivato una sola volta dalla querystring (?a=&b=&s=):
-  // permette di aprire un link "sfida" già impostato e simulato. Niente effetto
-  // di mount → niente cascading render.
-  const [initial] = useState(() => computeInitial(teams, searchParams));
   const [selA, setSelA] = useState<string[]>(initial.selA);
   const [selB, setSelB] = useState<string[]>(initial.selB);
   const [nonce, setNonce] = useState(initial.nonce);
   const [result, setResult] = useState<SimResult | null>(initial.result);
+
+  // Ogni richiesta ha un numero: una risposta arrivata dopo che l'utente ha
+  // cambiato formazione riguarda una sfida che non esiste più, e va scartata.
+  const latestRequest = useRef(0);
+
+  const simulate = useMutation({
+    mutationFn: async (input: SimulateInput): Promise<SimResult> => {
+      const res = await fetch("/api/simulator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      return res.json();
+    },
+  });
 
   // Pool: tutti i giocatori di tutte le squadre della stagione (dedup per
   // chiave: chi milita in più squadre compare una sola volta).
@@ -121,6 +153,12 @@ export default function MatchSimulator({ teams }: MatchSimulatorProps) {
   const checksB = useMemo(() => validateLineup(playersB), [playersB]);
   const canSimulate = checksA.valid && checksB.valid;
 
+  /** Invalida risultato e richieste in corso: la formazione è cambiata. */
+  function clearResult() {
+    latestRequest.current++;
+    setResult(null);
+  }
+
   // Una scelta è ammessa solo se non rende la formazione non valida (regole
   // condivise in lib/rating/lineupRules.ts).
   function canAssign(p: SimPlayer, side: "A" | "B"): boolean {
@@ -136,28 +174,35 @@ export default function MatchSimulator({ teams }: MatchSimulatorProps) {
     setSelB((prev) =>
       side === "B" ? [...prev.filter((x) => x !== k), k] : prev.filter((x) => x !== k)
     );
-    setResult(null);
+    clearResult();
   }
 
   function unassign(k: string) {
     setSelA((prev) => prev.filter((x) => x !== k));
     setSelB((prev) => prev.filter((x) => x !== k));
-    setResult(null);
+    clearResult();
   }
 
   function resetSelection() {
     setSelA([]);
     setSelB([]);
-    setResult(null);
+    clearResult();
   }
 
   function runSim(useNonce: number) {
-    setResult(
-      simulateMatch({
-        teamAMus: selA.map((k) => byKey.get(k)?.mu ?? null),
-        teamBMus: selB.map((k) => byKey.get(k)?.mu ?? null),
-        seed: buildSeed(selA, selB, useNonce),
-      })
+    const requestId = ++latestRequest.current;
+    simulate.mutate(
+      { a: selA, b: selB, nonce: useNonce },
+      {
+        onSuccess: (r) => {
+          if (requestId === latestRequest.current) setResult(r);
+        },
+        onError: () => {
+          if (requestId === latestRequest.current) {
+            showToast({ message: t("simulateError"), severity: "error" });
+          }
+        },
+      }
     );
   }
 
@@ -216,8 +261,14 @@ export default function MatchSimulator({ teams }: MatchSimulatorProps) {
         <Button
           variant="contained"
           size="large"
-          startIcon={<SportsBasketballIcon />}
-          disabled={!canSimulate}
+          startIcon={
+            simulate.isPending ? (
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              <SportsBasketballIcon />
+            )
+          }
+          disabled={!canSimulate || simulate.isPending}
           onClick={handleSimulate}
           sx={{ fontWeight: 800, flex: 1 }}
         >
@@ -267,46 +318,6 @@ export default function MatchSimulator({ teams }: MatchSimulatorProps) {
   );
 }
 
-function buildSeed(a: string[], b: string[], nonce: number): string {
-  return `${[...a].sort().join(",")}|${[...b].sort().join(",")}|${nonce}`;
-}
-
-interface InitialState {
-  selA: string[];
-  selB: string[];
-  nonce: number;
-  result: SimResult | null;
-}
-
-/** Deriva lo stato iniziale dalla querystring (chiavi valide filtrate sul roster). */
-function computeInitial(teams: SimTeam[], sp: { get(name: string): string | null }): InitialState {
-  const playerByKey = new Map<string, SimPlayer>();
-  for (const team of teams) for (const p of team.roster) playerByKey.set(keyOf(p), p);
-
-  const parse = (v: string | null) => (v ? v.split(",").filter((k) => playerByKey.has(k)) : []);
-  const selA = parse(sp.get("a"));
-  const selB = parse(sp.get("b"));
-
-  const nRaw = sp.get("s");
-  const nParsed = nRaw ? Number(nRaw) : 0;
-  const nonce = Number.isFinite(nParsed) ? nParsed : 0;
-
-  // Auto-simula solo se entrambe le formazioni del link sono valide secondo le
-  // regole Baskin (coerente con il gate del pulsante "Simula").
-  const playersA = selA.map((k) => playerByKey.get(k)!).filter(Boolean);
-  const playersB = selB.map((k) => playerByKey.get(k)!).filter(Boolean);
-  let result: SimResult | null = null;
-  if (validateLineup(playersA).valid && validateLineup(playersB).valid) {
-    result = simulateMatch({
-      teamAMus: playersA.map((p) => p.mu),
-      teamBMus: playersB.map((p) => p.mu),
-      seed: buildSeed(selA, selB, nonce),
-    });
-  }
-
-  return { selA, selB, nonce, result };
-}
-
 function SideColumn({
   title,
   colorToken,
@@ -351,7 +362,7 @@ function SideColumn({
       ) : (
         <Stack spacing={0.75}>
           {players.map((p) => (
-            <Box key={`${p.kind}-${p.id}`} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box key={keyOf(p)} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Avatar src={p.image ?? undefined} sx={{ width: 28, height: 28, fontSize: 13 }}>
                 {p.name[0]}
               </Avatar>
@@ -379,11 +390,7 @@ function SideColumn({
                 <FemaleIcon sx={{ fontSize: 15, color: "secondary.main" }} />
               )}
               {p.gender === "MALE" && <MaleIcon sx={{ fontSize: 15, color: "text.disabled" }} />}
-              <IconButton
-                size="small"
-                onClick={() => onRemove(`${p.kind}-${p.id}`)}
-                aria-label="remove"
-              >
+              <IconButton size="small" onClick={() => onRemove(keyOf(p))} aria-label="remove">
                 <CloseIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Box>

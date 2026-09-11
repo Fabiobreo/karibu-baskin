@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { sanitizePostHtml } from "@/lib/sanitizeHtml";
+import JsonLd from "@/components/common/JsonLd";
+import { newsArticleJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
 import { buildMetadata } from "@/lib/seo";
 import { hasRole } from "@/lib/authRoles";
@@ -117,6 +120,16 @@ export default async function NewsSlugPage({ params }: Props) {
 
   return (
     <>
+      <JsonLd
+        data={newsArticleJsonLd({
+          title: post.title,
+          description: excerpt(post.body) || post.title,
+          slug,
+          publishedAt: post.publishedAt!,
+          imageUrl: post.imageUrl,
+          authorName: post.author.name,
+        })}
+      />
       {post.imageUrl && (
         <Box
           sx={{
@@ -202,7 +215,10 @@ export default async function NewsSlugPage({ params }: Props) {
             lineHeight: 1.7,
             color: "text.primary",
           }}
-          dangerouslySetInnerHTML={{ __html: post.body }}
+          // Il corpo e' gia' sanificato in scrittura (api/posts). Qui di nuovo: un
+          // contenuto entrato prima del sanitizer, importato o modificato a mano
+          // sul database verrebbe altrimenti reso cosi' com'e' (KB-29).
+          dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.body) }}
         />
 
         {post.poll && (
