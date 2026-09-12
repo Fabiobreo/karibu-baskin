@@ -215,3 +215,88 @@ describe("generateTeams — layer skill (TrueSkill)", () => {
     expect(withLayer.teamA.length + withLayer.teamB.length).toBe(4);
   });
 });
+
+describe("generateTeams — bilanciamento per singolo ruolo", () => {
+  const countRole = (team: Athlete[], role: number) => team.filter((a) => a.role === role).length;
+  const teamsOf = (r: ReturnType<typeof generateTeams>) => [
+    r.teamA,
+    r.teamB,
+    ...(r.teamC ? [r.teamC] : []),
+  ];
+
+  it("4 donne R4 + 1 donna R5 + 4 uomini R5 → ruoli pari (regressione: pool donne R4+R5 unico)", () => {
+    // Composizione reale di un allenamento: prima della correzione il pool
+    // femminile R4+R5 veniva distribuito contando solo le donne, e la donna R5
+    // rubava il turno a una R4 → 3-1 su R4 e 2-3 su R5.
+    const roster: Athlete[] = [
+      { id: "w4a", name: "W4a", role: 4, gender: "FEMALE" },
+      { id: "w4b", name: "W4b", role: 4, gender: "FEMALE" },
+      { id: "w4c", name: "W4c", role: 4, gender: "FEMALE" },
+      { id: "w4d", name: "W4d", role: 4, gender: "FEMALE" },
+      { id: "w5", name: "W5", role: 5, gender: "FEMALE" },
+      { id: "m5a", name: "M5a", role: 5, gender: "MALE" },
+      { id: "m5b", name: "M5b", role: 5, gender: "MALE" },
+      { id: "m5c", name: "M5c", role: 5, gender: "MALE" },
+      { id: "m5d", name: "M5d", role: 5, gender: "MALE" },
+    ];
+    for (let seed = 0; seed < 30; seed++) {
+      const result = generateTeams(roster, `prod-like-${seed}`, 2);
+      expect(Math.abs(countRole(result.teamA, 4) - countRole(result.teamB, 4))).toBeLessThanOrEqual(
+        1
+      );
+      expect(Math.abs(countRole(result.teamA, 5) - countRole(result.teamB, 5))).toBeLessThanOrEqual(
+        1
+      );
+    }
+  });
+
+  it("ogni ruolo resta entro 1 di differenza su roster casuali (2 e 3 squadre)", () => {
+    let seed = 12345;
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    for (let n = 0; n < 200; n++) {
+      const size = 6 + Math.floor(rand() * 25);
+      const roster: Athlete[] = Array.from({ length: size }, (_, i) => ({
+        id: `p${i}`,
+        name: `P${i}`,
+        role: 1 + Math.floor(rand() * 5),
+        gender: rand() < 0.4 ? "FEMALE" : "MALE",
+        rating: rand() < 0.7 ? 15 + rand() * 20 : null,
+      }));
+      for (const numTeams of [2, 3] as const) {
+        const teams = teamsOf(generateTeams(roster, `rnd-${n}`, numTeams));
+        for (let role = 1; role <= 5; role++) {
+          const counts = teams.map((t) => countRole(t, role));
+          expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+        }
+        const sizes = teams.map((t) => t.length);
+        expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+        expect(teams.flat()).toHaveLength(size);
+      }
+    }
+  });
+
+  it("le donne R4-R5 restano distribuite entro 1 dopo la riparazione dei ruoli", () => {
+    const roster: Athlete[] = [
+      ...Array.from({ length: 5 }, (_, i) => ({
+        id: `w${i}`,
+        name: `W${i}`,
+        role: 4 + (i % 2),
+        gender: "FEMALE",
+      })),
+      ...Array.from({ length: 5 }, (_, i) => ({
+        id: `m${i}`,
+        name: `M${i}`,
+        role: 3 + (i % 3),
+        gender: "MALE",
+      })),
+    ];
+    for (let seed = 0; seed < 20; seed++) {
+      const teams = teamsOf(generateTeams(roster, `women-${seed}`, 2));
+      const women = teams.map((t) => t.filter((a) => a.gender === "FEMALE" && a.role >= 4).length);
+      expect(Math.max(...women) - Math.min(...women)).toBeLessThanOrEqual(1);
+    }
+  });
+});

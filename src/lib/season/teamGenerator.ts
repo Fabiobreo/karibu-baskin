@@ -43,12 +43,30 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
   return a;
 }
 
-// Assegna un atleta al bucket con il conteggio minore nell'array dato
-function assignToSmallest(athlete: Athlete, buckets: Athlete[][], groupCounts: number[]): void {
-  const minVal = Math.min(...groupCounts);
-  const idx = groupCounts.indexOf(minVal);
+/**
+ * Assegna un atleta al bucket con il conteggio minore nell'array dato.
+ * A parità di conteggio vince la squadra che ha meno atleti di quel ruolo:
+ * senza questo spareggio due avanzi dello stesso ruolo possono finire insieme
+ * lasciando l'altra squadra scoperta su quel ruolo.
+ */
+function assignToSmallest(
+  athlete: Athlete,
+  buckets: Athlete[][],
+  groupCounts: number[],
+  roleCounts: number[][]
+): number {
+  let idx = 0;
+  for (let t = 1; t < buckets.length; t++) {
+    const better =
+      groupCounts[t] < groupCounts[idx] ||
+      (groupCounts[t] === groupCounts[idx] &&
+        roleCounts[t][athlete.role] < roleCounts[idx][athlete.role]);
+    if (better) idx = t;
+  }
   buckets[idx].push(athlete);
   groupCounts[idx]++;
+  roleCounts[idx][athlete.role]++;
+  return idx;
 }
 
 export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 2 | 3 = 2): Teams {
@@ -56,15 +74,21 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
   const lowCounts = new Array<number>(numTeams).fill(0);
   const highCounts = new Array<number>(numTeams).fill(0);
   const womenR45Counts = new Array<number>(numTeams).fill(0);
+  // roleCounts[squadra][ruolo] — usato per lo spareggio nella distribuzione avanzi
+  const roleCounts: number[][] = Array.from({ length: numTeams }, () =>
+    new Array<number>(6).fill(0)
+  );
 
   const lowLeftovers: Athlete[] = [];
   const highLeftovers: Athlete[] = [];
-  // Donne R4+R5 estratte dal flusso normale per bilanciamento di genere
-  const womenR45: Athlete[] = [];
+  // Donne R4+R5 estratte dal flusso normale per bilanciamento di genere,
+  // tenute separate per ruolo: mescolarle in un unico pool sbilancia i ruoli
+  // (una R5 può prendere il posto di una R4 nel giro di assegnazione).
+  const womenByRole = new Map<number, Athlete[]>();
 
   // Passo 1: per ogni ruolo, distribuisci floor(count/numTeams) atleti a ciascuna
   // squadra in modo uniforme; i rimanenti vanno nel pool avanzi del gruppo (low/high).
-  // Eccezione: le donne nei ruoli 4 e 5 vengono estratte nel pool womenR45
+  // Eccezione: le donne nei ruoli 4 e 5 vengono estratte in womenByRole
   // per una distribuzione separata bilanciata per genere (passo 3.5).
   for (let role = 1; role <= 5; role++) {
     const isLow = role <= 2;
@@ -78,13 +102,14 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
     if (needsGenderBalance) {
       const women = group.filter((a) => a.gender === "FEMALE");
       const men = group.filter((a) => a.gender !== "FEMALE");
-      womenR45.push(...women);
+      womenByRole.set(role, women);
 
       const base = Math.floor(men.length / numTeams);
       for (let t = 0; t < numTeams; t++) {
         const slice = men.slice(t * base, (t + 1) * base);
         buckets[t].push(...slice);
         highCounts[t] += slice.length;
+        roleCounts[t][role] += slice.length;
       }
       highLeftovers.push(...men.slice(numTeams * base));
     } else {
@@ -94,6 +119,7 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
         buckets[t].push(...slice);
         if (isLow) lowCounts[t] += slice.length;
         else highCounts[t] += slice.length;
+        roleCounts[t][role] += slice.length;
       }
       const leftovers = group.slice(numTeams * base);
       if (isLow) lowLeftovers.push(...leftovers);
@@ -107,7 +133,7 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
     stringToSeed(`${sessionId}-low-leftovers`)
   );
   for (const a of shuffledLowLeftovers) {
-    assignToSmallest(a, buckets, lowCounts);
+    assignToSmallest(a, buckets, lowCounts, roleCounts);
   }
 
   // Passo 3: distribuisci gli avanzi high (uomini R3-5) bilanciando il totale per squadra
@@ -116,28 +142,70 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
     stringToSeed(`${sessionId}-high-leftovers`)
   );
   for (const a of shuffledHighLeftovers) {
-    assignToSmallest(a, buckets, highCounts);
+    assignToSmallest(a, buckets, highCounts, roleCounts);
   }
 
-  // Passo 3.5: distribuisci le donne R4+R5 bilanciando il conteggio femminile per squadra
-  const shuffledWomenR45 = seededShuffle(womenR45, stringToSeed(`${sessionId}-women-r45`));
-  for (const a of shuffledWomenR45) {
-    const minVal = Math.min(...womenR45Counts);
-    const idx = womenR45Counts.indexOf(minVal);
-    buckets[idx].push(a);
-    womenR45Counts[idx]++;
+  // Passo 3.5: distribuisci le donne R4+R5. Prima la quota piena ruolo per ruolo
+  // (come per gli uomini), così i ruoli restano pari; solo gli avanzi si
+  // bilanciano sul conteggio femminile, con spareggio sul ruolo.
+  const womenLeftovers: Athlete[] = [];
+  for (const role of [4, 5]) {
+    const women = seededShuffle(
+      womenByRole.get(role) ?? [],
+      stringToSeed(`${sessionId}-women-r${role}`)
+    );
+    const base = Math.floor(women.length / numTeams);
+    for (let t = 0; t < numTeams; t++) {
+      const slice = women.slice(t * base, (t + 1) * base);
+      buckets[t].push(...slice);
+      womenR45Counts[t] += slice.length;
+      highCounts[t] += slice.length;
+      roleCounts[t][role] += slice.length;
+    }
+    womenLeftovers.push(...women.slice(numTeams * base));
+  }
+  const shuffledWomenLeftovers = seededShuffle(
+    womenLeftovers,
+    stringToSeed(`${sessionId}-women-leftovers`)
+  );
+  for (const a of shuffledWomenLeftovers) {
+    const idx = assignToSmallest(a, buckets, womenR45Counts, roleCounts);
     highCounts[idx]++;
   }
 
-  // Passo 4: correzione finale — se la differenza di dimensioni è > 1 sposta un atleta
-  const sizes = buckets.map((b) => b.length);
-  const maxLen = Math.max(...sizes);
-  const minLen = Math.min(...sizes);
-  if (maxLen - minLen > 1) {
+  // Passo 4: correzione dimensioni — finché la differenza è > 1 sposta un atleta.
+  // Sposta uno del ruolo più sovrarappresentato nella squadra piena, non
+  // l'ultimo arrivato: spostare a caso rimette in squilibrio i ruoli.
+  // Con 3 squadre un solo spostamento non sempre basta (es. 5-2-2).
+  for (let guard = 0; guard < athletes.length; guard++) {
+    const sizes = buckets.map((b) => b.length);
+    const maxLen = Math.max(...sizes);
+    const minLen = Math.min(...sizes);
+    if (maxLen - minLen <= 1) break;
     const from = sizes.indexOf(maxLen);
     const to = sizes.indexOf(minLen);
-    buckets[to].push(buckets[from].pop()!);
+    let pick = buckets[from].length - 1;
+    let bestGap = -Infinity;
+    for (let i = 0; i < buckets[from].length; i++) {
+      const role = buckets[from][i].role;
+      const gap = roleCounts[from][role] - roleCounts[to][role];
+      if (gap > bestGap) {
+        bestGap = gap;
+        pick = i;
+      }
+    }
+    const moved = buckets[from].splice(pick, 1)[0];
+    buckets[to].push(moved);
+    roleCounts[from][moved.role]--;
+    roleCounts[to][moved.role]++;
   }
+
+  // Passo 4.5: riparazione ruoli. I giri precedenti bilanciano uomini e donne
+  // dello stesso ruolo separatamente, quindi entrambi possono arrotondare per
+  // eccesso sulla stessa squadra (es. 4 donne R4 + 1 donna R5 → 3-1 su R4).
+  // Qui si scambiano coppie di atleti di ruolo diverso, a dimensioni invariate,
+  // finché lo squilibrio per ruolo smette di calare.
+  repairRoleSpread(buckets, stringToSeed(`${sessionId}-roles`));
 
   // Passo 5: layer skill (TrueSkill). Bilancia il totale di μ tra le squadre
   // SENZA toccare struttura ruoli e genere — scambia solo coppie con stesso
@@ -150,6 +218,72 @@ export function generateTeams(athletes: Athlete[], sessionId: string, numTeams: 
     ...(numTeams === 3 ? { teamC: buckets[2] } : {}),
     numTeams,
   };
+}
+
+/** Costo di squilibrio: somma degli scarti max-min per ogni ruolo, più lo
+ *  scarto delle donne R4-R5 come criterio secondario (peso minore, non deve
+ *  mai far preferire uno scambio che peggiora i ruoli). */
+function spreadCost(buckets: Athlete[][]): number {
+  let cost = 0;
+  for (let role = 1; role <= 5; role++) {
+    const counts = buckets.map((b) => b.filter((a) => a.role === role).length);
+    cost += Math.max(...counts) - Math.min(...counts);
+  }
+  const women = buckets.map((b) => b.filter((a) => a.gender === "FEMALE" && a.role >= 4).length);
+  cost += (Math.max(...women) - Math.min(...women)) * 0.5;
+  return cost;
+}
+
+/**
+ * Scambia coppie di atleti tra squadre finché lo squilibrio per ruolo cala.
+ * Le dimensioni delle squadre non cambiano (è sempre uno scambio, mai uno
+ * spostamento) e a parità di guadagno si preferisce lo scambio tra atleti
+ * dello stesso genere, per non disfare il bilanciamento femminile.
+ */
+function repairRoleSpread(buckets: Athlete[][], seed: number): void {
+  const MAX_ITERATIONS = 50;
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    const current = spreadCost(buckets);
+    if (current === 0) return;
+    let best: { ti: number; ai: number; tj: number; aj: number; cost: number; key: string } | null =
+      null;
+
+    for (let ti = 0; ti < buckets.length; ti++) {
+      for (let tj = ti + 1; tj < buckets.length; tj++) {
+        for (let ai = 0; ai < buckets[ti].length; ai++) {
+          for (let aj = 0; aj < buckets[tj].length; aj++) {
+            const x = buckets[ti][ai];
+            const y = buckets[tj][aj];
+            if (x.role === y.role) continue; // scambio inutile per i ruoli
+
+            buckets[ti][ai] = y;
+            buckets[tj][aj] = x;
+            const cost = spreadCost(buckets);
+            buckets[ti][ai] = x;
+            buckets[tj][aj] = y;
+
+            if (cost >= current - 1e-9) continue;
+            // Tie-break deterministico: prima gli scambi tra stesso genere,
+            // poi ordine stabile sugli id.
+            const sameGender = (x.gender ?? null) === (y.gender ?? null) ? "0" : "1";
+            const key = `${sameGender}:${pairKey(x, y, seed)}`;
+            if (
+              best === null ||
+              cost < best.cost - 1e-9 ||
+              (cost < best.cost + 1e-9 && key < best.key)
+            ) {
+              best = { ti, ai, tj, aj, cost, key };
+            }
+          }
+        }
+      }
+    }
+
+    if (!best) return; // nessun miglioramento possibile
+    const tmp = buckets[best.ti][best.ai];
+    buckets[best.ti][best.ai] = buckets[best.tj][best.aj];
+    buckets[best.tj][best.aj] = tmp;
+  }
 }
 
 const DEFAULT_RATING = 25; // μ₀ TrueSkill — usato per gli atleti non valutati

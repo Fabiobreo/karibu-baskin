@@ -1,5 +1,7 @@
 import { cache } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { prisma } from "@/lib/db";
+import { isTransientDbError, withDbRetry } from "@/lib/dbRetry";
 import {
   pickCurrentSeason,
   resolveActiveSeason,
@@ -9,14 +11,34 @@ import {
 /**
  * Stagioni marcate `isCurrent` dallo staff (di norma zero o una). In cache per
  * richiesta: layout e pagina la chiedono entrambi, la query parte una volta.
+ *
+ * Questa query la esegue il root layout a ogni richiesta, su ogni pagina: se
+ * lancia, cade l'intero sito sulla pagina di errore critico. Un database
+ * irraggiungibile (Neon che si risveglia) qui non è quindi un errore fatale ma
+ * una mancanza di informazione: si riprova una volta e, se ancora non si
+ * raggiunge, si ricade sulla stagione del calendario — che è poi la stessa
+ * risposta che si dà quando nessuna stagione è marcata.
  */
 const loadMarkedSeasons = cache(async (): Promise<string[]> => {
-  const rows = await prisma.season.findMany({
-    where: { isCurrent: true },
-    select: { label: true },
-    orderBy: { label: "desc" },
-  });
-  return rows.map((r) => r.label);
+  try {
+    const rows = await withDbRetry(() =>
+      prisma.season.findMany({
+        where: { isCurrent: true },
+        select: { label: true },
+        orderBy: { label: "desc" },
+      })
+    );
+    return rows.map((r) => r.label);
+  } catch (err) {
+    if (!isTransientDbError(err)) throw err;
+    // Registrato come warning, non come errore: la pagina è stata servita.
+    // Senza questo, un database intermittente diventerebbe invisibile.
+    Sentry.captureException(err, {
+      level: "warning",
+      tags: { fallback: "season-from-calendar" },
+    });
+    return [];
+  }
 });
 
 /**
