@@ -115,6 +115,8 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
               variant="body2"
               sx={{
                 flex: 1,
+                minWidth: 0,
+                overflowWrap: "anywhere",
                 fontSize: "0.82rem",
                 color: effective === false ? "text.disabled" : "text.primary",
               }}
@@ -231,17 +233,23 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
         </Typography>
       </Box>
 
-      {/* Body: due colonne quando c'e' qualcosa da mettere nella seconda */}
+      {/* Body: due colonne quando c'e' qualcosa da mettere nella seconda.
+          minmax(0, 1fr) e non 1fr: una colonna 1fr non scende sotto la
+          larghezza minima del contenuto, e su mobile il form punteggi
+          allargava la card oltre lo schermo. */}
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: hasAthletes ? "1fr 1fr" : "1fr" },
+          gridTemplateColumns: {
+            xs: "minmax(0, 1fr)",
+            md: hasAthletes ? "repeat(2, minmax(0, 1fr))" : "minmax(0, 1fr)",
+          },
         }}
       >
         {/* Colonna sinistra: presenze */}
         <Box
           sx={{
-            p: 2.5,
+            p: { xs: 2, sm: 2.5 },
             borderRight: { md: hasAthletes ? "1px solid" : "none" },
             borderColor: { md: "divider" },
           }}
@@ -262,7 +270,7 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
             partitella da registrare, e il form chiedeva "Arancioni vs Neri"
             anche sugli allenamenti con zero presenze. */}
         {hasAthletes && (
-          <Box sx={{ p: 2.5 }}>
+          <Box sx={{ p: { xs: 2, sm: 2.5 }, pt: { xs: 0, md: 2.5 } }}>
             <TrainingMatchResults sessionId={s.id} isStaff={true} teams={s.teams} />
           </Box>
         )}
@@ -278,6 +286,7 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
+          flexWrap: "wrap",
           gap: 1.5,
           bgcolor: (theme) =>
             confirming

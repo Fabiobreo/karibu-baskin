@@ -171,7 +171,16 @@ function MatchupSlot({
         }}
       >
         {label}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        {/* Su mobile una squadra per riga, punteggio a destra: affiancate non
+            ci stanno in una card stretta. */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: { xs: 1, sm: 2 },
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Box
               sx={{
@@ -182,7 +191,11 @@ function MatchupSlot({
                 flexShrink: 0,
               }}
             />
-            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>
+            <Typography
+              variant="caption"
+              fontWeight={600}
+              sx={{ minWidth: 58, flex: { xs: 1, sm: "none" } }}
+            >
               {team1Name}
             </Typography>
             <TextField
@@ -204,7 +217,11 @@ function MatchupSlot({
               disabled={saving}
             />
           </Box>
-          <Typography color="text.disabled" fontWeight={700} sx={{ fontSize: "0.8rem" }}>
+          <Typography
+            color="text.disabled"
+            fontWeight={700}
+            sx={{ fontSize: "0.8rem", display: { xs: "none", sm: "block" } }}
+          >
             vs
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -217,7 +234,11 @@ function MatchupSlot({
                 flexShrink: 0,
               }}
             />
-            <Typography variant="caption" fontWeight={600} sx={{ minWidth: 58 }}>
+            <Typography
+              variant="caption"
+              fontWeight={600}
+              sx={{ minWidth: 58, flex: { xs: 1, sm: "none" } }}
+            >
               {team2Name}
             </Typography>
             <TextField
