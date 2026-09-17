@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Container, Box, Typography, Stack, Button } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { common } from "@mui/material/colors";
 import PlaceIcon from "@mui/icons-material/Place";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
@@ -201,7 +202,7 @@ export default async function EventoPage({ params }: Props) {
                   sx={{
                     color: "common.white",
                     textDecoration: "underline",
-                    textDecorationColor: (th) => alpha(th.palette.common.white, 0.4),
+                    textDecorationColor: alpha(common.white, 0.4),
                     textUnderlineOffset: 3,
                   }}
                 >
