@@ -55,6 +55,20 @@ const nextConfig: NextConfig = {
     "/partite/[slug]/opengraph-image": ["./public/fonts/*.ttf"],
     "/squadre/[season]/[slug]/opengraph-image": ["./public/fonts/*.ttf"],
   },
+  // Il file tracing copia in ogni funzione tutto @prisma/client, compresi i
+  // motori wasm di ogni database (~53 MB): servono solo con un driver adapter o
+  // sul runtime edge, e qui usiamo il client Node con l'engine nativo. Senza
+  // questa esclusione ogni deploy pesava ~60% in più nel Functions Storage di
+  // Vercel (limite Hobby 10 GB). Se si adotta un driver adapter (es.
+  // @prisma/adapter-neon) questi file tornano necessari: togliere le prime due righe.
+  // I `.tmp*` sono copie dell'engine lasciate da `prisma generate` su Windows.
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/@prisma/client/runtime/*.wasm-base64.*",
+      "node_modules/.prisma/client/*.wasm",
+      "node_modules/.prisma/client/*.tmp*",
+    ],
+  },
   images: {
     remotePatterns: [
       {

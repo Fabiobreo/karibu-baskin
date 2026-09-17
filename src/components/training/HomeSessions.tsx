@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { withDbRetry } from "@/lib/dbRetry";
 import { parseTeamsData } from "@/lib/schemas";
 import HomeSessionsSection from "@/components/training/HomeSessionsSection";
 import type { SessionWithCount } from "@/components/training/SessionCard";
@@ -25,14 +26,18 @@ export default async function HomeSessions({ userId, isMember, isStaff }: HomeSe
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const horizon = new Date(startOfToday.getTime() + HOME_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-  const rawSessions = await prisma.trainingSession.findMany({
-    where: { date: { gte: startOfToday, lte: horizon } },
-    orderBy: { date: "asc" },
-    include: {
-      _count: { select: { registrations: true } },
-      restrictTeam: { select: { id: true, name: true, color: true } },
-    },
-  });
+  // Retry: la home è la prima pagina che tocca il database dopo una pausa, e una
+  // connessione del pool chiusa da Neon (P1017) farebbe cadere tutta la pagina.
+  const rawSessions = await withDbRetry(() =>
+    prisma.trainingSession.findMany({
+      where: { date: { gte: startOfToday, lte: horizon } },
+      orderBy: { date: "asc" },
+      include: {
+        _count: { select: { registrations: true } },
+        restrictTeam: { select: { id: true, name: true, color: true } },
+      },
+    })
+  );
 
   // Le squadre generate contengono nome, ruolo e genere di ogni atleta, minori
   // compresi: nella home pubblica non devono finire nel payload della pagina.
@@ -60,10 +65,12 @@ export default async function HomeSessions({ userId, isMember, isStaff }: HomeSe
   let registrationIdBySession: Record<string, string> = {};
   const visibleIds = [...inCorso, ...upcoming].map((s) => s.id);
   if (userId && visibleIds.length > 0) {
-    const regs = await prisma.registration.findMany({
-      where: { userId, sessionId: { in: visibleIds } },
-      select: { id: true, sessionId: true },
-    });
+    const regs = await withDbRetry(() =>
+      prisma.registration.findMany({
+        where: { userId, sessionId: { in: visibleIds } },
+        select: { id: true, sessionId: true },
+      })
+    );
     registrationIdBySession = Object.fromEntries(regs.map((r) => [r.sessionId, r.id]));
   }
 

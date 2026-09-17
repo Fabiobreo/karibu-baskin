@@ -4,6 +4,7 @@ import { alpha } from "@mui/material/styles";
 import { brandColor } from "@/lib/heroStyles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { prisma } from "@/lib/db";
+import { withDbRetry } from "@/lib/dbRetry";
 import ProssimePartiteCards from "./ProssimePartiteCards";
 import { getTranslations } from "next-intl/server";
 
@@ -17,21 +18,23 @@ export default async function ProssimePartiteHome() {
 
   const [t, matches] = await Promise.all([
     getTranslations("matches"),
-    prisma.match.findMany({
-      where: { date: { gte: now, lte: limit } },
-      orderBy: { date: "asc" },
-      take: 3,
-      select: {
-        id: true,
-        slug: true,
-        date: true,
-        isHome: true,
-        venue: true,
-        team: { select: { id: true, name: true, color: true } },
-        opponent: { select: { id: true, name: true } },
-        opponentTeam: { select: { id: true, name: true } },
-      },
-    }),
+    withDbRetry(() =>
+      prisma.match.findMany({
+        where: { date: { gte: now, lte: limit } },
+        orderBy: { date: "asc" },
+        take: 3,
+        select: {
+          id: true,
+          slug: true,
+          date: true,
+          isHome: true,
+          venue: true,
+          team: { select: { id: true, name: true, color: true } },
+          opponent: { select: { id: true, name: true } },
+          opponentTeam: { select: { id: true, name: true } },
+        },
+      })
+    ),
   ]);
 
   if (matches.length === 0) return null;

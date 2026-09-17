@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { withDbRetry } from "@/lib/dbRetry";
 import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -11,10 +12,12 @@ export default async function BirthdayBanner() {
 
   const [t, users] = await Promise.all([
     getTranslations("home"),
-    prisma.user.findMany({
-      where: { birthDate: { not: null }, appRole: { not: "GUEST" }, slug: { not: null } },
-      select: { name: true, slug: true, birthDate: true },
-    }),
+    withDbRetry(() =>
+      prisma.user.findMany({
+        where: { birthDate: { not: null }, appRole: { not: "GUEST" }, slug: { not: null } },
+        select: { name: true, slug: true, birthDate: true },
+      })
+    ),
   ]);
 
   const celebrants = users.filter((u) => {

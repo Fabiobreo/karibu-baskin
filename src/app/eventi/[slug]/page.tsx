@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { Container, Box, Typography, Chip, Stack, Button } from "@mui/material";
+import { Container, Box, Typography, Stack, Button } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import PlaceIcon from "@mui/icons-material/Place";
-import EventIcon from "@mui/icons-material/Event";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -11,6 +11,8 @@ import { prisma } from "@/lib/db";
 import JsonLd from "@/components/common/JsonLd";
 import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
+import PageHero from "@/components/common/PageHero";
+import EventPoster from "@/components/common/EventPoster";
 import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
@@ -176,72 +178,44 @@ export default async function EventoPage({ params }: Props) {
           imageUrl: ev.imageUrl,
         })}
       />
-      {/* Hero copertina */}
-      <Box
-        sx={{
-          position: "relative",
-          minHeight: { xs: 200, md: 320 },
-          bgcolor: "action.hover",
-          display: "flex",
-          alignItems: "flex-end",
-        }}
+      <PageHero
+        title={ev.title}
+        chip={dateLabel}
+        align="left"
+        py={{ xs: 4, md: 6 }}
+        decorativeCircles={false}
       >
-        {ev.imageUrl ? (
-          <Box
-            component="img"
-            src={ev.imageUrl}
-            alt={ev.title}
-            sx={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
-          />
-        ) : (
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <EventIcon sx={{ fontSize: 72, color: "text.disabled" }} />
+        {ev.location && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <PlaceIcon sx={{ color: "primary.main", fontSize: 20 }} />
+            {mapsUrl ? (
+              <Link
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: "none" }}
+              >
+                <Typography
+                  variant="body1"
+                  fontWeight={600}
+                  sx={{
+                    color: "common.white",
+                    textDecoration: "underline",
+                    textDecorationColor: (th) => alpha(th.palette.common.white, 0.4),
+                    textUnderlineOffset: 3,
+                  }}
+                >
+                  {ev.location}
+                </Typography>
+              </Link>
+            ) : (
+              <Typography variant="body1" fontWeight={600} sx={{ color: "common.white" }}>
+                {ev.location}
+              </Typography>
+            )}
           </Box>
         )}
-        <Box
-          sx={{
-            position: "relative",
-            width: "100%",
-            background: "linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0))",
-            p: { xs: 2.5, md: 4 },
-          }}
-        >
-          <Container maxWidth="md" disableGutters>
-            <Chip
-              label={dateLabel}
-              size="small"
-              sx={{
-                fontWeight: 700,
-                mb: 1,
-                // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
-                bgcolor: "primary.dark",
-                color: "primary.contrastText",
-              }}
-            />
-            <Typography
-              variant="h4"
-              fontWeight={900}
-              sx={{ color: "common.white", lineHeight: 1.15 }}
-            >
-              {ev.title}
-            </Typography>
-          </Container>
-        </Box>
-      </Box>
+      </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <Link href="/eventi" style={{ textDecoration: "none" }}>
@@ -250,53 +224,54 @@ export default async function EventoPage({ params }: Props) {
           </Button>
         </Link>
 
-        <Stack spacing={3}>
-          {ev.location && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <PlaceIcon sx={{ color: "primary.main" }} />
-              <Box>
-                <Typography variant="caption" color="text.disabled" sx={{ display: "block" }}>
-                  {t("location")}
-                </Typography>
-                {mapsUrl ? (
-                  <Link
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: "none" }}
-                  >
-                    <Typography variant="body1" fontWeight={600} sx={{ color: "primary.onLight" }}>
-                      {ev.location}
-                    </Typography>
-                  </Link>
-                ) : (
-                  <Typography variant="body1" fontWeight={600}>
-                    {ev.location}
-                  </Typography>
-                )}
-              </Box>
+        {/* Con la locandina: due colonne su desktop (contenuto + locandina intera
+            che resta visibile scorrendo); su mobile la locandina è una riga
+            compatta prima della descrizione. */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "minmax(0, 1fr)",
+              md: ev.imageUrl ? "minmax(0, 1fr) 280px" : "minmax(0, 1fr)",
+            },
+            gap: { xs: 3, md: 4 },
+            alignItems: "start",
+          }}
+        >
+          <Stack spacing={3}>
+            {ev.description && (
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}
+              >
+                {ev.description}
+              </Typography>
+            )}
+
+            <EventRsvp
+              eventId={ev.id}
+              isLoggedIn={!!userId}
+              isPast={isPast}
+              subjects={subjects}
+              options={optionsView}
+              initialCounts={counts}
+            />
+          </Stack>
+
+          {ev.imageUrl && (
+            <Box
+              component="aside"
+              sx={{
+                order: { xs: -1, md: 0 },
+                position: { md: "sticky" },
+                top: { md: 88 },
+              }}
+            >
+              <EventPoster imageUrl={ev.imageUrl} title={ev.title} />
             </Box>
           )}
-
-          {ev.description && (
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}
-            >
-              {ev.description}
-            </Typography>
-          )}
-
-          <EventRsvp
-            eventId={ev.id}
-            isLoggedIn={!!userId}
-            isPast={isPast}
-            subjects={subjects}
-            options={optionsView}
-            initialCounts={counts}
-          />
-        </Stack>
+        </Box>
       </Container>
     </>
   );

@@ -6,6 +6,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
 
+// Testi di riserva, in italiano come ogni URL senza cookie. Servono quando la
+// pagina di errore viene resa fuori dal NextIntlClientProvider: succede con le
+// POST che portano una Server Action inesistente (scanner automatici con
+// `Next-Action: x`), dove Next rende l'errore senza il root layout. Lì
+// `useTranslations` lancia, e la pagina di errore diventerebbe a sua volta un
+// errore senza messaggio.
+const FALLBACK_LABELS = {
+  retry: "Riprova",
+  backHome: "Torna agli allenamenti",
+  serverError: "Qualcosa è andato storto",
+  serverErrorDesc:
+    "Si è verificato un errore imprevisto. Puoi riprovare oppure tornare alla pagina principale.",
+} as const;
+
+type ErrorLabelKey = keyof typeof FALLBACK_LABELS;
+
+/** `useTranslations("errors")` che non lancia mai: senza provider usa l'italiano. */
+export function useErrorLabels(): (key: ErrorLabelKey) => string {
+  try {
+    const t = useTranslations("errors");
+    return (key) => t(key);
+  } catch {
+    return (key) => FALLBACK_LABELS[key];
+  }
+}
+
 interface Props {
   code?: string | number;
   title: string;
@@ -16,7 +42,7 @@ interface Props {
 }
 
 export default function ErrorPage({ code, title, description, showReset, onReset, digest }: Props) {
-  const t = useTranslations("errors");
+  const t = useErrorLabels();
   return (
     <Box
       sx={{

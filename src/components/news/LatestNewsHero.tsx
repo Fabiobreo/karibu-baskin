@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { withDbRetry } from "@/lib/dbRetry";
 import Link from "next/link";
 import { Box, Container, Typography, Grid2 as Grid, Stack } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
@@ -18,20 +19,22 @@ export type PostItem = {
 
 export default async function LatestNewsHero() {
   const [posts, t, tm] = await Promise.all([
-    prisma.post.findMany({
-      where: { publishedAt: { not: null } },
-      orderBy: { publishedAt: "desc" },
-      take: 4,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        body: true,
-        imageUrl: true,
-        publishedAt: true,
-        poll: { select: { id: true, closesAt: true } },
-      },
-    }),
+    withDbRetry(() =>
+      prisma.post.findMany({
+        where: { publishedAt: { not: null } },
+        orderBy: { publishedAt: "desc" },
+        take: 4,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          body: true,
+          imageUrl: true,
+          publishedAt: true,
+          poll: { select: { id: true, closesAt: true } },
+        },
+      })
+    ),
     getTranslations("home"),
     getTranslations("matches"),
   ]);

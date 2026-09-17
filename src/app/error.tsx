@@ -1,7 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import ErrorPage from "@/components/common/ErrorPage";
-import { useTranslations } from "next-intl";
+import ErrorPage, { useErrorLabels } from "@/components/common/ErrorPage";
 
 export default function Error({
   error,
@@ -10,7 +9,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const t = useTranslations("errors");
+  const t = useErrorLabels();
 
   useEffect(() => {
     console.error("[error boundary]", {
