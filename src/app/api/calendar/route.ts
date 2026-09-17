@@ -10,7 +10,14 @@ export interface CalendarEvent {
   title: string;
   date: string; // ISO
   endDate?: string; // ISO
-  color: string; // hex
+  /**
+   * Squadra dell'evento. L'API non decide piu' un `color` gia' cotto: il colore
+   * dello sfondo dipende dal TIPO (e quindi dal tema chiaro/scuro, che il server
+   * non conosce), mentre il colore squadra serve solo come accento. Risolve
+   * entrambi il client con `eventVisual` in `@/lib/calendar/eventColors`.
+   */
+  teamId?: string;
+  teamColor?: string | null;
   teamName?: string;
   opponent?: string;
   isHome?: boolean;
@@ -46,7 +53,7 @@ export async function GET(req: Request) {
         date: true,
         endTime: true,
         dateSlug: true,
-        team: { select: { name: true, color: true } },
+        team: { select: { id: true, name: true, color: true } },
       },
       orderBy: { date: "asc" },
     }),
@@ -59,7 +66,7 @@ export async function GET(req: Request) {
         isHome: true,
         venue: true,
         result: true,
-        team: { select: { name: true, color: true } },
+        team: { select: { id: true, name: true, color: true } },
         opponent: { select: { name: true } },
         opponentTeam: { select: { name: true } },
       },
@@ -83,7 +90,8 @@ export async function GET(req: Request) {
       title: t.title,
       date: t.date.toISOString(),
       endDate: t.endTime?.toISOString(),
-      color: t.team?.color ?? "#FF6D00",
+      teamId: t.team?.id,
+      teamColor: t.team?.color ?? null,
       teamName: t.team?.name,
       href: `/allenamento/${t.dateSlug ?? t.id}`,
     })),
@@ -94,7 +102,8 @@ export async function GET(req: Request) {
         type: "match" as const,
         title: m.isHome ? `vs ${opponentName}` : `@ ${opponentName}`,
         date: m.date.toISOString(),
-        color: m.team?.color ?? "#F44336",
+        teamId: m.team?.id,
+        teamColor: m.team?.color ?? null,
         teamName: m.team?.name,
         opponent: opponentName,
         isHome: m.isHome,
@@ -109,7 +118,6 @@ export async function GET(req: Request) {
       title: e.title,
       date: e.date.toISOString(),
       endDate: e.endDate?.toISOString(),
-      color: "#039BE5",
       location: e.location ?? undefined,
       href: `/eventi/${e.slug ?? e.id}`,
     })),

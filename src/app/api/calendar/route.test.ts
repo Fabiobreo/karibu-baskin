@@ -25,7 +25,7 @@ const trainingStub = {
   date: new Date("2025-07-07T17:00:00Z"),
   endTime: new Date("2025-07-07T19:00:00Z"),
   dateSlug: "2025-07-07",
-  team: { name: "Karibu A", color: "#FF6D00" },
+  team: { id: "team-a", name: "Karibu A", color: "#FF6D00" },
 };
 
 const matchStub = {
@@ -35,7 +35,7 @@ const matchStub = {
   isHome: true,
   venue: "Palazzetto",
   result: "52-48",
-  team: { name: "Karibu A", color: "#FF6D00" },
+  team: { id: "team-a", name: "Karibu A", color: "#FF6D00" },
   opponent: { name: "Avversario FC" },
 };
 
@@ -75,7 +75,8 @@ describe("GET /api/calendar", () => {
     const item = json[0];
     expect(item.type).toBe("training");
     expect(item.title).toBe("Allenamento Lunedì");
-    expect(item.color).toBe("#FF6D00");
+    expect(item.teamId).toBe("team-a");
+    expect(item.teamColor).toBe("#FF6D00");
     expect(item.teamName).toBe("Karibu A");
     expect(item.href).toBe("/allenamento/2025-07-07");
     expect(item.endDate).toBe(trainingStub.endTime.toISOString());
@@ -88,11 +89,14 @@ describe("GET /api/calendar", () => {
     expect(json[0].href).toBe("/allenamento/sess-1");
   });
 
-  it("usa il colore di default #FF6D00 per allenamenti senza squadra", async () => {
+  it("non inventa un colore per allenamenti senza squadra", async () => {
+    // Il colore dello sfondo lo decide il tipo di evento, lato client, dal tema:
+    // qui esce solo l'accento squadra, che senza squadra non c'e'.
     p.trainingSession.findMany.mockResolvedValue([{ ...trainingStub, team: null }]);
     const res = await GET(makeRequest("?month=2025-07"));
     const json = await res.json();
-    expect(json[0].color).toBe("#FF6D00");
+    expect(json[0].teamColor).toBeNull();
+    expect(json[0].teamId).toBeUndefined();
   });
 
   it("mappa correttamente una partita in casa", async () => {
@@ -124,11 +128,12 @@ describe("GET /api/calendar", () => {
     expect(json[0].href).toBe("/partite/match-1");
   });
 
-  it("usa il colore di default #F44336 per partite senza squadra", async () => {
+  it("non inventa un colore per partite senza squadra", async () => {
     p.match.findMany.mockResolvedValue([{ ...matchStub, team: null }]);
     const res = await GET(makeRequest("?month=2025-07"));
     const json = await res.json();
-    expect(json[0].color).toBe("#F44336");
+    expect(json[0].teamColor).toBeNull();
+    expect(json[0].teamId).toBeUndefined();
   });
 
   it("mappa correttamente un evento", async () => {
@@ -139,7 +144,7 @@ describe("GET /api/calendar", () => {
     const item = json[0];
     expect(item.type).toBe("event");
     expect(item.title).toBe("Torneo Estivo");
-    expect(item.color).toBe("#039BE5");
+    expect(item.teamColor).toBeUndefined();
     expect(item.location).toBe("Vicenza");
     expect(item.endDate).toBe(eventStub.endDate.toISOString());
   });

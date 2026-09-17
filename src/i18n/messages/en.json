@@ -692,6 +692,8 @@
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
     "todayBtn": "Today",
+    "legendTypes": "Type",
+    "legendTeams": "Teams",
     "typeTraining": "Training",
     "typeMatch": "Match",
     "typeEvent": "Event",

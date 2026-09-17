@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { Box, Typography, IconButton, Skeleton } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -36,17 +37,29 @@ import EventDetailDialog from "@/components/calendar/dialogs/EventDetailDialog";
 import DayEventsDialog from "@/components/calendar/dialogs/DayEventsDialog";
 import CreateEventDialog from "@/components/calendar/dialogs/CreateEventDialog";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
+import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 
-const FILTERS_STORAGE_KEY = "karibu-calendar-filters";
+// v2: le chiavi dei filtri sono cambiate (type:<tipo> e team:<id> al posto di
+// "training" e "match:<colore>"). Chiave nuova così i filtri vecchi salvati sui
+// dispositivi non restano lì a nascondere niente.
+const FILTERS_STORAGE_KEY = "karibu-calendar-filters-v2";
 
 interface Props {
   isStaff?: boolean;
   isAdmin?: boolean;
   teams?: TeamInfo[];
+  /** Squadre di chi guarda (e dei suoi figli): i loro impegni vanno marcati. */
+  myTeamIds?: string[];
 }
 
-export default function CalendarClient({ isStaff = false, isAdmin = false, teams = [] }: Props) {
+export default function CalendarClient({
+  isStaff = false,
+  isAdmin = false,
+  teams = [],
+  myTeamIds = [],
+}: Props) {
   const t = useTranslations("calendar");
+  const theme = useTheme();
   const dateLocale = useActiveDateLocale();
   // Compute short day names starting from Monday (2024-01-01 is a Monday)
   const DAY_LABELS = Array.from({ length: 7 }, (_, i) =>
@@ -94,6 +107,9 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
     setHiddenKeys(new Set());
     persistFilters(new Set());
   }
+
+  const mine = useMemo(() => new Set(myTeamIds), [myTeamIds]);
+  const isOwnTeam = (ev: CalendarEvent) => !!ev.teamId && mine.has(ev.teamId);
 
   const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
 
@@ -224,7 +240,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
       </Box>
 
       {/* Etichette giorni settimana */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", mb: "1px" }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", mb: "1px" }}>
         {DAY_LABELS.map((d) => (
           <Typography
             key={d}
@@ -247,7 +263,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
+            gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
             gap: "1px",
             bgcolor: "divider",
             border: "1px solid",
@@ -279,7 +295,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
+            gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
             gap: "1px",
             bgcolor: "divider",
             border: "1px solid",
@@ -305,6 +321,10 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                 onKeyDown={(e) => handleDayKeyDown(e, day)}
                 sx={{
                   minHeight: { xs: 72, sm: 116 },
+                  // Senza questo la cella (grid item) tornerebbe a dimensionarsi
+                  // sul proprio min-content e sborderebbe dalla traccia.
+                  minWidth: 0,
+                  overflow: "hidden",
                   bgcolor: "background.paper",
                   p: { xs: "4px", sm: "6px" },
                   opacity: inMonth ? 1 : 0.38,
@@ -357,6 +377,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                         // Mostra il titolo all'inizio o a inizio settimana (lunedì),
                         // così ogni riga della griglia resta leggibile.
                         showTitle={seg.isStart || getDay(day) === 1}
+                        isOwnTeam={isOwnTeam(ev)}
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelected(ev);
@@ -391,6 +412,8 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                           ? EmojiEventsIcon
                           : EventNoteIcon;
                     const seg = getDaySegment(ev, day);
+                    // Stessa codifica del desktop: sfondo = tipo, bordo = squadra.
+                    const { bg, fg, accent } = eventVisual(theme, ev.type, ev.teamColor);
                     // Barra continua per eventi multi-giorno: bordi smussati solo
                     // alle estremità ed estensione fino al bordo cella.
                     const radius = seg.multiDay
@@ -404,7 +427,15 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                         sx={{
                           height: 14,
                           borderRadius: radius,
-                          bgcolor: ev.color,
+                          bgcolor: bg,
+                          ...decorationSx(theme, {
+                            accent: !seg.multiDay || seg.isStart ? accent : null,
+                            bandWidth: 4,
+                            echo: isOwnTeam(ev) ? bg : null,
+                            // Qui le barre distano 2px: eco piu' stretta.
+                            echoGap: 1,
+                            echoWidth: 1,
+                          }),
                           mx: seg.multiDay ? "-4px" : 0,
                           display: "flex",
                           alignItems: "center",
@@ -413,7 +444,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
                       >
                         {/* Icona solo all'inizio: i giorni di proseguimento restano barra piena */}
                         {(!seg.multiDay || seg.isStart) && (
-                          <Icon sx={{ fontSize: "0.58rem", color: "common.white" }} />
+                          <Icon sx={{ fontSize: "0.58rem", color: fg }} />
                         )}
                       </Box>
                     );
@@ -452,6 +483,7 @@ export default function CalendarClient({ isStaff = false, isAdmin = false, teams
         year={year}
         month={month}
         hiddenKeys={hiddenKeys}
+        myTeamIds={myTeamIds}
         onToggleKey={toggleKey}
         onClearFilters={clearFilters}
       />

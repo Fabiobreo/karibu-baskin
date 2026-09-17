@@ -1,5 +1,6 @@
 "use client";
 import { Box, Button, Dialog, DialogActions, DialogContent, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EventNoteIcon from "@mui/icons-material/EventNote";
@@ -11,6 +12,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { getDaySegment } from "@/components/calendar/calendarShared";
 import type { CalendarEvent } from "@/app/api/calendar/route";
+import { eventVisual } from "@/lib/calendar/eventColors";
 
 interface DayEventsDialogProps {
   day: Date | null;
@@ -33,6 +35,7 @@ export default function DayEventsDialog({
   const t = useTranslations("calendar");
   const tCommon = useTranslations("common");
   const dateLocale = useActiveDateLocale();
+  const theme = useTheme();
   if (!day) return null;
 
   const sorted = [...events].sort(
@@ -76,6 +79,15 @@ export default function DayEventsDialog({
                     ? EmojiEventsIcon
                     : EventNoteIcon;
 
+              // Velatura del colore di tipo (prima era concatenazione di hex,
+              // che si rompe su qualunque colore non #rrggbb) + accento squadra
+              // sul bordo sinistro, come nei chip della griglia.
+              const { bg, fg, accent, tint, tintBorder, tintHover } = eventVisual(
+                theme,
+                ev.type,
+                ev.teamColor
+              );
+
               const rowSx = {
                 display: "flex",
                 alignItems: "center",
@@ -83,10 +95,11 @@ export default function DayEventsDialog({
                 p: 1.25,
                 borderRadius: 1,
                 cursor: "pointer",
-                bgcolor: `${ev.color}18`,
+                bgcolor: tint,
                 border: "1px solid",
-                borderColor: `${ev.color}44`,
-                "&:hover": { bgcolor: `${ev.color}28` },
+                borderColor: tintBorder,
+                borderLeft: accent ? `4px solid ${accent}` : undefined,
+                "&:hover": { bgcolor: tintHover },
                 textDecoration: "none",
                 color: "inherit",
               };
@@ -98,14 +111,14 @@ export default function DayEventsDialog({
                       width: 32,
                       height: 32,
                       borderRadius: "50%",
-                      bgcolor: ev.color,
+                      bgcolor: bg,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                     }}
                   >
-                    <Icon sx={{ color: "common.white", fontSize: "1rem" }} />
+                    <Icon sx={{ color: fg, fontSize: "1rem" }} />
                   </Box>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Typography variant="body2" fontWeight={600} noWrap>
@@ -127,6 +140,7 @@ export default function DayEventsDialog({
                           (ev.endDate ? ` – ${format(new Date(ev.endDate), "HH:mm")}` : "")
                         );
                       })()}
+                      {ev.teamName ? ` · ${ev.teamName}` : ""}
                     </Typography>
                   </Box>
                   <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled", flexShrink: 0 }} />

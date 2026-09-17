@@ -177,6 +177,34 @@ const darkAdminBand: AdminBandPalette = {
   hover: "rgba(255,138,80,0.10)",
 };
 
+/**
+ * Calendario: il colore dello sfondo dice il TIPO di evento, non la squadra.
+ * La squadra la dice il bordo sinistro del chip, col colore scelto dallo staff
+ * (vedi `eventVisual` in `@/lib/calendar/eventColors`). Prima il chip prendeva
+ * il colore della squadra e la legenda un colore del tema: due fonti diverse
+ * per la stessa cosa, che non combaciavano mai.
+ *
+ * Il testo sopra lo sceglie `contrastText()`: in chiaro vince il bianco
+ * (6,61 / 5,60 / 4,80:1), in scuro il nero (8,60 / 9,00 / 10,48:1).
+ */
+type CalendarPalette = {
+  training: string;
+  match: string;
+  event: string;
+};
+
+const lightCalendar: CalendarPalette = {
+  training: "#00695C",
+  match: ORANGE_ON_LIGHT,
+  event: "#0277BD",
+};
+
+const darkCalendar: CalendarPalette = {
+  training: "#4DB6AC",
+  match: ORANGE_ON_DARK,
+  event: "#4FC3F7",
+};
+
 declare module "@mui/material/styles" {
   interface Palette {
     match: MatchPalette;
@@ -188,6 +216,7 @@ declare module "@mui/material/styles" {
     focusRing: FocusRingPalette;
     appBar: AppBarPalette;
     adminBand: AdminBandPalette;
+    calendar: CalendarPalette;
   }
   interface PaletteOptions {
     match?: MatchPalette;
@@ -199,6 +228,7 @@ declare module "@mui/material/styles" {
     focusRing?: FocusRingPalette;
     appBar?: AppBarPalette;
     adminBand?: AdminBandPalette;
+    calendar?: CalendarPalette;
   }
 
   // Arancione da usare per TESTO e link. Vedi ORANGE_ON_LIGHT / ORANGE_ON_DARK.
@@ -555,6 +585,7 @@ export const lightTheme = createTheme({
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
     adminBand: lightAdminBand,
+    calendar: lightCalendar,
   },
   typography: sharedTypography,
   shape: sharedShape,
@@ -596,6 +627,7 @@ export const darkTheme = createTheme({
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
     adminBand: darkAdminBand,
+    calendar: darkCalendar,
   },
   typography: sharedTypography,
   shape: sharedShape,

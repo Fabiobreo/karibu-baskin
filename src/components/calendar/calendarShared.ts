@@ -1,5 +1,6 @@
 import { startOfDay } from "date-fns";
 import type { CalendarEvent } from "@/app/api/calendar/route";
+import { teamFilterKey, typeFilterKey } from "@/lib/calendar/eventColors";
 
 /** Squadra agonistica per la legenda/filtri del calendario. */
 export interface TeamInfo {
@@ -16,11 +17,16 @@ export interface DaySegment {
   isContinuation: boolean; // giorno successivo all'inizio (durante/fine)
 }
 
-/** True se l'evento è visibile dati i filtri attivi (chiavi nascoste). */
+/**
+ * True se l'evento è visibile dati i filtri attivi (chiavi nascoste).
+ *
+ * Due assi indipendenti: il tipo (`type:training`) e la squadra (`team:<id>`).
+ * La chiave squadra usa l'ID e non il colore: due squadre che hanno scelto lo
+ * stesso colore restano due filtri distinti.
+ */
 export function isVisible(ev: CalendarEvent, hidden: Set<string>): boolean {
-  if (ev.type === "training") return !hidden.has("training");
-  if (ev.type === "event") return !hidden.has("event");
-  if (ev.type === "match") return !hidden.has(`match:${ev.color}`) && !hidden.has("match:*");
+  if (hidden.has(typeFilterKey(ev.type))) return false;
+  if (ev.teamId && hidden.has(teamFilterKey(ev.teamId))) return false;
   return true;
 }
 

@@ -22,11 +22,28 @@ export default async function CalendarioPage() {
   const [session, teams] = await Promise.all([
     auth(),
     prisma.competitiveTeam.findMany({
+      // La Karibu di stagione non e' una squadra come le altre e resta nascosta
+      // su tutte le superfici pubbliche: in legenda comparirebbe come filtro di
+      // qualcosa che l'utente non puo' vedere altrove.
+      where: { isMixed: false },
       select: { id: true, name: true, season: true, color: true },
       orderBy: [{ season: "desc" }, { name: "asc" }],
     }),
   ]);
 
+  // Squadre di chi guarda e dei suoi figli: servono a marcare nel calendario
+  // gli impegni che lo riguardano. Niente sessione, nessun contorno. Va dopo
+  // perche' dipende dall'esito di `auth()`, non prima: cosi' la query delle
+  // squadre resta in parallelo con la sessione invece di accodarsi.
+  const userId = session?.user?.id;
+  const myMemberships = userId
+    ? await prisma.teamMembership.findMany({
+        where: { OR: [{ userId }, { child: { parentId: userId } }] },
+        select: { teamId: true },
+      })
+    : [];
+
+  const myTeamIds = [...new Set(myMemberships.map((m) => m.teamId))];
   const userRole = session?.user?.appRole as AppRole | undefined;
   const isStaff = !!userRole && hasRole(userRole, "COACH");
   const isAdmin = !!userRole && hasRole(userRole, "ADMIN");
@@ -52,7 +69,7 @@ export default async function CalendarioPage() {
           </Box>
           <SubscribeCalendarButton />
         </Box>
-        <CalendarClient isStaff={isStaff} isAdmin={isAdmin} teams={teams} />
+        <CalendarClient isStaff={isStaff} isAdmin={isAdmin} teams={teams} myTeamIds={myTeamIds} />
       </Container>
     </>
   );

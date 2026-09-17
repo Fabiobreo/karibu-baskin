@@ -10,7 +10,7 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EventNoteIcon from "@mui/icons-material/EventNote";
@@ -25,6 +25,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { CalendarEvent } from "@/app/api/calendar/route";
+import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
@@ -46,7 +47,13 @@ export default function EventDetailDialog({
   const tCommon = useTranslations("common");
   const dateLocale = useActiveDateLocale();
   const { matchResultLabel } = useEntityLabels();
+  const theme = useTheme();
   if (!event) return null;
+
+  // Banner: sfondo = tipo di evento, accento = squadra. Il testo lo sceglie
+  // `fg` per contrasto: in dark i colori di tipo sono chiari e il bianco fisso
+  // di prima sarebbe stato illeggibile.
+  const { bg, fg, accent } = eventVisual(theme, event.type, event.teamColor);
 
   const Icon =
     event.type === "training"
@@ -78,7 +85,9 @@ export default function EventDetailDialog({
       {/* Banner colorato */}
       <Box
         sx={{
-          bgcolor: event.color,
+          bgcolor: bg,
+          // Stessa fascia separata dei chip: qui poggia sulla stessa tinta.
+          ...decorationSx(theme, { accent, bandWidth: 6 }),
           px: 3,
           pt: 3,
           pb: 2.5,
@@ -92,14 +101,14 @@ export default function EventDetailDialog({
             width: 40,
             height: 40,
             borderRadius: "50%",
-            bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
+            bgcolor: alpha(fg, 0.18),
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}
         >
-          <Icon sx={{ color: "common.white", fontSize: "1.3rem" }} />
+          <Icon sx={{ color: fg, fontSize: "1.3rem" }} />
         </Box>
         <Box sx={{ overflow: "hidden", flex: 1 }}>
           <Chip
@@ -112,14 +121,14 @@ export default function EventDetailDialog({
             }
             size="small"
             sx={{
-              bgcolor: (theme) => alpha(theme.palette.common.white, 0.25),
-              color: "common.white",
+              bgcolor: alpha(fg, 0.22),
+              color: fg,
               fontWeight: 700,
               fontSize: "0.68rem",
               mb: 0.5,
             }}
           />
-          <Typography variant="h6" fontWeight={800} sx={{ color: "common.white", lineHeight: 1.2 }}>
+          <Typography variant="h6" fontWeight={800} sx={{ color: fg, lineHeight: 1.2 }}>
             {event.title}
           </Typography>
         </Box>
@@ -130,10 +139,10 @@ export default function EventDetailDialog({
             onClick={onClose}
             size="small"
             sx={{
-              color: (theme) => alpha(theme.palette.common.white, 0.85),
+              color: alpha(fg, 0.85),
               "&:hover": {
-                color: "common.white",
-                bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
+                color: fg,
+                bgcolor: alpha(fg, 0.15),
               },
               flexShrink: 0,
             }}
