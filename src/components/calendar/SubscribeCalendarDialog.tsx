@@ -25,6 +25,8 @@ interface SubscribeCalendarDialogProps {
 }
 
 const ICS_PATH = "/api/calendar/export.ics";
+// Lo stesso endpoint serve inline per la sottoscrizione; il download va chiesto.
+const ICS_DOWNLOAD_PATH = `${ICS_PATH}?download=1`;
 
 export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCalendarDialogProps) {
   const { showToast } = useToast();
@@ -37,9 +39,15 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
     () => (origin ? `webcal://${origin.replace(/^https?:\/\//, "")}${ICS_PATH}` : ""),
     [origin]
   );
+  // `addbyurl` apre direttamente la finestra "Aggiungi calendario da URL". Il
+  // solo `?cid=` a volte lascia l'utente sulla home di Google Calendar senza
+  // che compaia niente. Si passa l'URL https, non il webcal: Google scarica il
+  // feed dai propri server e https e' quello che sa leggere senza conversioni.
   const googleUrl = useMemo(
     () =>
-      origin ? `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(httpsUrl)}` : "",
+      origin
+        ? `https://calendar.google.com/calendar/r/settings/addbyurl?cid=${encodeURIComponent(httpsUrl)}`
+        : "",
     [origin, httpsUrl]
   );
 
@@ -122,7 +130,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
               </Button>
               <Button
                 component="a"
-                href={ICS_PATH}
+                href={ICS_DOWNLOAD_PATH}
                 download="karibu-baskin.ics"
                 variant="text"
                 startIcon={<DownloadIcon />}

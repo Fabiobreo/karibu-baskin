@@ -13,7 +13,8 @@ import { GET } from "./route";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 
-const mockReq = () => new NextRequest("http://localhost/api/calendar/export.ics");
+const mockReq = (search = "") =>
+  new NextRequest(`http://localhost/api/calendar/export.ics${search}`);
 
 type PrismaMock = {
   trainingSession: { findMany: Mock };
@@ -37,9 +38,61 @@ describe("GET /api/calendar/export.ics", () => {
     expect(res.headers.get("Content-Type")).toContain("text/calendar");
   });
 
-  it("restituisce header Content-Disposition attachment", async () => {
+  it("serve il file inline, non come allegato", async () => {
+    // Un allegato il calendario lo IMPORTA (gli eventi di quel momento e basta):
+    // per poter sottoscrivere il feed la risposta dev'essere inline.
     const res = await GET(mockReq());
-    expect(res.headers.get("Content-Disposition")).toContain("karibu-baskin.ics");
+    expect(res.headers.get("Content-Disposition")).toBe('inline; filename="karibu-baskin.ics"');
+  });
+
+  it("serve come allegato solo su richiesta esplicita", async () => {
+    const res = await GET(mockReq("?download=1"));
+    expect(res.headers.get("Content-Disposition")).toBe('attachment; filename="karibu-baskin.ics"');
+  });
+
+  it("non dichiara METHOD", async () => {
+    // Con METHOD:PUBLISH i client leggono il file come messaggio da importare
+    // una volta sola invece che come feed da seguire.
+    const res = await GET(mockReq());
+    expect(await res.text()).not.toContain("METHOD:");
+  });
+
+  it("chiede ai client ogni quanto ricontrollare", async () => {
+    const body = await (await GET(mockReq())).text();
+    expect(body).toContain("REFRESH-INTERVAL;VALUE=DURATION:PT6H");
+    expect(body).toContain("X-PUBLISHED-TTL:PT6H");
+  });
+
+  it("include il passato recente, non solo il futuro", async () => {
+    // Quello che esce dal feed il client lo cancella dal calendario di chi è
+    // iscritto: tenendo solo il futuro, lo storico spariva da solo.
+    await GET(mockReq());
+    const where = p.trainingSession.findMany.mock.calls[0][0].where;
+    const from: Date = where.date.gte;
+    const mesi = (Date.now() - from.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    expect(mesi).toBeGreaterThan(5);
+    expect(mesi).toBeLessThan(7);
+  });
+
+  it("numera le sequenze così che gli spostamenti arrivino ai client", async () => {
+    p.trainingSession.findMany.mockResolvedValue([
+      { id: "s1", title: "Allenamento", date: baseDate, endTime: null },
+    ]);
+    const prima = await (await GET(mockReq())).text();
+    const seqPrima = Number(prima.match(/SEQUENCE:(\d+)/)![1]);
+
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        id: "s1",
+        title: "Allenamento",
+        date: new Date(baseDate.getTime() + 60 * 60 * 1000),
+        endTime: null,
+      },
+    ]);
+    const dopo = await (await GET(mockReq())).text();
+    const seqDopo = Number(dopo.match(/SEQUENCE:(\d+)/)![1]);
+
+    expect(seqDopo).toBeGreaterThan(seqPrima);
   });
 
   it("restituisce header Cache-Control no-store", async () => {
