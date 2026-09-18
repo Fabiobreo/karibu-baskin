@@ -54,6 +54,14 @@ export async function GET(req: Request) {
         endTime: true,
         dateSlug: true,
         team: { select: { id: true, name: true, color: true } },
+        // `teamId` non e' scrivibile da nessuna parte dell'app (non sta negli
+        // schemi Zod dell'allenamento, ne' nel form admin): in pratica e'
+        // sempre null e la squadra la porta `restrictTeamId`, che e' quello che
+        // lo staff compila davvero e che il resto dell'app gia' usa come
+        // "squadra dell'allenamento". Per chi guarda il calendario un
+        // allenamento riservato a una squadra e' un allenamento di quella
+        // squadra, quindi si legge il primo dei due che c'e'.
+        restrictTeam: { select: { id: true, name: true, color: true } },
       },
       orderBy: { date: "asc" },
     }),
@@ -84,17 +92,20 @@ export async function GET(req: Request) {
   ]);
 
   const result: CalendarEvent[] = [
-    ...trainings.map((t) => ({
-      id: t.id,
-      type: "training" as const,
-      title: t.title,
-      date: t.date.toISOString(),
-      endDate: t.endTime?.toISOString(),
-      teamId: t.team?.id,
-      teamColor: t.team?.color ?? null,
-      teamName: t.team?.name,
-      href: `/allenamento/${t.dateSlug ?? t.id}`,
-    })),
+    ...trainings.map((t) => {
+      const team = t.team ?? t.restrictTeam;
+      return {
+        id: t.id,
+        type: "training" as const,
+        title: t.title,
+        date: t.date.toISOString(),
+        endDate: t.endTime?.toISOString(),
+        teamId: team?.id,
+        teamColor: team?.color ?? null,
+        teamName: team?.name,
+        href: `/allenamento/${t.dateSlug ?? t.id}`,
+      };
+    }),
     ...matches.map((m) => {
       const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
       return {

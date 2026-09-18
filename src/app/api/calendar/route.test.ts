@@ -26,6 +26,7 @@ const trainingStub = {
   endTime: new Date("2025-07-07T19:00:00Z"),
   dateSlug: "2025-07-07",
   team: { id: "team-a", name: "Karibu A", color: "#FF6D00" },
+  restrictTeam: null,
 };
 
 const matchStub = {
@@ -92,11 +93,42 @@ describe("GET /api/calendar", () => {
   it("non inventa un colore per allenamenti senza squadra", async () => {
     // Il colore dello sfondo lo decide il tipo di evento, lato client, dal tema:
     // qui esce solo l'accento squadra, che senza squadra non c'e'.
-    p.trainingSession.findMany.mockResolvedValue([{ ...trainingStub, team: null }]);
+    p.trainingSession.findMany.mockResolvedValue([
+      { ...trainingStub, team: null, restrictTeam: null },
+    ]);
     const res = await GET(makeRequest("?month=2025-07"));
     const json = await res.json();
     expect(json[0].teamColor).toBeNull();
     expect(json[0].teamId).toBeUndefined();
+  });
+
+  it("ricade su restrictTeam quando l'allenamento non ha teamId", async () => {
+    // Il caso reale: `teamId` non e' scrivibile da nessuna parte dell'app,
+    // quindi in produzione e' sempre null e la squadra sta su `restrictTeamId`.
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        ...trainingStub,
+        team: null,
+        restrictTeam: { id: "karigin", name: "KariGin", color: "#8E24AA" },
+      },
+    ]);
+    const res = await GET(makeRequest("?month=2025-07"));
+    const json = await res.json();
+    expect(json[0].teamId).toBe("karigin");
+    expect(json[0].teamColor).toBe("#8E24AA");
+    expect(json[0].teamName).toBe("KariGin");
+  });
+
+  it("preferisce teamId a restrictTeam quando ci sono entrambi", async () => {
+    p.trainingSession.findMany.mockResolvedValue([
+      {
+        ...trainingStub,
+        restrictTeam: { id: "karigin", name: "KariGin", color: "#8E24AA" },
+      },
+    ]);
+    const res = await GET(makeRequest("?month=2025-07"));
+    const json = await res.json();
+    expect(json[0].teamId).toBe("team-a");
   });
 
   it("mappa correttamente una partita in casa", async () => {
