@@ -10,6 +10,7 @@ import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { logAudit } from "@/lib/audit";
+import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 
 /**
  * Elenco degli iscritti a un allenamento.
@@ -45,7 +46,10 @@ export async function GET(req: NextRequest) {
   const registrations = await prisma.registration.findMany({
     where: { sessionId },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
-    include: { user: { select: { slug: true } }, child: { select: { slug: true } } },
+    include: {
+      user: { select: { id: true, slug: true, sportRole: true, ...PUBLIC_PROFILE_SELECT } },
+      child: { select: { slug: true } },
+    },
   });
 
   // note e anonymousEmail sono dati sensibili: visibili solo allo staff.
@@ -55,8 +59,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(
     registrations.map(({ user, child, note, anonymousEmail, ...r }) => ({
       ...r,
-      // Slug del profilo pubblico (utente o figlio), con fallback su id; null = anonimo.
-      userSlug: user?.slug ?? r.userId ?? child?.slug ?? r.childId ?? null,
+      // Slug del profilo pubblico (utente o figlio), con fallback su id; null =
+      // anonimo, o utente senza profilo pubblico (GUEST, genitore che non gioca).
+      userSlug: user ? withProfileLink(user).slug : (child?.slug ?? r.childId ?? null),
       ...(isStaff && { note, anonymousEmail }),
     }))
   );

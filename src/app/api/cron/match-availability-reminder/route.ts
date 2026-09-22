@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { MIN_CALLUPS } from "@/lib/constants";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
+import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 // Vercel Cron — eseguito giornalmente.
 // Notifica i giocatori (User o genitori di Child) membri di una squadra che ha
@@ -95,8 +94,8 @@ export async function GET(req: NextRequest) {
 
     if (targetUserIds.size === 0) continue;
 
-    const dateLabel = format(m.date, "EEEE d MMMM", { locale: it });
-    const timeLabel = format(m.date, "HH:mm");
+    const dateLabel = formatRomeDayLabel(m.date);
+    const timeLabel = formatRomeTime(m.date);
     const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
     const url = "/profilo/disponibilita";
     const title = "🏀 Disponibilità partita";

@@ -17,7 +17,15 @@ export default async function AdminAllenamentiPage() {
     orderBy: { date: "desc" },
     include: {
       registrations: {
-        select: { id: true, name: true, role: true, attended: true, registeredAsCoach: true },
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          attended: true,
+          registeredAsCoach: true,
+          userId: true,
+          childId: true,
+        },
         orderBy: [{ role: "asc" }, { createdAt: "asc" }],
       },
       matchResults: { select: { matchup: true } },
@@ -47,6 +55,9 @@ export default async function AdminAllenamentiPage() {
       athleteCount,
       presentCount,
       athletes,
+      // Tutti, allenatori compresi: servono alla gestione iscritti per sapere
+      // chi c'è già.
+      registrations: s.registrations,
       expectedResults,
       teams,
     };

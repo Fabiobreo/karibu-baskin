@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import {
   Avatar,
   Box,
+  Button,
   Chip,
   IconButton,
   InputAdornment,
@@ -19,6 +20,8 @@ import {
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import Link from "next/link";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ROLE_COLORS, sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
@@ -125,6 +128,11 @@ export default function ChildrenTab({
             ? `${filtered.length} di ${childRows.length}`
             : `${childRows.length} figli senza account`}
         </Typography>
+        <Link href="/admin/utenti/nuovo-figlio" style={{ textDecoration: "none" }}>
+          <Button variant="outlined" size="small" startIcon={<ChildCareIcon />}>
+            Nuovo figlio
+          </Button>
+        </Link>
       </Box>
 
       {/* ── Tabella figli ── */}

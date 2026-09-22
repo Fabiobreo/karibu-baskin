@@ -105,6 +105,8 @@ const ACTION_LABELS: Record<string, string> = {
   UPDATE_OPPOSING_TEAM: "Modifica squadra avversaria",
   DELETE_OPPOSING_TEAM: "Eliminazione squadra avversaria",
   DELETE_REGISTRATION: "Eliminazione iscrizione (staff)",
+  ADD_REGISTRATION: "Iscrizione aggiunta (staff)",
+  CREATE_CHILD: "Creazione figlio (staff)",
 };
 
 const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" | "info"> = {
@@ -144,6 +146,8 @@ const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" 
   UPDATE_OPPOSING_TEAM: "info",
   DELETE_OPPOSING_TEAM: "error",
   DELETE_REGISTRATION: "warning",
+  ADD_REGISTRATION: "success",
+  CREATE_CHILD: "success",
 };
 
 const TARGET_TYPE_LABELS: Record<string, string> = {

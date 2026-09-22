@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
+import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { publicSubjects } from "@/lib/minors";
 import {
   Box,
@@ -72,6 +73,7 @@ async function getTeam(season: string, slug: string) {
               gender: true,
               slug: true,
               birthDate: true,
+              ...PUBLIC_PROFILE_SELECT,
             },
           },
           child: {
@@ -1009,24 +1011,32 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           const athlete = m.user ?? m.child;
                           if (!athlete) return null;
                           const isUser = !!m.user;
+                          // Un genitore in rosa che non ha ancora giocato non ha
+                          // un profilo pubblico: card senza link.
+                          const userSlug = m.user ? withProfileLink(m.user).slug : null;
+                          const userCard = m.user && (
+                            <AthleteCard
+                              name={athlete.name ?? "—"}
+                              image={m.user.image ?? undefined}
+                              roleNum={athlete.sportRole}
+                              roleVariant={athlete.sportRoleVariant}
+                              isCaptain={m.isCaptain}
+                              teamColor={teamColor}
+                            />
+                          );
                           return (
                             <Grid key={m.id} size={{ xs: 12, sm: 6, md: 4 }}>
                               {isUser ? (
-                                <Link
-                                  href={`/giocatori/${m.user!.slug ?? m.user!.id}`}
-                                  style={{ textDecoration: "none" }}
-                                >
-                                  <AthleteCard
-                                    name={athlete.name ?? "—"}
-                                    image={
-                                      "image" in athlete ? (athlete.image ?? undefined) : undefined
-                                    }
-                                    roleNum={athlete.sportRole}
-                                    roleVariant={athlete.sportRoleVariant}
-                                    isCaptain={m.isCaptain}
-                                    teamColor={teamColor}
-                                  />
-                                </Link>
+                                userSlug ? (
+                                  <Link
+                                    href={`/giocatori/${userSlug}`}
+                                    style={{ textDecoration: "none" }}
+                                  >
+                                    {userCard}
+                                  </Link>
+                                ) : (
+                                  userCard
+                                )
                               ) : (
                                 <Link
                                   href={`/giocatori/${m.child!.slug ?? m.child!.id}`}

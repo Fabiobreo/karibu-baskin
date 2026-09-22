@@ -16,6 +16,8 @@ import {
   Typography,
 } from "@mui/material";
 import HistoryIcon from "@mui/icons-material/History";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { AppRole } from "@prisma/client";
@@ -529,7 +531,16 @@ export default function UserEditDialog({
           )}
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pb: 2, flexWrap: "wrap", gap: 1 }}>
+        {/* Scorciatoia per il backfill: il genitore arriva già scelto. */}
+        {row.kind === "user" && (
+          <Link
+            href={`/admin/utenti/nuovo-figlio?parentId=${row.id}`}
+            style={{ textDecoration: "none", marginRight: "auto" }}
+          >
+            <Button startIcon={<ChildCareIcon />}>Aggiungi figlio</Button>
+          </Link>
+        )}
         <Button onClick={onClose}>Annulla</Button>
         <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>
           {saving ? "Salvataggio..." : "Salva"}

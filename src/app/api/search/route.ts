@@ -3,9 +3,11 @@ import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { slugify } from "@/lib/slugUtils";
 import { notMinorFilter, notMinorFilterChild } from "@/lib/minors";
+import { publicProfileUserFilter } from "@/lib/publicProfile";
 
 // Ricerca globale pubblica su giocatori, squadre, avversarie, news ed eventi.
-// Privacy: esclude gli account GUEST e i minorenni. Per gli `User` la minore età
+// Privacy: esclude chi non ha un profilo pubblico (GUEST, genitori che non
+// giocano: vedi @/lib/publicProfile) e i minorenni. Per gli `User` la minore età
 // si calcola da `birthDate` e chi non ce l'ha è trattato come adulto; per i
 // `Child` vale il default opposto — senza data di nascita si presume minorenne,
 // perché quel record esiste proprio perché l'atleta è gestito da un genitore.
@@ -26,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   const [users, children, teams, opponents, posts, events] = await Promise.all([
     prisma.user.findMany({
-      where: { AND: [nameMatch, notMinor, { appRole: { not: "GUEST" } }] },
+      where: { AND: [nameMatch, notMinor, publicProfileUserFilter()] },
       select: { id: true, name: true, slug: true, image: true, customImage: true, sportRole: true },
       take: 5,
     }),

@@ -16,6 +16,7 @@ import OpenRegistrationsAlert from "@/components/training/OpenRegistrationsAlert
 import CloseRegistrationsAlert from "@/components/training/CloseRegistrationsAlert";
 import TeamsHeader from "@/components/training/TeamsHeader";
 import SectionErrorBoundary from "@/components/common/SectionErrorBoundary";
+import ManageParticipantsDialog from "@/components/admin/ManageParticipantsDialog";
 import { TEAM_META } from "@/lib/constants";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { hasRole, isMemberRole } from "@/lib/authRoles";
@@ -248,6 +249,7 @@ export default function SessionPageClient({
   const isStaff = !!currentUser && hasRole(currentUser.appRole as AppRole, "COACH");
 
   const [removingTeams, setRemovingTeams] = useState(false);
+  const [managingRoster, setManagingRoster] = useState(false);
   const [editingTeams, setEditingTeams] = useState(false);
 
   async function handleRemoveTeams() {
@@ -324,6 +326,7 @@ export default function SessionPageClient({
     restricted: rosterRestriction,
     loading: currentUser === undefined || (canSeeRoster && registrationsPending),
     totalCount: session?._count.registrations ?? 0,
+    onManage: isStaff ? () => setManagingRoster(true) : undefined,
   };
 
   const teamDisplayProps = {
@@ -347,6 +350,18 @@ export default function SessionPageClient({
 
   return (
     <>
+      {isStaff && session && realSessionId && (
+        <ManageParticipantsDialog
+          open={managingRoster}
+          onClose={() => setManagingRoster(false)}
+          sessionId={realSessionId}
+          sessionTitle={session.title}
+          sessionDate={session.date}
+          isPast={!!sessionDate && new Date() >= sessionDate}
+          registrations={registrations}
+          onChanged={refreshSecondary}
+        />
+      )}
       {/* ── Hero ── */}
       {loading ? (
         <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 0 }} />

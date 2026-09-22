@@ -46,6 +46,7 @@ import NextTrainingCard, {
   type TrainingSubject,
 } from "@/components/profile/NextTrainingCard";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
+import { userHasPublicProfile } from "@/lib/publicProfile";
 
 export const metadata = buildMetadata({
   title: "Il mio profilo",
@@ -108,7 +109,7 @@ export default async function ProfiloPage() {
       registrations: {
         select: { session: { select: { date: true } } },
       },
-      _count: { select: { registrations: true } },
+      _count: { select: { registrations: true, matchStats: true } },
       // Con Google il nome arriva da lì e viene riscritto a ogni accesso: si
       // modifica dal profilo solo senza account Google (magic link).
       accounts: { where: { provider: "google" }, select: { id: true }, take: 1 },
@@ -320,18 +321,21 @@ export default async function ProfiloPage() {
         </Box>
 
         <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
-          {user.slug && (
-            <Link href={`/giocatori/${user.slug}`} style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-                sx={{ fontSize: "0.78rem", fontWeight: 600 }}
-              >
-                {t("publicProfile")}
-              </Button>
-            </Link>
-          )}
+          {/* Il genitore che non gioca non ha un profilo pubblico (vedi
+              @/lib/publicProfile): niente link verso un 404. */}
+          {user.slug &&
+            userHasPublicProfile({ ...user, matchesPlayed: user._count.matchStats }) && (
+              <Link href={`/giocatori/${user.slug}`} style={{ textDecoration: "none" }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
+                  sx={{ fontSize: "0.78rem", fontWeight: 600 }}
+                >
+                  {t("publicProfile")}
+                </Button>
+              </Link>
+            )}
           <Link href="/profilo/disponibilita" style={{ textDecoration: "none" }}>
             <Badge badgeContent={pendingAvailabilities} color="warning" max={99}>
               <Button

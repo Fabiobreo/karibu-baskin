@@ -20,7 +20,11 @@ import TouchAppIcon from "@mui/icons-material/TouchApp";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import TrainingMatchResults from "@/components/training/TrainingMatchResults";
+import ManageParticipantsDialog, {
+  type ParticipantRegistration,
+} from "@/components/admin/ManageParticipantsDialog";
 import { ROLE_COLORS, ROLE_LABELS } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import type { TeamsData } from "@/lib/schemas";
@@ -40,6 +44,7 @@ export interface AdminSessionRow {
   athleteCount: number;
   presentCount: number;
   athletes: Athlete[];
+  registrations: ParticipantRegistration[];
   expectedResults: number;
   teams: TeamsData | null;
 }
@@ -182,7 +187,9 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
   const hasAthletes = s.athleteCount > 0;
   const [confirming, setConfirming] = useState(false);
   const [concluding, setConcluding] = useState(false);
+  const [managing, setManaging] = useState(false);
   const { showToast } = useToast();
+  const router = useRouter();
 
   async function handleConclude() {
     setConcluding(true);
@@ -254,16 +261,41 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
             borderColor: { md: "divider" },
           }}
         >
-          <Typography
-            variant="overline"
-            fontWeight={700}
-            color="text.secondary"
-            sx={{ letterSpacing: "0.08em" }}
-          >
-            Presenze: {s.presentCount}/{s.athleteCount}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography
+              variant="overline"
+              fontWeight={700}
+              color="text.secondary"
+              sx={{ letterSpacing: "0.08em", flex: 1 }}
+            >
+              Presenze: {s.presentCount}/{s.athleteCount}
+            </Typography>
+            {/* Chi c'era ma non si era iscritto si aggiunge da qui, gia'
+                presente; chi e' iscritto per errore si toglie. */}
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ManageAccountsIcon />}
+              onClick={() => setManaging(true)}
+              sx={{ minHeight: 36, fontWeight: 700, flexShrink: 0 }}
+            >
+              Iscritti
+            </Button>
+          </Box>
           <Divider sx={{ my: 1 }} />
-          <AttendanceList athletes={s.athletes} />
+          {/* key: dopo una modifica agli iscritti la lista riparte dai dati
+              del server invece che dagli override locali delle presenze. */}
+          <AttendanceList key={s.athletes.map((a) => a.id).join()} athletes={s.athletes} />
+          <ManageParticipantsDialog
+            open={managing}
+            onClose={() => setManaging(false)}
+            sessionId={s.id}
+            sessionTitle={s.title}
+            sessionDate={s.date}
+            isPast
+            registrations={s.registrations}
+            onChanged={() => router.refresh()}
+          />
         </Box>
 
         {/* Colonna destra: risultati. Senza iscritti non c'e' nessuna

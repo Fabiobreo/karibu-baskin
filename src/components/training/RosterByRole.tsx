@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
@@ -60,6 +61,8 @@ interface Props {
   /** Non si sa ancora chi guarda, o la rosa sta arrivando: nessuno stato vuoto. */
   loading?: boolean;
   totalCount?: number;
+  /** Solo staff: apre la gestione iscritti (aggiungi/togli, anche a posteriori). */
+  onManage?: () => void;
 }
 
 // ── Icona stato presenza ──────────────────────────────────────────────────────
@@ -272,6 +275,7 @@ export default function RosterByRole({
   restricted = false,
   loading = false,
   totalCount = 0,
+  onManage,
 }: Props) {
   const t = useTranslations("trainings");
   const { roleLabel } = useEntityLabels();
@@ -470,6 +474,7 @@ export default function RosterByRole({
         sx={{
           display: "flex",
           alignItems: "center",
+          flexWrap: "wrap",
           gap: 1,
           px: 2,
           py: 1.5,
@@ -507,8 +512,19 @@ export default function RosterByRole({
             size="small"
             color="success"
             variant="outlined"
-            sx={{ fontWeight: 600, ml: "auto" }}
+            sx={{ fontWeight: 600, ml: onManage ? 0 : "auto" }}
           />
+        )}
+        {isStaff && onManage && !loading && !restricted && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<ManageAccountsIcon />}
+            onClick={onManage}
+            sx={{ ml: "auto", minHeight: 36, fontWeight: 700 }}
+          >
+            {t("manageRoster")}
+          </Button>
         )}
       </Box>
 

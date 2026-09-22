@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { toLocalDateString, toLocalTimeString, sessionEndDate } from "./dateUtils";
+import {
+  toLocalDateString,
+  toLocalTimeString,
+  sessionEndDate,
+  formatRomeDayLabel,
+  formatRomeTime,
+} from "./dateUtils";
 
 describe("toLocalDateString()", () => {
   it("formatta una data come YYYY-MM-DD", () => {
@@ -58,5 +64,23 @@ describe("sessionEndDate()", () => {
     const result = sessionEndDate(new Date(2025, 5, 9, 19, 0, 0));
     expect(result.getHours()).toBe(21);
     expect(result.getMinutes()).toBe(0);
+  });
+});
+
+describe("formatRomeTime / formatRomeDayLabel", () => {
+  it("usa l'ora legale di Roma (UTC+2) a prescindere dal fuso del processo", () => {
+    const d = new Date("2026-09-22T16:30:00Z");
+    expect(formatRomeTime(d)).toBe("18:30");
+    expect(formatRomeDayLabel(d)).toBe("martedì 22 settembre");
+  });
+
+  it("usa l'ora solare di Roma (UTC+1) d'inverno", () => {
+    expect(formatRomeTime(new Date("2026-12-01T17:00:00Z"))).toBe("18:00");
+  });
+
+  it("sposta il giorno quando in UTC è ancora il giorno prima", () => {
+    const d = new Date("2026-09-21T22:30:00Z");
+    expect(formatRomeTime(d)).toBe("00:30");
+    expect(formatRomeDayLabel(d)).toBe("martedì 22 settembre");
   });
 });

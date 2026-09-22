@@ -1292,7 +1292,8 @@
     "homeSeeCalendar": "See the calendar",
     "rosterPrivateGuest": "The list of registered athletes is visible to Karibu members.",
     "teamsPrivateGuest": "The teams for this session are visible to Karibu members.",
-    "ownNameHelper": "We will also save it to your profile."
+    "ownNameHelper": "We will also save it to your profile.",
+    "manageRoster": "Manage"
   },
   "home": {
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",

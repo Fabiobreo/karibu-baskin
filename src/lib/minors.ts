@@ -19,7 +19,7 @@
  * Usato da:
  *  - `/api/search`  → esclude i minorenni dai risultati
  *  - `sitemap.ts`   → non indicizza i profili dei minorenni
- *  - `/giocatori/[slug]` → `noindex` + data di nascita nascosta
+ *  - `/giocatori/[slug]` → `noindex` (la data di nascita non è mai pubblica, per nessuno)
  */
 
 /** Data di nascita limite: chi è nato entro questa data è maggiorenne. */

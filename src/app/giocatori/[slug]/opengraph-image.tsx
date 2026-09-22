@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { isMinor } from "@/lib/minors";
+import { userHasPublicProfile } from "@/lib/publicProfile";
 import { sportRoleLabel } from "@/lib/constants";
 
 export const size = { width: 1200, height: 630 };
@@ -25,6 +26,7 @@ export default async function OgImage({ params }: Props) {
     where: { OR: [{ slug }, { id: slug }] },
     select: {
       name: true,
+      appRole: true,
       sportRole: true,
       sportRoleVariant: true,
       birthDate: true,
@@ -38,8 +40,14 @@ export default async function OgImage({ params }: Props) {
   });
 
   // Le anteprime social le scaricano crawler anonimi: per un minore la card
-  // resta generica, senza nome, squadra né statistiche.
-  const user = rawUser && !isMinor(rawUser.birthDate) ? rawUser : null;
+  // resta generica, senza nome, squadra né statistiche. Lo stesso per chi non
+  // ha un profilo pubblico (GUEST, genitore che non gioca).
+  const user =
+    rawUser &&
+    !isMinor(rawUser.birthDate) &&
+    userHasPublicProfile({ ...rawUser, matchesPlayed: rawUser.matchStats.length })
+      ? rawUser
+      : null;
 
   const playerColor = user?.teamMemberships[0]?.team.color ?? "#E65100";
   const totalPoints = user?.matchStats.reduce((s, m) => s + m.points, 0) ?? 0;

@@ -1,7 +1,6 @@
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 export interface SessionNotifyInput {
   id: string;
@@ -17,9 +16,9 @@ type NotifKind = "new" | "updated" | "closed";
 
 export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind = "new") {
   const timeRange = session.endTime
-    ? `${format(session.date, "HH:mm")}–${format(session.endTime, "HH:mm")}`
-    : `ore ${format(session.date, "HH:mm")}`;
-  const dateLabel = format(session.date, "EEEE d MMMM", { locale: it });
+    ? `${formatRomeTime(session.date)}–${formatRomeTime(session.endTime)}`
+    : `ore ${formatRomeTime(session.date)}`;
+  const dateLabel = formatRomeDayLabel(session.date);
   const body = `${session.title}: ${dateLabel}, ${timeRange}`;
   const url = `/allenamento/${session.dateSlug ?? session.id}`;
   const pushTitle =

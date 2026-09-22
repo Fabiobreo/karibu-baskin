@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { computeMatchCoverageBatch } from "@/lib/matches/matchCoverage";
+import { formatRomeDayLabel } from "@/lib/dateUtils";
 
 // Vercel Cron — giornaliero alle 09:00 UTC.
 // Per ogni partita ufficiale tra 36 e 60 ore da adesso (≈ 48h),
@@ -62,7 +61,7 @@ export async function GET(req: NextRequest) {
 
   for (const m of matchesWithShortfall) {
     const cov = coverages.get(m.id)!;
-    const dateLabel = format(m.date, "EEEE d MMMM", { locale: it });
+    const dateLabel = formatRomeDayLabel(m.date);
     const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario";
     const shortfallDetail = cov.perGroup
       .filter((r) => r.shortfall > 0)

@@ -38,6 +38,7 @@ import { slugify } from "@/lib/slugUtils";
 import { isMinor, isMinorChild } from "@/lib/minors";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
+import { userHasPublicProfile } from "@/lib/publicProfile";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
@@ -60,10 +61,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     matchStats: { select: { points: true } },
   };
   // Cerca prima tra gli utenti, poi tra i figli (per slug, fallback su ID).
-  const userRow = await prisma.user.findFirst({
+  const rawUser = await prisma.user.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
-    select: metaSelect,
+    select: { ...metaSelect, appRole: true },
   });
+  // Stessa regola della pagina: un utente senza profilo pubblico (GUEST, o
+  // genitore che non gioca) non esiste, e lo slug può valere per un figlio.
+  const userRow =
+    rawUser && userHasPublicProfile({ ...rawUser, matchesPlayed: rawUser.matchStats.length })
+      ? rawUser
+      : null;
   const childRow = userRow
     ? null
     : await prisma.child.findFirst({ where: { OR: [{ slug }, { id: slug }] }, select: metaSelect });
@@ -205,10 +212,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   ]);
   const dateLocale = getDateFnsLocale(locale);
 
-  // Se non è un utente (o è un GUEST), vale il figlio senza account.
-  const childRow = userRow && userRow.appRole !== "GUEST" ? null : childMatch;
+  // Un utente senza profilo pubblico (GUEST, o genitore che non gioca) non
+  // esiste qui: vale il figlio senza account con lo stesso slug, se c'è.
+  const userIsPublic =
+    !!userRow && userHasPublicProfile({ ...userRow, matchesPlayed: userRow.matchStats.length });
+  const childRow = userIsPublic ? null : childMatch;
 
-  if ((!userRow || userRow.appRole === "GUEST") && !childRow) notFound();
+  if (!userIsPublic && !childRow) notFound();
 
   // Tutela dei minori: il profilo pubblico di un minore non esiste per chi non
   // è tesserato. La famiglia ritrova gli stessi dati in /profilo, lo staff
@@ -227,7 +237,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         sportRole: childRow.sportRole,
         sportRoleVariant: childRow.sportRoleVariant,
         gender: childRow.gender,
-        birthDate: childRow.birthDate,
         teamMemberships: childRow.teamMemberships,
         matchStats: childRow.matchStats,
         _count: childRow._count,
@@ -243,7 +252,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         sportRole: userRow!.sportRole,
         sportRoleVariant: userRow!.sportRoleVariant,
         gender: userRow!.gender,
-        birthDate: userRow!.birthDate,
         teamMemberships: userRow!.teamMemberships,
         matchStats: userRow!.matchStats,
         _count: userRow!._count,
@@ -885,15 +893,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             {player.gender && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <InfoRow label={t("gender")} value={genderLabel(player.gender)} />
-              </Grid>
-            )}
-            {/* Privacy: la data di nascita dei minorenni non è mai pubblica. */}
-            {player.birthDate && !isMinor(player.birthDate) && (
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow
-                  label={t("birthDate")}
-                  value={format(new Date(player.birthDate), "d MMMM yyyy", { locale: dateLocale })}
-                />
               </Grid>
             )}
             {player.sportRole && (

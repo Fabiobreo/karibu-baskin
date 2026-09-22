@@ -4,6 +4,7 @@ import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { heroGradient } from "@/lib/heroStyles";
+import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 
 export default async function BirthdayBanner() {
   const now = new Date();
@@ -15,15 +16,26 @@ export default async function BirthdayBanner() {
     withDbRetry(() =>
       prisma.user.findMany({
         where: { birthDate: { not: null }, appRole: { not: "GUEST" }, slug: { not: null } },
-        select: { name: true, slug: true, birthDate: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          birthDate: true,
+          sportRole: true,
+          ...PUBLIC_PROFILE_SELECT,
+        },
       })
     ),
   ]);
 
-  const celebrants = users.filter((u) => {
-    const d = new Date(u.birthDate!);
-    return d.getMonth() + 1 === todayMonth && d.getDate() === todayDay;
-  });
+  // Anche i genitori ricevono gli auguri, ma senza link se non hanno un
+  // profilo pubblico (`slug` null, vedi withProfileLink).
+  const celebrants = users
+    .filter((u) => {
+      const d = new Date(u.birthDate!);
+      return d.getMonth() + 1 === todayMonth && d.getDate() === todayDay;
+    })
+    .map(withProfileLink);
 
   if (celebrants.length === 0) return null;
 
@@ -67,7 +79,7 @@ export default async function BirthdayBanner() {
               <>
                 {t("birthdayPlural")}{" "}
                 {celebrants.map((c, i) => (
-                  <span key={c.slug}>
+                  <span key={c.id}>
                     {i > 0 && (i === celebrants.length - 1 ? " e " : ", ")}
                     {c.slug ? (
                       <Link

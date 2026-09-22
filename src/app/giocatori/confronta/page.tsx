@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { isMinor, isMinorChild } from "@/lib/minors";
+import { userHasPublicProfile } from "@/lib/publicProfile";
 import PageHero from "@/components/common/PageHero";
 import ComparePicker from "@/components/common/ComparePicker";
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
@@ -63,7 +64,8 @@ async function loadComparePlayer(
     _count: { select: { matchMvps: true } },
   };
 
-  // Utente e figlio in parallelo: il figlio conta solo se l'utente non c'è (o è GUEST).
+  // Utente e figlio in parallelo: il figlio conta solo se l'utente non ha un
+  // profilo pubblico (non c'è, è GUEST o è un genitore che non gioca).
   const [user, childMatch] = await Promise.all([
     prisma.user.findFirst({
       where: { OR: [{ slug: key }, { id: key }] },
@@ -71,9 +73,11 @@ async function loadComparePlayer(
     }),
     prisma.child.findFirst({ where: { OR: [{ slug: key }, { id: key }] }, select: sel }),
   ]);
-  const child = user && user.appRole !== "GUEST" ? null : childMatch;
+  const userIsPublic =
+    !!user && userHasPublicProfile({ ...user, matchesPlayed: user.matchStats.length });
+  const child = userIsPublic ? null : childMatch;
 
-  const row = child ?? (user && user.appRole !== "GUEST" ? user : null);
+  const row = child ?? (userIsPublic ? user : null);
   if (!row) return null;
   // Tutela dei minori: per chi non è tesserato un minore non è confrontabile.
   const minor = child ? isMinorChild(row.birthDate) : isMinor(row.birthDate);

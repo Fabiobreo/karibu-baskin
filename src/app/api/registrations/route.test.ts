@@ -562,7 +562,13 @@ describe("GET /api/registrations", () => {
         childId: null,
         note: "allergica alle noci",
         anonymousEmail: "alice@example.com",
-        user: { slug: "alice" },
+        user: {
+          id: "u9",
+          slug: "alice",
+          sportRole: 1,
+          appRole: "ATHLETE",
+          _count: { matchStats: 0 },
+        },
         child: null,
       },
     ]);
@@ -573,6 +579,32 @@ describe("GET /api/registrations", () => {
     expect(json[0].userSlug).toBe("alice");
     expect(json[0].note).toBeUndefined();
     expect(json[0].anonymousEmail).toBeUndefined();
+  });
+
+  it("non linka il profilo di un genitore che non ha mai giocato", async () => {
+    p.registration.findMany.mockResolvedValue([
+      {
+        id: "r2",
+        sessionId: "sess-1",
+        name: "Bruno",
+        role: 2,
+        userId: "u10",
+        childId: null,
+        note: null,
+        anonymousEmail: null,
+        user: {
+          id: "u10",
+          slug: "bruno",
+          sportRole: 2,
+          appRole: "PARENT",
+          _count: { matchStats: 0 },
+        },
+        child: null,
+      },
+    ]);
+    const json = await (await GET(makeGet())).json();
+    expect(json[0].userSlug).toBeNull();
+    expect(JSON.stringify(json)).not.toContain("PARENT");
   });
 
   it("allo staff espone note e email anonime", async () => {

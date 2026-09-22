@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 import { SITE_URL } from "@/lib/siteUrl";
 import { notMinorFilter } from "@/lib/minors";
+import { publicProfileUserFilter } from "@/lib/publicProfile";
 
 const BASE = SITE_URL;
 
@@ -39,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Privacy: i profili dei minorenni non finiscono in sitemap (stessa regola
     // applicata alla ricerca globale e al `noindex` sul profilo pubblico).
     prisma.user.findMany({
-      where: { appRole: { not: "GUEST" }, slug: { not: null }, ...notMinorFilter() },
+      where: { AND: [publicProfileUserFilter(), { slug: { not: null } }, notMinorFilter()] },
       select: { slug: true, createdAt: true },
     }),
     prisma.trainingSession.findMany({

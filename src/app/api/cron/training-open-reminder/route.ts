@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
+import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 // Vercel Cron — eseguito giornalmente alle 09:00 UTC.
 // Notifica COACH/ADMIN per allenamenti futuri (<= 48h) con iscrizioni ancora chiuse
@@ -46,8 +45,8 @@ export async function GET(req: NextRequest) {
   const staffIds = staff.map((s) => s.id);
 
   for (const s of pending) {
-    const dateLabel = format(s.date, "EEEE d MMMM", { locale: it });
-    const timeLabel = format(s.date, "HH:mm");
+    const dateLabel = formatRomeDayLabel(s.date);
+    const timeLabel = formatRomeTime(s.date);
     const url = `/allenamento/${s.dateSlug ?? s.id}`;
     const title = "⏰ Iscrizioni da aprire";
     const body = `"${s.title}" è ${dateLabel} alle ${timeLabel} e le iscrizioni non sono ancora state aperte.`;

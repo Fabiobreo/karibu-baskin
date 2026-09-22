@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { sendPushToAll } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 import { MIN_CALLUPS } from "@/lib/constants";
+import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 // Vercel Cron — eseguito giornalmente alle 09:00 UTC.
 // Notifica COACH/ADMIN per le partite ufficiali entro 3 giorni con meno di
@@ -54,8 +53,8 @@ export async function GET(req: NextRequest) {
   const staffIds = staff.map((s) => s.id);
 
   for (const m of toRemind) {
-    const dateLabel = format(m.date, "EEEE d MMMM", { locale: it });
-    const timeLabel = format(m.date, "HH:mm");
+    const dateLabel = formatRomeDayLabel(m.date);
+    const timeLabel = formatRomeTime(m.date);
     const url = `/admin/partite/${m.id}/convocazioni`;
     const count = m._count.callups;
     const title = "📋 Convocazioni mancanti";

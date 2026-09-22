@@ -33,6 +33,7 @@ type Access =
 const ROUTES: Record<string, Access> = {
   "admin/audit": "staff",
   "admin/export": "staff",
+  "admin/people": "staff",
   "auth/[...nextauth]": "authjs",
   calendar: "public",
   "calendar/export.ics": "public",

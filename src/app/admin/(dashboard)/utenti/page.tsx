@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
 import AdminUserList from "@/components/admin/AdminUserList";
 import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
-import { Paper, Button } from "@mui/material";
+import { Paper, Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
 import Link from "next/link";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
@@ -152,11 +153,18 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         title="Gestione Utenti"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
         action={
-          <Link href="/admin/utenti/nuovo" style={{ textDecoration: "none" }}>
-            <Button variant="contained" startIcon={<PersonAddIcon />} size="small">
-              Nuovo utente
-            </Button>
-          </Link>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
+            <Link href="/admin/utenti/nuovo-figlio" style={{ textDecoration: "none" }}>
+              <Button variant="outlined" startIcon={<ChildCareIcon />} size="small">
+                Nuovo figlio
+              </Button>
+            </Link>
+            <Link href="/admin/utenti/nuovo" style={{ textDecoration: "none" }}>
+              <Button variant="contained" startIcon={<PersonAddIcon />} size="small">
+                Nuovo utente
+              </Button>
+            </Link>
+          </Stack>
         }
       />
       <GuestApprovalInbox guests={pendingGuests} />

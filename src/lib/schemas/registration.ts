@@ -27,3 +27,20 @@ export const TeamMemberSchema = z
   .refine((b) => !!b.userId !== !!b.childId, {
     message: "Esattamente uno tra userId e childId è richiesto",
   });
+
+/**
+ * Iscrizione fatta dallo staff (`POST /api/sessions/[sessionId]/registrations`),
+ * anche ad allenamenti passati o chiusi: serve a ricostruire le presenze.
+ * Esattamente uno tra `userId` e `childId`. `role` serve solo se la persona
+ * non ha ancora un ruolo Baskin: altrimenti vale quello a profilo.
+ */
+export const StaffRegistrationCreateSchema = z
+  .object({
+    userId: z.string().min(1).optional(),
+    childId: z.string().min(1).optional(),
+    role: z.number().int().min(1).max(5).optional(),
+    attended: z.boolean().nullable().optional(),
+  })
+  .refine((d) => !!d.userId !== !!d.childId, {
+    message: "Indica una sola persona da iscrivere",
+  });

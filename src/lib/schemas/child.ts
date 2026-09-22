@@ -28,3 +28,25 @@ export const ChildPatchSchema = z.object({
   linkUserId: z.string().min(1).optional(),
   unlinkAccount: z.boolean().optional(),
 });
+
+/**
+ * Creazione di un figlio da parte dello staff (`POST /api/admin/children`),
+ * per preparare i dati senza passare dal profilo del genitore. A differenza
+ * di `ChildCreateSchema` il consenso non è obbligatorio: lo staff dichiara solo
+ * se il genitore l'ha già dato fuori dall'app (modulo di tesseramento). Senza,
+ * `parentalConsentAt` resta null, come per i record creati prima del flag.
+ */
+export const AdminChildCreateSchema = z.object({
+  parentId: z.string().min(1, "Scegli il genitore"),
+  name: z.string().trim().min(1, "Il nome è obbligatorio").max(60),
+  sportRole: SportRoleField,
+  gender: GenderEnum,
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data di nascita non valida")
+    .nullable()
+    .optional(),
+  parentalConsent: z.boolean().optional(),
+  /** Porta il genitore da GUEST a PARENT (ignorato per gli altri ruoli). */
+  promoteParent: z.boolean().optional(),
+});

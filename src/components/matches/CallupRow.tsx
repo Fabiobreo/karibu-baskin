@@ -11,7 +11,9 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
   const name = person.name ?? "—";
   const variant = person.sportRoleVariant ?? null;
   const image = c.user?.image ?? null;
-  const slug = c.user?.slug ?? c.user?.id ?? c.child?.slug ?? c.child?.id ?? null;
+  // Per gli utenti `slug` è già il segmento da linkare, null se non hanno un
+  // profilo pubblico (vedi withProfileLink): niente fallback sull'id.
+  const slug = c.user ? c.user.slug : (c.child?.slug ?? c.child?.id ?? null);
 
   const inner = (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25 }}>

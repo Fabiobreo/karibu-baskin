@@ -3,6 +3,7 @@ import JsonLd from "@/components/common/JsonLd";
 import { sportsEventJsonLd } from "@/lib/structuredData";
 import { isMemberRole } from "@/lib/authRoles";
 import { publicSubjects } from "@/lib/minors";
+import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { auth } from "@/lib/authjs";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -102,6 +103,7 @@ async function getMatch(slug: string) {
               sportRole: true,
               sportRoleVariant: true,
               birthDate: true,
+              ...PUBLIC_PROFILE_SELECT,
             },
           },
           child: {
@@ -182,6 +184,12 @@ export default async function MatchDetailPage({ params }: Props) {
   const viewerIsMember = isMemberRole(session?.user?.appRole);
   match.playerStats = publicSubjects(match.playerStats, viewerIsMember);
   match.callups = publicSubjects(match.callups, viewerIsMember);
+  // Convocati: `slug` del link, null per chi non ha un profilo pubblico (vedi
+  // @/lib/publicProfile). Toglie anche appRole prima di passare al client.
+  const callups = match.callups.map((c) => ({
+    ...c,
+    user: c.user && withProfileLink(c.user),
+  }));
   match.mvps = publicSubjects(match.mvps, viewerIsMember);
 
   const matchTypeLabel = (type: string) =>
@@ -955,7 +963,7 @@ export default async function MatchDetailPage({ params }: Props) {
         <MatchDetailTabs
           notes={match.notes}
           stats={match.playerStats}
-          callups={match.callups}
+          callups={callups}
           canSeeCallups={canSeeCallups}
           hasScore={hasScore}
           prevMatches={prevMatches}

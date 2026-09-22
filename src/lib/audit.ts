@@ -39,7 +39,9 @@ export type AuditAction =
   | "CREATE_OPPOSING_TEAM"
   | "UPDATE_OPPOSING_TEAM"
   | "DELETE_OPPOSING_TEAM"
-  | "DELETE_REGISTRATION";
+  | "DELETE_REGISTRATION"
+  | "ADD_REGISTRATION"
+  | "CREATE_CHILD";
 
 interface LogAuditInput {
   actorId: string;
