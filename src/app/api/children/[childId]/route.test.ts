@@ -13,6 +13,7 @@ vi.mock("@/lib/db", () => ({
     ratingUpdate: { deleteMany: vi.fn(), createMany: vi.fn() },
     linkRequest: { findFirst: vi.fn(), create: vi.fn(), count: vi.fn() },
     appNotification: { create: vi.fn() },
+    childGuardian: { findUnique: vi.fn(), findMany: vi.fn(), delete: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
@@ -45,9 +46,21 @@ type PrismaMock = {
   ratingUpdate: { deleteMany: Mock; createMany: Mock };
   linkRequest: { findFirst: Mock; create: Mock; count: Mock };
   appNotification: { create: Mock };
+  childGuardian: { findUnique: Mock; findMany: Mock; delete: Mock };
   $transaction: Mock;
 };
 const p = prisma as unknown as PrismaMock;
+
+/** Genitori collegati al figlio (tabella ChildGuardian). */
+function mockGuardians(userIds: string[]) {
+  p.childGuardian.findUnique.mockImplementation(
+    (args: { where: { childId_userId: { userId: string } } }) =>
+      Promise.resolve(
+        userIds.includes(args.where.childId_userId.userId) ? { childId: "child-1" } : null
+      )
+  );
+  p.childGuardian.findMany.mockResolvedValue(userIds.map((userId) => ({ userId })));
+}
 const mockAuth = auth as Mock;
 const mockIsCoachOrAdmin = isCoachOrAdmin as Mock;
 const mockSendPush = sendPushToUser as Mock;
@@ -76,7 +89,6 @@ function makeDELETE(childId: string): [NextRequest, { params: Promise<{ childId:
 const baseChild = {
   id: "child-1",
   name: "Luca Rossi",
-  parentId: "parent-1",
   userId: null,
   sportRole: null,
   sportRoleVariant: null,
@@ -91,6 +103,7 @@ describe("PATCH /api/children/[childId]", () => {
     vi.resetAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "parent-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
+    mockGuardians(["parent-1"]);
     // Lookup per id → il child; lookup per slug (generateChildSlug) → null (libero)
     p.child.findUnique.mockImplementation((args: { where?: { id?: string; slug?: string } }) =>
       Promise.resolve(args?.where?.id ? baseChild : null)
@@ -292,6 +305,7 @@ describe("DELETE /api/children/[childId]", () => {
     vi.resetAllMocks();
     mockAuth.mockResolvedValue({ user: { id: "parent-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
+    mockGuardians(["parent-1"]);
     p.child.findUnique.mockResolvedValue(baseChild);
     p.registration.findMany.mockResolvedValue([]);
     p.registration.deleteMany.mockResolvedValue(undefined);
@@ -375,5 +389,53 @@ describe("DELETE /api/children/[childId]", () => {
     expect(p.registration.deleteMany).not.toHaveBeenCalled();
     expect(p.trainingSession.updateMany).not.toHaveBeenCalled();
     expect(p.child.delete).toHaveBeenCalled();
+  });
+
+  describe("con più genitori", () => {
+    beforeEach(() => mockGuardians(["parent-1", "parent-2"]));
+
+    it("il genitore toglie solo sé stesso: il figlio resta all'altro", async () => {
+      const [req, ctx] = makeDELETE("child-1");
+      const res = await DELETE(req, ctx);
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ unlinked: true });
+      expect(p.childGuardian.delete).toHaveBeenCalledWith({
+        where: { childId_userId: { childId: "child-1", userId: "parent-1" } },
+      });
+      expect(p.child.delete).not.toHaveBeenCalled();
+      expect(p.registration.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it("anche con ?all=1 un genitore non staff toglie solo sé stesso", async () => {
+      const res = await DELETE(
+        new NextRequest("http://localhost/api/children/child-1?all=1", { method: "DELETE" }),
+        { params: Promise.resolve({ childId: "child-1" }) }
+      );
+      expect(res.status).toBe(200);
+      expect(p.child.delete).not.toHaveBeenCalled();
+    });
+
+    it("lo staff con ?all=1 elimina il figlio per tutti", async () => {
+      mockIsCoachOrAdmin.mockResolvedValue(true);
+      const res = await DELETE(
+        new NextRequest("http://localhost/api/children/child-1?all=1", { method: "DELETE" }),
+        { params: Promise.resolve({ childId: "child-1" }) }
+      );
+      expect(res.status).toBe(204);
+      expect(p.child.delete).toHaveBeenCalled();
+      expect(p.childGuardian.delete).not.toHaveBeenCalled();
+    });
+
+    it("l'altro genitore può modificarlo", async () => {
+      mockAuth.mockResolvedValue({ user: { id: "parent-2" } });
+      p.child.findUnique.mockImplementation((args: { where?: { id?: string } }) =>
+        Promise.resolve(args?.where?.id ? baseChild : null)
+      );
+      p.child.update.mockResolvedValue(baseChild);
+      p.sportRoleHistory.findMany.mockResolvedValue([]);
+      const [req, ctx] = makePATCH("child-1", { name: "Luca" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).not.toBe(403);
+    });
   });
 });

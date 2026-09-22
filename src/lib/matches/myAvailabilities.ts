@@ -8,6 +8,7 @@
 import { prisma } from "@/lib/db";
 import { withMixedTeams } from "@/lib/matches/mixedTeam";
 import type { AvailabilityMatch } from "@/components/matches/MieDisponibilitaClient";
+import { guardianOf } from "@/lib/guardians";
 
 type PersonKey = `user:${string}` | `child:${string}`;
 
@@ -18,7 +19,7 @@ async function loadEligibility(userId: string) {
       select: { team: { select: { id: true, season: true } } },
     }),
     prisma.child.findMany({
-      where: { parentId: userId },
+      where: guardianOf(userId),
       select: {
         id: true,
         name: true,

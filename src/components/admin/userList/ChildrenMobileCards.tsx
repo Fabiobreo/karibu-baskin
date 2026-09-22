@@ -6,6 +6,7 @@ import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
+import { guardianNames } from "@/lib/guardianNames";
 
 type ChildRow = ChildEntry & { kind: "child" };
 
@@ -60,7 +61,7 @@ export default function ChildrenMobileCards({
                 {row.name}
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap display="block">
-                Figlio di {row.parent.name ?? row.parent.email}
+                Figlio di {guardianNames(row.guardians)}
               </Typography>
               <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
                 <AthleteStatusChip status={row.athleteStatus} />

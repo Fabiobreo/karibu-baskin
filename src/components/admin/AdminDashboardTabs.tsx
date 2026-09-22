@@ -45,7 +45,8 @@ type RecentChild = {
   createdAt: Date | string;
   sportRole: number | null;
   sportRoleVariant: string | null;
-  parent: { name: string | null; email: string | null };
+  /** "Anna Rossi e Marco Rossi" */
+  parentLabel: string;
 };
 
 type RecentRow = RecentUser | RecentChild;
@@ -172,9 +173,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                         {row.name ?? "—"}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {row.kind === "user"
-                          ? row.email
-                          : `Figlio di ${row.parent.name ?? row.parent.email}`}
+                        {row.kind === "user" ? row.email : `Figlio di ${row.parentLabel}`}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -283,9 +282,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                       {row.name ?? "—"}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap display="block">
-                      {row.kind === "user"
-                        ? row.email
-                        : `Figlio di ${row.parent.name ?? row.parent.email}`}
+                      {row.kind === "user" ? row.email : `Figlio di ${row.parentLabel}`}
                     </Typography>
                     <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
                       {row.kind === "user" ? (

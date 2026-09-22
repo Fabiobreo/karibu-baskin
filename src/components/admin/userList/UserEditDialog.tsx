@@ -35,6 +35,7 @@ import type {
   TeamInfo,
   UserEntry,
 } from "@/components/admin/userList/userListShared";
+import ChildGuardiansSection from "@/components/admin/userList/ChildGuardiansSection";
 
 interface EditState {
   name: string;
@@ -228,6 +229,16 @@ export default function UserEditDialog({
               disabled={!isAdmin}
             />
           </Box>
+
+          {/* Genitori (solo figli): effetto immediato, non aspettano Salva */}
+          {row.kind === "child" && (
+            <ChildGuardiansSection
+              childId={row.id}
+              childName={row.name}
+              guardians={row.guardians}
+              onChange={(guardians) => onSaved({ ...row, guardians })}
+            />
+          )}
 
           {/* Email (solo utenti) */}
           {row.kind === "user" && (

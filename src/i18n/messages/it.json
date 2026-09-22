@@ -186,7 +186,10 @@
     "googlePhoto": "Foto da Google",
     "avatarSaveError": "Errore nel salvataggio dell'immagine",
     "avatarRemoveError": "Errore nella rimozione dell'immagine",
-    "avatarRemoved": "Immagine rimossa"
+    "avatarRemoved": "Immagine rimossa",
+    "sharedWith": "Gestito anche da {names}",
+    "removeFromMe": "Togli dal mio profilo",
+    "childRemovedFromMe": "{name} non è più nel tuo profilo: resta a {names}"
   },
   "linkRequests": {
     "title": "Richieste di collegamento",

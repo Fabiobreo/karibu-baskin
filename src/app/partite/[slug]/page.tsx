@@ -37,6 +37,7 @@ import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { onHover } from "@/lib/hoverStyles";
+import { guardianOf } from "@/lib/guardians";
 
 export const revalidate = 3600;
 
@@ -232,7 +233,7 @@ export default async function MatchDetailPage({ params }: Props) {
       await prisma.teamMembership.findMany({
         where: {
           teamId: { in: teamIds },
-          OR: [{ userId: uid }, { child: { parentId: uid } }],
+          OR: [{ userId: uid }, { child: guardianOf(uid) }],
         },
         select: {
           user: { select: { id: true, name: true } },

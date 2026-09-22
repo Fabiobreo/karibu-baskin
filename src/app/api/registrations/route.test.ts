@@ -20,6 +20,7 @@ vi.mock("@/lib/db", () => {
       user,
       child,
       teamMembership: { findFirst: vi.fn() },
+      childGuardian: { findUnique: vi.fn() },
       $transaction: vi.fn((cb: (tx: unknown) => unknown) => cb({ registration, user, child })),
     },
   };
@@ -61,6 +62,7 @@ type PrismaMock = {
   user: { findUnique: Mock; update: Mock };
   child: { findUnique: Mock; update: Mock };
   teamMembership: { findFirst: Mock };
+  childGuardian: { findUnique: Mock };
   $transaction: Mock;
 };
 const p = prisma as unknown as PrismaMock;
@@ -321,11 +323,12 @@ describe("POST /api/registrations", () => {
       p.child.findUnique.mockResolvedValue({
         id: "child-1",
         name: "Luca",
-        parentId: "parent-1",
         sportRole: 3,
         userId: null,
       });
       p.user.findUnique.mockResolvedValue({ appRole: "PARENT" });
+      // parent-1 è genitore di child-1 (ChildGuardian)
+      p.childGuardian.findUnique.mockResolvedValue({ childId: "child-1" });
     });
 
     it("crea l'iscrizione del figlio con childId e restituisce 201", async () => {
@@ -350,13 +353,7 @@ describe("POST /api/registrations", () => {
     });
 
     it("restituisce 403 se l'utente non è il genitore del figlio", async () => {
-      p.child.findUnique.mockResolvedValue({
-        id: "child-1",
-        name: "Luca",
-        parentId: "other-parent",
-        sportRole: 3,
-        userId: null,
-      });
+      p.childGuardian.findUnique.mockResolvedValue(null);
       const res = await POST(makePost({ sessionId: "sess-1", role: 3, childId: "child-1" }));
       expect(res.status).toBe(403);
     });
@@ -382,7 +379,6 @@ describe("POST /api/registrations", () => {
       p.child.findUnique.mockResolvedValue({
         id: "child-1",
         name: "Luca",
-        parentId: "parent-1",
         sportRole: 3,
         userId: "linked-user",
       });
@@ -399,7 +395,6 @@ describe("POST /api/registrations", () => {
       p.child.findUnique.mockResolvedValue({
         id: "child-1",
         name: "Luca",
-        parentId: "parent-1",
         sportRole: null,
         userId: null,
       });

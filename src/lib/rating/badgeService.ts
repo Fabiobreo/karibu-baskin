@@ -164,7 +164,7 @@ export async function reconcilePlayerBadges(
 
 /** Invia notifica in-app + push al destinatario corretto per i badge sbloccati. */
 async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<void> {
-  let targetUserId: string | null = null;
+  let targetUserIds: string[] = [];
   let subjectName: string | null = null;
   let profileSlug: string | null = null;
   let isSelf = false;
@@ -175,23 +175,30 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
       select: { id: true, name: true, slug: true },
     });
     if (!user) return;
-    targetUserId = user.id;
+    targetUserIds = [user.id];
     subjectName = user.name;
     profileSlug = user.slug ?? user.id;
     isSelf = true;
   } else {
     const child = await prisma.child.findUnique({
       where: { id: ref.childId },
-      select: { name: true, slug: true, id: true, parentId: true, userId: true },
+      select: {
+        name: true,
+        slug: true,
+        id: true,
+        userId: true,
+        guardians: { select: { userId: true } },
+      },
     });
     if (!child) return;
-    // Notifica il genitore (i figli senza account non ricevono notifiche).
-    targetUserId = child.userId ?? child.parentId;
+    // Il figlio con un account riceve lui la notifica; altrimenti tutti i
+    // suoi genitori (i figli senza account non ricevono notifiche).
+    targetUserIds = child.userId ? [child.userId] : child.guardians.map((g) => g.userId);
     subjectName = child.name;
     profileSlug = child.slug ?? child.id;
   }
 
-  if (!targetUserId) return;
+  if (targetUserIds.length === 0) return;
   const url = `/giocatori/${profileSlug}`;
 
   for (const badgeId of badgeIds) {
@@ -202,7 +209,9 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
       ? `Hai sbloccato il traguardo "${badge.label}" 🎉`
       : `${subjectName} ha sbloccato il traguardo "${badge.label}" 🎉`;
 
-    await createAppNotification({ type: "BADGE_UNLOCKED", title, body, url, targetUserId });
+    for (const targetUserId of targetUserIds) {
+      await createAppNotification({ type: "BADGE_UNLOCKED", title, body, url, targetUserId });
+    }
   }
 
   // Una sola push riepilogativa se i badge sono più d'uno.
@@ -219,5 +228,5 @@ async function notifyBadgeUnlock(ref: PlayerRef, badgeIds: string[]): Promise<vo
         ? `Hai sbloccato ${badgeIds.length} nuovi traguardi`
         : `${subjectName} ha sbloccato ${badgeIds.length} nuovi traguardi`;
 
-  await sendPushToUsers([targetUserId], { title: pushTitle, body: pushBody, url });
+  await sendPushToUsers(targetUserIds, { title: pushTitle, body: pushBody, url });
 }

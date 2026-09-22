@@ -140,77 +140,82 @@ export async function GET(req: NextRequest) {
           parent: { select: { name: true, email: true } },
         },
       },
-      children: {
+      // Figli collegati. Gli altri genitori restano fuori: sono dati di terzi.
+      guardianOf: {
         orderBy: { createdAt: "asc" },
         select: {
-          id: true,
-          name: true,
-          sportRole: true,
-          sportRoleVariant: true,
-          gender: true,
-          birthDate: true,
-          createdAt: true,
-          parentalConsentAt: true,
-          userId: true,
-          teamMemberships: {
-            select: {
-              isCaptain: true,
-              createdAt: true,
-              team: { select: { name: true, season: true, championship: true } },
-            },
-          },
-          registrations: {
-            orderBy: { createdAt: "desc" },
+          child: {
             select: {
               id: true,
               name: true,
-              role: true,
-              note: true,
-              attended: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              gender: true,
+              birthDate: true,
               createdAt: true,
-              session: { select: { id: true, title: true, date: true, endTime: true } },
-            },
-          },
-          matchStats: {
-            select: {
-              points: true,
-              twoPointers: true,
-              threePointers: true,
-              freeThrows: true,
-              fouls: true,
-              illegalFouls: true,
-              shotsAttempted: true,
-              notes: true,
-              isLoan: true,
-              match: {
+              parentalConsentAt: true,
+              userId: true,
+              teamMemberships: {
                 select: {
-                  id: true,
-                  date: true,
-                  isHome: true,
-                  ourScore: true,
-                  theirScore: true,
-                  result: true,
-                  matchType: true,
-                  team: { select: { name: true, season: true } },
-                  opponent: { select: { name: true } },
-                  opponentTeam: { select: { name: true, season: true } },
+                  isCaptain: true,
+                  createdAt: true,
+                  team: { select: { name: true, season: true, championship: true } },
                 },
               },
-            },
-          },
-          callups: {
-            select: {
-              isLoan: true,
-              match: {
+              registrations: {
+                orderBy: { createdAt: "desc" },
                 select: {
                   id: true,
-                  date: true,
-                  team: { select: { name: true, season: true } },
-                  opponent: { select: { name: true } },
-                  opponentTeam: { select: { name: true, season: true } },
+                  name: true,
+                  role: true,
+                  note: true,
+                  attended: true,
+                  createdAt: true,
+                  session: { select: { id: true, title: true, date: true, endTime: true } },
                 },
               },
-              team: { select: { name: true, season: true } },
+              matchStats: {
+                select: {
+                  points: true,
+                  twoPointers: true,
+                  threePointers: true,
+                  freeThrows: true,
+                  fouls: true,
+                  illegalFouls: true,
+                  shotsAttempted: true,
+                  notes: true,
+                  isLoan: true,
+                  match: {
+                    select: {
+                      id: true,
+                      date: true,
+                      isHome: true,
+                      ourScore: true,
+                      theirScore: true,
+                      result: true,
+                      matchType: true,
+                      team: { select: { name: true, season: true } },
+                      opponent: { select: { name: true } },
+                      opponentTeam: { select: { name: true, season: true } },
+                    },
+                  },
+                },
+              },
+              callups: {
+                select: {
+                  isLoan: true,
+                  match: {
+                    select: {
+                      id: true,
+                      date: true,
+                      team: { select: { name: true, season: true } },
+                      opponent: { select: { name: true } },
+                      opponentTeam: { select: { name: true, season: true } },
+                    },
+                  },
+                  team: { select: { name: true, season: true } },
+                },
+              },
             },
           },
         },
@@ -230,7 +235,10 @@ export async function GET(req: NextRequest) {
         "Dati personali dell'utente loggato e dei figli a lui collegati. Esclusi token OAuth e sessioni Auth.js.",
       app: "Karibu Baskin",
     },
-    user,
+    user: (({ guardianOf, ...rest }) => ({
+      ...rest,
+      children: guardianOf.map((g) => g.child),
+    }))(user),
   };
 
   const filenameDate = new Date().toISOString().slice(0, 10);

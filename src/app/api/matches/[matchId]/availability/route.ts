@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { AvailabilitySchema } from "@/lib/schemas";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
+import { guardianOf } from "@/lib/guardians";
 
 type Params = { params: Promise<{ matchId: string }> };
 
@@ -54,11 +55,11 @@ export async function PUT(req: Request, { params }: Params) {
 
   if (childId) {
     // Verifica che il childId appartenga al genitore loggato
-    const child = await prisma.child.findUnique({
-      where: { id: childId },
-      select: { id: true, parentId: true },
+    const child = await prisma.child.findFirst({
+      where: { id: childId, ...guardianOf(userId) },
+      select: { id: true },
     });
-    if (!child || child.parentId !== userId) {
+    if (!child) {
       return NextResponse.json({ error: "Non autorizzato per questo figlio" }, { status: 403 });
     }
     // Verifica membership del child in una delle squadre della partita

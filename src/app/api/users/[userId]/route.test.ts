@@ -37,6 +37,12 @@ vi.mock("@/lib/audit", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
+// La cancellazione passa dall'helper che toglie anche i figli rimasti senza
+// genitori: la sua logica ha un test a parte (src/lib/guardians.test.ts).
+vi.mock("@/lib/guardians", () => ({
+  deleteUserAndOrphanedChildren: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { PATCH, DELETE } from "./route";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
@@ -44,6 +50,7 @@ import { isAdminUser, isCoachOrAdmin } from "@/lib/apiAuth";
 import { sendPushToUser } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { logAudit } from "@/lib/audit";
+import { deleteUserAndOrphanedChildren } from "@/lib/guardians";
 
 type PrismaMock = {
   user: { findUnique: Mock; update: Mock; delete: Mock };
@@ -254,7 +261,7 @@ describe("DELETE /api/users/[userId]", () => {
     const [req, ctx] = makeDELETE("user-2");
     const res = await DELETE(req, ctx);
     expect(res.status).toBe(401);
-    expect(p.user.delete).not.toHaveBeenCalled();
+    expect(deleteUserAndOrphanedChildren).not.toHaveBeenCalled();
   });
 
   it("impedisce all'admin di eliminare se stesso", async () => {
@@ -264,7 +271,7 @@ describe("DELETE /api/users/[userId]", () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toMatch(/tuo account/i);
-    expect(p.user.delete).not.toHaveBeenCalled();
+    expect(deleteUserAndOrphanedChildren).not.toHaveBeenCalled();
   });
 
   it("elimina un altro utente con successo", async () => {
@@ -273,7 +280,7 @@ describe("DELETE /api/users/[userId]", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.ok).toBe(true);
-    expect(p.user.delete).toHaveBeenCalledWith({ where: { id: "user-2" } });
+    expect(deleteUserAndOrphanedChildren).toHaveBeenCalledWith("user-2");
   });
 
   it("chiama logAudit dopo eliminazione", async () => {
@@ -289,7 +296,7 @@ describe("DELETE /api/users/[userId]", () => {
     mockAuth.mockResolvedValue(null);
     const [req, ctx] = makeDELETE("user-2");
     await DELETE(req, ctx);
-    expect(p.user.delete).toHaveBeenCalled();
+    expect(deleteUserAndOrphanedChildren).toHaveBeenCalled();
     expect(mockLogAudit).not.toHaveBeenCalled();
   });
 
@@ -300,6 +307,6 @@ describe("DELETE /api/users/[userId]", () => {
     expect(res.status).toBe(404);
     const json = await res.json();
     expect(json.error).toMatch(/non trovato/i);
-    expect(p.user.delete).not.toHaveBeenCalled();
+    expect(deleteUserAndOrphanedChildren).not.toHaveBeenCalled();
   });
 });

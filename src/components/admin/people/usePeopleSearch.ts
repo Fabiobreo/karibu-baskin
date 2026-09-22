@@ -11,7 +11,7 @@ export type { AdminPerson };
  * debounce: si digita un cognome sul telefono, e una richiesta per lettera
  * sarebbe solo rumore. Sotto i 2 caratteri non parte.
  */
-export function usePeopleSearch(query: string, kind: "user" | "all") {
+export function usePeopleSearch(query: string, kind: "user" | "child" | "all") {
   const [debounced, setDebounced] = useState("");
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query.trim()), 250);

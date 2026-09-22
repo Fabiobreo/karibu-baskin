@@ -238,13 +238,17 @@ async function nuke() {
   const delTeams = await prisma.competitiveTeam.deleteMany({
     where: { name: { contains: SIM_TEAM_TAG } },
   });
-  // Utenti @sim.test → cascade su RatingUpdate/TeamMembership; i figli del
-  // genitore sim si cancellano col genitore (Child.parent onDelete: Cascade).
+  // Utenti @sim.test → cascade su RatingUpdate/TeamMembership. I figli del
+  // genitore sim vanno eliminati prima: col genitore se ne andrebbe solo il
+  // collegamento (ChildGuardian), non il figlio.
   const simUsers = await prisma.user.findMany({
     where: { email: { endsWith: SIM_DOMAIN } },
     select: { id: true },
   });
   if (simUsers.length > 0) {
+    await prisma.child.deleteMany({
+      where: { guardians: { some: { userId: { in: simUsers.map((u) => u.id) } } } },
+    });
     await prisma.user.deleteMany({ where: { email: { endsWith: SIM_DOMAIN } } });
   }
 
@@ -309,7 +313,7 @@ async function createWorld(): Promise<World> {
     } else {
       const c = await prisma.child.create({
         data: {
-          parentId: parent.id,
+          guardians: { create: { userId: parent.id } },
           name: def.name,
           slug: slugify(def.name),
           sportRole: def.role,

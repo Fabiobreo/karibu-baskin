@@ -71,8 +71,9 @@ export default function ChildrenTab({
       result = result.filter(
         (c) =>
           c.name.toLowerCase().includes(q) ||
-          c.parent.name?.toLowerCase().includes(q) ||
-          c.parent.email.toLowerCase().includes(q)
+          c.guardians.some(
+            (g) => g.name?.toLowerCase().includes(q) || g.email.toLowerCase().includes(q)
+          )
       );
     }
     return [...result].sort((a, b) => {
@@ -196,14 +197,22 @@ export default function ChildrenTab({
                   </Box>
                 </TableCell>
 
-                {/* Genitore */}
+                {/* Genitori */}
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
-                    {row.parent.name ?? row.parent.email}
-                  </Typography>
-                  <Typography variant="caption" color="text.disabled">
-                    {row.parent.email}
-                  </Typography>
+                  {row.guardians.map((g) => (
+                    <Box key={g.id} sx={{ "& + &": { mt: 0.5 } }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontStyle: "italic" }}
+                      >
+                        {g.name ?? g.email}
+                      </Typography>
+                      <Typography variant="caption" color="text.disabled">
+                        {g.email}
+                      </Typography>
+                    </Box>
+                  ))}
                 </TableCell>
 
                 {/* Ruolo Baskin */}

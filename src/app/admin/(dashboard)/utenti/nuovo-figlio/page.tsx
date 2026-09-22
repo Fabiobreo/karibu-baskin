@@ -38,6 +38,7 @@ export default async function NuovoFiglioPage({ searchParams }: { searchParams: 
         sportRole: parent.sportRole,
         image: parent.customImage ?? parent.image ?? null,
         parentName: null,
+        guardianIds: [],
       }
     : null;
 

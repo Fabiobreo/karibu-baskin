@@ -8,6 +8,7 @@ import { ChildPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { generateChildSlug } from "@/lib/slugUtils";
 import { recomputeRatings } from "@/lib/rating/ratingEngine";
+import { isGuardian } from "@/lib/guardians";
 
 // PATCH /api/children/[childId] — aggiorna i dati di un figlio
 export async function PATCH(
@@ -31,7 +32,7 @@ export async function PATCH(
   }
 
   const isStaff = await isCoachOrAdmin();
-  if (child.parentId !== session.user.id && !isStaff) {
+  if (!isStaff && !(await isGuardian(session.user.id, childId))) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
   }
 
@@ -241,9 +242,14 @@ export async function PATCH(
   return NextResponse.json(updated);
 }
 
-// DELETE /api/children/[childId] — elimina un figlio
+// DELETE /api/children/[childId] — elimina un figlio.
+//
+// Con più genitori, chi lo elimina dal proprio profilo toglie solo sé stesso:
+// il figlio resta agli altri, con iscrizioni e statistiche. Si cancella
+// davvero quando resta un solo genitore, o quando lo chiede lo staff con
+// `?all=1` (pannello admin).
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
 ) {
   const { childId } = await params;
@@ -263,8 +269,24 @@ export async function DELETE(
   }
 
   const isStaff = await isCoachOrAdmin();
-  if (child.parentId !== session.user.id && !isStaff) {
+  const guardians = await prisma.childGuardian.findMany({
+    where: { childId },
+    select: { userId: true },
+  });
+  const amGuardian = guardians.some((g) => g.userId === session.user.id);
+  if (!amGuardian && !isStaff) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
+  }
+
+  const deleteAll =
+    guardians.length <= 1 ||
+    !amGuardian ||
+    (isStaff && req.nextUrl.searchParams.get("all") === "1");
+  if (!deleteAll) {
+    await prisma.childGuardian.delete({
+      where: { childId_userId: { childId, userId: session.user.id } },
+    });
+    return NextResponse.json({ unlinked: true });
   }
 
   // Trova le sessioni con squadre generate che includono questo figlio,

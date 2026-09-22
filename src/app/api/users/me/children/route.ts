@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { ChildCreateSchema } from "@/lib/schemas";
 import { generateChildSlug } from "@/lib/slugUtils";
+import { guardianOf } from "@/lib/guardians";
 
 // GET /api/users/me/children — figli del genitore loggato
 export async function GET() {
@@ -12,12 +13,19 @@ export async function GET() {
   }
 
   const children = await prisma.child.findMany({
-    where: { parentId: session.user.id },
+    where: guardianOf(session.user.id),
     orderBy: { createdAt: "asc" },
     // Il TrueSkill è visibile solo allo staff: un genitore non riceve il rating
     // del figlio (vedi KB-40).
     omit: { ratingMu: true, ratingSigma: true },
     include: {
+      // Gli altri genitori, per nome: "Gestito anche da Marco". L'email non
+      // serve e resta fuori.
+      guardians: {
+        where: { userId: { not: session.user.id } },
+        orderBy: { createdAt: "asc" },
+        select: { user: { select: { name: true } } },
+      },
       teamMemberships: {
         select: {
           teamId: true,
@@ -28,8 +36,9 @@ export async function GET() {
   });
 
   return NextResponse.json(
-    children.map(({ teamMemberships, ...child }) => ({
+    children.map(({ teamMemberships, guardians, ...child }) => ({
       ...child,
+      otherGuardians: guardians.map((g) => g.user.name ?? "?"),
       teamMemberships: teamMemberships.map((m) => ({
         teamId: m.teamId,
         teamName: m.team.name,
@@ -66,7 +75,7 @@ export async function POST(req: NextRequest) {
 
   const child = await prisma.child.create({
     data: {
-      parentId: session.user.id,
+      guardians: { create: { userId: session.user.id } },
       name: trimmedName,
       ...(slug ? { slug } : {}),
       sportRole: sportRole ?? null,

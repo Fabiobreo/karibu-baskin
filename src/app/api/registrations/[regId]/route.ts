@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
 import { logAudit } from "@/lib/audit";
+import { guardianOf, isGuardian } from "@/lib/guardians";
 
 export async function DELETE(
   _req: NextRequest,
@@ -28,15 +29,11 @@ export async function DELETE(
   let isAllowed = false;
   if (!isOwner && !isStaff && currentUserId) {
     if (registration.childId) {
-      const child = await prisma.child.findUnique({
-        where: { id: registration.childId },
-        select: { parentId: true },
-      });
-      isAllowed = child?.parentId === currentUserId;
+      isAllowed = await isGuardian(currentUserId, registration.childId);
     } else if (registration.userId) {
       // Registrazione via userId: controlla se è un figlio del genitore loggato
       const childOfParent = await prisma.child.findFirst({
-        where: { userId: registration.userId, parentId: currentUserId },
+        where: { userId: registration.userId, ...guardianOf(currentUserId) },
       });
       isAllowed = !!childOfParent;
     }

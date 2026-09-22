@@ -50,3 +50,10 @@ export const AdminChildCreateSchema = z.object({
   /** Porta il genitore da GUEST a PARENT (ignorato per gli altri ruoli). */
   promoteParent: z.boolean().optional(),
 });
+
+/** Lo staff collega un altro genitore a un figlio già registrato. */
+export const GuardianLinkSchema = z.object({
+  userId: z.string().min(1, "Scegli il genitore"),
+  /** Porta il genitore da GUEST a PARENT (ignorato per gli altri ruoli). */
+  promoteParent: z.boolean().optional(),
+});

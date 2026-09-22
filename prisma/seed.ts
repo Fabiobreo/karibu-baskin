@@ -636,8 +636,8 @@ async function nuke() {
     await prisma.user.deleteMany({
       where: { email: { endsWith: "@mock.test" } },
     });
-    // Child orfani (parentId già eliminato via cascade, rimangono solo quelli
-    // con id prefissato "mock-child-")
+    // Child dei mock: col genitore se ne va solo il collegamento
+    // (ChildGuardian), il figlio resta e si elimina qui per id "mock-child-"
     await prisma.child.deleteMany({
       where: { id: { startsWith: "mock-child-" } },
     });
@@ -747,7 +747,7 @@ async function seed() {
         update: {},
         create: {
           id: childId,
-          parentId: parent.id,
+          guardians: { create: { userId: parent.id } },
           name: ch.name,
           gender: ch.gender,
           sportRole: ch.sportRole ?? null,

@@ -60,7 +60,8 @@ export interface ChildEntry {
   ratingMu: number | null;
   ratingSigma: number | null;
   createdAt: Date | string;
-  parent: { name: string | null; email: string };
+  /** Genitori collegati, nell'ordine di collegamento. */
+  guardians: { id: string; name: string | null; email: string }[];
   _count: { registrations: number };
   teamMemberships: MembershipInfo[];
 }

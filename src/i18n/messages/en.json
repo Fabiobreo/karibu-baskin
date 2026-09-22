@@ -186,7 +186,10 @@
     "googlePhoto": "Photo from Google",
     "avatarSaveError": "Error saving the image",
     "avatarRemoveError": "Error removing the image",
-    "avatarRemoved": "Image removed"
+    "avatarRemoved": "Image removed",
+    "sharedWith": "Also managed by {names}",
+    "removeFromMe": "Remove from my profile",
+    "childRemovedFromMe": "{name} is no longer in your profile: still managed by {names}"
   },
   "linkRequests": {
     "title": "Link requests",

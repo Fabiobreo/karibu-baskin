@@ -75,9 +75,19 @@ export default function ParentChildLinker({
   async function handleDelete(child: ChildData) {
     setDeletingId(child.id);
     try {
-      await fetch(`/api/children/${child.id}`, { method: "DELETE" });
+      // Con altri genitori il server toglie solo il nostro collegamento: il
+      // figlio resta a loro, con iscrizioni e statistiche.
+      const res = await fetch(`/api/children/${child.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("delete failed");
       setChildren((prev) => prev.filter((c) => c.id !== child.id));
-      showToast({ message: t("childRemoved", { name: child.name }), severity: "info" });
+      const others = child.otherGuardians ?? [];
+      showToast({
+        message:
+          others.length > 0
+            ? t("childRemovedFromMe", { name: child.name, names: others.join(", ") })
+            : t("childRemoved", { name: child.name }),
+        severity: "info",
+      });
     } catch {
       showToast({ message: t("removeError"), severity: "error" });
     } finally {
@@ -192,6 +202,15 @@ export default function ParentChildLinker({
                       })}
                     </Typography>
                   )}
+                  {child.otherGuardians && child.otherGuardians.length > 0 && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ display: "block", mt: 0.25 }}
+                    >
+                      {t("sharedWith", { names: child.otherGuardians.join(", ") })}
+                    </Typography>
+                  )}
                   {child.userId && child.user?.email && (
                     <Typography
                       variant="caption"
@@ -235,7 +254,10 @@ export default function ParentChildLinker({
                     color="error"
                     onClick={() => handleDelete(child)}
                     disabled={deletingId === child.id}
-                    aria-label={tCommon("delete")}
+                    aria-label={
+                      child.otherGuardians?.length ? t("removeFromMe") : tCommon("delete")
+                    }
+                    title={child.otherGuardians?.length ? t("removeFromMe") : undefined}
                   >
                     {deletingId === child.id ? (
                       <CircularProgress size={16} />

@@ -18,6 +18,7 @@ import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp"
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { guardianOf } from "@/lib/guardians";
 
 export const revalidate = 0;
 
@@ -87,11 +88,11 @@ export default async function EventoPage({ params }: Props) {
 
   // Figli + conteggi + risposte proprie (status/note) + selezioni opzioni
   // proprie, tutto insieme: le righe dei figli si filtrano sulla relazione
-  // (`child.parentId`) invece di aspettare prima la lista dei loro id.
+  // (`guardianOf`) invece di aspettare prima la lista dei loro id.
   const [children, grouped, mine, mySelections] = await Promise.all([
     userId
       ? prisma.child.findMany({
-          where: { parentId: userId },
+          where: guardianOf(userId),
           orderBy: { createdAt: "asc" },
           select: { id: true, name: true },
         })
@@ -105,7 +106,7 @@ export default async function EventoPage({ params }: Props) {
       ? prisma.eventAttendance.findMany({
           where: {
             eventId: ev.id,
-            OR: [{ userId }, { child: { parentId: userId } }],
+            OR: [{ userId }, { child: guardianOf(userId) }],
           },
           select: { userId: true, childId: true, status: true, note: true },
         })
@@ -114,7 +115,7 @@ export default async function EventoPage({ params }: Props) {
       ? prisma.eventOptionSelection.findMany({
           where: {
             optionId: { in: optionIds },
-            OR: [{ userId }, { child: { parentId: userId } }],
+            OR: [{ userId }, { child: guardianOf(userId) }],
           },
           select: { optionId: true, userId: true, childId: true },
         })

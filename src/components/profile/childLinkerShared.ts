@@ -15,6 +15,8 @@ export interface ChildData {
   user?: { email: string; image: string | null } | null;
   pendingRequestId?: string | null;
   teamMemberships?: { team: { name: string; color: string | null; season: string } }[];
+  /** Gli altri genitori collegati, per nome. */
+  otherGuardians?: string[];
 }
 
 export interface FoundUser {

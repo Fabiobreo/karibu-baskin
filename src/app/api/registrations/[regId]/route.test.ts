@@ -12,6 +12,7 @@ vi.mock("@/lib/db", () => ({
       findUnique: vi.fn(),
       findFirst: vi.fn(),
     },
+    childGuardian: { findUnique: vi.fn() },
   },
 }));
 
@@ -31,6 +32,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 type PrismaMock = {
   registration: { findUnique: Mock; delete: Mock };
   child: { findUnique: Mock; findFirst: Mock };
+  childGuardian: { findUnique: Mock };
 };
 const p = prisma as unknown as PrismaMock;
 const mockAuth = auth as Mock;
@@ -122,13 +124,13 @@ describe("DELETE /api/registrations/[regId]", () => {
     p.registration.findUnique.mockResolvedValue({ userId: null, childId: "child-1" });
     mockAuth.mockResolvedValue({ user: { id: "parent-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
-    p.child.findUnique.mockResolvedValue({ userId: null, parentId: "parent-1" });
+    p.childGuardian.findUnique.mockResolvedValue({ childId: "child-1" });
     const [req, ctx] = makeDELETE("reg-7");
     const res = await DELETE(req, ctx);
     expect(res.status).toBe(204);
-    expect(p.child.findUnique).toHaveBeenCalledWith({
-      where: { id: "child-1" },
-      select: { parentId: true },
+    expect(p.childGuardian.findUnique).toHaveBeenCalledWith({
+      where: { childId_userId: { childId: "child-1", userId: "parent-1" } },
+      select: { childId: true },
     });
   });
 
@@ -136,7 +138,7 @@ describe("DELETE /api/registrations/[regId]", () => {
     p.registration.findUnique.mockResolvedValue({ userId: null, childId: "child-1" });
     mockAuth.mockResolvedValue({ user: { id: "linked-user-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
-    p.child.findUnique.mockResolvedValue({ parentId: "parent-2" });
+    p.childGuardian.findUnique.mockResolvedValue(null);
     const [req, ctx] = makeDELETE("reg-8");
     const res = await DELETE(req, ctx);
     expect(res.status).toBe(401);
@@ -146,7 +148,7 @@ describe("DELETE /api/registrations/[regId]", () => {
     p.registration.findUnique.mockResolvedValue({ userId: null, childId: "child-1" });
     mockAuth.mockResolvedValue({ user: { id: "stranger-1" } });
     mockIsCoachOrAdmin.mockResolvedValue(false);
-    p.child.findUnique.mockResolvedValue({ userId: "other-user", parentId: "other-parent" });
+    p.childGuardian.findUnique.mockResolvedValue(null);
     const [req, ctx] = makeDELETE("reg-9");
     const res = await DELETE(req, ctx);
     expect(res.status).toBe(401);
@@ -161,7 +163,7 @@ describe("DELETE /api/registrations/[regId]", () => {
     const res = await DELETE(req, ctx);
     expect(res.status).toBe(204);
     expect(p.child.findFirst).toHaveBeenCalledWith({
-      where: { userId: "athlete-1", parentId: "parent-1" },
+      where: { userId: "athlete-1", guardians: { some: { userId: "parent-1" } } },
     });
   });
 

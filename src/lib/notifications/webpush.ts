@@ -125,7 +125,7 @@ export async function sendPushToUsers(
 
 /**
  * Invia push ai membri di una squadra agonistica e ai genitori dei figli in squadra.
- * Combina userId diretti + parentId dei Child + userId collegati ai Child.
+ * Combina userId diretti + genitori dei Child (tutti) + userId collegati ai Child.
  *
  * Se sportRole è fornito, filtra solo i membri con quel ruolo.
  * Se sportRoles (array) è fornito, filtra per uno qualsiasi dei ruoli nell'array.
@@ -172,10 +172,10 @@ export async function sendPushToFilter(
         : { id: { in: childIds } };
       const children = await prisma.child.findMany({
         where: childWhere,
-        select: { parentId: true, userId: true },
+        select: { guardians: { select: { userId: true } }, userId: true },
       });
       for (const c of children) {
-        userIds.add(c.parentId);
+        for (const g of c.guardians) userIds.add(g.userId);
         if (c.userId) userIds.add(c.userId);
       }
     }
@@ -188,10 +188,10 @@ export async function sendPushToFilter(
 
     const children = await prisma.child.findMany({
       where: { sportRole: { in: roleFilter } },
-      select: { parentId: true, userId: true },
+      select: { guardians: { select: { userId: true } }, userId: true },
     });
     for (const c of children) {
-      userIds.add(c.parentId);
+      for (const g of c.guardians) userIds.add(g.userId);
       if (c.userId) userIds.add(c.userId);
     }
   }

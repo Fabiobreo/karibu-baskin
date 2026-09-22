@@ -82,7 +82,7 @@ model User {
   accounts              Account[]
   authSessions          Session[]
   registrations         Registration[]
-  children              Child[]               @relation("ParentChildren")
+  guardianOf            ChildGuardian[]
   childAccount          Child?                @relation("ChildUser")
   sportRoleHistory      SportRoleHistory[]
   pushSubscriptions     PushSubscription[]
@@ -175,7 +175,6 @@ model SportRoleHistory {
 
 model Child {
   id               String    @id @default(cuid())
-  parentId         String
   name             String
   slug             String?   @unique // URL leggibile profilo pubblico (noindex)
   sportRole        Int?
@@ -199,7 +198,9 @@ model Child {
   // Collegamento opzionale a un account User (se il figlio si registra in futuro)
   userId String? @unique
 
-  parent              User                @relation("ParentChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  // Genitori/tutori: tutti con gli stessi poteri (iscrivere, disponibilità,
+  // notifiche, modifica). Almeno uno: vedi @/lib/guardians.
+  guardians           ChildGuardian[]
   user                User?               @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
   registrations       Registration[]
   teamMemberships     TeamMembership[]
@@ -214,7 +215,21 @@ model Child {
   eventAttendances    EventAttendance[]
   eventOptionSelections EventOptionSelection[]
 
-  @@index([parentId])
+}
+
+// Collegamento genitore ↔ figlio. Un figlio può avere più genitori, tutti
+// paritari. Eliminare un utente toglie solo il suo collegamento: il figlio
+// rimasto senza genitori va eliminato a mano (deleteUserAndOrphanedChildren).
+model ChildGuardian {
+  childId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([childId, userId])
+  @@index([userId])
 }
 
 model LinkRequest {

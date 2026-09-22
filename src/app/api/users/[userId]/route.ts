@@ -17,6 +17,7 @@ import {
   VALID_SPORT_ROLES,
   VALID_SPORT_ROLE_VARIANTS,
 } from "@/lib/validators";
+import { deleteUserAndOrphanedChildren } from "@/lib/guardians";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const actorSession = await auth();
@@ -250,7 +251,9 @@ export async function DELETE(
   if (!deleted) {
     return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
   }
-  await prisma.user.delete({ where: { id: userId } });
+  // I figli per cui era l'unico genitore se ne vanno con lui, come prima della
+  // tabella ChildGuardian; quelli con un altro genitore restano a lui.
+  await deleteUserAndOrphanedChildren(userId);
 
   if (session?.user?.id) {
     logAudit({

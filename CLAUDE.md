@@ -236,7 +236,8 @@ sentry.edge.config.ts                      # Sentry edge runtime
 | `User`                 | `User`                 | Utenti Auth.js + dati atleta                            |
 | `Session`              | `Session`              | Sessioni OAuth (Auth.js)                                |
 | `Account`              | `Account`              | Provider OAuth (Google)                                 |
-| `Child`                | `Child`                | Figli senza account, gestiti dal genitore               |
+| `Child`                | `Child`                | Figli senza account, gestiti da uno o più genitori      |
+| `ChildGuardian`        | `ChildGuardian`        | Collegamento genitore ↔ figlio (più genitori paritari)  |
 | `LinkRequest`          | `LinkRequest`          | Richiesta collegamento genitore-figlio                  |
 | `SportRoleHistory`     | `SportRoleHistory`     | Storico cambi ruolo sportivo                            |
 | `PushSubscription`     | `PushSubscription`     | Subscription Web Push                                   |
@@ -270,6 +271,7 @@ sentry.edge.config.ts                      # Sentry edge runtime
 | `InstagramPost`        | `InstagramPost`        | Post Instagram mirrorati per la Gallery                 |
 | `VerificationToken`    | `VerificationToken`    | Token verifica Auth.js                                  |
 
+> **Genitori dei figli:** un `Child` ha uno o più genitori in `ChildGuardian`, tutti paritari. Ogni controllo "è suo genitore?" passa da `@/lib/guardians` (`guardianOf`, `isGuardian`); dettagli in [`docs/workflows/06-genitore-figlio.md`](docs/workflows/06-genitore-figlio.md).
 > **Attenzione naming:** `prisma.trainingSession` = allenamenti; `prisma.session` = sessioni Auth.js. Non confonderli.
 > **`Match` → `OfficialMatch`:** il modello si chiama `Match` in Prisma ma la tabella DB è `OfficialMatch` (via `@@map`).
 
@@ -485,7 +487,7 @@ Rilevamento cambio iscritti (per alert "ricrea squadre"): confronto Set degli ID
 
 ## Eliminazione figlio (CASCADE manuale)
 
-`DELETE /api/children/[childId]`: prima di eliminare il figlio, cancella esplicitamente le sue iscrizioni e azzera il campo `teams` (JSON) degli allenamenti coinvolti con `Prisma.DbNull`. Necessario perché `Registration.child` ha `onDelete: SetNull` (non Cascade).
+`DELETE /api/children/[childId]`: prima di eliminare il figlio, cancella esplicitamente le sue iscrizioni e azzera il campo `teams` (JSON) degli allenamenti coinvolti con `Prisma.DbNull`. Necessario perché `Registration.child` ha `onDelete: SetNull` (non Cascade). Con più genitori, un genitore che non è l'unico toglie solo il proprio collegamento e il figlio non viene toccato; lo staff elimina per tutti con `?all=1`.
 
 ## Workflow migrazioni DB
 

@@ -27,7 +27,6 @@ const mockAuth = auth as Mock;
 
 const baseChild = {
   id: "child-1",
-  parentId: "user-1",
   name: "Luca Rossi",
   sportRole: 3,
   sportRoleVariant: null,
@@ -35,6 +34,7 @@ const baseChild = {
   birthDate: null,
   createdAt: new Date("2025-01-01"),
   teamMemberships: [],
+  guardians: [{ user: { name: "Marco Rossi" } }],
 };
 
 describe("GET /api/users/me/children", () => {
@@ -84,11 +84,17 @@ describe("GET /api/users/me/children", () => {
     expect(json[0].name).toBe("Luca Rossi");
   });
 
-  it("usa il parentId dall'utente in sessione nella query", async () => {
+  it("cerca i figli di cui l'utente in sessione è uno dei genitori", async () => {
     await GET();
     expect(p.child.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { parentId: "user-1" } })
+      expect.objectContaining({ where: { guardians: { some: { userId: "user-1" } } } })
     );
+  });
+
+  it("indica per nome gli altri genitori, senza la loro email", async () => {
+    const json = await (await GET()).json();
+    expect(json[0].otherGuardians).toEqual(["Marco Rossi"]);
+    expect(json[0].guardians).toBeUndefined();
   });
 });
 
@@ -166,7 +172,7 @@ describe("POST /api/users/me/children", () => {
     expect(res.status).toBe(201);
     const call = p.child.create.mock.calls[0][0].data;
     expect(call.name).toBe("Luca");
-    expect(call.parentId).toBe("user-1");
+    expect(call.guardians).toEqual({ create: { userId: "user-1" } });
     expect(call.sportRole).toBe(2);
     expect(call.gender).toBe("MALE");
     expect(call.parentalConsentAt).toBeInstanceOf(Date);

@@ -423,7 +423,9 @@ export default function AdminUserList({
     if (!deleteRow) return;
     setDeleting(true);
     const url =
-      deleteRow.kind === "user" ? `/api/users/${deleteRow.id}` : `/api/children/${deleteRow.id}`;
+      deleteRow.kind === "user"
+        ? `/api/users/${deleteRow.id}`
+        : `/api/children/${deleteRow.id}?all=1`;
     try {
       const res = await fetch(url, { method: "DELETE" });
       if (res.ok) {
@@ -603,11 +605,16 @@ export default function AdminUserList({
           teams={availableTeams}
           currentSeason={currentSeason}
           onClose={() => setEditRow(null)}
-          onSaved={(updated) =>
+          onSaved={(updated) => {
             setRows((prev) =>
               prev.map((r) => (r.id === updated.id && r.kind === updated.kind ? updated : r))
-            )
-          }
+            );
+            // I genitori si salvano subito, a scheda aperta: la scheda deve
+            // vedere la lista nuova.
+            setEditRow((cur) =>
+              cur && cur.id === updated.id && cur.kind === updated.kind ? updated : cur
+            );
+          }}
         />
       )}
     </Box>

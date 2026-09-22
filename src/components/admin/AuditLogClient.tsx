@@ -107,6 +107,8 @@ const ACTION_LABELS: Record<string, string> = {
   DELETE_REGISTRATION: "Eliminazione iscrizione (staff)",
   ADD_REGISTRATION: "Iscrizione aggiunta (staff)",
   CREATE_CHILD: "Creazione figlio (staff)",
+  LINK_GUARDIAN: "Genitore collegato a un figlio",
+  UNLINK_GUARDIAN: "Genitore scollegato da un figlio",
 };
 
 const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" | "info"> = {
@@ -148,6 +150,8 @@ const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" 
   DELETE_REGISTRATION: "warning",
   ADD_REGISTRATION: "success",
   CREATE_CHILD: "success",
+  LINK_GUARDIAN: "success",
+  UNLINK_GUARDIAN: "warning",
 };
 
 const TARGET_TYPE_LABELS: Record<string, string> = {

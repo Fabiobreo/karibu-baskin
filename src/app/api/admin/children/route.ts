@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       }
       return tx.child.create({
         data: {
-          parentId: parent.id,
+          guardians: { create: { userId: parent.id } },
           name,
           ...(slug ? { slug } : {}),
           sportRole: sportRole ?? null,

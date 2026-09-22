@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { EventSelectionsSchema } from "@/lib/schemas";
 import { isEventPast } from "@/lib/events";
+import { guardianOf } from "@/lib/guardians";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -50,7 +51,7 @@ export async function PUT(req: Request, { params }: Params) {
   // Se rispondo per un figlio, verifico che sia mio.
   if (childId) {
     const child = await prisma.child.findFirst({
-      where: { id: childId, parentId: userId },
+      where: { id: childId, ...guardianOf(userId) },
       select: { id: true },
     });
     if (!child) return NextResponse.json({ error: "Figlio non valido" }, { status: 403 });

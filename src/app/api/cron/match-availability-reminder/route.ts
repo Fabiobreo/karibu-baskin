@@ -84,10 +84,10 @@ export async function GET(req: NextRequest) {
     if (missingChildIds.length > 0) {
       const children = await prisma.child.findMany({
         where: { id: { in: missingChildIds } },
-        select: { parentId: true, userId: true },
+        select: { guardians: { select: { userId: true } }, userId: true },
       });
       for (const c of children) {
-        targetUserIds.add(c.parentId);
+        for (const g of c.guardians) targetUserIds.add(g.userId);
         if (c.userId) targetUserIds.add(c.userId);
       }
     }

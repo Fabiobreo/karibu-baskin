@@ -21,6 +21,7 @@ import { getBadgeI18n } from "@/lib/rating/badgeLabels";
 import AchievementsGrid, { type AchievementItem } from "@/components/rating/AchievementsGrid";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { guardianOf } from "@/lib/guardians";
 
 export const metadata: Metadata = buildMetadata({
   title: "I miei traguardi",
@@ -131,7 +132,7 @@ export default async function TraguardiPage() {
       select: { name: true, appRole: true },
     }),
     prisma.child.findMany({
-      where: { parentId: userId },
+      where: guardianOf(userId),
       orderBy: { createdAt: "asc" },
       select: { id: true, name: true },
     }),

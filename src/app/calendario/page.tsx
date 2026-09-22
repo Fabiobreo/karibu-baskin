@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import type { AppRole } from "@prisma/client";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { guardianOf } from "@/lib/guardians";
 
 export const metadata: Metadata = buildMetadata({
   title: "Calendario",
@@ -38,7 +39,7 @@ export default async function CalendarioPage() {
   const userId = session?.user?.id;
   const myMemberships = userId
     ? await prisma.teamMembership.findMany({
-        where: { OR: [{ userId }, { child: { parentId: userId } }] },
+        where: { OR: [{ userId }, { child: guardianOf(userId) }] },
         select: { teamId: true },
       })
     : [];

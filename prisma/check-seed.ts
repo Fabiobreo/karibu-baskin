@@ -27,7 +27,12 @@ async function main() {
     const [users, children, posts, teams] = await Promise.all([
       prisma.user.count({ where: { OR: testEmail } }),
       prisma.child.count({
-        where: { OR: [{ id: { startsWith: "mock-" } }, { parent: { OR: testEmail } }] },
+        where: {
+          OR: [
+            { id: { startsWith: "mock-" } },
+            { guardians: { some: { user: { OR: testEmail } } } },
+          ],
+        },
       }),
       prisma.post.count({
         where: {

@@ -2,16 +2,38 @@
 
 ## Modello `Child`
 
-Un `Child` rappresenta un atleta senza account Google (tipicamente un minore). È gestito da un genitore (`PARENT`).
+Un `Child` rappresenta un atleta senza account Google (tipicamente un minore). È gestito da **uno o più genitori**, tutti con gli stessi poteri (iscriverlo, disponibilità, RSVP, notifiche, modifica).
 
 ```prisma
 Child {
-  parentId  String     // User.id del genitore
   name      String
   sportRole Int?
-  userId    String?    // se il figlio crea un account in futuro
+  userId    String?          // se il figlio crea un account in futuro
+  guardians ChildGuardian[]  // i genitori (almeno uno)
+}
+
+ChildGuardian {            // chiave: (childId, userId)
+  childId   String
+  userId    String         // User.id del genitore
+  createdAt DateTime       // il più vecchio è chi l'ha registrato
 }
 ```
+
+Ogni controllo "è il genitore di questo figlio?" passa da `@/lib/guardians`: `guardianOf(userId)` (filtro Prisma), `isGuardian(userId, childId)`, `GUARDIANS_SELECT` + `guardianList`/`guardianNames` per mostrarli. Mai confrontare un singolo campo: il modello a genitore unico (`Child.parentId`) è stato migrato in `ChildGuardian` a settembre 2026.
+
+### Secondo genitore
+
+Lo collega solo lo staff, per ora:
+
+- **`/admin/utenti/nuovo-figlio`**: scelto il genitore, mentre si scrive il nome del figlio compaiono i figli già registrati con un nome simile (`ExistingChildMatches`, `GET /api/admin/people?kind=child`); "Collega" li aggiunge a quel genitore invece di creare un doppione.
+- **Scheda del figlio in `/admin/utenti`** (sezione Genitori, `ChildGuardiansSection`): aggiungi o scollega un genitore.
+- API: `POST` / `DELETE /api/admin/children/[childId]/guardians`. L'ultimo genitore non si scollega (si elimina il figlio).
+
+### Eliminazione
+
+- Dal profilo, con altri genitori collegati, "elimina" toglie solo il proprio collegamento (`DELETE /api/children/[id]` → `{ unlinked: true }`): il figlio resta agli altri con iscrizioni e statistiche.
+- Lo staff elimina per tutti con `?all=1` (pannello admin).
+- Eliminando un utente, i figli di cui era l'unico genitore vengono eliminati con lui (`deleteUserAndOrphanedChildren`); quelli condivisi restano all'altro genitore.
 
 Un figlio può:
 
@@ -25,7 +47,9 @@ Un figlio può:
 Il genitore usa il componente `ParentChildLinker`:
 
 1. Inserisce nome, ruolo, genere, data nascita del figlio
-2. `POST /api/users/me/children` → crea riga `Child`
+2. `POST /api/users/me/children` → crea riga `Child` e il collegamento `ChildGuardian`
+
+Nella lista, un figlio condiviso mostra "Gestito anche da …" (`otherGuardians`, solo nomi: l'email dell'altro genitore non viene esposta).
 
 ## Collegamento figlio → account (`LinkRequest`)
 

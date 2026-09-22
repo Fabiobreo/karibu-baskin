@@ -22,6 +22,7 @@ import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { onHover } from "@/lib/hoverStyles";
+import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
 
 export const revalidate = 30;
 
@@ -66,7 +67,7 @@ export default async function AdminPage() {
         sportRole: true,
         sportRoleVariant: true,
         createdAt: true,
-        parent: { select: { name: true, email: true } },
+        ...GUARDIANS_SELECT,
       },
     }),
     // Utenti con ruolo suggerito ma non ancora confermato
@@ -100,7 +101,11 @@ export default async function AdminPage() {
   // Unisce utenti e figli, ordina per data e prende i 5 più recenti
   const recentAll = [
     ...recentUsers.map((u) => ({ ...u, kind: "user" as const })),
-    ...recentChildren.map((c) => ({ ...c, kind: "child" as const })),
+    ...recentChildren.map(({ guardians, ...c }) => ({
+      ...c,
+      kind: "child" as const,
+      parentLabel: guardianNames(guardianList({ guardians })),
+    })),
   ]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);

@@ -69,7 +69,7 @@ describe("POST /api/admin/children", () => {
     expect(res.status).toBe(201);
     const data = p.child.create.mock.calls[0][0].data;
     expect(data).toMatchObject({
-      parentId: "p1",
+      guardians: { create: { userId: "p1" } },
       name: "Luca Rossi",
       slug: "luca-rossi",
       sportRole: 2,

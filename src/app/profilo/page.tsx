@@ -79,19 +79,29 @@ export default async function ProfiloPage() {
   const userQuery = prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      children: {
+      // Figli di cui l'utente è uno dei genitori (vedi @/lib/guardians).
+      guardianOf: {
         orderBy: { createdAt: "asc" as const },
         select: {
-          id: true,
-          name: true,
-          sportRole: true,
-          sportRoleVariant: true,
-          gender: true,
-          birthDate: true,
-          userId: true,
-          user: { select: { email: true, image: true } },
-          teamMemberships: {
-            include: { team: { select: { name: true, color: true, season: true } } },
+          child: {
+            select: {
+              id: true,
+              name: true,
+              sportRole: true,
+              sportRoleVariant: true,
+              gender: true,
+              birthDate: true,
+              userId: true,
+              user: { select: { email: true, image: true } },
+              teamMemberships: {
+                include: { team: { select: { name: true, color: true, season: true } } },
+              },
+              guardians: {
+                where: { userId: { not: session.user.id } },
+                orderBy: { createdAt: "asc" as const },
+                select: { user: { select: { name: true } } },
+              },
+            },
           },
         },
       },
@@ -123,11 +133,15 @@ export default async function ProfiloPage() {
   ]);
 
   if (!user) redirect("/login");
+  const children = user.guardianOf.map(({ child: { guardians, ...child } }) => ({
+    ...child,
+    otherGuardians: guardians.map((g) => g.user.name ?? "?"),
+  }));
 
   // ── Prossimo allenamento ──────────────────────────────────────────────────
   // È il motivo principale per cui un atleta apre il sito, e nel profilo non
   // c'era. Per un genitore le righe sono quelle dei figli collegati.
-  const childIds = user.children.map((c) => c.id);
+  const childIds = children.map((c) => c.id);
   const nextSessionQuery = prisma.trainingSession.findFirst({
     where: { date: { gte: new Date() } },
     orderBy: { date: "asc" },
@@ -222,7 +236,7 @@ export default async function ProfiloPage() {
         reason: check.reason ?? null,
       });
     }
-    for (const child of user.children) {
+    for (const child of children) {
       const check = checkRegistrationAllowed(
         restrictions,
         "ATHLETE",
@@ -405,19 +419,16 @@ export default async function ProfiloPage() {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t("linkChildDesc")}
       </Typography>
-      <ParentChildLinker
-        initialChildren={user.children as ChildData[]}
-        currentSeason={currentSeason}
-      />
+      <ParentChildLinker initialChildren={children as ChildData[]} currentSeason={currentSeason} />
     </Paper>
   ) : null;
 
   // Badge dei figli (tab Famiglia). Senza `emptyLabel` BadgeShowcase non
   // mostra nulla per un figlio senza badge né traguardi vicini.
   const childBadgesTab =
-    isParent && user.children.length > 0 ? (
+    isParent && children.length > 0 ? (
       <>
-        {user.children.map((c) => (
+        {children.map((c) => (
           <Suspense key={c.id} fallback={badgesSkeleton}>
             <ProfileBadges
               player={{ childId: c.id }}

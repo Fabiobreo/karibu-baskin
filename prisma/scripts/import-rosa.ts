@@ -220,7 +220,7 @@ async function main() {
       let childId: string | undefined;
       if (parentId) {
         const existingChild = await prisma.child.findFirst({
-          where: { parentId, name: fullName },
+          where: { name: fullName, guardians: { some: { userId: parentId } } },
         });
         childId = existingChild?.id;
         if (!existingChild) {
@@ -228,7 +228,12 @@ async function main() {
           if (apply) {
             const slug = await generateChildSlug(fullName);
             const created = await prisma.child.create({
-              data: { parentId, name: fullName, sportRole, slug },
+              data: {
+                name: fullName,
+                sportRole,
+                slug,
+                guardians: { create: { userId: parentId } },
+              },
             });
             childId = created.id;
           }

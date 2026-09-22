@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { EventAttendanceSchema } from "@/lib/schemas";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
+import { guardianOf } from "@/lib/guardians";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -25,7 +26,7 @@ export async function GET(_req: Request, { params }: Params) {
       userId: true,
       childId: true,
       user: { select: { id: true, name: true, image: true, customImage: true } },
-      child: { select: { id: true, name: true, parentId: true } },
+      child: { select: { id: true, name: true, guardians: { select: { userId: true } } } },
     },
   });
 
@@ -35,7 +36,7 @@ export async function GET(_req: Request, { params }: Params) {
   const userId = session?.user?.id ?? null;
   const mine = userId
     ? attendances
-        .filter((a) => a.userId === userId || a.child?.parentId === userId)
+        .filter((a) => a.userId === userId || !!a.child?.guardians.some((g) => g.userId === userId))
         .map((a) => ({ childId: a.childId ?? null, status: a.status }))
     : [];
 
@@ -87,7 +88,7 @@ export async function PUT(req: Request, { params }: Params) {
   // Se rispondo per un figlio, verifico che sia mio.
   if (childId) {
     const child = await prisma.child.findFirst({
-      where: { id: childId, parentId: userId },
+      where: { id: childId, ...guardianOf(userId) },
       select: { id: true },
     });
     if (!child) {

@@ -8,7 +8,6 @@ import {
   Checkbox,
   CircularProgress,
   FormControlLabel,
-  InputAdornment,
   Paper,
   Stack,
   TextField,
@@ -16,7 +15,6 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
@@ -24,9 +22,11 @@ import type { Gender } from "@prisma/client";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { ROLE_LABELS_IT } from "@/lib/constants";
-import { usePeopleSearch, type AdminPerson } from "@/components/admin/people/usePeopleSearch";
+import type { AdminPerson } from "@/components/admin/people/usePeopleSearch";
 import PersonRow from "@/components/admin/people/PersonRow";
 import RolePicker from "@/components/admin/people/RolePicker";
+import ExistingChildMatches from "@/components/admin/people/ExistingChildMatches";
+import UserSearchPicker from "@/components/admin/people/UserSearchPicker";
 
 interface ChildDraft {
   name: string;
@@ -48,6 +48,8 @@ interface Created {
   name: string;
   parentName: string;
   parentPromoted: boolean;
+  /** Figlio già registrato, collegato anche a questo genitore. */
+  linked: boolean;
 }
 
 /**
@@ -57,6 +59,10 @@ interface Created {
  * Pensato per inserire molti figli di fila: dopo il salvataggio il genitore
  * resta scelto e "Un altro figlio di …" riporta al nome, che è il campo da
  * cambiare. Sul telefono ogni scelta è un pulsante largo, niente menu.
+ *
+ * Mentre si scrive il nome compaiono i figli già registrati con un nome
+ * simile (`ExistingChildMatches`): per il secondo genitore si collega quello
+ * esistente invece di creare un doppione.
  */
 export default function AdminNuovoFiglioClient({
   initialParent,
@@ -68,12 +74,10 @@ export default function AdminNuovoFiglioClient({
 
   const [parent, setParent] = useState<AdminPerson | null>(initialParent);
   const [promoteParent, setPromoteParent] = useState(true);
-  const [parentQuery, setParentQuery] = useState("");
   const [child, setChild] = useState<ChildDraft>(EMPTY_CHILD);
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState<Created | null>(null);
-
-  const { people, searching, enabled, isError } = usePeopleSearch(parentQuery, "user");
+  const [linkingId, setLinkingId] = useState<string | null>(null);
 
   function set<K extends keyof ChildDraft>(key: K, value: ChildDraft[K]) {
     setChild((c) => ({ ...c, [key]: value }));
@@ -81,7 +85,6 @@ export default function AdminNuovoFiglioClient({
 
   function chooseParent(p: AdminPerson) {
     setParent(p);
-    setParentQuery("");
     setPromoteParent(true);
     requestAnimationFrame(() => nameRef.current?.focus());
   }
@@ -123,6 +126,7 @@ export default function AdminNuovoFiglioClient({
         name: data.name,
         parentName: parent.name,
         parentPromoted: data.parentPromoted,
+        linked: false,
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -135,6 +139,38 @@ export default function AdminNuovoFiglioClient({
     }
   }
 
+  async function linkExisting(existing: AdminPerson) {
+    if (!parent) return;
+    setLinkingId(existing.id);
+    try {
+      const res = await fetch(`/api/admin/children/${existing.id}/guardians`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: parent.id,
+          promoteParent: parent.appRole === "GUEST" && promoteParent,
+        }),
+      });
+      if (!res.ok) throw new Error(await readError(res));
+      const data = (await res.json()) as { parentPromoted: boolean };
+      if (data.parentPromoted) setParent({ ...parent, appRole: "PARENT" });
+      setCreated({
+        name: existing.name,
+        parentName: parent.name,
+        parentPromoted: data.parentPromoted,
+        linked: true,
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      showToast({
+        message: err instanceof Error ? err.message : "Errore durante il collegamento",
+        severity: "error",
+      });
+    } finally {
+      setLinkingId(null);
+    }
+  }
+
   // ── Conferma: il passo successivo più probabile è un altro figlio ────────
   if (created) {
     const firstName = created.parentName.split(" ")[0];
@@ -144,10 +180,14 @@ export default function AdminNuovoFiglioClient({
           <CheckCircleIcon sx={{ fontSize: 44, color: "success.main" }} />
           <Box>
             <Typography variant="h6" fontWeight={800}>
-              {created.name} è stato aggiunto
+              {created.linked
+                ? `${created.name} è collegato anche a ${firstName}`
+                : `${created.name} è stato aggiunto`}
             </Typography>
             <Typography color="text.secondary">
-              Ora è collegato a {created.parentName}, che lo trova nel suo profilo.
+              {created.linked
+                ? `Stessa scheda, presenze e statistiche per tutti i genitori: ${created.parentName} lo trova nel suo profilo.`
+                : `Ora è collegato a ${created.parentName}, che lo trova nel suo profilo.`}
               {created.parentPromoted && ` ${firstName} adesso ha il ruolo Genitore.`}
             </Typography>
           </Box>
@@ -215,74 +255,7 @@ export default function AdminNuovoFiglioClient({
                 )}
               </>
             ) : (
-              <>
-                <TextField
-                  autoFocus
-                  fullWidth
-                  value={parentQuery}
-                  onChange={(e) => setParentQuery(e.target.value)}
-                  placeholder="Cerca il genitore per nome o email"
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: "text.disabled" }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: searching ? (
-                        <InputAdornment position="end">
-                          <CircularProgress size={18} />
-                        </InputAdornment>
-                      ) : null,
-                    },
-                    htmlInput: { enterKeyHint: "search", autoComplete: "off" },
-                  }}
-                />
-                {enabled && (
-                  <Box sx={{ mt: 1 }}>
-                    {isError ? (
-                      <Hint>Ricerca non riuscita: riprova.</Hint>
-                    ) : people.length === 0 && !searching ? (
-                      <Hint>
-                        Nessun utente trovato. Se il genitore non ha ancora un account,{" "}
-                        <Link href="/admin/utenti/nuovo">crealo prima qui</Link>.
-                      </Hint>
-                    ) : (
-                      people.map((p) => (
-                        <Box
-                          key={p.id}
-                          component="button"
-                          type="button"
-                          onClick={() => chooseParent(p)}
-                          sx={{
-                            display: "block",
-                            width: "100%",
-                            textAlign: "left",
-                            border: 0,
-                            bgcolor: "transparent",
-                            color: "inherit",
-                            font: "inherit",
-                            p: 0,
-                            px: 1,
-                            borderRadius: 1,
-                            cursor: "pointer",
-                            "&:hover, &:focus-visible": { bgcolor: "action.hover" },
-                          }}
-                        >
-                          <PersonRow
-                            name={p.name}
-                            image={p.image}
-                            sportRole={null}
-                            meta={[p.email, p.appRole && ROLE_LABELS_IT[p.appRole]]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          />
-                        </Box>
-                      ))
-                    )}
-                  </Box>
-                )}
-              </>
+              <UserSearchPicker autoFocus onPick={chooseParent} />
             )}
           </Box>
 
@@ -307,6 +280,14 @@ export default function AdminNuovoFiglioClient({
                 disabled={!parent}
                 slotProps={{ htmlInput: { autoCapitalize: "words", maxLength: 60 } }}
               />
+              {parent && (
+                <ExistingChildMatches
+                  name={child.name}
+                  parent={parent}
+                  linkingId={linkingId}
+                  onLink={linkExisting}
+                />
+              )}
 
               <Field label="Genere">
                 <ToggleButtonGroup
@@ -408,13 +389,5 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </Typography>
       {children}
     </Box>
-  );
-}
-
-function Hint({ children }: { children: React.ReactNode }) {
-  return (
-    <Typography variant="body2" color="text.secondary" sx={{ py: 2, px: 1 }}>
-      {children}
-    </Typography>
   );
 }

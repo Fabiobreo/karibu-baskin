@@ -11,6 +11,7 @@ import { RegistrationPostSchema, RegistrationPatchSchema } from "@/lib/schemas";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { logAudit } from "@/lib/audit";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
+import { isGuardian } from "@/lib/guardians";
 
 /**
  * Elenco degli iscritti a un allenamento.
@@ -164,7 +165,7 @@ export async function POST(req: NextRequest) {
     if (!child) {
       return NextResponse.json({ error: "Figlio non trovato" }, { status: 404 });
     }
-    if (child.parentId !== userId) {
+    if (!(await isGuardian(userId, childId))) {
       return NextResponse.json({ error: "Non autorizzato" }, { status: 403 });
     }
 

@@ -9,6 +9,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
+import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 
 export const revalidate = 60;
 
@@ -121,7 +122,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         ratingMu: true,
         ratingSigma: true,
         createdAt: true,
-        parent: { select: { name: true, email: true } },
+        ...GUARDIANS_SELECT,
         _count: { select: { registrations: true } },
         teamMemberships: {
           select: {
@@ -171,7 +172,10 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         <AdminUserList
           users={users}
-          childEntries={childEntries}
+          childEntries={childEntries.map(({ guardians, ...c }) => ({
+            ...c,
+            guardians: guardianList({ guardians }),
+          }))}
           initialTeams={teams}
           isAdmin={isAdmin}
           currentSeason={currentSeason}
