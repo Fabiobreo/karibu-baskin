@@ -48,8 +48,11 @@ interface Created {
   name: string;
   parentName: string;
   parentPromoted: boolean;
-  /** Figlio già registrato, collegato anche a questo genitore. */
-  linked: boolean;
+  /**
+   * new: figlio creato ora; shared: figlio già registrato, collegato anche a
+   * questo genitore; account: utente con account, ora figlio di questo genitore.
+   */
+  outcome: "new" | "shared" | "account";
 }
 
 /**
@@ -126,7 +129,7 @@ export default function AdminNuovoFiglioClient({
         name: data.name,
         parentName: parent.name,
         parentPromoted: data.parentPromoted,
-        linked: false,
+        outcome: "new",
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -143,14 +146,25 @@ export default function AdminNuovoFiglioClient({
     if (!parent) return;
     setLinkingId(existing.id);
     try {
-      const res = await fetch(`/api/admin/children/${existing.id}/guardians`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: parent.id,
-          promoteParent: parent.appRole === "GUEST" && promoteParent,
-        }),
-      });
+      const promote = parent.appRole === "GUEST" && promoteParent;
+      // Figlio già registrato: si aggiunge un genitore alla sua scheda.
+      // Utente con account: nasce la sua scheda figlio, legata all'account.
+      const res =
+        existing.kind === "child"
+          ? await fetch(`/api/admin/children/${existing.id}/guardians`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: parent.id, promoteParent: promote }),
+            })
+          : await fetch("/api/admin/children/link-account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                parentId: parent.id,
+                userId: existing.id,
+                promoteParent: promote,
+              }),
+            });
       if (!res.ok) throw new Error(await readError(res));
       const data = (await res.json()) as { parentPromoted: boolean };
       if (data.parentPromoted) setParent({ ...parent, appRole: "PARENT" });
@@ -158,7 +172,7 @@ export default function AdminNuovoFiglioClient({
         name: existing.name,
         parentName: parent.name,
         parentPromoted: data.parentPromoted,
-        linked: true,
+        outcome: existing.kind === "child" ? "shared" : "account",
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -180,14 +194,18 @@ export default function AdminNuovoFiglioClient({
           <CheckCircleIcon sx={{ fontSize: 44, color: "success.main" }} />
           <Box>
             <Typography variant="h6" fontWeight={800}>
-              {created.linked
+              {created.outcome === "shared"
                 ? `${created.name} è collegato anche a ${firstName}`
-                : `${created.name} è stato aggiunto`}
+                : created.outcome === "account"
+                  ? `${created.name} ora è figlio di ${firstName}`
+                  : `${created.name} è stato aggiunto`}
             </Typography>
             <Typography color="text.secondary">
-              {created.linked
+              {created.outcome === "shared"
                 ? `Stessa scheda, presenze e statistiche per tutti i genitori: ${created.parentName} lo trova nel suo profilo.`
-                : `Ora è collegato a ${created.parentName}, che lo trova nel suo profilo.`}
+                : created.outcome === "account"
+                  ? `Continua a usare il suo account; ${created.parentName} lo trova nel suo profilo e può iscriverlo.`
+                  : `Ora è collegato a ${created.parentName}, che lo trova nel suo profilo.`}
               {created.parentPromoted && ` ${firstName} adesso ha il ruolo Genitore.`}
             </Typography>
           </Box>

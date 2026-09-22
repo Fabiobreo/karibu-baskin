@@ -10,7 +10,8 @@ interface ExistingChildMatchesProps {
   name: string;
   parent: AdminPerson;
   linkingId: string | null;
-  onLink: (child: AdminPerson) => void;
+  /** Un figlio già registrato (scheda figlio) o un utente con account. */
+  onLink: (person: AdminPerson) => void;
 }
 
 /**
@@ -18,6 +19,9 @@ interface ExistingChildMatchesProps {
  * simile, con i loro genitori. Il caso tipico è il secondo genitore: la mamma
  * ha già registrato Luca, e invece di un doppione (presenze e statistiche
  * divise su due schede) lo si collega anche al papà con un tocco.
+ *
+ * Propone anche gli utenti con un proprio account che non sono ancora figli di
+ * nessuno: un atleta può essere figlio di un altro tesserato.
  *
  * Compare solo quando c'è qualcosa da proporre: con zero risultati non occupa
  * spazio, e il form resta quello di sempre.
@@ -30,7 +34,9 @@ export default function ExistingChildMatches({
 }: ExistingChildMatchesProps) {
   // Da 3 lettere: con 2 ("Lu") i suggerimenti sarebbero rumore.
   const query = name.trim().length >= 3 ? name : "";
-  const { people, searching } = usePeopleSearch(query, "child");
+  const { people: found, searching } = usePeopleSearch(query, "child");
+  // Il genitore non può essere figlio di sé stesso.
+  const people = found.filter((p) => !(p.kind === "user" && p.id === parent.id));
   if (people.length === 0) {
     return searching ? (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "text.secondary" }}>
@@ -57,10 +63,17 @@ export default function ExistingChildMatches({
         const busy = linkingId === c.id;
         return (
           <PersonRow
-            key={c.id}
+            key={`${c.kind}:${c.id}`}
             name={c.name}
+            image={c.image}
             sportRole={c.sportRole}
-            meta={c.parentName ? `Figlio di ${c.parentName}` : "Nessun genitore collegato"}
+            meta={
+              c.kind === "user"
+                ? `Ha un account · ${c.email}`
+                : c.parentName
+                  ? `Figlio di ${c.parentName}`
+                  : "Nessun genitore collegato"
+            }
             trailing={
               alreadyLinked ? (
                 <Chip icon={<CheckIcon />} label={`Già di ${firstName}`} size="small" />

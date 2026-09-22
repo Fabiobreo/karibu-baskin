@@ -27,6 +27,7 @@ Lo collega solo lo staff, per ora:
 
 - **`/admin/utenti/nuovo-figlio`**: scelto il genitore, mentre si scrive il nome del figlio compaiono i figli già registrati con un nome simile (`ExistingChildMatches`, `GET /api/admin/people?kind=child`); "Collega" li aggiunge a quel genitore invece di creare un doppione.
 - **Scheda del figlio in `/admin/utenti`** (sezione Genitori, `ChildGuardiansSection`): aggiungi o scollega un genitore.
+- **Figlio con un proprio account** (es. un atleta figlio di un tesserato): la stessa ricerca propone anche gli utenti che non hanno ancora una scheda figlio. "Collega" crea la scheda legata all'account (`POST /api/admin/children/link-account`: nome, ruolo, genere e data di nascita dal profilo, **senza slug** così la persona non compare due volte in ricerca pubblica) con il genitore come primo tutore. È lo stesso stato di una `LinkRequest` accettata. Le schede legate a un account non compaiono tra i candidati della rosa (`/admin/squadre/[teamId]/rosa`): lì la persona si aggiunge come utente.
 - API: `POST` / `DELETE /api/admin/children/[childId]/guardians`. L'ultimo genitore non si scollega (si elimina il figlio).
 
 ### Eliminazione

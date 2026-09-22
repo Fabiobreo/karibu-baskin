@@ -26,9 +26,10 @@ type Kind = (typeof KINDS)[number];
 // GET /api/admin/people?q=mar&kind=user|child|all
 // Ricerca persone per i picker dello staff.
 //  - user:  genitore di un nuovo figlio
-//  - child: figlio già registrato, da collegare a un altro genitore; compaiono
-//           anche i figli che hanno un proprio account (il legame coi genitori
-//           resta sul record Child)
+//  - child: chi può diventare figlio di un genitore: i figli già registrati
+//           (anche con un proprio account: il legame coi genitori resta sul
+//           record Child) e gli utenti con account che una scheda figlio non
+//           ce l'hanno ancora (es. un atleta figlio di un altro tesserato)
 //  - all:   iscrizione manuale agli allenamenti; qui un figlio con account
 //           compare una volta sola, come utente
 export async function GET(req: NextRequest) {
@@ -47,22 +48,24 @@ export async function GET(req: NextRequest) {
   };
 
   const [users, children] = await Promise.all([
-    kind === "child"
-      ? Promise.resolve([])
-      : prisma.user.findMany({
-          where: { OR: [{ name: contains }, { email: contains }] },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            appRole: true,
-            sportRole: true,
-            image: true,
-            customImage: true,
-          },
-          orderBy: { name: "asc" },
-          take: LIMIT,
-        }),
+    prisma.user.findMany({
+      where: {
+        OR: [{ name: contains }, { email: contains }],
+        // Chi ha già una scheda figlio compare come figlio, non due volte.
+        ...(kind === "child" ? { childAccount: null } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        appRole: true,
+        sportRole: true,
+        image: true,
+        customImage: true,
+      },
+      orderBy: { name: "asc" },
+      take: LIMIT,
+    }),
     kind === "user"
       ? Promise.resolve([])
       : prisma.child.findMany({

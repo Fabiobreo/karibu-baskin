@@ -67,7 +67,10 @@ export default async function AdminRosaPage({ params }: Params) {
         birthDate: true,
       },
     }),
+    // Solo figli senza account: chi ha un account si aggiunge come utente,
+    // e la sua scheda figlio (legame coi genitori) sarebbe un doppione.
     prisma.child.findMany({
+      where: { userId: null },
       orderBy: { name: "asc" },
       select: {
         id: true,

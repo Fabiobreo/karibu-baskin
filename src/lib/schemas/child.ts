@@ -57,3 +57,14 @@ export const GuardianLinkSchema = z.object({
   /** Porta il genitore da GUEST a PARENT (ignorato per gli altri ruoli). */
   promoteParent: z.boolean().optional(),
 });
+
+/**
+ * Lo staff dichiara che un utente con account è figlio di un genitore: nasce
+ * la scheda figlio legata a quell'account (come dopo una richiesta di
+ * collegamento accettata).
+ */
+export const AccountChildLinkSchema = z.object({
+  parentId: z.string().min(1, "Scegli il genitore"),
+  userId: z.string().min(1, "Scegli il figlio"),
+  promoteParent: z.boolean().optional(),
+});
