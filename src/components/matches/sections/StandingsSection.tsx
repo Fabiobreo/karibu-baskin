@@ -35,7 +35,7 @@ export default function StandingsSection({
       >
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           fontWeight={700}
           sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.62rem" }}
         >
@@ -64,7 +64,7 @@ export default function StandingsSection({
                 sx={{
                   fontWeight: 700,
                   fontSize: "0.65rem",
-                  color: "text.disabled",
+                  color: "text.secondary",
                   py: 0.75,
                   width: 28,
                 }}
@@ -81,7 +81,7 @@ export default function StandingsSection({
                   sx={{
                     fontWeight: 700,
                     fontSize: "0.65rem",
-                    color: "text.disabled",
+                    color: "text.secondary",
                     py: 0.75,
                     width: 28,
                   }}
@@ -114,7 +114,7 @@ export default function StandingsSection({
                 }}
               >
                 <TableCell
-                  sx={{ fontSize: "0.75rem", color: "text.disabled", fontWeight: 700, py: 1 }}
+                  sx={{ fontSize: "0.75rem", color: "text.secondary", fontWeight: 700, py: 1 }}
                 >
                   {i + 1}
                 </TableCell>

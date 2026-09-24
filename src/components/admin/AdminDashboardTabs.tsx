@@ -213,7 +213,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           }}
                         />
                       ) : (
-                        <Typography variant="body2" color="text.disabled">
+                        <Typography variant="body2" color="text.secondary">
                           —
                         </Typography>
                       )}
@@ -310,7 +310,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                   </Box>
                   <Typography
                     variant="caption"
-                    color="text.disabled"
+                    color="text.secondary"
                     sx={{ flexShrink: 0, textAlign: "right" }}
                   >
                     {format(new Date(row.createdAt), "d MMM", { locale: it })}

@@ -48,7 +48,7 @@ export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: str
       <Divider sx={{ mb: 2.5 }}>
         {/* Non "oppure": non e' un terzo metodo di accesso alla pari, e'
             attrezzatura da sviluppo. */}
-        <Typography variant="caption" color="text.disabled" sx={{ px: 1 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ px: 1 }}>
           solo in sviluppo
         </Typography>
       </Divider>

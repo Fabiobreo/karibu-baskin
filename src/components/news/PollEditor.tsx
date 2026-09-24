@@ -69,7 +69,7 @@ export default function PollEditor({ value, onChange }: PollEditorProps) {
         </Typography>
         {value.options.map((opt, i) => (
           <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <DragIndicatorIcon fontSize="small" sx={{ color: "text.disabled", flexShrink: 0 }} />
+            <DragIndicatorIcon fontSize="small" sx={{ color: "text.secondary", flexShrink: 0 }} />
             <TextField
               value={opt.text}
               onChange={(e) => updateOption(i, e.target.value)}

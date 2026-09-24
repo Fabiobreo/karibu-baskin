@@ -18,7 +18,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
     <Box sx={{ mb: 4 }}>
       <Typography
         variant="caption"
-        color="text.disabled"
+        color="text.secondary"
         fontWeight={700}
         sx={{
           textTransform: "uppercase",
@@ -92,7 +92,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               </Typography>
               <Typography
                 variant="caption"
-                color="text.disabled"
+                color="text.secondary"
                 fontWeight={600}
                 sx={{ fontSize: "0.62rem" }}
               >

@@ -245,7 +245,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                  <SearchIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                 </InputAdornment>
               ),
             },
@@ -255,7 +255,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
         <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
           <Typography
             variant="caption"
-            color="text.disabled"
+            color="text.secondary"
             fontWeight={700}
             sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
           >
@@ -290,7 +290,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             />
           ))}
           {filtered.length !== rows.length && (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="text.secondary">
               {t("playerCount", { count: filtered.length })}
             </Typography>
           )}
@@ -330,7 +330,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
-                sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.disabled" }}
+                sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
               >
                 #
               </TableCell>
@@ -367,7 +367,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 <TableCell
                   colSpan={COLS.length + 2}
                   align="center"
-                  sx={{ py: 4, color: "text.disabled" }}
+                  sx={{ py: 4, color: "text.secondary" }}
                 >
                   {t("noPlayersRole")}
                 </TableCell>
@@ -375,7 +375,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             ) : (
               paginated.map((row, i) => (
                 <TableRow key={row.id} hover>
-                  <TableCell sx={{ color: "text.disabled", fontWeight: 700, fontSize: "0.8rem" }}>
+                  <TableCell sx={{ color: "text.secondary", fontWeight: 700, fontSize: "0.8rem" }}>
                     {page * rowsPerPage + i + 1}
                   </TableCell>
                   <TableCell sx={{ minWidth: 200 }}>
@@ -499,7 +499,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
       <Box sx={{ display: { xs: "block", sm: "none" } }}>
         {paginated.length === 0 ? (
           <Box sx={{ py: 4, textAlign: "center" }}>
-            <Typography variant="body2" color="text.disabled">
+            <Typography variant="body2" color="text.secondary">
               {t("noPlayersRole")}
             </Typography>
           </Box>
@@ -525,7 +525,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   <Typography
                     variant="body2"
                     fontWeight={700}
-                    color="text.disabled"
+                    color="text.secondary"
                     sx={{ minWidth: 24, textAlign: "right", flexShrink: 0 }}
                   >
                     {rank}
@@ -616,7 +616,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                     <Box key={label} sx={{ textAlign: "center" }}>
                       <Typography
                         variant="caption"
-                        color="text.disabled"
+                        color="text.secondary"
                         display="block"
                         sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}
                       >

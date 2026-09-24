@@ -117,7 +117,7 @@ export default async function PartitePage({ searchParams }: Props) {
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
             <Typography
               variant="caption"
-              color="text.disabled"
+              color="text.secondary"
               fontWeight={700}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
@@ -246,7 +246,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             <MatchTimeCell dateIso={m.date.toISOString()} />
                             <Typography
                               variant="caption"
-                              color="text.disabled"
+                              color="text.secondary"
                               sx={{ fontSize: "0.68rem", display: "block" }}
                             >
                               {format(new Date(m.date), "d MMM · HH:mm", { locale: dateLocale })}
@@ -281,7 +281,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             </Typography>
                             <Typography
                               sx={{
-                                color: "text.disabled",
+                                color: "text.secondary",
                                 fontWeight: 700,
                                 fontSize: "0.85rem",
                                 px: 0.5,
@@ -329,7 +329,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                   display: "flex",
                                   alignItems: "center",
                                   gap: 0.3,
-                                  color: "text.disabled",
+                                  color: "text.secondary",
                                   maxWidth: 160,
                                 }}
                               >
@@ -358,7 +358,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                 borderColor: "divider",
                               }}
                             />
-                            <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+                            <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
                           </Box>
                         </Box>
                       </Paper>

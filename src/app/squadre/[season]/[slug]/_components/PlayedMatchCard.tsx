@@ -72,11 +72,11 @@ export default async function PlayedMatchCard({
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4, mt: 0.2 }}>
                 {match.isHome ? (
-                  <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                  <HomeIcon sx={{ fontSize: 11, color: "text.secondary" }} />
                 ) : (
-                  <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                  <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
                 )}
-                <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
                   {match.isHome ? t("home") : t("away")} · {matchTypeLabel(match.matchType)}
                 </Typography>
               </Box>
@@ -120,7 +120,7 @@ export default async function PlayedMatchCard({
                   {leftScore}–{rightScore}
                 </Typography>
               ) : (
-                <Typography sx={{ color: "text.disabled", fontWeight: 700, px: 0.5 }}>
+                <Typography sx={{ color: "text.secondary", fontWeight: 700, px: 0.5 }}>
                   vs
                 </Typography>
               )}
@@ -154,7 +154,7 @@ export default async function PlayedMatchCard({
                   }}
                 />
               )}
-              <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+              <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
             </Box>
           </Box>
         </Box>

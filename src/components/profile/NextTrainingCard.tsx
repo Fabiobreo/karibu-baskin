@@ -184,7 +184,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
                 {isRegistered ? (
                   <CheckCircleIcon sx={{ fontSize: 18, color: "match.win" }} />
                 ) : (
-                  <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+                  <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
                 )}
                 <Typography variant="body2" fontWeight={600} noWrap>
                   {s.kind === "child"

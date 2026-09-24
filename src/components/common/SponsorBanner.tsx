@@ -134,7 +134,7 @@ export default function SponsorBanner() {
         <Typography
           variant="caption"
           sx={{
-            color: "text.disabled",
+            color: "text.secondary",
             fontWeight: 700,
             letterSpacing: "0.08em",
             textTransform: "uppercase",

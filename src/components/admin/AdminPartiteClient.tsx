@@ -238,11 +238,11 @@ function MatchMobileCard({
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               {m.isHome ? (
-                <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                <HomeIcon sx={{ fontSize: 11, color: "text.secondary" }} />
               ) : (
-                <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
               )}
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="text.secondary">
                 {m.isHome ? "Casa" : "Trasferta"}
               </Typography>
             </Box>
@@ -656,7 +656,7 @@ function EmptyState({ onCreate, disabled }: { onCreate: () => void; disabled: bo
         Nessuna partita registrata
       </Typography>
       {disabled ? (
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           Crea prima una squadra nella sezione Squadre.
         </Typography>
       ) : (
@@ -738,7 +738,7 @@ function LeagueView({
   if (matches.length === 0) {
     return (
       <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           Nessuna partita di campionato.
         </Typography>
       </Paper>
@@ -895,11 +895,11 @@ function MatchRowAndContext({
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             {m.isHome ? (
-              <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+              <HomeIcon sx={{ fontSize: 11, color: "text.secondary" }} />
             ) : (
-              <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+              <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
             )}
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="text.secondary">
               {m.isHome ? "Casa" : "Trasferta"}
             </Typography>
           </Box>
@@ -972,7 +972,7 @@ function MatchRowAndContext({
           ) : (
             <Typography
               variant="caption"
-              color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+              color={m._count.playerStats > 0 ? "text.primary" : "text.secondary"}
             >
               {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
             </Typography>
@@ -1099,11 +1099,11 @@ function FlatMatchRow({
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           {m.isHome ? (
-            <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+            <HomeIcon sx={{ fontSize: 11, color: "text.secondary" }} />
           ) : (
-            <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+            <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
           )}
-          <Typography variant="caption" color="text.disabled">
+          <Typography variant="caption" color="text.secondary">
             {m.isHome ? "Casa" : "Trasferta"}
           </Typography>
         </Box>
@@ -1185,7 +1185,7 @@ function FlatMatchRow({
         ) : (
           <Typography
             variant="caption"
-            color={m._count.playerStats > 0 ? "primary" : "text.disabled"}
+            color={m._count.playerStats > 0 ? "text.primary" : "text.secondary"}
           >
             {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
           </Typography>
@@ -1307,7 +1307,7 @@ function FlatView({
   if (matches.length === 0) {
     return (
       <Paper elevation={0} variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           Nessuna partita in questa categoria.
         </Typography>
       </Paper>

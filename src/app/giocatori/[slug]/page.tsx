@@ -1018,14 +1018,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     />
                     <Typography
                       variant="caption"
-                      color="text.disabled"
+                      color="text.secondary"
                       sx={{ display: "block", textAlign: "center", mt: 0.25 }}
                     >
                       {format(new Date(entry.changedAt), "MMM yyyy", { locale: dateLocale })}
                     </Typography>
                   </Box>
                   {i < player.sportRoleHistory.length - 1 && (
-                    <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled", mb: 2.5 }} />
+                    <ChevronRightIcon sx={{ fontSize: 16, color: "text.secondary", mb: 2.5 }} />
                   )}
                 </Box>
               ))}
@@ -1435,7 +1435,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                   }}
                                 />
                               )}
-                              <ChevronRightIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                              <ChevronRightIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                             </Box>
                           </Box>
                           <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
@@ -1456,7 +1456,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           {ms.notes && (
                             <Typography
                               variant="caption"
-                              color="text.disabled"
+                              color="text.secondary"
                               sx={{ display: "block", mt: 1 }}
                             >
                               {ms.notes}
@@ -1478,7 +1478,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Typography variant="h6" color="text.secondary">
               {t("noStats")}
             </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               {t("noStatsDesc")}
             </Typography>
           </Box>

@@ -65,7 +65,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                     width: 9,
                     height: 9,
                     borderRadius: "50%",
-                    bgcolor: typeof k === "number" ? ROLE_COLORS[k] : "text.disabled",
+                    bgcolor: typeof k === "number" ? ROLE_COLORS[k] : "text.secondary",
                   }}
                 />
                 <span>{roleLabel(k)}</span>
@@ -143,6 +143,6 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
 /** Icona di genere: donna evidenziata (utile per il vincolo R4/R5). */
 function GenderMark({ gender }: { gender: "MALE" | "FEMALE" | null }) {
   if (gender === "FEMALE") return <FemaleIcon sx={{ fontSize: 16, color: "secondary.main" }} />;
-  if (gender === "MALE") return <MaleIcon sx={{ fontSize: 16, color: "text.disabled" }} />;
+  if (gender === "MALE") return <MaleIcon sx={{ fontSize: 16, color: "text.secondary" }} />;
   return null;
 }

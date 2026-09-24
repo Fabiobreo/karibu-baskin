@@ -197,7 +197,7 @@ export default function AdminGalleryClient({
                   )}
                 </Box>
                 <Box sx={{ p: 1 }}>
-                  <Typography variant="caption" color="text.disabled" sx={{ display: "block" }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
                     {format(new Date(post.timestamp), "d MMM yyyy", { locale: it })}
                   </Typography>
                   <Box

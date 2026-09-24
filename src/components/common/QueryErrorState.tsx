@@ -40,7 +40,7 @@ export default function QueryErrorState({ message, onRetry, compact }: QueryErro
         textAlign: "center",
       }}
     >
-      <CloudOffIcon sx={{ color: "text.disabled", fontSize: compact ? 24 : 32 }} />
+      <CloudOffIcon sx={{ color: "text.secondary", fontSize: compact ? 24 : 32 }} />
       <Typography variant="body2" sx={{ color: "text.secondary" }}>
         {message ?? t("loadFailed")}
       </Typography>

@@ -112,7 +112,7 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
       </Paper>
 
       {opponents.length === 0 ? (
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           Nessuna squadra avversaria registrata.
         </Typography>
       ) : (

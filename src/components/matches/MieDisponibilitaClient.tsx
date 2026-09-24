@@ -294,9 +294,9 @@ function CompactMatchRow({
       {/* Header compatto su una riga */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.75, flexWrap: "wrap" }}>
         {m.isHome ? (
-          <HomeIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+          <HomeIcon sx={{ fontSize: 14, color: "text.secondary" }} />
         ) : (
-          <FlightIcon sx={{ fontSize: 14, color: "text.disabled" }} />
+          <FlightIcon sx={{ fontSize: 14, color: "text.secondary" }} />
         )}
         <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.88rem" }}>
           vs {m.opponentLabel}

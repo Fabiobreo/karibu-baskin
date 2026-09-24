@@ -31,7 +31,7 @@ export default function HeadToHeadSection({
     <Box sx={{ mb: 4 }}>
       <Typography
         variant="caption"
-        color="text.disabled"
+        color="text.secondary"
         fontWeight={700}
         sx={{
           textTransform: "uppercase",
@@ -62,7 +62,7 @@ export default function HeadToHeadSection({
             >
               <Typography
                 variant="caption"
-                color="text.disabled"
+                color="text.secondary"
                 sx={{ minWidth: 88, fontWeight: 600, fontSize: "0.72rem" }}
               >
                 {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
@@ -93,7 +93,7 @@ export default function HeadToHeadSection({
                   display: "flex",
                   alignItems: "center",
                   gap: 0.5,
-                  color: "text.disabled",
+                  color: "text.secondary",
                 }}
               >
                 {m.isHome ? (

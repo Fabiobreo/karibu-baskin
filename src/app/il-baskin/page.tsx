@@ -224,7 +224,7 @@ export default async function IlBaskinPage() {
                         >
                           <Typography
                             variant="caption"
-                            color="text.disabled"
+                            color="text.secondary"
                             fontWeight={700}
                             sx={{
                               display: "block",

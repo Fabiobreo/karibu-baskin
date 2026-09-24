@@ -231,7 +231,7 @@ export default function PostEditor({
             "& a": { color: "primary.main" },
             "&:empty::before, & p:empty::before": {
               content: "attr(data-placeholder)",
-              color: "text.disabled",
+              color: "text.secondary",
               pointerEvents: "none",
             },
           },

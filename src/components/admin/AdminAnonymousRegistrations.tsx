@@ -280,7 +280,7 @@ export default function AdminAnonymousRegistrations({
                 <TableCell>
                   <Typography
                     variant="body2"
-                    color={!group.hasEmail ? "text.disabled" : "text.primary"}
+                    color={!group.hasEmail ? "text.secondary" : "text.primary"}
                   >
                     {group.emails.length > 0 ? group.emails.join(", ") : "—"}
                   </Typography>

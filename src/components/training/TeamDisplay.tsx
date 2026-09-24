@@ -491,7 +491,7 @@ function TeamEditor({
                   })
               )}
               {pool.length === 0 && (
-                <Typography variant="caption" color="text.disabled" sx={{ px: 0.5 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ px: 0.5 }}>
                   {t("editorAllAssigned")}
                 </Typography>
               )}
@@ -586,7 +586,7 @@ function TeamEditor({
                     })
                 )}
                 {teamList.length === 0 && (
-                  <Typography variant="caption" color="text.disabled" sx={{ px: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ px: 0.5 }}>
                     {t("editorNoPlayers")}
                   </Typography>
                 )}
@@ -800,7 +800,7 @@ export default function TeamDisplay({
           )}
 
           {!registrationIds?.length && (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="text.secondary">
               {t("teamsNoAthletes")}
             </Typography>
           )}
@@ -823,11 +823,11 @@ export default function TeamDisplay({
           backgroundColor: "background.paper",
         }}
       >
-        <SportsBasketballIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
+        <SportsBasketballIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
         <Typography variant="body1" color="text.secondary" fontWeight={500}>
           {isEnded ? t("teamsNotPublishedPast") : t("teamsNotPublished")}
         </Typography>
-        <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           {isEnded ? t("teamsNotPublishedPastDesc") : t("teamsNotPublishedDesc")}
         </Typography>
       </Box>

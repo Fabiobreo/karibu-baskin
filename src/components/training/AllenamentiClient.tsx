@@ -204,7 +204,7 @@ function SessionRow({
             variant="caption"
             sx={{
               display: "block",
-              color: "text.disabled",
+              color: "text.secondary",
               fontWeight: 700,
               lineHeight: 1,
               textTransform: "uppercase",
@@ -224,7 +224,7 @@ function SessionRow({
             variant="caption"
             sx={{
               display: "block",
-              color: "text.disabled",
+              color: "text.secondary",
               fontWeight: 700,
               lineHeight: 1,
               textTransform: "uppercase",
@@ -278,20 +278,20 @@ function SessionRow({
             )}
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="text.secondary">
               {format(date, "HH:mm")}
               {endTime && `–${format(endTime, "HH:mm")}`}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
-              <GroupsIcon sx={{ fontSize: 11, color: "text.disabled" }} />
-              <Typography variant="caption" color="text.disabled">
+              <GroupsIcon sx={{ fontSize: 11, color: "text.secondary" }} />
+              <Typography variant="caption" color="text.secondary">
                 {s._count.registrations}
               </Typography>
             </Box>
             {((s.allowedRoles && s.allowedRoles.length > 0) || s.restrictTeamId) && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-                <LockIcon sx={{ fontSize: 10, color: "text.disabled" }} />
-                <Typography variant="caption" color="text.disabled">
+                <LockIcon sx={{ fontSize: 10, color: "text.secondary" }} />
+                <Typography variant="caption" color="text.secondary">
                   {s.restrictTeam
                     ? `${t("onlyTeam", { team: s.restrictTeam.name })}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => `R${r}`).join(", ")}` : ""}`
                     : s.allowedRoles!.map((r) => `R${r}`).join(", ")}
@@ -300,8 +300,8 @@ function SessionRow({
             )}
             {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.3 }}>
-                <LockOpenIcon sx={{ fontSize: 10, color: "text.disabled" }} />
-                <Typography variant="caption" color="text.disabled">
+                <LockOpenIcon sx={{ fontSize: 10, color: "text.secondary" }} />
+                <Typography variant="caption" color="text.secondary">
                   {t("rolesOpenShort", { roles: s.openRoles.map((r) => `R${r}`).join(", ") })}
                 </Typography>
               </Box>
@@ -362,7 +362,7 @@ function SessionRow({
                   onGenerateTeams?.();
                 }}
                 disabled={generating}
-                sx={{ color: "text.disabled", p: 0.25, "&:hover": { color: "primary.main" } }}
+                sx={{ color: "text.secondary", p: 0.25, "&:hover": { color: "primary.main" } }}
               >
                 {generating ? (
                   <CircularProgress size={13} color="inherit" />
@@ -451,7 +451,7 @@ function SessionRow({
                   e.preventDefault();
                   setMenuAnchor(e.currentTarget);
                 }}
-                sx={{ color: "text.disabled", mr: -0.5 }}
+                sx={{ color: "text.secondary", mr: -0.5 }}
               >
                 <MoreVertIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -488,7 +488,7 @@ function SessionRow({
               </Menu>
             </>
           ) : (
-            <ChevronRightIcon sx={{ color: "text.disabled", fontSize: 18 }} />
+            <ChevronRightIcon sx={{ color: "text.secondary", fontSize: 18 }} />
           )}
         </Box>
       </Box>
@@ -925,7 +925,7 @@ export default function AllenamentiClient({
             <Typography
               variant="overline"
               fontWeight={700}
-              sx={{ color: "text.disabled", letterSpacing: "0.1em" }}
+              sx={{ color: "text.secondary", letterSpacing: "0.1em" }}
             >
               {t("next")}
             </Typography>
@@ -992,7 +992,7 @@ export default function AllenamentiClient({
                 message={t("noneDesc")}
               />
             ) : restUpcoming.length === 0 ? (
-              <Typography variant="body2" color="text.disabled" sx={{ py: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
                 {t("noneMore")}
               </Typography>
             ) : (
@@ -1027,7 +1027,7 @@ export default function AllenamentiClient({
                       <Divider sx={{ flex: 1 }} />
                       <Typography
                         variant="caption"
-                        color="text.disabled"
+                        color="text.secondary"
                         sx={{ whiteSpace: "nowrap" }}
                       >
                         {t("sessionCount", { count: yearSessions.length })}
@@ -1035,7 +1035,7 @@ export default function AllenamentiClient({
                       <IconButton
                         size="small"
                         aria-label={isYearOpen ? t("collapseYear") : t("expandYear")}
-                        sx={{ color: "text.disabled", p: 0.25 }}
+                        sx={{ color: "text.secondary", p: 0.25 }}
                       >
                         {isYearOpen ? (
                           <ExpandLessIcon fontSize="small" />
@@ -1068,7 +1068,7 @@ export default function AllenamentiClient({
                                   variant="overline"
                                   fontWeight={700}
                                   sx={{
-                                    color: isOpen ? "text.secondary" : "text.disabled",
+                                    color: isOpen ? "text.primary" : "text.secondary",
                                     letterSpacing: "0.1em",
                                     lineHeight: 1,
                                     whiteSpace: "nowrap",
@@ -1080,7 +1080,7 @@ export default function AllenamentiClient({
                                 <Divider sx={{ flex: 1 }} />
                                 <Typography
                                   variant="caption"
-                                  color="text.disabled"
+                                  color="text.secondary"
                                   sx={{ whiteSpace: "nowrap" }}
                                 >
                                   {t("sessionCount", { count: monthSessions.length })}
@@ -1088,7 +1088,7 @@ export default function AllenamentiClient({
                                 <IconButton
                                   size="small"
                                   aria-label={isOpen ? t("collapseMonth") : t("expandMonth")}
-                                  sx={{ color: "text.disabled", p: 0.25 }}
+                                  sx={{ color: "text.secondary", p: 0.25 }}
                                 >
                                   {isOpen ? (
                                     <ExpandLessIcon fontSize="small" />
@@ -1180,7 +1180,7 @@ export default function AllenamentiClient({
                       <Divider sx={{ flex: 1 }} />
                       <Typography
                         variant="caption"
-                        color="text.disabled"
+                        color="text.secondary"
                         sx={{ whiteSpace: "nowrap" }}
                       >
                         {t("sessionCount", { count: yearSessions.length })}
@@ -1188,7 +1188,7 @@ export default function AllenamentiClient({
                       <IconButton
                         size="small"
                         aria-label={isYearOpen ? t("collapseYear") : t("expandYear")}
-                        sx={{ color: "text.disabled", p: 0.25 }}
+                        sx={{ color: "text.secondary", p: 0.25 }}
                       >
                         {isYearOpen ? (
                           <ExpandLessIcon fontSize="small" />
@@ -1221,7 +1221,7 @@ export default function AllenamentiClient({
                                   variant="overline"
                                   fontWeight={700}
                                   sx={{
-                                    color: isOpen ? "text.secondary" : "text.disabled",
+                                    color: isOpen ? "text.primary" : "text.secondary",
                                     letterSpacing: "0.1em",
                                     lineHeight: 1,
                                     whiteSpace: "nowrap",
@@ -1233,7 +1233,7 @@ export default function AllenamentiClient({
                                 <Divider sx={{ flex: 1 }} />
                                 <Typography
                                   variant="caption"
-                                  color="text.disabled"
+                                  color="text.secondary"
                                   sx={{ whiteSpace: "nowrap" }}
                                 >
                                   {t("sessionCount", { count: monthSessions.length })}
@@ -1241,7 +1241,7 @@ export default function AllenamentiClient({
                                 <IconButton
                                   size="small"
                                   aria-label={isOpen ? t("collapseMonth") : t("expandMonth")}
-                                  sx={{ color: "text.disabled", p: 0.25 }}
+                                  sx={{ color: "text.secondary", p: 0.25 }}
                                 >
                                   {isOpen ? (
                                     <ExpandLessIcon fontSize="small" />

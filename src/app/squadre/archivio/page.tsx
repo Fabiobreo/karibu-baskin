@@ -96,7 +96,12 @@ export default async function SquadreArchivioPage() {
                 <Typography
                   variant="overline"
                   fontWeight={700}
-                  sx={{ color: "text.disabled", letterSpacing: "0.1em", display: "block", mb: 1.5 }}
+                  sx={{
+                    color: "text.secondary",
+                    letterSpacing: "0.1em",
+                    display: "block",
+                    mb: 1.5,
+                  }}
                 >
                   {t("seasonLabel")} {season}
                 </Typography>
@@ -135,7 +140,7 @@ export default async function SquadreArchivioPage() {
                             {team.championship && (
                               <Typography
                                 variant="caption"
-                                color="text.disabled"
+                                color="text.secondary"
                                 noWrap
                                 sx={{ display: "block" }}
                               >
@@ -144,14 +149,14 @@ export default async function SquadreArchivioPage() {
                             )}
                             <Box sx={{ display: "flex", gap: 1.5, mt: 0.5 }}>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
-                                <GroupsIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-                                <Typography variant="caption" color="text.disabled">
+                                <GroupsIcon sx={{ fontSize: 13, color: "text.secondary" }} />
+                                <Typography variant="caption" color="text.secondary">
                                   {t("athleteCount", { count: team._count.memberships })}
                                 </Typography>
                               </Box>
                               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
-                                <SportsSoccerIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-                                <Typography variant="caption" color="text.disabled">
+                                <SportsSoccerIcon sx={{ fontSize: 13, color: "text.secondary" }} />
+                                <Typography variant="caption" color="text.secondary">
                                   {t("matchCount", { count: team._count.matches })}
                                 </Typography>
                               </Box>

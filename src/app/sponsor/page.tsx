@@ -161,7 +161,7 @@ export default async function SponsorPage() {
                         {s.name}
                       </Typography>
                       <OpenInNewIcon
-                        sx={{ fontSize: "0.9rem", color: "text.disabled", flexShrink: 0 }}
+                        sx={{ fontSize: "0.9rem", color: "text.secondary", flexShrink: 0 }}
                       />
                     </Box>
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>

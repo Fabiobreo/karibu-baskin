@@ -356,7 +356,7 @@ function SideColumn({
         <Chip label={countLabel} size="small" sx={{ fontWeight: 700 }} />
       </Box>
       {players.length === 0 ? (
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="text.secondary">
           {emptyText}
         </Typography>
       ) : (
@@ -389,7 +389,7 @@ function SideColumn({
               {p.gender === "FEMALE" && (
                 <FemaleIcon sx={{ fontSize: 15, color: "secondary.main" }} />
               )}
-              {p.gender === "MALE" && <MaleIcon sx={{ fontSize: 15, color: "text.disabled" }} />}
+              {p.gender === "MALE" && <MaleIcon sx={{ fontSize: 15, color: "text.secondary" }} />}
               <IconButton size="small" onClick={() => onRemove(keyOf(p))} aria-label="remove">
                 <CloseIcon sx={{ fontSize: 16 }} />
               </IconButton>

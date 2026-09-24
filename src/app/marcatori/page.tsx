@@ -322,7 +322,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 3, alignItems: "center" }}>
             <Typography
               variant="caption"
-              color="text.disabled"
+              color="text.secondary"
               fontWeight={700}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >

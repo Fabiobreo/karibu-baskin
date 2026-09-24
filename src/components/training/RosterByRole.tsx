@@ -74,7 +74,7 @@ const UNDO_MS = 10_000;
 function AttendanceIcon({ attended }: { attended: boolean | null | undefined }) {
   if (attended === true) return <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />;
   if (attended === false) return <CancelIcon sx={{ fontSize: 14, color: "error.main" }} />;
-  return <RadioButtonUncheckedIcon sx={{ fontSize: 14, color: "text.disabled" }} />;
+  return <RadioButtonUncheckedIcon sx={{ fontSize: 14, color: "text.secondary" }} />;
 }
 
 function nextAttended(current: boolean | null | undefined): boolean | null {
@@ -180,7 +180,7 @@ function AthletePill({
         )}
         {hasNote && (
           <ChatBubbleOutlineIcon
-            sx={{ fontSize: "0.68rem", color: "text.disabled", flexShrink: 0 }}
+            sx={{ fontSize: "0.68rem", color: "text.secondary", flexShrink: 0 }}
           />
         )}
       </Box>
@@ -215,7 +215,7 @@ function AthletePill({
           sx={{
             p: "3px",
             mr: 0.5,
-            color: "text.disabled",
+            color: "text.secondary",
             "&:hover": { color: "error.main", bgcolor: "transparent" },
           }}
         >
@@ -582,7 +582,7 @@ export default function RosterByRole({
                   >
                     {roleLabel(role)}
                   </Typography>
-                  <Typography variant="caption" color="text.disabled" fontWeight={600}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
                     {group.length}
                   </Typography>
                   <Divider sx={{ flex: 1 }} />
@@ -698,7 +698,7 @@ export default function RosterByRole({
                           sx={{
                             p: "3px",
                             mr: 0.5,
-                            color: isOwn ? "rgba(255,255,255,0.6)" : "text.disabled",
+                            color: isOwn ? "rgba(255,255,255,0.6)" : "text.secondary",
                             "&:hover": {
                               color: isOwn ? "common.white" : "error.main",
                               bgcolor: "transparent",

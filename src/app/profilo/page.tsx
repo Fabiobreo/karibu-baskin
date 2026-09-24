@@ -288,7 +288,7 @@ export default async function ProfiloPage() {
         // risposta anche quando la risposta è "nessuno".
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <CalendarMonthIcon sx={{ fontSize: 20, color: "text.disabled" }} />
+            <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
             <Typography
               variant="overline"
               fontWeight={800}
@@ -371,7 +371,7 @@ export default async function ProfiloPage() {
         </Stack>
 
         {user.appRole === "GUEST" && (
-          <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
             {t("guestPending")}
           </Typography>
         )}

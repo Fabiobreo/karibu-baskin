@@ -62,7 +62,7 @@ export default function SimulatorResult({
         }}
       >
         <TeamScore name={nameA} score={scoreA} win={winner === "A"} colorToken="primary.main" />
-        <Typography variant="h5" color="text.disabled" fontWeight={800}>
+        <Typography variant="h5" color="text.secondary" fontWeight={800}>
           –
         </Typography>
         <TeamScore name={nameB} score={scoreB} win={winner === "B"} colorToken="secondary.main" />

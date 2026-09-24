@@ -74,7 +74,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
         <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
           {body}
         </Typography>
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="text.secondary">
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: dateLocale })}
         </Typography>
       </Box>
@@ -91,7 +91,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
         />
       )}
       {url && (
-        <ChevronRightIcon sx={{ fontSize: 20, color: "text.disabled", flexShrink: 0, mt: 0.5 }} />
+        <ChevronRightIcon sx={{ fontSize: 20, color: "text.secondary", flexShrink: 0, mt: 0.5 }} />
       )}
     </>
   );

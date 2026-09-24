@@ -84,7 +84,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
             {relativeLabel(match.date, now, tCommon, dateLocale)}
           </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
             {format(new Date(match.date), "d MMM · HH:mm", { locale: dateLocale })}
           </Typography>
         </Box>
@@ -110,7 +110,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           >
             {leftName}
           </Typography>
-          <Typography sx={{ color: "text.disabled", fontWeight: 700, px: 0.5 }}>vs</Typography>
+          <Typography sx={{ color: "text.secondary", fontWeight: 700, px: 0.5 }}>vs</Typography>
           <Typography
             variant="body2"
             sx={{
@@ -137,7 +137,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           variant="outlined"
           sx={{ fontSize: "0.65rem", height: 22 }}
         />
-        <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+        <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
       </Paper>
     </Link>
   );

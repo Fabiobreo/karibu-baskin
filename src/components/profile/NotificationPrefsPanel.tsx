@@ -147,7 +147,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       </Typography>
 
       {pushStatus === "unsupported" ? (
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="text.secondary">
           {t("unsupported")}
         </Typography>
       ) : pushStatus === "denied" ? (

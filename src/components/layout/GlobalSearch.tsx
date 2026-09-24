@@ -107,7 +107,7 @@ export default function GlobalSearch() {
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: "text.disabled" }} />
+                    <SearchIcon sx={{ color: "text.secondary" }} />
                   </InputAdornment>
                 ),
                 endAdornment: isFetching ? (
@@ -121,11 +121,11 @@ export default function GlobalSearch() {
 
           <Box sx={{ mt: 1.5, maxHeight: "60vh", overflowY: "auto" }}>
             {!enabled ? (
-              <Typography variant="body2" color="text.disabled" sx={{ p: 2, textAlign: "center" }}>
+              <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: "center" }}>
                 {t("hint")}
               </Typography>
             ) : total === 0 && !isFetching ? (
-              <Typography variant="body2" color="text.disabled" sx={{ p: 2, textAlign: "center" }}>
+              <Typography variant="body2" color="text.secondary" sx={{ p: 2, textAlign: "center" }}>
                 {t("noResults")}
               </Typography>
             ) : (
@@ -158,7 +158,11 @@ export default function GlobalSearch() {
                             {item.name}
                           </Typography>
                           {item.sportRole ? (
-                            <Typography variant="caption" color="text.disabled" sx={{ ml: "auto" }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ ml: "auto" }}
+                            >
                               R{item.sportRole}
                             </Typography>
                           ) : null}

@@ -25,7 +25,7 @@ export default function ConvocazioniFilters({
       <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", flexWrap: "wrap" }}>
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           fontWeight={700}
           sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
         >
@@ -60,7 +60,7 @@ export default function ConvocazioniFilters({
       <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", flexWrap: "wrap" }}>
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           fontWeight={700}
           sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
         >

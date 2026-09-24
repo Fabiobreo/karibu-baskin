@@ -168,7 +168,7 @@ export default function GironeFullView({
         </Typography>
       </Box>
       {standings.length === 0 ? (
-        <Typography variant="body2" color="text.disabled" sx={{ px: 2, pb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ px: 2, pb: 2 }}>
           {t("noResults")}
         </Typography>
       ) : (
@@ -231,7 +231,7 @@ export default function GironeFullView({
                     <TableCell sx={{ pl: 2 }}>
                       <Typography
                         variant="body2"
-                        color={s.isOurs ? "inherit" : "text.disabled"}
+                        color={s.isOurs ? "inherit" : "text.secondary"}
                         fontWeight={600}
                       >
                         {i + 1}
@@ -299,7 +299,7 @@ export default function GironeFullView({
       </Box>
 
       {matchdays.length === 0 ? (
-        <Typography variant="body2" color="text.disabled" sx={{ px: 2, pb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ px: 2, pb: 2 }}>
           {t("noMatches")}
         </Typography>
       ) : (
@@ -388,7 +388,7 @@ export default function GironeFullView({
                         </TableCell>
                         <TableCell sx={{ width: 24, pr: 1 }}>
                           <ChevronRightIcon
-                            sx={{ fontSize: 16, color: "text.disabled", display: "block" }}
+                            sx={{ fontSize: 16, color: "text.secondary", display: "block" }}
                           />
                         </TableCell>
                       </TableRow>

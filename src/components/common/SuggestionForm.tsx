@@ -114,7 +114,7 @@ export default function SuggestionForm() {
             val ? (
               CATEGORY_LABELS[val as keyof typeof CATEGORY_LABELS]
             ) : (
-              <Typography component="span" color="text.disabled">
+              <Typography component="span" color="text.secondary">
                 {t("selectCategory")}
               </Typography>
             )

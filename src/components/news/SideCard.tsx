@@ -66,7 +66,7 @@ export default function SideCard({ post }: SideCardProps) {
             (post.poll ? (
               <HowToVoteIcon sx={{ fontSize: 32, color: "primary.main" }} />
             ) : (
-              <ArticleIcon sx={{ fontSize: 32, color: "text.disabled" }} />
+              <ArticleIcon sx={{ fontSize: 32, color: "text.secondary" }} />
             ))}
         </Box>
 
@@ -107,7 +107,7 @@ export default function SideCard({ post }: SideCardProps) {
             </Typography>
           )}
           {post.publishedAt && (
-            <Typography variant="caption" color="text.disabled" sx={{ mt: "auto", pt: 0.5 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: "auto", pt: 0.5 }}>
               {format(new Date(post.publishedAt), "d MMM yyyy", { locale: dateLocale })}
             </Typography>
           )}

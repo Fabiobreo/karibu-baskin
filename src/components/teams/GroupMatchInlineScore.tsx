@@ -118,7 +118,7 @@ export default function GroupMatchInlineScore({
               sx={{ width: 95 }}
               autoFocus
             />
-            <Typography variant="body2" color="text.disabled">
+            <Typography variant="body2" color="text.secondary">
               –
             </Typography>
             <TextField

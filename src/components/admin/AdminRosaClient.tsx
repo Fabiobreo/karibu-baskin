@@ -407,7 +407,7 @@ export default function AdminRosaClient({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon fontSize="small" sx={{ color: "text.disabled" }} />
+                  <SearchIcon fontSize="small" sx={{ color: "text.secondary" }} />
                 </InputAdornment>
               ),
             }}
@@ -469,7 +469,7 @@ export default function AdminRosaClient({
       <Box sx={{ p: 1.5, maxHeight: { md: "70vh" }, overflowY: { md: "auto" } }}>
         {filteredPool.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography variant="body2" color="text.disabled">
+            <Typography variant="body2" color="text.secondary">
               {pool.length === 0
                 ? "Tutti gli atleti sono già in rosa"
                 : "Nessun atleta corrisponde ai filtri"}
@@ -594,7 +594,7 @@ function GroupSection({
       {members.length === 0 ? (
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           sx={{ display: "block", py: 1, fontStyle: "italic" }}
         >
           Nessun atleta in questo ruolo
@@ -813,7 +813,7 @@ function PoolRow({
               }}
             />
           ) : (
-            <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.65rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
               Ruolo non assegnato
             </Typography>
           )}

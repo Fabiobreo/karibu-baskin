@@ -184,7 +184,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
               }}
             >
               <CompareHeader p={pa} />
-              <Typography variant="overline" color="text.disabled" fontWeight={800}>
+              <Typography variant="overline" color="text.secondary" fontWeight={800}>
                 {t("compareVs")}
               </Typography>
               <CompareHeader p={pb} />

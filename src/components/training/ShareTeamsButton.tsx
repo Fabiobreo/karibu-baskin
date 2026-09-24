@@ -272,7 +272,7 @@ export default function ShareTeamsButton({
                 style={{
                   fontSize: 10,
                   fontWeight: 800,
-                  color: "#999",
+                  color: "#666",
                   textTransform: "uppercase",
                   letterSpacing: 1,
                 }}

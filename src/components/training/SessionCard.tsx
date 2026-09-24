@@ -70,12 +70,14 @@ function getStatusData(
   const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
   if (now >= date && now <= end)
     return { key: "live", color: "match.win", labelColor: "common.white" };
-  if (now > end) return { key: "ended", color: "text.disabled", labelColor: "common.white" };
+  // Grigio fisso, non `text.*`: e' lo sfondo di un'etichetta bianca, e in tema
+  // scuro `text.secondary` (#AAAAAA) la porterebbe a 2,3:1.
+  if (now > end) return { key: "ended", color: "grey.700", labelColor: "common.white" };
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays === 0)
-    return { key: "todayBang", color: "primary.main", labelColor: "common.white" };
+    return { key: "todayBang", color: "primary.fill", labelColor: "common.white" };
   // Come nell'hero: niente ciano fuori palette per "Domani" / "Tra N giorni".
   if (diffDays === 1)
     return { key: "tomorrow", color: "secondary.main", labelColor: "secondary.contrastText" };
@@ -305,7 +307,8 @@ export default function SessionCard({
                   setMenuAnchor(e.currentTarget);
                 }}
                 sx={{
-                  color: muted ? "text.disabled" : "rgba(255,255,255,0.7)",
+                  // E' un bottone: serve almeno 3:1 anche da spento.
+                  color: muted ? "text.secondary" : "rgba(255,255,255,0.7)",
                   pointerEvents: "auto",
                 }}
               >
@@ -369,13 +372,13 @@ export default function SessionCard({
               sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+                <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
                   {format(date, dateFormat, { locale: dateLocale })}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+                <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
                   {format(date, "HH:mm")}
                   {endTime && `–${format(endTime, "HH:mm")}`}
@@ -385,7 +388,7 @@ export default function SessionCard({
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <GroupsIcon sx={{ fontSize: iconSize, color: "text.disabled" }} />
+                <GroupsIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
                 <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
                   {t("registeredCount", { count: s._count.registrations })}
                 </Typography>

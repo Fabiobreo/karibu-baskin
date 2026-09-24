@@ -204,7 +204,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
             <Typography
               variant="caption"
-              color="text.disabled"
+              color="text.secondary"
               fontWeight={700}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
@@ -437,11 +437,11 @@ function MatchCard({
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.4, mt: 0.2 }}>
                 {m.isHome ? (
-                  <HomeIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                  <HomeIcon sx={{ fontSize: 11, color: "text.secondary" }} />
                 ) : (
-                  <FlightIcon sx={{ fontSize: 11, color: "text.disabled" }} />
+                  <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
                 )}
-                <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
                   {m.isHome ? tFn("home") : tFn("away")} ·{" "}
                   {(
                     {
@@ -495,7 +495,7 @@ function MatchCard({
                 </Typography>
               ) : (
                 <Typography
-                  sx={{ color: "text.disabled", fontWeight: 700, fontSize: "0.85rem", px: 0.5 }}
+                  sx={{ color: "text.secondary", fontWeight: 700, fontSize: "0.85rem", px: 0.5 }}
                 >
                   vs
                 </Typography>
@@ -532,7 +532,7 @@ function MatchCard({
                   }}
                 />
               )}
-              <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+              <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
             </Box>
           </Box>
         </Box>

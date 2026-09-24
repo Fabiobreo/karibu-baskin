@@ -277,7 +277,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         {/* Preview destinatari */}
         <Typography
           variant="caption"
-          color={hasTarget ? "primary.main" : "text.disabled"}
+          color={hasTarget ? "primary.onLight" : "text.secondary"}
           fontWeight={600}
         >
           → {audienceDescription()}

@@ -211,7 +211,7 @@ export default function ChildrenTab({
                       >
                         {g.name ?? g.email}
                       </Typography>
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography variant="caption" color="text.secondary">
                         {g.email}
                       </Typography>
                     </Box>
@@ -232,7 +232,7 @@ export default function ChildrenTab({
                       }}
                     />
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography variant="body2" color="text.secondary">
                       —
                     </Typography>
                   )}
@@ -261,7 +261,7 @@ export default function ChildrenTab({
                   {row.gender ? (
                     <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography variant="body2" color="text.secondary">
                       —
                     </Typography>
                   )}

@@ -75,7 +75,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
-                sx={{ width: 28, fontWeight: 700, fontSize: "0.72rem", color: "text.disabled" }}
+                sx={{ width: 28, fontWeight: 700, fontSize: "0.72rem", color: "text.secondary" }}
               >
                 #
               </TableCell>
@@ -108,7 +108,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
 
               return (
                 <TableRow key={stat.id} hover>
-                  <TableCell sx={{ color: "text.disabled", fontWeight: 700, fontSize: "0.78rem" }}>
+                  <TableCell sx={{ color: "text.secondary", fontWeight: 700, fontSize: "0.78rem" }}>
                     {globalOffset + i + 1}
                   </TableCell>
                   <TableCell>
@@ -155,7 +155,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                         {stat.notes && (
                           <Typography
                             variant="caption"
-                            color="text.disabled"
+                            color="text.secondary"
                             sx={{
                               display: "block",
                               mt: 0.3,
@@ -189,10 +189,11 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                         sx={{
                           fontSize: "0.82rem",
                           fontWeight: col.primary ? 800 : 400,
+                          // Statistica che non vale per il ruolo: la cella dice "—".
                           color: col.primary
-                            ? "primary.main"
+                            ? "text.primary"
                             : !allowedForRole
-                              ? "text.disabled"
+                              ? "text.secondary"
                               : col.key === "fouls" && val >= 4
                                 ? "stats.fouls"
                                 : undefined,

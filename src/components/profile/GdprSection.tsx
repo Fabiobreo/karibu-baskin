@@ -10,7 +10,7 @@ export default async function GdprSection({ email }: { email: string }) {
     <>
       {/* Export dati personali (GDPR art. 20) */}
       <Box sx={{ pt: 1 }}>
-        <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
           {t("gdprExportNote")}
         </Typography>
         <Button
@@ -26,7 +26,7 @@ export default async function GdprSection({ email }: { email: string }) {
 
       {/* Sessioni attive: esci da tutti i dispositivi (telefono perso, PC condiviso) */}
       <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
-        <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
           {t("signOutEverywhereNote")}
         </Typography>
         <SignOutEverywhereButton />
@@ -34,7 +34,7 @@ export default async function GdprSection({ email }: { email: string }) {
 
       {/* Eliminazione account (GDPR art. 17) */}
       <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid", borderColor: "divider" }}>
-        <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
+        <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1 }}>
           {t("gdprDeleteNote")}
         </Typography>
         <Button

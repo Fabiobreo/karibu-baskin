@@ -276,7 +276,7 @@ export default function ContattiPage() {
                   <Box sx={{ color: "primary.main", display: "flex" }}>{c.icon}</Box>
                   <Typography
                     variant="caption"
-                    color="text.disabled"
+                    color="text.secondary"
                     fontWeight={700}
                     sx={{
                       textTransform: "uppercase",
@@ -416,7 +416,7 @@ export default function ContattiPage() {
                     <Box>
                       <Typography
                         variant="caption"
-                        color="text.disabled"
+                        color="text.secondary"
                         fontWeight={700}
                         sx={{
                           textTransform: "uppercase",
@@ -439,7 +439,7 @@ export default function ContattiPage() {
 
               <Typography
                 variant="caption"
-                color="text.disabled"
+                color="text.secondary"
                 fontWeight={700}
                 sx={{
                   textTransform: "uppercase",

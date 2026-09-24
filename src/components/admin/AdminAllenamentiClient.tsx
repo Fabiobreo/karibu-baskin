@@ -82,7 +82,7 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
 
   if (athletes.length === 0) {
     return (
-      <Typography variant="caption" color="text.disabled">
+      <Typography variant="caption" color="text.secondary">
         Nessun iscritto
       </Typography>
     );
@@ -124,14 +124,16 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
                 minWidth: 0,
                 overflowWrap: "anywhere",
                 fontSize: "0.82rem",
-                color: effective === false ? "text.disabled" : "text.primary",
+                // Assente: grigio leggibile piu' barrato, non solo il colore (UX-09).
+                color: effective === false ? "text.secondary" : "text.primary",
+                textDecoration: effective === false ? "line-through" : "none",
               }}
             >
               {a.name}
             </Typography>
             <Typography
               variant="caption"
-              color="text.disabled"
+              color="text.secondary"
               sx={{ fontSize: "0.65rem", mr: 0.25 }}
             >
               {ROLE_LABELS[a.role]}

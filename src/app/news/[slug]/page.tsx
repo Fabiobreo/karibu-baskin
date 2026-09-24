@@ -177,7 +177,7 @@ export default async function NewsSlugPage({ params }: Props) {
           </Typography>
           {post.author.name && (
             <>
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="text.secondary">
                 ·
               </Typography>
               <Typography variant="caption" color="text.secondary">

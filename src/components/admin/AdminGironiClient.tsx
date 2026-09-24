@@ -163,13 +163,13 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
             Crea
           </Button>
         </Box>
-        <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1.5 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
           Le squadre (nostre e avversarie) si aggiungono dalla pagina del girone.
         </Typography>
       </Paper>
 
       {groups.length === 0 ? (
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           Nessun girone creato.
         </Typography>
       ) : (
@@ -221,7 +221,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                     </TableCell>
                     <TableCell>
                       {g.competitiveTeams.length === 0 ? (
-                        <Typography variant="caption" color="text.disabled">
+                        <Typography variant="caption" color="text.secondary">
                           nessuna
                         </Typography>
                       ) : (
@@ -245,7 +245,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                     <TableCell align="center">
                       <Typography
                         variant="caption"
-                        color={g._count.matches > 0 ? "primary" : "text.disabled"}
+                        color={g._count.matches > 0 ? "text.primary" : "text.secondary"}
                       >
                         {g._count.matches}
                       </Typography>

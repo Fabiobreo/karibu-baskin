@@ -110,9 +110,9 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
                       {result.topLineups.length - 1 === 1 ? "a" : "e"}
                     </Typography>
                     {showAlternatives ? (
-                      <ExpandLessIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                      <ExpandLessIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                     ) : (
-                      <ExpandMoreIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                      <ExpandMoreIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                     )}
                   </Box>
                   <Collapse in={showAlternatives}>
@@ -291,7 +291,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
           sx={{
             minWidth: 38,
             textAlign: "right",
-            color: hasRating ? "text.primary" : "text.disabled",
+            color: hasRating ? "text.primary" : "text.secondary",
             fontStyle: hasRating ? "normal" : "italic",
           }}
         >
@@ -301,8 +301,8 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
       {p.height != null && (
         <Tooltip title={`Altezza: ${p.height} cm`}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-            <HeightIcon sx={{ fontSize: 13, color: "text.disabled" }} />
-            <Typography variant="caption" color="text.disabled" sx={{ fontSize: "0.68rem" }}>
+            <HeightIcon sx={{ fontSize: 13, color: "text.secondary" }} />
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
               {p.height}
             </Typography>
           </Box>
@@ -388,7 +388,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
       {entry.inLineup.length > 0 && (
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           sx={{ lineHeight: "22px", flexShrink: 0 }}
         >
           →
@@ -404,7 +404,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
             )}
             <Typography
               variant="caption"
-              color={noBackup ? "match.loss" : "text.disabled"}
+              color={noBackup ? "match.loss" : "text.secondary"}
               fontWeight={noBackup ? 700 : 400}
             >
               {entry.inLineup.length === 0 ? "—" : "nessuna riserva"}

@@ -106,7 +106,7 @@ export default function ConvocazioniTable({
                     {selected ? (
                       <CheckCircleIcon sx={{ color: "primary.main", fontSize: 22 }} />
                     ) : (
-                      <RadioButtonUncheckedIcon sx={{ color: "text.disabled", fontSize: 22 }} />
+                      <RadioButtonUncheckedIcon sx={{ color: "text.secondary", fontSize: 22 }} />
                     )}
                   </TableCell>
                   <TableCell>
@@ -209,7 +209,7 @@ export default function ConvocazioniTable({
                   {/* Presenze */}
                   <TableCell align="center">
                     {row.eligibleSessions === 0 ? (
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography variant="caption" color="text.secondary">
                         —
                       </Typography>
                     ) : (
@@ -238,11 +238,11 @@ export default function ConvocazioniTable({
                   {/* Assenze */}
                   <TableCell align="center">
                     {row.eligibleSessions === 0 ? (
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography variant="caption" color="text.secondary">
                         —
                       </Typography>
                     ) : row.absences === 0 ? (
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography variant="caption" color="text.secondary">
                         0
                       </Typography>
                     ) : (
@@ -278,7 +278,7 @@ export default function ConvocazioniTable({
                     {row.daysSinceLastCallup == null ? (
                       <Typography
                         variant="caption"
-                        color="text.disabled"
+                        color="text.secondary"
                         sx={{ fontStyle: "italic" }}
                       >
                         mai

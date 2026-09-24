@@ -345,13 +345,13 @@ function TeamGrid({
                   )}
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <GroupsIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                      <GroupsIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>
                         {t("athleteCount", { count: team._count.memberships })}
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <SportsSoccerIcon sx={{ fontSize: 16, color: "text.disabled" }} />
+                      <SportsSoccerIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                       <Typography variant="caption" color="text.secondary" fontWeight={600}>
                         {t("matchCount", { count: team._count.matches })}
                       </Typography>

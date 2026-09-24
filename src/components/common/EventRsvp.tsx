@@ -140,7 +140,7 @@ function SubjectOptionsForm({
                   <Typography
                     component="span"
                     variant="caption"
-                    color="text.disabled"
+                    color="text.secondary"
                     sx={{ ml: 1 }}
                   >
                     {format(new Date(o.startsAt), "EEE d MMM, HH:mm", { locale: dl })}
@@ -246,7 +246,7 @@ export default function EventRsvp({
           </Button>
         </Box>
       ) : isPast ? (
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           {t("rsvpClosed")}
         </Typography>
       ) : hasOptions ? (

@@ -50,7 +50,7 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+                <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
               </InputAdornment>
             ),
           },

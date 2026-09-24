@@ -89,7 +89,7 @@ export default async function AthleteInfoSection({
           )}
         </Stack>
       ) : (
-        <Typography variant="body2" color="text.disabled">
+        <Typography variant="body2" color="text.secondary">
           {t("noAthleteData")}
         </Typography>
       )}

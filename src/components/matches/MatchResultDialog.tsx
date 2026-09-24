@@ -154,7 +154,7 @@ export default function MatchResultDialog({
             sx={{ width: 150 }}
             autoFocus
           />
-          <Typography variant="h6" color="text.disabled">
+          <Typography variant="h6" color="text.secondary">
             –
           </Typography>
           <TextField
@@ -184,7 +184,7 @@ export default function MatchResultDialog({
               }}
             />
           ) : (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="text.secondary">
               Inserisci entrambi i punteggi per calcolare l&apos;esito
             </Typography>
           )}

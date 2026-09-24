@@ -29,7 +29,7 @@ export default function SimulatorChecklist({ checks }: { checks: LineupChecks })
           {r.ok ? (
             <CheckCircleIcon sx={{ fontSize: 15, color: "success.main" }} />
           ) : (
-            <RadioButtonUncheckedIcon sx={{ fontSize: 15, color: "text.disabled" }} />
+            <RadioButtonUncheckedIcon sx={{ fontSize: 15, color: "text.secondary" }} />
           )}
           <Typography
             variant="caption"

@@ -42,7 +42,7 @@ export default function UserSearchPicker({
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: "text.disabled" }} />
+                <SearchIcon sx={{ color: "text.secondary" }} />
               </InputAdornment>
             ),
             endAdornment: searching ? (

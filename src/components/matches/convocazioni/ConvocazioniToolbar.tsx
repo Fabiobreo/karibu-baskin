@@ -50,7 +50,7 @@ export default function ConvocazioniToolbar({
       <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
         <Typography
           variant="caption"
-          color="text.disabled"
+          color="text.secondary"
           fontWeight={700}
           sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
         >
@@ -65,10 +65,12 @@ export default function ConvocazioniToolbar({
               size="small"
               sx={{
                 bgcolor: count > 0 ? ROLE_COLORS[r] : "transparent",
-                color: count > 0 ? "common.white" : "text.disabled",
+                color: count > 0 ? "common.white" : "text.secondary",
                 fontWeight: 700,
                 fontSize: "0.7rem",
-                border: `1px solid ${count > 0 ? ROLE_COLORS[r] : "transparent"}`,
+                border: "1px solid",
+                // Ruolo scoperto: chip vuoto con il bordo, non solo il colore.
+                borderColor: count > 0 ? ROLE_COLORS[r] : "divider",
               }}
             />
           );

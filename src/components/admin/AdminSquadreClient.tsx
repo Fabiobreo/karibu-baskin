@@ -385,7 +385,7 @@ export default function AdminSquadreClient({
           }}
           onClick={teamsInSeason.length < 2 ? openCreate : undefined}
         >
-          <AddIcon sx={{ fontSize: 36, color: "text.disabled", mb: 1 }} />
+          <AddIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
           <Typography variant="body1" color="text.secondary">
             Aggiungi la prima squadra della stagione {activeSeason}
           </Typography>
@@ -743,7 +743,7 @@ function TeamCard({
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <SportsSoccerIcon sx={{ fontSize: 17, color: "text.disabled" }} />
+            <SportsSoccerIcon sx={{ fontSize: 17, color: "text.secondary" }} />
             <Typography variant="body2" fontWeight={700}>
               {team._count.matches}
             </Typography>

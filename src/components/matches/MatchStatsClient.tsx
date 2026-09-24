@@ -361,7 +361,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
           <Typography color="text.secondary" sx={{ mb: 1 }}>
             Nessun convocato per questa partita.
           </Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Imposta prima i convocati dalla pagina &quot;Convocati&quot;.
           </Typography>
           <Button href={`/admin/partite/${matchId}/convocazioni`} variant="outlined">
@@ -544,7 +544,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                               ) : (
                                 <Typography
                                   variant="body2"
-                                  color="text.disabled"
+                                  color="text.secondary"
                                   sx={{ fontSize: "0.78rem" }}
                                   title={
                                     row.sportRole

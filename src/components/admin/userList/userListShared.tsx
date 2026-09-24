@@ -125,7 +125,7 @@ export function TeamCellSelect({
       renderValue={(val) => {
         if (!val)
           return (
-            <Typography variant="body2" color="text.disabled" component="span">
+            <Typography variant="body2" color="text.secondary" component="span">
               —
             </Typography>
           );

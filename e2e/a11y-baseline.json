@@ -1,7 +1,7 @@
 {
   "admin|allenamenti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 133
+    "nodes": 33
   },
   "admin|allenamenti|desktop|target-size": {
     "impact": "serious",
@@ -9,7 +9,7 @@
   },
   "admin|allenamenti|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 104
+    "nodes": 18
   },
   "admin|allenamenti|mobile|target-size": {
     "impact": "serious",
@@ -17,145 +17,65 @@
   },
   "admin|dashboard|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 6
+    "nodes": 5
   },
   "admin|dashboard|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 11
+    "nodes": 5
   },
   "admin|partite|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 49
+    "nodes": 17
   },
   "admin|partite|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 17
-  },
-  "admin|utenti|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 25
+    "nodes": 1
   },
   "admin|utenti|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 25
-  },
-  "anon|allenamenti|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 3
-  },
-  "anon|allenamenti|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 2
-  },
-  "anon|allenamento|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
+    "nodes": 24
   },
   "anon|calendario|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 6
+    "nodes": 1
   },
   "anon|calendario|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 5
+    "nodes": 1
   },
   "anon|contatti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 9
+    "nodes": 1
   },
   "anon|contatti|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 8
-  },
-  "anon|eventi|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 1
   },
   "anon|giocatore|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 15
+    "nodes": 14
   },
   "anon|giocatore|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 14
   },
-  "anon|home|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 2
-  },
-  "anon|home|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
-  },
-  "anon|login|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 2
-  },
-  "anon|login|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
-  },
-  "anon|marcatori|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 18
-  },
-  "anon|marcatori|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 167
-  },
   "anon|partita|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 7
+    "nodes": 1
   },
   "anon|partita|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 6
+    "nodes": 1
   },
   "anon|partita|mobile|target-size": {
     "impact": "serious",
     "nodes": 1
   },
-  "anon|risultati|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 18
-  },
-  "anon|risultati|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 16
-  },
   "athlete|allenamento-passato|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 3
+    "nodes": 1
   },
   "athlete|allenamento-passato|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 2
-  },
-  "athlete|disponibilita|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 2
-  },
-  "athlete|disponibilita|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
-  },
-  "athlete|home|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 2
-  },
-  "athlete|home|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
-  },
-  "athlete|notifiche|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 21
-  },
-  "athlete|notifiche|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 20
-  },
-  "athlete|profilo|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 1
   }

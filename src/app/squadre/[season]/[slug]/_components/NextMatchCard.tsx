@@ -207,12 +207,12 @@ export default async function NextMatchCard({
               >
                 ⏱ {format(new Date(match.date), "HH:mm")}
               </Typography>
-              <Typography sx={{ color: "text.disabled", fontSize: "0.78rem" }}>·</Typography>
+              <Typography sx={{ color: "text.secondary", fontSize: "0.78rem" }}>·</Typography>
               <Typography
                 sx={{
                   fontSize: "0.78rem",
                   fontWeight: 700,
-                  color: isImminent ? teamColor : "text.disabled",
+                  color: isImminent ? teamColor : "text.secondary",
                 }}
               >
                 {days === 0 && hours === 0
@@ -406,7 +406,7 @@ export default async function NextMatchCard({
             <Typography
               variant="caption"
               sx={{
-                color: "text.disabled",
+                color: "text.secondary",
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -428,7 +428,7 @@ export default async function NextMatchCard({
               {themName}
             </Typography>
             {match.opponent.city && (
-              <Typography variant="caption" sx={{ color: "text.disabled", fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                 {match.opponent.city}
               </Typography>
             )}
@@ -467,7 +467,7 @@ export default async function NextMatchCard({
                 <Typography
                   variant="caption"
                   sx={{
-                    color: "text.disabled",
+                    color: "text.secondary",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                     fontWeight: 700,
@@ -516,7 +516,7 @@ export default async function NextMatchCard({
                     {prev.isHome ? prevTheirScore : prevOurScore}
                   </Box>
                 </Box>
-                <Typography variant="caption" sx={{ color: "text.disabled", fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                   {format(new Date(prev.date), "d MMM", { locale: dateLocale })}
                 </Typography>
               </Box>

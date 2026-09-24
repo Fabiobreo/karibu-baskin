@@ -41,7 +41,7 @@ export default function MatchStatsTab({
           <Typography variant="h6" color="text.secondary" fontWeight={700}>
             {t("noStats")}
           </Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             {t("statsUnavailable")}
           </Typography>
         </Box>

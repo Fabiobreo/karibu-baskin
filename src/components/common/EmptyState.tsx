@@ -16,7 +16,7 @@ export default function EmptyState({ icon, title, message, action }: EmptyStateP
         {title}
       </Typography>
       {message && (
-        <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           {message}
         </Typography>
       )}

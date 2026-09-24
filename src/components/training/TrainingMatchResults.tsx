@@ -218,7 +218,7 @@ function MatchupSlot({
             />
           </Box>
           <Typography
-            color="text.disabled"
+            color="text.secondary"
             fontWeight={700}
             sx={{ fontSize: "0.8rem", display: { xs: "none", sm: "block" } }}
           >
@@ -319,7 +319,7 @@ function MatchupSlot({
                 fontSize: "0.8rem",
               }}
             />
-            <Typography variant="caption" color="text.disabled" fontWeight={700}>
+            <Typography variant="caption" color="text.secondary" fontWeight={700}>
               vs
             </Typography>
             <Chip
@@ -341,7 +341,7 @@ function MatchupSlot({
             )}
           </Box>
         ) : (
-          <Typography variant="caption" color="text.disabled">
+          <Typography variant="caption" color="text.secondary">
             {t("matchNotRecorded")}
           </Typography>
         )}
@@ -353,7 +353,7 @@ function MatchupSlot({
               size="small"
               onClick={startEdit}
               aria-label="Modifica"
-              sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "primary.main" } }}
+              sx={{ p: "3px", color: "text.secondary", "&:hover": { color: "primary.main" } }}
             >
               <EditIcon sx={{ fontSize: 14 }} />
             </IconButton>
@@ -365,7 +365,7 @@ function MatchupSlot({
                 onClick={handleDelete}
                 disabled={deleting}
                 aria-label="Cancella risultato"
-                sx={{ p: "3px", color: "text.disabled", "&:hover": { color: "error.main" } }}
+                sx={{ p: "3px", color: "text.secondary", "&:hover": { color: "error.main" } }}
               >
                 {deleting ? (
                   <CircularProgress size={12} />

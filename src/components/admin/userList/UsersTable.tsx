@@ -253,7 +253,7 @@ export default function UsersTable({
                       </Tooltip>
                     </Box>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography variant="body2" color="text.secondary">
                       —
                     </Typography>
                   )}
@@ -282,7 +282,7 @@ export default function UsersTable({
                   {row.gender ? (
                     <Typography variant="body2">{GENDER_LABELS_SHORT[row.gender]}</Typography>
                   ) : (
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography variant="body2" color="text.secondary">
                       —
                     </Typography>
                   )}

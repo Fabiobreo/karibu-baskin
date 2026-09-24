@@ -127,7 +127,7 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
           );
         })}
       </Box>
-      <Typography variant="caption" color="text.disabled" sx={{ display: "block", mt: 1 }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
         Per altri ruoli o per i dati atleta usa la scheda utente nella lista qui sotto.
       </Typography>
     </Paper>

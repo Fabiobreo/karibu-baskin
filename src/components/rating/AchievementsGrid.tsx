@@ -65,7 +65,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
         {earned ? (
           <CheckCircleIcon sx={{ fontSize: 16, color: c.text }} />
         ) : (
-          <LockOutlinedIcon sx={{ fontSize: 15, color: "text.disabled" }} />
+          <LockOutlinedIcon sx={{ fontSize: 15, color: "text.secondary" }} />
         )}
       </Box>
 
@@ -110,7 +110,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
       {earned && item.unlockedAtLabel && (
         <Typography
           sx={{
-            color: "text.disabled",
+            color: "text.secondary",
             fontSize: "0.75rem",
             lineHeight: 1.35,
             display: "block",

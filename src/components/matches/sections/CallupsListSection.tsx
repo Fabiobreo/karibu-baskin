@@ -35,7 +35,7 @@ export default function CallupsListSection({
         </Typography>
         <Typography
           variant="body2"
-          color="text.disabled"
+          color="text.secondary"
           sx={{ mt: 0.5, mb: 2.5, maxWidth: 360, mx: "auto" }}
         >
           {t("callupsRestricted")}
@@ -54,7 +54,7 @@ export default function CallupsListSection({
         <Typography variant="h6" color="text.secondary" fontWeight={700}>
           {t("noCallups")}
         </Typography>
-        <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           {t("callupsUnavailable")}
         </Typography>
       </Box>
@@ -147,7 +147,7 @@ export default function CallupsListSection({
           <Typography
             variant="caption"
             fontWeight={700}
-            sx={{ ...groupLabelSx, color: "text.disabled" }}
+            sx={{ ...groupLabelSx, color: "text.secondary" }}
           >
             {t("unassignedRole", { count: noRole.length })}
           </Typography>
@@ -166,7 +166,7 @@ export default function CallupsListSection({
           <Typography
             variant="caption"
             fontWeight={700}
-            sx={{ ...groupLabelSx, color: "text.disabled" }}
+            sx={{ ...groupLabelSx, color: "text.secondary" }}
           >
             {t("notPlayed", { count: notPlayed.length })}
           </Typography>

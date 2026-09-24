@@ -78,7 +78,7 @@ function UpcomingCard({ s }: { s: AdminUpcomingSessionRow }) {
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    bgcolor: ROLE_COLORS[a.role] ?? "text.disabled",
+                    bgcolor: ROLE_COLORS[a.role] ?? "text.secondary",
                     ml: "8px !important",
                   }}
                 />

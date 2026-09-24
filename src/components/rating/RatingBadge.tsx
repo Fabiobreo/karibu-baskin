@@ -17,7 +17,7 @@ interface RatingBadgeProps {
 export default function RatingBadge({ mu, sigma, compact }: RatingBadgeProps) {
   if (mu == null || sigma == null) {
     return (
-      <Typography variant="body2" color="text.disabled" component="span">
+      <Typography variant="body2" color="text.secondary" component="span">
         —
       </Typography>
     );
@@ -46,7 +46,7 @@ export default function RatingBadge({ mu, sigma, compact }: RatingBadgeProps) {
           {muLabel}
         </Typography>
         {!compact && (
-          <Typography variant="caption" component="span" color="text.disabled">
+          <Typography variant="caption" component="span" color="text.secondary">
             ±{sigmaLabel}
           </Typography>
         )}

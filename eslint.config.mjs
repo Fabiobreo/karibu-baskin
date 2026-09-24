@@ -33,6 +33,21 @@ export default [
           message:
             "Colore esadecimale dentro sx: usa un token del tema (primary.main, text.secondary, medal.gold…) invece del letterale.",
         },
+        // UX-09: `text.disabled` (#9E9E9E, 2,67:1 su bianco) non e' un colore di
+        // testo. Esenti solo le icone grandi degli stati vuoti (fontSize >= 40
+        // nello stesso oggetto `sx`): sono decorative. I controlli disabilitati
+        // lo prendono gia' da MUI, senza passare di qui.
+        {
+          selector:
+            "ObjectExpression:not(:has(Property[key.name='fontSize'] > Literal[value>=40])) > Property[key.name='color'] Literal[value='text.disabled']",
+          message:
+            "text.disabled non regge il contrasto come testo (2,67:1): usa text.secondary. Se indica uno stato (non marcato, zero, passato) aggiungi un secondo segnale oltre al colore.",
+        },
+        {
+          selector: "JSXAttribute[name.name='color'] Literal[value='text.disabled']",
+          message:
+            "text.disabled non regge il contrasto come testo (2,67:1): usa text.secondary. Se indica uno stato (non marcato, zero, passato) aggiungi un secondo segnale oltre al colore.",
+        },
       ],
     },
   },

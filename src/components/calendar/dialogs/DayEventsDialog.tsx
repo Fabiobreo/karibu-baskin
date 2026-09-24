@@ -143,7 +143,7 @@ export default function DayEventsDialog({
                       {ev.teamName ? ` · ${ev.teamName}` : ""}
                     </Typography>
                   </Box>
-                  <ChevronRightIcon sx={{ fontSize: 18, color: "text.disabled", flexShrink: 0 }} />
+                  <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary", flexShrink: 0 }} />
                 </>
               );
 

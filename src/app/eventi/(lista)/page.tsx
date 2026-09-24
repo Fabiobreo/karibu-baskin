@@ -89,7 +89,7 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
           </Typography>
           {ev.location && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.75 }}>
-              <PlaceIcon sx={{ fontSize: 15, color: "text.disabled" }} />
+              <PlaceIcon sx={{ fontSize: 15, color: "text.secondary" }} />
               <Typography variant="caption" color="text.secondary" noWrap>
                 {ev.location}
               </Typography>

@@ -82,7 +82,7 @@ export default function LeaderCard({
           <Typography variant="caption" color="text.secondary" fontWeight={600}>
             pt
           </Typography>
-          <Typography variant="caption" color="text.disabled" sx={{ ml: 0.5 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
             · {avgLabel}
           </Typography>
         </Box>

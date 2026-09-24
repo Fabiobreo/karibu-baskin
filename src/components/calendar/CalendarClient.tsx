@@ -349,12 +349,15 @@ export default function CalendarClient({
                     height: { xs: 22, sm: 26 },
                     borderRadius: "50%",
                     fontWeight: isCurrentDay ? 800 : 500,
-                    bgcolor: isCurrentDay ? "primary.main" : "transparent",
+                    // Oggi: numero bianco sul riempimento arancio (primary.fill,
+                    // 4,71:1). Fuori mese: grigio leggibile, la posizione nella
+                    // griglia dice gia' che non e' il mese corrente (UX-09).
+                    bgcolor: isCurrentDay ? "primary.fill" : "transparent",
                     color: isCurrentDay
                       ? "common.white"
                       : inMonth
                         ? "text.primary"
-                        : "text.disabled",
+                        : "text.secondary",
                     fontSize: { xs: "0.72rem", sm: "0.8rem" },
                     mb: "3px",
                     flexShrink: 0,

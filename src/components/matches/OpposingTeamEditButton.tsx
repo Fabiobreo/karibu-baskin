@@ -189,7 +189,7 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     />
                   ) : (
-                    <PhotoCameraIcon sx={{ color: "text.disabled" }} />
+                    <PhotoCameraIcon sx={{ color: "text.secondary" }} />
                   )}
                 </Box>
                 <Stack spacing={1}>

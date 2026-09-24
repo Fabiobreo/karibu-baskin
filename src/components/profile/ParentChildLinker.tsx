@@ -181,7 +181,7 @@ export default function ParentChildLinker({
                         label={t("noAccount")}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: "0.7rem", color: "text.disabled", borderColor: "divider" }}
+                        sx={{ fontSize: "0.7rem", color: "text.secondary", borderColor: "divider" }}
                       />
                     )}
                   </Box>

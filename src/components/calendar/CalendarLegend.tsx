@@ -110,7 +110,7 @@ export default function CalendarLegend({
                       width: 5,
                       height: 18,
                       borderRadius: "3px",
-                      bgcolor: team.color ?? "text.disabled",
+                      bgcolor: team.color ?? "text.secondary",
                       ...decorationSx(theme, {
                         echo: mine.has(team.id) ? (team.color ?? null) : null,
                         echoGap: 2,
@@ -147,7 +147,7 @@ function LegendCaption({ children }: { children: React.ReactNode }) {
     <Typography
       variant="caption"
       sx={{
-        color: "text.disabled",
+        color: "text.secondary",
         fontWeight: 700,
         textTransform: "uppercase",
         letterSpacing: "0.04em",
@@ -203,7 +203,9 @@ function LegendItem({
       <Typography
         variant="body2"
         sx={{
-          color: active ? "text.secondary" : "text.disabled",
+          // Filtro spento: barrato (il segnale che non dipende dal colore) e
+          // grigio; acceso: testo pieno.
+          color: active ? "text.primary" : "text.secondary",
           textDecoration: active ? "none" : "line-through",
           transition: "color 0.15s",
         }}

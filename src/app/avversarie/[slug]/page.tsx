@@ -262,7 +262,12 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
 
           {seasonsPlayed.length > 0 && (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, alignItems: "center" }}>
-              <Typography variant="caption" color="text.disabled" fontWeight={700} sx={{ mr: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={700}
+                sx={{ mr: 0.5 }}
+              >
                 {t("facedInSeasons")}
               </Typography>
               {seasonsPlayed.map((s) => (
@@ -365,7 +370,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                           flexWrap: "wrap",
                         }}
                       >
-                        <Typography variant="caption" color="text.disabled" fontWeight={700}>
+                        <Typography variant="caption" color="text.secondary" fontWeight={700}>
                           {t("lastMatches", { count: last5.length })}
                         </Typography>
                         {last5.map((m) => {
@@ -485,7 +490,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 0.4,
-                                color: "text.disabled",
+                                color: "text.secondary",
                               }}
                             >
                               {m.isHome ? (
@@ -521,7 +526,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                               />
                               <Typography
                                 variant="caption"
-                                color="text.disabled"
+                                color="text.secondary"
                                 sx={{ fontSize: "0.68rem" }}
                               >
                                 {matchTypeLabel(m.matchType)}
@@ -544,7 +549,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 {m.ourScore} – {m.theirScore}
                               </Typography>
                             ) : (
-                              <Typography variant="body2" color="text.disabled">
+                              <Typography variant="body2" color="text.secondary">
                                 {t("toPlay")}
                               </Typography>
                             )}

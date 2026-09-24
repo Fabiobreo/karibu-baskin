@@ -642,7 +642,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5 }}>
                   {t("seasonBalance")}
                 </Typography>
-                <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                   {includeFriendlies ? t("filterAll") : t("filterOfficial")}
                 </Typography>
               </Box>
@@ -699,7 +699,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     ) : diff < 0 ? (
                       <TrendingDownIcon sx={{ fontSize: 18, color: "match.loss" }} />
                     ) : (
-                      <TrendingFlatIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+                      <TrendingFlatIcon sx={{ fontSize: 18, color: "text.secondary" }} />
                     )}
                     <Typography
                       variant="caption"
@@ -727,7 +727,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   </Typography>
                   <Box sx={{ display: "flex", gap: 2, mt: "auto" }}>
                     <Box>
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography variant="caption" color="text.secondary">
                         {t("statScored")}
                       </Typography>
                       <Typography fontWeight={700} sx={{ fontVariantNumeric: "tabular-nums" }}>
@@ -735,7 +735,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="caption" color="text.disabled">
+                      <Typography variant="caption" color="text.secondary">
                         {t("statConceded")}
                       </Typography>
                       <Typography fontWeight={700} sx={{ fontVariantNumeric: "tabular-nums" }}>
@@ -779,11 +779,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     >
                       {formatDecimal(pointsFor / playedMatches.length, locale)}
                     </Typography>
-                    <Typography variant="body2" color="text.disabled">
+                    <Typography variant="body2" color="text.secondary">
                       pt
                     </Typography>
                   </Box>
-                  <Typography variant="caption" color="text.disabled" sx={{ mt: "auto" }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
                     {t("statMatches", { count: playedMatches.length })}
                   </Typography>
                 </Paper>
@@ -843,11 +843,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       </Typography>
                     </Box>
                   ) : (
-                    <Typography variant="h6" sx={{ color: "text.disabled", fontWeight: 700 }}>
+                    <Typography variant="h6" sx={{ color: "text.secondary", fontWeight: 700 }}>
                       —
                     </Typography>
                   )}
-                  <Typography variant="caption" color="text.disabled" sx={{ mt: "auto" }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
                     {bestWinStreak > 1
                       ? t("statBestStreak", { count: bestWinStreak })
                       : streakResult
@@ -980,7 +980,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         </Typography>
                         <Typography
                           variant="caption"
-                          color="text.disabled"
+                          color="text.secondary"
                           sx={{ fontWeight: 600 }}
                         >
                           ({members.length})
@@ -1112,7 +1112,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Typography variant="h6" color="text.secondary">
               {t("seasonPreparing")}
             </Typography>
-            <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               {t("seasonPreparingDesc")}
             </Typography>
           </Box>

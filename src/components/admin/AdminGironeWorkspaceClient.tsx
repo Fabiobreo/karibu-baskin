@@ -457,7 +457,7 @@ export default function AdminGironeWorkspaceClient({
           </Button>
         </Box>
         {ourTeamsInGroup.length === 0 ? (
-          <Typography variant="body2" color="text.disabled">
+          <Typography variant="body2" color="text.secondary">
             Nessuna nostra squadra in questo girone. Aggiungine almeno una per inserire partite.
           </Typography>
         ) : (
@@ -531,7 +531,7 @@ export default function AdminGironeWorkspaceClient({
           </Button>
         </Box>
         {teamsInGroup.length === 0 ? (
-          <Typography variant="body2" color="text.disabled">
+          <Typography variant="body2" color="text.secondary">
             Nessuna squadra ancora associata. Clicca &quot;Aggiungi avversaria&quot; per associarne
             una.
           </Typography>
@@ -719,7 +719,7 @@ export default function AdminGironeWorkspaceClient({
         </Paper>
 
         {gmMatches.length === 0 ? (
-          <Typography variant="body2" color="text.disabled" sx={{ textAlign: "center", py: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 2 }}>
             Nessun risultato esterno inserito.
           </Typography>
         ) : (
@@ -851,7 +851,7 @@ export default function AdminGironeWorkspaceClient({
                       ))}
                   </Select>
                 </FormControl>
-                <Typography variant="caption" color="text.disabled">
+                <Typography variant="caption" color="text.secondary">
                   Sono nascoste le squadre già presenti nel girone.
                 </Typography>
               </>
@@ -873,7 +873,7 @@ export default function AdminGironeWorkspaceClient({
                   fullWidth
                 />
                 <Divider />
-                <Typography variant="caption" color="text.disabled">
+                <Typography variant="caption" color="text.secondary">
                   La squadra viene aggiunta all&apos;anagrafica generale e associata subito a questo
                   girone.
                 </Typography>
@@ -930,7 +930,7 @@ export default function AdminGironeWorkspaceClient({
                   ))}
               </Select>
             </FormControl>
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="text.secondary">
               Sono nascoste le squadre già associate a questo girone.
             </Typography>
           </Stack>
