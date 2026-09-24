@@ -67,6 +67,10 @@ interface Props {
 
 // ── Icona stato presenza ──────────────────────────────────────────────────────
 
+// Tempo per annullare una disiscrizione (UX-05): 10 s, non 3, cosi' anche chi
+// legge lentamente fa in tempo a leggere l'avviso e a toccare "Annulla".
+const UNDO_MS = 10_000;
+
 function AttendanceIcon({ attended }: { attended: boolean | null | undefined }) {
   if (attended === true) return <CheckCircleIcon sx={{ fontSize: 14, color: "success.main" }} />;
   if (attended === false) return <CancelIcon sx={{ fontSize: 14, color: "error.main" }} />;
@@ -278,6 +282,7 @@ export default function RosterByRole({
   onManage,
 }: Props) {
   const t = useTranslations("trainings");
+  const tCommon = useTranslations("common");
   const { roleLabel } = useEntityLabels();
 
   function attendedLabel(attended: boolean | null | undefined): string {
@@ -316,7 +321,7 @@ export default function RosterByRole({
     onSuccess: () => onUnregistered?.(),
     onError: (err) =>
       showToast({
-        message: err instanceof Error ? err.message : "Errore di rete, riprova",
+        message: err instanceof Error ? err.message : tCommon("networkError"),
         severity: "error",
       }),
   });
@@ -341,12 +346,12 @@ export default function RosterByRole({
     const isOwnChild =
       (!!reg.childId && (parentChildIds.includes(reg.childId) || reg.childId === linkedChildId)) ||
       (!!reg.userId && childUserIds.includes(reg.userId));
-    const msg =
-      isStaff && reg.userId !== currentUserId && !isOwnChild
-        ? `${reg.name} rimosso dall'allenamento`
-        : isOwnChild && reg.childId !== linkedChildId
-          ? `${reg.name} disiscritto/a`
-          : "Disiscrizione effettuata";
+    const aboutSomeoneElse =
+      (isStaff && reg.userId !== currentUserId && !isOwnChild) ||
+      (isOwnChild && reg.childId !== linkedChildId);
+    const msg = aboutSomeoneElse
+      ? t("rosterUnregisteredOther", { name: reg.name })
+      : t("rosterUnregisteredSelf");
 
     pendingDeleteRegRef.current = reg;
     setPendingDeleteId(reg.id);
@@ -365,20 +370,20 @@ export default function RosterByRole({
       pendingDeleteRegRef.current = null;
       setPendingDeleteId(null);
       void executeDeletion(reg);
-    }, 3000);
+    }, UNDO_MS);
 
     showToast({
       message: msg,
       severity: "success",
-      duration: 3000,
-      progressMs: 3000,
+      duration: UNDO_MS,
+      progressMs: UNDO_MS,
       action: (
         <Button
           size="small"
           onClick={cancelPending}
           sx={{ color: "common.white", fontWeight: 700, ml: 0.5, minWidth: 0, p: "2px 8px" }}
         >
-          Annulla
+          {t("rosterUndo")}
         </Button>
       ),
     });
@@ -402,11 +407,11 @@ export default function RosterByRole({
       } else {
         // Rollback
         setAttendedOverrides((prev) => ({ ...prev, [reg.id]: currentAttended ?? null }));
-        showToast({ message: "Errore nell'aggiornamento della presenza", severity: "error" });
+        showToast({ message: t("attendanceUpdateError"), severity: "error" });
       }
     } catch {
       setAttendedOverrides((prev) => ({ ...prev, [reg.id]: currentAttended ?? null }));
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+      showToast({ message: tCommon("networkError"), severity: "error" });
     } finally {
       setTogglingId(null);
     }
@@ -448,7 +453,7 @@ export default function RosterByRole({
           return rollback;
         });
         showToast({
-          message: "Errore nell'aggiornamento automatico delle presenze",
+          message: t("attendanceAutoError"),
           severity: "error",
         });
       } else {

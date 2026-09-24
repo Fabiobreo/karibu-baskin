@@ -1,6 +1,6 @@
 # UX-05 · Messaggi che restano
 
-**Ondata:** 0 · **Stima:** M · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 0 · **Stima:** M · **Dipende da:** nessuno · **Stato:** fatto (commit su `develop`): errori che restano finche' non si chiudono, avvisi almeno 6 s, errore di salvataggio sotto la partita con "Riprova", annullamento della disiscrizione per 10 s, blocco d'iscrizione con motivo leggibile e "Chiedi allo staff"
 
 ## Problema
 
@@ -25,3 +25,18 @@ Molti riscontri spariscono prima che una persona con difficoltà di lettura o di
 - Un errore di rete durante il salvataggio della disponibilità lascia un messaggio visibile vicino alla partita fino al nuovo tentativo.
 - Nessun messaggio d'errore si chiude da solo.
 - Nessuna stringa italiana scritta nel codice di `RosterByRole`.
+
+## Esito
+
+- **Scelta del punto 3:** annullamento per 10 s (decisione del committente, settembre 2026), niente dialog di conferma.
+- `ToastContext`: `toastAutoHideMs` (con test): errori senza chiusura automatica, e un tocco altrove non li chiude; tutti gli altri avvisi almeno 6 s, anche quelli che chiedevano meno (es. "Link copiato" in `ShareSection`, prima 2 s).
+- `MieDisponibilitaClient`: se il salvataggio fallisce, sotto la partita resta un `Alert` "Risposta non salvata." con il motivo e "Riprova", che ripete la risposta scelta. Niente piu' avviso che sparisce. Un errore di rete mostra il testo tradotto invece di "Failed to fetch".
+- `RosterByRole`: annullamento per 10 s (`UNDO_MS`), messaggi, "Annulla" ed errori delle presenze in `it.json`/`en.json`. Il messaggio per figli e iscritti rimossi dallo staff ora e' neutro ("Iscrizione di {name} annullata"), senza "disiscritto/a".
+- `RegistrationForm`: nuovo `RegistrationBlocked`, usato nei due punti in cui l'iscrizione e' bloccata (prima nel secondo il motivo mancava del tutto): motivo in `body2` `text.primary`, frase d'aiuto e "Chiedi allo staff" verso `/contatti`.
+- Verifica con Playwright su desktop e mobile, prima e dopo: errore di rete simulato sulla disponibilita' (dopo 5 s prima non restava nulla, ora c'e' l'avviso sotto la partita), blocco di un allenamento riservato al ruolo 1, "Annulla" ancora visibile dopo 5 s e iscrizione conservata dopo l'annullamento. `npm run a11y` senza nuove violazioni.
+
+**Rimasto fuori**
+
+- Gli altri ~270 punti che chiamano `showToast` con un errore riferito a un elemento preciso (per esempio le presenze in `RosterByRole`, il form partita in admin) mostrano ancora l'errore solo nell'avviso, che pero' ora non sparisce da solo. Portarli accanto all'elemento va fatto caso per caso.
+- Il pulsante per togliere un'iscrizione ha l'etichetta generica "Rimuovi iscrizione", senza il nome: con piu' pulsanti nella lista uno screen reader non li distingue. Da valutare in un ticket di accessibilita'.
+- `/contatti` e' il passo successivo di "Chiedi allo staff": se UX-06 cambia il modulo contatti, controllare che il link resti sensato.

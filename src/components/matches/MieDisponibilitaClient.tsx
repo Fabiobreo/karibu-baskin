@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
+  Alert,
   Typography,
   Box,
   Button,
@@ -53,6 +54,12 @@ interface Props {
   initialMatches: AvailabilityMatch[];
 }
 
+interface SaveFailure {
+  /** La risposta che l'utente voleva salvare, da ripetere con "Riprova". */
+  value: boolean;
+  message: string;
+}
+
 function entityKey(matchId: string, entity: AvailabilityEntity) {
   return `${matchId}:${entity.kind}:${entity.id}`;
 }
@@ -87,6 +94,10 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
   const [overrides, setOverrides] = useState<Map<string, boolean>>(new Map());
   // Salvataggi in corso (toggle disabilitato nel frattempo)
   const [savingKeys, setSavingKeys] = useState<Set<string>>(new Set());
+  // Salvataggi falliti: l'errore resta scritto sotto la partita, con il
+  // pulsante per riprovare, finche' non si ritenta (UX-05). Un avviso che
+  // sparisce da solo faceva credere di aver risposto.
+  const [failures, setFailures] = useState<Map<string, SaveFailure>>(new Map());
   const [showPast, setShowPast] = useState(false);
   const { showToast } = useToast();
   const t = useTranslations("profile");
@@ -108,6 +119,12 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
 
     setOverrides((m) => new Map(m).set(k, value));
     setSavingKeys((s) => new Set(s).add(k));
+    setFailures((m) => {
+      if (!m.has(k)) return m;
+      const next = new Map(m);
+      next.delete(k);
+      return next;
+    });
     try {
       const body: { available: boolean; childId?: string } = { available: value };
       if (entity.kind === "child") body.childId = entity.id;
@@ -128,10 +145,17 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
         else next.set(k, prev);
         return next;
       });
-      showToast({
-        message: err instanceof Error ? err.message : tCommon("error"),
-        severity: "error",
-      });
+      setFailures((m) =>
+        new Map(m).set(k, {
+          value,
+          // `fetch` senza rete lancia un TypeError con il testo del browser
+          // ("Failed to fetch"): non tradotto e incomprensibile.
+          message:
+            err instanceof Error && !(err instanceof TypeError)
+              ? err.message
+              : tCommon("networkError"),
+        })
+      );
     } finally {
       setSavingKeys((s) => {
         const next = new Set(s);
@@ -180,6 +204,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                   isPast={false}
                   effectiveValue={effectiveValue}
                   isSaving={(e) => savingKeys.has(entityKey(m.matchId, e))}
+                  failure={(e) => failures.get(entityKey(m.matchId, e))}
                   onChange={handleChange}
                 />
               ))}
@@ -218,6 +243,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                       isPast={true}
                       effectiveValue={effectiveValue}
                       isSaving={() => false}
+                      failure={() => undefined}
                       onChange={() => {}}
                     />
                   ))}
@@ -236,6 +262,7 @@ interface CompactMatchRowProps {
   isPast: boolean;
   effectiveValue: (matchId: string, entity: AvailabilityEntity) => boolean | null;
   isSaving: (entity: AvailabilityEntity) => boolean;
+  failure: (entity: AvailabilityEntity) => SaveFailure | undefined;
   onChange: (matchId: string, entity: AvailabilityEntity, value: boolean | null) => void;
 }
 
@@ -244,6 +271,7 @@ function CompactMatchRow({
   isPast,
   effectiveValue,
   isSaving,
+  failure,
   onChange,
 }: CompactMatchRowProps) {
   const t = useTranslations("profile");
@@ -292,108 +320,132 @@ function CompactMatchRow({
       {m.entities.map((entity) => {
         const value = effectiveValue(m.matchId, entity);
         const saving = isSaving(entity);
+        const failed = failure(entity);
         return (
-          <Box
-            key={`${entity.kind}-${entity.id}`}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 1,
-              py: 0.25,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0, flex: 1 }}>
-              {m.entities.length > 1 && (
-                <Box
+          <Box key={`${entity.kind}-${entity.id}`}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+                py: 0.25,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0, flex: 1 }}>
+                {m.entities.length > 1 && (
+                  <Box
+                    sx={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      bgcolor: entity.teamColor ?? "primary.main",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <Typography
+                  variant="body2"
+                  fontWeight={500}
+                  noWrap
+                  sx={{ fontSize: "0.82rem" }}
+                  title={`${entity.name} · ${entity.teamName}`}
+                >
+                  {m.entities.length > 1 ? entity.name : entity.teamName}
+                </Typography>
+                {saving && <CircularProgress size={12} sx={{ flexShrink: 0 }} />}
+              </Box>
+              {isPast ? (
+                // Niente pulsanti spenti: la risposta data si legge come testo.
+                <Typography
+                  variant="caption"
+                  fontWeight={700}
                   sx={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    bgcolor: entity.teamColor ?? "primary.main",
                     flexShrink: 0,
+                    color:
+                      value === true
+                        ? "match.win"
+                        : value === false
+                          ? "match.loss"
+                          : "text.secondary",
                   }}
-                />
+                >
+                  {value === true
+                    ? t("answeredYes")
+                    : value === false
+                      ? t("answeredNo")
+                      : t("answeredNone")}
+                </Typography>
+              ) : (
+                <ToggleButtonGroup
+                  value={value}
+                  exclusive
+                  size="small"
+                  disabled={saving}
+                  onChange={(_, v) => {
+                    if (v === null) return; // ignora deselezione (non si può tornare a "non risposto")
+                    onChange(m.matchId, entity, v as boolean);
+                  }}
+                  sx={{
+                    "& .MuiToggleButton-root": {
+                      py: 0.25,
+                      px: 1,
+                      fontSize: "0.7rem",
+                      fontWeight: 700,
+                      textTransform: "none",
+                      border: "1px solid",
+                      borderColor: "divider",
+                    },
+                  }}
+                >
+                  <ToggleButton
+                    value={true}
+                    sx={{
+                      "&.Mui-selected": {
+                        bgcolor: "match.win",
+                        color: "common.white",
+                      },
+                    }}
+                  >
+                    <EventAvailableIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                    {tCommon("yes")}
+                  </ToggleButton>
+                  <ToggleButton
+                    value={false}
+                    sx={{
+                      "&.Mui-selected": {
+                        bgcolor: "match.loss",
+                        color: "common.white",
+                      },
+                    }}
+                  >
+                    <EventBusyIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                    {tCommon("no")}
+                  </ToggleButton>
+                </ToggleButtonGroup>
               )}
-              <Typography
-                variant="body2"
-                fontWeight={500}
-                noWrap
-                sx={{ fontSize: "0.82rem" }}
-                title={`${entity.name} · ${entity.teamName}`}
-              >
-                {m.entities.length > 1 ? entity.name : entity.teamName}
-              </Typography>
-              {saving && <CircularProgress size={12} sx={{ flexShrink: 0 }} />}
             </Box>
-            {isPast ? (
-              // Niente pulsanti spenti: la risposta data si legge come testo.
-              <Typography
-                variant="caption"
-                fontWeight={700}
-                sx={{
-                  flexShrink: 0,
-                  color:
-                    value === true
-                      ? "match.win"
-                      : value === false
-                        ? "match.loss"
-                        : "text.secondary",
-                }}
+            {failed && (
+              <Alert
+                severity="error"
+                sx={{ mt: 0.5, mb: 0.5, py: 0 }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    disabled={saving}
+                    onClick={() => onChange(m.matchId, entity, failed.value)}
+                    sx={{ fontWeight: 700 }}
+                  >
+                    {tCommon("retry")}
+                  </Button>
+                }
               >
-                {value === true
-                  ? t("answeredYes")
-                  : value === false
-                    ? t("answeredNo")
-                    : t("answeredNone")}
-              </Typography>
-            ) : (
-              <ToggleButtonGroup
-                value={value}
-                exclusive
-                size="small"
-                disabled={saving}
-                onChange={(_, v) => {
-                  if (v === null) return; // ignora deselezione (non si può tornare a "non risposto")
-                  onChange(m.matchId, entity, v as boolean);
-                }}
-                sx={{
-                  "& .MuiToggleButton-root": {
-                    py: 0.25,
-                    px: 1,
-                    fontSize: "0.7rem",
-                    fontWeight: 700,
-                    textTransform: "none",
-                    border: "1px solid",
-                    borderColor: "divider",
-                  },
-                }}
-              >
-                <ToggleButton
-                  value={true}
-                  sx={{
-                    "&.Mui-selected": {
-                      bgcolor: "match.win",
-                      color: "common.white",
-                    },
-                  }}
-                >
-                  <EventAvailableIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                  {tCommon("yes")}
-                </ToggleButton>
-                <ToggleButton
-                  value={false}
-                  sx={{
-                    "&.Mui-selected": {
-                      bgcolor: "match.loss",
-                      color: "common.white",
-                    },
-                  }}
-                >
-                  <EventBusyIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                  {tCommon("no")}
-                </ToggleButton>
-              </ToggleButtonGroup>
+                <Box component="span" sx={{ fontWeight: 700 }}>
+                  {t("availabilityNotSaved")}
+                </Box>{" "}
+                {failed.message}
+              </Alert>
             )}
           </Box>
         );

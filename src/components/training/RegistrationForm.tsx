@@ -315,15 +315,7 @@ export default function RegistrationForm({
           </Box>
         ) : hasConfirmedRole && restrictionBlock ? (
           /* Pre-check: ruolo già confermato e bloccato dalle restrizioni → niente form */
-          <Box sx={{ textAlign: "center", py: 2 }}>
-            <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
-            <Typography variant="body2" color="error.main" fontWeight={600}>
-              {t("cannotRegister")}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-              {restrictionBlock}
-            </Typography>
-          </Box>
+          <RegistrationBlocked reason={restrictionBlock} />
         ) : (
           <>
             {/* Intestazione soggetto */}
@@ -608,12 +600,7 @@ export default function RegistrationForm({
                 )}
 
                 {restrictionBlock ? (
-                  <Box sx={{ textAlign: "center", py: 1 }}>
-                    <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
-                    <Typography variant="body2" color="error.main" fontWeight={600}>
-                      {t("cannotRegister")}
-                    </Typography>
-                  </Box>
+                  <RegistrationBlocked reason={restrictionBlock} />
                 ) : (
                   <>
                     <TextField
@@ -651,6 +638,31 @@ export default function RegistrationForm({
             )}
           </>
         ))}
+    </Box>
+  );
+}
+
+/**
+ * Iscrizione non consentita (UX-05): il motivo in testo leggibile, non in
+ * didascalia grigia, e una via d'uscita verso lo staff invece di un vicolo cieco.
+ */
+function RegistrationBlocked({ reason }: { reason: string }) {
+  const t = useTranslations("trainings");
+  return (
+    <Box sx={{ textAlign: "center", py: 2 }}>
+      <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
+      <Typography variant="body1" color="error.main" fontWeight={700}>
+        {t("cannotRegister")}
+      </Typography>
+      <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>
+        {reason}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+        {t("cannotRegisterHelp")}
+      </Typography>
+      <Button href="/contatti" variant="outlined" size="small" sx={{ mt: 1, fontWeight: 700 }}>
+        {t("askStaff")}
+      </Button>
     </Box>
   );
 }

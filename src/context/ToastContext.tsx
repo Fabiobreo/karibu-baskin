@@ -5,6 +5,7 @@ import { Snackbar, Alert, AlertColor, Box, LinearProgress } from "@mui/material"
 interface ToastOptions {
   message: string;
   severity?: AlertColor;
+  /** Durata in ms. Mai sotto `MIN_TOAST_MS`; ignorata per gli errori. */
   duration?: number;
   /** Optional action button rendered inside the toast (e.g. "Annulla"). */
   action?: ReactNode;
@@ -14,6 +15,17 @@ interface ToastOptions {
 
 interface ToastContextValue {
   showToast: (options: ToastOptions) => void;
+}
+
+// Linee guida W3C COGA (UX-05): niente limiti di tempo sulle informazioni
+// importanti. Gli errori restano finche' l'utente non li chiude; gli altri
+// avvisi almeno 6 s, abbastanza per chi legge lentamente.
+const MIN_TOAST_MS = 6000;
+
+/** `null` = l'avviso non si chiude da solo. */
+export function toastAutoHideMs(options: Pick<ToastOptions, "severity" | "duration">) {
+  if (options.severity === "error") return null;
+  return Math.max(options.duration ?? MIN_TOAST_MS, MIN_TOAST_MS);
 }
 
 export const ToastContext = createContext<ToastContextValue>({ showToast: () => {} });
@@ -51,8 +63,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <Snackbar
         open={open}
-        autoHideDuration={toast.duration ?? 3500}
-        onClose={() => setOpen(false)}
+        autoHideDuration={toastAutoHideMs(toast)}
+        onClose={(_, reason) => {
+          // Un tocco altrove non deve far sparire un errore non ancora letto.
+          if (reason === "clickaway" && toast.severity === "error") return;
+          setOpen(false);
+        }}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
