@@ -75,7 +75,9 @@ export default function GlobalError({
           <button
             onClick={reset}
             style={{
-              background: "#E65100",
+              // Niente tema qui (errore del layout radice): stesso riempimento
+              // del bottone primario, ORANGE_FILL in theme.ts (UX-07).
+              background: "#C84B00",
               color: "#fff",
               border: "none",
               borderRadius: 12,

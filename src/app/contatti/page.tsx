@@ -231,7 +231,7 @@ export default function ContattiPage() {
           {/* Titolo sezione */}
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -352,7 +352,7 @@ export default function ContattiPage() {
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 variant="overline"
-                color="primary.onLight"
+                color="text.secondary"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >
@@ -381,7 +381,7 @@ export default function ContattiPage() {
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography
                 variant="overline"
-                color="primary.onLight"
+                color="text.secondary"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >
@@ -478,7 +478,7 @@ export default function ContattiPage() {
           {/* Sponsor attuali — logo strip */}
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -546,7 +546,7 @@ export default function ContattiPage() {
           {/* Diventa sponsor */}
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >

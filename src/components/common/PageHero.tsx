@@ -6,7 +6,6 @@ import type { ContainerProps } from "@mui/material";
 interface PageHeroProps {
   title?: string;
   chip?: string;
-  chipWhite?: boolean;
   subtitle?: string;
   subtitleMaxWidth?: number;
   breadcrumb?: React.ReactNode;
@@ -20,7 +19,6 @@ interface PageHeroProps {
 export default function PageHero({
   title,
   chip,
-  chipWhite = false,
   subtitle,
   subtitleMaxWidth = 560,
   breadcrumb,
@@ -87,21 +85,20 @@ export default function PageHero({
       <Container maxWidth={maxWidth} sx={{ position: "relative", zIndex: 1 }}>
         {title ? (
           <>
-            {chip &&
-              (chipWhite ? (
-                <Chip
-                  label={chip}
-                  size="small"
-                  sx={{
-                    mb: 2,
-                    fontWeight: 700,
-                    backgroundColor: "rgba(255,255,255,0.12)",
-                    color: "rgba(255,255,255,0.8)",
-                  }}
-                />
-              ) : (
-                <Chip label={chip} color="primary" size="small" sx={{ mb: 2, fontWeight: 700 }} />
-              ))}
+            {/* Chip neutro: sopra il titolo informa, non si tocca, quindi
+                niente arancio pieno (UX-07: arancio = "qui si agisce"). */}
+            {chip && (
+              <Chip
+                label={chip}
+                size="small"
+                sx={{
+                  mb: 2,
+                  fontWeight: 700,
+                  backgroundColor: alpha(brandColor.white, 0.12),
+                  color: alpha(brandColor.white, 0.85),
+                }}
+              />
+            )}
             <Typography
               variant="h3"
               component="h1"

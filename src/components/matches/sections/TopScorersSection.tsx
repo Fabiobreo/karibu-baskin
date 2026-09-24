@@ -83,7 +83,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                 sx={{
                   fontSize: "1.8rem",
                   fontWeight: 900,
-                  color: "primary.onLight",
+                  color: "text.primary",
                   lineHeight: 1.1,
                   mt: 1,
                 }}

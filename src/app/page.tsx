@@ -89,7 +89,7 @@ export default async function HomePage() {
         <Box sx={{ mb: 8 }}>
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -131,7 +131,7 @@ export default async function HomePage() {
         <Box>
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -162,7 +162,7 @@ export default async function HomePage() {
                       width: 40,
                       height: 40,
                       borderRadius: "50%",
-                      backgroundColor: "primary.main",
+                      backgroundColor: "primary.fill",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",

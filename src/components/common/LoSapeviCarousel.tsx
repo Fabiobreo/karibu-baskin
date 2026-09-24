@@ -82,7 +82,7 @@ export default function LoSapeviCarousel() {
           top: 0,
           left: 0,
           height: 3,
-          bgcolor: "primary.main",
+          bgcolor: "primary.fill",
           "@keyframes fillBar": {
             from: { width: "0%" },
             to: { width: "100%" },
@@ -117,7 +117,7 @@ export default function LoSapeviCarousel() {
               width: 40,
               height: 40,
               borderRadius: "50%",
-              bgcolor: "primary.main",
+              bgcolor: "primary.fill",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -132,7 +132,7 @@ export default function LoSapeviCarousel() {
             <Typography
               variant="overline"
               sx={{
-                color: "primary.onLight",
+                color: "text.secondary",
                 fontWeight: 700,
                 letterSpacing: "0.12em",
                 fontSize: "0.68rem",

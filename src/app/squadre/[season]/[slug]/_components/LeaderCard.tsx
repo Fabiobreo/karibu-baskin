@@ -43,7 +43,8 @@ export default function LeaderCard({
         position: "relative",
         overflow: "hidden",
         transition: "all 0.15s",
-        ...onHover({ borderColor: teamColor, transform: "translateY(-2px)" }),
+        // Si solleva solo quando porta al profilo: senza link e' da leggere.
+        ...(leader.slug ? onHover({ borderColor: teamColor, transform: "translateY(-2px)" }) : {}),
       }}
     >
       {/* Medaglia/trofeo in alto a destra */}

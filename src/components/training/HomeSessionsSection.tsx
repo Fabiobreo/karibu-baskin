@@ -143,7 +143,7 @@ export default function HomeSessionsSection({
             <Box>
               <Typography
                 variant="overline"
-                color="primary.onLight"
+                color="text.secondary"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
               >
@@ -180,7 +180,7 @@ export default function HomeSessionsSection({
             <Box>
               <Typography
                 variant="overline"
-                color="primary.onLight"
+                color="text.secondary"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
               >

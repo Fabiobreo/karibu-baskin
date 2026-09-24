@@ -48,11 +48,11 @@ export default async function LatestNewsHero() {
     <Box sx={{ bgcolor: "action.hover", py: { xs: 4, md: 6 } }}>
       <Container maxWidth="md">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <NewspaperIcon sx={{ color: "primary.main", fontSize: 32 }} />
+          <NewspaperIcon sx={{ color: "text.secondary", fontSize: 32 }} />
           <Box>
             <Typography
               variant="overline"
-              color="primary.onLight"
+              color="text.secondary"
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
             >

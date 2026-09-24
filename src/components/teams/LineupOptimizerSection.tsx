@@ -156,7 +156,7 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
         <Typography
           variant="overline"
           fontWeight={800}
-          color="primary.onLight"
+          color="text.secondary"
           sx={{ letterSpacing: "0.08em" }}
         >
           Formazione Ottimale

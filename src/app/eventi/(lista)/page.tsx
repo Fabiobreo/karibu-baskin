@@ -76,7 +76,6 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
           <Chip
             label={dateLabel}
             size="small"
-            color="primary"
             variant="outlined"
             sx={{ fontWeight: 700, fontSize: "0.7rem", mb: 1 }}
           />

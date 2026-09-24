@@ -1077,7 +1077,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               <Box>
                 <Typography
                   variant="overline"
-                  color="primary.onLight"
+                  color="text.secondary"
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
@@ -1298,7 +1298,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <GroupsIcon color="primary" />
                 <Typography
                   variant="overline"
-                  color="primary.onLight"
+                  color="text.secondary"
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >
@@ -1384,7 +1384,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <SportsSoccerIcon color="primary" />
                 <Typography
                   variant="overline"
-                  color="primary.onLight"
+                  color="text.secondary"
                   fontWeight={700}
                   sx={{ letterSpacing: "0.1em" }}
                 >

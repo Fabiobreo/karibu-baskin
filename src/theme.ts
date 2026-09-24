@@ -1,5 +1,5 @@
 "use client";
-import { createTheme } from "@mui/material/styles";
+import { alpha, createTheme } from "@mui/material/styles";
 import { heroGradient } from "@/lib/heroStyles";
 import LinkBehavior from "@/components/common/LinkBehavior";
 
@@ -16,6 +16,14 @@ const DARK = "#1A1A1A";
 const ORANGE_ON_LIGHT = "#BF360C";
 // Equivalente per fondo scuro: 8,03:1 su #121212 e 7,15:1 su #1E1E1E.
 const ORANGE_ON_DARK = "#FF8A50";
+
+// Riempimento arancio con etichetta bianca (bottone primario, chip pieni,
+// pallini): stessa tinta della maglia (circa 22°), piu' scura. Variante B
+// scelta dal committente (UX-07): 4,71:1 col bianco, hover 6,22:1.
+// Non va usato per il TESTO arancio su fondo chiaro: su crema fa 4,28:1,
+// sotto la soglia. Per quello resta ORANGE_ON_LIGHT (`primary.onLight`).
+const ORANGE_FILL = "#C84B00";
+const ORANGE_FILL_HOVER = "#A83F00";
 
 // Anello di focus da tastiera. `main` e' l'arancione chiaro, leggibile
 // sull'header scuro (7,46:1 su #1A1A1A); `contrast` e' l'anello interno che
@@ -232,12 +240,15 @@ declare module "@mui/material/styles" {
     calendar?: CalendarPalette;
   }
 
-  // Arancione da usare per TESTO e link. Vedi ORANGE_ON_LIGHT / ORANGE_ON_DARK.
+  // `onLight`: arancione da usare per TESTO e link (ORANGE_ON_LIGHT / ORANGE_ON_DARK).
+  // `fill`: riempimento arancio sotto un'etichetta bianca (ORANGE_FILL).
   interface PaletteColor {
     onLight: string;
+    fill: string;
   }
   interface SimplePaletteColorOptions {
     onLight?: string;
+    fill?: string;
   }
 }
 
@@ -482,16 +493,16 @@ function buildComponents(mode: "light" | "dark") {
           paddingBottom: 8,
         },
         containedPrimary: {
-          // Riempimento con l'arancione scuro: bianco su #BF360C fa 5,60:1,
-          // mentre su #E65100 si fermava a 3,79:1 (sotto la soglia AA).
-          backgroundColor: ORANGE_ON_LIGHT,
-          boxShadow: "0 2px 8px rgba(191, 54, 12, 0.30)",
+          // Riempimento arancio della maglia, scurito (UX-07): bianco su
+          // #C84B00 fa 4,71:1, mentre su #E65100 si fermava a 3,79:1.
+          backgroundColor: ORANGE_FILL,
+          boxShadow: `0 2px 8px ${alpha(ORANGE_FILL, 0.3)}`,
           // `&&` per battere le `variants` di MuiButton, che assegnano
-          // primary.dark in hover (cioe' lo stesso colore del riposo).
+          // primary.dark in hover.
           "@media (hover: hover)": {
             "&&:hover": {
-              backgroundColor: "#A32E0A",
-              boxShadow: "0 4px 14px rgba(191, 54, 12, 0.45)",
+              backgroundColor: ORANGE_FILL_HOVER,
+              boxShadow: `0 4px 14px ${alpha(ORANGE_FILL, 0.45)}`,
             },
           },
         },
@@ -515,20 +526,21 @@ function buildComponents(mode: "light" | "dark") {
           // In dark l'ombra non stacca la card dallo sfondo: serve un bordo.
           ...(isDark ? { border: "1px solid rgba(255,255,255,0.09)" } : {}),
           transition: "box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease",
+          // Si solleva solo una card che si tocca (UX-07): link, bottone o
+          // con dentro una CardActionArea. Prima si muovevano tutte, anche
+          // quelle da leggere e basta: una falsa promessa di interazione.
           // Solo sui dispositivi con un vero puntatore: sul touch l'hover
           // resterebbe appiccicato dopo il tap.
           "@media (hover: hover)": {
-            "&:hover": {
-              boxShadow: cardHoverShadow,
-              transform: "translateY(-2px)",
-              ...(isDark ? { borderColor: "rgba(255,255,255,0.22)" } : {}),
-            },
-            // Dopo la regola qui sopra, per vincerla a pari specificita'. Con
-            // "riduci movimento" la card cambia ombra ma non si solleva:
-            // azzerare solo la durata della transizione la farebbe comunque
-            // saltare in alto, di colpo.
+            "&:is(a, button, [role='button']):hover, a > &:hover, &:has(.MuiCardActionArea-root):hover":
+              {
+                boxShadow: cardHoverShadow,
+                transform: "translateY(-2px)",
+                ...(isDark ? { borderColor: "rgba(255,255,255,0.22)" } : {}),
+              },
+            // Con "riduci movimento" la card cambia ombra ma non si solleva.
             "@media (prefers-reduced-motion: reduce)": {
-              "&:hover": { transform: "none" },
+              "&:hover, a > &:hover": { transform: "none" },
             },
           },
         },
@@ -543,10 +555,11 @@ function buildComponents(mode: "light" | "dark") {
     MuiChip: {
       styleOverrides: {
         root: { fontWeight: 600, borderRadius: 6 },
-        // Chip `color="primary"` pieno (es. "Sondaggio"): etichetta bianca su
-        // #E65100 fa 3,79:1, sotto AA. Stesso rimedio dei bottoni contained:
-        // riempimento con l'arancione scuro, 5,60:1 in entrambi i temi.
-        filledPrimary: { backgroundColor: ORANGE_ON_LIGHT },
+        // Chip `color="primary"` pieno: etichetta bianca su #E65100 fa 3,79:1,
+        // sotto AA. Stesso riempimento del bottone primario, 4,71:1. Da usare
+        // solo su chip che si toccano (filtri, selezioni): l'arancio pieno
+        // dice "qui si agisce" (UX-07).
+        filledPrimary: { backgroundColor: ORANGE_FILL },
         // L'outlined e' testo sulla superficie: arancione accessibile.
         outlinedPrimary: { color: orangeText },
       },
@@ -565,6 +578,9 @@ function buildComponents(mode: "light" | "dark") {
       // ferma a 3,79:1 su bianco e 4,40:1 su #1E1E1E. L'indicatore sotto resta
       // su `primary.main` (elemento grafico, soglia 3:1).
       styleOverrides: {
+        // Niente maiuscolo forzato (default MUI): meta' delle tab lo aveva e
+        // meta' no (UX-07).
+        root: { textTransform: "none" },
         textColorPrimary: { "&.Mui-selected": { color: orangeText } },
       },
     },
@@ -588,6 +604,8 @@ export const lightTheme = createTheme({
       // Da usare per TESTO e link arancioni su fondo chiaro (>= 4,5:1).
       // `main` resta per riempimenti, bordi e icone (soglia 3:1).
       onLight: ORANGE_ON_LIGHT,
+      // Riempimento sotto un'etichetta bianca (bottoni, chip, pallini).
+      fill: ORANGE_FILL,
       contrastText: "#fff",
     },
     secondary: {
@@ -630,6 +648,7 @@ export const darkTheme = createTheme({
       // In dark il testo arancione usa la variante chiara (>= 7:1 sulle
       // superfici #121212 / #1E1E1E).
       onLight: ORANGE_ON_DARK,
+      fill: ORANGE_FILL,
       contrastText: "#fff",
     },
     secondary: {

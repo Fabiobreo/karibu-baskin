@@ -157,7 +157,7 @@ export default function GironeFullView({
 
       {/* Classifica */}
       <Box sx={{ px: 2, py: 1.25, display: "flex", alignItems: "center", gap: 0.75 }}>
-        <EmojiEventsIcon sx={{ fontSize: 16, color: "primary.main" }} />
+        <EmojiEventsIcon sx={{ fontSize: 16, color: "text.secondary" }} />
         <Typography
           variant="overline"
           color="text.secondary"
@@ -287,7 +287,7 @@ export default function GironeFullView({
       {/* Calendario per giornata */}
       <Divider />
       <Box sx={{ px: 2, py: 1.25, display: "flex", alignItems: "center", gap: 0.75 }}>
-        <SportsSoccerIcon sx={{ fontSize: 16, color: "primary.main" }} />
+        <SportsSoccerIcon sx={{ fontSize: 16, color: "text.secondary" }} />
         <Typography
           variant="overline"
           color="text.secondary"

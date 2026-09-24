@@ -50,7 +50,7 @@ export default function LoSapeviCard() {
               width: 44,
               height: 44,
               borderRadius: "50%",
-              bgcolor: "primary.main",
+              bgcolor: "primary.fill",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -64,7 +64,7 @@ export default function LoSapeviCard() {
             <Typography
               variant="overline"
               sx={{
-                color: "primary.onLight",
+                color: "text.secondary",
                 fontWeight: 700,
                 letterSpacing: "0.12em",
                 display: "block",

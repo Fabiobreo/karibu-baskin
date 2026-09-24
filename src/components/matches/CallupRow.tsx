@@ -33,7 +33,7 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
       {hasScore && c.stat !== null && (
         <Box sx={{ textAlign: "right", flexShrink: 0 }}>
           <Typography
-            sx={{ fontSize: "1.15rem", fontWeight: 900, color: "primary.onLight", lineHeight: 1 }}
+            sx={{ fontSize: "1.15rem", fontWeight: 900, color: "text.primary", lineHeight: 1 }}
           >
             {c.stat.points}
           </Typography>

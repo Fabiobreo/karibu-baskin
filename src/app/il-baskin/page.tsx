@@ -56,7 +56,7 @@ export default async function IlBaskinPage() {
         <Box sx={{ mb: 5 }}>
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -84,7 +84,7 @@ export default async function IlBaskinPage() {
         <Box sx={{ mb: 7 }}>
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >
@@ -139,7 +139,7 @@ export default async function IlBaskinPage() {
         <Box>
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >

@@ -453,12 +453,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                       </>
                     )}
                     {s.pending > 0 && (
-                      <Chip
-                        label={`${s.pending} ${t("toPlay")}`}
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                      />
+                      <Chip label={`${s.pending} ${t("toPlay")}`} size="small" variant="outlined" />
                     )}
                   </Box>
                 </Box>

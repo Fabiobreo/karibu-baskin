@@ -104,7 +104,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
         <Typography
           variant="overline"
           fontWeight={800}
-          color="primary.onLight"
+          color="text.secondary"
           sx={{ letterSpacing: "0.1em", display: "block", mb: 1.5 }}
         >
           {t("yourAvailability")}

@@ -46,7 +46,9 @@ export const ROLE_LABELS: Record<number, string> = {
 export const ROLE_COLORS: Record<number, string> = {
   1: "#1565C0", // blu scuro
   2: "#2E7D32", // verde scuro
-  3: "#E65100", // arancio scuro
+  // Stesso riempimento del bottone primario (UX-07): con #E65100 il testo
+  // bianco si fermava a 3,79:1. Il ridisegno dei colori dei ruoli e' UX-11.
+  3: "#C84B00", // arancio scuro
   4: "#6A1B9A", // viola
   5: "#C62828", // rosso scuro
 };

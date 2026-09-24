@@ -58,11 +58,11 @@ export default async function ProssimePartiteHome() {
     >
       <Container maxWidth="md">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <EmojiEventsIcon sx={{ color: "primary.main", fontSize: 32 }} />
+          <EmojiEventsIcon sx={{ color: "text.secondary", fontSize: 32 }} />
           <Box>
             <Typography
               variant="overline"
-              color="primary.onLight"
+              color="text.secondary"
               fontWeight={700}
               sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
             >

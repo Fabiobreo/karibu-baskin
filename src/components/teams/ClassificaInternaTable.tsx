@@ -625,7 +625,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                       <Typography
                         variant="body2"
                         fontWeight={primary ? 800 : 600}
-                        color={primary ? "primary.onLight" : "text.primary"}
+                        color="text.primary"
                         sx={{ fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}
                       >
                         {value}

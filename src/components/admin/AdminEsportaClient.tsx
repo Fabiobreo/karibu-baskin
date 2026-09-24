@@ -76,7 +76,7 @@ export default function AdminEsportaClient() {
             ))}
           </Select>
         </FormControl>
-        <Chip label={season || "Tutte"} color="primary" size="small" sx={{ fontWeight: 700 }} />
+        <Chip label={season || "Tutte"} size="small" sx={{ fontWeight: 700 }} />
       </Paper>
 
       <Stack spacing={2}>

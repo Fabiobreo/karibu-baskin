@@ -123,7 +123,6 @@ export default function ParentChildLinker({
                     <Chip
                       label={t("athlete")}
                       size="small"
-                      color="primary"
                       sx={{ fontSize: "0.7rem", fontWeight: 600 }}
                     />
                     {child.sportRole && (

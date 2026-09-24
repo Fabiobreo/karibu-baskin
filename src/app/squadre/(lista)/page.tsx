@@ -85,7 +85,7 @@ export default async function SquadrePage() {
                   variant="h4"
                   component="p"
                   fontWeight={800}
-                  color="primary.onLight"
+                  color="text.primary"
                   sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
                 >
                   {s.value}
@@ -125,7 +125,7 @@ export default async function SquadrePage() {
               )}
               <Typography
                 variant="overline"
-                color="primary.onLight"
+                color="text.secondary"
                 fontWeight={700}
                 sx={{ letterSpacing: "0.1em" }}
               >

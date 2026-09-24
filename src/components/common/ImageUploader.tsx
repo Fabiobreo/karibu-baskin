@@ -139,7 +139,7 @@ export default function ImageUploader({
                 size="small"
                 onClick={() => inputRef.current?.click()}
                 sx={{
-                  bgcolor: "primary.main",
+                  bgcolor: "primary.fill",
                   color: "primary.contrastText",
                   "&:hover": { bgcolor: "primary.dark" },
                   width: 28,

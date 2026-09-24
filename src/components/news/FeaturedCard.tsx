@@ -8,6 +8,8 @@ import PollChip from "@/components/news/PollChip";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
 import { onHover } from "@/lib/hoverStyles";
+import { alpha } from "@mui/material/styles";
+import { brandColor } from "@/lib/heroStyles";
 
 const FEATURED_TEASER_LEN = 160;
 
@@ -111,8 +113,9 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
               label={featuredLabel}
               size="small"
               sx={{
-                // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
-                bgcolor: "primary.dark",
+                // Chip informativo sulla foto scura: neutro, non arancio pieno
+                // (UX-07: l'arancio pieno e' per cio' che si tocca).
+                bgcolor: alpha(brandColor.white, 0.16),
                 color: "common.white",
                 fontWeight: 700,
                 "& .MuiChip-icon": { color: "common.white" },

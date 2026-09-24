@@ -249,7 +249,7 @@ export default function ConvocazioniClient({
           <GroupsIcon color="primary" />
           <Typography
             variant="overline"
-            color="primary.onLight"
+            color="text.secondary"
             fontWeight={700}
             sx={{ letterSpacing: "0.1em" }}
           >

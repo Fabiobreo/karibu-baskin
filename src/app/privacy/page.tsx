@@ -17,7 +17,7 @@ export default function PrivacyPage() {
   return (
     <>
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography variant="overline" color="primary.onLight" fontWeight={700}>
+        <Typography variant="overline" color="text.secondary" fontWeight={700}>
           Documento legale
         </Typography>
         <Typography

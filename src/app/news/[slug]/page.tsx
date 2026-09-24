@@ -189,7 +189,7 @@ export default async function NewsSlugPage({ params }: Props) {
             <Chip
               label={pollClosed ? t("news.pollClosed") : t("news.pollOpen")}
               size="small"
-              color={pollClosed ? "default" : "primary"}
+              variant={pollClosed ? "filled" : "outlined"}
               sx={{ ml: 0.5 }}
             />
           )}

@@ -43,7 +43,6 @@ export default function ConvocazioniToolbar({
       <Chip
         icon={<CheckCircleIcon sx={{ fontSize: "16px !important" }} />}
         label={`${totalSelectedActive} convocati${isMulti ? ` per ${activeTeamName}` : ""}`}
-        color="primary"
         sx={{ fontWeight: 700 }}
       />
 

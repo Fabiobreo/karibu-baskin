@@ -584,7 +584,6 @@ export default function MatchFormDialog({
                         <Chip
                           label={opt.isMixed ? "tutti i giocatori" : "interna"}
                           size="small"
-                          color="primary"
                           sx={{ fontSize: "0.62rem", height: 18, fontWeight: 700 }}
                         />
                       </Box>

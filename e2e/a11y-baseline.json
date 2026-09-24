@@ -1,7 +1,7 @@
 {
   "admin|allenamenti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 137
+    "nodes": 133
   },
   "admin|allenamenti|desktop|target-size": {
     "impact": "serious",
@@ -9,7 +9,7 @@
   },
   "admin|allenamenti|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 107
+    "nodes": 104
   },
   "admin|allenamenti|mobile|target-size": {
     "impact": "serious",
@@ -17,11 +17,11 @@
   },
   "admin|dashboard|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 8
+    "nodes": 6
   },
   "admin|dashboard|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 13
+    "nodes": 11
   },
   "admin|partite|desktop|color-contrast": {
     "impact": "serious",
@@ -33,11 +33,11 @@
   },
   "admin|utenti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 31
+    "nodes": 25
   },
   "admin|utenti|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 31
+    "nodes": 25
   },
   "anon|allenamenti|desktop|color-contrast": {
     "impact": "serious",
@@ -101,7 +101,7 @@
   },
   "anon|marcatori|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 174
+    "nodes": 167
   },
   "anon|partita|desktop|color-contrast": {
     "impact": "serious",
@@ -125,11 +125,11 @@
   },
   "athlete|allenamento-passato|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 4
+    "nodes": 3
   },
   "athlete|allenamento-passato|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 3
+    "nodes": 2
   },
   "athlete|disponibilita|desktop|color-contrast": {
     "impact": "serious",

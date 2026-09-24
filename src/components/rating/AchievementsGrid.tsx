@@ -9,7 +9,6 @@ import {
   type BadgeProgress,
   type BadgeTier,
 } from "@/lib/rating/badges";
-import { onHover } from "@/lib/hoverStyles";
 
 export type AchievementItem = BadgeProgress & { unlockedAtLabel?: string | null };
 
@@ -57,8 +56,8 @@ function AchievementCard({ item }: { item: AchievementItem }) {
         filter: earned ? "none" : "saturate(0.25)",
         opacity: earned ? 1 : 0.85,
         boxShadow: earned ? 1 : "none",
-        transition: "transform 0.15s ease, box-shadow 0.15s ease",
-        ...(earned ? onHover({ transform: "translateY(-2px)", boxShadow: 3 }) : {}),
+        // Niente sollevamento al passaggio del mouse: il traguardo non si
+        // tocca, e una card che si muove promette un'azione (UX-07).
       }}
     >
       {/* Indicatore stato in alto a destra */}

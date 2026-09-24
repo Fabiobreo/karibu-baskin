@@ -185,12 +185,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           sx={{ fontWeight: 600 }}
                         />
                       ) : (
-                        <Chip
-                          label="Atleta"
-                          size="small"
-                          color="primary"
-                          sx={{ fontWeight: 600 }}
-                        />
+                        <Chip label="Atleta" size="small" sx={{ fontWeight: 600 }} />
                       )}
                     </TableCell>
                     <TableCell align="center">
@@ -296,7 +291,6 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                         <Chip
                           label="Atleta"
                           size="small"
-                          color="primary"
                           sx={{ fontWeight: 600, fontSize: "0.68rem" }}
                         />
                       )}

@@ -55,7 +55,6 @@ export default async function SquadreArchivioPage() {
     <>
       <PageHero
         chip={t("archiveHeroChip")}
-        chipWhite
         title={t("archiveTitle")}
         subtitle={t("archiveSubtitle")}
         subtitleMaxWidth={480}

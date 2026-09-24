@@ -84,7 +84,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
             width: 8,
             height: 8,
             borderRadius: "50%",
-            bgcolor: "primary.main",
+            bgcolor: "primary.fill",
             flexShrink: 0,
             mt: 0.75,
           }}

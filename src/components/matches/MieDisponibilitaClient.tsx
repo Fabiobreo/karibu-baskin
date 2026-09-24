@@ -192,7 +192,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
               <Typography
                 variant="overline"
                 fontWeight={800}
-                color="primary.onLight"
+                color="text.secondary"
                 sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
               >
                 {t("upcoming")} ({futureMatches.length})

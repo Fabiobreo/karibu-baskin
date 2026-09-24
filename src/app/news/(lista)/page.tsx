@@ -145,7 +145,7 @@ export default async function NewsPage() {
                             <Chip
                               label={isClosed ? t("news.pollClosed") : t("news.pollOpen")}
                               size="small"
-                              color={isClosed ? "default" : "primary"}
+                              variant={isClosed ? "filled" : "outlined"}
                               sx={{ ml: 0.5 }}
                             />
                           )}
