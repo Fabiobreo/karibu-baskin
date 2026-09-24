@@ -449,7 +449,15 @@ function buildComponents(mode: "light" | "dark") {
         // L'anello globale `:focus-visible` colpiva l'<input> dentro il campo:
         // un rettangolo nero (l'anello interno di contrasto) dentro il bordo
         // arancione. Il campo segnala il focus col suo bordo, vedi sopra.
-        input: { "&:focus-visible": { outline: "none", boxShadow: "none" } },
+        //
+        // Sui dispositivi touch il testo del campo sta a 16px: sotto, iOS Safari
+        // ingrandisce la pagina da solo al focus. La regola sta sull'<input>,
+        // quindi vince sui `fontSize` messi sul contenitore negli `sx` locali;
+        // su desktop quei valori restano come sono.
+        input: {
+          "&:focus-visible": { outline: "none", boxShadow: "none" },
+          "@media (pointer: coarse)": { fontSize: 16 },
+        },
       },
     },
     MuiButton: {

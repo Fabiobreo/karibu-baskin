@@ -101,8 +101,10 @@ export async function generateViewport(): Promise<Viewport> {
     // grigio scurissimo in scuro (prima era fissa su #E65100).
     themeColor: scheme === "dark" ? "#121212" : "#E65100",
     width: "device-width",
+    // Niente `maximumScale`: bloccava lo zoom con due dita su Android (WCAG
+    // 1.4.4). Lo zoom automatico di iOS sui campi lo evita il tema, con i
+    // campi a 16px sui dispositivi touch (MuiInputBase in theme.ts).
     initialScale: 1,
-    maximumScale: 1,
   };
 }
 

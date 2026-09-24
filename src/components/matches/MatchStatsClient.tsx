@@ -575,7 +575,9 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                             slotProps={{
                               htmlInput: {
                                 maxLength: 500,
-                                style: { padding: "4px 8px", fontSize: "0.78rem" },
+                                // Niente fontSize inline: vincerebbe sui 16px
+                                // touch del tema (zoom automatico su iOS).
+                                style: { padding: "4px 8px" },
                               },
                             }}
                             sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
