@@ -1,6 +1,6 @@
 # UX-12 · Pannello "Aspetto" nell'header
 
-**Ondata:** 1 · **Stima:** S · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 1 · **Stima:** S · **Dipende da:** nessuno · **Stato:** fatto (commit su `develop`): pulsante "Aspetto" con menu del tema, lingua in un solo bottone "IT · EN"; fermate di Tab prima del contenuto da 18 a 15
 
 ## Problema
 
@@ -22,3 +22,18 @@ L'header desktop (`src/components/layout/SiteHeader.tsx`) mostra tre bottoni per
 
 - Fermate di Tab prima del contenuto ridotte di almeno 3.
 - Lingua cambiabile senza accesso, su desktop e mobile, con al massimo un tocco in più di oggi.
+
+## Esito
+
+- **Tema:** `ThemeSwitcher` e' ora un solo `IconButton` con l'icona del tema corrente, tooltip "Aspetto" ed etichetta accessibile "Aspetto: Segui sistema". Apre un `Menu` con l'intestazione "Tema" e le tre opzioni (`menuitemradio`, spunta sulla scelta attiva). Sotto l'intestazione c'e' posto per altre preferenze di lettura.
+- **Lingua:** `LanguageSwitcher` e' un solo bottone "IT · EN". La lingua corrente e' in arancio e sottolineata, non solo colorata; un tocco passa all'altra. Etichetta bilingue "Lingua / Language: IT. Passa a EN" nei dizionari. Resta visibile a tutti nell'header desktop e nel drawer mobile.
+- **Drawer mobile:** tema invariato (bottone che scorre le tre opzioni), lingua con il nuovo bottone.
+- **Verifica** con Playwright su `/news`, desktop:
+  - fermate di Tab prima del contenuto da **18 a 15** (anonimo) e da **19 a 16** (admin);
+  - cambio lingua con un tocco e ritorno;
+  - menu del tema aperto e chiuso con Esc;
+  - `npm run a11y` senza nuove violazioni.
+
+**Rimasto fuori**
+
+- Con piu' di due lingue il bottone andrebbe trasformato in un menu (oggi scorre alla successiva).
