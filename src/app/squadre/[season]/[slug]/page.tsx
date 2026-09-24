@@ -43,7 +43,7 @@ import LeaderCard from "./_components/LeaderCard";
 import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
-import { brandColor, heroText } from "@/lib/heroStyles";
+import { brandColor, heroBottomBorder, heroImage, heroText, heroTint } from "@/lib/heroStyles";
 
 type Props = {
   params: Promise<{ season: string; slug: string }>;
@@ -375,13 +375,12 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
     <>
       <Box
         style={{
-          backgroundImage: team.imageUrl
-            ? `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${team.imageUrl})`
-            : `linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, ${teamColor} 130%)`,
+          backgroundImage: team.imageUrl ? heroImage(team.imageUrl) : heroTint(teamColor),
           backgroundSize: team.imageUrl ? "cover" : undefined,
           backgroundPosition: team.imageUrl ? "center" : undefined,
         }}
         sx={{
+          ...heroBottomBorder,
           color: "common.white",
           py: { xs: 5, md: 7 },
           px: 2,
@@ -389,34 +388,6 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           overflow: "hidden",
         }}
       >
-        {/* Sfere decorative */}
-        <Box
-          aria-hidden="true"
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: alpha(brandColor.orange, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Box
-          aria-hidden="true"
-          sx={{
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            backgroundColor: alpha(brandColor.orange, 0.06),
-            pointerEvents: "none",
-          }}
-        />
-
         <Box
           sx={{
             position: "absolute",

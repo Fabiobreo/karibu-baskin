@@ -491,7 +491,6 @@ export default async function ProfiloPage() {
       {/* Stesso schema delle pagine pubbliche: passando da /squadre a /profilo
           non deve sembrare un altro sito. */}
       <PageHero
-        chip={t("heroChip")}
         title={t("title")}
         subtitle={t("heroSubtitle")}
         subtitleMaxWidth={540}

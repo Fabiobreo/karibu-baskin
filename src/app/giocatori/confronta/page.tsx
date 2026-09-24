@@ -164,7 +164,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero chip={t("compare")} title={t("compareTitle")} subtitle={t("comparePick")} />
+      <PageHero title={t("compareTitle")} subtitle={t("comparePick")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         <ComparePicker

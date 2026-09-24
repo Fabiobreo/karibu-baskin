@@ -372,7 +372,6 @@
     "registeredAthletes": "Registered athletes",
     "teamsInField": "Active teams",
     "regionalTitle": "Regional title 2018",
-    "archiveHeroChip": "Previous seasons",
     "archiveTitle": "Teams archive",
     "archiveSubtitle": "All Karibu Baskin teams from past seasons.",
     "archiveEmpty": "No previous seasons",
@@ -653,7 +652,6 @@
     "speciali": "Special"
   },
   "events": {
-    "heroChip": "Events",
     "heroTitle": "Events",
     "heroSubtitle": "Tournaments, away trips, parties and club gatherings.",
     "upcoming": "Upcoming events",
@@ -764,7 +762,6 @@
     "appRoleADMIN": "Admin",
     "noMatchesForTeamsDesc": "As soon as your team has scheduled matches you will find them here.",
     "noUpcomingMatchesDesc": "There are no scheduled matches to declare your availability for.",
-    "heroChip": "Your area",
     "heroSubtitle": "Your details, your trainings and the achievements you have unlocked.",
     "availabilitiesHeroChip": "Matches",
     "availabilitiesHeroSubtitle": "Tell the staff whether you will be there: call-ups are based on these answers.",
@@ -853,7 +850,6 @@
     "privacyLink": "privacy policy"
   },
   "roleQuiz": {
-    "heroChip": "Your profile",
     "heroTitle": "Your Baskin role",
     "heroSubtitle": "In Baskin everyone plays with a role from 1 to 5, based on their abilities. Answer a few questions and we will suggest yours.",
     "suggestedOverline": "Your suggested role",
@@ -916,7 +912,6 @@
       "followInstagram": "Follow us on Instagram"
     },
     "news": {
-      "heroChip": "Updates",
       "heroSubtitle": "Communications, updates and polls from the team.",
       "empty": "No articles published yet.",
       "pollOpen": "Open poll",
@@ -941,7 +936,6 @@
       "loadMore": "Load previous",
       "loading": "Loading...",
       "loadError": "Loading error",
-      "heroChip": "Updates",
       "heroTitle": "Notifications",
       "heroSubtitle": "Trainings, matches and team news, newest first.",
       "markAllRead": "Mark all as read",
@@ -1007,7 +1001,6 @@
       ]
     },
     "sponsor": {
-      "heroChip": "Our sponsors",
       "heroTitle": "Partners & sponsors",
       "heroSubtitle": "The companies and partners who support Karibu Baskin with their invaluable contribution.",
       "thanksTo": "Thanks to",
@@ -1065,7 +1058,6 @@
       ]
     },
     "ilbaskin": {
-      "heroChip": "Baskin",
       "heroTitle": "What is Baskin?",
       "heroSubtitle": "Baskin is an inclusive sport that allows people with and without disabilities to play together on the same team.",
       "rolesSection": "The roles",

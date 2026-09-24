@@ -180,13 +180,7 @@ export default async function EventoPage({ params }: Props) {
           imageUrl: ev.imageUrl,
         })}
       />
-      <PageHero
-        title={ev.title}
-        chip={dateLabel}
-        align="left"
-        py={{ xs: 4, md: 6 }}
-        decorativeCircles={false}
-      >
+      <PageHero title={ev.title} chip={dateLabel} align="left" py={{ xs: 4, md: 6 }}>
         {ev.location && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <PlaceIcon sx={{ color: "primary.main", fontSize: 20 }} />

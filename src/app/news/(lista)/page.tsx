@@ -45,12 +45,7 @@ export default async function NewsPage() {
 
   return (
     <>
-      <PageHero
-        chip={t("news.heroChip")}
-        title="News"
-        subtitle={t("news.heroSubtitle")}
-        subtitleMaxWidth={520}
-      />
+      <PageHero title="News" subtitle={t("news.heroSubtitle")} subtitleMaxWidth={520} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {isStaff && (

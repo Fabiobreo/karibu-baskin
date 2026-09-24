@@ -156,12 +156,7 @@ export default async function EventiPage() {
 
   return (
     <>
-      <PageHero
-        chip={t("heroChip")}
-        title={t("heroTitle")}
-        subtitle={t("heroSubtitle")}
-        subtitleMaxWidth={520}
-      />
+      <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} subtitleMaxWidth={520} />
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {events.length === 0 ? (
           <EmptyState

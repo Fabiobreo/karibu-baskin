@@ -1,6 +1,6 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { brandColor } from "@/lib/heroStyles";
+import { brandColor, heroBottomBorder, heroTint } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 
 interface EntityHeroProps {
@@ -30,9 +30,10 @@ export default function EntityHero({
   return (
     <Box
       style={{
-        backgroundImage: `linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, ${color} 130%)`,
+        backgroundImage: heroTint(color),
       }}
       sx={{
+        ...heroBottomBorder,
         color: "common.white",
         py,
         px: 2,
@@ -40,34 +41,6 @@ export default function EntityHero({
         overflow: "hidden",
       }}
     >
-      {/* Sfere decorative */}
-      <Box
-        aria-hidden="true"
-        sx={{
-          position: "absolute",
-          top: -60,
-          right: -60,
-          width: 260,
-          height: 260,
-          borderRadius: "50%",
-          backgroundColor: alpha(brandColor.orange, 0.1),
-          pointerEvents: "none",
-        }}
-      />
-      <Box
-        aria-hidden="true"
-        sx={{
-          position: "absolute",
-          bottom: -80,
-          left: -80,
-          width: 320,
-          height: 320,
-          borderRadius: "50%",
-          backgroundColor: alpha(brandColor.orange, 0.06),
-          pointerEvents: "none",
-        }}
-      />
-
       {breadcrumb && (
         <Box
           sx={{

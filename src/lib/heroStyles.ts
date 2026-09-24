@@ -6,12 +6,52 @@
  * client references → diventano `undefined` a runtime lato server.
  */
 
+// Fondo degli hero (UX-08): grafite pieno, non piu' il marrone
+// #2D1A0A / #3D2010, che diluiva l'identita' arancio e nero.
+const HERO_BASE = "linear-gradient(160deg, #141414 0%, #1E1E1E 100%)";
+
+/**
+ * L'unico punto in cui si scrivono i colori degli hero. Tutti gli hero del sito
+ * (PageHero, EntityHero, allenamento, partita, giocatore, squadra, errori)
+ * passano di qui: per cambiarli basta questo file.
+ */
 export const heroGradient = {
-  dark: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
-  /** Variante corta, usata dal footer e dalle fasce scure di fine pagina. */
-  footer: "linear-gradient(135deg, #1A1A1A 0%, #2D1A0A 100%)",
+  /** Hero standard: grafite con un solo bagliore arancio leggero in alto a destra. */
+  dark: `radial-gradient(90% 120% at 100% 0%, rgba(230, 81, 0, 0.16) 0%, rgba(230, 81, 0, 0) 60%), ${HERO_BASE}`,
+  /** Variante senza bagliore, usata dal footer e dalle fasce scure di fine pagina. */
+  footer: HERO_BASE,
   /** Fascia arancione piena (banner compleanni). */
   orange: "linear-gradient(90deg, #E65100 0%, #FF8F00 100%)",
+} as const;
+
+/**
+ * Hero di un'entita' con un suo colore (squadra, giocatore, esito della
+ * partita): stesso grafite, con il colore che affiora da un angolo invece di
+ * tingere tutta la superficie. `color` puo' arrivare dal database, quindi si
+ * miscela con `color-mix` e non con un suffisso esadecimale.
+ */
+export function heroTint(color: string): string {
+  return `radial-gradient(100% 140% at 100% 100%, color-mix(in srgb, ${color} 45%, transparent) 0%, transparent 65%), ${HERO_BASE}`;
+}
+
+/** Foto di copertina sotto l'hero, velata per reggere il testo bianco. */
+export function heroImage(url: string): string {
+  return `linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url(${url})`;
+}
+
+/** Colori degli esiti per gli hero delle partite, che restano scuri in entrambi i temi. */
+export const heroResultColor = {
+  WIN: "#2E7D32",
+  LOSS: "#C62828",
+} as const;
+
+/**
+ * Bordo inferiore degli hero: in tema scuro un hero grafite su una pagina
+ * #121212 si confonderebbe con lo sfondo. In chiaro e' trasparente.
+ */
+export const heroBottomBorder = {
+  borderBottom: "1px solid",
+  borderColor: "heroGradient.border",
 } as const;
 
 /**

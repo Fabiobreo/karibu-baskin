@@ -53,7 +53,6 @@ export default async function RuoloPage() {
   return (
     <>
       <PageHero
-        chip={t("heroChip")}
         title={t("heroTitle")}
         subtitle={t("heroSubtitle")}
         subtitleMaxWidth={540}

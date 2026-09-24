@@ -1,6 +1,6 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { brandColor, heroGradient } from "@/lib/heroStyles";
+import { brandColor, heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 
 interface PageHeroProps {
@@ -11,7 +11,6 @@ interface PageHeroProps {
   breadcrumb?: React.ReactNode;
   py?: { xs: number; md: number };
   maxWidth?: ContainerProps["maxWidth"];
-  decorativeCircles?: boolean;
   align?: "center" | "left";
   children?: React.ReactNode;
 }
@@ -24,7 +23,6 @@ export default function PageHero({
   breadcrumb,
   py = { xs: 6, md: 9 },
   maxWidth = "md",
-  decorativeCircles = true,
   align = "center",
   children,
 }: PageHeroProps) {
@@ -32,6 +30,7 @@ export default function PageHero({
     <Box
       style={{ backgroundImage: heroGradient.dark }}
       sx={{
+        ...heroBottomBorder,
         color: "common.white",
         py,
         px: 2,
@@ -40,34 +39,6 @@ export default function PageHero({
         overflow: "hidden",
       }}
     >
-      {decorativeCircles && (
-        <>
-          <Box
-            sx={{
-              position: "absolute",
-              top: -60,
-              right: -60,
-              width: 260,
-              height: 260,
-              borderRadius: "50%",
-              backgroundColor: alpha(brandColor.orange, 0.1),
-              pointerEvents: "none",
-            }}
-          />
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: -80,
-              left: -80,
-              width: 320,
-              height: 320,
-              borderRadius: "50%",
-              backgroundColor: alpha(brandColor.orange, 0.06),
-              pointerEvents: "none",
-            }}
-          />
-        </>
-      )}
       {breadcrumb && (
         <Box
           sx={{

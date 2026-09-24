@@ -45,7 +45,6 @@ export default async function IlBaskinPage() {
   return (
     <>
       <PageHero
-        chip={t("ilbaskin.heroChip")}
         title={t("ilbaskin.heroTitle")}
         subtitle={t("ilbaskin.heroSubtitle")}
         subtitleMaxWidth={580}

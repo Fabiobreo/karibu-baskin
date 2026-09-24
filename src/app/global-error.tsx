@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
+import { heroGradient } from "@/lib/heroStyles";
 
 // global-error sostituisce interamente il layout root, quindi
 // non ha accesso a MUI ThemeProvider — usiamo CSS inline puro.
@@ -32,7 +33,7 @@ export default function GlobalError({
           justifyContent: "center",
           textAlign: "center",
           padding: "24px",
-          background: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+          background: heroGradient.dark,
           color: "#fff",
           fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
           gap: "16px",

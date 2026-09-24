@@ -10,7 +10,14 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { Container, Typography, Box, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { brandColor } from "@/lib/heroStyles";
+import {
+  brandColor,
+  heroBottomBorder,
+  heroGradient,
+  heroImage,
+  heroResultColor,
+  heroTint,
+} from "@/lib/heroStyles";
 import { visuallyHidden } from "@mui/utils";
 import MatchEditButton from "@/components/matches/MatchEditButton";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
@@ -44,9 +51,9 @@ export const revalidate = 3600;
 type Props = { params: Promise<{ slug: string }> };
 
 const RESULT_GRADIENT: Record<"WIN" | "LOSS" | "DRAW", string> = {
-  WIN: "linear-gradient(150deg, #1A2E1A 0%, #1B3A1B 60%, #1F4A1F 100%)",
-  LOSS: "linear-gradient(150deg, #2E1A1A 0%, #3A1B1B 60%, #4A1F1F 100%)",
-  DRAW: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+  WIN: heroTint(heroResultColor.WIN),
+  LOSS: heroTint(heroResultColor.LOSS),
+  DRAW: heroGradient.dark,
 };
 
 async function getMatch(slug: string) {
@@ -386,11 +393,7 @@ export default async function MatchDetailPage({ params }: Props) {
 
   const meta = match.result ? MATCH_RESULT_META[match.result] : null;
 
-  const heroBg = match.result
-    ? RESULT_GRADIENT[match.result]
-    : isUpcoming
-      ? "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #E65100 130%)"
-      : "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)";
+  const heroBg = match.result ? RESULT_GRADIENT[match.result] : heroGradient.dark;
 
   const teamSeasonParam = match.team.season.replace("-", "");
   const teamSlug = slugify(match.team.name);
@@ -409,13 +412,12 @@ export default async function MatchDetailPage({ params }: Props) {
       />
       <Box
         style={{
-          backgroundImage: match.imageUrl
-            ? `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${match.imageUrl})`
-            : heroBg,
+          backgroundImage: match.imageUrl ? heroImage(match.imageUrl) : heroBg,
           backgroundSize: match.imageUrl ? "cover" : undefined,
           backgroundPosition: match.imageUrl ? "center" : undefined,
         }}
         sx={{
+          ...heroBottomBorder,
           color: "common.white",
           pt: { xs: 4, md: 5 },
           pb: { xs: 5, md: 7 },
@@ -458,34 +460,6 @@ export default async function MatchDetailPage({ params }: Props) {
             </Typography>
           </Breadcrumbs>
         </Box>
-
-        {/* Sfere decorative */}
-        <Box
-          aria-hidden="true"
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: alpha(brandColor.orange, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Box
-          aria-hidden="true"
-          sx={{
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            backgroundColor: alpha(brandColor.orange, 0.06),
-            pointerEvents: "none",
-          }}
-        />
 
         {/* Azioni in alto a destra: share tabellino + edit (staff) */}
         <Box

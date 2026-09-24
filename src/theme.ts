@@ -135,6 +135,11 @@ type MedalPalette = {
 
 type HeroGradientPalette = {
   dark: string;
+  /**
+   * Bordo inferiore degli hero (UX-08): trasparente in chiaro, visibile in
+   * scuro, dove un hero grafite su #121212 si confonderebbe con la pagina.
+   */
+  border: string;
 };
 
 type FocusRingPalette = {
@@ -627,7 +632,7 @@ export const lightTheme = createTheme({
     admin: lightAdmin,
     stats: lightStats,
     medal: lightMedal,
-    heroGradient,
+    heroGradient: { ...heroGradient, border: "transparent" },
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
     adminBand: lightAdminBand,
@@ -670,7 +675,7 @@ export const darkTheme = createTheme({
     admin: darkAdmin,
     stats: darkStats,
     medal: darkMedal,
-    heroGradient,
+    heroGradient: { ...heroGradient, border: "rgba(255,255,255,0.14)" },
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
     adminBand: darkAdminBand,

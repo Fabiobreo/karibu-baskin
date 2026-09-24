@@ -61,12 +61,7 @@ export default async function NotifichePage() {
 
   return (
     <>
-      <PageHero
-        chip={t("heroChip")}
-        title={t("heroTitle")}
-        subtitle={t("heroSubtitle")}
-        subtitleMaxWidth={520}
-      />
+      <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} subtitleMaxWidth={520} />
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         <NotificheClient
           initialNotifications={initialNotifications}

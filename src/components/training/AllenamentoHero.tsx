@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import { useTranslations, useLocale } from "next-intl";
 import {
   Box,
@@ -215,9 +216,10 @@ export default function AllenamientoHero({
     <>
       <Box
         style={{
-          backgroundImage: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+          backgroundImage: heroGradient.dark,
         }}
         sx={{
+          ...heroBottomBorder,
           color: "common.white",
           px: { xs: 2.5, sm: 4, md: 8 },
           py: { xs: 3, sm: 4 },
@@ -252,30 +254,6 @@ export default function AllenamientoHero({
             </Tooltip>
           </Box>
         )}
-        <Box
-          sx={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 260,
-            height: 260,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-            pointerEvents: "none",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 320,
-            height: 320,
-            borderRadius: "50%",
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.06),
-            pointerEvents: "none",
-          }}
-        />
 
         {/* Il breadcrumb stava in `position: absolute` sopra il titolo: a 390px
             andava a capo e i due testi finivano uno sull'altro. Qui ha una riga

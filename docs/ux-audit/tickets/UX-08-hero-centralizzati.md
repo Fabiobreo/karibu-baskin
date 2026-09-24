@@ -1,6 +1,6 @@
 # UX-08 · Hero: gradiente unico, meno marrone, niente cerchi
 
-**Ondata:** 1 · **Stima:** M · **Dipende da:** UX-07 · **Stato:** da fare
+**Ondata:** 1 · **Stima:** M · **Dipende da:** UX-07 · **Stato:** fatto (commit su `develop`): fondo grafite unico da `heroStyles.ts`, bordo inferiore in tema scuro, niente cerchi, tolti 10 chip che ripetevano il titolo
 
 ## Problema
 
@@ -23,3 +23,24 @@
 - Nessun colore del gradiente scritto a mano fuori da `heroStyles.ts`.
 - Hero visivamente neri in tema chiaro; distinguibili dalla pagina in tema scuro.
 - Schermate prima/dopo di home, una lista (News), un dettaglio (partita), profilo giocatore, allenamento.
+
+## Esito
+
+- **Un solo punto per i colori:** `src/lib/heroStyles.ts` definisce il fondo grafite (`#141414 → #1E1E1E`) e:
+  - `heroGradient.dark`, con un bagliore arancio leggero in alto a destra;
+  - `heroGradient.footer`, senza bagliore, per footer e fasce scure;
+  - `heroTint(colore)`: il colore di squadra, giocatore o esito affiora da un angolo invece di tingere tutto (`color-mix`, perche' il colore puo' arrivare dal database);
+  - `heroImage(url)`: foto di copertina velata;
+  - `heroResultColor`: vittoria e sconfitta.
+- **Chi lo usa:** `PageHero`, `EntityHero`, `AllenamentoHero`, profilo giocatore, dettaglio partita (anche i gradienti vittoria/sconfitta, prima letterali), pagina squadra e `global-error.tsx`. Fuori da `heroStyles.ts` non restano `#2D1A0A` / `#3D2010` se non nelle immagini OG e nel tabellino, esclusi dal ticket.
+- **Tema scuro:** `heroBottomBorder` e il nuovo campo `heroGradient.border` della palette: trasparente in chiaro, `rgba(255,255,255,0.14)` in scuro. Oltre alla linea c'e' il gradino di colore, hero `#1E1E1E` contro pagina `#121212`.
+- **Cerchi:** tolti da `PageHero` (con la prop `decorativeCircles`), `EntityHero`, `AllenamentoHero`, giocatore, partita e squadra.
+- **Chip che ripetevano il titolo o la voce di menu, tolti (10):** Eventi, Il Baskin, Confronto giocatori, I miei traguardi, Sponsor, Archivio squadre, Il mio profilo, Ruolo, News, Notifiche; chiavi rimosse dai dizionari. Restano quelli che aggiungono un'informazione: "Siamo qui", "Hai una domanda?", "Chi siamo", "Solo per gioco", la data dell'evento, "Partite" sulle disponibilita', "Karibu Baskin" sulla Gallery.
+- **Verifica** con Playwright, prima e dopo, desktop (chiaro e scuro) e mobile: home, News, dettaglio partita, profilo giocatore, allenamento, eventi, squadra, footer. Bordo misurato: trasparente in chiaro, visibile in scuro. `npm run a11y`: nessuna nuova violazione; +1 nodo di `color-contrast` su `/marcatori` e `/risultati`, dovuto alle etichette "Stagione:"/"Ruolo:" in `text.disabled` (fuori dagli hero, e' UX-09): baseline non alzata.
+
+**Rimasto fuori**
+
+- Il fondo del footer e delle fasce scure (`heroGradient.footer`) e' ora grafite: cambia anche il footer, non solo gli hero.
+- Occhielli e icone arancioni dentro gli hero (`primary.light`, es. `/classifiche`, `/marcatori`, `/partite`, `/risultati`) sono rimasti: su fondo grafite reggono il contrasto, ma sono arancio su elementi non toccabili (regola di UX-07). Da decidere se neutralizzarli.
+- `NextMatchCard` (pagina squadra) e il banner "La tua squadra" dell'allenamento hanno gradienti propri con il colore della squadra: sono card, non hero, e non usano il marrone.
+- Immagini OG e tabellino: tema parcheggiato.

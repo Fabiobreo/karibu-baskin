@@ -150,7 +150,6 @@ export default async function TraguardiPage() {
   return (
     <>
       <PageHero
-        chip={t("achievementsPageChip")}
         title={t("achievements")}
         subtitle={t("achievementsPageSubtitle")}
         subtitleMaxWidth={520}

@@ -70,7 +70,6 @@ export default async function SponsorPage() {
   return (
     <>
       <PageHero
-        chip={t("sponsor.heroChip")}
         title={t("sponsor.heroTitle")}
         subtitle={t("sponsor.heroSubtitle")}
         subtitleMaxWidth={520}
