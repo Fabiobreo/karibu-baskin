@@ -15,7 +15,6 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -241,15 +240,14 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
       </Stack>
 
       <Box sx={{ mt: 2 }}>
-        <Link href={training.href} style={{ textDecoration: "none" }}>
-          <Button
-            size="small"
-            endIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-            sx={{ fontWeight: 700 }}
-          >
-            {t("openTraining")}
-          </Button>
-        </Link>
+        <Button
+          href={training.href}
+          size="small"
+          endIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
+          sx={{ fontWeight: 700 }}
+        >
+          {t("openTraining")}
+        </Button>
       </Box>
     </Paper>
   );

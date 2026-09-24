@@ -2,7 +2,6 @@
 
 import { Box, Button, Divider } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import TopScorersSection from "@/components/matches/sections/TopScorersSection";
 import CallupsListSection from "@/components/matches/sections/CallupsListSection";
@@ -48,16 +47,15 @@ export default function MatchCallupsTab({
     <Box sx={{ pt: 3 }}>
       {isStaff && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Link href={`/admin/partite/${matchId}/convocazioni`} style={{ textDecoration: "none" }}>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              sx={{ fontWeight: 700 }}
-            >
-              {t("manageCallups")}
-            </Button>
-          </Link>
+          <Button
+            href={`/admin/partite/${matchId}/convocazioni`}
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+            sx={{ fontWeight: 700 }}
+          >
+            {t("manageCallups")}
+          </Button>
         </Box>
       )}
 

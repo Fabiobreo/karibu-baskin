@@ -3,7 +3,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import EditIcon from "@mui/icons-material/Edit";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import MatchStatsTable from "@/components/matches/MatchStatsTable";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
@@ -25,16 +24,15 @@ export default function MatchStatsTab({
     <Box sx={{ pt: 3 }}>
       {isStaff && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Link href={`/admin/partite/${matchId}/statistiche`} style={{ textDecoration: "none" }}>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-              sx={{ fontWeight: 700 }}
-            >
-              {hasStats ? t("editStats") : t("addStats")}
-            </Button>
-          </Link>
+          <Button
+            href={`/admin/partite/${matchId}/statistiche`}
+            variant="outlined"
+            size="small"
+            startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+            sx={{ fontWeight: 700 }}
+          >
+            {hasStats ? t("editStats") : t("addStats")}
+          </Button>
         </Box>
       )}
       {!hasStats ? (

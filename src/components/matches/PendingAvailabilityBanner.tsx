@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Alert, Button, Container } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import { getTranslations } from "next-intl/server";
@@ -23,11 +22,14 @@ export default async function PendingAvailabilityBanner({ userId }: { userId: st
         icon={<EventAvailableIcon fontSize="small" />}
         sx={{ alignItems: "center", "& .MuiAlert-message": { fontWeight: 600 } }}
         action={
-          <Link href="/profilo/disponibilita" style={{ textDecoration: "none" }}>
-            <Button color="inherit" size="small" sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-              {t("respondNow")}
-            </Button>
-          </Link>
+          <Button
+            href="/profilo/disponibilita"
+            color="inherit"
+            size="small"
+            sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+          >
+            {t("respondNow")}
+          </Button>
         }
       >
         {t("pendingAvailabilities", { count })}

@@ -3,7 +3,6 @@ import { Box, Typography, Button, Stack } from "@mui/material";
 import { useTranslations } from "next-intl";
 import { alpha } from "@mui/material/styles";
 import Image from "next/image";
-import Link from "next/link";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
 
 // Testi di riserva, in italiano come ogni URL senza cookie. Servono quando la
@@ -134,24 +133,23 @@ export default function ErrorPage({ code, title, description, showReset, onReset
             {t("retry")}
           </Button>
         )}
-        <Link href="/" style={{ textDecoration: "none" }}>
-          <Button
-            variant={showReset ? "outlined" : "contained"}
-            size="large"
-            sx={{
-              borderRadius: 3,
-              px: 4,
-              fontWeight: 700,
-              ...(showReset && {
-                color: "rgba(255,255,255,0.7)",
-                borderColor: "rgba(255,255,255,0.2)",
-                "&:hover": { borderColor: "rgba(255,255,255,0.5)" },
-              }),
-            }}
-          >
-            {t("backHome")}
-          </Button>
-        </Link>
+        <Button
+          href="/"
+          variant={showReset ? "outlined" : "contained"}
+          size="large"
+          sx={{
+            borderRadius: 3,
+            px: 4,
+            fontWeight: 700,
+            ...(showReset && {
+              color: "rgba(255,255,255,0.7)",
+              borderColor: "rgba(255,255,255,0.2)",
+              "&:hover": { borderColor: "rgba(255,255,255,0.5)" },
+            }),
+          }}
+        >
+          {t("backHome")}
+        </Button>
       </Stack>
 
       {/* Linea decorativa in fondo */}

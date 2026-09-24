@@ -55,16 +55,15 @@ export default async function NewsPage() {
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {isStaff && (
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-            <Link href="/admin/news" style={{ textDecoration: "none" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                sx={{ fontWeight: 700 }}
-              >
-                Crea news
-              </Button>
-            </Link>
+            <Button
+              href="/admin/news"
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              sx={{ fontWeight: 700 }}
+            >
+              Crea news
+            </Button>
           </Box>
         )}
         {posts.length === 0 && (

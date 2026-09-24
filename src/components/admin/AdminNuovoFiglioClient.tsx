@@ -1,6 +1,5 @@
 "use client";
 import { useRef, useState } from "react";
-import Link from "next/link";
 import {
   Alert,
   Box,
@@ -216,11 +215,9 @@ export default function AdminNuovoFiglioClient({
             <Button variant="outlined" size="large" fullWidth onClick={anotherForNewParent}>
               Figlio di un altro genitore
             </Button>
-            <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
-              <Button color="inherit" size="large" fullWidth>
-                Torna agli utenti
-              </Button>
-            </Link>
+            <Button href="/admin/utenti" color="inherit" size="large" fullWidth>
+              Torna agli utenti
+            </Button>
           </Stack>
         </Stack>
       </Paper>

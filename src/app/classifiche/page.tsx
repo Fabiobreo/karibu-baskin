@@ -5,7 +5,6 @@ import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import Link from "next/link";
 import type { Metadata } from "next";
 import GironeFullView from "@/components/teams/GironeFullView";
 import type {
@@ -144,49 +143,46 @@ export default async function ClassifichePage() {
           {t("seasonValue", { season: displaySeason })}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
-          <Link href="/marcatori" style={{ textDecoration: "none" }}>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<LeaderboardIcon />}
-              sx={{
-                color: "rgba(255,255,255,0.7)",
-                borderColor: "rgba(255,255,255,0.3)",
-                fontSize: "0.78rem",
-                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-              }}
-            >
-              {t("linkScorers")}
-            </Button>
-          </Link>
-          <Link href="/risultati" style={{ textDecoration: "none" }}>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{
-                color: "rgba(255,255,255,0.7)",
-                borderColor: "rgba(255,255,255,0.3)",
-                fontSize: "0.78rem",
-                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-              }}
-            >
-              {t("linkResults")}
-            </Button>
-          </Link>
-          <Link href="/calendario" style={{ textDecoration: "none" }}>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{
-                color: "rgba(255,255,255,0.7)",
-                borderColor: "rgba(255,255,255,0.3)",
-                fontSize: "0.78rem",
-                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-              }}
-            >
-              {t("linkCalendar")}
-            </Button>
-          </Link>
+          <Button
+            href="/marcatori"
+            size="small"
+            variant="outlined"
+            startIcon={<LeaderboardIcon />}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              borderColor: "rgba(255,255,255,0.3)",
+              fontSize: "0.78rem",
+              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+            }}
+          >
+            {t("linkScorers")}
+          </Button>
+          <Button
+            href="/risultati"
+            size="small"
+            variant="outlined"
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              borderColor: "rgba(255,255,255,0.3)",
+              fontSize: "0.78rem",
+              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+            }}
+          >
+            {t("linkResults")}
+          </Button>
+          <Button
+            href="/calendario"
+            size="small"
+            variant="outlined"
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              borderColor: "rgba(255,255,255,0.3)",
+              fontSize: "0.78rem",
+              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+            }}
+          >
+            {t("linkCalendar")}
+          </Button>
         </Box>
       </PageHero>
 

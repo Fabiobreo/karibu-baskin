@@ -39,17 +39,9 @@
     "impact": "serious",
     "nodes": 32
   },
-  "admin|utenti|desktop|target-size": {
-    "impact": "serious",
-    "nodes": 1
-  },
   "admin|utenti|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 31
-  },
-  "admin|utenti|mobile|target-size": {
-    "impact": "serious",
-    "nodes": 1
   },
   "anon|allenamenti|desktop|color-contrast": {
     "impact": "serious",
@@ -95,17 +87,9 @@
     "impact": "serious",
     "nodes": 2
   },
-  "anon|home|desktop|target-size": {
-    "impact": "serious",
-    "nodes": 2
-  },
   "anon|home|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 1
-  },
-  "anon|home|mobile|target-size": {
-    "impact": "serious",
-    "nodes": 2
   },
   "anon|login|desktop|color-contrast": {
     "impact": "serious",
@@ -163,15 +147,7 @@
     "impact": "serious",
     "nodes": 2
   },
-  "athlete|home|desktop|target-size": {
-    "impact": "serious",
-    "nodes": 1
-  },
   "athlete|home|mobile|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
-  },
-  "athlete|home|mobile|target-size": {
     "impact": "serious",
     "nodes": 1
   },

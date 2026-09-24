@@ -1,6 +1,7 @@
 "use client";
 import { createTheme } from "@mui/material/styles";
 import { heroGradient } from "@/lib/heroStyles";
+import LinkBehavior from "@/components/common/LinkBehavior";
 
 // Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
 export { heroGradient };
@@ -417,6 +418,10 @@ function buildComponents(mode: "light" | "dark") {
     // questi due override la regola globale qui sopra, a parita' di
     // specificita', perderebbe contro le classi dei componenti.
     MuiButtonBase: {
+      // `<Button href="/x">` (e IconButton, MenuItem, Tab…) rende `next/link`:
+      // un solo elemento, una sola fermata di Tab e navigazione lato client,
+      // anche da un Server Component. Esterni, `/api/*` e download restano `<a>`.
+      defaultProps: { LinkComponent: LinkBehavior },
       styleOverrides: {
         root: { "&:focus-visible": focusRingStyles },
       },
@@ -426,7 +431,7 @@ function buildComponents(mode: "light" | "dark") {
       // accessibile invece di `primary.main` (3,79:1 su bianco). Sta nei
       // defaultProps, non negli styleOverrides, cosi' un `color="inherit"`
       // dentro un hero scuro continua a vincere.
-      defaultProps: { color: "primary.onLight" },
+      defaultProps: { color: "primary.onLight", component: LinkBehavior },
       styleOverrides: {
         root: { "&:focus-visible": focusRingStyles },
       },

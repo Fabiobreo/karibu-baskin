@@ -4,7 +4,6 @@ import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
 import { Paper, Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
-import Link from "next/link";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -166,16 +165,22 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
         action={
           <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
-            <Link href="/admin/utenti/nuovo-figlio" style={{ textDecoration: "none" }}>
-              <Button variant="outlined" startIcon={<ChildCareIcon />} size="small">
-                Nuovo figlio
-              </Button>
-            </Link>
-            <Link href="/admin/utenti/nuovo" style={{ textDecoration: "none" }}>
-              <Button variant="contained" startIcon={<PersonAddIcon />} size="small">
-                Nuovo utente
-              </Button>
-            </Link>
+            <Button
+              href="/admin/utenti/nuovo-figlio"
+              variant="outlined"
+              startIcon={<ChildCareIcon />}
+              size="small"
+            >
+              Nuovo figlio
+            </Button>
+            <Button
+              href="/admin/utenti/nuovo"
+              variant="contained"
+              startIcon={<PersonAddIcon />}
+              size="small"
+            >
+              Nuovo utente
+            </Button>
           </Stack>
         }
       />

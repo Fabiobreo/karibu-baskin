@@ -64,11 +64,13 @@ export default async function FaqPage() {
               {t("faq.suggestionCtaDesc")}
             </Typography>
           </Box>
-          <Link href="/contatti#suggerimenti" style={{ textDecoration: "none" }}>
-            <Button variant="contained" sx={{ fontWeight: 700, borderRadius: 2, flexShrink: 0 }}>
-              {t("faq.suggestionCtaBtn")}
-            </Button>
-          </Link>
+          <Button
+            href="/contatti#suggerimenti"
+            variant="contained"
+            sx={{ fontWeight: 700, borderRadius: 2, flexShrink: 0 }}
+          >
+            {t("faq.suggestionCtaBtn")}
+          </Button>
         </Box>
       </Container>
     </>

@@ -710,11 +710,9 @@ export default function TeamDisplay({
           {restricted === "guest" ? t("teamsPrivateGuest") : t("teamsPrivate")}
         </Typography>
         {restricted === "anonymous" && (
-          <Link href="/login">
-            <Button size="small" variant="outlined">
-              {t("rosterPrivateCta")}
-            </Button>
-          </Link>
+          <Button href="/login" size="small" variant="outlined">
+            {t("rosterPrivateCta")}
+          </Button>
         )}
       </Box>
     );

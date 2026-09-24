@@ -1,6 +1,6 @@
 # UX-04 · Link come bottoni (fine di `<Link><Button>`)
 
-**Ondata:** 0 · **Stima:** M · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 0 · **Stima:** M · **Dipende da:** nessuno · **Stato:** fatto (commit su `develop`): `LinkBehavior` come link di default del tema, 42 `<Link><Button>` e 3 ancore semplici migrati a `<Button href>`/`MuiLink`, zero `a button` sulle pagine di UX-01
 
 ## Problema
 
@@ -37,3 +37,17 @@ Configurare il link una volta sola nel tema, invece di un nuovo componente. `src
 - Ogni CTA riceve il focus una sola volta.
 - Abbonamento al calendario, link esterni ed esportazioni funzionano come prima.
 - La navigazione tra pagine interne resta lato client (niente ricaricamento completo).
+
+## Esito
+
+- `src/components/common/LinkBehavior.tsx` + regole in `src/lib/linkTarget.ts` (con test): `next/link` per le pagine interne, `<a>` semplice per URL assoluti, `mailto:`/`tel:`/`webcal:`, `/api/*` e `download`. Montato in `theme.ts` su `MuiButtonBase.LinkComponent` e `MuiLink.component`.
+- Migrate le 42 occorrenze (33 file, 14 Server Component) e le ancore di `profilo/page.tsx`, `profilo/ruolo/page.tsx`, `profilo/disponibilita/page.tsx` (ora i breadcrumb navigano lato client). Anche l'`<a download><Button>` dell'export dati in `GdprSection`.
+- Tolto `clickable` ai `Chip` dentro un `<Link>` (figli nel profilo giocatore, `AdminAnonymousRegistrations`): erano `a [role=button]`. L'effetto al passaggio del mouse resta con `a:hover > &`.
+- Verifica: `a button, a [role=button]` = 0 su 16 pagine (anonimo, atleta, admin; desktop e mobile), clic su un bottone di un Server Component senza ricaricamento, export dati e mailto restano `<a>` semplici. `npm run a11y`: nessuna nuova violazione, 6 voci `target-size` sparite, baseline 47 → 41.
+- CLAUDE.md e `src/components/CLAUDE.md` aggiornati.
+
+**Rimasto fuori**
+
+- `prefetch={false}` non applicato: le liste admin con `IconButton` link (`AdminGironiClient`) hanno pochi elementi e con Next 16 il prefetch di una pagina dinamica si ferma al `loading`. Da rivedere solo se compaiono liste lunghe.
+- I `component={Link}` nei Client Component (header, calendario, notifiche, admin) funzionano e non annidano nulla: lasciati com'erano, si possono semplificare in `href` quando si tocca il file.
+- I bottoni in `SubscribeCalendarDialog` e i social del `Footer` usano `component="a"` esplicito, quindi non passano da `LinkBehavior`: comportamento invariato.

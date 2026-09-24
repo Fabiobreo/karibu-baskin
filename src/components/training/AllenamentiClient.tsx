@@ -1282,11 +1282,14 @@ export default function AllenamentiClient({
             {/* Le stagioni precedenti non vengono caricate di default */}
             {previousSeasonsCount > 0 && (
               <Box sx={{ textAlign: "center", mt: 2 }}>
-                <Link href="/allenamenti?all=1" style={{ textDecoration: "none" }}>
-                  <Button size="small" variant="text" sx={{ fontWeight: 600 }}>
-                    {t("showPreviousSeasons", { count: previousSeasonsCount })}
-                  </Button>
-                </Link>
+                <Button
+                  href="/allenamenti?all=1"
+                  size="small"
+                  variant="text"
+                  sx={{ fontWeight: 600 }}
+                >
+                  {t("showPreviousSeasons", { count: previousSeasonsCount })}
+                </Button>
               </Box>
             )}
           </Box>

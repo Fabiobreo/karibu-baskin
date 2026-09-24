@@ -15,7 +15,6 @@ import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Image from "next/image";
-import Link from "next/link";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
@@ -249,17 +248,16 @@ export default async function SponsorPage() {
                 {t("sponsor.writeUsDesc")}
               </Typography>
             </Box>
-            <Link href="mailto:asdkaribubaskin@gmail.com" style={{ textDecoration: "none" }}>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<EmailIcon />}
-                size="large"
-                sx={{ whiteSpace: "nowrap" }}
-              >
-                {t("sponsor.contactUs")}
-              </Button>
-            </Link>
+            <Button
+              href="mailto:asdkaribubaskin@gmail.com"
+              variant="contained"
+              color="primary"
+              startIcon={<EmailIcon />}
+              size="large"
+              sx={{ whiteSpace: "nowrap" }}
+            >
+              {t("sponsor.contactUs")}
+            </Button>
           </Box>
         </Box>
       </Container>

@@ -16,7 +16,6 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CancelIcon from "@mui/icons-material/Cancel";
-import Link from "next/link";
 import { format } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
@@ -242,11 +241,9 @@ export default function EventRsvp({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
             {t("rsvpLoginPrompt")}
           </Typography>
-          <Link href="/login" style={{ textDecoration: "none" }}>
-            <Button variant="contained" sx={{ fontWeight: 700, borderRadius: 2 }}>
-              {t("rsvpTitle")}
-            </Button>
-          </Link>
+          <Button href="/login" variant="contained" sx={{ fontWeight: 700, borderRadius: 2 }}>
+            {t("rsvpTitle")}
+          </Button>
         </Box>
       ) : isPast ? (
         <Typography variant="body2" color="text.disabled">

@@ -175,11 +175,9 @@ export default async function SquadrePage() {
               </Typography>
             </Box>
           </Box>
-          <Link href="/squadre/sfida" style={{ textDecoration: "none" }}>
-            <Button variant="contained" size="small" sx={{ fontWeight: 700 }}>
-              {t("simChallengeCta")}
-            </Button>
-          </Link>
+          <Button href="/squadre/sfida" variant="contained" size="small" sx={{ fontWeight: 700 }}>
+            {t("simChallengeCta")}
+          </Button>
         </Box>
 
         {/* Link archivio */}
@@ -209,11 +207,9 @@ export default async function SquadrePage() {
                 </Typography>
               </Box>
             </Box>
-            <Link href="/squadre/archivio" style={{ textDecoration: "none" }}>
-              <Button variant="outlined" size="small">
-                {t("goToArchive")}
-              </Button>
-            </Link>
+            <Button href="/squadre/archivio" variant="outlined" size="small">
+              {t("goToArchive")}
+            </Button>
           </Box>
         )}
 

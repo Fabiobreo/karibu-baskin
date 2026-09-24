@@ -220,11 +220,14 @@ export default async function EventoPage({ params }: Props) {
       </PageHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Link href="/eventi" style={{ textDecoration: "none" }}>
-          <Button size="small" startIcon={<ArrowBackIcon />} sx={{ mb: 2, fontWeight: 600 }}>
-            {t("backToList")}
-          </Button>
-        </Link>
+        <Button
+          href="/eventi"
+          size="small"
+          startIcon={<ArrowBackIcon />}
+          sx={{ mb: 2, fontWeight: 600 }}
+        >
+          {t("backToList")}
+        </Button>
 
         {/* Con la locandina: due colonne su desktop (contenuto + locandina intera
             che resta visibile scorrendo); su mobile la locandina è una riga

@@ -100,15 +100,18 @@ export default function RoleQuizClient({
   return (
     <RoleResultCard result={suggested} rolesInfo={rolesInfo} kind="suggested">
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 3 }}>
-        <Link href={nextSession?.href ?? "/allenamenti"} style={{ textDecoration: "none" }}>
-          <Button variant="contained" startIcon={<EventAvailableIcon />} fullWidth>
-            {nextSession
-              ? nextSession.registered
-                ? t("ctaBooked")
-                : t("ctaNextSession")
-              : t("ctaSessions")}
-          </Button>
-        </Link>
+        <Button
+          href={nextSession?.href ?? "/allenamenti"}
+          variant="contained"
+          startIcon={<EventAvailableIcon />}
+          fullWidth
+        >
+          {nextSession
+            ? nextSession.registered
+              ? t("ctaBooked")
+              : t("ctaNextSession")
+            : t("ctaSessions")}
+        </Button>
         <Button variant="outlined" startIcon={<ReplayIcon />} onClick={() => setRedoing(true)}>
           {t("redo")}
         </Button>

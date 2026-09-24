@@ -364,9 +364,9 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
           <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
             Imposta prima i convocati dalla pagina &quot;Convocati&quot;.
           </Typography>
-          <Link href={`/admin/partite/${matchId}/convocazioni`} style={{ textDecoration: "none" }}>
-            <Button variant="outlined">Vai a Convocazioni</Button>
-          </Link>
+          <Button href={`/admin/partite/${matchId}/convocazioni`} variant="outlined">
+            Vai a Convocazioni
+          </Button>
         </Paper>
       ) : (
         <>

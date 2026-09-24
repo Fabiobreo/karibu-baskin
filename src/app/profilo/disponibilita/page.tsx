@@ -38,9 +38,6 @@ export default async function MieDisponibilitaPage() {
             aria-label="breadcrumb"
             sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
           >
-            {/* Niente `component={Link}`: qui siamo in un Server Component e
-                passare un componente a un Client Component non attraversa il
-                confine RSC. Resta un'ancora normale. */}
             <MuiLink
               href="/profilo"
               underline="hover"

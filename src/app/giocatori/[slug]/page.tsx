@@ -942,10 +942,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
               {guardedChildren.map((c) => (
                 <Link key={c.id} href={c.href} style={{ textDecoration: "none" }}>
+                  {/* Niente `clickable`: il link e' gia' l'elemento da
+                      toccare, un bottone dentro farebbe due fermate di Tab. */}
                   <Chip
-                    clickable
                     label={c.name}
                     variant="outlined"
+                    sx={{ cursor: "pointer", "a:hover > &": { bgcolor: "action.hover" } }}
                     avatar={
                       c.sportRole ? (
                         <Avatar
@@ -1186,14 +1188,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             )}
 
             <Box sx={{ mb: 5 }}>
-              <Link
+              <Button
                 href={`/giocatori/confronta?a=${encodeURIComponent(slug)}`}
-                style={{ textDecoration: "none" }}
+                size="small"
+                variant="outlined"
+                startIcon={<CompareArrowsIcon />}
               >
-                <Button size="small" variant="outlined" startIcon={<CompareArrowsIcon />}>
-                  {t("compare")}
-                </Button>
-              </Link>
+                {t("compare")}
+              </Button>
             </Box>
           </>
         )}

@@ -1,6 +1,5 @@
 import { Container, Paper, Typography, Box, Button } from "@mui/material";
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo";
 
@@ -33,11 +32,9 @@ export default async function VerifyRequestPage() {
           {t("spamHint")}
         </Typography>
         <Box>
-          <Link href="/login">
-            <Button variant="outlined" sx={{ textTransform: "none", fontWeight: 600 }}>
-              {t("back")}
-            </Button>
-          </Link>
+          <Button href="/login" variant="outlined" sx={{ textTransform: "none", fontWeight: 600 }}>
+            {t("back")}
+          </Button>
         </Box>
       </Paper>
     </Container>

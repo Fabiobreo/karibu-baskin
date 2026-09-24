@@ -21,7 +21,6 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import Link from "next/link";
 import { contrastText } from "@/lib/colorUtils";
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/profile/ParentChildLinker";
@@ -348,29 +347,27 @@ export default async function ProfiloPage() {
               @/lib/publicProfile): niente link verso un 404. */}
           {user.slug &&
             userHasPublicProfile({ ...user, matchesPlayed: user._count.matchStats }) && (
-              <Link href={`/giocatori/${user.slug}`} style={{ textDecoration: "none" }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-                  sx={{ fontSize: "0.78rem", fontWeight: 600 }}
-                >
-                  {t("publicProfile")}
-                </Button>
-              </Link>
-            )}
-          <Link href="/profilo/disponibilita" style={{ textDecoration: "none" }}>
-            <Badge badgeContent={pendingAvailabilities} color="warning" max={99}>
               <Button
+                href={`/giocatori/${user.slug}`}
                 size="small"
                 variant="outlined"
-                startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
+                startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
                 sx={{ fontSize: "0.78rem", fontWeight: 600 }}
               >
-                {t("myAvailabilities")}
+                {t("publicProfile")}
               </Button>
-            </Badge>
-          </Link>
+            )}
+          <Badge badgeContent={pendingAvailabilities} color="warning" max={99}>
+            <Button
+              href="/profilo/disponibilita"
+              size="small"
+              variant="outlined"
+              startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
+              sx={{ fontSize: "0.78rem", fontWeight: 600 }}
+            >
+              {t("myAvailabilities")}
+            </Button>
+          </Badge>
         </Stack>
 
         {user.appRole === "GUEST" && (
@@ -401,14 +398,13 @@ export default async function ProfiloPage() {
             />
           </Suspense>
           <Box sx={{ mt: -1.5, textAlign: "right" }}>
-            <Link href="/profilo/traguardi" style={{ textDecoration: "none" }}>
-              <Button
-                size="small"
-                endIcon={<EmojiEventsIcon sx={{ fontSize: "1rem !important" }} />}
-              >
-                {t("viewAllAchievements")}
-              </Button>
-            </Link>
+            <Button
+              href="/profilo/traguardi"
+              size="small"
+              endIcon={<EmojiEventsIcon sx={{ fontSize: "1rem !important" }} />}
+            >
+              {t("viewAllAchievements")}
+            </Button>
           </Box>
         </Box>
       )}
@@ -504,9 +500,6 @@ export default async function ProfiloPage() {
             aria-label="breadcrumb"
             sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
           >
-            {/* Niente `component={Link}`: qui siamo in un Server Component e
-                passare un componente a un Client Component non attraversa il
-                confine RSC. Resta un'ancora normale. */}
             <MuiLink
               href="/"
               underline="hover"

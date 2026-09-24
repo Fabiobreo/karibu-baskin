@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { Box, Typography, Button, Container } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 function scrollToAllenamenti() {
@@ -176,29 +175,28 @@ export default function HeroSection({ guest }: HeroSectionProps) {
           >
             {guest ? tGuest("heroCtaTrainings") : t("upcomingTrainings")}
           </Button>
-          <Link href={guest ? "/profilo/ruolo" : "/il-baskin"} style={{ textDecoration: "none" }}>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{
-                fontWeight: 600,
-                px: 3,
-                py: 1.4,
-                fontSize: "0.95rem",
-                borderRadius: 2,
-                color: "common.white",
-                borderColor: "rgba(255,255,255,0.35)",
-                backdropFilter: "blur(4px)",
-                bgcolor: "rgba(255,255,255,0.06)",
-                "&:hover": {
-                  borderColor: "rgba(255,255,255,0.65)",
-                  bgcolor: "rgba(255,255,255,0.12)",
-                },
-              }}
-            >
-              {guest ? tGuest("heroCtaRole") : t("whatIsBaskin")}
-            </Button>
-          </Link>
+          <Button
+            href={guest ? "/profilo/ruolo" : "/il-baskin"}
+            variant="outlined"
+            size="large"
+            sx={{
+              fontWeight: 600,
+              px: 3,
+              py: 1.4,
+              fontSize: "0.95rem",
+              borderRadius: 2,
+              color: "common.white",
+              borderColor: "rgba(255,255,255,0.35)",
+              backdropFilter: "blur(4px)",
+              bgcolor: "rgba(255,255,255,0.06)",
+              "&:hover": {
+                borderColor: "rgba(255,255,255,0.65)",
+                bgcolor: "rgba(255,255,255,0.12)",
+              },
+            }}
+          >
+            {guest ? tGuest("heroCtaRole") : t("whatIsBaskin")}
+          </Button>
         </Box>
       </Container>
     </Box>

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Box, Button, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
 import SignOutEverywhereButton from "@/components/profile/SignOutEverywhereButton";
@@ -14,11 +13,15 @@ export default async function GdprSection({ email }: { email: string }) {
         <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
           {t("gdprExportNote")}
         </Typography>
-        <a href="/api/users/me/export" download style={{ textDecoration: "none" }}>
-          <Button size="small" variant="outlined" sx={{ fontSize: "0.78rem" }}>
-            {t("downloadData")}
-          </Button>
-        </a>
+        <Button
+          href="/api/users/me/export"
+          download
+          size="small"
+          variant="outlined"
+          sx={{ fontSize: "0.78rem" }}
+        >
+          {t("downloadData")}
+        </Button>
       </Box>
 
       {/* Sessioni attive: esci da tutti i dispositivi (telefono perso, PC condiviso) */}
@@ -34,13 +37,15 @@ export default async function GdprSection({ email }: { email: string }) {
         <Typography variant="caption" color="text.disabled" display="block" sx={{ mb: 1 }}>
           {t("gdprDeleteNote")}
         </Typography>
-        <Link
+        <Button
           href={`mailto:asdkaribubaskin@gmail.com?subject=${encodeURIComponent("Richiesta eliminazione account GDPR")}&body=${encodeURIComponent(`Salve,\n\nrichiedo l'eliminazione del mio account e di tutti i dati personali associati.\n\nEmail account: ${email}\n\nGrazie.`)}`}
+          size="small"
+          color="error"
+          variant="outlined"
+          sx={{ fontSize: "0.78rem" }}
         >
-          <Button size="small" color="error" variant="outlined" sx={{ fontSize: "0.78rem" }}>
-            {t("deleteAccount")}
-          </Button>
-        </Link>
+          {t("deleteAccount")}
+        </Button>
       </Box>
     </>
   );

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
 
@@ -34,16 +33,12 @@ export default async function JoinUsCta() {
           {t("joinBody")}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, justifyContent: "center", flexWrap: "wrap" }}>
-          <Link href="/contatti">
-            <Button variant="contained" size="large">
-              {t("joinCta")}
-            </Button>
-          </Link>
-          <Link href="/il-baskin">
-            <Button variant="outlined" size="large">
-              {t("joinLearn")}
-            </Button>
-          </Link>
+          <Button href="/contatti" variant="contained" size="large">
+            {t("joinCta")}
+          </Button>
+          <Button href="/il-baskin" variant="outlined" size="large">
+            {t("joinLearn")}
+          </Button>
         </Box>
       </Container>
     </Box>

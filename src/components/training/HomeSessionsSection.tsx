@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
 import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -164,12 +163,12 @@ export default function HomeSessionsSection({
             {t("homeNoneSoon")}
           </Typography>
           <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            <Link href="/contatti">
-              <Button variant="contained">{t("homeNoneSoonCta")}</Button>
-            </Link>
-            <Link href="/calendario">
-              <Button variant="outlined">{t("homeSeeCalendar")}</Button>
-            </Link>
+            <Button href="/contatti" variant="contained">
+              {t("homeNoneSoonCta")}
+            </Button>
+            <Button href="/calendario" variant="outlined">
+              {t("homeSeeCalendar")}
+            </Button>
           </Box>
         </Box>
       )}

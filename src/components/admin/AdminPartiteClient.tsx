@@ -34,7 +34,6 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import type { MatchCoverage } from "@/lib/matches/matchCoverage";
-import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -766,14 +765,14 @@ function LeagueView({
               {sec.groupName}
             </Typography>
             {sec.groupId && (
-              <Link
+              <Button
                 href={`/admin/gironi/${sec.groupId}`}
-                style={{ textDecoration: "none", color: "inherit" }}
+                size="small"
+                startIcon={<OpenInNewIcon />}
+                sx={{ fontSize: "0.72rem" }}
               >
-                <Button size="small" startIcon={<OpenInNewIcon />} sx={{ fontSize: "0.72rem" }}>
-                  Apri girone
-                </Button>
-              </Link>
+                Apri girone
+              </Button>
             )}
           </Box>
           {/* Desktop table */}

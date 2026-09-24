@@ -18,7 +18,6 @@ import {
 import HistoryIcon from "@mui/icons-material/History";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { AppRole } from "@prisma/client";
@@ -546,22 +545,23 @@ export default function UserEditDialog({
       <DialogActions sx={{ px: 3, pb: 2, flexWrap: "wrap", gap: 1 }}>
         {/* Scorciatoia per il backfill: il genitore arriva già scelto. */}
         {row.kind === "user" && (
-          <Link
+          <Button
             href={`/admin/utenti/nuovo-figlio?parentId=${row.id}`}
-            style={{ textDecoration: "none" }}
+            startIcon={<ChildCareIcon />}
           >
-            <Button startIcon={<ChildCareIcon />}>Aggiungi figlio</Button>
-          </Link>
+            Aggiungi figlio
+          </Button>
         )}
         {/* Profilo giocatore: lo staff lo apre anche quando non è pubblico
             (genitori che non giocano), e da lì raggiunge i figli. */}
-        <Link
+        <Button
           href={`/giocatori/${row.id}`}
           target="_blank"
-          style={{ textDecoration: "none", marginRight: "auto" }}
+          startIcon={<OpenInNewIcon />}
+          sx={{ mr: "auto" }}
         >
-          <Button startIcon={<OpenInNewIcon />}>Profilo</Button>
-        </Link>
+          Profilo
+        </Button>
         <Button onClick={onClose}>Annulla</Button>
         <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>
           {saving ? "Salvataggio..." : "Salva"}

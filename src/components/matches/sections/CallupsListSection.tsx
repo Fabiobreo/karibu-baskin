@@ -3,7 +3,6 @@
 import { Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LockIcon from "@mui/icons-material/Lock";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ROLE_COLORS } from "@/lib/constants";
 import CallupRow from "@/components/matches/CallupRow";
@@ -41,11 +40,9 @@ export default function CallupsListSection({
         >
           {t("callupsRestricted")}
         </Typography>
-        <Link href="/login" style={{ textDecoration: "none" }}>
-          <Button variant="contained" color="primary" sx={{ fontWeight: 700 }}>
-            {tNav("login")}
-          </Button>
-        </Link>
+        <Button href="/login" variant="contained" color="primary" sx={{ fontWeight: 700 }}>
+          {tNav("login")}
+        </Button>
       </Box>
     );
   }

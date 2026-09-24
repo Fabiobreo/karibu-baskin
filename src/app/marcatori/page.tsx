@@ -284,35 +284,33 @@ export default async function MarcatoriPage({ searchParams }: Props) {
           {t("pageTitle")}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
-          <Link href="/classifiche" style={{ textDecoration: "none" }}>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<EmojiEventsIcon />}
-              sx={{
-                color: "rgba(255,255,255,0.7)",
-                borderColor: "rgba(255,255,255,0.3)",
-                fontSize: "0.78rem",
-                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-              }}
-            >
-              {t("linkStandings")}
-            </Button>
-          </Link>
-          <Link href="/risultati" style={{ textDecoration: "none" }}>
-            <Button
-              size="small"
-              variant="outlined"
-              sx={{
-                color: "rgba(255,255,255,0.7)",
-                borderColor: "rgba(255,255,255,0.3)",
-                fontSize: "0.78rem",
-                "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-              }}
-            >
-              {t("linkResults")}
-            </Button>
-          </Link>
+          <Button
+            href="/classifiche"
+            size="small"
+            variant="outlined"
+            startIcon={<EmojiEventsIcon />}
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              borderColor: "rgba(255,255,255,0.3)",
+              fontSize: "0.78rem",
+              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+            }}
+          >
+            {t("linkStandings")}
+          </Button>
+          <Button
+            href="/risultati"
+            size="small"
+            variant="outlined"
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              borderColor: "rgba(255,255,255,0.3)",
+              fontSize: "0.78rem",
+              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
+            }}
+          >
+            {t("linkResults")}
+          </Button>
         </Box>
       </PageHero>
 

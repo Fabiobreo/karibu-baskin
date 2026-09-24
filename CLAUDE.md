@@ -227,7 +227,7 @@ sentry.edge.config.ts                      # Sentry edge runtime
 - **Tipi:** interface per oggetti, type per union; mai `as any` senza commento
 - **Stile MUI:** usare `sx` prop + colori dal tema (`primary.main`, `text.secondary`), mai colori hardcoded
 - **Server vs Client:** le pagine in `app/` sono Server Components di default; aggiungere `"use client"` solo dove serve interattività
-- **Button + Link in Server Component:** usare sempre `<Link><Button>` mai `<Button component={Link}>` (causa errore runtime Next.js)
+- **Bottoni che portano a una pagina:** `<Button href="/x">` (anche `IconButton`, `MenuItem`, `MuiLink`), in Server e Client Component. Il tema monta `LinkBehavior` (`src/components/common/LinkBehavior.tsx`) come link di default: rende `next/link` (navigazione lato client) e un `<a>` semplice per esterni, `mailto:`/`tel:`/`webcal:`, `/api/*` e `download` (regole in `@/lib/linkTarget`). Mai `<Link><Button>` (HTML non valido, due fermate di Tab) né `<Button component={Link}>` in un Server Component (errore runtime)
 - **Select con valore vuoto:** usare `displayEmpty` + `InputLabel shrink` + `notched` per evitare sovrapposizione etichetta
 
 ## Modelli Prisma principali
@@ -673,7 +673,7 @@ export default async function Page() {
 - **Mai `as any`** senza commento `// eslint-disable-next-line` + spiegazione del perché.
 - **Mai colori hardcoded** (`#fff`, `#000`, `rgb(...)`). Usare token del tema MUI: `primary.main`, `text.secondary`, ecc.
 - **Mai CSS in file `.css` o `.module.css`** — tutto via `sx` prop o `styled()` di Emotion.
-- **Mai `<Button component={Link}>`** in Server Component → causa runtime error. Usare `<Link href=".."><Button>...</Button></Link>`.
+- **Mai `<Link><Button>`** (un bottone dentro un link: HTML non valido, due fermate di Tab) e **mai `<Button component={Link}>`** in Server Component (errore runtime). Usare `<Button href="..">`: il tema lo fa diventare un `next/link`. Stesso discorso per un `Chip clickable` dentro un `<Link>`: togliere `clickable`.
 - **Mai `NextResponse.cookies.set()`** per cookie di sessione → bug Turbopack. Usare `res.headers.set("Set-Cookie", ...)`.
 - **Mai `null` su campo `Json` Prisma** → usare `Prisma.DbNull`. Per "field non passato" usare `Prisma.JsonNull` solo dentro update.
 - **Mai chiamare Prisma dentro `proxy.ts`** (middleware) → Edge Runtime non lo supporta. L'auth va nei layout/API routes.

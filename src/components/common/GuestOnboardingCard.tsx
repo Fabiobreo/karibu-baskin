@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { Box, Button, LinearProgress, Paper, Stack, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -222,15 +221,14 @@ export default function GuestOnboardingCard({
               {c.action && (
                 // Da mobile il pulsante va a capo, allineato al testo e non all'icona.
                 <Box sx={{ flexShrink: 0, ml: { xs: "44px", sm: 0 } }}>
-                  <Link href={c.action.href} style={{ textDecoration: "none" }}>
-                    <Button
-                      variant={c.action.primary ? (isNext ? "contained" : "outlined") : "text"}
-                      size="small"
-                      sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
-                    >
-                      {c.action.label}
-                    </Button>
-                  </Link>
+                  <Button
+                    href={c.action.href}
+                    variant={c.action.primary ? (isNext ? "contained" : "outlined") : "text"}
+                    size="small"
+                    sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+                  >
+                    {c.action.label}
+                  </Button>
                 </Box>
               )}
             </Box>

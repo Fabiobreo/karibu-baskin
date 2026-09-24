@@ -581,11 +581,9 @@ export default function AdminGironeWorkspaceClient({
             Partite.
           </Typography>
         </Box>
-        <Link href="/admin/partite" style={{ textDecoration: "none" }}>
-          <Button size="small" variant="outlined" startIcon={<OpenInNewIcon />}>
-            Apri Gestione Partite
-          </Button>
-        </Link>
+        <Button href="/admin/partite" size="small" variant="outlined" startIcon={<OpenInNewIcon />}>
+          Apri Gestione Partite
+        </Button>
       </Paper>
 
       {/* Sezione Risultati altre squadre */}

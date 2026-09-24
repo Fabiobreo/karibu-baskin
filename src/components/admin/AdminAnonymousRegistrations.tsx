@@ -296,8 +296,12 @@ export default function AdminAnonymousRegistrations({
                         <Chip
                           label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
                           size="small"
-                          clickable
-                          sx={{ fontSize: "0.65rem", fontWeight: 600 }}
+                          sx={{
+                            fontSize: "0.65rem",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            "a:hover > &": { bgcolor: "action.focus" },
+                          }}
                         />
                       </Link>
                     ))}
@@ -417,8 +421,12 @@ export default function AdminAnonymousRegistrations({
                     <Chip
                       label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
                       size="small"
-                      clickable
-                      sx={{ fontSize: "0.65rem", fontWeight: 600 }}
+                      sx={{
+                        fontSize: "0.65rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        "a:hover > &": { bgcolor: "action.focus" },
+                      }}
                     />
                   </Link>
                 ))}
