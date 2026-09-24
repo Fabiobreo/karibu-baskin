@@ -173,6 +173,7 @@ export default function UsersTable({
                     value={row.appRole}
                     size="small"
                     onChange={(e) => onRoleChange(row.id, e.target.value as AppRole)}
+                    inputProps={{ "aria-label": `Ruolo utente di ${row.name ?? row.email}` }}
                     sx={{ minWidth: 110, fontSize: "0.8rem" }}
                     renderValue={(val) => (
                       <Chip
@@ -233,7 +234,8 @@ export default function UsersTable({
                       <Tooltip title="Conferma ruolo">
                         <IconButton
                           size="small"
-                          sx={{ p: "2px", color: "success.main" }}
+                          aria-label={`Conferma ruolo di ${row.name ?? row.email}`}
+                          sx={{ color: "success.main" }}
                           onClick={() => onConfirmSuggestedRole(row)}
                         >
                           <CheckCircleOutlineIcon sx={{ fontSize: 15 }} />
@@ -242,7 +244,8 @@ export default function UsersTable({
                       <Tooltip title="Rifiuta suggerimento">
                         <IconButton
                           size="small"
-                          sx={{ p: "2px", color: "error.main" }}
+                          aria-label={`Rifiuta ruolo suggerito per ${row.name ?? row.email}`}
+                          sx={{ color: "error.main" }}
                           onClick={() => onRejectSuggestedRole(row)}
                         >
                           <HighlightOffIcon sx={{ fontSize: 15 }} />
@@ -265,6 +268,7 @@ export default function UsersTable({
                     teams={teams}
                     memberships={row.teamMemberships}
                     onChange={(teamId) => onTeamChange(row, teamId)}
+                    ariaLabel={`Squadra di ${row.name ?? row.email}`}
                   />
                 </TableCell>
 

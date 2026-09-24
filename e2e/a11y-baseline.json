@@ -11,37 +11,17 @@
     "impact": "serious",
     "nodes": 107
   },
-  "admin|allenamenti|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
   "admin|allenamenti|mobile|target-size": {
     "impact": "serious",
     "nodes": 10
-  },
-  "admin|dashboard|desktop|aria-input-field-name": {
-    "impact": "serious",
-    "nodes": 2
   },
   "admin|dashboard|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 9
   },
-  "admin|dashboard|desktop|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
-  "admin|dashboard|mobile|aria-input-field-name": {
-    "impact": "serious",
-    "nodes": 2
-  },
   "admin|dashboard|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 13
-  },
-  "admin|dashboard|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 2
   },
   "admin|partite|desktop|color-contrast": {
     "impact": "serious",
@@ -51,49 +31,21 @@
     "impact": "serious",
     "nodes": 17
   },
-  "admin|partite|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
   "admin|statistiche-partita|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 1
-  },
-  "admin|statistiche-partita|desktop|label": {
-    "impact": "critical",
-    "nodes": 42
-  },
-  "admin|statistiche-partita|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
-  "admin|statistiche-partita|mobile|label": {
-    "impact": "critical",
-    "nodes": 42
-  },
-  "admin|utenti|desktop|aria-input-field-name": {
-    "impact": "serious",
-    "nodes": 50
   },
   "admin|utenti|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 32
   },
-  "admin|utenti|desktop|image-alt": {
-    "impact": "critical",
-    "nodes": 2
-  },
   "admin|utenti|desktop|target-size": {
     "impact": "serious",
-    "nodes": 3
+    "nodes": 1
   },
   "admin|utenti|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 31
-  },
-  "admin|utenti|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 3
   },
   "admin|utenti|mobile|target-size": {
     "impact": "serious",
@@ -131,17 +83,9 @@
     "impact": "serious",
     "nodes": 1
   },
-  "anon|giocatore|desktop|aria-progressbar-name": {
-    "impact": "serious",
-    "nodes": 3
-  },
   "anon|giocatore|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 15
-  },
-  "anon|giocatore|mobile|aria-progressbar-name": {
-    "impact": "serious",
-    "nodes": 3
   },
   "anon|giocatore|mobile|color-contrast": {
     "impact": "serious",
@@ -207,20 +151,12 @@
     "impact": "serious",
     "nodes": 3
   },
-  "athlete|allenamento-passato|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
   "athlete|disponibilita|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 2
   },
   "athlete|disponibilita|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 1
-  },
-  "athlete|disponibilita|mobile|image-alt": {
-    "impact": "critical",
     "nodes": 1
   },
   "athlete|home|desktop|color-contrast": {
@@ -235,10 +171,6 @@
     "impact": "serious",
     "nodes": 1
   },
-  "athlete|home|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
   "athlete|home|mobile|target-size": {
     "impact": "serious",
     "nodes": 1
@@ -247,40 +179,12 @@
     "impact": "serious",
     "nodes": 21
   },
-  "athlete|notifiche|desktop|list": {
-    "impact": "serious",
-    "nodes": 1
-  },
   "athlete|notifiche|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 20
   },
-  "athlete|notifiche|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
-  "athlete|notifiche|mobile|list": {
-    "impact": "serious",
-    "nodes": 1
-  },
-  "athlete|profilo|desktop|aria-progressbar-name": {
-    "impact": "serious",
-    "nodes": 3
-  },
   "athlete|profilo|desktop|color-contrast": {
     "impact": "serious",
     "nodes": 1
-  },
-  "athlete|profilo|desktop|image-alt": {
-    "impact": "critical",
-    "nodes": 1
-  },
-  "athlete|profilo|mobile|aria-progressbar-name": {
-    "impact": "serious",
-    "nodes": 3
-  },
-  "athlete|profilo|mobile|image-alt": {
-    "impact": "critical",
-    "nodes": 2
   }
 }

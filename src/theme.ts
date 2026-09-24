@@ -460,6 +460,13 @@ function buildComponents(mode: "light" | "dark") {
         },
       },
     },
+    MuiAvatar: {
+      // La foto dell'Avatar sta sempre accanto al nome della persona (liste,
+      // tabelle, bottom nav): e' decorativa, e senza `alt` il lettore di
+      // schermo leggeva l'indirizzo dell'immagine. Dove la foto e' l'unico
+      // contenuto (es. il menu utente nell'header) si passa un `alt` esplicito.
+      defaultProps: { alt: "" },
+    },
     MuiButton: {
       styleOverrides: {
         root: {

@@ -1,4 +1,5 @@
 import { Box, Typography, LinearProgress } from "@mui/material";
+import { useTranslations } from "next-intl";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {
@@ -29,6 +30,7 @@ function tierColors(tier: BadgeTier) {
 }
 
 function AchievementCard({ item }: { item: AchievementItem }) {
+  const t = useTranslations("badgeProgress");
   const earned = item.earned;
   const c = tierColors(item.tier);
   const hasProgress = !earned && item.target != null && item.target > 0;
@@ -123,7 +125,13 @@ function AchievementCard({ item }: { item: AchievementItem }) {
 
       {hasProgress && (
         <Box sx={{ width: "100%", mt: 1 }}>
-          <LinearProgress variant="determinate" value={pct} sx={{ height: 5, borderRadius: 3 }} />
+          <LinearProgress
+            variant="determinate"
+            value={pct}
+            aria-label={item.label}
+            aria-valuetext={t("value", { current: item.current ?? 0, target: item.target! })}
+            sx={{ height: 5, borderRadius: 3 }}
+          />
           <Typography
             sx={{ color: "text.secondary", fontSize: "0.75rem", mt: 0.25, display: "block" }}
           >

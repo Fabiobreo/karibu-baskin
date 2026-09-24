@@ -122,8 +122,11 @@ export default function NotificationItem({ notification, onRead }: NotificationI
   }
 
   // Senza `url` non porta da nessuna parte: non deve sembrare cliccabile.
+  // `div`: il `<li>` e' il contenitore in NotificheClient/NotificationDropdown,
+  // che avvolge anche il divisore.
   return (
     <ListItem
+      component="div"
       sx={{ alignItems: "flex-start", gap: 1.5, py: 1.5, px: 2, ...(unreadStyles as object) }}
     >
       {content}

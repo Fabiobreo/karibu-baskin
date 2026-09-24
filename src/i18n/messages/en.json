@@ -1377,5 +1377,8 @@
     "later": "Not now",
     "iosStep1": "Tap Share in the Safari bar",
     "iosStep2": "Choose \"Add to Home Screen\""
+  },
+  "badgeProgress": {
+    "value": "{current} of {target}"
   }
 }

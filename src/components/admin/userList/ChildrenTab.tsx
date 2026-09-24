@@ -245,6 +245,7 @@ export default function ChildrenTab({
                     teams={teams}
                     memberships={row.teamMemberships}
                     onChange={(teamId) => onTeamChange(row, teamId)}
+                    ariaLabel={`Squadra di ${row.name}`}
                   />
                 </TableCell>
 

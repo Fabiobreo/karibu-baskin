@@ -195,9 +195,12 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
 
           {/* Per squadra */}
           <FormControl size="small" sx={{ minWidth: 160 }} disabled={targetAll || sending}>
-            <InputLabel shrink>Squadra</InputLabel>
+            <InputLabel shrink id="notif-team-label">
+              Squadra
+            </InputLabel>
             <Select
               value={teamId}
+              labelId="notif-team-label"
               label="Squadra"
               notched
               displayEmpty
@@ -233,9 +236,12 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
 
           {/* Per ruolo */}
           <FormControl size="small" sx={{ minWidth: 130 }} disabled={targetAll || sending}>
-            <InputLabel shrink>Ruolo Baskin</InputLabel>
+            <InputLabel shrink id="notif-role-label">
+              Ruolo Baskin
+            </InputLabel>
             <Select
               value={sportRole}
+              labelId="notif-role-label"
               label="Ruolo Baskin"
               notched
               displayEmpty

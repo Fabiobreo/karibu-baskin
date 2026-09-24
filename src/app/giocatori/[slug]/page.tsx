@@ -662,6 +662,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               </Typography>
               <Typography
                 variant="h2"
+                component="h1"
                 fontWeight={900}
                 sx={{
                   fontSize: { xs: "2.2rem", md: "3.4rem" },

@@ -99,7 +99,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
       ) : (
         <List disablePadding sx={{ overflowY: "auto", flex: 1 }}>
           {notifications.map((n, idx) => (
-            <Box key={n.id}>
+            <Box component="li" key={n.id} sx={{ listStyle: "none" }}>
               <NotificationItem notification={n} onRead={handleRead} />
               {idx < notifications.length - 1 && <Divider />}
             </Box>

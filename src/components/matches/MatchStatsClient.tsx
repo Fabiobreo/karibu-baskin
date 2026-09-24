@@ -528,6 +528,10 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                                     htmlInput: {
                                       min: 0,
                                       inputMode: "numeric",
+                                      // Nella tabella l'etichetta visibile e' solo
+                                      // l'intestazione di colonna: senza, il lettore
+                                      // di schermo annuncia "campo modifica, 0".
+                                      "aria-label": `${col.title}, ${row.name}`,
                                       style: {
                                         textAlign: "center",
                                         padding: "4px 6px",
@@ -575,6 +579,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                             slotProps={{
                               htmlInput: {
                                 maxLength: 500,
+                                "aria-label": `Note, ${row.name}`,
                                 // Niente fontSize inline: vincerebbe sui 16px
                                 // touch del tema (zoom automatico su iOS).
                                 style: { padding: "4px 8px" },

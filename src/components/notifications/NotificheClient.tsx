@@ -156,7 +156,7 @@ export default function NotificheClient({
             <Paper variant="outlined" sx={{ overflow: "hidden" }}>
               <List disablePadding>
                 {group.items.map((n, idx) => (
-                  <Box key={n.id}>
+                  <Box component="li" key={n.id} sx={{ listStyle: "none" }}>
                     <NotificationItem notification={n} onRead={handleRead} />
                     {idx < group.items.length - 1 && <Divider />}
                   </Box>

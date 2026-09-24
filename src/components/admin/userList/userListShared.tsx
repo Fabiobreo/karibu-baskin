@@ -105,17 +105,21 @@ export function TeamCellSelect({
   teams,
   memberships,
   onChange,
+  ariaLabel,
 }: {
   value: string;
   teams: TeamInfo[];
   memberships: MembershipInfo[];
   onChange: (teamId: string) => void;
+  /** Nome accessibile: nella riga di una tabella la select non ha etichetta visibile. */
+  ariaLabel: string;
 }) {
   return (
     <Select
       value={value}
       size="small"
       displayEmpty
+      inputProps={{ "aria-label": ariaLabel }}
       onChange={(e) => onChange(e.target.value)}
       sx={{ minWidth: 110, fontSize: "0.8rem" }}
       renderValue={(val) => {

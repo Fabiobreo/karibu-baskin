@@ -1,4 +1,5 @@
 import { Box, Typography, Paper, LinearProgress } from "@mui/material";
+import { useTranslations } from "next-intl";
 import type { Badge, LockedBadge } from "@/lib/rating/badges";
 
 export type EarnedBadgeView = Badge & { unlockedAtLabel?: string | null };
@@ -33,6 +34,7 @@ export default function BadgeShowcase({
   emptyLabel,
   maxNext = 3,
 }: BadgeShowcaseProps) {
+  const t = useTranslations("badgeProgress");
   // Prossimi traguardi: i bloccati più vicini al completamento.
   const next = [...locked]
     .filter((b) => b.target > 0)
@@ -132,6 +134,10 @@ export default function BadgeShowcase({
                   <LinearProgress
                     variant="determinate"
                     value={Math.min(100, (badge.current / badge.target) * 100)}
+                    // Nome e avanzamento per il lettore di schermo: la barra da
+                    // sola annuncerebbe solo una percentuale senza contesto.
+                    aria-label={badge.label}
+                    aria-valuetext={t("value", { current: badge.current, target: badge.target })}
                     sx={{ height: 5, borderRadius: 3 }}
                   />
                 </Box>
