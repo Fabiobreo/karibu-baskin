@@ -99,7 +99,6 @@ export default function ContattiPage() {
   const t = useTranslations("pages");
   const PERKS = t.raw("contatti.perks") as { title: string; desc: string }[];
   const { status } = useSession();
-  const [formOpen, setFormOpen] = useState(false);
   const [suggestionOpen, setSuggestionOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<"contatti" | "partner">("contatti");
 
@@ -295,25 +294,14 @@ export default function ContattiPage() {
             ))}
           </Grid>
 
-          {/* Form espandibile */}
-          <Box sx={{ mb: 5 }}>
-            <Button
-              variant={formOpen ? "outlined" : "contained"}
-              startIcon={formOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              onClick={() => setFormOpen((o) => !o)}
-              sx={{ fontWeight: 700, borderRadius: 2 }}
-            >
-              {formOpen ? t("contatti.closeForm") : t("contatti.openForm")}
-            </Button>
-            <Collapse in={formOpen} timeout="auto">
-              <Paper
-                elevation={0}
-                sx={{ mt: 2, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
-              >
-                <ContactForm />
-              </Paper>
-            </Collapse>
-          </Box>
+          {/* Modulo sempre aperto: e' il punto di conversione della pagina,
+              nasconderlo dietro un bottone costava un passo (UX-06). */}
+          <Paper
+            elevation={0}
+            sx={{ mb: 5, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
+          >
+            <ContactForm />
+          </Paper>
 
           {/* Suggerimenti — solo utenti loggati */}
           {status === "authenticated" && (

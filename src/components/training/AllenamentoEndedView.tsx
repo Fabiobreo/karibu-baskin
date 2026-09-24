@@ -54,22 +54,25 @@ export default function AllenamentoEndedView({
           />
         </SectionErrorBoundary>
       )}
-      <SectionErrorBoundary label="Squadre">
-        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-          <TeamsHeader
-            teams={teams}
-            coaches={teamDisplayProps.coaches}
-            sessionTitle={sessionTitle}
-            sessionDate={sessionDate}
-            sessionEndTime={sessionEndTime}
-            isStaff={isStaff}
-            isEnded
-            removingTeams={removingTeams}
-            onRemoveTeams={onRemoveTeams}
-          />
-          <TeamDisplay {...teamDisplayProps} isStaff={false} isEnded />
-        </Paper>
-      </SectionErrorBoundary>
+      {/* Per chi non e' tesserato l'invito ad accedere sta gia' nella card Iscritti. */}
+      {!teamDisplayProps.restricted && (
+        <SectionErrorBoundary label="Squadre">
+          <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+            <TeamsHeader
+              teams={teams}
+              coaches={teamDisplayProps.coaches}
+              sessionTitle={sessionTitle}
+              sessionDate={sessionDate}
+              sessionEndTime={sessionEndTime}
+              isStaff={isStaff}
+              isEnded
+              removingTeams={removingTeams}
+              onRemoveTeams={onRemoveTeams}
+            />
+            <TeamDisplay {...teamDisplayProps} isStaff={false} isEnded />
+          </Paper>
+        </SectionErrorBoundary>
+      )}
     </>
   );
 }

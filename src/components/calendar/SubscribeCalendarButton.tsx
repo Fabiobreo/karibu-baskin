@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import SubscribeCalendarDialog from "./SubscribeCalendarDialog";
@@ -7,6 +8,7 @@ import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 
 export default function SubscribeCalendarButton() {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("calendarSub");
   return (
     <>
       <Button
@@ -15,7 +17,7 @@ export default function SubscribeCalendarButton() {
         startIcon={<CalendarMonthIcon />}
         sx={{ ...TOUCH_TARGET_MIN, fontWeight: 600 }}
       >
-        Aggiungi al calendario
+        {t("button")}
       </Button>
       <SubscribeCalendarDialog open={open} onClose={() => setOpen(false)} />
     </>

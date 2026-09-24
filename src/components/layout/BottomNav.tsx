@@ -59,6 +59,9 @@ export default function BottomNav() {
       <BottomNavigation
         value={active}
         onChange={(_e, val: string) => router.push(val)}
+        // Etichetta su ogni voce, non solo su quella attiva: le icone da sole
+        // non si capiscono (UX-06).
+        showLabels
         sx={{
           bgcolor: "background.paper",
           height: 60,

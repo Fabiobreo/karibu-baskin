@@ -34,7 +34,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
   const [isPending, startTransition] = useTransition();
   const [answered, setAnswered] = useState<"yes" | "no" | null>(null);
   const [claimed, setClaimed] = useState(0);
-  const [selected, setSelected] = useState<Set<string>>(new Set(registrations.map((r) => r.id)));
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   if (answered === "no") return null;
 

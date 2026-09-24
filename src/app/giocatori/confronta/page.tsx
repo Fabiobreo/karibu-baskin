@@ -1,6 +1,7 @@
 import { Container, Box, Typography, Paper, Avatar, Chip, Divider } from "@mui/material";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { formatDecimal } from "@/lib/numberFormat";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
@@ -135,10 +136,11 @@ function CompareHeader({ p }: { p: ComparePlayer }) {
 }
 
 export default async function ConfrontaPage({ searchParams }: Props) {
-  const [session, t, { a, b }] = await Promise.all([
+  const [session, t, { a, b }, locale] = await Promise.all([
     auth(),
     getTranslations("players"),
     searchParams,
+    getLocale(),
   ]);
   const viewerIsMember = isMemberRole(session?.user?.appRole);
 
@@ -154,7 +156,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
   }[] = [
     { label: t("matches"), get: (p) => p.matches },
     { label: t("totalPoints"), get: (p) => p.points },
-    { label: t("avgPoints"), get: (p) => p.avg, fmt: (n) => n.toFixed(1) },
+    { label: t("avgPoints"), get: (p) => p.avg, fmt: (n) => formatDecimal(n, locale) },
     { label: "%", get: (p) => p.accuracy },
     { label: "MVP", get: (p) => p.mvp },
     { label: t("achievements"), get: (p) => p.badges },

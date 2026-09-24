@@ -44,8 +44,10 @@ export default function MatchDetailTabs({
   isStaff,
 }: Props) {
   const t = useTranslations("matches");
-  const [tab, setTab] = useState(0);
   const hasStats = stats.length > 0;
+  // Chi non vede i convocati non deve atterrare su un lucchetto: se ci sono
+  // statistiche, la pagina parte da quelle (UX-06).
+  const [tab, setTab] = useState(!canSeeCallups && hasStats ? 1 : 0);
 
   // Merge callups + stats per partite già giocate
   const callupsWithStats: CallupWithStat[] = callups.map((c) => ({

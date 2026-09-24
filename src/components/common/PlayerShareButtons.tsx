@@ -6,6 +6,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useTranslations } from "next-intl";
+import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
 import { socialBrandColor } from "@/lib/heroStyles";
 
@@ -35,7 +36,8 @@ export default function PlayerShareButtons({
     const title = `${playerName} · Karibu Baskin`;
     const parts: string[] = [`🏀 ${playerName} sul Karibu Baskin`];
     if (matchesPlayed > 0) {
-      const avg = (totalPoints / matchesPlayed).toFixed(1);
+      // Il testo condiviso e' ancora solo in italiano, quindi virgola italiana.
+      const avg = formatDecimal(totalPoints / matchesPlayed, "it");
       parts.push(`📊 ${totalPoints} punti totali · ${avg} a partita su ${matchesPlayed} partite`);
     }
     if (medalsCount > 0) {

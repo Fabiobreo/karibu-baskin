@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
+import { formatDecimal } from "@/lib/numberFormat";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import {
@@ -106,7 +107,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const totalPoints = p.matchStats.reduce((s, m) => s + m.points, 0);
   const matchesPlayed = p.matchStats.length;
-  const avgPoints = matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : null;
+  // Metadati solo in italiano (lingua degli URL senza cookie), quindi "it".
+  const avgPoints = matchesPlayed > 0 ? formatDecimal(totalPoints / matchesPlayed, "it") : null;
   const roleLabel = p.sportRole ? sportRoleLabelRaw(p.sportRole, p.sportRoleVariant ?? null) : null;
   const title = p.name ?? "Giocatore";
   const descParts: string[] = [];
@@ -873,7 +875,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         fontVariantNumeric: "tabular-nums",
                       }}
                     >
-                      {(totalPoints / matchesPlayed).toFixed(1)}
+                      {formatDecimal(totalPoints / matchesPlayed, locale)}
                     </Typography>
                     <Typography
                       sx={{
@@ -1120,7 +1122,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 { label: t("totalPoints"), value: totalPoints, color: "stats.points" },
                 {
                   label: t("avgPoints"),
-                  value: matchesPlayed > 0 ? (totalPoints / matchesPlayed).toFixed(1) : "—",
+                  value:
+                    matchesPlayed > 0 ? formatDecimal(totalPoints / matchesPlayed, locale) : "—",
                   color: "text.primary",
                 },
                 { label: t("twoPointers"), value: totalTwo, color: "stats.twopt" },

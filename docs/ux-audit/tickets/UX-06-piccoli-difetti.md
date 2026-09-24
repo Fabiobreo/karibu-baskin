@@ -1,6 +1,6 @@
 # UX-06 · Piccoli difetti di usabilità + sito pubblico fuori dall'admin
 
-**Ondata:** 0 · **Stima:** M · **Dipende da:** UX-04 (le nuove CTA usano `<Button href>`) · **Stato:** da fare
+**Ondata:** 0 · **Stima:** M · **Dipende da:** UX-04 (le nuove CTA usano `<Button href>`) · **Stato:** fatto (commit su `develop`): tutti gli 11 punti; nastro sponsor e footer nascosti solo in `/admin`
 
 Correzioni indipendenti, ognuna piccola. Si possono dividere in più PR.
 
@@ -33,3 +33,28 @@ Correzioni indipendenti, ognuna piccola. Si possono dividere in più PR.
 - Ogni punto verificato a mano su desktop e mobile.
 - Testi nuovi in entrambi i dizionari.
 - Il nastro sponsor compare in tutte le pagine pubbliche come prima e in nessuna pagina `/admin`.
+
+## Esito
+
+1. `ClaimAnonymousCard` parte senza selezioni; "Collega selezionati" era gia' disabilitato a selezione vuota.
+2. `ClassificaInternaTable`: in grande il totale (il numero su cui si ordina), sotto "N in prestito" in `text.secondary`; legenda sopra la tabella quando ci sono prestiti. Il `title` in italiano scritto a mano e' sparito.
+3. `BottomNav` con `showLabels`.
+4. `MatchDetailTabs`: chi non vede i convocati parte da "Statistiche" se ci sono.
+5. Un solo invito ad accedere nella card "Iscritti" ("Sei del Karibu? Accedi per vedere iscritti e squadre"); la card "Squadre" non compare per chi non e' tesserato, anche nella vista dell'allenamento concluso (`AllenamentoEndedView`).
+6. "Abbonati al calendario" nei dizionari; anche il titolo del dialog, che diceva "Iscriviti".
+7. `/contatti`: modulo sempre visibile, tolto il bottone apri/chiudi (e le chiavi `openForm`/`closeForm`).
+8. `/squadre`: bottone "Vieni a provare" verso `/contatti`.
+9. `EventRsvp`: "Accedi per rispondere".
+10. `formatDecimal` in `@/lib/numberFormat` (con test) al posto di `toFixed` in profilo giocatore, confronto, pagina squadra, `LeaderCard`, tabella marcatori e testo di condivisione. In `LeaderCard` anche "/partita" passa dai dizionari (`teams.leaderAvg`).
+11. `HideInAdmin` (con test su `isAdminPath`) attorno a `SponsorBanner` e `Footer` nel root layout.
+
+Verifica con Playwright, prima e dopo, desktop e mobile: nastro sponsor e footer presenti su 10 pagine pubbliche e assenti in `/admin`; un solo link di accesso nella pagina allenamento; tab "Statistiche" aperta per l'anonimo; 4 etichette sulla barra in basso. `npm run a11y`: nessuna nuova violazione, baseline 41 → 40 voci e meno nodi di contrasto.
+
+**Rimasto fuori**
+
+- Punto 1 verificato solo nel codice: serve un utente con iscrizioni anonime da collegare, che nel DB di sviluppo non c'e'.
+- `toFixed` restano negli strumenti TrueSkill per lo staff (`LineupOptimizerSection`, `RatingBadge`), solo in italiano, e nelle coordinate SVG, dove sono corretti.
+- "pt" resta scritto a mano accanto a qualche numero (pagina squadra, `LeaderCard`): e' uguale in inglese, ma andrebbe nei dizionari.
+- Il testo di condivisione del profilo (`PlayerShareButtons`) e' tutto in italiano scritto a mano: da portare nei dizionari.
+- Nelle card mobile dei marcatori c'e' il totale ma non il dettaglio del prestito: la legenda lo dice senza rimandare a un dettaglio.
+- Il bottone di `/squadre` porta ai contatti; quando c'e' il percorso di UX-15 va aggiornato.

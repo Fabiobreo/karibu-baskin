@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { formatDecimal } from "@/lib/numberFormat";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
@@ -170,10 +171,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   const [{ season: seasonParam, slug }, sp] = await Promise.all([params, searchParams]);
   const includeFriendlies = sp.amichevoli === "1";
   const season = parseSeasonParam(seasonParam);
-  const [team, session, t] = await Promise.all([
+  const [team, session, t, locale] = await Promise.all([
     getTeam(season, slug),
     auth(),
     getTranslations("teams"),
+    getLocale(),
   ]);
   if (!team) notFound();
 
@@ -804,7 +806,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       fontWeight={900}
                       sx={{ fontVariantNumeric: "tabular-nums", lineHeight: 1 }}
                     >
-                      {(pointsFor / playedMatches.length).toFixed(1)}
+                      {formatDecimal(pointsFor / playedMatches.length, locale)}
                     </Typography>
                     <Typography variant="body2" color="text.disabled">
                       pt
@@ -906,7 +908,14 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Grid container spacing={2}>
               {leadersByPoints.map((l, idx) => (
                 <Grid key={l.key} size={{ xs: 12, sm: 4 }}>
-                  <LeaderCard rank={idx + 1} leader={l} teamColor={teamColor} />
+                  <LeaderCard
+                    rank={idx + 1}
+                    leader={l}
+                    teamColor={teamColor}
+                    avgLabel={t("leaderAvg", {
+                      avg: formatDecimal(l.points / l.games, locale),
+                    })}
+                  />
                 </Grid>
               ))}
             </Grid>

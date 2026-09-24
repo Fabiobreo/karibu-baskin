@@ -236,6 +236,15 @@ export default async function SquadrePage() {
             <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 420 }}>
               {t("joinUsDesc")}
             </Typography>
+            {/* Poi verso il percorso "Vieni a provare" di UX-15. */}
+            <Button
+              href="/contatti"
+              variant="contained"
+              size="large"
+              sx={{ mt: 2, fontWeight: 700 }}
+            >
+              {t("joinUsCta")}
+            </Button>
           </Box>
         )}
       </Container>

@@ -1,7 +1,7 @@
 {
   "admin|allenamenti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 138
+    "nodes": 137
   },
   "admin|allenamenti|desktop|target-size": {
     "impact": "serious",
@@ -17,7 +17,7 @@
   },
   "admin|dashboard|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 9
+    "nodes": 8
   },
   "admin|dashboard|mobile|color-contrast": {
     "impact": "serious",
@@ -25,19 +25,15 @@
   },
   "admin|partite|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 50
+    "nodes": 49
   },
   "admin|partite|mobile|color-contrast": {
     "impact": "serious",
     "nodes": 17
   },
-  "admin|statistiche-partita|desktop|color-contrast": {
-    "impact": "serious",
-    "nodes": 1
-  },
   "admin|utenti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 32
+    "nodes": 31
   },
   "admin|utenti|mobile|color-contrast": {
     "impact": "serious",
@@ -101,7 +97,7 @@
   },
   "anon|marcatori|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 40
+    "nodes": 18
   },
   "anon|marcatori|mobile|color-contrast": {
     "impact": "serious",
@@ -109,11 +105,11 @@
   },
   "anon|partita|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 10
+    "nodes": 7
   },
   "anon|partita|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 9
+    "nodes": 6
   },
   "anon|partita|mobile|target-size": {
     "impact": "serious",

@@ -242,7 +242,7 @@ export default function EventRsvp({
             {t("rsvpLoginPrompt")}
           </Typography>
           <Button href="/login" variant="contained" sx={{ fontWeight: 700, borderRadius: 2 }}>
-            {t("rsvpTitle")}
+            {t("rsvpLoginCta")}
           </Button>
         </Box>
       ) : isPast ? (

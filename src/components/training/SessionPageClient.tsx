@@ -439,22 +439,24 @@ export default function SessionPageClient({
             ) : teamFirstLayout ? (
               /* ── Stato: iscritto + squadre create ── */
               <>
-                <SectionErrorBoundary label="Squadre">
-                  <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                    <TeamsHeader
-                      teams={teams}
-                      coaches={teamDisplayProps.coaches}
-                      sessionTitle={session?.title}
-                      sessionDate={session?.date}
-                      sessionEndTime={session?.endTime}
-                      isStaff={isStaff}
-                      removingTeams={removingTeams}
-                      onRemoveTeams={handleRemoveTeams}
-                      onEditTeams={() => setEditingTeams(true)}
-                    />
-                    <TeamDisplay {...teamDisplayProps} />
-                  </Paper>
-                </SectionErrorBoundary>
+                {!rosterRestriction && (
+                  <SectionErrorBoundary label="Squadre">
+                    <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                      <TeamsHeader
+                        teams={teams}
+                        coaches={teamDisplayProps.coaches}
+                        sessionTitle={session?.title}
+                        sessionDate={session?.date}
+                        sessionEndTime={session?.endTime}
+                        isStaff={isStaff}
+                        removingTeams={removingTeams}
+                        onRemoveTeams={handleRemoveTeams}
+                        onEditTeams={() => setEditingTeams(true)}
+                      />
+                      <TeamDisplay {...teamDisplayProps} />
+                    </Paper>
+                  </SectionErrorBoundary>
+                )}
                 <SectionErrorBoundary label="Lista iscritti">
                   <RosterByRole {...rosterProps} />
                 </SectionErrorBoundary>
@@ -468,22 +470,26 @@ export default function SessionPageClient({
                     <SectionErrorBoundary label="Lista iscritti">
                       <RosterByRole {...rosterProps} />
                     </SectionErrorBoundary>
-                    <SectionErrorBoundary label="Squadre">
-                      <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                        <TeamsHeader
-                          teams={teams}
-                          coaches={teamDisplayProps.coaches}
-                          sessionTitle={session?.title}
-                          sessionDate={session?.date}
-                          sessionEndTime={session?.endTime}
-                          isStaff={isStaff}
-                          removingTeams={removingTeams}
-                          onRemoveTeams={handleRemoveTeams}
-                          onEditTeams={() => setEditingTeams(true)}
-                        />
-                        <TeamDisplay {...teamDisplayProps} />
-                      </Paper>
-                    </SectionErrorBoundary>
+                    {/* Chi non e' tesserato vede un solo invito ad accedere,
+                        nella card Iscritti: niente seconda card Squadre. */}
+                    {!rosterRestriction && (
+                      <SectionErrorBoundary label="Squadre">
+                        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                          <TeamsHeader
+                            teams={teams}
+                            coaches={teamDisplayProps.coaches}
+                            sessionTitle={session?.title}
+                            sessionDate={session?.date}
+                            sessionEndTime={session?.endTime}
+                            isStaff={isStaff}
+                            removingTeams={removingTeams}
+                            onRemoveTeams={handleRemoveTeams}
+                            onEditTeams={() => setEditingTeams(true)}
+                          />
+                          <TeamDisplay {...teamDisplayProps} />
+                        </Paper>
+                      </SectionErrorBoundary>
+                    )}
                   </Box>
                 </Grid>
 

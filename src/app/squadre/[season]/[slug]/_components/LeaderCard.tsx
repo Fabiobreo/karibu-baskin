@@ -11,8 +11,11 @@ export default function LeaderCard({
   rank,
   leader,
   teamColor,
+  avgLabel,
 }: {
   rank: number;
+  /** Media a partita gia' formattata e tradotta ("8,5/partita"). */
+  avgLabel: string;
   leader: {
     name: string;
     image: string | null;
@@ -79,7 +82,7 @@ export default function LeaderCard({
             pt
           </Typography>
           <Typography variant="caption" color="text.disabled" sx={{ ml: 0.5 }}>
-            · {(leader.points / leader.games).toFixed(1)}/partita
+            · {avgLabel}
           </Typography>
         </Box>
       </Box>

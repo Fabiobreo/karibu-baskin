@@ -13,6 +13,7 @@ import OfflineBanner from "@/components/layout/OfflineBanner";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SkipToContent from "@/components/layout/SkipToContent";
 import Footer from "@/components/layout/Footer";
+import HideInAdmin from "@/components/layout/HideInAdmin";
 import SponsorBanner from "@/components/common/SponsorBanner";
 import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
@@ -158,8 +159,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <OfflineBanner />
                   {children}
                 </Box>
-                <SponsorBanner />
-                <Footer />
+                {/* Solo fuori dall'admin: nel pannello staff sono rumore. */}
+                <HideInAdmin>
+                  <SponsorBanner />
+                  <Footer />
+                </HideInAdmin>
                 <BottomNav />
                 <SwUpdateToast />
                 <CookieBanner />

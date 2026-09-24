@@ -546,7 +546,7 @@ export default function RosterByRole({
           </Typography>
           {restricted === "anonymous" && (
             <Box>
-              <Button href="/login" size="small" variant="outlined">
+              <Button href="/login" size="small" variant="contained">
                 {t("rosterPrivateCta")}
               </Button>
             </Box>

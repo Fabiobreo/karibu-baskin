@@ -24,7 +24,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import { ROLE_COLORS } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { formatDecimal } from "@/lib/numberFormat";
 import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
@@ -78,6 +79,7 @@ const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
 export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[] }) {
   const t = useTranslations("scorers");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const { sportRoleLabel } = useEntityLabels();
   // `advanced: true` = colonna secondaria, nascosta finché non si accende
   // l'interruttore. Le dodici colonne tutte insieme non stavano nella pagina:
@@ -212,6 +214,10 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
 
   if (rows.length === 0) return null;
 
+  // Qualche numero comprende un prestito? Allora serve la legenda sopra la
+  // tabella: il vecchio `title` non si vedeva sui dispositivi touch.
+  const hasLoans = rows.some((r) => COLS.some((c) => getParts(r, c.key).loan > 0));
+
   // Determine which roles actually appear in the data
   const rolesInData = new Set(rows.map((r) => r.sportRole).filter(Boolean));
 
@@ -307,6 +313,16 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           }
         />
       </Box>
+
+      {hasLoans && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ px: 2, py: 1.25, borderBottom: "1px solid", borderColor: "divider" }}
+        >
+          {t("loanLegend")}
+        </Typography>
+      )}
 
       {/* Desktop table */}
       <Box sx={{ display: { xs: "none", sm: "block" }, overflowX: "auto" }}>
@@ -435,12 +451,15 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   {COLS.map((col) => {
                     const { primary, loan } = getParts(row, col.key);
                     const isActive = sortBy === col.key;
-                    const primaryLabel =
+                    // In grande il totale, cioe' il numero su cui si ordina:
+                    // prima si vedeva solo la parte propria e "74 (+13)" finiva
+                    // sopra "76" (UX-06).
+                    const totalLabel =
                       col.key === "avgPoints"
-                        ? primary.toFixed(1)
+                        ? formatDecimal(primary, locale)
                         : col.key === "accuracy"
                           ? formatAccuracy(madeTotal(row), attemptedTotal(row))
-                          : primary.toString();
+                          : String(primary + loan);
                     return (
                       <TableCell
                         key={col.key}
@@ -456,19 +475,14 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           fontVariantNumeric: "tabular-nums",
                         }}
                       >
-                        {primaryLabel}
+                        {totalLabel}
                         {loan > 0 && (
                           <Typography
                             component="span"
-                            sx={{
-                              ml: 0.5,
-                              fontSize: "0.7rem",
-                              color: "text.disabled",
-                              fontWeight: 600,
-                            }}
-                            title="Stats fatte giocando in prestito per un'altra squadra"
+                            display="block"
+                            sx={{ fontSize: "0.7rem", color: "text.secondary", fontWeight: 600 }}
                           >
-                            (+{loan})
+                            {t("loanDetail", { count: loan })}
                           </Typography>
                         )}
                       </TableCell>
@@ -581,7 +595,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 >
                   {[
                     { label: t("colPoints"), value: totPoints, primary: true },
-                    { label: t("colAvg"), value: avg.toFixed(1) },
+                    { label: t("colAvg"), value: formatDecimal(avg, locale) },
                     { label: t("colAccuracy"), value: accuracyLabel },
                     { label: t("colMatches"), value: totMatches },
                     { label: t("col2pt"), value: row.twoPointers + row.loanTwoPointers },
