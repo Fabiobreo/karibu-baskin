@@ -1,6 +1,6 @@
 # UX-01 · Controllo di accessibilità ripetibile
 
-**Ondata:** 0 · **Stima:** S · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 0 · **Stima:** S · **Dipende da:** nessuno · **Stato:** fatto (commit su `develop`): `npm run a11y` con `e2e/a11y.mjs` e baseline iniziale di 71 voci gravi in `e2e/a11y-baseline.json`
 
 ## Problema
 
@@ -29,3 +29,21 @@ L'audit ha misurato le violazioni con axe-core una volta sola, con uno script es
 - `npm run a11y` gira in locale contro il dev server e produce il riepilogo.
 - La baseline iniziale è committata; nuove violazioni gravi fanno fallire lo script.
 - Documentato in CLAUDE.md nella sezione "Comandi principali".
+
+## Esito
+
+- Script `e2e/a11y.mjs` (Node puro, senza passo di compilazione), lanciato da `npm run a11y`. Aggiunto `@axe-core/playwright` alle `devDependencies`.
+- Opzioni: `--update-baseline` (riscrive solo i profili misurati) e `--only=anon,athlete,admin`. Report completo in `test-results/a11y/report.json` (ignorato da git).
+- Utenti: `E2E_ATHLETE_EMAIL`/`E2E_ADMIN_EMAIL` da `.env.test` o `.env`. Se mancano, il primo ATHLETE e il primo ADMIN del DB (esclusi `@sim.test`). URL con id (allenamento, partita, statistiche) dal DB. Il profilo giocatore è il primo link di `/marcatori`, così rispetta le regole di visibilità.
+- Per avere risultati ripetibili, oltre a quanto previsto:
+  - si aspetta `<main id="contenuto">` (altrimenti era una schermata intermedia del dev server), la scomparsa degli skeleton e il `<title>`, che con lo streaming arriva dopo il `load`;
+  - animazioni e transizioni spente: il nastro sponsor scorre e cambiava i `target-size` da un giro all'altro;
+  - immagini esterne servite con un PNG locale: l'`Avatar` MUI inserisce il suo `<img>` solo a caricamento riuscito, quindi i `image-alt` dipendevano dalla rete.
+- Verifica: tre giri consecutivi con esito identico (uscita 0). Togliendo una voce dalla baseline lo script esce con 1.
+
+### Rimasto fuori / da sapere
+
+- La baseline contiene difetti veri per i ticket successivi: `color-contrast` (38 voci), `image-alt` (13: `Avatar` senza `alt`, da UX-03), `target-size` (9: tra cui il bottone di pausa del nastro sponsor), `aria-progressbar-name` (4: profilo), `label` (2: 42 campi senza etichetta nelle statistiche partita, da UX-03/UX-13), `aria-input-field-name` (3), `list` (2: `/notifiche`).
+- Le violazioni `moderate`/`minor` (per esempio `meta-viewport`, che chiude UX-02, e `heading-order`) compaiono nel riepilogo ma non entrano nella baseline e non fanno fallire.
+- Lo script non avvia il server: serve `npm run dev` con `ENABLE_TEST_LOGIN=true`. La baseline dipende dai dati del DB di sviluppo: se cambiano molto, rigenerarla.
+- Nessuna modifica alla UI, quindi niente schermate prima/dopo.

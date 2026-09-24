@@ -43,9 +43,12 @@ npm run format       # Prettier --write su src/
 npm run format:check # Prettier --check (CI)
 npm test             # Vitest run (one-shot)
 npm run test:watch   # Vitest watch
+npm run a11y         # axe-core su pagine fisse (anonimo/atleta/admin, desktop+mobile) contro il dev server con ENABLE_TEST_LOGIN=true; fallisce su violazioni gravi non in e2e/a11y-baseline.json (--update-baseline per riscriverla, --only=anon,athlete,admin)
 npm run email:dev    # Preview React Email (porta 3333)
 npx tsc --noEmit     # type check — SEMPRE prima di fare push
 ```
+
+> **Accessibilità:** `npm run a11y` (script `e2e/a11y.mjs`) misura con axe-core le pagine elencate nel ticket UX-01 e scrive il dettaglio in `test-results/a11y/report.json`. Utenti da `E2E_ATHLETE_EMAIL`/`E2E_ADMIN_EMAIL`, altrimenti il primo ATHLETE e il primo ADMIN del DB. Quando un ticket risolve delle violazioni, rigenerare la baseline con `npm run a11y -- --update-baseline` e committarla.
 
 > **Importante:** eseguire sempre `tsc --noEmit` (dopo aver eliminato `.next/`) prima di committare. Il `build` script esegue `prisma migrate deploy`, che applica al DB di produzione **solo** le migration committate in `prisma/migrations/` non ancora applicate. **Non** sincronizza più lo schema automaticamente: ogni modifica a `schema.prisma` deve essere accompagnata da una migration (vedi [Workflow migrazioni](#workflow-migrazioni-db)).
 

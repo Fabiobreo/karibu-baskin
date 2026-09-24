@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "a11y": "node e2e/a11y.mjs",
     "lint": "eslint src/",
     "format": "prettier --write src/",
     "format:check": "prettier --check src/",
@@ -70,6 +71,7 @@
     "@swc/helpers": ">=0.5.17"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@chromatic-com/storybook": "^5.2.1",
     "@playwright/test": "^1.60.0",
     "@react-email/ui": "^6.0.0",
