@@ -48,6 +48,15 @@ export default [
           message:
             "text.disabled non regge il contrasto come testo (2,67:1): usa text.secondary. Se indica uno stato (non marcato, zero, passato) aggiungi un secondo segnale oltre al colore.",
         },
+        // UX-10: le dimensioni del testo vengono dalla scala del tema
+        // (variant, o sx={{ typography: "caption" }}). Esclusi i tag *Icon,
+        // dove fontSize e' la dimensione dell'icona. Gli avvisi di oggi sono i
+        // letterali ancora da migrare per area: il numero deve solo scendere.
+        {
+          selector:
+            "JSXOpeningElement:not([name.name=/Icon$/]) > JSXAttribute[name.name=/^(sx|InputProps|slotProps)$/] Property[key.name='fontSize'] Literal",
+          message: "fontSize letterale: usa variant o sx={{ typography: '…' }} (scala in theme.ts)",
+        },
       ],
     },
   },

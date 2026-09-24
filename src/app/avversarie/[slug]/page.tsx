@@ -277,7 +277,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   size="small"
                   variant={s === currentSeason ? "filled" : "outlined"}
                   color={s === currentSeason ? "primary" : "default"}
-                  sx={{ fontWeight: 600, fontSize: "0.7rem", height: 22 }}
+                  sx={{ fontWeight: 600, fontSize: "0.75rem", height: 22 }}
                 />
               ))}
             </Box>
@@ -386,7 +386,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                fontSize: "0.7rem",
+                                fontSize: "0.75rem",
                                 fontWeight: 800,
                                 cursor: m.slug ? "pointer" : "default",
                               }}
@@ -520,14 +520,14 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                   bgcolor: m.team.color ?? "primary.main",
                                   color: contrastText(m.team.color),
                                   fontWeight: 700,
-                                  fontSize: "0.68rem",
+                                  fontSize: "0.75rem",
                                   height: 20,
                                 }}
                               />
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
-                                sx={{ fontSize: "0.68rem" }}
+                                sx={{ fontSize: "0.75rem" }}
                               >
                                 {matchTypeLabel(m.matchType)}
                                 {m.matchday ? ` · G${m.matchday}` : ""}
@@ -561,7 +561,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                   bgcolor: MATCH_RESULT_META[m.result].color,
                                   color: "common.white",
                                   fontWeight: 700,
-                                  fontSize: "0.7rem",
+                                  fontSize: "0.75rem",
                                   height: 20,
                                   minWidth: 28,
                                 }}

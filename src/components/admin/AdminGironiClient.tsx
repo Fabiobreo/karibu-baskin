@@ -235,7 +235,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                                 bgcolor: t.color ?? "primary.main",
                                 color: contrastText(t.color),
                                 fontWeight: 700,
-                                fontSize: "0.68rem",
+                                fontSize: "0.75rem",
                               }}
                             />
                           ))}

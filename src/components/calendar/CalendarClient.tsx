@@ -250,7 +250,7 @@ export default function CalendarClient({
               color: "text.secondary",
               fontWeight: 700,
               py: 1,
-              fontSize: { xs: "0.7rem", sm: "0.8rem" },
+              fontSize: { xs: "0.75rem", sm: "0.8rem" },
             }}
           >
             {d}
@@ -358,7 +358,7 @@ export default function CalendarClient({
                       : inMonth
                         ? "text.primary"
                         : "text.secondary",
-                    fontSize: { xs: "0.72rem", sm: "0.8rem" },
+                    fontSize: { xs: "0.75rem", sm: "0.8rem" },
                     mb: "3px",
                     flexShrink: 0,
                   }}
@@ -391,7 +391,7 @@ export default function CalendarClient({
                   {extra > 0 && (
                     <Typography
                       variant="caption"
-                      sx={{ color: "text.secondary", fontSize: "0.65rem", pl: "3px" }}
+                      sx={{ color: "text.secondary", fontSize: "0.75rem", pl: "3px" }}
                     >
                       {t("moreEvents", { count: extra })}
                     </Typography>
@@ -456,7 +456,7 @@ export default function CalendarClient({
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: "0.5rem",
+                        fontSize: "0.75rem",
                         color: "text.secondary",
                         textAlign: "center",
                         lineHeight: "12px",

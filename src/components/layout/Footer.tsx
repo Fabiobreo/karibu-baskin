@@ -117,7 +117,7 @@ export default async function Footer() {
             <Link
               href="/sponsor"
               style={{
-                fontSize: "0.72rem",
+                fontSize: "0.75rem",
                 color: "rgba(255,255,255,0.7)",
                 textDecorationColor: "rgba(255,255,255,0.35)",
               }}
@@ -127,7 +127,7 @@ export default async function Footer() {
             <Link
               href="/privacy"
               style={{
-                fontSize: "0.72rem",
+                fontSize: "0.75rem",
                 color: "rgba(255,255,255,0.7)",
                 textDecorationColor: "rgba(255,255,255,0.35)",
               }}

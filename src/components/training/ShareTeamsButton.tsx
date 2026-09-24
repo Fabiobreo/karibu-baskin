@@ -107,7 +107,12 @@ export default function ShareTeamsButton({
   return (
     <>
       {/* Card off-screen — catturata da html2canvas con soli inline styles */}
-      <div style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none", zIndex: -1 }}>
+      {/* Sorgente dell'immagine da condividere: fuori schermo e nascosta ai
+          lettori di schermo, che altrimenti leggerebbero due volte le squadre. */}
+      <div
+        aria-hidden="true"
+        style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none", zIndex: -1 }}
+      >
         <div
           ref={cardRef}
           style={{

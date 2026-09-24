@@ -134,7 +134,7 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ fontSize: "0.65rem", mr: 0.25 }}
+              sx={{ fontSize: "0.75rem", mr: 0.25 }}
             >
               {ROLE_LABELS[a.role]}
             </Typography>

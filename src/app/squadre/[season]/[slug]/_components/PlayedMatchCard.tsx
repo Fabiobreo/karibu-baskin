@@ -76,7 +76,7 @@ export default async function PlayedMatchCard({
                 ) : (
                   <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
                 )}
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
                   {match.isHome ? t("home") : t("away")} · {matchTypeLabel(match.matchType)}
                 </Typography>
               </Box>
@@ -149,7 +149,7 @@ export default async function PlayedMatchCard({
                     bgcolor: res.bg,
                     color: res.color,
                     fontWeight: 800,
-                    fontSize: "0.68rem",
+                    fontSize: "0.75rem",
                     height: 22,
                   }}
                 />

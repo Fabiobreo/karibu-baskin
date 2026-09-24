@@ -65,7 +65,7 @@ export default function GlobalError({
             style={{
               color: "rgba(255,255,255,0.2)",
               margin: 0,
-              fontSize: "0.7rem",
+              fontSize: "0.75rem",
               fontFamily: "monospace",
             }}
           >

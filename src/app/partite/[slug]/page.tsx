@@ -567,7 +567,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 sx={{
                   color: alpha(brandColor.white, 0.6),
                   borderColor: alpha(brandColor.white, 0.2),
-                  fontSize: "0.68rem",
+                  fontSize: "0.75rem",
                 }}
               />
             </Box>
@@ -911,7 +911,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             borderRadius: 0.5,
                             bgcolor: ROLE_COLORS[role],
                             color: "common.white",
-                            fontSize: "0.6rem",
+                            fontSize: "0.75rem",
                             fontWeight: 700,
                           }}
                         >

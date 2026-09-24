@@ -58,8 +58,8 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
           size="small"
           sx={{
             fontWeight: 800,
-            fontSize: "0.6rem",
-            height: 18,
+            fontSize: "0.75rem",
+            height: 20,
             // Riempimento tenue + testo arancione accessibile: l'etichetta
             // bianca su primary.main si fermava a 3,79:1.
             bgcolor: (theme) => alpha(theme.palette.primary.main, 0.14),

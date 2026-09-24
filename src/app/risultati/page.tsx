@@ -163,7 +163,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       bgcolor: "match.win",
                       color: "common.white",
                       fontWeight: 800,
-                      fontSize: "0.68rem",
+                      fontSize: "0.75rem",
                       height: 20,
                     }}
                   />
@@ -175,7 +175,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         bgcolor: "match.draw",
                         color: "common.white",
                         fontWeight: 800,
-                        fontSize: "0.68rem",
+                        fontSize: "0.75rem",
                         height: 20,
                       }}
                     />
@@ -187,7 +187,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       bgcolor: "match.loss",
                       color: "common.white",
                       fontWeight: 800,
-                      fontSize: "0.68rem",
+                      fontSize: "0.75rem",
                       height: 20,
                     }}
                   />
@@ -221,7 +221,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   size="small"
                   variant={season === s ? "filled" : "outlined"}
                   color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.72rem" }}
+                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.75rem" }}
                 />
               </Link>
             ))}
@@ -287,7 +287,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         bgcolor: "match.winBg",
                         color: "match.win",
                         fontWeight: 800,
-                        fontSize: "0.68rem",
+                        fontSize: "0.75rem",
                         height: 20,
                       }}
                     />
@@ -299,7 +299,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                           bgcolor: "match.drawBg",
                           color: "match.draw",
                           fontWeight: 800,
-                          fontSize: "0.68rem",
+                          fontSize: "0.75rem",
                           height: 20,
                         }}
                       />
@@ -311,7 +311,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         bgcolor: "match.lossBg",
                         color: "match.loss",
                         fontWeight: 800,
-                        fontSize: "0.68rem",
+                        fontSize: "0.75rem",
                         height: 20,
                       }}
                     />
@@ -441,7 +441,7 @@ function MatchCard({
                 ) : (
                   <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
                 )}
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
                   {m.isHome ? tFn("home") : tFn("away")} ·{" "}
                   {(
                     {
@@ -527,7 +527,7 @@ function MatchCard({
                     bgcolor: meta.bg,
                     color: meta.color,
                     fontWeight: 800,
-                    fontSize: "0.68rem",
+                    fontSize: "0.75rem",
                     height: 22,
                   }}
                 />

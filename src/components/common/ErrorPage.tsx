@@ -111,7 +111,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
         <Typography
           sx={{
             color: "rgba(255,255,255,0.25)",
-            fontSize: "0.72rem",
+            fontSize: "0.75rem",
             fontFamily: "monospace",
             mb: 2,
             mt: -2,

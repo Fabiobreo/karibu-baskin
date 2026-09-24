@@ -135,7 +135,7 @@ export default function LoSapeviCarousel() {
                 color: "text.secondary",
                 fontWeight: 700,
                 letterSpacing: "0.12em",
-                fontSize: "0.68rem",
+                fontSize: "0.75rem",
                 display: "block",
                 mb: 0.25,
               }}

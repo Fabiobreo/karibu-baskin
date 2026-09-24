@@ -148,7 +148,7 @@ function AthletePill({
         }}
       >
         <Typography
-          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.68rem", lineHeight: 1 }}
+          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.75rem", lineHeight: 1 }}
         >
           {initial}
         </Typography>
@@ -248,7 +248,7 @@ function AthletePill({
             display: "block",
             px: 1,
             mt: 0.25,
-            fontSize: "0.65rem",
+            fontSize: "0.75rem",
             fontStyle: "italic",
             color: "text.secondary",
             wordBreak: "break-word",
@@ -674,7 +674,7 @@ export default function RosterByRole({
                         }}
                       >
                         <Typography
-                          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.68rem" }}
+                          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.75rem" }}
                         >
                           {reg.name[0]?.toUpperCase() ?? "?"}
                         </Typography>
@@ -729,7 +729,7 @@ export default function RosterByRole({
                           display: "block",
                           px: 1,
                           mt: 0.25,
-                          fontSize: "0.65rem",
+                          fontSize: "0.75rem",
                           fontStyle: "italic",
                           color: "text.secondary",
                           wordBreak: "break-word",

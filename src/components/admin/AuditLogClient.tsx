@@ -495,7 +495,7 @@ export default function AuditLogClient() {
                           label={ACTION_LABELS[item.action] ?? item.action}
                           color={ACTION_COLORS[item.action] ?? "default"}
                           size="small"
-                          sx={{ fontSize: "0.7rem" }}
+                          sx={{ fontSize: "0.75rem" }}
                         />
                       </TableCell>
                       <TableCell>
@@ -572,7 +572,7 @@ export default function AuditLogClient() {
                       label={ACTION_LABELS[item.action] ?? item.action}
                       color={ACTION_COLORS[item.action] ?? "default"}
                       size="small"
-                      sx={{ fontSize: "0.68rem", maxWidth: "100%" }}
+                      sx={{ fontSize: "0.75rem", maxWidth: "100%" }}
                     />
                     <Typography
                       variant="caption"

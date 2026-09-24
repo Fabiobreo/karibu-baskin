@@ -346,8 +346,8 @@ export default function RegistrationForm({
                           label={m.teamName}
                           size="small"
                           sx={{
-                            height: 16,
-                            fontSize: "0.65rem",
+                            height: 20,
+                            fontSize: "0.75rem",
                             fontWeight: 700,
                             bgcolor: m.teamColor ?? "primary.main",
                             color: contrastText(m.teamColor),
@@ -380,8 +380,8 @@ export default function RegistrationForm({
                             label={m.teamName}
                             size="small"
                             sx={{
-                              height: 16,
-                              fontSize: "0.65rem",
+                              height: 20,
+                              fontSize: "0.75rem",
                               fontWeight: 700,
                               bgcolor: m.teamColor ?? "primary.main",
                               color: contrastText(m.teamColor),

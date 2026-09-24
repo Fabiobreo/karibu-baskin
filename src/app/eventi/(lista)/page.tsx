@@ -77,7 +77,7 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
             label={dateLabel}
             size="small"
             variant="outlined"
-            sx={{ fontWeight: 700, fontSize: "0.7rem", mb: 1 }}
+            sx={{ fontWeight: 700, fontSize: "0.75rem", mb: 1 }}
           />
           <Typography
             variant="subtitle1"

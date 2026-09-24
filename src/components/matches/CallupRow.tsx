@@ -25,7 +25,7 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
           {name}
         </Typography>
         {variant && (
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
             {`var. ${variant}`}
           </Typography>
         )}
@@ -37,7 +37,7 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
           >
             {c.stat.points}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.6rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
             pt
           </Typography>
         </Box>

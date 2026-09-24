@@ -165,8 +165,8 @@ export function MobileTeamTabs({
                   label={allTeams[i].length}
                   size="small"
                   sx={{
-                    height: 18,
-                    fontSize: "0.65rem",
+                    height: 20,
+                    fontSize: "0.75rem",
                     fontWeight: 700,
                     bgcolor: tab === i ? m.color : "action.selected",
                     color: tab === i ? "common.white" : "text.secondary",
@@ -445,7 +445,7 @@ function TeamEditor({
                 <Chip
                   label={pool.length}
                   size="small"
-                  sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
                 />
               </Box>
               {!!selected && selected.fromKey !== "pool" && (
@@ -526,8 +526,8 @@ function TeamEditor({
                     label={teamList.length}
                     size="small"
                     sx={{
-                      height: 18,
-                      fontSize: "0.65rem",
+                      height: 20,
+                      fontSize: "0.75rem",
                       fontWeight: 700,
                       bgcolor: "rgba(255,255,255,0.3)",
                       color: "common.white",

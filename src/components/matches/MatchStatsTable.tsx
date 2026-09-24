@@ -75,18 +75,18 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
-                sx={{ width: 28, fontWeight: 700, fontSize: "0.72rem", color: "text.secondary" }}
+                sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>{t("statPlayer")}</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>{t("statPlayer")}</TableCell>
               {COLS.map((col) => (
                 <TableCell
                   key={col.key as string}
                   align="center"
                   sx={{
                     fontWeight: 700,
-                    fontSize: "0.72rem",
+                    fontSize: "0.75rem",
                     color: col.primary ? "primary.main" : undefined,
                   }}
                   title={col.title}
@@ -146,8 +146,8 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                               bgcolor: ROLE_COLORS[role],
                               color: contrastText(ROLE_COLORS[role]),
                               fontWeight: 600,
-                              fontSize: "0.55rem",
-                              height: 13,
+                              fontSize: "0.75rem",
+                              height: 20,
                               mt: 0.2,
                             }}
                           />
@@ -160,7 +160,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                               display: "block",
                               mt: 0.3,
                               fontStyle: "italic",
-                              fontSize: "0.7rem",
+                              fontSize: "0.75rem",
                               maxWidth: 200,
                               lineHeight: 1.3,
                             }}

@@ -84,7 +84,7 @@ export default function EventChip({
           noWrap
           sx={{
             color: fg,
-            fontSize: "0.65rem",
+            fontSize: "0.75rem",
             // Un filo di peso in piu' sugli impegni propri: rinforza l'eco
             // senza aggiungere altra grafica in un chip alto 18px.
             fontWeight: isOwnTeam ? 700 : 600,

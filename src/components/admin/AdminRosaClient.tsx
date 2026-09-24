@@ -673,7 +673,7 @@ function MemberRow({
             <Chip
               label="Figlio"
               size="small"
-              sx={{ height: 15, fontSize: "0.58rem", fontWeight: 700 }}
+              sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
             />
           )}
           {m.isCaptain && (
@@ -681,8 +681,8 @@ function MemberRow({
               label="Capitano"
               size="small"
               sx={{
-                height: 16,
-                fontSize: "0.6rem",
+                height: 20,
+                fontSize: "0.75rem",
                 bgcolor: "medal.gold",
                 color: "common.white",
                 fontWeight: 700,
@@ -699,18 +699,18 @@ function MemberRow({
                 bgcolor: ROLE_COLORS[athlete.sportRole],
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.6rem",
-                height: 16,
+                fontSize: "0.75rem",
+                height: 20,
               }}
             />
           )}
           {gShort && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               {gShort}
             </Typography>
           )}
           {age != null && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               · {age}a
             </Typography>
           )}
@@ -785,7 +785,7 @@ function PoolRow({
             <Chip
               label="Figlio"
               size="small"
-              sx={{ height: 14, fontSize: "0.55rem", fontWeight: 700 }}
+              sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
             />
           )}
           {otherTeamName && (
@@ -794,7 +794,7 @@ function PoolRow({
                 label={otherTeamName}
                 size="small"
                 color="warning"
-                sx={{ height: 14, fontSize: "0.55rem", fontWeight: 700 }}
+                sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
               />
             </Tooltip>
           )}
@@ -808,22 +808,22 @@ function PoolRow({
                 bgcolor: ROLE_COLORS[athlete.sportRole],
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.58rem",
-                height: 15,
+                fontSize: "0.75rem",
+                height: 20,
               }}
             />
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               Ruolo non assegnato
             </Typography>
           )}
           {gShort && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               {gShort}
             </Typography>
           )}
           {age != null && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               · {age}a
             </Typography>
           )}

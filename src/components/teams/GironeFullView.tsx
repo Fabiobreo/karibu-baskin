@@ -151,7 +151,7 @@ export default function GironeFullView({
           {groupName}
         </Typography>
         {championship && (
-          <Chip label={championship} size="small" variant="outlined" sx={{ fontSize: "0.7rem" }} />
+          <Chip label={championship} size="small" variant="outlined" sx={{ fontSize: "0.75rem" }} />
         )}
       </Box>
 
@@ -162,7 +162,7 @@ export default function GironeFullView({
           variant="overline"
           color="text.secondary"
           fontWeight={700}
-          sx={{ letterSpacing: "0.08em", fontSize: "0.7rem" }}
+          sx={{ letterSpacing: "0.08em", fontSize: "0.75rem" }}
         >
           {t("classification")}
         </Typography>
@@ -179,7 +179,7 @@ export default function GironeFullView({
                 sx={{
                   "& th": {
                     fontWeight: 700,
-                    fontSize: "0.7rem",
+                    fontSize: "0.75rem",
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
                     color: "text.secondary",
@@ -292,7 +292,7 @@ export default function GironeFullView({
           variant="overline"
           color="text.secondary"
           fontWeight={700}
-          sx={{ letterSpacing: "0.08em", fontSize: "0.7rem" }}
+          sx={{ letterSpacing: "0.08em", fontSize: "0.75rem" }}
         >
           {t("calendarSection")}
         </Typography>
@@ -315,7 +315,7 @@ export default function GironeFullView({
               borderColor: "divider",
               "& .MuiTab-root": {
                 minHeight: 36,
-                fontSize: "0.72rem",
+                fontSize: "0.75rem",
                 fontWeight: 700,
                 textTransform: "none",
                 py: 0.5,
@@ -352,7 +352,7 @@ export default function GironeFullView({
                           bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
                         }}
                       >
-                        <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
+                        <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.75rem" }}>
                           {format(new Date(m.date), "d MMM", { locale: dateLocale })}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700, fontSize: "0.8rem" }}>{home}</TableCell>
@@ -380,8 +380,8 @@ export default function GironeFullView({
                                 bgcolor: RESULT_COLORS[m.result],
                                 color: "common.white",
                                 fontWeight: 700,
-                                height: 18,
-                                fontSize: "0.65rem",
+                                height: 20,
+                                fontSize: "0.75rem",
                               }}
                             />
                           )}
@@ -396,7 +396,7 @@ export default function GironeFullView({
                   })}
                   {current.external.map((gm) => (
                     <TableRow key={gm.id}>
-                      <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.72rem" }}>
+                      <TableCell sx={{ width: 80, color: "text.secondary", fontSize: "0.75rem" }}>
                         {gm.date ? format(new Date(gm.date), "d MMM", { locale: dateLocale }) : "—"}
                       </TableCell>
                       <TableCell sx={{ fontSize: "0.8rem" }}>{gm.homeTeam.name}</TableCell>

@@ -102,7 +102,7 @@ export default function SessionRestrictionEditor({
             label="attive"
             size="small"
             color="warning"
-            sx={{ fontSize: "0.65rem", height: 18 }}
+            sx={{ fontSize: "0.75rem", height: 20 }}
           />
         )}
       </Box>

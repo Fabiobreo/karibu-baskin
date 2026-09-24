@@ -207,7 +207,7 @@ export default function UsersTable({
                         bgcolor: ROLE_COLORS[row.sportRole],
                         color: "common.white",
                         fontWeight: 700,
-                        fontSize: "0.72rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   ) : row.sportRoleSuggested ? (
@@ -227,7 +227,7 @@ export default function UsersTable({
                           borderColor: ROLE_COLORS[row.sportRoleSuggested],
                           color: ROLE_COLORS[row.sportRoleSuggested],
                           fontWeight: 700,
-                          fontSize: "0.72rem",
+                          fontSize: "0.75rem",
                         }}
                         title="Autovalutazione da confermare"
                       />

@@ -221,7 +221,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 sx={{
                   display: "block",
                   color: (theme) => alpha(theme.palette.common.white, 0.5),
-                  fontSize: "0.62rem",
+                  fontSize: "0.75rem",
                   letterSpacing: "0.07em",
                   textTransform: "uppercase",
                 }}
@@ -407,7 +407,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       component="span"
                       sx={{
                         ml: "auto",
-                        fontSize: "0.65rem",
+                        fontSize: "0.75rem",
                         px: 0.6,
                         py: 0.1,
                         borderRadius: 0.5,
@@ -647,7 +647,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
             sx={{
               color: (theme) => alpha(theme.palette.common.white, 0.5),
               textTransform: "uppercase",
-              fontSize: "0.7rem",
+              fontSize: "0.75rem",
               letterSpacing: "0.08em",
             }}
           >
@@ -906,7 +906,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                         <Box
                           component="span"
                           sx={{
-                            fontSize: "0.6rem",
+                            fontSize: "0.75rem",
                             px: 0.6,
                             py: 0.1,
                             borderRadius: 0.5,

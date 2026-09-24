@@ -69,7 +69,7 @@ export default function BottomNav() {
             color: "text.secondary",
             minWidth: 0,
             "& .MuiBottomNavigationAction-label": {
-              fontSize: "0.65rem",
+              fontSize: "0.75rem",
               mt: "2px",
             },
           },

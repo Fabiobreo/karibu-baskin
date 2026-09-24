@@ -131,7 +131,7 @@ function MatchTimingChip({ upcoming }: { upcoming: boolean }) {
       size="small"
       color="info"
       variant="outlined"
-      sx={{ fontWeight: 700, fontSize: "0.65rem", height: 20 }}
+      sx={{ fontWeight: 700, fontSize: "0.75rem", height: 20 }}
     />
   );
 }
@@ -213,7 +213,7 @@ function MatchMobileCard({
                 variant="caption"
                 color="text.secondary"
                 fontWeight={700}
-                sx={{ fontSize: "0.68rem" }}
+                sx={{ fontSize: "0.75rem" }}
               >
                 G.{matchday}
               </Typography>
@@ -226,7 +226,7 @@ function MatchMobileCard({
               <Typography
                 component="span"
                 variant="caption"
-                sx={{ color: "primary.onLight", fontWeight: 700, fontSize: "0.68rem" }}
+                sx={{ color: "primary.onLight", fontWeight: 700, fontSize: "0.75rem" }}
               >
                 (interna)
               </Typography>
@@ -255,7 +255,7 @@ function MatchMobileCard({
                   backgroundColor: RESULT_COLORS[m.result],
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.65rem",
+                  fontSize: "0.75rem",
                   height: 20,
                 }}
               />
@@ -340,7 +340,7 @@ function MissingStatsChip({ matchId, router }: { matchId: string; router: Router
         color="warning"
         variant="outlined"
         onClick={() => router.push(`/admin/partite/${matchId}/statistiche`)}
-        sx={{ fontWeight: 700, fontSize: "0.65rem", height: 20, cursor: "pointer" }}
+        sx={{ fontWeight: 700, fontSize: "0.75rem", height: 20, cursor: "pointer" }}
       />
     </Tooltip>
   );
@@ -769,7 +769,7 @@ function LeagueView({
                 href={`/admin/gironi/${sec.groupId}`}
                 size="small"
                 startIcon={<OpenInNewIcon />}
-                sx={{ fontSize: "0.72rem" }}
+                sx={{ fontSize: "0.75rem" }}
               >
                 Apri girone
               </Button>
@@ -912,7 +912,7 @@ function MatchRowAndContext({
               backgroundColor: m.team.color ?? "primary.main",
               color: "common.white",
               fontWeight: 700,
-              fontSize: "0.7rem",
+              fontSize: "0.75rem",
             }}
           />
         </TableCell>
@@ -938,7 +938,7 @@ function MatchRowAndContext({
                 backgroundColor: RESULT_COLORS[m.result],
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.68rem",
+                fontSize: "0.75rem",
               }}
             />
           ) : (
@@ -1002,16 +1002,16 @@ function MatchRowAndContext({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontWeight: 700, fontSize: "0.7rem" }}
+                sx={{ fontWeight: 700, fontSize: "0.75rem" }}
               >
                 Giornata {m.matchday}:
               </Typography>
               {others.map((g) => (
                 <Box
                   key={g.id}
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.72rem" }}
+                  sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: "0.75rem" }}
                 >
-                  <Typography variant="caption" sx={{ fontSize: "0.72rem" }}>
+                  <Typography variant="caption" sx={{ fontSize: "0.75rem" }}>
                     {g.homeTeam.name}
                   </Typography>
                   <GroupMatchInlineScore
@@ -1023,7 +1023,7 @@ function MatchRowAndContext({
                     awayScore={g.awayScore}
                     onSaved={onGroupMatchSaved}
                   />
-                  <Typography variant="caption" sx={{ fontSize: "0.72rem" }}>
+                  <Typography variant="caption" sx={{ fontSize: "0.75rem" }}>
                     {g.awayTeam.name}
                   </Typography>
                 </Box>
@@ -1116,7 +1116,7 @@ function FlatMatchRow({
             backgroundColor: m.team.color ?? "primary.main",
             color: "common.white",
             fontWeight: 700,
-            fontSize: "0.7rem",
+            fontSize: "0.75rem",
           }}
         />
       </TableCell>
@@ -1151,7 +1151,7 @@ function FlatMatchRow({
               backgroundColor: RESULT_COLORS[m.result],
               color: "common.white",
               fontWeight: 700,
-              fontSize: "0.68rem",
+              fontSize: "0.75rem",
             }}
           />
         ) : (

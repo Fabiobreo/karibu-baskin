@@ -134,7 +134,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   size="small"
                   variant={season === s ? "filled" : "outlined"}
                   color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.72rem" }}
+                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.75rem" }}
                 />
               </Link>
             ))}
@@ -196,7 +196,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   sx={{
                     ml: "auto",
                     fontWeight: 700,
-                    fontSize: "0.68rem",
+                    fontSize: "0.75rem",
                     height: 20,
                     bgcolor: alpha(brandColor.orange, 0.1),
                     color: "primary.main",
@@ -247,7 +247,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ fontSize: "0.68rem", display: "block" }}
+                              sx={{ fontSize: "0.75rem", display: "block" }}
                             >
                               {format(new Date(m.date), "d MMM · HH:mm", { locale: dateLocale })}
                             </Typography>
@@ -321,7 +321,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               label={m.isHome ? t("home") : t("away")}
                               size="small"
                               variant="outlined"
-                              sx={{ fontSize: "0.65rem", height: 22 }}
+                              sx={{ fontSize: "0.75rem", height: 22 }}
                             />
                             {m.venue && (
                               <Box
@@ -337,7 +337,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: "0.65rem",
+                                    fontSize: "0.75rem",
                                     overflow: "hidden",
                                     textOverflow: "ellipsis",
                                     whiteSpace: "nowrap",
@@ -352,7 +352,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               size="small"
                               variant="outlined"
                               sx={{
-                                fontSize: "0.6rem",
+                                fontSize: "0.75rem",
                                 height: 20,
                                 color: "text.secondary",
                                 borderColor: "divider",

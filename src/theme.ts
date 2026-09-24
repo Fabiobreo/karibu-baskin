@@ -245,6 +245,13 @@ declare module "@mui/material/styles" {
     calendar?: CalendarPalette;
   }
 
+  interface TypographyVariants {
+    stat: React.CSSProperties;
+  }
+  interface TypographyVariantsOptions {
+    stat?: React.CSSProperties;
+  }
+
   // `onLight`: arancione da usare per TESTO e link (ORANGE_ON_LIGHT / ORANGE_ON_DARK).
   // `fill`: riempimento arancio sotto un'etichetta bianca (ORANGE_FILL).
   interface PaletteColor {
@@ -254,6 +261,12 @@ declare module "@mui/material/styles" {
   interface SimplePaletteColorOptions {
     onLight?: string;
     fill?: string;
+  }
+}
+
+declare module "@mui/material/Typography" {
+  interface TypographyPropsVariantOverrides {
+    stat: true;
   }
 }
 
@@ -383,6 +396,21 @@ const sharedTypography = {
   h5: { fontWeight: 700, letterSpacing: "-0.3px" },
   h6: { fontWeight: 600 },
   subtitle1: { fontWeight: 500 },
+  // Scala del testo corrente (UX-10): 14px per il corpo secondario, 12px e'
+  // il minimo per qualunque testo (didascalie, meta, chip).
+  body2: { fontSize: "0.875rem" },
+  caption: { fontSize: "0.75rem", lineHeight: 1.5 },
+  // Occhiello maiuscoletto sopra i titoli: un solo letterSpacing per tutto il
+  // sito (prima sette valori diversi riscritti a mano).
+  overline: { fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.08em", lineHeight: 1.6 },
+  // Numeri grandi (tabelloni, punti, statistiche): la dimensione la sceglie
+  // chi la usa, qui peso, interlinea e cifre a larghezza fissa.
+  stat: {
+    fontWeight: 800,
+    lineHeight: 1,
+    fontVariantNumeric: "tabular-nums",
+    letterSpacing: "-0.5px",
+  },
   button: { fontWeight: 600, letterSpacing: 0 },
 } as const;
 

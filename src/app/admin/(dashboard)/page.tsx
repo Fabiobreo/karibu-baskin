@@ -352,7 +352,7 @@ function NavLink({
             label={badge}
             size="small"
             color="warning"
-            sx={{ fontWeight: 700, height: 20, fontSize: "0.72rem" }}
+            sx={{ fontWeight: 700, height: 20, fontSize: "0.75rem" }}
           />
         )}
       </Box>

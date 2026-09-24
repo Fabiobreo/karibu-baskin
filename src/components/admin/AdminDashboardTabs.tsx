@@ -107,7 +107,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                   label={anonNoEmail > 0 ? `${anonNoEmail} senza email` : anonCount}
                   size="small"
                   color={anonNoEmail > 0 ? "warning" : "default"}
-                  sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
                 />
               )}
             </Box>
@@ -197,7 +197,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                             bgcolor: ROLE_COLORS[row.sportRole],
                             color: "common.white",
                             fontWeight: 700,
-                            fontSize: "0.72rem",
+                            fontSize: "0.75rem",
                           }}
                         />
                       ) : row.kind === "user" && row.sportRoleSuggested ? (
@@ -209,7 +209,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                             borderColor: ROLE_COLORS[row.sportRoleSuggested],
                             color: ROLE_COLORS[row.sportRoleSuggested],
                             fontWeight: 700,
-                            fontSize: "0.72rem",
+                            fontSize: "0.75rem",
                           }}
                         />
                       ) : (
@@ -285,13 +285,13 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
                           size="small"
                           color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
-                          sx={{ fontWeight: 600, fontSize: "0.68rem" }}
+                          sx={{ fontWeight: 600, fontSize: "0.75rem" }}
                         />
                       ) : (
                         <Chip
                           label="Atleta"
                           size="small"
-                          sx={{ fontWeight: 600, fontSize: "0.68rem" }}
+                          sx={{ fontWeight: 600, fontSize: "0.75rem" }}
                         />
                       )}
                       {row.sportRole && (
@@ -302,7 +302,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                             bgcolor: ROLE_COLORS[row.sportRole],
                             color: "common.white",
                             fontWeight: 700,
-                            fontSize: "0.68rem",
+                            fontSize: "0.75rem",
                           }}
                         />
                       )}

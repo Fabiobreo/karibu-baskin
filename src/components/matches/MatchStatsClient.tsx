@@ -503,8 +503,8 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                                     bgcolor: ROLE_COLORS[row.sportRole],
                                     color: contrastText(ROLE_COLORS[row.sportRole]),
                                     fontWeight: 600,
-                                    fontSize: "0.55rem",
-                                    height: 14,
+                                    fontSize: "0.75rem",
+                                    height: 20,
                                     mt: 0.2,
                                   }}
                                 />

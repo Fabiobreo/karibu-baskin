@@ -267,7 +267,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             variant={roleFilter === null ? "filled" : "outlined"}
             color={roleFilter === null ? "primary" : "default"}
             onClick={() => handleRoleFilter(null)}
-            sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.72rem" }}
+            sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.75rem" }}
           />
           {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
             <Chip
@@ -278,7 +278,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               sx={{
                 fontWeight: 700,
                 cursor: "pointer",
-                fontSize: "0.72rem",
+                fontSize: "0.75rem",
                 bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
                 color: roleFilter === r ? contrastText(ROLE_COLORS[r]) : "text.primary",
                 border: "1px solid",
@@ -425,8 +425,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                                 bgcolor: ROLE_COLORS[row.sportRole],
                                 color: contrastText(ROLE_COLORS[row.sportRole]),
                                 fontWeight: 600,
-                                fontSize: "0.58rem",
-                                height: 14,
+                                fontSize: "0.75rem",
+                                height: 20,
                               }}
                             />
                           )}
@@ -439,8 +439,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                                 bgcolor: t.color ?? "primary.main",
                                 color: contrastText(t.color),
                                 fontWeight: 600,
-                                fontSize: "0.58rem",
-                                height: 14,
+                                fontSize: "0.75rem",
+                                height: 20,
                               }}
                             />
                           ))}
@@ -480,7 +480,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           <Typography
                             component="span"
                             display="block"
-                            sx={{ fontSize: "0.7rem", color: "text.secondary", fontWeight: 600 }}
+                            sx={{ fontSize: "0.75rem", color: "text.secondary", fontWeight: 600 }}
                           >
                             {t("loanDetail", { count: loan })}
                           </Typography>
@@ -562,8 +562,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                             bgcolor: ROLE_COLORS[row.sportRole],
                             color: "common.white",
                             fontWeight: 600,
-                            fontSize: "0.6rem",
-                            height: 16,
+                            fontSize: "0.75rem",
+                            height: 20,
                           }}
                         />
                       )}
@@ -576,8 +576,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                             bgcolor: t.color ?? "primary.main",
                             color: contrastText(t.color),
                             fontWeight: 600,
-                            fontSize: "0.6rem",
-                            height: 16,
+                            fontSize: "0.75rem",
+                            height: 20,
                           }}
                         />
                       ))}
@@ -618,7 +618,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         variant="caption"
                         color="text.secondary"
                         display="block"
-                        sx={{ fontSize: "0.65rem", lineHeight: 1.2 }}
+                        sx={{ fontSize: "0.75rem", lineHeight: 1.2 }}
                       >
                         {label}
                       </Typography>

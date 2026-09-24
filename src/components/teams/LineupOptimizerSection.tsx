@@ -164,7 +164,7 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
         <Chip
           label={`Σμ ${lineup.muSum.toFixed(1)}`}
           size="small"
-          sx={{ fontWeight: 700, fontSize: "0.68rem", height: 20 }}
+          sx={{ fontWeight: 700, fontSize: "0.75rem", height: 20 }}
         />
         {winLabel && (
           <Chip
@@ -172,7 +172,7 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
             size="small"
             sx={{
               fontWeight: 700,
-              fontSize: "0.68rem",
+              fontSize: "0.75rem",
               height: 20,
               bgcolor:
                 winLabel === "Favoriti"
@@ -217,7 +217,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
         <Chip
           label={`Σμ ${lineup.muSum.toFixed(1)}`}
           size="small"
-          sx={{ fontWeight: 600, fontSize: "0.65rem", height: 18 }}
+          sx={{ fontWeight: 600, fontSize: "0.75rem", height: 20 }}
         />
         {lineup.winProbability != null && (
           <Typography variant="caption" color="text.secondary">
@@ -244,7 +244,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
                 }
                 label={p.name.split(" ")[0]}
                 size="small"
-                sx={{ fontSize: "0.72rem", fontWeight: 600, height: 26 }}
+                sx={{ fontSize: "0.75rem", fontWeight: 600, height: 26 }}
               />
             </Tooltip>
           ))}
@@ -279,8 +279,8 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
             bgcolor: roleColor,
             color: "common.white",
             fontWeight: 700,
-            fontSize: "0.6rem",
-            height: 18,
+            fontSize: "0.75rem",
+            height: 20,
           }}
         />
       )}
@@ -302,7 +302,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
         <Tooltip title={`Altezza: ${p.height} cm`}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
             <HeightIcon sx={{ fontSize: 13, color: "text.secondary" }} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               {p.height}
             </Typography>
           </Box>
@@ -357,7 +357,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
           bgcolor: ROLE_COLORS[entry.role],
           color: "common.white",
           fontWeight: 700,
-          fontSize: "0.68rem",
+          fontSize: "0.75rem",
           height: 20,
           minWidth: 32,
           flexShrink: 0,
@@ -373,7 +373,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               size="small"
               sx={{
                 fontWeight: 700,
-                fontSize: "0.7rem",
+                fontSize: "0.75rem",
                 height: 22,
                 bgcolor: (theme) =>
                   alpha(ROLE_COLORS[entry.role] ?? theme.palette.primary.main, 0.15),
@@ -421,7 +421,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
                 size="small"
                 sx={{
                   fontWeight: 600,
-                  fontSize: "0.7rem",
+                  fontSize: "0.75rem",
                   height: 22,
                   bgcolor: "action.hover",
                   color: "text.secondary",
@@ -441,7 +441,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               variant="caption"
               color="match.loss"
               fontWeight={700}
-              sx={{ fontSize: "0.68rem" }}
+              sx={{ fontSize: "0.75rem" }}
             >
               −{entry.gap.toFixed(1)}
             </Typography>

@@ -305,12 +305,12 @@ function CompactMatchRow({
         <Chip
           label={matchTypeLabel(m.matchType)}
           size="small"
-          sx={{ height: 18, fontSize: "0.68rem", fontWeight: 700 }}
+          sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
         />
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ ml: "auto", fontWeight: 600, fontSize: "0.72rem" }}
+          sx={{ ml: "auto", fontWeight: 600, fontSize: "0.75rem" }}
         >
           {formatShortDate(m.date, tCommon, dateLocale)}
         </Typography>
@@ -390,7 +390,7 @@ function CompactMatchRow({
                     "& .MuiToggleButton-root": {
                       py: 0.25,
                       px: 1,
-                      fontSize: "0.7rem",
+                      fontSize: "0.75rem",
                       fontWeight: 700,
                       textTransform: "none",
                       border: "1px solid",

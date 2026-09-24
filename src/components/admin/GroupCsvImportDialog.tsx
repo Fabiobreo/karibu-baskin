@@ -273,14 +273,14 @@ export default function GroupCsvImportDialog({
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ bgcolor: "action.hover" }}>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>G.</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Data</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Casa</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.72rem" }}>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>G.</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Data</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Casa</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.75rem" }}>
                         Ris.
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Ospiti</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Stato</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Ospiti</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Stato</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -312,14 +312,14 @@ export default function GroupCsvImportDialog({
                               label={row.error}
                               size="small"
                               color="error"
-                              sx={{ fontSize: "0.62rem", height: 20 }}
+                              sx={{ fontSize: "0.75rem", height: 20 }}
                             />
                           ) : (
                             <Chip
                               label="OK"
                               size="small"
                               color="success"
-                              sx={{ fontSize: "0.62rem", height: 20 }}
+                              sx={{ fontSize: "0.75rem", height: 20 }}
                             />
                           )}
                         </TableCell>

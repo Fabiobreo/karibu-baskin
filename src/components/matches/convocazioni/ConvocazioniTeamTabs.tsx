@@ -46,8 +46,8 @@ export default function ConvocazioniTeamTabs({
                     label={count}
                     size="small"
                     sx={{
-                      height: 18,
-                      fontSize: "0.7rem",
+                      height: 20,
+                      fontSize: "0.75rem",
                       bgcolor: idx === activeIndex ? "primary.main" : "action.hover",
                       color: idx === activeIndex ? "common.white" : "text.secondary",
                       fontWeight: 800,

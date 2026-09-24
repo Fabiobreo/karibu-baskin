@@ -124,7 +124,7 @@ export default function EventDetailDialog({
               bgcolor: alpha(fg, 0.22),
               color: fg,
               fontWeight: 700,
-              fontSize: "0.68rem",
+              fontSize: "0.75rem",
               mb: 0.5,
             }}
           />

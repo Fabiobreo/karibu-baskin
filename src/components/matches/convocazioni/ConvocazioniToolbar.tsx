@@ -67,7 +67,7 @@ export default function ConvocazioniToolbar({
                 bgcolor: count > 0 ? ROLE_COLORS[r] : "transparent",
                 color: count > 0 ? "common.white" : "text.secondary",
                 fontWeight: 700,
-                fontSize: "0.7rem",
+                fontSize: "0.75rem",
                 border: "1px solid",
                 // Ruolo scoperto: chip vuoto con il bordo, non solo il colore.
                 borderColor: count > 0 ? ROLE_COLORS[r] : "divider",

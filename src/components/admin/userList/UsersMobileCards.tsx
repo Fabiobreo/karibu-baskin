@@ -77,7 +77,7 @@ export default function UsersMobileCards({
                     label={ROLE_LABELS_IT[row.appRole]}
                     size="small"
                     color={ROLE_CHIP_COLORS[row.appRole]}
-                    sx={{ fontWeight: 600, fontSize: "0.68rem" }}
+                    sx={{ fontWeight: 600, fontSize: "0.75rem" }}
                   />
                   <AthleteStatusChip status={row.athleteStatus} />
                   {row.sportRole ? (
@@ -88,7 +88,7 @@ export default function UsersMobileCards({
                         bgcolor: ROLE_COLORS[row.sportRole],
                         color: "common.white",
                         fontWeight: 700,
-                        fontSize: "0.68rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   ) : row.sportRoleSuggested ? (
@@ -100,7 +100,7 @@ export default function UsersMobileCards({
                         borderColor: ROLE_COLORS[row.sportRoleSuggested],
                         color: ROLE_COLORS[row.sportRoleSuggested],
                         fontWeight: 700,
-                        fontSize: "0.68rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   ) : null}
@@ -112,7 +112,7 @@ export default function UsersMobileCards({
                         bgcolor: team.color ?? "primary.main",
                         color: contrastText(team.color),
                         fontWeight: 600,
-                        fontSize: "0.68rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   )}
@@ -121,7 +121,7 @@ export default function UsersMobileCards({
                       size="small"
                       variant="outlined"
                       label={<RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />}
-                      sx={{ fontSize: "0.68rem" }}
+                      sx={{ fontSize: "0.75rem" }}
                     />
                   )}
                 </Box>

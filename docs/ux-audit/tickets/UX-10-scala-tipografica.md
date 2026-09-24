@@ -1,6 +1,6 @@
 # UX-10 · Scala tipografica, minimo 12 px, regola ESLint
 
-**Ondata:** 1 · **Stima:** M per tema, codemod e regola, più la verifica visiva per area · **Dipende da:** UX-09 · **Stato:** da fare
+**Ondata:** 1 · **Stima:** M per tema, codemod e regola, più la verifica visiva per area · **Dipende da:** UX-09 · **Stato:** fatto per i criteri di accettazione (commit su `develop`): scala nel tema, nessun testo sotto 12 px (da 1749 a 0 sulle pagine di UX-01), regola ESLint con tetto di 621 avvisi. La migrazione dei letterali >= 12 px sulla scala resta da fare per area
 
 ## Problema
 
@@ -32,3 +32,26 @@ Le dimensioni reali sono circa una dozzina (0,72, 0,68, 0,7, 0,65 rem…): si po
 - Nessun testo sotto 12 px nelle pagine di UX-01 (misurabile con lo stesso script).
 - Nuovi `fontSize` letterali segnalati dal lint.
 - Nessuna regressione visibile in marcatori mobile, risultati, admin utenti e admin partite (schermate prima/dopo).
+
+## Esito
+
+- **Scala nel tema** (`sharedTypography` in `theme.ts`):
+  - `body2` 14 px;
+  - `caption` 12 px, il minimo;
+  - `overline` 12 px con un solo `letterSpacing` (`0.08em`) e peso 700;
+  - nuova variante `stat` (peso 800, interlinea 1, cifre tabellari) per i numeri grandi, con l'augmentation di `TypographyVariants` e `TypographyPropsVariantOverrides`.
+- **Minimo 12 px:** codemod con il parser TypeScript su tutti i `.tsx`. Porta a 12 px i `fontSize` letterali sotto i 12 px, anche dentro gli oggetti responsive: 258 valori in 74 file. Salta le icone (tag `*Icon`, selettori `svg`/`icon`, 301 valori), gli `Avatar` (36) e i file che generano immagini (OG, tabellino, `ShareTeamsButton`). Nei `Chip` ad altezza fissa sotto 20 px l'altezza passa a 20 (45 casi), perche' il testo non venga tagliato.
+- **Sorgente dell'immagine delle squadre** (`ShareTeamsButton`): il nodo fuori schermo ora ha `aria-hidden`, i lettori di schermo leggevano due volte le squadre.
+- **Regola ESLint** (quella del ticket, nello stesso array `no-restricted-syntax`, in `warn`): oggi **621 avvisi**, che e' il tetto: il numero deve solo scendere. Regola anche in CLAUDE.md.
+- **Verifica:**
+  - misura con lo stesso elenco di pagine di UX-01 (3 profili, desktop e mobile, 42 combinazioni): testi visibili sotto 12 px da **1749 a 0** (iniziali degli Avatar escluse);
+  - nessun chip o cella tagliato (unici casi: due anteprime troncate di proposito e un titolo nascosto ai vedenti);
+  - schermate prima/dopo di marcatori, risultati, admin utenti, admin partite, desktop e mobile, senza regressioni: righe e chip un filo piu' alti;
+  - `npm run a11y` invariato.
+
+**Rimasto fuori**
+
+- **Migrazione dei letterali >= 12 px sulla scala** (i 621 avvisi): punto 2 del ticket oltre la soglia minima. Va fatta per area con verifica visiva, come previsto al punto 5 (5-8 giorni).
+- **Pesi scritti a mano** (`fontWeight` 700-900): non toccati.
+- **Livelli dei titoli** (punto 4, `heading-order`): da sistemare pagina per pagina insieme alla migrazione per area. Oggi axe li segnala come `moderate`, fuori dalla baseline grave.
+- **Occhielli:** chi riscrive `letterSpacing` a mano nell'`sx` sovrascrive ancora quello unico del tema; si allineano con la migrazione per area.

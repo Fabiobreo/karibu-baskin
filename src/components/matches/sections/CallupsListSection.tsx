@@ -102,7 +102,7 @@ export default function CallupsListSection({
   const groupLabelSx = {
     textTransform: "uppercase",
     letterSpacing: "0.06em",
-    fontSize: "0.65rem",
+    fontSize: "0.75rem",
     display: "block",
     mb: 1,
   } as const;

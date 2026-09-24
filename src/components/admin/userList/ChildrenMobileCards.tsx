@@ -73,7 +73,7 @@ export default function ChildrenMobileCards({
                       bgcolor: ROLE_COLORS[row.sportRole],
                       color: "common.white",
                       fontWeight: 700,
-                      fontSize: "0.68rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 )}
@@ -85,7 +85,7 @@ export default function ChildrenMobileCards({
                       bgcolor: team.color ?? "primary.main",
                       color: contrastText(team.color),
                       fontWeight: 600,
-                      fontSize: "0.68rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 )}
@@ -94,7 +94,7 @@ export default function ChildrenMobileCards({
                     size="small"
                     variant="outlined"
                     label={<RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />}
-                    sx={{ fontSize: "0.68rem" }}
+                    sx={{ fontSize: "0.75rem" }}
                   />
                 )}
               </Box>

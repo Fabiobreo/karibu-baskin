@@ -94,8 +94,8 @@ export default function ConvocazioniLoanDialog({
                       bgcolor: ROLE_COLORS[role],
                       color: "common.white",
                       fontWeight: 600,
-                      fontSize: "0.58rem",
-                      height: 16,
+                      fontSize: "0.75rem",
+                      height: 20,
                     }}
                   />
                 )}

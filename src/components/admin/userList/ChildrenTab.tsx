@@ -228,7 +228,7 @@ export default function ChildrenTab({
                         bgcolor: ROLE_COLORS[row.sportRole],
                         color: "common.white",
                         fontWeight: 700,
-                        fontSize: "0.72rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   ) : (

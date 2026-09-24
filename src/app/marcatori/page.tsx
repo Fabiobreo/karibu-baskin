@@ -339,7 +339,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
                   size="small"
                   variant={activeSeason === s ? "filled" : "outlined"}
                   color={activeSeason === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.72rem" }}
+                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.75rem" }}
                 />
               </Link>
             ))}

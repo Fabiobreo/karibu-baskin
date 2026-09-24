@@ -71,8 +71,8 @@ export default async function AthleteCard({
               bgcolor: ROLE_COLORS[roleNum],
               color: "common.white",
               fontWeight: 700,
-              fontSize: "0.65rem",
-              height: 18,
+              fontSize: "0.75rem",
+              height: 20,
             }}
           />
         )}

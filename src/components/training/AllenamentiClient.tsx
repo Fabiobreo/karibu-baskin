@@ -208,7 +208,7 @@ function SessionRow({
               fontWeight: 700,
               lineHeight: 1,
               textTransform: "uppercase",
-              fontSize: "0.62rem",
+              fontSize: "0.75rem",
               letterSpacing: "0.05em",
             }}
           >
@@ -228,7 +228,7 @@ function SessionRow({
               fontWeight: 700,
               lineHeight: 1,
               textTransform: "uppercase",
-              fontSize: "0.62rem",
+              fontSize: "0.75rem",
               letterSpacing: "0.05em",
             }}
           >
@@ -255,8 +255,8 @@ function SessionRow({
                   bgcolor: "status.pending",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.6rem",
-                  height: 18,
+                  fontSize: "0.75rem",
+                  height: 20,
                   "& .MuiChip-icon": { ml: 0.5 },
                 }}
               />
@@ -270,8 +270,8 @@ function SessionRow({
                   bgcolor: "status.closed",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.6rem",
-                  height: 18,
+                  fontSize: "0.75rem",
+                  height: 20,
                   "& .MuiChip-icon": { ml: 0.5 },
                 }}
               />
@@ -328,7 +328,7 @@ function SessionRow({
                 bgcolor: myTeam.color,
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.68rem",
+                fontSize: "0.75rem",
                 height: 20,
               }}
             />

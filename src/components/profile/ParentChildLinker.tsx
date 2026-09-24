@@ -123,7 +123,7 @@ export default function ParentChildLinker({
                     <Chip
                       label={t("athlete")}
                       size="small"
-                      sx={{ fontSize: "0.7rem", fontWeight: 600 }}
+                      sx={{ fontSize: "0.75rem", fontWeight: 600 }}
                     />
                     {child.sportRole && (
                       <Chip
@@ -133,7 +133,7 @@ export default function ParentChildLinker({
                           bgcolor: ROLE_COLORS[child.sportRole],
                           color: "common.white",
                           fontWeight: 700,
-                          fontSize: "0.7rem",
+                          fontSize: "0.75rem",
                         }}
                       />
                     )}
@@ -148,7 +148,7 @@ export default function ParentChildLinker({
                             bgcolor: m.team.color ?? "primary.main",
                             color: contrastText(m.team.color),
                             fontWeight: 700,
-                            fontSize: "0.7rem",
+                            fontSize: "0.75rem",
                           }}
                         />
                       ))}
@@ -157,7 +157,7 @@ export default function ParentChildLinker({
                         label={genderLabel(child.gender)}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: "0.7rem" }}
+                        sx={{ fontSize: "0.75rem" }}
                       />
                     )}
                     {child.userId ? (
@@ -166,7 +166,7 @@ export default function ParentChildLinker({
                         size="small"
                         color="success"
                         variant="outlined"
-                        sx={{ fontSize: "0.7rem" }}
+                        sx={{ fontSize: "0.75rem" }}
                       />
                     ) : child.pendingRequestId ? (
                       <Chip
@@ -174,14 +174,18 @@ export default function ParentChildLinker({
                         size="small"
                         color="warning"
                         variant="outlined"
-                        sx={{ fontSize: "0.7rem" }}
+                        sx={{ fontSize: "0.75rem" }}
                       />
                     ) : (
                       <Chip
                         label={t("noAccount")}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: "0.7rem", color: "text.secondary", borderColor: "divider" }}
+                        sx={{
+                          fontSize: "0.75rem",
+                          color: "text.secondary",
+                          borderColor: "divider",
+                        }}
                       />
                     )}
                   </Box>

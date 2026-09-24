@@ -420,7 +420,7 @@ export default function UserEditDialog({
                       bgcolor: ROLE_COLORS[r],
                       color: "common.white",
                       fontWeight: 700,
-                      fontSize: "0.72rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 </MenuItem>

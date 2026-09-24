@@ -69,7 +69,7 @@ export default function LoSapeviCard() {
                 letterSpacing: "0.12em",
                 display: "block",
                 mb: 0.25,
-                fontSize: "0.7rem",
+                fontSize: "0.75rem",
               }}
             >
               {t("didYouKnow")}

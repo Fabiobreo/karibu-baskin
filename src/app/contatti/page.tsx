@@ -281,7 +281,7 @@ export default function ContattiPage() {
                     sx={{
                       textTransform: "uppercase",
                       letterSpacing: "0.06em",
-                      fontSize: "0.62rem",
+                      fontSize: "0.75rem",
                     }}
                   >
                     {c.label}
@@ -422,7 +422,7 @@ export default function ContattiPage() {
                           textTransform: "uppercase",
                           letterSpacing: "0.06em",
                           display: "block",
-                          fontSize: "0.62rem",
+                          fontSize: "0.75rem",
                         }}
                       >
                         {s.label}

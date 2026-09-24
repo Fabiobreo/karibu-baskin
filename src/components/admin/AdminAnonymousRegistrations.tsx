@@ -297,7 +297,7 @@ export default function AdminAnonymousRegistrations({
                           label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
                           size="small"
                           sx={{
-                            fontSize: "0.65rem",
+                            fontSize: "0.75rem",
                             fontWeight: 600,
                             cursor: "pointer",
                             "a:hover > &": { bgcolor: "action.focus" },
@@ -422,7 +422,7 @@ export default function AdminAnonymousRegistrations({
                       label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
                       size="small"
                       sx={{
-                        fontSize: "0.65rem",
+                        fontSize: "0.75rem",
                         fontWeight: 600,
                         cursor: "pointer",
                         "a:hover > &": { bgcolor: "action.focus" },
@@ -541,7 +541,7 @@ export default function AdminAnonymousRegistrations({
                         bgcolor: ROLE_COLORS[r],
                         color: "common.white",
                         fontWeight: 700,
-                        fontSize: "0.72rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   </MenuItem>

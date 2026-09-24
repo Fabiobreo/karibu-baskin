@@ -53,31 +53,31 @@ export default function ConvocazioniTable({
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell sx={{ width: 40 }} />
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.72rem" }}>Giocatore</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}
                 title="Presenze / allenamenti eligibili nelle ultime 2 settimane"
               >
                 Presenze
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}
                 title="Mancate iscrizioni + iscritto-ma-assente, su sessioni eligibili"
               >
                 Assenze
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}
                 title="Convocazioni nella stagione corrente (escluso questo match)"
               >
                 Partite st.
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: "0.72rem", whiteSpace: "nowrap" }}
+                sx={{ fontWeight: 700, fontSize: "0.75rem", whiteSpace: "nowrap" }}
                 title="Giorni dall'ultima convocazione"
               >
                 Ultima conv.
@@ -142,8 +142,8 @@ export default function ConvocazioniTable({
                                 bgcolor: "match.winBg",
                                 color: "match.win",
                                 fontWeight: 700,
-                                fontSize: "0.6rem",
-                                height: 16,
+                                fontSize: "0.75rem",
+                                height: 20,
                               }}
                             />
                           )}
@@ -157,8 +157,8 @@ export default function ConvocazioniTable({
                                   bgcolor: "secondary.main",
                                   color: "secondary.contrastText",
                                   fontWeight: 700,
-                                  fontSize: "0.58rem",
-                                  height: 16,
+                                  fontSize: "0.75rem",
+                                  height: 20,
                                   "& .MuiChip-icon": { color: "secondary.contrastText" },
                                 }}
                               />
@@ -169,7 +169,7 @@ export default function ConvocazioniTable({
                               label={row.fromTeam}
                               size="small"
                               variant="outlined"
-                              sx={{ fontWeight: 600, fontSize: "0.58rem", height: 16 }}
+                              sx={{ fontWeight: 600, fontSize: "0.75rem", height: 20 }}
                             />
                           )}
                           {elsewhere && (
@@ -181,8 +181,8 @@ export default function ConvocazioniTable({
                                   bgcolor: "action.selected",
                                   color: "text.secondary",
                                   fontWeight: 700,
-                                  fontSize: "0.58rem",
-                                  height: 16,
+                                  fontSize: "0.75rem",
+                                  height: 20,
                                 }}
                               />
                             </Tooltip>
@@ -196,8 +196,8 @@ export default function ConvocazioniTable({
                               bgcolor: ROLE_COLORS[role],
                               color: "common.white",
                               fontWeight: 600,
-                              fontSize: "0.58rem",
-                              height: 14,
+                              fontSize: "0.75rem",
+                              height: 20,
                               mt: 0.25,
                             }}
                           />
@@ -260,7 +260,7 @@ export default function ConvocazioniTable({
                               : "text.secondary",
                           fontWeight: 700,
                           height: 20,
-                          fontSize: "0.72rem",
+                          fontSize: "0.75rem",
                         }}
                       />
                     )}

@@ -72,7 +72,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                 <Chip
                   label={groups.get(k)?.length ?? 0}
                   size="small"
-                  sx={{ height: 18, fontSize: 11, fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: 12, fontWeight: 700 }}
                 />
               </Box>
             }
@@ -102,7 +102,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                 label={p.teamName}
                 size="small"
                 variant="outlined"
-                sx={{ height: 17, fontSize: 10, fontWeight: 600, mt: 0.25 }}
+                sx={{ height: 20, fontSize: 12, fontWeight: 600, mt: 0.25 }}
               />
             </Box>
             <Button

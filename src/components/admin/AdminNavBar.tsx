@@ -67,7 +67,7 @@ export default function AdminNavBar() {
                 fontWeight: 800,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                fontSize: "0.65rem",
+                fontSize: "0.75rem",
                 color: "adminBand.accent",
                 display: { xs: "none", md: "block" },
               }}

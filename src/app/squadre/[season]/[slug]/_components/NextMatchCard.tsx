@@ -107,7 +107,7 @@ export default async function NextMatchCard({
                 color: contrastText(teamColor),
                 px: 1,
                 py: 0.4,
-                fontSize: "0.62rem",
+                fontSize: "0.75rem",
                 fontWeight: 800,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -129,7 +129,7 @@ export default async function NextMatchCard({
               </Typography>
               <Typography
                 sx={{
-                  fontSize: "0.62rem",
+                  fontSize: "0.75rem",
                   fontWeight: 800,
                   color: "text.secondary",
                   letterSpacing: "0.1em",
@@ -171,8 +171,8 @@ export default async function NextMatchCard({
                   bgcolor: "common.white",
                   color: "grey.900",
                   fontWeight: 800,
-                  fontSize: "0.6rem",
-                  height: 18,
+                  fontSize: "0.75rem",
+                  height: 20,
                 }}
               />
             </Box>
@@ -232,8 +232,8 @@ export default async function NextMatchCard({
                     bgcolor: teamColor,
                     color: contrastText(teamColor),
                     fontWeight: 800,
-                    fontSize: "0.6rem",
-                    height: 18,
+                    fontSize: "0.75rem",
+                    height: 20,
                     letterSpacing: "0.04em",
                   }}
                 />
@@ -263,7 +263,7 @@ export default async function NextMatchCard({
             )}
             <Typography
               sx={{
-                fontSize: "0.6rem",
+                fontSize: "0.75rem",
                 fontWeight: 800,
                 color: "common.white",
                 textTransform: "uppercase",
@@ -322,7 +322,7 @@ export default async function NextMatchCard({
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
-                fontSize: "0.6rem",
+                fontSize: "0.75rem",
               }}
             >
               Karibu
@@ -410,7 +410,7 @@ export default async function NextMatchCard({
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
-                fontSize: "0.6rem",
+                fontSize: "0.75rem",
               }}
             >
               {t("opponent")}
@@ -471,7 +471,7 @@ export default async function NextMatchCard({
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                     fontWeight: 700,
-                    fontSize: "0.62rem",
+                    fontSize: "0.75rem",
                   }}
                 >
                   {t("firstLeg")}
@@ -487,13 +487,13 @@ export default async function NextMatchCard({
                     py: 0.25,
                     borderRadius: 1,
                     fontWeight: 800,
-                    fontSize: "0.72rem",
+                    fontSize: "0.75rem",
                   }}
                 >
                   <Box
                     component="span"
                     sx={{
-                      fontSize: "0.62rem",
+                      fontSize: "0.75rem",
                       letterSpacing: "0.06em",
                       textTransform: "uppercase",
                       opacity: 0.95,
@@ -505,7 +505,7 @@ export default async function NextMatchCard({
                         ? t("lostShort")
                         : t("drawShort")}
                   </Box>
-                  <Box component="span" sx={{ opacity: 0.5, fontSize: "0.62rem" }}>
+                  <Box component="span" sx={{ opacity: 0.5, fontSize: "0.75rem" }}>
                     ·
                   </Box>
                   <Box

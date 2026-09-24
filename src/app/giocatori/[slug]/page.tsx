@@ -667,7 +667,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       bgcolor: ROLE_COLORS[player.sportRole],
                       color: "common.white",
                       fontWeight: 800,
-                      fontSize: "0.72rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 )}
@@ -690,7 +690,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       bgcolor: m.team.color ?? "text.primary",
                       color: contrastText(m.team.color),
                       fontWeight: 700,
-                      fontSize: "0.72rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 ))}
@@ -764,7 +764,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         <Box sx={{ lineHeight: 1 }}>
                           <Typography
                             sx={{
-                              fontSize: "0.62rem",
+                              fontSize: "0.75rem",
                               fontWeight: 800,
                               color: medalColorToken,
                               textTransform: "uppercase",
@@ -776,7 +776,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           </Typography>
                           <Typography
                             sx={{
-                              fontSize: "0.65rem",
+                              fontSize: "0.75rem",
                               fontWeight: 600,
                               color: "rgba(255,255,255,0.75)",
                             }}
@@ -795,7 +795,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         bgcolor: alpha(brandColor.white, 0.1),
                         color: "common.white",
                         fontWeight: 700,
-                        fontSize: "0.7rem",
+                        fontSize: "0.75rem",
                       }}
                     />
                   )}
@@ -852,7 +852,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "0.72rem",
+                        fontSize: "0.75rem",
                         fontWeight: 700,
                         color: "rgba(255,255,255,0.75)",
                       }}
@@ -874,7 +874,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "0.72rem",
+                        fontSize: "0.75rem",
                         fontWeight: 700,
                         color: "rgba(255,255,255,0.75)",
                       }}
@@ -1240,7 +1240,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                               fontWeight: 800,
                               textTransform: "uppercase",
                               letterSpacing: "0.06em",
-                              fontSize: "0.65rem",
+                              fontSize: "0.75rem",
                               display: "block",
                             }}
                           >
@@ -1337,7 +1337,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           label={`Stagione ${m.team.season}`}
                           size="small"
                           variant="outlined"
-                          sx={{ fontWeight: 600, fontSize: "0.7rem" }}
+                          sx={{ fontWeight: 600, fontSize: "0.75rem" }}
                         />
                       </Box>
                     </Paper>
@@ -1431,7 +1431,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                     backgroundColor: MATCH_RESULT_META[ms.match.result].color,
                                     color: "common.white",
                                     fontWeight: 700,
-                                    fontSize: "0.7rem",
+                                    fontSize: "0.75rem",
                                   }}
                                 />
                               )}
@@ -1514,7 +1514,7 @@ function StatItem({ label, value }: { label: string; value: number }) {
       <Typography
         variant="caption"
         color="text.secondary"
-        sx={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.05em" }}
+        sx={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em" }}
       >
         {label}
       </Typography>

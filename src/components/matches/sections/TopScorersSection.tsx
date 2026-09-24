@@ -25,7 +25,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
           letterSpacing: "0.08em",
           display: "block",
           mb: 1.5,
-          fontSize: "0.62rem",
+          fontSize: "0.75rem",
         }}
       >
         {t("topScorers")}
@@ -73,8 +73,8 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                     bgcolor: ROLE_COLORS[role],
                     color: "common.white",
                     fontWeight: 600,
-                    fontSize: "0.56rem",
-                    height: 14,
+                    fontSize: "0.75rem",
+                    height: 20,
                     mt: 0.5,
                   }}
                 />
@@ -94,7 +94,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                 variant="caption"
                 color="text.secondary"
                 fontWeight={600}
-                sx={{ fontSize: "0.62rem" }}
+                sx={{ fontSize: "0.75rem" }}
               >
                 {t("pointsUnit")}
               </Typography>

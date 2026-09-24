@@ -370,7 +370,7 @@ function SideColumn({
                 <Chip
                   label={`R${p.sportRole}`}
                   size="small"
-                  sx={{ height: 18, fontSize: 11, fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: 12, fontWeight: 700 }}
                 />
               )}
               <Box sx={{ flex: 1, minWidth: 0 }}>

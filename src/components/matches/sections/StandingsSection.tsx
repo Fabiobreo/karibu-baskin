@@ -37,7 +37,7 @@ export default function StandingsSection({
           variant="caption"
           color="text.secondary"
           fontWeight={700}
-          sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.62rem" }}
+          sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.75rem" }}
         >
           {t("groupStandings")}
           {groupName ? ` · ${groupName}` : ""}
@@ -48,7 +48,7 @@ export default function StandingsSection({
             sx={{
               color: "primary.onLight",
               fontWeight: 700,
-              fontSize: "0.68rem",
+              fontSize: "0.75rem",
               "&:hover": { textDecoration: "underline" },
             }}
           >
@@ -63,7 +63,7 @@ export default function StandingsSection({
               <TableCell
                 sx={{
                   fontWeight: 700,
-                  fontSize: "0.65rem",
+                  fontSize: "0.75rem",
                   color: "text.secondary",
                   py: 0.75,
                   width: 28,
@@ -71,7 +71,7 @@ export default function StandingsSection({
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.65rem", py: 0.75 }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.75 }}>
                 {tStandings("colTeam")}
               </TableCell>
               {(["colPlayed", "colWins", "colDraws", "colLosses"] as const).map((key) => (
@@ -80,7 +80,7 @@ export default function StandingsSection({
                   align="center"
                   sx={{
                     fontWeight: 700,
-                    fontSize: "0.65rem",
+                    fontSize: "0.75rem",
                     color: "text.secondary",
                     py: 0.75,
                     width: 28,
@@ -93,7 +93,7 @@ export default function StandingsSection({
                 align="center"
                 sx={{
                   fontWeight: 700,
-                  fontSize: "0.65rem",
+                  fontSize: "0.75rem",
                   color: "primary.onLight",
                   py: 0.75,
                   width: 36,
@@ -123,7 +123,7 @@ export default function StandingsSection({
                   {row.isOurs && (
                     <Box
                       component="span"
-                      sx={{ ml: 0.5, fontSize: "0.55rem", color: "primary.main" }}
+                      sx={{ ml: 0.5, fontSize: "0.75rem", color: "primary.main" }}
                     >
                       ●
                     </Box>

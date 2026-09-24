@@ -84,7 +84,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
             {relativeLabel(match.date, now, tCommon, dateLocale)}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.68rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
             {format(new Date(match.date), "d MMM · HH:mm", { locale: dateLocale })}
           </Typography>
         </Box>
@@ -135,7 +135,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           label={match.isHome ? tMatches("home") : tMatches("away")}
           size="small"
           variant="outlined"
-          sx={{ fontSize: "0.65rem", height: 22 }}
+          sx={{ fontSize: "0.75rem", height: 22 }}
         />
         <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
       </Paper>

@@ -270,7 +270,7 @@ export default function SessionCard({
                   bgcolor: "status.pending",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.68rem",
+                  fontSize: "0.75rem",
                 }}
               />
             )}
@@ -283,7 +283,7 @@ export default function SessionCard({
                   bgcolor: "status.closed",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.68rem",
+                  fontSize: "0.75rem",
                 }}
               />
             )}
@@ -294,7 +294,7 @@ export default function SessionCard({
                 bgcolor: muted ? "action.selected" : status.color,
                 color: muted ? "text.secondary" : status.labelColor,
                 fontWeight: 700,
-                fontSize: "0.68rem",
+                fontSize: "0.75rem",
               }}
             />
             {isStaff && (
@@ -462,7 +462,7 @@ export default function SessionCard({
                   href={href}
                   variant="contained"
                   size="small"
-                  sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4 }}
+                  sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {t("signUp")}
                 </Button>
@@ -485,7 +485,7 @@ export default function SessionCard({
                     onOpenRegistrations();
                   }}
                   disabled={openingRegistrations}
-                  sx={{ fontWeight: 700, fontSize: "0.72rem", py: 0.4 }}
+                  sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {openingRegistrations ? "Apertura..." : "Apri iscrizioni"}
                 </Button>
@@ -508,7 +508,7 @@ export default function SessionCard({
                     onCloseRegistrations();
                   }}
                   disabled={closingRegistrations}
-                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {closingRegistrations ? "Chiusura..." : "Chiudi iscrizioni"}
                 </Button>
@@ -519,7 +519,7 @@ export default function SessionCard({
                   size="small"
                   startIcon={<SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
                   onClick={() => setTeamsOpen(true)}
-                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {t("viewTeamsBtn")}
                 </Button>
@@ -535,7 +535,7 @@ export default function SessionCard({
                     onRemoveTeams?.();
                   }}
                   disabled={removingTeams}
-                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {removingTeams ? (
                     <CircularProgress size={13} color="inherit" />
@@ -561,7 +561,7 @@ export default function SessionCard({
                     onGenerateTeams?.();
                   }}
                   disabled={generating || s._count.registrations === 0}
-                  sx={{ fontWeight: 600, fontSize: "0.72rem", py: 0.4 }}
+                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {generating ? "Creazione..." : "Crea squadre"}
                 </Button>

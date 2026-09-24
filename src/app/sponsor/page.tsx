@@ -154,7 +154,7 @@ export default async function SponsorPage() {
                     <Chip
                       label={sponsorsContent[i].category}
                       size="small"
-                      sx={{ mb: 1, fontWeight: 600, fontSize: "0.68rem" }}
+                      sx={{ mb: 1, fontWeight: 600, fontSize: "0.75rem" }}
                     />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
                       <Typography variant="subtitle1" fontWeight={700} noWrap>

@@ -86,7 +86,7 @@ export default function GroupMatchInlineScore({
           minWidth: 0,
           px: 0.75,
           py: 0,
-          fontSize: "0.72rem",
+          fontSize: "0.75rem",
           fontWeight: 600,
           textTransform: "none",
           color: hasScore ? "text.primary" : "primary.main",

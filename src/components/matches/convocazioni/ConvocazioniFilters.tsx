@@ -37,7 +37,7 @@ export default function ConvocazioniFilters({
           variant={roleFilter === null ? "filled" : "outlined"}
           color={roleFilter === null ? "primary" : "default"}
           onClick={() => onRoleFilterChange(null)}
-          sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.72rem" }}
+          sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.75rem" }}
         />
         {ROLES.map((r) => (
           <Chip
@@ -48,7 +48,7 @@ export default function ConvocazioniFilters({
             sx={{
               fontWeight: 700,
               cursor: "pointer",
-              fontSize: "0.72rem",
+              fontSize: "0.75rem",
               bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
               color: roleFilter === r ? "common.white" : "text.primary",
               border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "transparent"}`,
@@ -73,7 +73,7 @@ export default function ConvocazioniFilters({
           onChange={(_, v) => v && onSortKeyChange(v as ConvocazioniSortKey)}
           sx={{
             "& .MuiToggleButton-root": {
-              fontSize: "0.7rem",
+              fontSize: "0.75rem",
               textTransform: "none",
               py: 0.25,
               px: 1,

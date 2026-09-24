@@ -468,7 +468,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   fontWeight: 700,
                   bgcolor: teamColor,
                   color: contrastText(teamColor),
-                  fontSize: "0.7rem",
+                  fontSize: "0.75rem",
                 }}
               />
               <Typography
@@ -517,7 +517,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       <Typography
                         sx={{
                           color: "common.white",
-                          fontSize: "0.7rem",
+                          fontSize: "0.75rem",
                           fontWeight: 700,
                           textTransform: "lowercase",
                         }}
@@ -546,7 +546,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         <Typography
                           sx={{
                             color: "common.white",
-                            fontSize: "0.7rem",
+                            fontSize: "0.75rem",
                             fontWeight: 700,
                             textTransform: "lowercase",
                           }}
@@ -572,7 +572,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       <Typography
                         sx={{
                           color: "common.white",
-                          fontSize: "0.7rem",
+                          fontSize: "0.75rem",
                           fontWeight: 700,
                           textTransform: "lowercase",
                         }}
@@ -658,7 +658,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       size="small"
                       variant={!includeFriendlies ? "filled" : "outlined"}
                       color={!includeFriendlies ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: "0.7rem" }}
+                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: "0.75rem" }}
                     />
                   </Link>
                   <Link
@@ -671,7 +671,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       size="small"
                       variant={includeFriendlies ? "filled" : "outlined"}
                       color={includeFriendlies ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: "0.7rem" }}
+                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: "0.75rem" }}
                     />
                   </Link>
                 </Box>

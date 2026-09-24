@@ -160,7 +160,7 @@ export default function LinkRequestsSection() {
                       bgcolor: ROLE_COLORS[req.child.sportRole],
                       color: "common.white",
                       fontWeight: 700,
-                      fontSize: "0.68rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 )}

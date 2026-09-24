@@ -33,7 +33,7 @@ export default function LanguageSwitcher({ onDark = false }: LanguageSwitcherPro
             ...TOUCH_TARGET_MIN,
             px: 1,
             py: 0,
-            fontSize: "0.72rem",
+            fontSize: "0.75rem",
             fontWeight: 700,
             letterSpacing: "0.04em",
             lineHeight: 1,

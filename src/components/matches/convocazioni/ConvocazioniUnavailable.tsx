@@ -9,7 +9,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
   if (rows.length === 0) return null;
 
   const chipSx = {
-    fontSize: "0.72rem",
+    fontSize: "0.75rem",
     height: 22,
     fontWeight: 600,
     bgcolor: (theme: Theme) => alpha(theme.palette.match.loss, 0.06),
@@ -46,8 +46,8 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                   bgcolor: ROLE_COLORS[r],
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.68rem",
-                  height: 18,
+                  fontSize: "0.75rem",
+                  height: 20,
                   minWidth: 32,
                 }}
               />
@@ -74,8 +74,8 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                 bgcolor: "grey.400",
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.68rem",
-                height: 18,
+                fontSize: "0.75rem",
+                height: 20,
                 minWidth: 32,
               }}
             />

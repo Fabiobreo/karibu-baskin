@@ -353,7 +353,7 @@ export default function AllenamientoHero({
                       bgcolor: "status.pending",
                       color: "common.white",
                       fontWeight: 700,
-                      fontSize: "0.72rem",
+                      fontSize: "0.75rem",
                       letterSpacing: 0.5,
                     }}
                   />
@@ -368,7 +368,7 @@ export default function AllenamientoHero({
                     bgcolor: "status.closed",
                     color: "common.white",
                     fontWeight: 700,
-                    fontSize: "0.72rem",
+                    fontSize: "0.75rem",
                     letterSpacing: 0.5,
                   }}
                 />
@@ -381,7 +381,7 @@ export default function AllenamientoHero({
                 bgcolor: status.bgcolor,
                 color: status.color,
                 fontWeight: 700,
-                fontSize: "0.72rem",
+                fontSize: "0.75rem",
                 letterSpacing: 0.5,
               }}
             />
@@ -399,7 +399,7 @@ export default function AllenamientoHero({
                   bgcolor: "warning.light",
                   color: "warning.contrastText",
                   fontWeight: 600,
-                  fontSize: "0.7rem",
+                  fontSize: "0.75rem",
                 }}
               />
             )}
@@ -415,7 +415,7 @@ export default function AllenamientoHero({
                   bgcolor: "success.light",
                   color: "success.contrastText",
                   fontWeight: 600,
-                  fontSize: "0.7rem",
+                  fontSize: "0.75rem",
                 }}
               />
             )}

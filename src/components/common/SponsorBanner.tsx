@@ -138,7 +138,7 @@ export default function SponsorBanner() {
             fontWeight: 700,
             letterSpacing: "0.08em",
             textTransform: "uppercase",
-            fontSize: "0.6rem",
+            fontSize: "0.75rem",
             display: { xs: "none", sm: "block" },
           }}
         >
@@ -290,7 +290,7 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
         variant="caption"
         sx={{
           color: "text.secondary",
-          fontSize: "0.68rem",
+          fontSize: "0.75rem",
           fontWeight: 500,
           maxWidth: 110,
           overflow: "hidden",

@@ -190,7 +190,7 @@ export default async function IlBaskinPage() {
                       backgroundColor: "rgba(255,255,255,0.2)",
                       color: "common.white",
                       fontWeight: 600,
-                      fontSize: "0.7rem",
+                      fontSize: "0.75rem",
                     }}
                   />
                 </Box>
@@ -230,7 +230,7 @@ export default async function IlBaskinPage() {
                               display: "block",
                               textTransform: "uppercase",
                               letterSpacing: "0.06em",
-                              fontSize: "0.65rem",
+                              fontSize: "0.75rem",
                             }}
                           >
                             {info.label}

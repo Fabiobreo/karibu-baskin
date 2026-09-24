@@ -38,7 +38,7 @@ export default function HeadToHeadSection({
           letterSpacing: "0.08em",
           display: "block",
           mb: 1.5,
-          fontSize: "0.62rem",
+          fontSize: "0.75rem",
         }}
       >
         {t("headToHead", { opponentName })}
@@ -63,7 +63,7 @@ export default function HeadToHeadSection({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ minWidth: 88, fontWeight: 600, fontSize: "0.72rem" }}
+                sx={{ minWidth: 88, fontWeight: 600, fontSize: "0.75rem" }}
               >
                 {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
               </Typography>
@@ -82,8 +82,8 @@ export default function HeadToHeadSection({
                     bgcolor: resMeta.color,
                     color: "common.white",
                     fontWeight: 700,
-                    fontSize: "0.62rem",
-                    height: 18,
+                    fontSize: "0.75rem",
+                    height: 20,
                   }}
                 />
               )}
@@ -101,7 +101,7 @@ export default function HeadToHeadSection({
                 ) : (
                   <FlightIcon sx={{ fontSize: 13 }} />
                 )}
-                <Typography variant="caption" sx={{ fontSize: "0.68rem" }}>
+                <Typography variant="caption" sx={{ fontSize: "0.75rem" }}>
                   {m.isHome ? t("home") : t("away")}
                 </Typography>
               </Box>
