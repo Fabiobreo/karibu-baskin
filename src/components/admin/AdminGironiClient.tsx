@@ -27,6 +27,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { contrastText } from "@/lib/colorUtils";
@@ -59,7 +60,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
   });
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(0);
-  const [rpp, setRpp] = useState(25);
+  const [rpp, setRpp] = useRowsPerPage("groups", [10, 25, 50], 25);
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Box,
   Table,
@@ -52,7 +53,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
   const tCommon = useTranslations("common");
   const { sportRoleLabel } = useEntityLabels();
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useRowsPerPage("match-stats", [10, 25, 50], 10);
 
   const COLS: { key: keyof MatchStatRow; label: string; title: string; primary?: boolean }[] = [
     { key: "points", label: t("statPoints"), title: t("statPointsTitle"), primary: true },

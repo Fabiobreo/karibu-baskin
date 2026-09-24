@@ -58,8 +58,10 @@ export async function POST(
   const body = await req.json().catch(() => ({}));
   const numTeams: 2 | 3 = body.numTeams === 3 ? 3 : 2;
 
+  // Chi è segnato assente non gioca: conta per le squadre ricreate a
+  // allenamento finito, dalla pagina "da completare".
   const registrations = await prisma.registration.findMany({
-    where: { sessionId },
+    where: { sessionId, NOT: { attended: false } },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
     include: {
       user: { select: { gender: true, ratingMu: true } },
@@ -98,11 +100,15 @@ export async function POST(
   });
 
   // Notifica push solo agli iscritti all'allenamento (fire-and-forget)
+  // Solo se l'allenamento non è finito: squadre ricostruite dopo (pagina "da
+  // completare") non sono una novità per nessuno.
   const trainingSession = await prisma.trainingSession.findUnique({
     where: { id: sessionId },
-    select: { title: true, dateSlug: true },
+    select: { title: true, dateSlug: true, date: true, endTime: true },
   });
-  if (trainingSession) {
+  const sessionEnded =
+    !!trainingSession && (trainingSession.endTime ?? trainingSession.date) < new Date();
+  if (trainingSession && !sessionEnded) {
     // Raccoglie gli userId degli iscritti come atleti (non allenatori)
     const registeredUserIds = registrations
       .filter((r) => !r.registeredAsCoach && r.userId)

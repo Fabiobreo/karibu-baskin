@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Avatar,
   Box,
@@ -62,7 +63,7 @@ export default function ChildrenTab({
   const [sortBy, setSortBy] = useState<ChildSortColumn>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useRowsPerPage("children", [10, 25, 50, 100], 25);
 
   const filtered = useMemo(() => {
     let result = childRows;

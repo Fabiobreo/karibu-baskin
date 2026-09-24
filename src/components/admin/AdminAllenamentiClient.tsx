@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import TrainingMatchResults from "@/components/training/TrainingMatchResults";
+import AdminSessionTeams from "@/components/admin/AdminSessionTeams";
 import ManageParticipantsDialog, {
   type ParticipantRegistration,
 } from "@/components/admin/ManageParticipantsDialog";
@@ -303,6 +304,22 @@ function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => 
             anche sugli allenamenti con zero presenze. */}
         {hasAthletes && (
           <Box sx={{ p: { xs: 2, sm: 2.5 }, pt: { xs: 0, md: 2.5 } }}>
+            {/* Squadre prima dei risultati: le partitelle si registrano per
+                squadra, e qui si creano o si correggono. */}
+            <Box sx={{ mb: 3 }}>
+              <AdminSessionTeams
+                sessionId={s.id}
+                sessionTitle={s.title}
+                sessionDate={s.date}
+                initialTeams={s.teams}
+                athletes={s.athletes
+                  .filter((a) => a.attended !== false)
+                  .map(({ id, name, role }) => ({ id, name, role }))}
+                coaches={s.registrations
+                  .filter((r) => r.registeredAsCoach)
+                  .map((r) => ({ id: r.id, name: r.name }))}
+              />
+            </Box>
             <TrainingMatchResults sessionId={s.id} isStaff={true} teams={s.teams} />
           </Box>
         )}

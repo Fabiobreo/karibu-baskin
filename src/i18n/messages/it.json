@@ -490,7 +490,9 @@
     "competitiveHistory": "Storico agonistico",
     "matchStats": "Statistiche per partita",
     "noStats": "Nessuna statistica disponibile",
-    "noStatsDesc": "Le statistiche agonistiche verranno pubblicate al termine delle partite."
+    "noStatsDesc": "Le statistiche agonistiche verranno pubblicate al termine delle partite.",
+    "staffOnlyProfile": "Questo profilo non è pubblico: lo vedi perché fai parte dello staff. Per tutti gli altri la pagina non esiste.",
+    "children": "Figli"
   },
   "scorers": {
     "pageTitle": "Classifica interna",
@@ -710,6 +712,9 @@
     "publicProfile": "Vedi il tuo profilo pubblico",
     "trainingAttendance": "Presenze agli allenamenti",
     "noAthleteData": "Nessun dato atleta disponibile. L'admin può impostare ruolo, genere e data di nascita.",
+    "myParents": "I miei genitori",
+    "myParentsDesc": "Sono collegati al tuo profilo e possono iscriverti agli allenamenti al posto tuo.",
+    "parentNoName": "Genitore",
     "myChildren": "I miei figli",
     "linkChildDesc": "Collega il profilo di tuo figlio/a per iscriverlo agli allenamenti.",
     "downloadData": "Scarica i miei dati",
@@ -1260,6 +1265,10 @@
     "editorMoveHint": "Tocca un giocatore per spostarlo",
     "editorMoveTo": "Sposta qui",
     "editorNoPlayers": "Nessun giocatore",
+    "teamsCreateManual": "Oppure componile a mano",
+    "editorUnassigned": "Da assegnare",
+    "editorRemove": "Togli dalla squadra",
+    "editorAllAssigned": "Tutti gli iscritti sono in una squadra",
     "editorDone": "Fatto",
     "teamCoaches": "Allenatori:",
     "playerCount": "{count, plural, one {# giocatore} other {# giocatori}}",

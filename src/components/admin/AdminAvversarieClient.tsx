@@ -21,6 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import OpposingTeamEditDialog, {
@@ -38,7 +39,7 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
   const [form, setForm] = useState({ name: "", city: "" });
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(0);
-  const [rpp, setRpp] = useState(25);
+  const [rpp, setRpp] = useRowsPerPage("opponents", [10, 25, 50], 25);
   const [editTeam, setEditTeam] = useState<OpposingTeam | null>(null);
   const { showToast } = useToast();
   const { openConfirm, ConfirmDialog } = useConfirmDialog();

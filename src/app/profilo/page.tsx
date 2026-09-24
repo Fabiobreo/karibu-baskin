@@ -11,6 +11,7 @@ import {
   Paper,
   Chip,
   Stack,
+  Avatar,
   Button,
   Badge,
   Skeleton,
@@ -106,7 +107,15 @@ export default async function ProfiloPage() {
         },
       },
       childAccount: {
-        select: { _count: { select: { registrations: true } } },
+        select: {
+          _count: { select: { registrations: true } },
+          // Chi è figlio di qualcuno (scheda figlio legata all'account) vede
+          // i suoi genitori nella tab Famiglia.
+          guardians: {
+            orderBy: { createdAt: "asc" as const },
+            select: { user: { select: { id: true, name: true, image: true, customImage: true } } },
+          },
+        },
       },
       sportRoleHistory: {
         orderBy: { changedAt: "desc" },
@@ -423,6 +432,37 @@ export default async function ProfiloPage() {
     </Paper>
   ) : null;
 
+  // Genitori di chi è figlio (tab Famiglia, per qualunque ruolo): solo nome e
+  // foto, lo stesso che la famiglia vede già dall'altra parte.
+  const myParents = user.childAccount?.guardians.map((g) => g.user) ?? [];
+  const parentsTab =
+    myParents.length > 0 ? (
+      <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
+        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+          {t("myParents")}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {t("myParentsDesc")}
+        </Typography>
+        <Stack spacing={1.5}>
+          {myParents.map((p) => (
+            <Box key={p.id} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar
+                src={p.customImage ?? p.image ?? undefined}
+                alt={p.name ?? ""}
+                sx={{ width: 40, height: 40 }}
+              >
+                {p.name?.[0]?.toUpperCase()}
+              </Avatar>
+              <Typography variant="body1" fontWeight={600}>
+                {p.name ?? t("parentNoName")}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+      </Paper>
+    ) : null;
+
   // Badge dei figli (tab Famiglia). Senza `emptyLabel` BadgeShowcase non
   // mostra nulla per un figlio senza badge né traguardi vicini.
   const childBadgesTab =
@@ -512,8 +552,9 @@ export default async function ProfiloPage() {
         <ProfileTabs
           profile={profileTab}
           family={
-            familyTab || childBadgesTab ? (
+            parentsTab || familyTab || childBadgesTab ? (
               <>
+                {parentsTab}
                 {familyTab}
                 {childBadgesTab}
               </>

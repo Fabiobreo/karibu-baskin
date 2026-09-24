@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from "react";
+import { writeRowsPerPageCookie } from "@/lib/rowsPerPage";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Box,
@@ -545,6 +546,7 @@ export default function AdminUserList({
             onRowsPerPageChange={(e) => {
               const newLimit = parseInt(e.target.value);
               setRowsPerPage(newLimit);
+              writeRowsPerPageCookie("users", newLimit);
               setPage(0);
               if (serverDriven) pushFilters({ limit: newLimit, page: 1 });
             }}

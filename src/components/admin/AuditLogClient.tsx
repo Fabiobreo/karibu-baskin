@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Box,
   Typography,
@@ -297,7 +298,7 @@ export default function AuditLogClient() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useRowsPerPage("audit", [10, 25, 50, 100], 25);
 
   // Dialog dettagli
   const [detail, setDetail] = useState<AuditItem | null>(null);

@@ -68,6 +68,13 @@ interface Props {
    *  falso quando invece esistono e semplicemente non le stiamo mostrando. */
   restricted?: false | "anonymous" | "guest";
   onTeamsGenerated: (teams: TeamsData) => void;
+  /** Tutti gli atleti iscritti (non allenatori). Se presente, l'editor mostra
+   *  "Da assegnare" con chi non sta in nessuna squadra, e si può togliere un
+   *  giocatore da una squadra: serve a comporre le squadre a mano. */
+  athletes?: TeamAthlete[];
+  /** Se presente, il pannello di creazione offre anche "Componi a mano":
+   *  squadre vuote e subito in modifica. */
+  onEnterEditMode?: () => void;
 }
 
 // ── Badge ruolo (riutilizzato in entrambi i layout) ───────────────────────────
@@ -337,19 +344,28 @@ export function AlignedTeamGrid({
 // ── Team Editor (spostamento manuale, solo staff) ─────────────────────────────
 
 type TeamKey = "teamA" | "teamB" | "teamC";
+/** "pool" = gli iscritti che non stanno in nessuna squadra. */
+type SlotKey = TeamKey | "pool";
 
 interface TeamEditorProps {
   teams: TeamsData;
   sessionId: string;
+  athletes?: TeamAthlete[];
   onTeamsUpdated: (teams: TeamsData) => void;
   onDone: () => void;
 }
 
-function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: TeamEditorProps) {
+function TeamEditor({
+  teams: initialTeams,
+  sessionId,
+  athletes,
+  onTeamsUpdated,
+  onDone,
+}: TeamEditorProps) {
   const t = useTranslations("trainings");
   const { teamColorLabel } = useEntityLabels();
   const [localTeams, setLocalTeams] = useState<TeamsData>(initialTeams);
-  const [selected, setSelected] = useState<{ id: string; fromKey: TeamKey } | null>(null);
+  const [selected, setSelected] = useState<{ id: string; fromKey: SlotKey } | null>(null);
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
 
@@ -357,21 +373,24 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
     localTeams.numTeams === 3 ? ["teamA", "teamB", "teamC"] : ["teamA", "teamB"];
   const meta = TEAM_META.slice(0, teamKeys.length);
 
-  async function moveTo(toKey: TeamKey) {
+  const assignedIds = new Set(teamKeys.flatMap((k) => (localTeams[k] ?? []).map((a) => a.id)));
+  const pool = athletes?.filter((a) => !assignedIds.has(a.id)) ?? [];
+  const listOf = (key: SlotKey) => (key === "pool" ? pool : (localTeams[key] ?? []));
+
+  async function moveTo(toKey: SlotKey) {
     if (!selected || saving) return;
     const { id, fromKey } = selected;
     if (fromKey === toKey) return;
 
-    const fromList = localTeams[fromKey] ?? [];
+    const fromList = listOf(fromKey);
     const athlete = fromList.find((a) => a.id === id);
     if (!athlete) return;
 
+    // "Da assegnare" non si salva: è chi manca dalle squadre.
     const prevTeams = localTeams;
-    const newTeams: TeamsData = {
-      ...localTeams,
-      [fromKey]: fromList.filter((a) => a.id !== id),
-      [toKey]: [...(localTeams[toKey] ?? []), athlete],
-    };
+    const newTeams: TeamsData = { ...localTeams };
+    if (fromKey !== "pool") newTeams[fromKey] = fromList.filter((a) => a.id !== id);
+    if (toKey !== "pool") newTeams[toKey] = [...(localTeams[toKey] ?? []), athlete];
 
     setLocalTeams(newTeams);
     setSelected(null);
@@ -406,6 +425,80 @@ function TeamEditor({ teams: initialTeams, sessionId, onTeamsUpdated, onDone }: 
       </Typography>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        {athletes && (
+          <Paper variant="outlined" sx={{ overflow: "hidden" }}>
+            <Box
+              sx={{
+                px: 2,
+                py: 1,
+                bgcolor: "action.hover",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                minHeight: 42,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography variant="subtitle2" fontWeight={700}>
+                  {t("editorUnassigned")}
+                </Typography>
+                <Chip
+                  label={pool.length}
+                  size="small"
+                  sx={{ height: 18, fontSize: "0.65rem", fontWeight: 700 }}
+                />
+              </Box>
+              {!!selected && selected.fromKey !== "pool" && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  disabled={saving}
+                  onClick={() => moveTo("pool")}
+                  sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.25, minWidth: 90 }}
+                >
+                  {saving ? <CircularProgress size={14} color="inherit" /> : t("editorRemove")}
+                </Button>
+              )}
+            </Box>
+            <Box sx={{ p: 1.5, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+              {ROLES.flatMap((role) =>
+                pool
+                  .filter((a) => a.role === role)
+                  .map((a) => {
+                    const isSelected = selected?.id === a.id;
+                    return (
+                      <Chip
+                        key={a.id}
+                        label={a.name}
+                        size="small"
+                        disabled={saving}
+                        onClick={() =>
+                          setSelected(isSelected ? null : { id: a.id, fromKey: "pool" })
+                        }
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: "0.78rem",
+                          bgcolor: isSelected ? "text.primary" : `${ROLE_COLORS[role]}22`,
+                          color: isSelected ? "background.paper" : "text.primary",
+                          border: `1px solid ${ROLE_COLORS[role]}`,
+                          cursor: "pointer",
+                          "&:hover": {
+                            bgcolor: isSelected ? "text.primary" : `${ROLE_COLORS[role]}44`,
+                          },
+                        }}
+                      />
+                    );
+                  })
+              )}
+              {pool.length === 0 && (
+                <Typography variant="caption" color="text.disabled" sx={{ px: 0.5 }}>
+                  {t("editorAllAssigned")}
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        )}
+
         {teamKeys.map((key, i) => {
           const teamList = localTeams[key] ?? [];
           const m = meta[i];
@@ -530,6 +623,8 @@ export default function TeamDisplay({
   onTeamsRetry,
   restricted = false,
   onTeamsGenerated,
+  athletes,
+  onEnterEditMode,
 }: Props) {
   const t = useTranslations("trainings");
   const [generating, setGenerating] = useState(false);
@@ -555,6 +650,37 @@ export default function TeamDisplay({
       } else {
         const err = await res.json().catch(() => ({}));
         showToast({ message: err.error ?? "Errore nella creazione", severity: "error" });
+      }
+    } catch {
+      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  // Squadre vuote salvate subito, poi l'editor: lo staff le compone a mano
+  // spostando i giocatori da "Da assegnare".
+  async function handleCreateEmpty() {
+    setGenerating(true);
+    const empty: TeamsData = {
+      teamA: [],
+      teamB: [],
+      ...(numTeams === 3 ? { teamC: [] } : {}),
+      coaches: coaches ?? [],
+      numTeams,
+      generated: true,
+    };
+    try {
+      const res = await fetch(`/api/teams/${sessionId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(empty),
+      });
+      if (res.ok) {
+        onTeamsGenerated(await res.json());
+        onEnterEditMode?.();
+      } else {
+        showToast({ message: "Errore nella creazione", severity: "error" });
       }
     } catch {
       showToast({ message: "Errore di rete, riprova", severity: "error" });
@@ -664,6 +790,17 @@ export default function TeamDisplay({
             {generating ? t("teamsCreating") : t("teamsCreateBtn")}
           </Button>
 
+          {onEnterEditMode && (
+            <Button
+              variant="text"
+              size="small"
+              onClick={handleCreateEmpty}
+              disabled={generating || !registrationIds?.length}
+            >
+              {t("teamsCreateManual")}
+            </Button>
+          )}
+
           {!registrationIds?.length && (
             <Typography variant="caption" color="text.disabled">
               {t("teamsNoAthletes")}
@@ -728,6 +865,7 @@ export default function TeamDisplay({
         <TeamEditor
           teams={teams}
           sessionId={sessionId}
+          athletes={athletes}
           onTeamsUpdated={(t) => onTeamsGenerated(t)}
           onDone={() => onExitEditMode?.()}
         />

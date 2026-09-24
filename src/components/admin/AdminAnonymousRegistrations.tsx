@@ -37,6 +37,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useState, useTransition } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter } from "next/navigation";
 import { ROLE_COLORS, sportRoleLabel, SPORT_ROLE_VARIANT_LABELS } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
@@ -108,7 +109,11 @@ export default function AdminAnonymousRegistrations({
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useRowsPerPage(
+    "anonymous-registrations",
+    [5, 10, 25, 50],
+    5
+  );
   const { showToast } = useToast();
 
   if (groups.length === 0) return null;

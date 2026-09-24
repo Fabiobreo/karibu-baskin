@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
 import AdminAllenamentiClient from "@/components/admin/AdminAllenamentiClient";
+import AdminUpcomingSessions from "@/components/admin/AdminUpcomingSessions";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { Alert } from "@mui/material";
+import { Alert, Typography } from "@mui/material";
 import MuiLink from "@mui/material/Link";
 import type { Metadata } from "next";
 
@@ -12,25 +13,45 @@ export const revalidate = 0;
 export default async function AdminAllenamentiPage() {
   const now = new Date();
 
-  const rawSessions = await prisma.trainingSession.findMany({
-    where: { date: { lt: now }, managedAt: null },
-    orderBy: { date: "desc" },
-    include: {
-      registrations: {
-        select: {
-          id: true,
-          name: true,
-          role: true,
-          attended: true,
-          registeredAsCoach: true,
-          userId: true,
-          childId: true,
-        },
-        orderBy: [{ role: "asc" }, { createdAt: "asc" }],
-      },
-      matchResults: { select: { matchup: true } },
+  const registrationsSelect = {
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      attended: true,
+      registeredAsCoach: true,
+      userId: true,
+      childId: true,
     },
-  });
+    orderBy: [{ role: "asc" as const }, { createdAt: "asc" as const }],
+  };
+
+  // Le due liste sono indipendenti: in parallelo (Neon a freddo).
+  const [rawSessions, upcomingSessions] = await Promise.all([
+    prisma.trainingSession.findMany({
+      where: { date: { lt: now }, managedAt: null },
+      orderBy: { date: "desc" },
+      include: {
+        registrations: registrationsSelect,
+        matchResults: { select: { matchup: true } },
+      },
+    }),
+    // Gli stessi "prossimi" di /allenamenti (data futura): lo staff iscrive da
+    // qui chi non è riuscito a farlo da solo.
+    prisma.trainingSession.findMany({
+      where: { date: { gt: now } },
+      orderBy: { date: "asc" },
+      select: {
+        id: true,
+        title: true,
+        date: true,
+        dateSlug: true,
+        registrations: registrationsSelect,
+      },
+    }),
+  ]);
+
+  const upcoming = upcomingSessions.map((s) => ({ ...s, date: s.date.toISOString() }));
 
   const sessions = rawSessions.map((s) => {
     const teams = parseTeamsData(s.teams);
@@ -67,7 +88,7 @@ export default async function AdminAllenamentiPage() {
     <>
       <AdminPageHeader
         title="Allenamenti da completare"
-        subtitle="Sessioni passate ancora aperte: segna le presenze, registra le partitelle e chiudi."
+        subtitle="Iscrivi chi non ci è riuscito ai prossimi allenamenti; per quelli passati segna le presenze, registra le partitelle e chiudi."
         breadcrumb={[
           { label: "Dashboard", href: "/admin" },
           { label: "Allenamenti da completare" },
@@ -84,8 +105,8 @@ export default async function AdminAllenamentiPage() {
           "& .MuiAlert-icon": { color: "primary.onLight" },
         }}
       >
-        Qui concludi gli allenamenti passati: presenze e risultati delle partitelle. Per creare o
-        modificare gli allenamenti usa il{" "}
+        Qui iscrivi le persone ai prossimi allenamenti e concludi quelli passati: presenze e
+        risultati delle partitelle. Per creare o modificare gli allenamenti usa il{" "}
         <MuiLink href="/calendario" fontWeight={700}>
           Calendario
         </MuiLink>{" "}
@@ -95,6 +116,18 @@ export default async function AdminAllenamentiPage() {
         </MuiLink>
         .
       </Alert>
+      <AdminUpcomingSessions sessions={upcoming} />
+      {upcoming.length > 0 && (
+        <Typography
+          variant="overline"
+          component="h2"
+          fontWeight={800}
+          color="text.secondary"
+          sx={{ display: "block", letterSpacing: "0.1em", mb: 2 }}
+        >
+          Da completare · {sessions.length}
+        </Typography>
+      )}
       <AdminAllenamentiClient sessions={sessions} />
     </>
   );

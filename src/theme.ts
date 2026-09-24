@@ -444,6 +444,14 @@ function buildComponents(mode: "light" | "dark") {
         },
       },
     },
+    MuiInputBase: {
+      styleOverrides: {
+        // L'anello globale `:focus-visible` colpiva l'<input> dentro il campo:
+        // un rettangolo nero (l'anello interno di contrasto) dentro il bordo
+        // arancione. Il campo segnala il focus col suo bordo, vedi sopra.
+        input: { "&:focus-visible": { outline: "none", boxShadow: "none" } },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {

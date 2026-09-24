@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import HistoryIcon from "@mui/icons-material/History";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -547,11 +548,20 @@ export default function UserEditDialog({
         {row.kind === "user" && (
           <Link
             href={`/admin/utenti/nuovo-figlio?parentId=${row.id}`}
-            style={{ textDecoration: "none", marginRight: "auto" }}
+            style={{ textDecoration: "none" }}
           >
             <Button startIcon={<ChildCareIcon />}>Aggiungi figlio</Button>
           </Link>
         )}
+        {/* Profilo giocatore: lo staff lo apre anche quando non è pubblico
+            (genitori che non giocano), e da lì raggiunge i figli. */}
+        <Link
+          href={`/giocatori/${row.id}`}
+          target="_blank"
+          style={{ textDecoration: "none", marginRight: "auto" }}
+        >
+          <Button startIcon={<OpenInNewIcon />}>Profilo</Button>
+        </Link>
         <Button onClick={onClose}>Annulla</Button>
         <Button variant="contained" size="large" onClick={handleSave} disabled={saving}>
           {saving ? "Salvataggio..." : "Salva"}

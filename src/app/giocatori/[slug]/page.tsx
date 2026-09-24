@@ -15,6 +15,7 @@ import {
   Breadcrumbs,
   Link as MuiLink,
   Button,
+  Alert,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { brandColor, heroMedal } from "@/lib/heroStyles";
@@ -37,8 +38,9 @@ import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import { slugify } from "@/lib/slugUtils";
 import { isMinor, isMinorChild } from "@/lib/minors";
 import { auth } from "@/lib/authjs";
-import { isMemberRole } from "@/lib/authRoles";
+import { hasRole, isMemberRole } from "@/lib/authRoles";
 import { userHasPublicProfile } from "@/lib/publicProfile";
+import { guardianOf } from "@/lib/guardians";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
@@ -67,13 +69,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
   // Stessa regola della pagina: un utente senza profilo pubblico (GUEST, o
   // genitore che non gioca) non esiste, e lo slug può valere per un figlio.
-  const userRow =
-    rawUser && userHasPublicProfile({ ...rawUser, matchesPlayed: rawUser.matchStats.length })
-      ? rawUser
-      : null;
-  const childRow = userRow
+  const rawUserIsPublic =
+    !!rawUser && userHasPublicProfile({ ...rawUser, matchesPlayed: rawUser.matchStats.length });
+  const childRow = rawUserIsPublic
     ? null
     : await prisma.child.findFirst({ where: { OR: [{ slug }, { id: slug }] }, select: metaSelect });
+  // Lo staff apre anche i profili non pubblici (vedi la pagina): per lui il
+  // titolo è il nome, per tutti gli altri resta "non trovato".
+  const staffOnly =
+    !!rawUser &&
+    !rawUserIsPublic &&
+    !childRow &&
+    hasRole((await auth())?.user?.appRole ?? "GUEST", "COACH");
+  const userRow = rawUserIsPublic || staffOnly ? rawUser : null;
   const p = userRow ?? childRow;
   if (!p) {
     return buildMetadata({
@@ -122,7 +130,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     image: "own",
     // Non vengono indicizzati né i profili dei figli (potenzialmente minori)
     // né quelli dei minorenni accertati — anche se hanno un account utente.
-    noindex: isChild || isMinor(p.birthDate),
+    noindex: isChild || staffOnly || isMinor(p.birthDate),
   });
 }
 
@@ -174,6 +182,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     badgeI18n,
     userRow,
     childMatch,
+    viewerSession,
   ] = await Promise.all([
     getTranslations("players"),
     getTranslations("teams"),
@@ -209,6 +218,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         ...relationSelect,
       },
     }),
+    auth(),
   ]);
   const dateLocale = getDateFnsLocale(locale);
 
@@ -218,13 +228,20 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     !!userRow && userHasPublicProfile({ ...userRow, matchesPlayed: userRow.matchStats.length });
   const childRow = userIsPublic ? null : childMatch;
 
-  if (!userIsPublic && !childRow) notFound();
+  // Lo staff apre anche i profili che non sono pubblici (il genitore che non
+  // gioca, un GUEST): servono per ritrovare la persona e raggiungere i suoi
+  // figli. Per tutti gli altri restano un 404, e la pagina non si indicizza.
+  const viewerRole = viewerSession?.user?.appRole;
+  const viewerIsStaff = !!viewerRole && hasRole(viewerRole, "COACH");
+  const staffOnly = !!userRow && !userIsPublic && !childRow && viewerIsStaff;
+
+  if (!userIsPublic && !childRow && !staffOnly) notFound();
 
   // Tutela dei minori: il profilo pubblico di un minore non esiste per chi non
   // è tesserato. La famiglia ritrova gli stessi dati in /profilo, lo staff
   // nell'area admin.
   const isMinorProfile = childRow ? isMinorChild(childRow.birthDate) : isMinor(userRow!.birthDate);
-  if (isMinorProfile && !isMemberRole((await auth())?.user?.appRole)) notFound();
+  if (isMinorProfile && !isMemberRole(viewerRole)) notFound();
 
   // Vista unificata: stesso shape per User e Child (i figli non hanno immagine).
   const player = childRow
@@ -447,6 +464,31 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   const matchesPlayed = filteredStats.length;
 
   const hasStats = matchesPlayed > 0;
+
+  // Figli dell'utente, solo per lo staff: dal profilo del genitore si arriva a
+  // quello di ogni figlio. Un figlio con un proprio account ha il profilo
+  // dell'account, gli altri quello della scheda figlio (slug, o id se manca).
+  const guardedChildren =
+    viewerIsStaff && userRow && !childRow
+      ? (
+          await prisma.child.findMany({
+            where: guardianOf(userRow.id),
+            orderBy: { name: "asc" },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              sportRole: true,
+              user: { select: { id: true, slug: true } },
+            },
+          })
+        ).map((c) => ({
+          id: c.id,
+          name: c.name,
+          sportRole: c.sportRole,
+          href: c.user ? `/giocatori/${c.user.slug ?? c.user.id}` : `/giocatori/${c.slug ?? c.id}`,
+        }))
+      : [];
 
   // Andamento punti per partita in ordine cronologico (filteredStats è desc).
   const trendValues = [...filteredStats].reverse().map((ms) => ms.points);
@@ -867,8 +909,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 </Box>
               )}
 
-              {/* Share section */}
-              <Box sx={{ mt: 2.5 }}>
+              {/* Share section: un profilo visibile solo allo staff non si condivide */}
+              <Box sx={{ mt: 2.5, display: staffOnly ? "none" : undefined }}>
                 <PlayerShareButtons
                   playerName={player.name ?? "Giocatore"}
                   totalPoints={totalPoints}
@@ -884,6 +926,45 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       </Box>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+        {staffOnly && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            {t("staffOnlyProfile")}
+          </Alert>
+        )}
+
+        {/* Figli (solo staff) */}
+        {guardedChildren.length > 0 && (
+          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
+            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+              {t("children")}
+            </Typography>
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+              {guardedChildren.map((c) => (
+                <Link key={c.id} href={c.href} style={{ textDecoration: "none" }}>
+                  <Chip
+                    clickable
+                    label={c.name}
+                    variant="outlined"
+                    avatar={
+                      c.sportRole ? (
+                        <Avatar
+                          sx={{
+                            bgcolor: `${ROLE_COLORS[c.sportRole]} !important`,
+                            color: "common.white !important",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {c.sportRole}
+                        </Avatar>
+                      ) : undefined
+                    }
+                  />
+                </Link>
+              ))}
+            </Stack>
+          </Paper>
+        )}
+
         {/* Info atleta */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
           <Typography variant="subtitle1" fontWeight={700} gutterBottom>

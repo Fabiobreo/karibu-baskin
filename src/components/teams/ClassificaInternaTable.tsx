@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Paper,
   Box,
@@ -98,7 +99,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
   const [roleFilter, setRoleFilter] = useState<number | null>(null);
   const [nameSearch, setNameSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useRowsPerPage("internal-standings", [10, 25, 50, 100], 25);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const COLS = ALL_COLS.filter((c) => showAdvanced || !c.advanced);
 

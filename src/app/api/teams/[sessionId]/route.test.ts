@@ -132,7 +132,32 @@ describe("POST /api/teams/[sessionId]", () => {
     p.trainingSession.findUnique.mockResolvedValue({
       title: "Allenamento Test",
       dateSlug: "2025-01-15",
+      date: new Date(Date.now() + 86_400_000),
+      endTime: null,
     });
+  });
+
+  it("esclude dalle squadre chi è segnato assente", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.registration.findMany.mockResolvedValue(athletes);
+    await POST(makePost(), mockParams);
+    const [args] = p.registration.findMany.mock.calls[0] as [{ where: unknown }];
+    expect(args.where).toEqual({ sessionId: "sess-1", NOT: { attended: false } });
+  });
+
+  it("non notifica le squadre di un allenamento già finito", async () => {
+    mockIsCoachOrAdmin.mockResolvedValue(true);
+    p.registration.findMany.mockResolvedValue(athletes);
+    p.trainingSession.findUnique.mockResolvedValue({
+      title: "Allenamento Test",
+      dateSlug: "2025-01-15",
+      date: new Date("2025-01-15T18:00:00Z"),
+      endTime: new Date("2025-01-15T20:00:00Z"),
+    });
+    const res = await POST(makePost(), mockParams);
+    expect(res.status).toBe(200);
+    expect(p.trainingSession.update).toHaveBeenCalledOnce();
+    expect(mockCreateTargeted).not.toHaveBeenCalled();
   });
 
   it("restituisce 401 se l'utente non è coach/admin", async () => {

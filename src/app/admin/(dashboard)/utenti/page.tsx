@@ -10,6 +10,8 @@ import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
 import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
+import { cookies } from "next/headers";
+import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
 
 export const revalidate = 60;
 
@@ -31,8 +33,17 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const sortDir = ((sp.sortDir as string | undefined) ?? "desc") as "asc" | "desc";
   const page = Math.max(1, parseInt((sp.page as string | undefined) ?? "1", 10));
   // 25 e non 10: con 111 utenti la paginazione a dieci righe faceva dodici
-  // pagine, ed e' il default gia' documentato in CLAUDE.md.
-  const limit = Math.min(100, Math.max(10, parseInt((sp.limit as string | undefined) ?? "25", 10)));
+  // pagine, ed e' il default gia' documentato in CLAUDE.md. Senza `limit`
+  // nell'URL vale l'ultima scelta dello staff (cookie, vedi @/lib/rowsPerPage).
+  const savedLimit = parseRowsPerPage(
+    (await cookies()).get(rowsPerPageCookieName("users"))?.value,
+    [10, 25, 50, 100],
+    25
+  );
+  const limit = Math.min(
+    100,
+    Math.max(10, parseInt((sp.limit as string | undefined) ?? String(savedLimit), 10) || 25)
+  );
 
   const where: Prisma.UserWhereInput = {};
   if (search) {

@@ -28,6 +28,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PlaceIcon from "@mui/icons-material/Place";
 import { useState, useTransition, useEffect } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -87,7 +88,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>([]);
   const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useRowsPerPage("events", [10, 25, 50], 10);
 
   const {
     register,

@@ -490,7 +490,9 @@
     "competitiveHistory": "Competitive history",
     "matchStats": "Per-match stats",
     "noStats": "No stats available",
-    "noStatsDesc": "Competitive stats will be published at the end of each match."
+    "noStatsDesc": "Competitive stats will be published at the end of each match.",
+    "staffOnlyProfile": "This profile isn't public: you can see it because you're on the staff. For everyone else this page doesn't exist.",
+    "children": "Children"
   },
   "scorers": {
     "pageTitle": "Internal standings",
@@ -710,6 +712,9 @@
     "publicProfile": "View your public profile",
     "trainingAttendance": "Training attendance",
     "noAthleteData": "No athlete data available. The admin can set role, gender and date of birth.",
+    "myParents": "My parents",
+    "myParentsDesc": "They're linked to your profile and can sign you up for training on your behalf.",
+    "parentNoName": "Parent",
     "myChildren": "My children",
     "linkChildDesc": "Link your child's profile to register them for training sessions.",
     "downloadData": "Download my data",
@@ -1260,6 +1265,10 @@
     "editorMoveHint": "Tap a player to move them",
     "editorMoveTo": "Move here",
     "editorNoPlayers": "No players",
+    "teamsCreateManual": "Or build them by hand",
+    "editorUnassigned": "Unassigned",
+    "editorRemove": "Remove from team",
+    "editorAllAssigned": "Every athlete is on a team",
     "editorDone": "Done",
     "teamCoaches": "Coaches:",
     "playerCount": "{count, plural, one {# player} other {# players}}",

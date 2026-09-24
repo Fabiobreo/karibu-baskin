@@ -36,6 +36,7 @@ import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import type { MatchCoverage } from "@/lib/matches/matchCoverage";
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
 import { alpha } from "@mui/material/styles";
 import { format } from "date-fns";
@@ -396,7 +397,7 @@ export default function AdminPartiteClient({
   const [profileMatch, setProfileMatch] = useState<Match | null>(null);
   const [tab, setTab] = useState<TabKey>("LEAGUE");
   const [page, setPage] = useState(0);
-  const [rpp, setRpp] = useState(25);
+  const [rpp, setRpp] = useRowsPerPage("matches", [10, 25, 50], 25);
   // Istante di riferimento per distinguere prossime/passate (stabile dal mount).
   const [now] = useState(() => Date.now());
   const { showToast } = useToast();
