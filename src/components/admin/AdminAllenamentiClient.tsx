@@ -25,6 +25,7 @@ export interface AdminSessionRow {
   title: string;
   date: string;
   endTime: string | null;
+  location: string | null;
   dateSlug: string | null;
   allowedRoles: number[];
   restrictTeamId: string | null;

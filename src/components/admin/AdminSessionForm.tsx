@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { readError } from "@/lib/fetchJson";
+import { CLUB_VENUE_LABEL } from "@/lib/clubVenue";
 import SessionRestrictionEditor, {
   seasonForDate,
   type RestrictionValue,
@@ -28,6 +29,7 @@ const SessionFormSchema = z
     date: z.string().min(1, "La data è obbligatoria"),
     time: z.string().min(1, "L'orario di inizio è obbligatorio"),
     endTime: z.string(),
+    location: z.string().max(200),
   })
   .refine((d) => !d.time || !d.endTime || d.endTime > d.time, {
     message: "L'orario di fine deve essere dopo l'inizio",
@@ -67,7 +69,14 @@ export default function AdminSessionForm({
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(SessionFormSchema),
-    defaultValues: { title: "", date: "", time: "18:00", endTime: "20:00" },
+    // Luogo precompilato con la sede abituale (UX-15): si cambia solo per le trasferte.
+    defaultValues: {
+      title: "",
+      date: "",
+      time: "18:00",
+      endTime: "20:00",
+      location: CLUB_VENUE_LABEL,
+    },
   });
 
   const dateValue = useWatch({ control, name: "date" });
@@ -85,6 +94,7 @@ export default function AdminSessionForm({
           title: values.title.trim(),
           date: dateTime.toISOString(),
           endTime: endDateTime?.toISOString() ?? null,
+          location: values.location.trim() || null,
           dateSlug: `${values.date}${values.time}`.replace(/-/g, "").replace(":", ""),
           allowedRoles: restrictions.allowedRoles,
           restrictTeamId: restrictions.restrictTeamId,
@@ -172,6 +182,17 @@ export default function AdminSessionForm({
           sx={{ flex: 1 }}
         />
       </Box>
+
+      <TextField
+        label="Luogo"
+        {...register("location")}
+        size="small"
+        fullWidth
+        disabled={isSubmitting}
+        error={!!errors.location}
+        helperText={errors.location?.message ?? "Lascia la sede abituale, o scrivi dove si gioca."}
+        sx={{ mb: 2 }}
+      />
 
       <Divider sx={{ mb: 2 }} />
 

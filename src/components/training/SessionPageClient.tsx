@@ -9,6 +9,9 @@ import RegistrationForm, {
   type ChildInfo,
 } from "@/components/training/RegistrationForm";
 import RosterByRole from "@/components/training/RosterByRole";
+import RegistrationSummary, {
+  type MyRegistration,
+} from "@/components/training/RegistrationSummary";
 import TeamDisplay, { type TeamsData } from "@/components/training/TeamDisplay";
 import AllenamentoHero from "@/components/training/AllenamentoHero";
 import AllenamentoEndedView from "@/components/training/AllenamentoEndedView";
@@ -30,6 +33,7 @@ export interface Session {
   title: string;
   date: string;
   endTime: string | null;
+  location?: string | null;
   dateSlug: string | null;
   allowedRoles: number[];
   restrictTeamId: string | null;
@@ -135,8 +139,22 @@ export default function SessionPageClient({
     staleTime: isEnded ? Infinity : 0,
   });
 
+  // Le proprie iscrizioni (e dei figli), per chiunque abbia fatto l'accesso:
+  // anche un GUEST, che non vede la rosa, deve sapere che e' iscritto (UX-15).
+  const mineQueryKey = ["registrations", realSessionId, "mine"] as const;
+  const { data: mine = [] } = useQuery<MyRegistration[]>({
+    queryKey: mineQueryKey,
+    queryFn: () =>
+      fetch(`/api/registrations?sessionId=${realSessionId}&mine=1`).then((r) =>
+        r.ok ? r.json() : Promise.reject(new Error("fetch failed"))
+      ),
+    enabled: !!realSessionId && !!currentUser,
+    refetchOnWindowFocus: true,
+  });
+
   function invalidateRegistrations() {
     void queryClient.invalidateQueries({ queryKey: regQueryKey });
+    void queryClient.invalidateQueries({ queryKey: mineQueryKey });
   }
 
   const teamsQueryKey = ["teams", realSessionId] as const;
@@ -386,6 +404,16 @@ export default function SessionPageClient({
           </Box>
         ) : session ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {/* Riepilogo che resta dopo l'iscrizione: chi, quando, dove (UX-15). */}
+            {!isEnded && (
+              <RegistrationSummary
+                date={session.date}
+                endTime={session.endTime}
+                location={session.location}
+                mine={mine}
+                currentUserId={currentUser?.id ?? null}
+              />
+            )}
             {/* Banner "la tua squadra" */}
             {myTeam && (
               <Paper
@@ -546,8 +574,8 @@ export default function SessionPageClient({
                             onOptimisticAdd={handleOptimisticAdd}
                             onSubmitError={invalidateRegistrations}
                             registeredNames={registrations.map((r) => r.name)}
-                            registeredUserIds={registrations.map((r) => r.userId)}
-                            registeredChildIds={registrations.map((r) => r.childId)}
+                            registeredUserIds={[...registrations, ...mine].map((r) => r.userId)}
+                            registeredChildIds={[...registrations, ...mine].map((r) => r.childId)}
                             currentUser={currentUser}
                             parentChildren={parentChildren}
                             currentSeason={currentSeason}

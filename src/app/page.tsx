@@ -262,7 +262,7 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
-      <HeroSection />
+      <HeroSection visitor />
 
       {newsBlock}
 

@@ -12,6 +12,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { logAudit } from "@/lib/audit";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { isGuardian } from "@/lib/guardians";
+import { guardianOf } from "@/lib/guardians";
 
 /**
  * Elenco degli iscritti a un allenamento.
@@ -38,6 +39,22 @@ export async function GET(req: NextRequest) {
   if (!authSession?.user) {
     return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
   }
+
+  // `mine=1` (UX-15): solo le iscrizioni proprie e dei propri figli, per
+  // chiunque abbia fatto l'accesso, GUEST compresi. Serve al riepilogo "Sei
+  // iscritto" e a far capire al form che l'iscrizione c'e' gia': nessun dato
+  // di altre persone, quindi niente controllo di tesseramento.
+  if (req.nextUrl.searchParams.get("mine") === "1") {
+    const userId = authSession.user.id;
+    if (!userId) return NextResponse.json([]);
+    const mine = await prisma.registration.findMany({
+      where: { sessionId, OR: [{ userId }, { child: guardianOf(userId) }] },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, userId: true, childId: true, registeredAsCoach: true },
+    });
+    return NextResponse.json(mine);
+  }
+
   // Autenticato non vuol dire tesserato: il login è aperto a qualunque account
   // Google, e un nuovo accesso nasce GUEST.
   if (!isMemberRole(authSession.user.appRole)) {

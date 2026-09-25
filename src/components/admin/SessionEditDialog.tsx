@@ -19,6 +19,7 @@ import SessionRestrictionEditor, {
 } from "@/components/training/SessionRestrictionEditor";
 import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
 import { readError } from "@/lib/fetchJson";
+import { CLUB_VENUE_LABEL } from "@/lib/clubVenue";
 import { useToast } from "@/context/ToastContext";
 
 export interface EditableSession {
@@ -26,6 +27,7 @@ export interface EditableSession {
   title: string;
   date: string;
   endTime: string | null;
+  location?: string | null;
   allowedRoles: number[];
   restrictTeamId: string | null;
   openRoles: number[];
@@ -69,6 +71,7 @@ function EditForm({
   const [date, setDate] = useState(toLocalDateString(start));
   const [time, setTime] = useState(toLocalTimeString(start));
   const [endTime, setEndTime] = useState(end ? toLocalTimeString(end) : "");
+  const [location, setLocation] = useState(session.location ?? CLUB_VENUE_LABEL);
   const [restrictions, setRestrictions] = useState<RestrictionValue>({
     allowedRoles: session.allowedRoles,
     restrictTeamId: session.restrictTeamId,
@@ -94,6 +97,7 @@ function EditForm({
           title: title.trim(),
           date: dateTime.toISOString(),
           endTime: endDateTime?.toISOString() ?? null,
+          location: location.trim() || null,
           dateSlug,
           allowedRoles: restrictions.allowedRoles,
           restrictTeamId: restrictions.restrictTeamId,
@@ -156,6 +160,15 @@ function EditForm({
               sx={{ flex: 1 }}
             />
           </Box>
+          <TextField
+            label="Luogo"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            fullWidth
+            disabled={loading}
+            slotProps={{ htmlInput: { maxLength: 200 } }}
+            helperText="Lascia la sede abituale, o scrivi dove si gioca."
+          />
           <Divider />
           <SessionRestrictionEditor
             value={restrictions}

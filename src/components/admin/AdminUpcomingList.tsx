@@ -34,6 +34,7 @@ export interface AdminUpcomingRow {
   title: string;
   date: string;
   endTime: string | null;
+  location: string | null;
   dateSlug: string | null;
   registrationOpen: boolean;
   registrationOpenedAt: string | null;

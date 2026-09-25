@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
+import { TRY_IT_HREF } from "@/lib/clubVenue";
 
 export default function HomeSessionsSection({
   inCorso: initInCorso,
@@ -99,7 +100,7 @@ export default function HomeSessionsSection({
             {t("homeNoneSoon")}
           </Typography>
           <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            <Button href="/contatti" variant="contained">
+            <Button href={TRY_IT_HREF} variant="contained">
               {t("homeNoneSoonCta")}
             </Button>
             <Button href="/calendario" variant="outlined">

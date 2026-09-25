@@ -953,6 +953,17 @@
       "emptyDesc": "Quando lo staff pubblica un allenamento o un risultato lo trovi qui."
     },
     "contatti": {
+      "tryTitle": "Vieni a provare",
+      "tryIntro": "La prima volta puoi venire a provare senza impegno: ti spieghiamo tutto sul posto. Scrivici qui sotto e ti diciamo quando venire.",
+      "tryWhen": "Quando",
+      "tryWhenEmpty": "Stiamo programmando i prossimi allenamenti: scrivici e ti avvisiamo.",
+      "tryWhenLoading": "Carico i prossimi allenamenti…",
+      "tryCalendar": "Tutto il calendario",
+      "tryWhere": "Dove",
+      "tryOpenMap": "Apri la mappa",
+      "tryBring": "Cosa portare",
+      "tryBringText": "Scarpe da ginnastica pulite (da palestra), abbigliamento comodo e una borraccia.",
+      "tryFaq": "Hai altre domande? Leggi le domande frequenti",
       "heroChip": "Siamo qui",
       "heroTitle": "Come possiamo aiutarti?",
       "heroSubtitle": "Hai una domanda, vuoi venire ad allenarci, o sei interessato a supportarci?",
@@ -1127,6 +1138,10 @@
     "pageTitle": "Classifiche"
   },
   "trainings": {
+    "locationMap": "{place}: apri la mappa",
+    "summarySelf": "Sei iscritto",
+    "summarySelfWith": "Sei iscritto insieme a {names}",
+    "summaryOthers": "Hai iscritto {names}",
     "questionnaire": {
       "intro": "Qualche domanda veloce per suggerirti il ruolo Baskin (1–5), così componiamo squadre equilibrate per tutti. Le singole risposte non vengono salvate: conta solo il ruolo finale, che verrà confermato dallo staff.",
       "previousAnswer": "La tua risposta precedente: {role}. Puoi aggiornarla qui sotto.",
@@ -1321,6 +1336,7 @@
   "home": {
     "heroSubtitle": "Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.",
     "upcomingTrainings": "Prossimi allenamenti",
+    "heroTryCta": "Vieni a provare",
     "whatIsBaskin": "Cos'è il Baskin?",
     "birthdaySingular": "{name} compie gli anni oggi",
     "birthdayPlural": "Oggi festeggiano",

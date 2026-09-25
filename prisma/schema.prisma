@@ -258,6 +258,7 @@ model TrainingSession {
   title         String
   date          DateTime // orario di inizio
   endTime       DateTime? // orario di fine (nullable per retrocompatibilità)
+  location      String? // luogo (UX-15); null = sede abituale del club (CLUB_VENUE)
   createdAt     DateTime              @default(now())
   teams         Json?
   dateSlug      String?               @unique // es. "2025-03-15T18:00" — URL slug leggibile

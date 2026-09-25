@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
       title: true,
       date: true,
       endTime: true,
+      location: true,
       dateSlug: true,
       teams: true,
       allowedRoles: true,
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
   const {
     title,
     date,
+    location,
     endTime,
     dateSlug,
     allowedRoles,
@@ -93,6 +95,7 @@ export async function POST(req: NextRequest) {
         title: title.trim(),
         date: new Date(date),
         endTime: endTime ? new Date(endTime) : null,
+        location: location || null,
         ...(dateSlug ? { dateSlug } : {}),
         allowedRoles: allowedRoles ?? [],
         restrictTeamId: restrictTeamId ?? null,

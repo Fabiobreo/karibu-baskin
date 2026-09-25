@@ -23,6 +23,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PlaceIcon from "@mui/icons-material/Place";
 import EditIcon from "@mui/icons-material/Edit";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LockIcon from "@mui/icons-material/Lock";
@@ -32,6 +33,7 @@ import NextLink from "next/link";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import ShareSection from "@/components/common/ShareSection";
+import { mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
 import SessionRestrictionEditor, {
   seasonForDate,
   type RestrictionValue,
@@ -52,6 +54,7 @@ interface Session {
   title: string;
   date: string;
   endTime: string | null;
+  location?: string | null;
   dateSlug: string | null;
   allowedRoles: number[];
   restrictTeamId: string | null;
@@ -465,6 +468,23 @@ export default function AllenamientoHero({
                 {format(sessionDate, "HH:mm")}
                 {sessionEnd && `–${format(sessionEnd, "HH:mm")}`}
               </Typography>
+            </Box>
+            {/* Dove (UX-15): il luogo dell'allenamento, o la sede del club.
+                Link a Google Maps, non una mappa incorporata: niente cookie. */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <PlaceIcon sx={{ fontSize: 16 }} />
+              <MuiLink
+                href={mapsSearchUrl(trainingLocation(session.location))}
+                target="_blank"
+                rel="noopener noreferrer"
+                color="inherit"
+                underline="always"
+                variant="body2"
+                aria-label={t("locationMap", { place: trainingLocation(session.location) })}
+                sx={{ fontWeight: 500 }}
+              >
+                {trainingLocation(session.location)}
+              </MuiLink>
             </Box>
           </Box>
 

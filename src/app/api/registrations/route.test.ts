@@ -632,6 +632,39 @@ describe("GET /api/registrations · ospiti", () => {
     p.registration.findMany.mockResolvedValue([]);
   });
 
+  it("mine=1: un GUEST vede solo le sue iscrizioni e dei figli", async () => {
+    mockAuth.mockResolvedValue({ user: { id: "g1", appRole: "GUEST" } });
+    p.registration.findMany.mockResolvedValue([
+      { id: "r1", name: "Io", userId: "g1", childId: null, registeredAsCoach: false },
+    ]);
+    const res = await GET(
+      new NextRequest("http://localhost/api/registrations?sessionId=sess-1&mine=1")
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toHaveLength(1);
+    const [args] = p.registration.findMany.mock.calls[0] as [{ where: unknown; select: unknown }];
+    expect(args.where).toEqual({
+      sessionId: "sess-1",
+      OR: [{ userId: "g1" }, { child: { guardians: { some: { userId: "g1" } } } }],
+    });
+    // Niente note, email o dati di altri iscritti.
+    expect(args.select).toEqual({
+      id: true,
+      name: true,
+      userId: true,
+      childId: true,
+      registeredAsCoach: true,
+    });
+  });
+
+  it("mine=1 richiede comunque l'accesso", async () => {
+    mockAuth.mockResolvedValue(null);
+    const res = await GET(
+      new NextRequest("http://localhost/api/registrations?sessionId=sess-1&mine=1")
+    );
+    expect(res.status).toBe(401);
+  });
+
   it("rifiuta un GUEST: autenticato non vuol dire tesserato", async () => {
     mockAuth.mockResolvedValue({ user: { id: "g1", appRole: "GUEST" } });
     const res = await GET(new NextRequest("http://localhost/api/registrations?sessionId=sess-1"));

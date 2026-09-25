@@ -1,6 +1,6 @@
 # UX-15 · Percorso "Vieni a provare" + luogo dell'allenamento
 
-**Ondata:** 2 · **Stima:** M · **Dipende da:** UX-06 (modulo contatti aperto, CTA in `/squadre`) · **Stato:** da fare
+**Ondata:** 2 · **Stima:** M · **Dipende da:** UX-06 (modulo contatti aperto, CTA in `/squadre`) · **Stato:** fatto (commit su `develop`): sezione "Vieni a provare" in Contatti con modulo, CTA dei visitatori puntate li', luogo dell'allenamento con migration, riepilogo dopo l'iscrizione
 
 ## Problema
 
@@ -26,3 +26,32 @@ Portare nuove persone ad allenarsi è l'obiettivo principale della parte pubblic
 - Ogni allenamento mostra il luogo.
 - Dopo l'iscrizione il riepilogo resta visibile ricaricando la pagina.
 - Migration committata insieme allo schema.
+
+## Esito
+
+- **Decisioni del committente (2026-09-25):**
+  - orari: i prossimi allenamenti veri dal calendario, non un orario scritto a mano;
+  - prima volta: "senza impegno", senza parlare di gratuita';
+  - cosa portare: scarpe da ginnastica pulite (da palestra), abbigliamento comodo, una borraccia;
+  - luogo predefinito: Polisportivo Gino Cosaro.
+- **Sezione `TryItSection`** in `/contatti#vieni-a-provare` (ancora, nessun URL nuovo), in cima alla sezione Contatti:
+  - quando: i prossimi 3 allenamenti con il luogo, piu' il link al calendario;
+  - dove: sede e link a Google Maps, senza mappa incorporata quindi senza cookie; la mappa col consenso resta piu' sotto;
+  - cosa portare, il modulo e il link alle FAQ;
+  - il modulo si e' spostato qui, niente doppioni.
+- **CTA per chi non e' tesserato:** hero della home anonima ("Vieni a provare" al posto di "Prossimi allenamenti", prop `visitor`), `JoinUsCta`, home senza allenamenti, `/squadre`, tutte verso `TRY_IT_HREF`. Tesserati e GUEST mantengono le loro CTA.
+- **Luogo:** `TrainingSession.location String?` con migration `20260925000000_training_session_location` (SQL generata con `prisma migrate diff` e verificata: solo la colonna). Null = sede abituale (`CLUB_VENUE`, `trainingLocation()` in `@/lib/clubVenue`, con test), quindi gli allenamenti esistenti la mostrano senza aggiornare i dati. Campo "Luogo" nel form di creazione (precompilato) e in `SessionEditDialog`; API POST/PATCH e schemi Zod aggiornati. Nell'hero dell'allenamento, accanto a data e ora, con link alla mappa.
+- **Riepilogo dopo l'iscrizione** (`RegistrationSummary`): "Sei iscritto" / "Hai iscritto {nomi}" / "Sei iscritto insieme a {nomi}", con data, orario e luogo, in cima alla pagina finche' l'allenamento non e' finito. I dati vengono da `GET /api/registrations?mine=1` (2 test), che restituisce solo le iscrizioni proprie e dei figli a chiunque abbia fatto l'accesso.
+  - Effetto collaterale utile: un account GUEST non vedeva la rosa, quindi il form non sapeva che era gia' iscritto; ora lo sa.
+- **Verifica** con Playwright su telefono:
+  - dalla home anonima "Vieni a provare" porta a `/contatti#vieni-a-provare` in un tocco, con quando, dove e cosa portare nella prima schermata e il modulo subito sotto;
+  - con un atleta e un account GUEST iscritti per prova (iscrizioni poi cancellate) il riepilogo resta dopo il ricaricamento;
+  - luogo nell'hero;
+  - "Luogo" precompilato nel form admin.
+- `npm test` verde (1766), `npm run a11y` senza nuove violazioni.
+
+**Rimasto fuori**
+
+- Chi si iscrive **senza account** (iscrizione anonima) non vede il riepilogo dopo il ricaricamento: non c'e' un modo di riconoscerlo senza salvare qualcosa nel browser.
+- Il testo "senza impegno" e la lista "cosa portare" sono nei dizionari (`pages.contatti.try*`): se il club vuole cambiarli, si cambiano li'.
+- Il dialog di modifica nell'hero della pagina allenamento (`AllenamentoHero`) non ha ancora il campo Luogo: da admin si', da li' no (la PATCH senza `location` non lo tocca).

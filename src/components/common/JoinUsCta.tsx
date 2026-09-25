@@ -1,5 +1,6 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
+import { TRY_IT_HREF } from "@/lib/clubVenue";
 
 /**
  * Invito a provare, in fondo alla home pubblica.
@@ -33,7 +34,7 @@ export default async function JoinUsCta() {
           {t("joinBody")}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, justifyContent: "center", flexWrap: "wrap" }}>
-          <Button href="/contatti" variant="contained" size="large">
+          <Button href={TRY_IT_HREF} variant="contained" size="large">
             {t("joinCta")}
           </Button>
           <Button href="/il-baskin" variant="outlined" size="large">

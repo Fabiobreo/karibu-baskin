@@ -27,6 +27,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { getActiveSeason } from "@/lib/season/activeSeason";
+import { TRY_IT_HREF } from "@/lib/clubVenue";
 
 export const metadata: Metadata = buildMetadata({
   title: "Squadre",
@@ -236,9 +237,9 @@ export default async function SquadrePage() {
             <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 420 }}>
               {t("joinUsDesc")}
             </Typography>
-            {/* Poi verso il percorso "Vieni a provare" di UX-15. */}
+            {/* Verso "Vieni a provare" (UX-15). */}
             <Button
-              href="/contatti"
+              href={TRY_IT_HREF}
               variant="contained"
               size="large"
               sx={{ mt: 2, fontWeight: 700 }}

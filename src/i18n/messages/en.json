@@ -953,6 +953,17 @@
       "emptyDesc": "When the staff publishes a training or a result, you will find it here."
     },
     "contatti": {
+      "tryTitle": "Come and try",
+      "tryIntro": "The first time you can come and try with no commitment: we will explain everything on the spot. Write to us below and we will tell you when to come.",
+      "tryWhen": "When",
+      "tryWhenEmpty": "We are planning the next training sessions: write to us and we will let you know.",
+      "tryWhenLoading": "Loading the next training sessions…",
+      "tryCalendar": "Full calendar",
+      "tryWhere": "Where",
+      "tryOpenMap": "Open the map",
+      "tryBring": "What to bring",
+      "tryBringText": "Clean sports shoes (for indoor courts), comfortable clothes and a water bottle.",
+      "tryFaq": "More questions? Read the FAQ",
       "heroChip": "We're here",
       "heroTitle": "How can we help you?",
       "heroSubtitle": "Have a question, want to join a training session, or interested in supporting us?",
@@ -1127,6 +1138,10 @@
     "pageTitle": "Standings"
   },
   "trainings": {
+    "locationMap": "{place}: open the map",
+    "summarySelf": "You are registered",
+    "summarySelfWith": "You are registered together with {names}",
+    "summaryOthers": "You registered {names}",
     "questionnaire": {
       "intro": "A few quick questions to suggest your Baskin role (1–5), so we can build balanced teams for everyone. Your individual answers are not stored: only the final role matters, and it will be confirmed by the staff.",
       "previousAnswer": "Your previous answer: {role}. You can update it below.",
@@ -1321,6 +1336,7 @@
   "home": {
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",
     "upcomingTrainings": "Upcoming trainings",
+    "heroTryCta": "Come and try",
     "whatIsBaskin": "What is Baskin?",
     "birthdaySingular": "{name}'s birthday today",
     "birthdayPlural": "Celebrating today",

@@ -15,7 +15,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import { useSession } from "next-auth/react";
 import PageHero from "@/components/common/PageHero";
-import ContactForm from "@/components/common/ContactForm";
+import TryItSection from "@/components/common/TryItSection";
 import SuggestionForm from "@/components/common/SuggestionForm";
 import Image from "next/image";
 import PhoneIcon from "@mui/icons-material/Phone";
@@ -29,7 +29,6 @@ import MessageIcon from "@mui/icons-material/Message";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import MapEmbed from "@/components/common/MapEmbed";
 import { onHover } from "@/lib/hoverStyles";
 import { heroGradient } from "@/lib/heroStyles";
@@ -227,6 +226,10 @@ export default function ContattiPage() {
         sx={{ pt: { xs: 4, md: 5 }, pb: { xs: 6, md: 9 }, scrollMarginTop: { xs: 96, sm: 104 } }}
       >
         <Container maxWidth="md">
+          {/* Vieni a provare (UX-15): quando, dove, cosa portare e il modulo,
+              in una schermata. Le CTA per chi non e' tesserato puntano qui. */}
+          <TryItSection />
+
           {/* Titolo sezione */}
           <Typography
             variant="overline"
@@ -292,15 +295,6 @@ export default function ContattiPage() {
               </Grid>
             ))}
           </Grid>
-
-          {/* Modulo sempre aperto: e' il punto di conversione della pagina,
-              nasconderlo dietro un bottone costava un passo (UX-06). */}
-          <Paper
-            elevation={0}
-            sx={{ mb: 5, p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
-          >
-            <ContactForm />
-          </Paper>
 
           {/* Suggerimenti — solo utenti loggati */}
           {status === "authenticated" && (

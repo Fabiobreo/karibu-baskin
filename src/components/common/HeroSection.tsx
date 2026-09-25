@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { Box, Typography, Button, Container } from "@mui/material";
+import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 
@@ -15,9 +16,14 @@ interface HeroSectionProps {
    * su quello che si può fare subito. `null` = nome non disponibile.
    */
   guest?: { firstName: string | null };
+  /**
+   * Visitatore senza accesso (UX-15): la CTA principale porta a "Vieni a
+   * provare" invece che alla lista degli allenamenti.
+   */
+  visitor?: boolean;
 }
 
-export default function HeroSection({ guest }: HeroSectionProps) {
+export default function HeroSection({ guest, visitor = false }: HeroSectionProps) {
   const t = useTranslations("home");
   const tGuest = useTranslations("guestOnboarding");
   return (
@@ -158,7 +164,7 @@ export default function HeroSection({ guest }: HeroSectionProps) {
         {/* CTA */}
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
           <Button
-            onClick={scrollToAllenamenti}
+            {...(visitor ? { href: TRY_IT_HREF } : { onClick: scrollToAllenamenti })}
             variant="contained"
             size="large"
             sx={{
@@ -173,7 +179,11 @@ export default function HeroSection({ guest }: HeroSectionProps) {
               },
             }}
           >
-            {guest ? tGuest("heroCtaTrainings") : t("upcomingTrainings")}
+            {guest
+              ? tGuest("heroCtaTrainings")
+              : visitor
+                ? t("heroTryCta")
+                : t("upcomingTrainings")}
           </Button>
           <Button
             href={guest ? "/profilo/ruolo" : "/il-baskin"}
