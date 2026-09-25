@@ -177,7 +177,7 @@ export default function MatchResultDialog({
               label={RESULT_LABELS[derived]}
               sx={{
                 bgcolor: RESULT_COLORS[derived],
-                color: "common.white",
+                color: "match.onFill",
                 fontWeight: 700,
                 fontSize: "0.85rem",
                 px: 1.5,

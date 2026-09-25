@@ -578,7 +578,9 @@ export default function RosterByRole({
                   <Typography
                     variant="overline"
                     fontWeight={700}
-                    sx={{ color: roleColor(role), letterSpacing: "0.08em", lineHeight: 1 }}
+                    // Il colore del ruolo sta nel pallino: come testo, in scuro, i ruoli
+                    // più scuri scendevano sotto 2:1 (UX-22).
+                    sx={{ color: "text.primary", letterSpacing: "0.08em", lineHeight: 1 }}
                   >
                     {roleLabel(role)}
                   </Typography>

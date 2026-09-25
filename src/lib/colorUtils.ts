@@ -109,3 +109,40 @@ export function contrastText(background: string | null | undefined): string {
   const onBlack = (luminance + 0.05) / 0.05;
   return onBlack >= onWhite ? DARK_TEXT : LIGHT_TEXT;
 }
+
+/** Il testo scuro di `contrastText` è nero all'87%: il colore che si vede davvero sul fondo. */
+function darkTextOn(rgb: [number, number, number]): [number, number, number] {
+  return rgb.map((c) => Math.round(c * 0.13)) as [number, number, number];
+}
+
+function ratio(a: [number, number, number], b: [number, number, number]): number {
+  const la = relativeLuminance(a);
+  const lb = relativeLuminance(b);
+  const [hi, lo] = la >= lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * Fondo ed etichetta per un colore dinamico usato come RIEMPIMENTO (chip
+ * squadra, UX-22). L'etichetta la sceglie `contrastText()`; se nemmeno la
+ * migliore delle due arriva a 4,5:1 (i colori a metà luminosità, dove bianco e
+ * nero quasi pieno si equivalgono) il fondo si scurisce finché il bianco regge.
+ *
+ * Con `preferWhite` l'etichetta resta sempre bianca e, se serve, si scurisce il
+ * fondo: è la scelta del committente per i riempimenti arancio (UX-07, niente
+ * nero su arancio), da usare su bottoni e chip che finora avevano il bianco.
+ *
+ * Con un colore non parsabile (token di tema, null) restituisce il riempimento
+ * arancio del tema con etichetta bianca.
+ */
+export function readableFill(
+  color: string | null | undefined,
+  { preferWhite = false }: { preferWhite?: boolean } = {}
+): { bg: string; fg: string } {
+  const rgb = color ? parseHex(color) : null;
+  if (!color || !rgb) return { bg: "primary.fill", fg: LIGHT_TEXT };
+  const fg = preferWhite ? LIGHT_TEXT : contrastText(color);
+  const shown: [number, number, number] = fg === LIGHT_TEXT ? [255, 255, 255] : darkTextOn(rgb);
+  if (ratio(rgb, shown) >= 4.5) return { bg: color, fg };
+  return { bg: readableOn(color, "#ffffff"), fg: LIGHT_TEXT };
+}

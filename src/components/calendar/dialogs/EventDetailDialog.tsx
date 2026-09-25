@@ -183,7 +183,7 @@ export default function EventDetailDialog({
                 size="small"
                 sx={{
                   bgcolor: RESULT_COLORS[event.result] ?? "grey.500",
-                  color: "common.white",
+                  color: "match.onFill",
                   fontWeight: 700,
                 }}
               />

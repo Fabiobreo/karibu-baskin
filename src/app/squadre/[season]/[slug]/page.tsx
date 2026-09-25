@@ -511,12 +511,12 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         borderRadius: 999,
                       }}
                     >
-                      <Typography fontWeight={900} sx={{ color: "common.white", fontSize: "1rem" }}>
+                      <Typography fontWeight={900} sx={{ color: "match.onFill", fontSize: "1rem" }}>
                         {wins}
                       </Typography>
                       <Typography
                         sx={{
-                          color: "common.white",
+                          color: "match.onFill",
                           fontSize: "0.75rem",
                           fontWeight: 700,
                           textTransform: "lowercase",
@@ -539,13 +539,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       >
                         <Typography
                           fontWeight={900}
-                          sx={{ color: "common.white", fontSize: "1rem" }}
+                          sx={{ color: "match.onFill", fontSize: "1rem" }}
                         >
                           {draws}
                         </Typography>
                         <Typography
                           sx={{
-                            color: "common.white",
+                            color: "match.onFill",
                             fontSize: "0.75rem",
                             fontWeight: 700,
                             textTransform: "lowercase",
@@ -566,12 +566,12 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         borderRadius: 999,
                       }}
                     >
-                      <Typography fontWeight={900} sx={{ color: "common.white", fontSize: "1rem" }}>
+                      <Typography fontWeight={900} sx={{ color: "match.onFill", fontSize: "1rem" }}>
                         {losses}
                       </Typography>
                       <Typography
                         sx={{
-                          color: "common.white",
+                          color: "match.onFill",
                           fontSize: "0.75rem",
                           fontWeight: 700,
                           textTransform: "lowercase",

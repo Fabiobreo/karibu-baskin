@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
 import { socialBrandColor } from "@/lib/heroStyles";
+import { readableFill } from "@/lib/colorUtils";
 
 interface Props {
   playerName: string;
@@ -28,6 +29,8 @@ export default function PlayerShareButtons({
   playerColor,
 }: Props) {
   const { showToast } = useToast();
+  // Colore della squadra come fondo, etichetta bianca: fondo scurito se serve (UX-22).
+  const fill = readableFill(playerColor, { preferWhite: true });
   const t = useTranslations("share");
   const [busy, setBusy] = useState(false);
 
@@ -93,15 +96,15 @@ export default function PlayerShareButtons({
         disabled={busy}
         startIcon={<ShareIcon sx={{ fontSize: 16 }} />}
         sx={{
-          bgcolor: playerColor,
-          color: "common.white",
+          bgcolor: fill.bg,
+          color: fill.fg,
           fontWeight: 700,
           fontSize: "0.78rem",
           textTransform: "none",
           px: 1.75,
           py: 0.5,
           borderRadius: 999,
-          "&:hover": { bgcolor: playerColor, opacity: 0.9 },
+          "&:hover": { bgcolor: fill.bg, opacity: 0.9 },
         }}
       >
         {t("share")}

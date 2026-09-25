@@ -81,7 +81,7 @@ function getSessionStatus(
   const end = sessionEndDate(date, endTime);
 
   if (now >= date && now <= end)
-    return { label: t("live"), bgcolor: "match.win", color: "common.white" };
+    return { label: t("live"), bgcolor: "match.win", color: "match.onFill" };
   if (now > end) return { label: t("ended"), bgcolor: "action.selected", color: "text.secondary" };
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

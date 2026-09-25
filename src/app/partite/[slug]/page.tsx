@@ -446,6 +446,10 @@ export default async function MatchDetailPage({ params }: Props) {
               sx={{
                 color: "rgba(255,255,255,0.65)",
                 fontWeight: 500,
+                // Area di tocco di almeno 24 px (WCAG 2.5.8, UX-22).
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 24,
                 "&:hover": { color: brandColor.white },
               }}
             >
@@ -742,7 +746,7 @@ export default async function MatchDetailPage({ params }: Props) {
                           label={matchResultLabel(match.result)}
                           sx={{
                             bgcolor: meta.color,
-                            color: "common.white",
+                            color: "match.onFill",
                             fontWeight: 800,
                             fontSize: "0.85rem",
                             height: 32,

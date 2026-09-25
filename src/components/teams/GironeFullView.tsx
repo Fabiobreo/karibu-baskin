@@ -378,7 +378,7 @@ export default function GironeFullView({
                               size="small"
                               sx={{
                                 bgcolor: RESULT_COLORS[m.result],
-                                color: "common.white",
+                                color: "match.onFill",
                                 fontWeight: 700,
                                 height: 20,
                                 fontSize: "0.75rem",

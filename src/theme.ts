@@ -23,6 +23,14 @@ const ORANGE_ON_DARK = "#FF8A50";
 // Non va usato per il TESTO arancio su fondo chiaro: su crema fa 4,28:1,
 // sotto la soglia. Per quello resta ORANGE_ON_LIGHT (`primary.onLight`).
 const ORANGE_FILL = "#C84B00";
+
+// Avvisi e informazioni nel tema chiaro (UX-22). I default MUI (#ED6C02,
+// #0288D1) si fermano a 3,11:1 e 3,86:1 col bianco: non reggono né
+// l'etichetta bianca dei chip pieni né il testo dei chip outlined. Questi
+// fanno 5,44:1 e 5,32:1 sul bianco, 4,97:1 e 4,86:1 sul crema del fondo.
+// In scuro restano i default MUI, con etichetta nera, già sopra soglia.
+const WARNING_ON_LIGHT = "#A65300";
+const INFO_ON_LIGHT = "#0270B0";
 const ORANGE_FILL_HOVER = "#A83F00";
 
 // Anello di focus da tastiera. `main` e' l'arancione chiaro, leggibile
@@ -43,6 +51,13 @@ type MatchPalette = {
   lossBg: string;
   draw: string;
   drawBg: string;
+  /**
+   * Etichetta sopra un riempimento `win`/`draw`/`loss` (chip risultato, badge
+   * "in corso"). In chiaro i fondi sono scuri e regge il bianco; in scuro sono
+   * chiari (il verde #66BB6A col bianco fa 2,36:1) e serve un'etichetta scura
+   * (UX-22).
+   */
+  onFill: string;
 };
 
 /**
@@ -280,6 +295,7 @@ const lightMatch: MatchPalette = {
   // a 3,79:1 in entrambi i versi.
   draw: ORANGE_ON_LIGHT,
   drawBg: "#FFF3E0",
+  onFill: "#fff",
 };
 
 const darkMatch: MatchPalette = {
@@ -291,6 +307,7 @@ const darkMatch: MatchPalette = {
   lossBg: "#331616",
   draw: "#FFA726",
   drawBg: "#3A2616",
+  onFill: "rgba(0, 0, 0, 0.87)",
 };
 
 // Tredici card della dashboard con tredici colori icona non codificavano nulla.
@@ -360,13 +377,15 @@ const darkStats: StatsPalette = {
 // distinguibili fra loro: oro olivastro, argento grigio, bronzo ramato.
 // `deep` e' la seconda fermata del gradiente delle pastiglie.
 const lightMedal: MedalPalette = {
-  gold: "#8C6D00", // 4,88:1 su bianco
+  // Oro e bronzo sono anche TESTO sui loro fondi tinti (nomi dei traguardi):
+  // lì servono >= 4,5:1, non solo sul bianco (UX-22).
+  gold: "#7A5F00", // 6,06:1 su bianco, 5,18:1 su goldBg
   goldDeep: "#6E5500",
   goldBg: "#F1EDE0", // gold al 12% su fondo carta
   silver: "#616161", // 6,19:1
   silverDeep: "#424242",
   silverBg: "#ECECEC",
-  bronze: "#A85B2A", // 5,01:1
+  bronze: "#94501F", // 6,13:1 su bianco, 5,22:1 su bronzeBg
   bronzeDeep: "#7D4020",
   bronzeBg: "#F5EBE5",
 };
@@ -645,6 +664,8 @@ export const lightTheme = createTheme({
       fill: ORANGE_FILL,
       contrastText: "#fff",
     },
+    warning: { main: WARNING_ON_LIGHT, contrastText: "#fff" },
+    info: { main: INFO_ON_LIGHT, contrastText: "#fff" },
     secondary: {
       main: DARK,
       light: "#3D3D3D",
@@ -688,6 +709,10 @@ export const darkTheme = createTheme({
       fill: ORANGE_FILL,
       contrastText: "#fff",
     },
+    // Il rosso del tema scuro resta chiaro (è anche testo su #1E1E1E, 4,53:1);
+    // sotto il bianco dei chip pieni si fermava a 3,68:1. Etichetta scura come
+    // MUI fa già per warning, info e success in scuro: 5,17:1 (UX-22).
+    error: { main: "#F44336", contrastText: "rgba(0, 0, 0, 0.87)" },
     secondary: {
       main: "#E0E0E0",
       light: "#FFFFFF",

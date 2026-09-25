@@ -315,7 +315,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         label={tMatches("resultWins", { count: totals.wins })}
                         sx={{
                           bgcolor: "match.win",
-                          color: "common.white",
+                          color: "match.onFill",
                           fontWeight: 700,
                           minWidth: 60,
                         }}
@@ -324,7 +324,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         label={tMatches("resultDraws", { count: totals.draws })}
                         sx={{
                           bgcolor: "match.draw",
-                          color: "common.white",
+                          color: "match.onFill",
                           fontWeight: 700,
                           minWidth: 60,
                         }}
@@ -333,7 +333,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         label={tMatches("resultLosses", { count: totals.losses })}
                         sx={{
                           bgcolor: "match.loss",
-                          color: "common.white",
+                          color: "match.onFill",
                           fontWeight: 700,
                           minWidth: 60,
                         }}
@@ -382,7 +382,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 height: 28,
                                 borderRadius: "50%",
                                 bgcolor: MATCH_RESULT_META[m.result!].color,
-                                color: "common.white",
+                                color: "match.onFill",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -437,17 +437,17 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         <Chip
                           label={tMatches("resultWins", { count: s.wins })}
                           size="small"
-                          sx={{ bgcolor: "match.win", color: "common.white", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.win", color: "match.onFill", fontWeight: 700 }}
                         />
                         <Chip
                           label={tMatches("resultDraws", { count: s.draws })}
                           size="small"
-                          sx={{ bgcolor: "match.draw", color: "common.white", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.draw", color: "match.onFill", fontWeight: 700 }}
                         />
                         <Chip
                           label={tMatches("resultLosses", { count: s.losses })}
                           size="small"
-                          sx={{ bgcolor: "match.loss", color: "common.white", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.loss", color: "match.onFill", fontWeight: 700 }}
                         />
                         <Chip
                           label={`${s.scored}–${s.conceded}`}
@@ -559,7 +559,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 size="small"
                                 sx={{
                                   bgcolor: MATCH_RESULT_META[m.result].color,
-                                  color: "common.white",
+                                  color: "match.onFill",
                                   fontWeight: 700,
                                   fontSize: "0.75rem",
                                   height: 20,

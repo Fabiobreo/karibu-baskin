@@ -2,7 +2,8 @@
  * Controllo di accessibilità ripetibile (UX-01): `npm run a11y`.
  *
  * Misura con axe-core un insieme fisso di pagine, per tre profili (anonimo,
- * atleta, admin) e due viewport (desktop 1440×900, mobile 390×844), contro un
+ * atleta, admin), due viewport (desktop 1440×900, mobile 390×844) e i due temi
+ * (chiaro e scuro, UX-22: il contrasto va verificato in entrambi), contro un
  * server già in esecuzione (default http://localhost:3000, `A11Y_BASE_URL` per
  * cambiarlo) con `ENABLE_TEST_LOGIN=true`.
  *
@@ -44,9 +45,16 @@ const REPORT_DIR = join(ROOT, "test-results", "a11y");
 const TAGS = ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa", "best-practice"];
 const GRAVE = new Set(["critical", "serious"]);
 
+const DESKTOP = { viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false };
+const MOBILE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
+// Il tema scuro si sceglie col cookie della preferenza (`karibu-color-mode`),
+// non con `karibu-scheme`: in modalità "system" lo script in <head> riscrive
+// quest'ultimo seguendo il sistema, che in Playwright è chiaro.
 const VIEWPORTS = [
-  { name: "desktop", viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false },
-  { name: "mobile", viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+  { name: "desktop", ...DESKTOP, scheme: "light" },
+  { name: "mobile", ...MOBILE, scheme: "light" },
+  { name: "desktop-dark", ...DESKTOP, scheme: "dark" },
+  { name: "mobile-dark", ...MOBILE, scheme: "dark" },
 ];
 
 const args = process.argv.slice(2);
@@ -89,7 +97,13 @@ async function resolveTargets(prisma) {
       select: { id: true, dateSlug: true },
     }),
     prisma.trainingSession.findFirst({
-      where: { date: { lt: now }, registrations: { some: {} } },
+      // Esclusi gli allenamenti del seed UX-26: non hanno squadre, e la pagina
+      // misurata perderebbe proprio le parti che si vedono dopo l'allenamento.
+      where: {
+        date: { lt: now },
+        registrations: { some: {} },
+        NOT: { title: { startsWith: "[UX]" } },
+      },
       orderBy: { date: "desc" },
       select: { id: true, dateSlug: true },
     }),
@@ -192,6 +206,7 @@ async function newContext(browser, vp, email) {
     isMobile: vp.isMobile,
     hasTouch: vp.hasTouch,
   });
+  await context.addCookies([{ name: "karibu-color-mode", value: vp.scheme, url: BASE_URL }]);
   // Immagini esterne (foto Google, Vercel Blob) servite con un PNG locale:
   // l'Avatar MUI mette il suo <img> solo a caricamento riuscito, quindi con la
   // rete vera le violazioni sulle immagini cambierebbero da un giro all'altro.
@@ -355,11 +370,13 @@ async function main() {
           if (vp === VIEWPORTS[0]) skipped.push(`${profile.name}/${label}: nessun dato nel DB`);
           continue;
         }
-        process.stdout.write(`${profile.name.padEnd(8)} ${vp.name.padEnd(8)} ${path} … `);
+        process.stdout.write(`${profile.name.padEnd(8)} ${vp.name.padEnd(12)} ${path} … `);
         try {
           await gotoWithRetry(page, path);
           const violations = await scan(page);
-          const measured = vp.isMobile ? await measureOverflow(page, vp) : null;
+          // La larghezza non dipende dal tema: basta misurarla in chiaro.
+          const measured =
+            vp.isMobile && vp.scheme === "light" ? await measureOverflow(page, vp) : null;
           const overflow = measured && measured.width > NARROW_WIDTH ? measured : null;
           report.push({
             profile: profile.name,

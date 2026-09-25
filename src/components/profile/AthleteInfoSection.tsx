@@ -2,7 +2,6 @@ import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { getEntityLabels } from "@/lib/entityLabels";
-import { roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import ProfileRow from "@/components/profile/ProfileRow";
 import { format } from "date-fns";
@@ -70,7 +69,7 @@ export default async function AthleteInfoSection({
                 <Stack spacing={0.5}>
                   {roleHistory.map((h, i) => (
                     <Typography key={i} variant="caption" color="text.secondary">
-                      <Box component="span" sx={{ color: roleColor(h.sportRole), fontWeight: 700 }}>
+                      <Box component="span" sx={{ color: "text.primary", fontWeight: 700 }}>
                         {roleLabel(h.sportRole)}
                       </Box>
                       {" · "}

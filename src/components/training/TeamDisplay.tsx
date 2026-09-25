@@ -25,10 +25,17 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { readableFill, readableOn } from "@/lib/colorUtils";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import QueryErrorState from "@/components/common/QueryErrorState";
+
+/**
+ * Colore della squadra come riempimento sotto un'etichetta bianca: l'arancio
+ * #E65100 col bianco fa 3,78:1, quindi si scurisce quanto basta (UX-22).
+ */
+const teamFill = (color: string) => readableFill(color, { preferWhite: true }).bg;
 
 export interface TeamAthlete {
   id: string;
@@ -146,7 +153,11 @@ export function MobileTeamTabs({
         sx={{
           "& .MuiTabs-indicator": { backgroundColor: activeColor, height: 3 },
           "& .MuiTab-root": { fontWeight: 700, fontSize: "0.75rem", minHeight: 48 },
-          "& .MuiTab-root.Mui-selected": { color: activeColor },
+          // Il nome della squadra è testo sul fondo del tema: l'arancio pieno fa
+          // 3,78:1 sul bianco e i "Neri" sparirebbero in scuro (UX-22).
+          "& .MuiTab-root.Mui-selected": {
+            color: (theme) => readableOn(activeColor, theme.palette.background.paper),
+          },
         }}
       >
         {meta.map((m, i) => (
@@ -171,7 +182,7 @@ export function MobileTeamTabs({
                     height: 20,
                     fontSize: "0.75rem",
                     fontWeight: 700,
-                    bgcolor: tab === i ? m.color : "action.selected",
+                    bgcolor: tab === i ? teamFill(m.color) : "action.selected",
                     color: tab === i ? "common.white" : "text.secondary",
                   }}
                 />
@@ -251,7 +262,7 @@ export function AlignedTeamGrid({
         sx={{
           px: 2,
           py: 1.5,
-          backgroundColor: m.color,
+          backgroundColor: teamFill(m.color),
           display: "flex",
           alignItems: "center",
           gap: 1,
@@ -263,7 +274,8 @@ export function AlignedTeamGrid({
         <Chip
           label={t("athletes", { count: allTeams[i].length })}
           size="small"
-          sx={{ backgroundColor: "rgba(255,255,255,0.3)", color: "common.white" }}
+          variant="outlined"
+          sx={{ color: "common.white", borderColor: "common.white" }}
         />
       </Box>
     );
@@ -515,7 +527,7 @@ function TeamEditor({
                 sx={{
                   px: 2,
                   py: 1,
-                  backgroundColor: m.color,
+                  backgroundColor: teamFill(m.color),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -528,12 +540,13 @@ function TeamEditor({
                   <Chip
                     label={teamList.length}
                     size="small"
+                    variant="outlined"
                     sx={{
                       height: 20,
                       fontSize: "0.75rem",
                       fontWeight: 700,
-                      bgcolor: "rgba(255,255,255,0.3)",
                       color: "common.white",
+                      borderColor: "common.white",
                     }}
                   />
                 </Box>
@@ -545,7 +558,7 @@ function TeamEditor({
                     onClick={() => moveTo(key)}
                     sx={{
                       bgcolor: "common.white",
-                      color: m.color,
+                      color: teamFill(m.color),
                       fontWeight: 700,
                       fontSize: "0.75rem",
                       py: 0.25,

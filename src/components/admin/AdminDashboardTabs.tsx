@@ -202,7 +202,8 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           variant="outlined"
                           sx={{
                             borderColor: roleColor(row.sportRoleSuggested),
-                            color: roleColor(row.sportRoleSuggested),
+                            // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
+                            color: "text.primary",
                             fontWeight: 700,
                             fontSize: "0.75rem",
                           }}

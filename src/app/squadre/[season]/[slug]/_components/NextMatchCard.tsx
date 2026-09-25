@@ -482,7 +482,7 @@ export default async function NextMatchCard({
                     alignItems: "center",
                     gap: 0.6,
                     bgcolor: MATCH_RESULT_META[prev.result].color,
-                    color: "common.white",
+                    color: "match.onFill",
                     px: 1,
                     py: 0.25,
                     borderRadius: 1,

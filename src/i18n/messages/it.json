@@ -1239,7 +1239,8 @@
         "question": "{who, select, child {{name} ha già giocato a basket o ad altri sport con la palla?} other {Hai già giocato a basket o ad altri sport con la palla?}}",
         "little": "No, o poco",
         "years": "Sì, per anni"
-      }
+      },
+      "progressLabel": "Avanzamento del questionario"
     },
     "showPreviousSeasons": "Mostra le stagioni precedenti ({count, plural, one {# allenamento} other {# allenamenti}})",
     "titleRequired": "Il titolo è obbligatorio",

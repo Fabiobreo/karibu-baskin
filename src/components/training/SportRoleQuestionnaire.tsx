@@ -160,6 +160,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
       <LinearProgress
         variant="determinate"
         value={progress}
+        aria-label={t("progressLabel")}
         sx={{ height: 3, borderRadius: 2, mb: 2.5, bgcolor: "action.hover" }}
       />
 

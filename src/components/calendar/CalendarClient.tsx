@@ -342,9 +342,10 @@ export default function CalendarClient({
                   // sul proprio min-content e sborderebbe dalla traccia.
                   minWidth: 0,
                   overflow: "hidden",
-                  bgcolor: "background.paper",
+                  // Fuori mese: fondo appena velato, non `opacity` sulla cella,
+                  // che portava il numero a 1,81:1 (UX-22).
+                  bgcolor: inMonth ? "background.paper" : "background.default",
                   p: { xs: "4px", sm: "6px" },
-                  opacity: inMonth ? 1 : 0.38,
                   cursor: isStaff || dayEvents.length > 0 ? "pointer" : "default",
                   "&:hover": isStaff || dayEvents.length > 0 ? { bgcolor: "action.hover" } : {},
                   "&:focus-visible": {

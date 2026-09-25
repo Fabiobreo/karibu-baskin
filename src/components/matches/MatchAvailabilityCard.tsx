@@ -161,14 +161,14 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
               >
                 <ToggleButton
                   value={true}
-                  sx={{ "&.Mui-selected": { bgcolor: "match.win", color: "common.white" } }}
+                  sx={{ "&.Mui-selected": { bgcolor: "match.win", color: "match.onFill" } }}
                 >
                   <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
                   {tCommon("yes")}
                 </ToggleButton>
                 <ToggleButton
                   value={false}
-                  sx={{ "&.Mui-selected": { bgcolor: "match.loss", color: "common.white" } }}
+                  sx={{ "&.Mui-selected": { bgcolor: "match.loss", color: "match.onFill" } }}
                 >
                   <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
                   {tCommon("no")}

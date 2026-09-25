@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { contrastText, contrastRatio, readableOn } from "./colorUtils";
+import { contrastText, contrastRatio, readableFill, readableOn } from "./colorUtils";
 
 const WHITE = "#fff";
 const DARK = "rgba(0,0,0,0.87)";
@@ -87,5 +87,51 @@ describe("readableOn", () => {
 
   it("restituisce invariato ciò che non sa parsare (token di tema)", () => {
     expect(readableOn("primary.main", "#fff")).toBe("primary.main");
+  });
+});
+
+describe("readableFill", () => {
+  const shownRatio = ({ bg, fg }: { bg: string; fg: string }) =>
+    fg === WHITE
+      ? contrastRatio(bg, "#ffffff")!
+      : contrastRatio(
+          bg,
+          "#" +
+            bg
+              .slice(1)
+              .match(/../g)!
+              .map((h) =>
+                Math.round(parseInt(h, 16) * 0.13)
+                  .toString(16)
+                  .padStart(2, "0")
+              )
+              .join("")
+        )!;
+
+  it("tiene il colore quando un'etichetta regge già", () => {
+    expect(readableFill("#1565C0")).toEqual({ bg: "#1565C0", fg: WHITE });
+    expect(readableFill("#FFD600")).toEqual({ bg: "#FFD600", fg: DARK });
+  });
+
+  it("con preferWhite scurisce il fondo invece di passare al testo scuro", () => {
+    const orange = readableFill("#E65100", { preferWhite: true });
+    expect(orange.fg).toBe(WHITE);
+    expect(contrastRatio(orange.bg, "#ffffff")).toBeGreaterThanOrEqual(4.5);
+    expect(readableFill("#1565C0", { preferWhite: true })).toEqual({ bg: "#1565C0", fg: WHITE });
+  });
+
+  it("sul token di tema o senza colore usa il riempimento arancio", () => {
+    expect(readableFill(null)).toEqual({ bg: "primary.fill", fg: WHITE });
+    expect(readableFill("primary.main")).toEqual({ bg: "primary.fill", fg: WHITE });
+  });
+
+  it("arriva a 4,5:1 su tutta la gamma di grigi e sui colori squadra", () => {
+    const greys = Array.from({ length: 52 }, (_, i) => {
+      const h = (i * 5).toString(16).padStart(2, "0");
+      return `#${h}${h}${h}`;
+    });
+    for (const c of [...greys, "#E65100", "#43A047", "#D32F2F", "#8E24AA", "#00897B"]) {
+      expect(shownRatio(readableFill(c)), c).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });

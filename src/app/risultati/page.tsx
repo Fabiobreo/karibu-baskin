@@ -159,7 +159,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     size="small"
                     sx={{
                       bgcolor: "match.win",
-                      color: "common.white",
+                      color: "match.onFill",
                       fontWeight: 800,
                       fontSize: "0.75rem",
                       height: 20,
@@ -171,7 +171,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       size="small"
                       sx={{
                         bgcolor: "match.draw",
-                        color: "common.white",
+                        color: "match.onFill",
                         fontWeight: 800,
                         fontSize: "0.75rem",
                         height: 20,
@@ -183,7 +183,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     size="small"
                     sx={{
                       bgcolor: "match.loss",
-                      color: "common.white",
+                      color: "match.onFill",
                       fontWeight: 800,
                       fontSize: "0.75rem",
                       height: 20,

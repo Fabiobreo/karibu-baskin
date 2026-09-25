@@ -87,7 +87,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                   sx={{
                     fontWeight: 700,
                     fontSize: "0.75rem",
-                    color: col.primary ? "primary.main" : undefined,
+                    color: col.primary ? "primary.onLight" : undefined,
                   }}
                   title={col.title}
                 >

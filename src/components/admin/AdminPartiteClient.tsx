@@ -55,6 +55,10 @@ import MatchResultDialog, {
 import GroupMatchInlineScore from "@/components/teams/GroupMatchInlineScore";
 import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
 import type { OpponentProfile } from "@/lib/schemas/match";
+import { readableFill } from "@/lib/colorUtils";
+
+// Chip squadra con etichetta bianca, fondo scurito se serve (UX-22).
+const WHITE_LABEL = { preferWhite: true };
 
 type Team = MatchFormTeam;
 type OpposingTeam = MatchFormOpposingTeam & { ratingMu?: number | null };
@@ -113,7 +117,8 @@ const RESULT_LABELS: Record<MatchResult, string> = {
 const RESULT_COLORS: Record<MatchResult, string> = {
   WIN: "#2E7D32",
   LOSS: "#C62828",
-  DRAW: "#E65100",
+  // Riempimento arancio del tema: #E65100 col bianco si fermava a 3,78:1 (UX-22).
+  DRAW: "primary.fill",
 };
 
 /** Una partita è "prossima" se la sua data è nel futuro rispetto a `now` (ms). */
@@ -909,8 +914,8 @@ function MatchRowAndContext({
             label={m.team.name}
             size="small"
             sx={{
-              backgroundColor: m.team.color ?? "primary.main",
-              color: "common.white",
+              backgroundColor: readableFill(m.team.color, WHITE_LABEL).bg,
+              color: readableFill(m.team.color, WHITE_LABEL).fg,
               fontWeight: 700,
               fontSize: "0.75rem",
             }}
@@ -1113,8 +1118,8 @@ function FlatMatchRow({
           label={m.team.name}
           size="small"
           sx={{
-            backgroundColor: m.team.color ?? "primary.main",
-            color: "common.white",
+            backgroundColor: readableFill(m.team.color, WHITE_LABEL).bg,
+            color: readableFill(m.team.color, WHITE_LABEL).fg,
             fontWeight: 700,
             fontSize: "0.75rem",
           }}

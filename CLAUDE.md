@@ -43,7 +43,7 @@ npm run format       # Prettier --write su src/
 npm run format:check # Prettier --check (CI)
 npm test             # Vitest run (one-shot)
 npm run test:watch   # Vitest watch
-npm run a11y         # axe-core su pagine fisse (anonimo/atleta/admin, desktop+mobile) contro il dev server con ENABLE_TEST_LOGIN=true; fallisce su violazioni gravi non in e2e/a11y-baseline.json (--update-baseline per riscriverla, --only=anon,athlete,admin)
+npm run a11y         # axe-core su pagine fisse (anonimo/atleta/admin, desktop+mobile, tema chiaro+scuro, larghezza a 360 px) contro il dev server con ENABLE_TEST_LOGIN=true; fallisce su violazioni gravi non in e2e/a11y-baseline.json (--update-baseline per riscriverla, --only=anon,athlete,admin)
 npm run email:dev    # Preview React Email (porta 3333)
 npx tsc --noEmit     # type check — SEMPRE prima di fare push
 ```

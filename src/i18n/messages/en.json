@@ -1239,7 +1239,8 @@
         "question": "{who, select, child {Has {name} played basketball or other ball sports before?} other {Have you played basketball or other ball sports before?}}",
         "little": "No, or a little",
         "years": "Yes, for years"
-      }
+      },
+      "progressLabel": "Questionnaire progress"
     },
     "showPreviousSeasons": "Show previous seasons ({count, plural, one {# training} other {# trainings}})",
     "titleRequired": "Title is required",

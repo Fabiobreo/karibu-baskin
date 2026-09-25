@@ -403,7 +403,7 @@ function CompactMatchRow({
                     sx={{
                       "&.Mui-selected": {
                         bgcolor: "match.win",
-                        color: "common.white",
+                        color: "match.onFill",
                       },
                     }}
                   >
@@ -415,7 +415,7 @@ function CompactMatchRow({
                     sx={{
                       "&.Mui-selected": {
                         bgcolor: "match.loss",
-                        color: "common.white",
+                        color: "match.onFill",
                       },
                     }}
                   >

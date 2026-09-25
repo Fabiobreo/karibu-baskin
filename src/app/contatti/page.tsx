@@ -204,7 +204,7 @@ export default function ContattiPage() {
                     px: 3,
                     py: 1.5,
                     fontWeight: active ? 700 : 400,
-                    color: active ? "primary.main" : "text.secondary",
+                    color: active ? "primary.onLight" : "text.secondary",
                     borderBottom: active ? "2px solid" : "2px solid transparent",
                     borderColor: active ? "primary.main" : "transparent",
                     fontSize: "0.88rem",

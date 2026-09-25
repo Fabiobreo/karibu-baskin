@@ -1400,7 +1400,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                   size="small"
                                   sx={{
                                     backgroundColor: MATCH_RESULT_META[ms.match.result].color,
-                                    color: "common.white",
+                                    color: "match.onFill",
                                     fontWeight: 700,
                                     fontSize: "0.75rem",
                                   }}
