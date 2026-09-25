@@ -54,6 +54,8 @@ interface TrainingCloseFormProps {
   results: SavedResult[];
   /** Chiamata dopo un salvataggio riuscito; `concluded` se l'allenamento e' stato chiuso. */
   onSaved: (concluded: boolean) => void;
+  /** Allenamento gia' concluso: solo correzioni, un bottone "Salva modifiche". */
+  alreadyConcluded?: boolean;
 }
 
 const MATCHUP_TEAMS: Record<MatchupKey, [number, number]> = {
@@ -80,6 +82,7 @@ export default function TrainingCloseForm({
   teams,
   results,
   onSaved,
+  alreadyConcluded = false,
 }: TrainingCloseFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -182,7 +185,9 @@ export default function TrainingCloseForm({
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
       <Typography variant="body2" color="text.secondary">
-        Segna chi c&apos;era, scrivi i punteggi delle partitelle, poi salva.
+        {alreadyConcluded
+          ? "Allenamento concluso: qui puoi correggere presenze e punteggi."
+          : "Segna chi c'era, scrivi i punteggi delle partitelle, poi salva."}
       </Typography>
 
       {/* ── Presenze ── */}
@@ -433,7 +438,7 @@ export default function TrainingCloseForm({
         }}
       >
         <Button
-          variant="outlined"
+          variant={alreadyConcluded ? "contained" : "outlined"}
           onClick={() => save(false)}
           disabled={!!saving || !dirty}
           startIcon={
@@ -445,19 +450,25 @@ export default function TrainingCloseForm({
           }
           sx={TOUCH}
         >
-          Salva senza concludere
+          {alreadyConcluded ? "Salva modifiche" : "Salva senza concludere"}
         </Button>
-        <Button
-          variant="contained"
-          onClick={() => save(true)}
-          disabled={!!saving}
-          startIcon={
-            saving === "conclude" ? <CircularProgress size={16} color="inherit" /> : <DoneAllIcon />
-          }
-          sx={{ ...TOUCH, fontWeight: 700 }}
-        >
-          Salva e concludi
-        </Button>
+        {!alreadyConcluded && (
+          <Button
+            variant="contained"
+            onClick={() => save(true)}
+            disabled={!!saving}
+            startIcon={
+              saving === "conclude" ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <DoneAllIcon />
+              )
+            }
+            sx={{ ...TOUCH, fontWeight: 700 }}
+          >
+            Salva e concludi
+          </Button>
+        )}
       </Box>
     </Box>
   );

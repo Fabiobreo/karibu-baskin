@@ -1,16 +1,25 @@
 import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
-import AdminAllenamentiClient from "@/components/admin/AdminAllenamentiClient";
-import AdminUpcomingSessions from "@/components/admin/AdminUpcomingSessions";
+import AdminTrainingsView, { type TrainingsSection } from "@/components/admin/AdminTrainingsView";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { Typography } from "@mui/material";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Allenamenti da completare | Admin" };
+export const metadata: Metadata = { title: "Allenamenti | Admin" };
 export const revalidate = 0;
 
-export default async function AdminAllenamentiPage() {
+// Quanti allenamenti conclusi mostrare: servono per correggere a posteriori,
+// non come archivio (quello e' /allenamenti).
+const CONCLUDED_LIMIT = 20;
+
+const SECTIONS: TrainingsSection[] = ["prossimi", "da-completare", "conclusi"];
+
+type Props = {
+  searchParams: Promise<{ sezione?: string; apri?: string; modifica?: string }>;
+};
+
+export default async function AdminAllenamentiPage({ searchParams }: Props) {
   const now = new Date();
+  const sp = await searchParams;
 
   const registrationsSelect = {
     select: {
@@ -24,89 +33,116 @@ export default async function AdminAllenamentiPage() {
     },
     orderBy: [{ role: "asc" as const }, { createdAt: "asc" as const }],
   };
+  const sessionFields = {
+    id: true,
+    title: true,
+    date: true,
+    endTime: true,
+    dateSlug: true,
+    teams: true,
+    allowedRoles: true,
+    restrictTeamId: true,
+    openRoles: true,
+    registrations: registrationsSelect,
+  } as const;
+  const pastFields = {
+    ...sessionFields,
+    // Solo i punteggi: servono per precompilare le partitelle.
+    matchResults: { select: { id: true, matchup: true, scoreA: true, scoreB: true } },
+  } as const;
 
-  // Le due liste sono indipendenti: in parallelo (Neon a freddo).
-  const [rawSessions, upcomingSessions] = await Promise.all([
+  // Le tre liste sono indipendenti: in parallelo (Neon a freddo).
+  const [toCompleteRaw, concludedRaw, upcomingRaw] = await Promise.all([
     prisma.trainingSession.findMany({
       where: { date: { lt: now }, managedAt: null },
       orderBy: { date: "desc" },
-      include: {
-        registrations: registrationsSelect,
-        // Solo i punteggi: servono per precompilare le partitelle.
-        matchResults: { select: { id: true, matchup: true, scoreA: true, scoreB: true } },
-      },
+      select: pastFields,
     }),
-    // Gli stessi "prossimi" di /allenamenti (data futura): lo staff iscrive da
-    // qui chi non è riuscito a farlo da solo.
+    prisma.trainingSession.findMany({
+      where: { date: { lt: now }, managedAt: { not: null } },
+      orderBy: { date: "desc" },
+      take: CONCLUDED_LIMIT,
+      select: pastFields,
+    }),
     prisma.trainingSession.findMany({
       where: { date: { gt: now } },
       orderBy: { date: "asc" },
-      select: {
-        id: true,
-        title: true,
-        date: true,
-        dateSlug: true,
-        registrations: registrationsSelect,
-      },
+      select: { ...sessionFields, registrationOpen: true, registrationOpenedAt: true },
     }),
   ]);
 
-  const upcoming = upcomingSessions.map((s) => ({ ...s, date: s.date.toISOString() }));
+  const upcoming = upcomingRaw.map((s) => ({
+    ...s,
+    date: s.date.toISOString(),
+    endTime: s.endTime?.toISOString() ?? null,
+    registrationOpenedAt: s.registrationOpenedAt?.toISOString() ?? null,
+    teams: parseTeamsData(s.teams),
+  }));
 
-  const sessions = rawSessions.map((s) => {
+  function toRow(s: (typeof toCompleteRaw)[number]) {
     const teams = parseTeamsData(s.teams);
     const athleteRegs = s.registrations.filter((r) => !r.registeredAsCoach);
-    const athleteCount = athleteRegs.length;
-    const presentCount = athleteRegs.filter((r) => r.attended === true).length;
-    const athletes = athleteRegs.map((r) => ({
-      id: r.id,
-      name: r.name,
-      role: r.role,
-      attended: r.attended,
-    }));
-
     const hasThreeTeams = !!(teams?.teamC && teams.teamC.length > 0);
-    const expectedResults = teams ? (hasThreeTeams ? 3 : 1) : 0;
     return {
       id: s.id,
       title: s.title,
       date: s.date.toISOString(),
+      endTime: s.endTime?.toISOString() ?? null,
       dateSlug: s.dateSlug,
-      athleteCount,
-      presentCount,
-      athletes,
+      allowedRoles: s.allowedRoles,
+      restrictTeamId: s.restrictTeamId,
+      openRoles: s.openRoles,
+      athleteCount: athleteRegs.length,
+      presentCount: athleteRegs.filter((r) => r.attended === true).length,
+      athletes: athleteRegs.map((r) => ({
+        id: r.id,
+        name: r.name,
+        role: r.role,
+        attended: r.attended,
+      })),
       // Tutti, allenatori compresi: servono alla gestione iscritti per sapere
       // chi c'è già.
       registrations: s.registrations,
-      expectedResults,
+      expectedResults: teams ? (hasThreeTeams ? 3 : 1) : 0,
       results: s.matchResults,
       teams,
     };
-  });
+  }
+  const toComplete = toCompleteRaw.map(toRow);
+  const concluded = concludedRaw.map(toRow);
+
+  // Sezione iniziale: quella chiesta, oppure quella che contiene l'allenamento
+  // da aprire, oppure "Da completare" se c'e' qualcosa da chiudere.
+  const target = sp.apri ?? sp.modifica ?? null;
+  const sectionOf = (id: string): TrainingsSection | null =>
+    upcoming.some((s) => s.id === id)
+      ? "prossimi"
+      : toComplete.some((s) => s.id === id)
+        ? "da-completare"
+        : concluded.some((s) => s.id === id)
+          ? "conclusi"
+          : null;
+  const requested = SECTIONS.find((x) => x === sp.sezione) ?? null;
+  const initialSection: TrainingsSection =
+    (target && sectionOf(target)) ||
+    requested ||
+    (toComplete.length > 0 ? "da-completare" : "prossimi");
 
   return (
     <>
       <AdminPageHeader
-        title="Allenamenti da completare"
-        subtitle="Iscrivi chi non ci è riuscito ai prossimi allenamenti e concludi quelli passati. Gli allenamenti si creano dal Calendario."
-        breadcrumb={[
-          { label: "Dashboard", href: "/admin" },
-          { label: "Allenamenti da completare" },
-        ]}
+        title="Allenamenti"
+        subtitle="Crea gli allenamenti, apri le iscrizioni, fai le squadre e, a fine allenamento, segna presenze e risultati."
+        breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }]}
       />
-      <AdminUpcomingSessions sessions={upcoming} />
-      {upcoming.length > 0 && (
-        <Typography
-          variant="overline"
-          component="h2"
-          fontWeight={800}
-          color="text.secondary"
-          sx={{ display: "block", letterSpacing: "0.1em", mb: 2 }}
-        >
-          Da completare · {sessions.length}
-        </Typography>
-      )}
-      <AdminAllenamentiClient sessions={sessions} />
+      <AdminTrainingsView
+        upcoming={upcoming}
+        toComplete={toComplete}
+        concluded={concluded}
+        initialSection={initialSection}
+        openId={sp.apri ?? null}
+        editId={sp.modifica ?? null}
+      />
     </>
   );
 }

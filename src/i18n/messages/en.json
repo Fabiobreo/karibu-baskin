@@ -706,6 +706,8 @@
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
     "todayBtn": "Today",
+    "newItem": "New",
+    "newItemHint": "New training or event",
     "legendTypes": "Type",
     "legendTeams": "Teams",
     "typeTraining": "Training",

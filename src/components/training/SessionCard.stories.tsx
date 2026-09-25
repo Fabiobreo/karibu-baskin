@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { fn } from "storybook/test";
 import SessionCard from "./SessionCard";
 import {
   sessionFuture,
@@ -25,8 +24,6 @@ const meta: Meta<typeof SessionCard> = {
     hero: false,
     muted: false,
     live: false,
-    generating: false,
-    removingTeams: false,
   },
 };
 
@@ -109,23 +106,10 @@ export const Pieno: Story = {
 // ── Varianti staff ────────────────────────────────────────────────────────────
 
 export const AzioniStaff: Story = {
-  name: "Con azioni staff (menu kebab)",
+  name: "Con collegamento Gestisci (staff)",
   args: {
     session: sessionFuture,
     isStaff: true,
-    onEdit: fn(),
-    onDelete: fn(),
-    onGenerateTeams: fn(),
-  },
-};
-
-export const GenerazioneInCorso: Story = {
-  name: "Generazione squadre in corso (staff)",
-  args: {
-    session: sessionFuture,
-    isStaff: true,
-    onGenerateTeams: fn(),
-    generating: true,
   },
 };
 

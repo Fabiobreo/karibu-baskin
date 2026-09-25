@@ -706,6 +706,8 @@
     "prevMonth": "Mese precedente",
     "nextMonth": "Mese successivo",
     "todayBtn": "Oggi",
+    "newItem": "Nuovo",
+    "newItemHint": "Nuovo allenamento o evento",
     "legendTypes": "Tipo",
     "legendTeams": "Squadre",
     "typeTraining": "Allenamento",

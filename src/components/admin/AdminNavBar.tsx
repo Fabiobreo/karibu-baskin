@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 // raggiungibili dalla dashboard per non affollare la barra.
 const NAV_ITEMS: { label: string; href: string; exact?: boolean }[] = [
   { label: "Dashboard", href: "/admin", exact: true },
-  { label: "Allenamenti da completare", href: "/admin/allenamenti" },
+  { label: "Allenamenti", href: "/admin/allenamenti" },
   { label: "Partite", href: "/admin/partite" },
   { label: "Eventi", href: "/admin/eventi" },
   { label: "News", href: "/admin/news" },

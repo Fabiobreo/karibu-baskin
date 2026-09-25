@@ -132,7 +132,7 @@ export default async function AdminPage() {
         }}
       >
         <StatCard
-          href="/admin/allenamenti"
+          href="/admin/allenamenti?sezione=da-completare"
           icon={<CalendarMonthIcon />}
           value={sessionsIncomplete}
           label="Allenamenti da completare"

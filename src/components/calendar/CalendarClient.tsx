@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
-import { Box, Typography, IconButton, Skeleton } from "@mui/material";
+import { Box, Typography, IconButton, Skeleton, Button } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -35,6 +35,7 @@ import EventChip from "@/components/calendar/EventChip";
 import CalendarLegend from "@/components/calendar/CalendarLegend";
 import EventDetailDialog from "@/components/calendar/dialogs/EventDetailDialog";
 import DayEventsDialog from "@/components/calendar/dialogs/DayEventsDialog";
+import AddIcon from "@mui/icons-material/Add";
 import CreateEventDialog from "@/components/calendar/dialogs/CreateEventDialog";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
@@ -237,6 +238,22 @@ export default function CalendarClient({
         >
           {t("todayBtn")}
         </Typography>
+        {/* Oltre al clic sul giorno, che non si vede (UX-14): un bottone esplicito. */}
+        {isStaff && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            aria-label={t("newItemHint")}
+            onClick={() => {
+              const today = new Date();
+              const inShownMonth = today.getFullYear() === year && today.getMonth() === month;
+              setCreateDay(inShownMonth ? today : new Date(year, month, 1));
+            }}
+            sx={{ ml: "auto", minHeight: 44 }}
+          >
+            {t("newItem")}
+          </Button>
+        )}
       </Box>
 
       {/* Etichette giorni settimana */}

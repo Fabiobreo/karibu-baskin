@@ -1,13 +1,9 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
 import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
-import { useToast } from "@/context/ToastContext";
-import PickTeamsDialog from "@/components/training/PickTeamsDialog";
 
 export default function HomeSessionsSection({
   inCorso: initInCorso,
@@ -21,64 +17,10 @@ export default function HomeSessionsSection({
   isStaff: boolean;
 }) {
   const t = useTranslations("trainings");
-  const router = useRouter();
-  const { showToast } = useToast();
-
-  const [inCorso, setInCorso] = useState(initInCorso);
-  const [upcoming, setUpcoming] = useState(initUpcoming);
-
-  const [generating, setGenerating] = useState<string | null>(null);
-  const [removingTeams, setRemovingTeams] = useState<string | null>(null);
-  const [teamPickSession, setTeamPickSession] = useState<SessionWithCount | null>(null);
-
-  function updateSession(id: string, patch: Partial<SessionWithCount>) {
-    const apply = (list: SessionWithCount[]) =>
-      list.map((s) => (s.id === id ? { ...s, ...patch } : s));
-    setInCorso(apply);
-    setUpcoming(apply);
-  }
-
-  async function handleGenerateTeams(s: SessionWithCount, numTeams: 2 | 3) {
-    setTeamPickSession(null);
-    setGenerating(s.id);
-    try {
-      const res = await fetch(`/api/teams/${s.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ numTeams }),
-      });
-      if (res.ok) {
-        const newTeams = await res.json();
-        updateSession(s.id, { teams: newTeams });
-        showToast({ message: `${numTeams} squadre create`, severity: "success" });
-        router.refresh();
-      } else {
-        showToast({ message: "Errore nella creazione delle squadre", severity: "error" });
-      }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
-    } finally {
-      setGenerating(null);
-    }
-  }
-
-  async function handleRemoveTeams(s: SessionWithCount) {
-    setRemovingTeams(s.id);
-    try {
-      const res = await fetch(`/api/teams/${s.id}`, { method: "DELETE" });
-      if (res.ok) {
-        updateSession(s.id, { teams: null });
-        showToast({ message: "Squadre rimosse", severity: "success" });
-        router.refresh();
-      } else {
-        showToast({ message: "Errore nella rimozione delle squadre", severity: "error" });
-      }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
-    } finally {
-      setRemovingTeams(null);
-    }
-  }
+  // Niente stato locale ne' azioni staff: le squadre e il resto si gestiscono
+  // da /admin/allenamenti (UX-14), la card porta li' con "Gestisci".
+  const inCorso = initInCorso;
+  const upcoming = initUpcoming;
 
   // Nessun `return null` quando entrambe le liste sono vuote: quel caso ha il
   // suo stato dedicato qui sotto. Uscire in anticipo lasciava vuoto il
@@ -120,12 +62,6 @@ export default function HomeSessionsSection({
                   isRegistered={!!registrationIdBySession[s.id]}
                   myRegistrationId={registrationIdBySession[s.id] ?? null}
                   isStaff={isStaff}
-                  onEdit={() => router.push(`/allenamenti?edit=${s.id}`)}
-                  onDelete={() => router.push(`/allenamenti?edit=${s.id}`)}
-                  onGenerateTeams={() => setTeamPickSession(s)}
-                  onRemoveTeams={() => handleRemoveTeams(s)}
-                  generating={generating === s.id}
-                  removingTeams={removingTeams === s.id}
                 />
               </Grid>
             ))}
@@ -204,25 +140,12 @@ export default function HomeSessionsSection({
                   isRegistered={!!registrationIdBySession[s.id]}
                   myRegistrationId={registrationIdBySession[s.id] ?? null}
                   isStaff={isStaff}
-                  onEdit={() => router.push(`/allenamenti?edit=${s.id}`)}
-                  onDelete={() => router.push(`/allenamenti?edit=${s.id}`)}
-                  onGenerateTeams={() => setTeamPickSession(s)}
-                  onRemoveTeams={() => handleRemoveTeams(s)}
-                  generating={generating === s.id}
-                  removingTeams={removingTeams === s.id}
                 />
               </Grid>
             ))}
           </Grid>
         </>
       )}
-
-      <PickTeamsDialog
-        open={!!teamPickSession}
-        sessionTitle={teamPickSession?.title}
-        onClose={() => setTeamPickSession(null)}
-        onConfirm={(n) => handleGenerateTeams(teamPickSession!, n)}
-      />
     </>
   );
 }

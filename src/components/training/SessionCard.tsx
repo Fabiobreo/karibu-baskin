@@ -2,27 +2,14 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { formatRoleNumbers } from "@/lib/roleList";
-import {
-  Box,
-  Typography,
-  Paper,
-  Chip,
-  Button,
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  CircularProgress,
-} from "@mui/material";
+import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
+import { Box, Typography, Paper, Chip, Button, IconButton, Tooltip } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import SettingsIcon from "@mui/icons-material/Settings";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -97,16 +84,6 @@ export default function SessionCard({
   isRegistered = false,
   myRegistrationId = null,
   isStaff = false,
-  onEdit,
-  onDelete,
-  onGenerateTeams,
-  onRemoveTeams,
-  onOpenRegistrations,
-  onCloseRegistrations,
-  generating = false,
-  removingTeams = false,
-  openingRegistrations = false,
-  closingRegistrations = false,
 }: {
   session: SessionWithCount;
   hero?: boolean;
@@ -115,19 +92,8 @@ export default function SessionCard({
   isRegistered?: boolean;
   myRegistrationId?: string | null;
   isStaff?: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onGenerateTeams?: () => void;
-  onRemoveTeams?: () => void;
-  onOpenRegistrations?: () => void;
-  onCloseRegistrations?: () => void;
-  generating?: boolean;
-  removingTeams?: boolean;
-  openingRegistrations?: boolean;
-  closingRegistrations?: boolean;
 }) {
   const [teamsOpen, setTeamsOpen] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const dateLocale = useActiveDateLocale();
   const locale = useLocale();
   const t = useTranslations("trainings");
@@ -297,58 +263,26 @@ export default function SessionCard({
                 fontSize: "0.75rem",
               }}
             />
+            {/* Lo staff gestisce l'allenamento dall'admin (UX-14): qui solo un
+                collegamento, niente piu' modifica, iscrizioni e squadre. */}
             {isStaff && (
-              <IconButton
-                size="small"
-                aria-label="Azioni allenamento"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setMenuAnchor(e.currentTarget);
-                }}
-                sx={{
-                  // E' un bottone: serve almeno 3:1 anche da spento.
-                  color: muted ? "text.secondary" : "rgba(255,255,255,0.7)",
-                  pointerEvents: "auto",
-                }}
-              >
-                <MoreVertIcon fontSize="small" />
-              </IconButton>
+              <Tooltip title="Gestisci in admin">
+                <IconButton
+                  href={`/admin/allenamenti?apri=${s.id}`}
+                  aria-label={`Gestisci ${s.title} in admin`}
+                  onClick={(e) => e.stopPropagation()}
+                  sx={{
+                    ...TOUCH_TARGET_MIN,
+                    // E' un bottone: serve almeno 3:1 anche da spento.
+                    color: muted ? "text.secondary" : "rgba(255,255,255,0.7)",
+                    pointerEvents: "auto",
+                  }}
+                >
+                  <SettingsIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
           </Box>
-          {isStaff && (
-            <Menu
-              anchorEl={menuAnchor}
-              open={!!menuAnchor}
-              onClose={() => setMenuAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-            >
-              <MenuItem
-                onClick={() => {
-                  setMenuAnchor(null);
-                  onEdit?.();
-                }}
-              >
-                <ListItemIcon>
-                  <EditIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>Modifica</ListItemText>
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  setMenuAnchor(null);
-                  onDelete?.();
-                }}
-                sx={{ color: "error.main" }}
-              >
-                <ListItemIcon>
-                  <DeleteIcon fontSize="small" color="error" />
-                </ListItemIcon>
-                <ListItemText>Elimina</ListItemText>
-              </MenuItem>
-            </Menu>
-          )}
         </Box>
 
         {/* Body: colonna info+CTA | colonna stamp */}
@@ -467,52 +401,6 @@ export default function SessionCard({
                   {t("signUp")}
                 </Button>
               )}
-              {isStaff && !isRegOpen && !isPast && onOpenRegistrations && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="warning"
-                  startIcon={
-                    openingRegistrations ? (
-                      <CircularProgress size={13} color="inherit" />
-                    ) : (
-                      <LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />
-                    )
-                  }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onOpenRegistrations();
-                  }}
-                  disabled={openingRegistrations}
-                  sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.4 }}
-                >
-                  {openingRegistrations ? "Apertura..." : "Apri iscrizioni"}
-                </Button>
-              )}
-              {isStaff && isRegOpen && !isPast && onCloseRegistrations && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="inherit"
-                  startIcon={
-                    closingRegistrations ? (
-                      <CircularProgress size={13} color="inherit" />
-                    ) : (
-                      <LockIcon sx={{ fontSize: "0.85rem !important" }} />
-                    )
-                  }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onCloseRegistrations();
-                  }}
-                  disabled={closingRegistrations}
-                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
-                >
-                  {closingRegistrations ? "Chiusura..." : "Chiudi iscrizioni"}
-                </Button>
-              )}
               {hasTeams && (
                 <Button
                   variant={myTeam ? "outlined" : "contained"}
@@ -522,48 +410,6 @@ export default function SessionCard({
                   sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
                 >
                   {t("viewTeamsBtn")}
-                </Button>
-              )}
-              {isStaff && hasTeams && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="error"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onRemoveTeams?.();
-                  }}
-                  disabled={removingTeams}
-                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
-                >
-                  {removingTeams ? (
-                    <CircularProgress size={13} color="inherit" />
-                  ) : (
-                    "Rimuovi squadre"
-                  )}
-                </Button>
-              )}
-              {isStaff && !hasTeams && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={
-                    generating ? (
-                      <CircularProgress size={13} color="inherit" />
-                    ) : (
-                      <SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />
-                    )
-                  }
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    onGenerateTeams?.();
-                  }}
-                  disabled={generating || s._count.registrations === 0}
-                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
-                >
-                  {generating ? "Creazione..." : "Crea squadre"}
                 </Button>
               )}
             </Box>

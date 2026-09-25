@@ -1,0 +1,134 @@
+"use client";
+import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Box, Button, Dialog, DialogContent, DialogTitle, Tab, Tabs } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import AdminSessionForm from "@/components/admin/AdminSessionForm";
+import AdminUpcomingList, { type AdminUpcomingRow } from "@/components/admin/AdminUpcomingList";
+import AdminAllenamentiClient, {
+  type AdminSessionRow,
+} from "@/components/admin/AdminAllenamentiClient";
+
+export type TrainingsSection = "prossimi" | "da-completare" | "conclusi";
+
+interface AdminTrainingsViewProps {
+  upcoming: AdminUpcomingRow[];
+  toComplete: AdminSessionRow[];
+  concluded: AdminSessionRow[];
+  initialSection: TrainingsSection;
+  /** Allenamento da aprire subito (`?apri=<id>`, dal sito pubblico o dal calendario). */
+  openId: string | null;
+  /** Allenamento da aprire in modifica (`?modifica=<id>`). */
+  editId: string | null;
+}
+
+/**
+ * Tutto il ciclo di vita di un allenamento in una vista (UX-14): Prossimi
+ * (iscritti, iscrizioni, squadre), Da completare (presenze e risultati),
+ * Conclusi (correzioni). Prima creazione, iscrizioni e squadre stavano sulla
+ * pagina pubblica /allenamenti.
+ */
+export default function AdminTrainingsView({
+  upcoming,
+  toComplete,
+  concluded,
+  initialSection,
+  openId,
+  editId,
+}: AdminTrainingsViewProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [section, setSection] = useState<TrainingsSection>(initialSection);
+  const [creating, setCreating] = useState(false);
+  const [creatingBusy, setCreatingBusy] = useState(false);
+
+  function changeSection(next: TrainingsSection) {
+    setSection(next);
+    // Nell'URL, cosi' tornando indietro o ricaricando si resta sulla sezione.
+    router.replace(`${pathname}?sezione=${next}`, { scroll: false });
+  }
+
+  const tabs: { value: TrainingsSection; label: string }[] = [
+    { value: "prossimi", label: `Prossimi (${upcoming.length})` },
+    { value: "da-completare", label: `Da completare (${toComplete.length})` },
+    { value: "conclusi", label: `Conclusi (${concluded.length})` },
+  ];
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+          mb: 2,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Tabs
+          value={section}
+          onChange={(_, v: TrainingsSection) => changeSection(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="Sezioni degli allenamenti"
+          sx={{ flex: 1, minWidth: 0, "& .MuiTab-root": { minHeight: 48 } }}
+        >
+          {tabs.map((t) => (
+            <Tab key={t.value} value={t.value} label={t.label} />
+          ))}
+        </Tabs>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setCreating(true)}
+          sx={{ minHeight: 44, mb: 1, fontWeight: 700 }}
+        >
+          Nuovo allenamento
+        </Button>
+      </Box>
+
+      {section === "prossimi" && (
+        <AdminUpcomingList sessions={upcoming} initialOpenId={openId} initialEditId={editId} />
+      )}
+      {section === "da-completare" && (
+        <AdminAllenamentiClient
+          sessions={toComplete}
+          initialOpenId={openId}
+          initialEditId={editId}
+        />
+      )}
+      {section === "conclusi" && (
+        <AdminAllenamentiClient
+          sessions={concluded}
+          variant="concluded"
+          initialOpenId={openId}
+          initialEditId={editId}
+        />
+      )}
+
+      <Dialog
+        open={creating}
+        onClose={() => !creatingBusy && setCreating(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle fontWeight={700}>Nuovo allenamento</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <AdminSessionForm
+              showTitle={false}
+              onLoadingChange={setCreatingBusy}
+              onCreated={() => {
+                setCreating(false);
+                changeSection("prossimi");
+                router.refresh();
+              }}
+            />
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </Box>
+  );
+}

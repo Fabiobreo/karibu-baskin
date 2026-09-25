@@ -64,7 +64,7 @@ export default function EventDetailDialog({
 
   const editHref =
     event.type === "training"
-      ? `/allenamenti?edit=${event.id}`
+      ? `/admin/allenamenti?modifica=${event.id}`
       : event.type === "match"
         ? `/admin/partite?edit=${event.id}`
         : `/admin/eventi?edit=${event.id}`;

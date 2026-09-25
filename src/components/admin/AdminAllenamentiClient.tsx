@@ -7,16 +7,15 @@ import {
   AccordionSummary,
   Box,
   Chip,
-  Link as MuiLink,
   Paper,
   Typography,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import TrainingCloseForm, { type CloseAthlete } from "@/components/admin/TrainingCloseForm";
+import SessionActions from "@/components/admin/SessionActions";
 import type { ParticipantRegistration } from "@/components/admin/ManageParticipantsDialog";
 import { closeStatus, type SavedResult } from "@/lib/trainingClose";
 import type { TeamsData } from "@/lib/schemas";
@@ -25,7 +24,11 @@ export interface AdminSessionRow {
   id: string;
   title: string;
   date: string;
+  endTime: string | null;
   dateSlug: string | null;
+  allowedRoles: number[];
+  restrictTeamId: string | null;
+  openRoles: number[];
   athleteCount: number;
   presentCount: number;
   athletes: CloseAthlete[];
@@ -37,7 +40,7 @@ export interface AdminSessionRow {
 
 // ── Riga chiusa: cosa manca, a colpo d'occhio ────────────────────────────────
 
-function SessionSummary({ s }: { s: AdminSessionRow }) {
+function SessionSummary({ s, concluded }: { s: AdminSessionRow; concluded: boolean }) {
   const status = closeStatus(
     s.athletes,
     s.expectedResults,
@@ -59,7 +62,14 @@ function SessionSummary({ s }: { s: AdminSessionRow }) {
         </Typography>
       </Box>
       <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-        {status.unmarked > 0 && (
+        {concluded && (
+          <Chip
+            size="small"
+            variant="outlined"
+            label={`Presenti ${s.presentCount}/${s.athleteCount} · ${s.results.length} ${s.results.length === 1 ? "risultato" : "risultati"}`}
+          />
+        )}
+        {!concluded && status.unmarked > 0 && (
           <Chip
             size="small"
             variant="outlined"
@@ -67,7 +77,7 @@ function SessionSummary({ s }: { s: AdminSessionRow }) {
             label={`Presenze da segnare: ${status.unmarked}`}
           />
         )}
-        {status.missingResults > 0 && (
+        {!concluded && status.missingResults > 0 && (
           <Chip
             size="small"
             variant="outlined"
@@ -79,18 +89,21 @@ function SessionSummary({ s }: { s: AdminSessionRow }) {
             }
           />
         )}
-        {s.expectedResults === 0 && s.athleteCount > 0 && (
+        {!concluded && s.expectedResults === 0 && s.athleteCount > 0 && (
           <Chip size="small" variant="outlined" label="Squadre da creare" />
         )}
-        {status.unmarked === 0 && status.missingResults === 0 && s.expectedResults > 0 && (
-          <Chip
-            size="small"
-            variant="outlined"
-            color="success"
-            icon={<CheckCircleIcon />}
-            label="Pronto da concludere"
-          />
-        )}
+        {!concluded &&
+          status.unmarked === 0 &&
+          status.missingResults === 0 &&
+          s.expectedResults > 0 && (
+            <Chip
+              size="small"
+              variant="outlined"
+              color="success"
+              icon={<CheckCircleIcon />}
+              label="Pronto da concludere"
+            />
+          )}
       </Box>
     </Box>
   );
@@ -103,17 +116,33 @@ function SessionSummary({ s }: { s: AdminSessionRow }) {
  * apre una sola alla volta. Prima erano tutte card aperte: con 27 allenamenti
  * la pagina arrivava a 21.000 px su mobile.
  */
-export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSessionRow[] }) {
+export default function AdminAllenamentiClient({
+  sessions,
+  variant = "toComplete",
+  initialOpenId = null,
+  initialEditId = null,
+}: {
+  sessions: AdminSessionRow[];
+  /** "concluded": gli allenamenti gia' chiusi, solo per correggere. */
+  variant?: "toComplete" | "concluded";
+  initialOpenId?: string | null;
+  initialEditId?: string | null;
+}) {
   const router = useRouter();
-  const [openId, setOpenId] = useState<string | null>(null);
+  const concluded = variant === "concluded";
+  const [openId, setOpenId] = useState<string | null>(initialOpenId ?? initialEditId);
 
   if (sessions.length === 0) {
     return (
       <Paper variant="outlined" sx={{ p: 5, textAlign: "center" }}>
         <CheckCircleIcon sx={{ fontSize: 40, color: "success.main", mb: 1 }} />
-        <Typography fontWeight={700}>Tutto in ordine!</Typography>
+        <Typography fontWeight={700}>
+          {concluded ? "Nessun allenamento concluso" : "Tutto in ordine!"}
+        </Typography>
         <Typography variant="body2" color="text.secondary">
-          Nessun allenamento passato richiede attenzione.
+          {concluded
+            ? "Gli allenamenti chiusi compariranno qui."
+            : "Nessun allenamento passato richiede attenzione."}
         </Typography>
       </Paper>
     );
@@ -164,25 +193,10 @@ export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSe
                   id={`riga-${s.id}`}
                   sx={{ minHeight: 64, "& .MuiAccordionSummary-content": { minWidth: 0 } }}
                 >
-                  <SessionSummary s={s} />
+                  <SessionSummary s={s} concluded={concluded} />
                 </AccordionSummary>
                 <AccordionDetails sx={{ pt: 0 }}>
-                  <Box sx={{ mb: 2 }}>
-                    <MuiLink
-                      href={`/allenamento/${s.dateSlug ?? s.id}`}
-                      variant="body2"
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        minHeight: 44,
-                        fontWeight: 600,
-                      }}
-                    >
-                      Apri la pagina dell&apos;allenamento
-                      <OpenInNewIcon fontSize="small" />
-                    </MuiLink>
-                  </Box>
+                  <SessionActions session={s} initialEdit={initialEditId === s.id} />
                   <TrainingCloseForm
                     sessionId={s.id}
                     title={s.title}
@@ -191,8 +205,9 @@ export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSe
                     registrations={s.registrations}
                     teams={s.teams}
                     results={s.results}
-                    onSaved={(concluded) => {
-                      if (concluded) setOpenId(null);
+                    alreadyConcluded={concluded}
+                    onSaved={(didConclude) => {
+                      if (didConclude) setOpenId(null);
                       router.refresh();
                     }}
                   />
