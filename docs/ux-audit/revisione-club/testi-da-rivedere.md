@@ -4,7 +4,9 @@ Documento per la revisione di UX-21. Sono i testi che leggono gli atleti e le fa
 
 **Come usarlo:** leggere ogni riga; se il testo va bene lasciare vuota l'ultima colonna, altrimenti scrivere la correzione. Si può stampare. Il documento è generato dal codice del sito (`genera-testi.ts`): quello che si legge qui è quello che c'è online.
 
-Revisione a cura di: **********\_\_********** Data: ****\_\_\_\_****
+| Revisione a cura di | Data | Firma |
+| ------------------- | ---- | ----- |
+|                     |      |       |
 
 ## 1. Varianti di ruolo (da decidere)
 

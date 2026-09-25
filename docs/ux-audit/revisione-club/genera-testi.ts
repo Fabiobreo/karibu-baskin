@@ -9,6 +9,7 @@
  * documento torna a coincidere con il sito.
  */
 import { readFileSync, writeFileSync } from "node:fs";
+import { format } from "prettier";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getBaskinRules, getRolesInfo } from "../../../src/lib/content/baskinInfo";
@@ -48,7 +49,8 @@ out.push(
   "**Come usarlo:** leggere ogni riga; se il testo va bene lasciare vuota l'ultima colonna, altrimenti scrivere la correzione. Si può stampare. Il documento è generato dal codice del sito (`genera-testi.ts`): quello che si legge qui è quello che c'è online."
 );
 out.push("");
-out.push("Revisione a cura di: ______________________ Data: ____________");
+// Una tabella e non una riga di trattini bassi: Prettier li legge come enfasi.
+out.push(table(["Revisione a cura di", "Data", "Firma"], [["", "", ""]]));
 out.push("");
 
 // ── 1. Varianti di ruolo ────────────────────────────────────────────────────
@@ -168,5 +170,15 @@ out.push(
 );
 out.push("");
 
-writeFileSync(join(HERE, "testi-da-rivedere.md"), out.join("\n"));
-console.log("Scritto docs/ux-audit/revisione-club/testi-da-rivedere.md");
+// Già formattato come lo lascerebbe Prettier: il file non cambia se lo si
+// riformatta, e il diff dopo una rigenerazione mostra solo i testi cambiati.
+const OUT_FILE = join(HERE, "testi-da-rivedere.md");
+format(out.join("\n"), { parser: "markdown", filepath: OUT_FILE })
+  .then((md) => {
+    writeFileSync(OUT_FILE, md);
+    console.log("Scritto docs/ux-audit/revisione-club/testi-da-rivedere.md");
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  });
