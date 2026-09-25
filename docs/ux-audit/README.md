@@ -57,6 +57,24 @@ Stime: **S** < mezza giornata · **M** 1-2 giorni · **L** 3-5 giorni. Ordine co
 | [UX-18](tickets/UX-18-risultati-mobile.md)             | Righe risultato leggibili su mobile                                                    | S     |            |
 | [UX-19](tickets/UX-19-casi-vuoti.md)                   | Copertine di fallback e news in evidenza senza "documento finto"                       | S     | UX-08      |
 
+### Ondata 3 · Quello che è rimasto fuori dalle ondate 0-2
+
+Raccoglie i "Rimasto fuori" dei ticket precedenti e un difetto trovato durante le verifiche (UX-20). Ordine consigliato: quello della tabella.
+
+| Ticket                                               | Titolo                                                     | Stima              | Dipende da   |
+| ---------------------------------------------------- | ---------------------------------------------------------- | ------------------ | ------------ |
+| [UX-20](tickets/UX-20-pagine-larghe-mobile.md)       | Pagine più larghe dello schermo su mobile                  | S                  |              |
+| [UX-21](tickets/UX-21-revisione-testi-club.md)       | Revisione dei testi facili con il club e varianti di ruolo | S + tempo del club | UX-17        |
+| [UX-22](tickets/UX-22-contrasto-residuo.md)          | Contrasto residuo: baseline di `npm run a11y` a zero       | M                  |              |
+| [UX-23](tickets/UX-23-pagina-allenamento-staff.md)   | Pagina del singolo allenamento allineata all'admin         | S                  | UX-14, UX-15 |
+| [UX-24](tickets/UX-24-rifiniture.md)                 | Rifiniture rimaste dai ticket precedenti                   | S                  |              |
+| [UX-25](tickets/UX-25-errori-vicino-all-elemento.md) | Errori accanto all'elemento, nei flussi principali         | M                  | UX-05        |
+| [UX-26](tickets/UX-26-dati-di-prova-verifiche.md)    | Dati di prova per le verifiche rimaste in sospeso          | S                  |              |
+| [UX-27](tickets/UX-27-tipografia-per-area.md)        | Migrazione tipografica per area e livelli dei titoli       | L (PR per area)    | UX-10        |
+| [UX-28](tickets/UX-28-arancio-negli-hero.md)         | Arancio su elementi non toccabili: hero e icone decorative | S, **da decidere** | UX-07, UX-08 |
+
+UX-21 aspetta il club e UX-28 una decisione: si possono avviare in parallelo agli altri. UX-26 conviene farlo presto, perché sblocca le prove nel browser rimaste in sospeso per UX-06, UX-14 e UX-17.
+
 ### Parcheggiati (da rivalutare dopo le ondate 0-2)
 
 - Riordino del menu principale: servono prove con utenti reali (tree test), le opinioni dei revisori divergono.
