@@ -2,6 +2,7 @@ import { Box, Typography, LinearProgress } from "@mui/material";
 import { useTranslations } from "next-intl";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 import {
   BADGE_CATEGORY_ORDER,
   BADGE_CATEGORY_LABELS,
@@ -10,7 +11,11 @@ import {
   type BadgeTier,
 } from "@/lib/rating/badges";
 
-export type AchievementItem = BadgeProgress & { unlockedAtLabel?: string | null };
+export type AchievementItem = BadgeProgress & {
+  /** Frase del traguardo raggiunto, al posto del criterio quando e' sbloccato. */
+  achieved?: string;
+  unlockedAtLabel?: string | null;
+};
 
 interface AchievementsGridProps {
   items: AchievementItem[];
@@ -93,7 +98,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
         {item.label}
       </Typography>
 
-      {/* Il criterio dice come si sblocca: era a 0,64rem, cioe' circa 10px. */}
+      {/* Sbloccato: cosa ha fatto. Da raggiungere: il criterio per sbloccarlo. */}
       <Typography
         sx={{
           color: "text.secondary",
@@ -103,7 +108,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
           mt: 0.5,
         }}
       >
-        {item.description}
+        {earned ? (item.achieved ?? item.description) : item.description}
       </Typography>
 
       {/* La data di sblocco e' informazione secondaria: non compete col criterio. */}
@@ -152,6 +157,7 @@ export default function AchievementsGrid({ items, categoryLabels }: Achievements
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <BadgeTierLegend />
       {groups.map((group) => (
         <Box key={group.category}>
           <Typography

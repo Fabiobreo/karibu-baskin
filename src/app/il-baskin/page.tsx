@@ -122,9 +122,19 @@ export default async function IlBaskinPage() {
                     >
                       {rule.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                      {rule.text}
-                    </Typography>
+                    <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                      {rule.items.map((item) => (
+                        <Typography
+                          key={item}
+                          component="li"
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ lineHeight: 1.6, mb: 0.5 }}
+                        >
+                          {item}
+                        </Typography>
+                      ))}
+                    </Box>
                   </Box>
                 </Paper>
               </Grid>
@@ -197,13 +207,19 @@ export default async function IlBaskinPage() {
 
                 {/* Body */}
                 <Box sx={{ p: 2.5 }}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ lineHeight: 1.75, mb: 2 }}
-                  >
-                    {r.description}
-                  </Typography>
+                  {/* Cosa fa in campo, una frase per riga: lo leggono gli atleti stessi. */}
+                  <Box component="ul" sx={{ m: 0, mb: 2, pl: 2.5, maxWidth: "65ch" }}>
+                    {r.summary.map((line) => (
+                      <Typography
+                        key={line}
+                        component="li"
+                        variant="body1"
+                        sx={{ lineHeight: 1.6, mb: 0.5 }}
+                      >
+                        {line}
+                      </Typography>
+                    ))}
+                  </Box>
                   {/* Badge info */}
                   <Grid container spacing={1}>
                     {[
@@ -246,6 +262,29 @@ export default async function IlBaskinPage() {
                       </Grid>
                     ))}
                   </Grid>
+                  {/* Il testo tecnico resta per coach e arbitri, chiuso di default. */}
+                  <Box
+                    component="details"
+                    sx={{
+                      mt: 2,
+                      "& > summary": {
+                        cursor: "pointer",
+                        typography: "body2",
+                        fontWeight: 600,
+                        color: "primary.onLight",
+                        py: 0.5,
+                      },
+                    }}
+                  >
+                    <summary>{t("ilbaskin.fullRules")}</summary>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ lineHeight: 1.75, mt: 1 }}
+                    >
+                      {r.description}
+                    </Typography>
+                  </Box>
                 </Box>
               </Paper>
             ))}

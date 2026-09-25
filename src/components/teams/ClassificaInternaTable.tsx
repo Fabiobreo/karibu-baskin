@@ -80,6 +80,7 @@ const ROLE_OPTIONS = [1, 2, 3, 4, 5] as const;
 export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[] }) {
   const t = useTranslations("scorers");
   const tCommon = useTranslations("common");
+  const tRoles = useTranslations("roles");
   const locale = useLocale();
   const { sportRoleLabel } = useEntityLabels();
   // `advanced: true` = colonna secondaria, nascosta finché non si accende
@@ -273,7 +274,8 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
             <Chip
               key={r}
-              label={`R${r}`}
+              // "Ruolo 1", non "R1": la sigla era gergo (UX-17).
+              label={tRoles("role", { n: r })}
               size="small"
               onClick={() => handleRoleFilter(r)}
               sx={{

@@ -1,6 +1,6 @@
 # UX-17 · Linguaggio facile: ruoli, questionario, errori, traguardi
 
-**Ondata:** 2 · **Stima:** M (soprattutto contenuti) · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 2 · **Stima:** M (soprattutto contenuti) · **Dipende da:** nessuno · **Stato:** fatto (commit su `develop`): ruoli e regole in frasi brevi con "Regole complete" per i tecnici, questionario in terza persona per i figli e con pittogrammi, niente barre oblique di genere, traguardi con frase sempre visibile e livelli spiegati, nomi militari sostituiti, sigle scritte per esteso
 
 ## Problema
 
@@ -31,3 +31,20 @@ Una parte degli utenti ha disabilità intellettive e legge i testi da sola o con
 - Testi riscritti revisionati da una persona del club e, se possibile, letti da 2-3 atleti con il loro tutor.
 - Nessuna barra obliqua di genere nei dizionari.
 - Nessun traguardo con descrizione visibile solo al passaggio del mouse.
+
+## Esito
+
+- **Ruoli** (`baskinInfo.ts`): nuovo campo `summary`, frasi brevi su cosa fa il giocatore in campo, mostrato in `/il-baskin` e in `/profilo/ruolo`. Il testo tecnico di prima resta intatto sotto "Regole complete" (`<details>`, chiuso). Anche i riquadri Canestro, Punteggio e "Chi lo può marcare" sono scritti per esteso.
+- **Regole**: ogni card è un elenco, una informazione per frase.
+- **Questionario**: introduzione in testo normale; domande e risposte in terza persona quando si iscrive un figlio (`subjectName`, "Come si muove Giulia quando fa sport?"); icone carrozzina, cammino e corsa.
+- **Barre oblique**: tolte le 13 del dizionario italiano; un test (`src/i18n/easyLanguage.test.ts`) impedisce che tornino.
+- **Traguardi**: chiave `achieved` per ogni traguardo ("Hai segnato…" sul proprio profilo, "Ha segnato…" su figli e profili pubblici), sempre visibile; i traguardi da raggiungere mostrano il criterio; legenda Bronzo/Argento/Oro (`BadgeTierLegend`). Niente più testo solo nel `title`. Nomi scelti dal committente: Mercenario → In prestito, Artigliere → 200 punti, Cecchino → Tre triple, Cecchino perfetto → Tutto a segno (gli id restano uguali, i traguardi già sbloccati non cambiano).
+- **Gergo**: "3V 1P 3S" → "3 vittorie, 1 pareggio, 3 sconfitte" in Risultati e nel profilo delle avversarie; "R1" → "Ruolo 1" nei filtri di `/marcatori` e nel simulatore; "Falli illegali" → "Marcature vietate"; "Statistiche avanzate" → "Più colonne"; etichette delle righe partita nel profilo giocatore tradotte (erano scritte a mano in italiano, "Falli ill."); date delle prossime partite e delle disponibilità con giorno della settimana e mese per esteso. Il "(+13)" era già stato risolto in UX-06.
+
+## Rimasto fuori
+
+- **Revisione dei testi** da parte di una persona del club e lettura con 2-3 atleti e tutor: criterio di accettazione che non si può chiudere nel codice.
+- **Varianti di ruolo** (`roles.variantS` "con spasticità", `variantP` "con limitazioni arti superiori"): linguaggio ancora clinico, mostrato all'atleta nel risultato del questionario. Da riscrivere insieme al club.
+- **Questionario per un figlio non provato nel browser**: nel DB di sviluppo non c'erano allenamenti aperti; la terza persona è coperta da test sui dizionari.
+- Sigle rimaste dove manca lo spazio: lettere V/P/S nei cerchietti di forma dei gironi (`GironeFullView`), "R1" nei chip delle convocazioni e dell'ottimizzatore (solo staff) e dei giocatori nel simulatore.
+- "Cannoniere" e "Bomber" restano: sono parole comuni nello sport, non nomi di armi.

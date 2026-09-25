@@ -132,7 +132,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                   color="text.secondary"
                   sx={{ display: "block", mb: 1.5 }}
                 >
-                  {format(m.date, "d MMM · HH:mm", { locale: dateLocale })}
+                  {format(m.date, "EEEE d MMMM · HH:mm", { locale: dateLocale })}
                 </Typography>
 
                 <Typography

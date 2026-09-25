@@ -62,7 +62,7 @@ async function AchievementSection({ player, name }: AchievementSectionProps) {
   const items: AchievementItem[] = computeAllBadges(input).map((b) => {
     const at = b.earned ? unlockedMap.get(b.id) : undefined;
     return {
-      ...badgeI18n.translate(b),
+      ...badgeI18n.translate(b, { self: Boolean(player.userId) }),
       unlockedAtLabel: at ? t("unlockedOn", { date: dateFmt.format(at) }) : null,
     };
   });

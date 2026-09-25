@@ -1,8 +1,13 @@
 import { Box, Typography, Paper, LinearProgress } from "@mui/material";
 import { useTranslations } from "next-intl";
 import type { Badge, LockedBadge } from "@/lib/rating/badges";
+import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 
-export type EarnedBadgeView = Badge & { unlockedAtLabel?: string | null };
+export type EarnedBadgeView = Badge & {
+  /** Frase del traguardo raggiunto ("Hai segnato 10 punti in una partita"). */
+  achieved?: string;
+  unlockedAtLabel?: string | null;
+};
 
 interface BadgeShowcaseProps {
   earned: EarnedBadgeView[];
@@ -48,15 +53,23 @@ export default function BadgeShowcase({
       <Typography variant="subtitle1" fontWeight={700} gutterBottom>
         {title}
       </Typography>
+      {earned.length > 0 && <BadgeTierLegend />}
 
       {earned.length > 0 ? (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
+        // Griglia e non chip affiancati: con la frase sempre visibile ogni
+        // traguardo e' una riga di testo, non un'etichetta corta.
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
+            gap: 1.5,
+          }}
+        >
           {earned.map((badge) => {
             const c = tierColors(badge.tier);
             return (
               <Box
                 key={badge.id}
-                title={badge.description}
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -82,12 +95,17 @@ export default function BadgeShowcase({
                   >
                     {badge.label}
                   </Typography>
-                  {/* Era a 0,62rem, circa 10px. */}
-                  <Typography
-                    sx={{ color: "text.secondary", fontSize: "0.75rem", display: "block" }}
-                  >
-                    {badge.unlockedAtLabel ?? badge.description}
+                  {/* Frase fissa sempre visibile (UX-17): prima il sottotitolo era a
+                      volte la data e a volte il criterio, e la descrizione stava
+                      solo nel `title`, invisibile su touch. */}
+                  <Typography variant="caption" color="text.primary" sx={{ display: "block" }}>
+                    {badge.achieved ?? badge.description}
                   </Typography>
+                  {badge.unlockedAtLabel && (
+                    <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                      {badge.unlockedAtLabel}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             );
@@ -131,6 +149,14 @@ export default function BadgeShowcase({
                       {badge.current}/{badge.target}
                     </Typography>
                   </Box>
+                  {/* Il criterio: cosa serve per raggiungerlo. */}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", mb: 0.5 }}
+                  >
+                    {badge.description}
+                  </Typography>
                   <LinearProgress
                     variant="determinate"
                     value={Math.min(100, (badge.current / badge.target) * 100)}

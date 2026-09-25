@@ -85,7 +85,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
             {relativeLabel(match.date, now, tCommon, dateLocale)}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
-            {format(new Date(match.date), "d MMM · HH:mm", { locale: dateLocale })}
+            {format(new Date(match.date), "EEEE d MMMM · HH:mm", { locale: dateLocale })}
           </Typography>
         </Box>
         <Box

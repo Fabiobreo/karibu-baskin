@@ -72,7 +72,7 @@ function formatShortDate(
   const d = new Date(iso);
   if (isToday(d)) return `${tCommon("today")} · ${format(d, "HH:mm")}`;
   if (isTomorrow(d)) return `${tCommon("tomorrow")} · ${format(d, "HH:mm")}`;
-  return format(d, "EEE d MMM · HH:mm", { locale: dateLocale });
+  return format(d, "EEEE d MMMM · HH:mm", { locale: dateLocale });
 }
 
 export default function MieDisponibilitaClient({ initialMatches }: Props) {

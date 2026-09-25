@@ -312,7 +312,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                     </Typography>
                     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
                       <Chip
-                        label={`${totals.wins} ${tMatches("resultWinShort")}`}
+                        label={tMatches("resultWins", { count: totals.wins })}
                         sx={{
                           bgcolor: "match.win",
                           color: "common.white",
@@ -321,7 +321,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         }}
                       />
                       <Chip
-                        label={`${totals.draws} ${tMatches("resultDrawShort")}`}
+                        label={tMatches("resultDraws", { count: totals.draws })}
                         sx={{
                           bgcolor: "match.draw",
                           color: "common.white",
@@ -330,7 +330,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         }}
                       />
                       <Chip
-                        label={`${totals.losses} ${tMatches("resultLossShort")}`}
+                        label={tMatches("resultLosses", { count: totals.losses })}
                         sx={{
                           bgcolor: "match.loss",
                           color: "common.white",
@@ -435,17 +435,17 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                     {s.played > 0 && (
                       <>
                         <Chip
-                          label={`${s.wins} ${tMatches("resultWinShort")}`}
+                          label={tMatches("resultWins", { count: s.wins })}
                           size="small"
                           sx={{ bgcolor: "match.win", color: "common.white", fontWeight: 700 }}
                         />
                         <Chip
-                          label={`${s.draws} ${tMatches("resultDrawShort")}`}
+                          label={tMatches("resultDraws", { count: s.draws })}
                           size="small"
                           sx={{ bgcolor: "match.draw", color: "common.white", fontWeight: 700 }}
                         />
                         <Chip
-                          label={`${s.losses} ${tMatches("resultLossShort")}`}
+                          label={tMatches("resultLosses", { count: s.losses })}
                           size="small"
                           sx={{ bgcolor: "match.loss", color: "common.white", fontWeight: 700 }}
                         />

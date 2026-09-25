@@ -526,6 +526,7 @@ export default function RegistrationForm({
                     </Typography>
                     <SportRoleQuestionnaire
                       onResult={handleQuestionnaireResult}
+                      subjectName={subject !== "self" ? selectedChild?.name : undefined}
                       initialSuggested={
                         subject === "self" && currentUser?.sportRoleSuggested
                           ? {

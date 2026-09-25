@@ -41,10 +41,12 @@ export default async function ProfileBadges({
   });
   const { earned, locked } = computeBadgeState(input);
   const unlockedMap = new Map(rows.map((r) => [r.badgeId, r.unlockedAt]));
+  // Il proprio profilo parla in seconda persona, i figli in terza.
+  const self = Boolean(player.userId);
   const earnedView: EarnedBadgeView[] = earned.map((b) => {
     const at = unlockedMap.get(b.id);
     return {
-      ...badgeI18n.translate(b),
+      ...badgeI18n.translate(b, { self }),
       unlockedAtLabel: at ? t("unlockedOn", { date: dateFmt.format(at) }) : null,
     };
   });

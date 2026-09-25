@@ -249,7 +249,9 @@ export default async function PartitePage({ searchParams }: Props) {
                               color="text.secondary"
                               sx={{ fontSize: "0.75rem", display: "block" }}
                             >
-                              {format(new Date(m.date), "d MMM · HH:mm", { locale: dateLocale })}
+                              {format(new Date(m.date), "EEEE d MMMM · HH:mm", {
+                                locale: dateLocale,
+                              })}
                             </Typography>
                           </Box>
 

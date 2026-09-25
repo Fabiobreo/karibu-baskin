@@ -85,7 +85,7 @@ const BADGE_DEFS: Array<{
   {
     id: "esordiente",
     label: "Esordiente",
-    description: "Prima partita ufficiale disputata",
+    description: "Giocare la prima partita ufficiale",
     emoji: "🏀",
     tier: "bronze",
     category: "presenza",
@@ -95,7 +95,7 @@ const BADGE_DEFS: Array<{
   {
     id: "cinque_partite",
     label: "5 partite",
-    description: "5 partite ufficiali disputate",
+    description: "Giocare 5 partite ufficiali",
     emoji: "🖐️",
     tier: "bronze",
     category: "presenza",
@@ -105,7 +105,7 @@ const BADGE_DEFS: Array<{
   {
     id: "dieci_partite",
     label: "10 partite",
-    description: "10 partite ufficiali disputate",
+    description: "Giocare 10 partite ufficiali",
     emoji: "🔟",
     tier: "bronze",
     category: "presenza",
@@ -115,7 +115,7 @@ const BADGE_DEFS: Array<{
   {
     id: "venti_partite",
     label: "20 partite",
-    description: "20 partite ufficiali disputate",
+    description: "Giocare 20 partite ufficiali",
     emoji: "⭐",
     tier: "silver",
     category: "presenza",
@@ -125,7 +125,7 @@ const BADGE_DEFS: Array<{
   {
     id: "veterano",
     label: "Veterano",
-    description: "30 partite ufficiali disputate",
+    description: "Giocare 30 partite ufficiali",
     emoji: "🏆",
     tier: "gold",
     category: "presenza",
@@ -135,7 +135,7 @@ const BADGE_DEFS: Array<{
   {
     id: "fedelissimo",
     label: "Fedelissimo",
-    description: "Presente in almeno 3 stagioni diverse",
+    description: "Giocare in 3 stagioni diverse",
     emoji: "♾️",
     tier: "silver",
     category: "presenza",
@@ -150,7 +150,7 @@ const BADGE_DEFS: Array<{
   {
     id: "primo_canestro",
     label: "Primo canestro",
-    description: "Primo punto segnato in una partita ufficiale",
+    description: "Segnare i primi punti in una partita ufficiale",
     emoji: "🎯",
     tier: "bronze",
     category: "punti",
@@ -166,7 +166,7 @@ const BADGE_DEFS: Array<{
   {
     id: "doppia_cifra",
     label: "Doppia cifra",
-    description: "10 o più punti in una partita",
+    description: "Segnare almeno 10 punti in una partita",
     emoji: "💥",
     tier: "bronze",
     category: "punti",
@@ -182,7 +182,7 @@ const BADGE_DEFS: Array<{
   {
     id: "bomber",
     label: "Bomber",
-    description: "20 o più punti in una singola partita",
+    description: "Segnare almeno 20 punti in una partita",
     emoji: "💣",
     tier: "silver",
     category: "punti",
@@ -198,7 +198,7 @@ const BADGE_DEFS: Array<{
   {
     id: "centurione",
     label: "Centurione",
-    description: "100 punti totali in carriera",
+    description: "Segnare 100 punti in tutto",
     emoji: "💯",
     tier: "bronze",
     category: "punti",
@@ -210,8 +210,8 @@ const BADGE_DEFS: Array<{
   },
   {
     id: "artigliere",
-    label: "Artigliere",
-    description: "200 punti totali in carriera",
+    label: "200 punti",
+    description: "Segnare 200 punti in tutto",
     emoji: "🧨",
     tier: "silver",
     category: "punti",
@@ -224,7 +224,7 @@ const BADGE_DEFS: Array<{
   {
     id: "cannoniere",
     label: "Cannoniere",
-    description: "300 punti totali in carriera",
+    description: "Segnare 300 punti in tutto",
     emoji: "🎆",
     tier: "gold",
     category: "punti",
@@ -238,8 +238,8 @@ const BADGE_DEFS: Array<{
   // ── Precisione ─────────────────────────────────────────────────────────────
   {
     id: "cecchino",
-    label: "Cecchino",
-    description: "3 o più canestri da 3 punti in una singola partita",
+    label: "Tre triple",
+    description: "Segnare 3 canestri da 3 punti in una partita",
     emoji: "🏹",
     tier: "bronze",
     category: "precisione",
@@ -255,7 +255,7 @@ const BADGE_DEFS: Array<{
   {
     id: "mira_acciaio",
     label: "Mira d'acciaio",
-    description: "Almeno 70% di realizzazione in una partita (min. 5 tiri)",
+    description: "Segnare almeno 7 tiri su 10 in una partita, con almeno 5 tiri",
     emoji: "🪙",
     tier: "silver",
     category: "precisione",
@@ -265,8 +265,8 @@ const BADGE_DEFS: Array<{
   },
   {
     id: "cecchino_perfetto",
-    label: "Cecchino perfetto",
-    description: "100% di realizzazione in una partita con almeno 3 canestri",
+    label: "Tutto a segno",
+    description: "Segnare tutti i tiri di una partita, con almeno 3 tiri",
     emoji: "🟢",
     tier: "gold",
     category: "precisione",
@@ -279,7 +279,7 @@ const BADGE_DEFS: Array<{
   {
     id: "costante",
     label: "Costante",
-    description: "A segno in 5 partite consecutive",
+    description: "Segnare in 5 partite di fila",
     emoji: "📈",
     tier: "silver",
     category: "continuita",
@@ -295,7 +295,7 @@ const BADGE_DEFS: Array<{
   {
     id: "in_fiamme",
     label: "In fiamme",
-    description: "Almeno 10 punti in 3 partite consecutive",
+    description: "Segnare almeno 10 punti in 3 partite di fila",
     emoji: "🔥",
     tier: "gold",
     category: "continuita",
@@ -313,7 +313,7 @@ const BADGE_DEFS: Array<{
   {
     id: "vincente",
     label: "Vincente",
-    description: "10 partite vinte disputate",
+    description: "Vincere 10 partite",
     emoji: "🏅",
     tier: "silver",
     category: "vittorie",
@@ -323,7 +323,7 @@ const BADGE_DEFS: Array<{
   {
     id: "trascinatore",
     label: "Trascinatore",
-    description: "20+ punti in una partita poi vinta",
+    description: "Segnare almeno 20 punti in una partita vinta",
     emoji: "⚡",
     tier: "gold",
     category: "vittorie",
@@ -344,7 +344,7 @@ const BADGE_DEFS: Array<{
   {
     id: "mvp",
     label: "MVP",
-    description: "Eletto MVP della partita almeno una volta",
+    description: "Essere scelto come migliore in campo (MVP) in una partita",
     emoji: "🌟",
     tier: "silver",
     category: "premi",
@@ -354,7 +354,7 @@ const BADGE_DEFS: Array<{
   {
     id: "beniamino",
     label: "Beniamino",
-    description: "Eletto MVP della partita 3 volte",
+    description: "Essere scelto come migliore in campo (MVP) 3 volte",
     emoji: "💫",
     tier: "gold",
     category: "premi",
@@ -364,7 +364,7 @@ const BADGE_DEFS: Array<{
   {
     id: "top_scorer",
     label: "Top scorer",
-    description: "1° marcatore del proprio ruolo in una stagione",
+    description: "Segnare più punti di tutti nel proprio ruolo in una stagione",
     emoji: "👑",
     tier: "gold",
     category: "premi",
@@ -376,7 +376,7 @@ const BADGE_DEFS: Array<{
   {
     id: "tripla",
     label: "Tripla mista",
-    description: "In una partita: almeno 1 canestro da 2pt, 1 da 3pt e 1 tiro libero",
+    description: "In una partita, segnare un canestro da 2 punti, uno da 3 punti e un tiro libero",
     emoji: "🎭",
     tier: "silver",
     category: "speciali",
@@ -385,8 +385,8 @@ const BADGE_DEFS: Array<{
   },
   {
     id: "mercenario",
-    label: "Mercenario",
-    description: "Almeno una partita giocata in prestito per un'altra squadra",
+    label: "In prestito",
+    description: "Giocare una partita con un'altra squadra, in prestito",
     emoji: "🤝",
     tier: "bronze",
     category: "speciali",
@@ -399,7 +399,7 @@ const BADGE_DEFS: Array<{
   {
     id: "fair_play",
     label: "Fair play",
-    description: "10 partite senza falli illegali (ruoli R4/R5)",
+    description: "Giocare 10 partite senza marcare chi non si può marcare",
     emoji: "🕊️",
     tier: "silver",
     category: "speciali",

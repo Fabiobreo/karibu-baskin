@@ -25,6 +25,7 @@ interface SimulatorPoolProps {
  */
 export default function SimulatorPool({ players, canAssign, onAssign }: SimulatorPoolProps) {
   const t = useTranslations("simulator");
+  const tRoles = useTranslations("roles");
 
   const groups = new Map<RoleKey, SimPlayer[]>();
   for (const p of players) {
@@ -42,7 +43,8 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
   const active = order.includes(activeRole) ? activeRole : order[0];
   const list = active != null ? (groups.get(active) ?? []) : [];
 
-  const roleLabel = (k: RoleKey) => (typeof k === "number" ? `R${k}` : t("noRole"));
+  const roleLabel = (k: RoleKey) =>
+    typeof k === "number" ? tRoles("role", { n: k }) : t("noRole");
 
   return (
     <Box sx={{ mt: 1.5 }}>

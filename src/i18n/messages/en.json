@@ -354,8 +354,8 @@
     "statShotsTitle": "Shots attempted",
     "statFouls": "F",
     "statFoulsTitle": "Fouls",
-    "statIllegal": "Illegal",
-    "statIllegalTitle": "Illegal fouls",
+    "statIllegal": "Not allowed",
+    "statIllegalTitle": "Illegal marking",
     "homeChip": "League",
     "homeUpcoming": "Upcoming matches",
     "homeSeeAll": "See all →",
@@ -370,7 +370,10 @@
     "firstLeg": "First leg:",
     "wonShort": "Won",
     "lostShort": "Lost",
-    "drawShort": "Draw"
+    "drawShort": "Draw",
+    "resultWins": "{count, plural, one {# win} other {# wins}}",
+    "resultDraws": "{count, plural, one {# draw} other {# draws}}",
+    "resultLosses": "{count, plural, one {# loss} other {# losses}}"
   },
   "teams": {
     "heroChip": "About us",
@@ -506,7 +509,7 @@
     "threePointers": "3-pointers",
     "freeThrows": "Free throws",
     "fouls": "Fouls",
-    "illegalFouls": "Illegal fouls",
+    "illegalFouls": "Illegal marking",
     "shotsAttempted": "Shots attempted",
     "honors": "Honours",
     "medals": "Medals and awards",
@@ -516,7 +519,14 @@
     "noStats": "No stats available",
     "noStatsDesc": "Competitive stats will be published at the end of each match.",
     "staffOnlyProfile": "This profile isn't public: you can see it because you're on the staff. For everyone else this page doesn't exist.",
-    "children": "Children"
+    "children": "Children",
+    "rowPoints": "Points",
+    "row2pt": "2-pointers",
+    "row3pt": "3-pointers",
+    "rowFreeThrows": "Free throws",
+    "rowFouls": "Fouls",
+    "rowIllegal": "Illegal marking",
+    "rowShots": "Shots"
   },
   "scorers": {
     "pageTitle": "Internal standings",
@@ -528,8 +538,8 @@
     "empty": "No data available for season {season}.",
     "emptyGeneric": "No data available",
     "emptyDesc": "The scorers table will be updated as the season progresses.",
-    "advancedStats": "Advanced stats",
-    "advancedStatsHint": "Show 1pt, MVP and illegal fouls",
+    "advancedStats": "More columns",
+    "advancedStatsHint": "Show free throws, MVP and illegal marking",
     "loanDetail": "{count} on loan",
     "loanLegend": "Numbers include games played on loan with another team.",
     "roleFilterLabel": "Role:",
@@ -548,8 +558,8 @@
     "col3pt": "3pt",
     "title3pt": "3-pointers",
     "colFouls": "Fouls",
-    "colIllegal": "Illegal",
-    "titleIllegal": "Illegal fouls",
+    "colIllegal": "Not allowed",
+    "titleIllegal": "Illegal marking: marking a player you are not allowed to mark",
     "colMvp": "MVP",
     "titleMvp": "MVP awards received this season",
     "colAccuracy": "%",
@@ -565,103 +575,128 @@
   "badges": {
     "esordiente": {
       "label": "Debutant",
-      "description": "First official match played"
+      "description": "Play your first official match",
+      "achieved": "Played the first official match"
     },
     "cinque_partite": {
       "label": "5 matches",
-      "description": "5 official matches played"
+      "description": "Play 5 official matches",
+      "achieved": "Played 5 official matches"
     },
     "dieci_partite": {
       "label": "10 matches",
-      "description": "10 official matches played"
+      "description": "Play 10 official matches",
+      "achieved": "Played 10 official matches"
     },
     "venti_partite": {
       "label": "20 matches",
-      "description": "20 official matches played"
+      "description": "Play 20 official matches",
+      "achieved": "Played 20 official matches"
     },
     "veterano": {
       "label": "Veteran",
-      "description": "30 official matches played"
+      "description": "Play 30 official matches",
+      "achieved": "Played 30 official matches"
     },
     "fedelissimo": {
       "label": "Ever-present",
-      "description": "Played in at least 3 different seasons"
+      "description": "Play in 3 different seasons",
+      "achieved": "Played in 3 different seasons"
     },
     "primo_canestro": {
       "label": "First basket",
-      "description": "First point scored in an official match"
+      "description": "Score the first points in an official match",
+      "achieved": "Scored the first points in an official match"
     },
     "doppia_cifra": {
       "label": "Double figures",
-      "description": "10 or more points in a match"
+      "description": "Score at least 10 points in a match",
+      "achieved": "Scored at least 10 points in a match"
     },
     "bomber": {
       "label": "Bomber",
-      "description": "20 or more points in a single match"
+      "description": "Score at least 20 points in a match",
+      "achieved": "Scored at least 20 points in a match"
     },
     "centurione": {
       "label": "Centurion",
-      "description": "100 career points"
+      "description": "Score 100 points in total",
+      "achieved": "Scored 100 points in total"
     },
     "artigliere": {
-      "label": "Gunner",
-      "description": "200 career points"
+      "label": "200 points",
+      "description": "Score 200 points in total",
+      "achieved": "Scored 200 points in total"
     },
     "cannoniere": {
-      "label": "Cannoneer",
-      "description": "300 career points"
+      "label": "Big scorer",
+      "description": "Score 300 points in total",
+      "achieved": "Scored 300 points in total"
     },
     "cecchino": {
-      "label": "Sniper",
-      "description": "3 or more 3-pointers in a single match"
+      "label": "Three threes",
+      "description": "Score 3 three-point baskets in a match",
+      "achieved": "Scored 3 three-point baskets in a match"
     },
     "mira_acciaio": {
-      "label": "Steel aim",
-      "description": "At least 70% shooting in a match (min. 5 shots)"
+      "label": "Steady aim",
+      "description": "Score at least 7 shots out of 10 in a match, with at least 5 shots",
+      "achieved": "Scored at least 7 shots out of 10 in a match"
     },
     "cecchino_perfetto": {
-      "label": "Perfect sniper",
-      "description": "100% shooting in a match with at least 3 baskets"
+      "label": "All in",
+      "description": "Score every shot in a match, with at least 3 shots",
+      "achieved": "Scored every shot in a match"
     },
     "costante": {
       "label": "Consistent",
-      "description": "Scored in 5 consecutive matches"
+      "description": "Score in 5 matches in a row",
+      "achieved": "Scored in 5 matches in a row"
     },
     "in_fiamme": {
       "label": "On fire",
-      "description": "At least 10 points in 3 consecutive matches"
+      "description": "Score at least 10 points in 3 matches in a row",
+      "achieved": "Scored at least 10 points in 3 matches in a row"
     },
     "vincente": {
       "label": "Winner",
-      "description": "10 matches won"
+      "description": "Win 10 matches",
+      "achieved": "Won 10 matches"
     },
     "trascinatore": {
       "label": "Match-winner",
-      "description": "20+ points in a match that was won"
+      "description": "Score at least 20 points in a match your team wins",
+      "achieved": "Scored at least 20 points in a winning match"
     },
     "mvp": {
       "label": "MVP",
-      "description": "Voted match MVP at least once"
+      "description": "Be chosen as best player (MVP) of a match",
+      "achieved": "Chosen as best player (MVP) of a match"
     },
     "beniamino": {
       "label": "Fan favourite",
-      "description": "Voted match MVP 3 times"
+      "description": "Be chosen as best player (MVP) 3 times",
+      "achieved": "Chosen as best player 3 times"
     },
     "top_scorer": {
       "label": "Top scorer",
-      "description": "Top scorer in your role within the team in a season"
+      "description": "Score the most points in your role in a season",
+      "achieved": "Scored the most points in their role in a season"
     },
     "tripla": {
       "label": "Mixed treble",
-      "description": "In one match: at least one 2pt, one 3pt and one free throw"
+      "description": "In one match, score a 2-point basket, a 3-point basket and a free throw",
+      "achieved": "In one match, scored from 2 points, from 3 points and a free throw"
     },
     "mercenario": {
-      "label": "Mercenary",
-      "description": "At least one match played on loan for another team"
+      "label": "On loan",
+      "description": "Play a match for another team, on loan",
+      "achieved": "Played a match for another team, on loan"
     },
     "fair_play": {
       "label": "Fair play",
-      "description": "10 matches without illegal fouls (R4/R5 roles)"
+      "description": "Play 10 matches without marking a player you are not allowed to mark",
+      "achieved": "Played 10 matches without marking a player they were not allowed to mark"
     }
   },
   "badgeCategories": {
@@ -1098,7 +1133,8 @@
       "rolesSection": "The roles",
       "roleCanestro": "Basket",
       "rolePunteggio": "Score",
-      "roleMarcatura": "Defence",
+      "roleMarcatura": "Who can mark them",
+      "fullRules": "Full rules",
       "origins": "The origins",
       "born2001": "Born in 2001 in Cremona",
       "historyText": "Baskin (Inclusive Basketball) was conceived by Antonio Bodini and Fausto Capellini in a school setting, with the aim of creating a sport in which every person, regardless of physical or cognitive ability, could actively take part with a real and meaningful role. The rules are managed by the Italian Inclusive Sports Body (EISI) in Cremona and it is now played across Italy by thousands of athletes. Each player is given a role number (1–5) that appears on the jersey as the first digit, followed by a personal identification number.",
@@ -1160,49 +1196,49 @@
     "summarySelfWith": "You are registered together with {names}",
     "summaryOthers": "You registered {names}",
     "questionnaire": {
-      "intro": "A few quick questions to suggest your Baskin role (1–5), so we can build balanced teams for everyone. Your individual answers are not stored: only the final role matters, and it will be confirmed by the staff.",
+      "intro": "Answer a few questions. They help us find the right Baskin role, from 1 to 5. We don't save your answers, only the role. Then the staff confirms the role.",
       "previousAnswer": "Your previous answer: {role}. You can update it below.",
       "mobility": {
-        "question": "How do you usually move during physical activity?",
-        "wheelchair": "I use a wheelchair",
-        "walk": "I walk, but I don't run",
-        "run": "I run"
+        "question": "{who, select, child {How does {name} move when doing sport?} other {How do you move when you do sport?}}",
+        "wheelchair": "{who, select, child {Uses a wheelchair} other {I use a wheelchair}}",
+        "walk": "{who, select, child {Walks, but doesn't run} other {I walk, but I don't run}}",
+        "run": "{who, select, child {Runs} other {I run}}"
       },
       "chair_autonomy": {
-        "question": "Can you move the wheelchair by yourself?",
+        "question": "{who, select, child {Can {name} move the wheelchair without help?} other {Can you move the wheelchair without help?}}",
         "bothHands": "Yes, with both hands",
         "oneArm": "Yes, but only with one arm",
-        "assistance": "No, I need assistance"
+        "assistance": "{who, select, child {No, needs help} other {No, I need help}}"
       },
       "chair_ball": {
-        "question": "Can you throw a basketball?",
+        "question": "{who, select, child {Can {name} throw a basketball?} other {Can you throw a basketball?}}",
         "yes": "Yes",
-        "difficulty": "No, I have difficulty with my arms or hands"
+        "difficulty": "{who, select, child {No, finds it hard with arms or hands} other {No, I find it hard with my arms or hands}}"
       },
       "walk_speed": {
-        "question": "Can you take a few quick steps or do a short jog?",
+        "question": "{who, select, child {Can {name} take a few quick steps or do a little run?} other {Can you take a few quick steps or do a little run?}}",
         "no": "No",
-        "aBit": "Yes, a little"
+        "aBit": "Yes, a bit"
       },
       "run_quality": {
-        "question": "How would you describe your running?",
-        "slow": "Strenuous, slow or poorly coordinated",
-        "slowSub": "I struggle to run smoothly",
-        "normal": "Normal or fast",
-        "normalSub": "I can run without major problems"
+        "question": "{who, select, child {How does {name} run?} other {How do you run?}}",
+        "slow": "Slowly or with effort",
+        "slowSub": "{who, select, child {Finds it hard to run smoothly} other {I find it hard to run smoothly}}",
+        "normal": "Normally or fast",
+        "normalSub": "{who, select, child {Runs without big problems} other {I run without big problems}}"
       },
       "run_dribble": {
-        "question": "Can you dribble a basketball while running?",
-        "no": "No, or barely",
-        "basic": "Yes, at a basic level",
-        "basicSub": "I can, but with some uncertainty",
-        "well": "Yes, well and continuously",
-        "wellSub": "I dribble without problems even while running"
+        "question": "{who, select, child {Can {name} dribble while running?} other {Can you dribble while running?}}",
+        "no": "No, or hardly ever",
+        "basic": "Yes, a bit",
+        "basicSub": "{who, select, child {Can do it, but sometimes loses the ball} other {I can, but sometimes I lose the ball}}",
+        "well": "Yes, well",
+        "wellSub": "{who, select, child {Dribbles easily, even while running} other {I dribble easily, even while running}}"
       },
       "experience": {
-        "question": "Do you have experience with basketball or other ball sports?",
-        "little": "No, or little experience",
-        "years": "Yes, years of practice"
+        "question": "{who, select, child {Has {name} played basketball or other ball sports before?} other {Have you played basketball or other ball sports before?}}",
+        "little": "No, or a little",
+        "years": "Yes, for years"
       }
     },
     "showPreviousSeasons": "Show previous seasons ({count, plural, one {# training} other {# trainings}})",
@@ -1265,8 +1301,8 @@
     "redoQuestionnaire": "↩ Redo questionnaire",
     "changeRole": "↩ Change role",
     "roleConfirmNote": "The role will be confirmed by the coach after the first training.",
-    "questionnairePromptSelf": "Answer a few questions to determine your role in Baskin:",
-    "questionnairePromptChild": "Answer a few questions to determine {name}'s role:",
+    "questionnairePromptSelf": "Answer a few questions about how you move.",
+    "questionnairePromptChild": "Answer a few questions about how {name} moves.",
     "staffRolePromptSelf": "Select your role:",
     "staffRolePromptChild": "Role for {name}:",
     "restrictionRoles": "This training is reserved for roles {roles}",
@@ -1425,6 +1461,10 @@
     "iosStep2": "Choose \"Add to Home Screen\""
   },
   "badgeProgress": {
-    "value": "{current} of {target}"
+    "value": "{current} of {target}",
+    "tier_bronze": "Bronze",
+    "tier_silver": "Silver",
+    "tier_gold": "Gold",
+    "tierExplain": "The border colour tells you how hard the achievement is. Gold is the hardest."
   }
 }

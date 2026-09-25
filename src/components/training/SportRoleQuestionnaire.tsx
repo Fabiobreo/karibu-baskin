@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Box, Typography, Paper, Button, LinearProgress, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import AccessibleIcon from "@mui/icons-material/Accessible";
+import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
+import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
@@ -25,6 +28,8 @@ interface Option {
   labelKey: string;
   /** Chiave i18n del sottotitolo (opzionale) */
   sublabelKey?: string;
+  /** Pittogramma per chi legge poco (UX-17): solo sulle opzioni di movimento. */
+  icon?: React.ReactNode;
   next: StepId | null;
   result?: SportRoleResult;
 }
@@ -38,9 +43,9 @@ interface Question {
 const QUESTIONS: Record<StepId, Question> = {
   mobility: {
     options: [
-      { labelKey: "wheelchair", next: "chair_autonomy" },
-      { labelKey: "walk", next: "walk_speed" },
-      { labelKey: "run", next: "run_quality" },
+      { labelKey: "wheelchair", icon: <AccessibleIcon fontSize="large" />, next: "chair_autonomy" },
+      { labelKey: "walk", icon: <DirectionsWalkIcon fontSize="large" />, next: "walk_speed" },
+      { labelKey: "run", icon: <DirectionsRunIcon fontSize="large" />, next: "run_quality" },
     ],
   },
   chair_autonomy: {
@@ -89,9 +94,14 @@ const MAX_DEPTH = 4;
 interface Props {
   onResult: (result: SportRoleResult) => void;
   initialSuggested?: SportRoleResult;
+  /**
+   * Nome di chi e' valutato quando non e' chi compila (un figlio): le domande
+   * passano alla terza persona ("Come si muove Giulia?").
+   */
+  subjectName?: string;
 }
 
-export default function SportRoleQuestionnaire({ onResult, initialSuggested }: Props) {
+export default function SportRoleQuestionnaire({ onResult, initialSuggested, subjectName }: Props) {
   const t = useTranslations("trainings.questionnaire");
   const tCommon = useTranslations("common");
   const { sportRoleLabel } = useEntityLabels();
@@ -100,6 +110,9 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
   const currentStep = history[history.length - 1];
   const question = QUESTIONS[currentStep];
   const progress = Math.min(((history.length - 1) / MAX_DEPTH) * 100, 90);
+  // Solo il nome proprio: "Come si muove Giulia?", non "Giulia Rossi".
+  const firstName = subjectName?.trim().split(/\s+/)[0];
+  const who = firstName ? { who: "child", name: firstName } : { who: "self", name: "" };
 
   function handleOption(opt: Option) {
     if (opt.result) {
@@ -121,7 +134,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
     <Box>
       {/* Cornice introduttiva: perché chiediamo e che fine fanno le risposte */}
       {history.length === 1 && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 2 }}>
+        <Typography variant="body2" sx={{ mb: 2 }}>
           {t("intro")}
         </Typography>
       )}
@@ -151,7 +164,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
       />
 
       <Typography variant="body1" fontWeight={600} sx={{ mb: 2 }}>
-        {t(`${currentStep}.question`)}
+        {t(`${currentStep}.question`, who)}
       </Typography>
 
       <Stack spacing={1} sx={{ mb: 2 }}>
@@ -183,14 +196,23 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested }: P
               },
             })}
           >
-            <Typography variant="body2" fontWeight={600}>
-              {t(`${currentStep}.${opt.labelKey}`)}
-            </Typography>
-            {opt.sublabelKey && (
-              <Typography variant="caption" color="text.secondary" display="block">
-                {t(`${currentStep}.${opt.sublabelKey}`)}
-              </Typography>
-            )}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              {opt.icon && (
+                <Box aria-hidden sx={{ display: "flex", color: "text.secondary" }}>
+                  {opt.icon}
+                </Box>
+              )}
+              <Box>
+                <Typography variant="body2" fontWeight={600}>
+                  {t(`${currentStep}.${opt.labelKey}`, who)}
+                </Typography>
+                {opt.sublabelKey && (
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {t(`${currentStep}.${opt.sublabelKey}`, who)}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
           </Paper>
         ))}
       </Stack>

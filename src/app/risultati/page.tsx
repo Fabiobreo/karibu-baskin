@@ -48,9 +48,10 @@ export default async function RisultatiPage({ searchParams }: Props) {
   const season = sp.season ?? displaySeason;
   const showFallbackNotice = !sp.season && isFallback;
   const dateLocale = getDateFnsLocale(locale);
-  const winShort = t("resultWinShort");
-  const drawShort = t("resultDrawShort");
-  const lossShort = t("resultLossShort");
+  // Per esteso ("3 vittorie", non "3V"): le sigle erano gergo (UX-17).
+  const wins = (count: number) => t("resultWins", { count });
+  const draws = (count: number) => t("resultDraws", { count });
+  const losses = (count: number) => t("resultLosses", { count });
   const matchTypeLabel = (type: string) =>
     ({ LEAGUE: t("typeLeague"), TOURNAMENT: t("typeTournament"), FRIENDLY: t("typeFriendly") })[
       type
@@ -157,7 +158,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                 </Typography>
                 <Box sx={{ display: "flex", gap: 0.5 }}>
                   <Chip
-                    label={`${t.wins}${winShort}`}
+                    label={wins(t.wins)}
                     size="small"
                     sx={{
                       bgcolor: "match.win",
@@ -169,7 +170,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   />
                   {t.draws > 0 && (
                     <Chip
-                      label={`${t.draws}${drawShort}`}
+                      label={draws(t.draws)}
                       size="small"
                       sx={{
                         bgcolor: "match.draw",
@@ -181,7 +182,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     />
                   )}
                   <Chip
-                    label={`${t.losses}${lossShort}`}
+                    label={losses(t.losses)}
                     size="small"
                     sx={{
                       bgcolor: "match.loss",
@@ -281,7 +282,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   )}
                   <Box sx={{ ml: "auto", display: "flex", gap: 0.75 }}>
                     <Chip
-                      label={`${tw}${winShort}`}
+                      label={wins(tw)}
                       size="small"
                       sx={{
                         bgcolor: "match.winBg",
@@ -293,7 +294,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     />
                     {td > 0 && (
                       <Chip
-                        label={`${td}${drawShort}`}
+                        label={draws(td)}
                         size="small"
                         sx={{
                           bgcolor: "match.drawBg",
@@ -305,7 +306,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       />
                     )}
                     <Chip
-                      label={`${tl}${lossShort}`}
+                      label={losses(tl)}
                       size="small"
                       sx={{
                         bgcolor: "match.lossBg",

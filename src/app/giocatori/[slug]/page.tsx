@@ -1410,18 +1410,22 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             </Box>
                           </Box>
                           <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                            <StatItem label="Punti" value={ms.points} />
-                            {ms.twoPointers > 0 && <StatItem label="2pt" value={ms.twoPointers} />}
-                            {ms.threePointers > 0 && (
-                              <StatItem label="3pt" value={ms.threePointers} />
+                            <StatItem label={t("rowPoints")} value={ms.points} />
+                            {ms.twoPointers > 0 && (
+                              <StatItem label={t("row2pt")} value={ms.twoPointers} />
                             )}
-                            {ms.freeThrows > 0 && <StatItem label="TL" value={ms.freeThrows} />}
-                            {ms.fouls > 0 && <StatItem label="Falli" value={ms.fouls} />}
+                            {ms.threePointers > 0 && (
+                              <StatItem label={t("row3pt")} value={ms.threePointers} />
+                            )}
+                            {ms.freeThrows > 0 && (
+                              <StatItem label={t("rowFreeThrows")} value={ms.freeThrows} />
+                            )}
+                            {ms.fouls > 0 && <StatItem label={t("rowFouls")} value={ms.fouls} />}
                             {ms.illegalFouls > 0 && (
-                              <StatItem label="Falli ill." value={ms.illegalFouls} />
+                              <StatItem label={t("rowIllegal")} value={ms.illegalFouls} />
                             )}
                             {ms.shotsAttempted > 0 && (
-                              <StatItem label="Tiri" value={ms.shotsAttempted} />
+                              <StatItem label={t("rowShots")} value={ms.shotsAttempted} />
                             )}
                           </Box>
                           {ms.notes && (

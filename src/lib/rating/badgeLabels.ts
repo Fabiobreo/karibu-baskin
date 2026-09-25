@@ -13,10 +13,19 @@ export async function getBadgeI18n() {
     getTranslations("badgeCategories"),
   ]);
 
-  const translate = <T extends { id: string; label: string; description: string }>(b: T): T => ({
+  /**
+   * `description` e' il criterio ("Segnare 10 punti in una partita"),
+   * `achieved` la frase per il traguardo raggiunto, sempre visibile: in
+   * seconda persona sul proprio profilo, in terza per figli e profili pubblici.
+   */
+  const translate = <T extends { id: string; label: string; description: string }>(
+    b: T,
+    opts: { self?: boolean } = {}
+  ): T & { achieved: string } => ({
     ...b,
     label: t(`${b.id}.label`),
     description: t(`${b.id}.description`),
+    achieved: t(`${b.id}.achieved`, { who: opts.self ? "self" : "other" }),
   });
 
   const categoryLabels = Object.fromEntries(

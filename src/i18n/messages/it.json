@@ -72,7 +72,7 @@
     "NEW_TRAINING": "Nuovo allenamento",
     "NEW_TRAINING_desc": "Quando viene creato un nuovo allenamento",
     "TEAMS_READY": "Squadre pronte",
-    "TEAMS_READY_desc": "Quando le squadre per un allenamento a cui sei iscritto/a sono pronte",
+    "TEAMS_READY_desc": "Quando sono pronte le squadre di un allenamento a cui ti sei iscritto",
     "MATCH_RESULT": "Risultato partita",
     "MATCH_RESULT_desc": "Quando viene inserito il risultato di una partita",
     "NEW_POST": "Nuova news / sondaggio",
@@ -140,12 +140,12 @@
   },
   "childLinker": {
     "noChildren": "Nessun figlio aggiunto.",
-    "addChild": "Aggiungi figlio/a",
+    "addChild": "Aggiungi un figlio o una figlia",
     "athlete": "Atleta",
     "accountLinked": "Account collegato",
     "pendingConfirm": "In attesa di conferma",
     "noAccount": "Senza account",
-    "bornOn": "Nato/a il {date}",
+    "bornOn": "Data di nascita: {date}",
     "linkAccount": "Collega l'account di {name}",
     "linkAccountDesc": "Inserisci l'email dell'account Google con cui {name} si logga nell'app. Riceverà una notifica per confermare il collegamento.",
     "accountEmail": "Email account",
@@ -160,23 +160,23 @@
     "female": "Femmina",
     "birthDate": "Data di nascita",
     "saveChanges": "Salva modifiche",
-    "titleChoice": "Aggiungi figlio/a",
+    "titleChoice": "Aggiungi un figlio o una figlia",
     "titleEmail": "Cerca per email",
     "titleName": "Cerca per nome",
     "titleConfirm": "Conferma",
     "titleSent": "Richiesta inviata",
     "titleCreate": "Crea manualmente",
-    "choiceIntro": "Il tuo figlio/a è già registrato/a nell'app? Cercalo, altrimenti crealo manualmente.",
+    "choiceIntro": "Tuo figlio o tua figlia ha già un profilo nell'app? Cerca il profilo. Se non c'è, crealo tu.",
     "searchByEmail": "Cerca per email",
     "searchByEmailDesc": "Inserisci l'email del suo account",
     "searchByName": "Cerca per nome e cognome",
     "searchByNameDesc": "Cerca tra gli utenti già registrati",
     "createManually": "Crea manualmente",
-    "createManuallyDesc": "Non è ancora registrato/a nell'app",
-    "emailStepDesc": "Cerca prima se il tuo figlio/a è già registrato/a nell'app tramite la sua email.",
+    "createManuallyDesc": "Non ha ancora un profilo nell'app",
+    "emailStepDesc": "Scrivi la sua email: vediamo se ha già un profilo nell'app.",
     "email": "Email",
     "noUserFound": "Nessun utente trovato con questa email.",
-    "nameStepDesc": "Inserisci nome e cognome del tuo figlio/a.",
+    "nameStepDesc": "Scrivi nome e cognome di tuo figlio o tua figlia.",
     "fullName": "Nome e cognome",
     "noResults": "Nessun risultato trovato.",
     "areYouParent": "Sei il genitore di questa persona?",
@@ -187,7 +187,7 @@
     "roleAssignedByCoach": "Il ruolo Baskin verrà assegnato dall'allenatore.",
     "back": "Indietro",
     "noRetry": "No, riprova",
-    "yesMyChild": "Sì, è mio figlio/a",
+    "yesMyChild": "Sì, è il profilo giusto",
     "consent": "Confermo di essere il genitore o tutore legale del minore e presto il consenso al trattamento dei suoi dati personali per le finalità descritte nell'informativa privacy.",
     "childAdded": "{name} aggiunto!",
     "childUpdated": "{name} aggiornato",
@@ -214,7 +214,7 @@
     "title": "Richieste di collegamento",
     "desc": "Un genitore ha richiesto di collegare il proprio account al tuo profilo.",
     "wantsToLink": "Vuole collegarsi al profilo:",
-    "bornOn": "nato/a il {date}",
+    "bornOn": "data di nascita: {date}",
     "reject": "Rifiuta",
     "accept": "Accetta",
     "linkAccepted": "Collegamento accettato!",
@@ -354,8 +354,8 @@
     "statShotsTitle": "Tiri tentati",
     "statFouls": "F",
     "statFoulsTitle": "Falli",
-    "statIllegal": "Illegali",
-    "statIllegalTitle": "Falli illegali",
+    "statIllegal": "Vietate",
+    "statIllegalTitle": "Marcature vietate",
     "homeChip": "Campionato",
     "homeUpcoming": "Prossime partite",
     "homeSeeAll": "Vedi tutte →",
@@ -370,7 +370,10 @@
     "firstLeg": "Andata:",
     "wonShort": "Vinta",
     "lostShort": "Persa",
-    "drawShort": "Pari"
+    "drawShort": "Pari",
+    "resultWins": "{count, plural, one {# vittoria} other {# vittorie}}",
+    "resultDraws": "{count, plural, one {# pareggio} other {# pareggi}}",
+    "resultLosses": "{count, plural, one {# sconfitta} other {# sconfitte}}"
   },
   "teams": {
     "heroChip": "Chi siamo",
@@ -506,7 +509,7 @@
     "threePointers": "Canestri 3pt",
     "freeThrows": "Tiri liberi",
     "fouls": "Falli",
-    "illegalFouls": "Falli illegali",
+    "illegalFouls": "Marcature vietate",
     "shotsAttempted": "Tiri tentati",
     "honors": "Albo",
     "medals": "Medaglie e riconoscimenti",
@@ -516,7 +519,14 @@
     "noStats": "Nessuna statistica disponibile",
     "noStatsDesc": "Le statistiche agonistiche verranno pubblicate al termine delle partite.",
     "staffOnlyProfile": "Questo profilo non è pubblico: lo vedi perché fai parte dello staff. Per tutti gli altri la pagina non esiste.",
-    "children": "Figli"
+    "children": "Figli",
+    "rowPoints": "Punti",
+    "row2pt": "Da 2 punti",
+    "row3pt": "Da 3 punti",
+    "rowFreeThrows": "Tiri liberi",
+    "rowFouls": "Falli",
+    "rowIllegal": "Marcature vietate",
+    "rowShots": "Tiri"
   },
   "scorers": {
     "pageTitle": "Classifica interna",
@@ -528,8 +538,8 @@
     "empty": "Nessun dato disponibile per la stagione {season}.",
     "emptyGeneric": "Nessun dato disponibile",
     "emptyDesc": "La classifica marcatori verrà aggiornata con l'avanzare della stagione.",
-    "advancedStats": "Statistiche avanzate",
-    "advancedStatsHint": "Mostra 1pt, MVP e falli illegali",
+    "advancedStats": "Più colonne",
+    "advancedStatsHint": "Mostra tiri liberi, MVP e marcature vietate",
     "loanDetail": "{count} in prestito",
     "loanLegend": "I numeri comprendono anche le partite giocate in prestito con un'altra squadra.",
     "roleFilterLabel": "Ruolo:",
@@ -548,8 +558,8 @@
     "col3pt": "3pt",
     "title3pt": "Canestri da 3",
     "colFouls": "Falli",
-    "colIllegal": "Illegali",
-    "titleIllegal": "Falli illegali",
+    "colIllegal": "Vietate",
+    "titleIllegal": "Marcature vietate: quando si marca un giocatore che non si può marcare",
     "colMvp": "MVP",
     "titleMvp": "Premi MVP ricevuti nella stagione",
     "colAccuracy": "%",
@@ -565,103 +575,128 @@
   "badges": {
     "esordiente": {
       "label": "Esordiente",
-      "description": "Prima partita ufficiale disputata"
+      "description": "Giocare la prima partita ufficiale",
+      "achieved": "{who, select, self {Hai giocato la tua prima partita ufficiale} other {Ha giocato la sua prima partita ufficiale}}"
     },
     "cinque_partite": {
       "label": "5 partite",
-      "description": "5 partite ufficiali disputate"
+      "description": "Giocare 5 partite ufficiali",
+      "achieved": "{who, select, self {Hai giocato 5 partite ufficiali} other {Ha giocato 5 partite ufficiali}}"
     },
     "dieci_partite": {
       "label": "10 partite",
-      "description": "10 partite ufficiali disputate"
+      "description": "Giocare 10 partite ufficiali",
+      "achieved": "{who, select, self {Hai giocato 10 partite ufficiali} other {Ha giocato 10 partite ufficiali}}"
     },
     "venti_partite": {
       "label": "20 partite",
-      "description": "20 partite ufficiali disputate"
+      "description": "Giocare 20 partite ufficiali",
+      "achieved": "{who, select, self {Hai giocato 20 partite ufficiali} other {Ha giocato 20 partite ufficiali}}"
     },
     "veterano": {
       "label": "Veterano",
-      "description": "30 partite ufficiali disputate"
+      "description": "Giocare 30 partite ufficiali",
+      "achieved": "{who, select, self {Hai giocato 30 partite ufficiali} other {Ha giocato 30 partite ufficiali}}"
     },
     "fedelissimo": {
       "label": "Fedelissimo",
-      "description": "Presente in almeno 3 stagioni diverse"
+      "description": "Giocare in 3 stagioni diverse",
+      "achieved": "{who, select, self {Hai giocato in 3 stagioni diverse} other {Ha giocato in 3 stagioni diverse}}"
     },
     "primo_canestro": {
       "label": "Primo canestro",
-      "description": "Primo punto segnato in una partita ufficiale"
+      "description": "Segnare i primi punti in una partita ufficiale",
+      "achieved": "{who, select, self {Hai segnato i tuoi primi punti in una partita ufficiale} other {Ha segnato i suoi primi punti in una partita ufficiale}}"
     },
     "doppia_cifra": {
       "label": "Doppia cifra",
-      "description": "10 o più punti in una partita"
+      "description": "Segnare almeno 10 punti in una partita",
+      "achieved": "{who, select, self {Hai segnato almeno 10 punti in una partita} other {Ha segnato almeno 10 punti in una partita}}"
     },
     "bomber": {
       "label": "Bomber",
-      "description": "20 o più punti in una singola partita"
+      "description": "Segnare almeno 20 punti in una partita",
+      "achieved": "{who, select, self {Hai segnato almeno 20 punti in una partita} other {Ha segnato almeno 20 punti in una partita}}"
     },
     "centurione": {
       "label": "Centurione",
-      "description": "100 punti totali in carriera"
+      "description": "Segnare 100 punti in tutto",
+      "achieved": "{who, select, self {Hai segnato 100 punti in tutto} other {Ha segnato 100 punti in tutto}}"
     },
     "artigliere": {
-      "label": "Artigliere",
-      "description": "200 punti totali in carriera"
+      "label": "200 punti",
+      "description": "Segnare 200 punti in tutto",
+      "achieved": "{who, select, self {Hai segnato 200 punti in tutto} other {Ha segnato 200 punti in tutto}}"
     },
     "cannoniere": {
       "label": "Cannoniere",
-      "description": "300 punti totali in carriera"
+      "description": "Segnare 300 punti in tutto",
+      "achieved": "{who, select, self {Hai segnato 300 punti in tutto} other {Ha segnato 300 punti in tutto}}"
     },
     "cecchino": {
-      "label": "Cecchino",
-      "description": "3 o più canestri da 3 punti in una singola partita"
+      "label": "Tre triple",
+      "description": "Segnare 3 canestri da 3 punti in una partita",
+      "achieved": "{who, select, self {Hai segnato 3 canestri da 3 punti in una partita} other {Ha segnato 3 canestri da 3 punti in una partita}}"
     },
     "mira_acciaio": {
       "label": "Mira d'acciaio",
-      "description": "Almeno 70% di realizzazione in una partita (min. 5 tiri)"
+      "description": "Segnare almeno 7 tiri su 10 in una partita, con almeno 5 tiri",
+      "achieved": "{who, select, self {Hai segnato almeno 7 tiri su 10 in una partita} other {Ha segnato almeno 7 tiri su 10 in una partita}}"
     },
     "cecchino_perfetto": {
-      "label": "Cecchino perfetto",
-      "description": "100% di realizzazione in una partita con almeno 3 canestri"
+      "label": "Tutto a segno",
+      "description": "Segnare tutti i tiri di una partita, con almeno 3 tiri",
+      "achieved": "{who, select, self {Hai segnato tutti i tiri di una partita} other {Ha segnato tutti i tiri di una partita}}"
     },
     "costante": {
       "label": "Costante",
-      "description": "A segno in 5 partite consecutive"
+      "description": "Segnare in 5 partite di fila",
+      "achieved": "{who, select, self {Hai segnato in 5 partite di fila} other {Ha segnato in 5 partite di fila}}"
     },
     "in_fiamme": {
       "label": "In fiamme",
-      "description": "Almeno 10 punti in 3 partite consecutive"
+      "description": "Segnare almeno 10 punti in 3 partite di fila",
+      "achieved": "{who, select, self {Hai segnato almeno 10 punti in 3 partite di fila} other {Ha segnato almeno 10 punti in 3 partite di fila}}"
     },
     "vincente": {
       "label": "Vincente",
-      "description": "10 partite vinte disputate"
+      "description": "Vincere 10 partite",
+      "achieved": "{who, select, self {Hai vinto 10 partite} other {Ha vinto 10 partite}}"
     },
     "trascinatore": {
       "label": "Trascinatore",
-      "description": "20+ punti in una partita poi vinta"
+      "description": "Segnare almeno 20 punti in una partita vinta",
+      "achieved": "{who, select, self {Hai segnato almeno 20 punti in una partita vinta} other {Ha segnato almeno 20 punti in una partita vinta}}"
     },
     "mvp": {
       "label": "MVP",
-      "description": "Eletto MVP della partita almeno una volta"
+      "description": "Essere scelto come migliore in campo (MVP) in una partita",
+      "achieved": "{who, select, self {Sei stato scelto come migliore in campo (MVP)} other {È stato scelto come migliore in campo (MVP)}}"
     },
     "beniamino": {
       "label": "Beniamino",
-      "description": "Eletto MVP della partita 3 volte"
+      "description": "Essere scelto come migliore in campo (MVP) 3 volte",
+      "achieved": "{who, select, self {Sei stato scelto come migliore in campo 3 volte} other {È stato scelto come migliore in campo 3 volte}}"
     },
     "top_scorer": {
       "label": "Top scorer",
-      "description": "1° marcatore del proprio ruolo in una stagione"
+      "description": "Segnare più punti di tutti nel proprio ruolo in una stagione",
+      "achieved": "{who, select, self {Hai segnato più punti di tutti nel tuo ruolo in una stagione} other {Ha segnato più punti di tutti nel suo ruolo in una stagione}}"
     },
     "tripla": {
       "label": "Tripla mista",
-      "description": "In una partita: almeno 1 canestro da 2pt, 1 da 3pt e 1 tiro libero"
+      "description": "In una partita, segnare un canestro da 2 punti, uno da 3 punti e un tiro libero",
+      "achieved": "{who, select, self {In una partita hai segnato da 2 punti, da 3 punti e un tiro libero} other {In una partita ha segnato da 2 punti, da 3 punti e un tiro libero}}"
     },
     "mercenario": {
-      "label": "Mercenario",
-      "description": "Almeno una partita giocata in prestito per un'altra squadra"
+      "label": "In prestito",
+      "description": "Giocare una partita con un'altra squadra, in prestito",
+      "achieved": "{who, select, self {Hai giocato una partita con un'altra squadra, in prestito} other {Ha giocato una partita con un'altra squadra, in prestito}}"
     },
     "fair_play": {
       "label": "Fair play",
-      "description": "10 partite senza falli illegali (ruoli R4/R5)"
+      "description": "Giocare 10 partite senza marcare chi non si può marcare",
+      "achieved": "{who, select, self {Hai giocato 10 partite senza marcare chi non si può marcare} other {Ha giocato 10 partite senza marcare chi non si può marcare}}"
     }
   },
   "badgeCategories": {
@@ -744,7 +779,7 @@
     "myParentsDesc": "Sono collegati al tuo profilo e possono iscriverti agli allenamenti al posto tuo.",
     "parentNoName": "Genitore",
     "myChildren": "I miei figli",
-    "linkChildDesc": "Collega il profilo di tuo figlio/a per iscriverlo agli allenamenti.",
+    "linkChildDesc": "Collega il profilo di tuo figlio o tua figlia. Così puoi fare l'iscrizione agli allenamenti.",
     "downloadData": "Scarica i miei dati",
     "deleteAccount": "Richiedi eliminazione account",
     "trainingsCount": "{count, plural, one {# allenamento} other {# allenamenti}}",
@@ -891,7 +926,7 @@
   "claim": {
     "successTitle": "Collegato! {count, plural, one {# allenamento aggiunto} other {# allenamenti aggiunti}} al tuo profilo.",
     "successNote": "Li trovi nel conteggio degli allenamenti.",
-    "title": "Ti riconosco! Sei già stato/a agli allenamenti?",
+    "title": "Ti riconosco! Hai già partecipato agli allenamenti?",
     "found": "Abbiamo trovato {count, plural, one {un allenamento} other {# allenamenti}} a cui si è iscritto qualcuno con il tuo stesso nome. Seleziona quelli in cui eri davvero tu:",
     "linkSelected": "Collega selezionati ({count})",
     "notMe": "Non ero io"
@@ -1098,7 +1133,8 @@
       "rolesSection": "I ruoli",
       "roleCanestro": "Canestro",
       "rolePunteggio": "Punteggio",
-      "roleMarcatura": "Marcatura",
+      "roleMarcatura": "Chi lo può marcare",
+      "fullRules": "Regole complete",
       "origins": "Le origini",
       "born2001": "Nato nel 2001 a Cremona",
       "historyText": "Il Baskin (Basket Inclusivo) è stato ideato da Antonio Bodini e Fausto Capellini in un contesto scolastico, con l'obiettivo di creare uno sport in cui ogni persona, indipendentemente dall'abilità fisica o cognitiva, potesse partecipare attivamente con un ruolo reale e significativo. Il regolamento è gestito dall'Ente Italiano Sport Inclusivi (EISI) di Cremona ed è oggi praticato in tutta Italia da migliaia di atleti. Ogni giocatore riceve un numero di ruolo (1–5) che compare sulla maglia come prima cifra, seguito da un numero identificativo personale.",
@@ -1160,49 +1196,49 @@
     "summarySelfWith": "Sei iscritto insieme a {names}",
     "summaryOthers": "Hai iscritto {names}",
     "questionnaire": {
-      "intro": "Qualche domanda veloce per suggerirti il ruolo Baskin (1–5), così componiamo squadre equilibrate per tutti. Le singole risposte non vengono salvate: conta solo il ruolo finale, che verrà confermato dallo staff.",
+      "intro": "Rispondi a qualche domanda. Serve a trovare il ruolo Baskin giusto, da 1 a 5. Non salviamo le risposte, solo il ruolo. Poi lo staff conferma il ruolo.",
       "previousAnswer": "La tua risposta precedente: {role}. Puoi aggiornarla qui sotto.",
       "mobility": {
-        "question": "Come ti muovi di solito durante un'attività fisica?",
-        "wheelchair": "Uso una sedia a rotelle",
-        "walk": "Cammino, ma non corro",
-        "run": "Corro"
+        "question": "{who, select, child {Come si muove {name} quando fa sport?} other {Come ti muovi quando fai sport?}}",
+        "wheelchair": "{who, select, child {Usa la sedia a rotelle} other {Uso la sedia a rotelle}}",
+        "walk": "{who, select, child {Cammina, ma non corre} other {Cammino, ma non corro}}",
+        "run": "{who, select, child {Corre} other {Corro}}"
       },
       "chair_autonomy": {
-        "question": "Riesci a muovere la sedia a rotelle da solo/a?",
-        "bothHands": "Sì, con entrambe le mani",
+        "question": "{who, select, child {{name} muove la sedia a rotelle senza aiuto?} other {Muovi la sedia a rotelle senza aiuto?}}",
+        "bothHands": "Sì, con tutte e due le mani",
         "oneArm": "Sì, ma solo con un braccio",
-        "assistance": "No, ho bisogno di assistenza"
+        "assistance": "{who, select, child {No, ha bisogno di aiuto} other {No, ho bisogno di aiuto}}"
       },
       "chair_ball": {
-        "question": "Riesci a lanciare una palla da basket?",
+        "question": "{who, select, child {{name} riesce a lanciare una palla da basket?} other {Riesci a lanciare una palla da basket?}}",
         "yes": "Sì",
-        "difficulty": "No, ho difficoltà con braccia o mani"
+        "difficulty": "{who, select, child {No, fa fatica con le braccia o le mani} other {No, faccio fatica con le braccia o le mani}}"
       },
       "walk_speed": {
-        "question": "Riesci a fare qualche passo veloce o una piccola corsetta?",
+        "question": "{who, select, child {{name} riesce a fare qualche passo veloce o una piccola corsa?} other {Riesci a fare qualche passo veloce o una piccola corsa?}}",
         "no": "No",
         "aBit": "Sì, un po'"
       },
       "run_quality": {
-        "question": "Come descriveresti la tua corsa?",
-        "slow": "Faticosa, lenta o poco coordinata",
-        "slowSub": "Faccio fatica a correre in modo fluido",
+        "question": "{who, select, child {Com'è la corsa di {name}?} other {Com'è la tua corsa?}}",
+        "slow": "Lenta o faticosa",
+        "slowSub": "{who, select, child {Fa fatica a correre in modo sciolto} other {Faccio fatica a correre in modo sciolto}}",
         "normal": "Normale o veloce",
-        "normalSub": "Riesco a correre senza grossi problemi"
+        "normalSub": "{who, select, child {Corre senza grossi problemi} other {Corro senza grossi problemi}}"
       },
       "run_dribble": {
-        "question": "Sai palleggiare una palla da basket mentre corri?",
-        "no": "No, o a malapena",
-        "basic": "Sì, di base",
-        "basicSub": "Riesco, ma con qualche incertezza",
-        "well": "Sì, bene e in modo continuo",
-        "wellSub": "Palleggio senza problemi anche in corsa"
+        "question": "{who, select, child {{name} sa palleggiare mentre corre?} other {Sai palleggiare mentre corri?}}",
+        "no": "No, o quasi mai",
+        "basic": "Sì, un po'",
+        "basicSub": "{who, select, child {Ci riesce, ma a volte perde la palla} other {Ci riesco, ma a volte perdo la palla}}",
+        "well": "Sì, bene",
+        "wellSub": "{who, select, child {Palleggia senza problemi anche di corsa} other {Palleggio senza problemi anche di corsa}}"
       },
       "experience": {
-        "question": "Hai esperienza con il basket o altri sport con la palla?",
-        "little": "No, o poca esperienza",
-        "years": "Sì, anni di pratica"
+        "question": "{who, select, child {{name} ha già giocato a basket o ad altri sport con la palla?} other {Hai già giocato a basket o ad altri sport con la palla?}}",
+        "little": "No, o poco",
+        "years": "Sì, per anni"
       }
     },
     "showPreviousSeasons": "Mostra le stagioni precedenti ({count, plural, one {# allenamento} other {# allenamenti}})",
@@ -1248,7 +1284,7 @@
     "alreadyRegistered": "Sei già iscritto a questo allenamento",
     "alreadyRegisteredFamilyAll": "Tutti siete già iscritti",
     "alreadyRegisteredParentAndChild": "Tu e {name} siete già iscritti",
-    "alreadyRegisteredChild": "{name} è già iscritto/a",
+    "alreadyRegisteredChild": "Iscrizione di {name} già fatta",
     "cannotRegister": "Non puoi iscriverti a questo allenamento",
     "cannotRegisterHelp": "Pensi che sia un errore? Scrivi allo staff: ti rispondiamo e sistemiamo.",
     "askStaff": "Chiedi allo staff",
@@ -1265,8 +1301,8 @@
     "redoQuestionnaire": "↩ Rifai il questionario",
     "changeRole": "↩ Cambia ruolo",
     "roleConfirmNote": "Il ruolo sarà confermato dall'allenatore dopo il primo allenamento.",
-    "questionnairePromptSelf": "Rispondi a qualche domanda per determinare il tuo ruolo nel Baskin:",
-    "questionnairePromptChild": "Rispondi a qualche domanda per determinare il ruolo di {name}:",
+    "questionnairePromptSelf": "Rispondi a qualche domanda sul tuo modo di muoverti.",
+    "questionnairePromptChild": "Rispondi a qualche domanda su come si muove {name}.",
     "staffRolePromptSelf": "Seleziona il tuo ruolo:",
     "staffRolePromptChild": "Ruolo di {name}:",
     "restrictionRoles": "Questo allenamento è riservato ai ruoli {roles}",
@@ -1324,7 +1360,7 @@
     "registeredCount": "{count, plural, one {# iscritto} other {# iscritti}}",
     "viewTeamsBtn": "Vedi squadre",
     "teamChip": "Squadra",
-    "registeredSuccess": "{name} iscritto/a con successo!",
+    "registeredSuccess": "Iscrizione di {name} fatta!",
     "enterName": "Inserisci il tuo nome",
     "noneDesc": "I prossimi allenamenti compariranno qui appena in programma.",
     "nonePastDesc": "Gli allenamenti conclusi compariranno qui a fine stagione.",
@@ -1425,6 +1461,10 @@
     "iosStep2": "Scegli «Aggiungi a Home»"
   },
   "badgeProgress": {
-    "value": "{current} su {target}"
+    "value": "{current} su {target}",
+    "tier_bronze": "Bronzo",
+    "tier_silver": "Argento",
+    "tier_gold": "Oro",
+    "tierExplain": "Il colore del bordo dice quanto è difficile il traguardo. L'oro è il più difficile."
   }
 }

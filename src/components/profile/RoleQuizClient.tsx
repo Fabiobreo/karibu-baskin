@@ -165,9 +165,13 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
         </Typography>
       )}
       {info && (
-        <Typography variant="body1" sx={{ mt: 2, lineHeight: 1.7 }}>
-          {info.description}
-        </Typography>
+        <Box component="ul" sx={{ mt: 2, mb: 0, pl: 2.5 }}>
+          {info.summary.map((line) => (
+            <Typography key={line} component="li" variant="body1" sx={{ lineHeight: 1.6, mb: 0.5 }}>
+              {line}
+            </Typography>
+          ))}
+        </Box>
       )}
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
         {kind === "confirmed" ? t("confirmedNote") : t("suggestedNote")}
