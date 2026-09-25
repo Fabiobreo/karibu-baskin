@@ -1,5 +1,6 @@
 "use client";
 
+import InlineError from "@/components/common/InlineError";
 import { useMemo, useState } from "react";
 import { Box, Button, Container, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -176,7 +177,12 @@ export default function ConvocazioniClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStats, selectionByTeam, activeIndex]);
 
+  // Errore del salvataggio: sotto la barra con "Salva", finche' non si
+  // riprova o si chiude (UX-25).
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   async function handleSave() {
+    setSaveError(null);
     setSaving(true);
     try {
       // Una PUT per ogni squadra (anche se è una sola). Per le interne salviamo
@@ -202,16 +208,13 @@ export default function ConvocazioniClient({
         }
       }
       if (errors.length > 0) {
-        showToast({
-          message: `Errori nel salvataggio: ${errors.join("; ")}`,
-          severity: "error",
-        });
+        setSaveError(errors.join("; "));
         return;
       }
       showToast({ message: `Salvati ${totalSelectedAll} convocati`, severity: "success" });
       router.refresh();
     } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
+      setSaveError("Errore di rete.");
     } finally {
       setSaving(false);
     }
@@ -291,6 +294,16 @@ export default function ConvocazioniClient({
         onClearAll={clearAll}
         onSave={handleSave}
       />
+      {saveError && (
+        <InlineError
+          title="Convocazioni non salvate."
+          message={saveError}
+          onRetry={handleSave}
+          onClose={() => setSaveError(null)}
+          retrying={saving}
+          sx={{ mb: 2 }}
+        />
+      )}
 
       <ConvocazioniFilters
         roleFilter={roleFilter}

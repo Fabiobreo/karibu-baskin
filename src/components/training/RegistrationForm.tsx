@@ -1,4 +1,5 @@
 "use client";
+import InlineError from "@/components/common/InlineError";
 import {
   Box,
   TextField,
@@ -82,6 +83,8 @@ export default function RegistrationForm({
     note,
     setNote,
     loading,
+    submitError,
+    clearSubmitError,
     selectedChild,
     confirmedRole,
     hasConfirmedRole,
@@ -291,6 +294,15 @@ export default function RegistrationForm({
             helperText={note.length > 0 ? `${note.length}/300` : t("notesEmpty")}
             sx={{ mb: 1.5 }}
           />
+          {submitError && (
+            <InlineError
+              title={t("registrationNotSaved")}
+              message={submitError}
+              onRetry={handleSubmit}
+              onClose={clearSubmitError}
+              retrying={loading}
+            />
+          )}
           <Button
             variant="contained"
             fullWidth
@@ -610,6 +622,15 @@ export default function RegistrationForm({
                       helperText={note.length > 0 ? `${note.length}/300` : t("notesEmpty")}
                       sx={{ mb: 1.5 }}
                     />
+                    {submitError && (
+                      <InlineError
+                        title={t("registrationNotSaved")}
+                        message={submitError}
+                        onRetry={handleSubmit}
+                        onClose={clearSubmitError}
+                        retrying={loading}
+                      />
+                    )}
                     <Button
                       variant="contained"
                       fullWidth

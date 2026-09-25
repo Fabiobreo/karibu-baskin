@@ -27,7 +27,7 @@ async function main() {
   try {
     const testEmail = TEST_EMAIL_DOMAINS.map((domain) => ({ email: { endsWith: domain } }));
 
-    const [users, children, posts, teams, uxTrainings, uxOpponents] = await Promise.all([
+    const [users, children, posts, teams, uxTrainings, uxOpponents, uxEvents] = await Promise.all([
       prisma.user.count({ where: { OR: testEmail } }),
       prisma.child.count({
         where: {
@@ -49,6 +49,7 @@ async function main() {
       prisma.competitiveTeam.count({ where: { name: { contains: SIM_MARKER } } }),
       prisma.trainingSession.count({ where: { title: { startsWith: UX_MARKER } } }),
       prisma.opposingTeam.count({ where: { name: { startsWith: UX_MARKER } } }),
+      prisma.event.count({ where: { title: { startsWith: UX_MARKER } } }),
     ]);
 
     const findings: Array<[label: string, count: number]> = [
@@ -58,6 +59,7 @@ async function main() {
       [`squadre di simulazione (nome con "${SIM_MARKER}")`, teams],
       [`allenamenti di prova (titolo "${UX_MARKER}")`, uxTrainings],
       [`avversarie di prova (nome "${UX_MARKER}")`, uxOpponents],
+      [`eventi di prova (titolo "${UX_MARKER}")`, uxEvents],
     ];
 
     for (const [label, count] of findings) {

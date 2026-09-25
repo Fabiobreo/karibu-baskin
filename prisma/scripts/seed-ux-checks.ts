@@ -15,7 +15,8 @@
  *   - un genitore di prova con un figlio SENZA ruolo;
  *   - un atleta di prova e due allenamenti passati con iscrizioni anonime al
  *     suo nome ("Ti riconosco!" in /profilo confronta il nome, non l'email);
- *   - due partite future, di sabato, con avversarie dal nome lungo.
+ *   - due partite future, di sabato, con avversarie dal nome lungo;
+ *   - un evento futuro con risposta Ci sarò/Forse/No (UX-25).
  *
  * Per entrare come gli utenti di prova serve `ENABLE_TEST_LOGIN=true`: il
  * login di test in /login accetta le email qui sotto.
@@ -40,6 +41,7 @@ const OPPONENTS = [
   { id: "ux-opp-2", name: `${UX_MARKER} Associazione Sportiva Inclusiva Riviera Berica` },
 ];
 const MATCHES = ["ux-match-1", "ux-match-2"];
+const EVENT_ID = "ux-event";
 
 // ─── Date ───────────────────────────────────────────────────────────────────
 
@@ -191,11 +193,29 @@ async function seed() {
     await prisma.match.upsert({ where: { id }, create: { id, ...data }, update: data });
   }
 
+  const event = {
+    title: `${UX_MARKER} Evento di prova`,
+    slug: "ux-evento-di-prova",
+    date: saturdayAfter(12, 10),
+    description: "Evento per provare la risposta Ci sarò / Forse / No.",
+  };
+  await prisma.event.upsert({
+    where: { id: EVENT_ID },
+    create: { id: EVENT_ID, ...event },
+    update: event,
+  });
+  // Le prove precedenti (iscrizione, risposta all'evento) si annullano: si riparte da zero.
+  await prisma.registration.deleteMany({
+    where: { sessionId: TRAINING_OPEN, userId: { in: [parent.id, athlete.id] } },
+  });
+  await prisma.eventAttendance.deleteMany({ where: { eventId: EVENT_ID } });
+
   console.log("Dati di prova UX pronti:");
   console.log(`  genitore      ${PARENT.email} (figlio senza ruolo: ${child.name})`);
   console.log(`  atleta        ${ATHLETE.email} (2 iscrizioni anonime da collegare in /profilo)`);
   console.log(`  allenamento   /allenamento/${open.dateSlug}`);
   console.log(`  partite       ${MATCHES.length} contro avversarie "[UX]", squadra ${team.name}`);
+  console.log(`  evento       /eventi/${event.slug}`);
   console.log(`  utenti id     ${parent.id}, ${athlete.id}`);
 }
 
@@ -236,6 +256,9 @@ async function clean() {
     },
   });
   const children = await prisma.child.deleteMany({ where: { id: CHILD_ID } });
+  const events = await prisma.event.deleteMany({
+    where: { OR: [{ id: EVENT_ID }, { title: { startsWith: UX_MARKER } }] },
+  });
   const notifications = await prisma.appNotification.deleteMany({
     where: { targetUserId: { in: userIds } },
   });
@@ -248,7 +271,7 @@ async function clean() {
   console.log(
     `  avversarie ${opponents.count}, figli ${children.count}, utenti ${deletedUsers.count}`
   );
-  console.log(`  notifiche  ${notifications.count}`);
+  console.log(`  eventi ${events.count}, notifiche ${notifications.count}`);
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────

@@ -66,6 +66,9 @@ export interface UseRegistrationFormReturn {
   note: string;
   setNote: (s: string) => void;
   loading: boolean;
+  /** Messaggio dell'ultimo invio fallito, da mostrare accanto al bottone. */
+  submitError: string | null;
+  clearSubmitError: () => void;
   // Derived
   selectedChild: ChildInfo | null;
   confirmedRole: number | null;
@@ -241,6 +244,10 @@ export function useRegistrationForm({
     optimisticReg: OptimisticReg;
   };
 
+  // Errore dell'invio: resta accanto al bottone, con "Riprova", finche' non si
+  // riprova o si chiude (UX-25). Il toast in un angolo si perdeva.
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const registerMutation = useMutation<void, Error, MutationVars>({
     mutationFn: async ({ body }) => {
       const res = await fetch("/api/registrations", {
@@ -264,10 +271,7 @@ export function useRegistrationForm({
         return s;
       });
       onSubmitError?.();
-      showToast({
-        message: err.message,
-        severity: "error",
-      });
+      setSubmitError(err.message);
     },
     onSuccess: (_, { displayName }) => {
       showToast({ message: t("registeredSuccess", { name: displayName }), severity: "success" });
@@ -284,6 +288,7 @@ export function useRegistrationForm({
   });
 
   function handleSubmit() {
+    setSubmitError(null);
     const isCoachRegistration = isCoach && coachMode === "coach";
     if (!isCoachRegistration && !chosenRole) return;
 
@@ -341,6 +346,8 @@ export function useRegistrationForm({
     note,
     setNote,
     loading: registerMutation.isPending,
+    submitError,
+    clearSubmitError: () => setSubmitError(null),
     selectedChild,
     confirmedRole,
     confirmedVariant,

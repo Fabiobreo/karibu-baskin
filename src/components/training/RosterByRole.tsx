@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
+import InlineError from "@/components/common/InlineError";
 import {
   Box,
   Typography,
@@ -300,6 +301,13 @@ export default function RosterByRole({
   const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingDeleteRegRef = useRef<Registration | null>(null);
   const { showToast } = useToast();
+  // Ultimo errore su un iscritto: resta in testa alla lista, con il nome e
+  // "Riprova", finche' non si riprova o si chiude (UX-25).
+  const [rowError, setRowError] = useState<{
+    title: string;
+    message: string;
+    retry?: () => void;
+  } | null>(null);
 
   const showAttendance = !!(isStaff && isEnded);
 
@@ -319,17 +327,21 @@ export default function RosterByRole({
       }
     },
     onSuccess: () => onUnregistered?.(),
-    onError: (err) =>
-      showToast({
+    onError: (err, reg) =>
+      setRowError({
+        title: t("unregisterFailed", { name: reg.name }),
         message: err instanceof Error ? err.message : tCommon("networkError"),
-        severity: "error",
+        retry: () => void executeDeletion(reg),
       }),
   });
 
   async function executeDeletion(reg: Registration) {
+    setRowError(null);
     setDeletingId(reg.id);
     try {
       await deleteMutation.mutateAsync(reg);
+    } catch {
+      // L'errore lo mostra `onError` accanto alla lista.
     } finally {
       setDeletingId(null);
     }
@@ -394,7 +406,14 @@ export default function RosterByRole({
     const next = nextAttended(currentAttended);
 
     setTogglingId(reg.id);
+    setRowError(null);
     setAttendedOverrides((prev) => ({ ...prev, [reg.id]: next }));
+    const failed = (message: string) =>
+      setRowError({
+        title: t("attendanceFailed", { name: reg.name }),
+        message,
+        retry: () => void handleToggleAttended(reg),
+      });
 
     try {
       const res = await fetch(`/api/registrations/${reg.id}/attendance`, {
@@ -407,11 +426,11 @@ export default function RosterByRole({
       } else {
         // Rollback
         setAttendedOverrides((prev) => ({ ...prev, [reg.id]: currentAttended ?? null }));
-        showToast({ message: t("attendanceUpdateError"), severity: "error" });
+        failed(t("attendanceUpdateError"));
       }
     } catch {
       setAttendedOverrides((prev) => ({ ...prev, [reg.id]: currentAttended ?? null }));
-      showToast({ message: tCommon("networkError"), severity: "error" });
+      failed(tCommon("networkError"));
     } finally {
       setTogglingId(null);
     }
@@ -452,10 +471,7 @@ export default function RosterByRole({
           });
           return rollback;
         });
-        showToast({
-          message: t("attendanceAutoError"),
-          severity: "error",
-        });
+        setRowError({ title: t("attendanceAutoError"), message: "" });
       } else {
         onAttendanceChanged?.();
       }
@@ -532,6 +548,15 @@ export default function RosterByRole({
           </Button>
         )}
       </Box>
+      {rowError && (
+        <InlineError
+          title={rowError.title}
+          message={rowError.message}
+          onRetry={rowError.retry}
+          onClose={() => setRowError(null)}
+          sx={{ mx: 2, mt: 1.5, mb: 0 }}
+        />
+      )}
 
       {/* Body */}
       {loading ? (
@@ -622,7 +647,7 @@ export default function RosterByRole({
                         onDelete={() => handleUnregister(reg)}
                         onToggleAttended={() => handleToggleAttended(reg)}
                         attendedLabel={attendedLabel}
-                        removeLabel={t("removeRegistration")}
+                        removeLabel={t("removeRegistrationOf", { name: reg.name })}
                       />
                     );
                   })}
@@ -696,7 +721,7 @@ export default function RosterByRole({
                         <IconButton
                           size="small"
                           onClick={() => handleUnregister(reg)}
-                          aria-label={t("removeRegistration")}
+                          aria-label={t("removeRegistrationOf", { name: reg.name })}
                           sx={{
                             p: "3px",
                             mr: 0.5,

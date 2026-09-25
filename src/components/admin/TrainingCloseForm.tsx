@@ -1,4 +1,5 @@
 "use client";
+import InlineError from "@/components/common/InlineError";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -96,6 +97,8 @@ export default function TrainingCloseForm({
   });
   const [saving, setSaving] = useState<"save" | "conclude" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Quale salvataggio e' fallito, per "Riprova" (null = errore di validazione).
+  const [failedConclude, setFailedConclude] = useState<boolean | null>(null);
   const [managing, setManaging] = useState(false);
 
   const effective = (a: CloseAthlete): Attended =>
@@ -140,6 +143,7 @@ export default function TrainingCloseForm({
 
   async function save(conclude: boolean) {
     setError(null);
+    setFailedConclude(null);
     if (ops.invalid.length > 0) {
       setError("Ogni partitella ha bisogno di entrambi i punteggi (o di nessuno).");
       return;
@@ -175,7 +179,8 @@ export default function TrainingCloseForm({
       onSaved(conclude);
     } catch (err) {
       // Resta scritto qui, vicino ai bottoni, finche' non si riprova (UX-05).
-      setError(err instanceof Error ? err.message : "Errore di rete. Riprova.");
+      setError(err instanceof Error ? err.message : "Errore di rete.");
+      setFailedConclude(conclude);
       router.refresh();
     } finally {
       setSaving(null);
@@ -421,9 +426,13 @@ export default function TrainingCloseForm({
       )}
 
       {error && (
-        <Alert severity="error" role="alert">
-          {error}
-        </Alert>
+        <InlineError
+          title={failedConclude !== null ? "Non salvato." : undefined}
+          message={error}
+          onRetry={failedConclude !== null ? () => save(failedConclude) : undefined}
+          onClose={() => setError(null)}
+          retrying={!!saving}
+        />
       )}
 
       <Box

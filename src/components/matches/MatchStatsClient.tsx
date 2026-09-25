@@ -1,5 +1,7 @@
 "use client";
 
+import InlineError from "@/components/common/InlineError";
+import { readError } from "@/lib/fetchJson";
 import { useState, useEffect } from "react";
 import {
   Box,
@@ -124,6 +126,9 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  // Errore del salvataggio: accanto a "Salva statistiche", in fondo alla
+  // tabella, non in cima alla pagina (UX-25).
+  const [saveError, setSaveError] = useState("");
   // Modifiche non salvate → prompt su refresh/chiusura + conferma su Annulla
   const [dirty, setDirty] = useState(false);
   useUnsavedChangesGuard(dirty);
@@ -252,7 +257,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
 
   async function handleSave() {
     setSaving(true);
-    setError("");
+    setSaveError("");
     try {
       const payload = rows
         .filter((r) => {
@@ -278,7 +283,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        setError("Errore nel salvataggio delle statistiche");
+        setSaveError(`Statistiche: ${await readError(res)}`);
         return;
       }
 
@@ -295,8 +300,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
         body: JSON.stringify({ userIds: mvpUserIds, childIds: mvpChildIds }),
       });
       if (!mvpRes.ok) {
-        const data = (await mvpRes.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Errore nel salvataggio degli MVP");
+        setSaveError(`MVP: ${await readError(mvpRes)}`);
         return;
       }
 
@@ -305,7 +309,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
       router.push("/admin/partite");
       router.refresh();
     } catch {
-      setError("Errore di rete");
+      setSaveError("Errore di rete.");
     } finally {
       setSaving(false);
     }
@@ -650,6 +654,16 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
         </>
       )}
 
+      {saveError && (
+        <InlineError
+          title="Non salvato."
+          message={saveError}
+          onRetry={handleSave}
+          onClose={() => setSaveError("")}
+          retrying={saving}
+          sx={{ mt: 3, mb: 0 }}
+        />
+      )}
       {!loading && rows.length > 0 && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mt: 3 }}>
           <Button onClick={handleCancel} disabled={saving} sx={{ minHeight: 44 }}>

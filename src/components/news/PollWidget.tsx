@@ -1,4 +1,5 @@
 "use client";
+import InlineError from "@/components/common/InlineError";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -53,6 +54,8 @@ export default function PollWidget({
 }: PollWidgetProps) {
   const [selected, setSelected] = useState<string[]>(userVoteOptionIds);
   const [saving, setSaving] = useState(false);
+  // Errore del voto: resta sotto il bottone, con "Riprova" (UX-25).
+  const [voteError, setVoteError] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(userVoteOptionIds.length > 0);
   const { showToast } = useToast();
   const router = useRouter();
@@ -86,6 +89,7 @@ export default function PollWidget({
       return;
     }
     setSaving(true);
+    setVoteError(null);
     try {
       const res = await fetch(`/api/polls/${pollId}/vote`, {
         method: "POST",
@@ -98,7 +102,7 @@ export default function PollWidget({
       // Aggiorna i risultati lato server (anteprima staff o sondaggio chiuso)
       router.refresh();
     } catch (err) {
-      showToast({ message: err instanceof Error ? err.message : "Errore", severity: "error" });
+      setVoteError(err instanceof Error ? err.message : t("voteNotSaved"));
     } finally {
       setSaving(false);
     }
@@ -279,6 +283,15 @@ export default function PollWidget({
                 </Typography>
               )}
             </Box>
+            {voteError && (
+              <InlineError
+                title={t("voteNotSaved")}
+                message={voteError}
+                onRetry={handleVote}
+                onClose={() => setVoteError(null)}
+                retrying={saving}
+              />
+            )}
           </Box>
         );
 

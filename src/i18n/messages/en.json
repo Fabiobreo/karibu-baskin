@@ -738,6 +738,7 @@
     "attendees": "Attendees",
     "saved": "Response saved",
     "saveError": "Couldn't save",
+    "rsvpNotSaved": "Reply not saved.",
     "save": "Save",
     "notePlaceholder": "Notes (allergies, needs…)",
     "optionsHint": "Select what you'll attend"
@@ -949,7 +950,8 @@
     "loginBtn": "Log in to vote",
     "updateVote": "Update vote",
     "vote": "Vote",
-    "changeNote": "You can change your vote until the poll closes."
+    "changeNote": "You can change your vote until the poll closes.",
+    "voteNotSaved": "Vote not recorded."
   },
   "pages": {
     "faq": {
@@ -1389,7 +1391,11 @@
     "rosterPrivateGuest": "Registered athletes and teams are visible to Karibu members.",
     "teamsPrivateGuest": "The teams for this session are visible to Karibu members.",
     "ownNameHelper": "We will also save it to your profile.",
-    "manageRoster": "Manage"
+    "manageRoster": "Manage",
+    "removeRegistrationOf": "Remove {name}'s registration",
+    "unregisterFailed": "{name}'s registration was not removed.",
+    "attendanceFailed": "{name}'s attendance was not saved.",
+    "registrationNotSaved": "Registration not saved."
   },
   "home": {
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",

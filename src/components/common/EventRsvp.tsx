@@ -18,6 +18,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { format } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
+import InlineError from "@/components/common/InlineError";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -102,11 +103,7 @@ function SubjectOptionsForm({
       }
       showToast({ message: t("saved"), severity: "success" });
     },
-    onError: (err) =>
-      showToast({
-        message: err instanceof Error ? err.message : t("saveError"),
-        severity: "error",
-      }),
+    // L'errore resta sotto "Salva" di questo partecipante (UX-25).
   });
 
   const toggle = (id: string) =>
@@ -170,6 +167,15 @@ function SubjectOptionsForm({
       >
         {t("save")}
       </Button>
+      {mutation.isError && (
+        <InlineError
+          title={t("rsvpNotSaved")}
+          message={mutation.error instanceof Error ? mutation.error.message : t("saveError")}
+          onRetry={() => mutation.mutate()}
+          onClose={() => mutation.reset()}
+          retrying={mutation.isPending}
+        />
+      )}
     </Box>
   );
 }
@@ -207,12 +213,15 @@ export default function EventRsvp({
       setGoingCount((c) => c + (status === "GOING" ? 1 : 0) - (prev === "GOING" ? 1 : 0));
       showToast({ message: t("saved"), severity: "success" });
     },
-    onError: (err) =>
-      showToast({
-        message: err instanceof Error ? err.message : t("saveError"),
-        severity: "error",
-      }),
+    // L'errore resta sotto i bottoni della persona a cui si riferisce (UX-25).
+    onError: (err, vars) =>
+      setFailure({ vars, message: err instanceof Error ? err.message : t("saveError") }),
+    onMutate: () => setFailure(null),
   });
+  const [failure, setFailure] = useState<{
+    vars: { childId: string | null; status: Status };
+    message: string;
+  } | null>(null);
 
   const label = (s: Status) =>
     s === "GOING" ? t("going") : s === "MAYBE" ? t("maybe") : t("notGoing");
@@ -299,6 +308,15 @@ export default function EventRsvp({
                     );
                   })}
                 </Box>
+                {failure && (failure.vars.childId ?? "self") === key && (
+                  <InlineError
+                    title={t("rsvpNotSaved")}
+                    message={failure.message}
+                    onRetry={() => statusMutation.mutate(failure.vars)}
+                    onClose={() => setFailure(null)}
+                    retrying={statusMutation.isPending}
+                  />
+                )}
               </Box>
             );
           })}

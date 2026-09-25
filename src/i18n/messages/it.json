@@ -738,6 +738,7 @@
     "attendees": "Partecipanti",
     "saved": "Risposta salvata",
     "saveError": "Errore nel salvataggio",
+    "rsvpNotSaved": "Risposta non salvata.",
     "save": "Salva",
     "notePlaceholder": "Note (allergie, esigenze…)",
     "optionsHint": "Seleziona a cosa parteciperai"
@@ -949,7 +950,8 @@
     "loginBtn": "Accedi per votare",
     "updateVote": "Aggiorna voto",
     "vote": "Vota",
-    "changeNote": "Puoi modificare il tuo voto fino alla chiusura."
+    "changeNote": "Puoi modificare il tuo voto fino alla chiusura.",
+    "voteNotSaved": "Voto non registrato."
   },
   "pages": {
     "faq": {
@@ -1389,7 +1391,11 @@
     "rosterPrivateGuest": "Iscritti e squadre sono visibili ai tesserati del Karibu.",
     "teamsPrivateGuest": "Le squadre di questo allenamento sono visibili ai tesserati del Karibu.",
     "ownNameHelper": "Lo salviamo anche nel tuo profilo.",
-    "manageRoster": "Gestisci"
+    "manageRoster": "Gestisci",
+    "removeRegistrationOf": "Rimuovi l'iscrizione di {name}",
+    "unregisterFailed": "Iscrizione di {name} non tolta.",
+    "attendanceFailed": "Presenza di {name} non salvata.",
+    "registrationNotSaved": "Iscrizione non salvata."
   },
   "home": {
     "heroSubtitle": "Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.",
