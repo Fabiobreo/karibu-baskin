@@ -50,3 +50,16 @@ export async function readError(res: Response): Promise<string> {
   if (!text || text.startsWith("<")) return statusLabel(res);
   return text.length > MAX_TEXT ? `${text.slice(0, MAX_TEXT)}…` : text;
 }
+
+/**
+ * GET di un JSON per `useQuery`: su una risposta non ok solleva con il
+ * messaggio di `readError`, invece di restituire il corpo di errore come se
+ * fosse il dato. Con `.then((r) => r.json())` un 429 o un 500 arrivava al
+ * componente come `{ error: "…" }` al posto di una lista, e un `.filter` su
+ * quell'oggetto faceva cadere tutta la pagina.
+ */
+export async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(url, init);
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as T;
+}

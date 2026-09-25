@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { readError } from "./fetchJson";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { fetchJson, readError } from "./fetchJson";
 
 function jsonRes(body: unknown, status = 400, statusText = "Bad Request") {
   return new Response(JSON.stringify(body), {
@@ -68,5 +68,22 @@ describe("readError", () => {
       "Errore 504 (Gateway Timeout)"
     );
     expect(await readError(new Response("", { status: 500, statusText: "" }))).toBe("Errore 500");
+  });
+});
+
+describe("fetchJson", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("restituisce il JSON di una risposta ok", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonRes([{ id: "a" }], 200, "OK")));
+    await expect(fetchJson("/api/x")).resolves.toEqual([{ id: "a" }]);
+  });
+
+  it("su un errore solleva, non restituisce il corpo di errore come dato", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonRes({ error: "Troppe richieste" }, 429, "Too Many Requests"))
+    );
+    await expect(fetchJson("/api/x")).rejects.toThrow("Troppe richieste");
   });
 });

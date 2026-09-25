@@ -51,6 +51,7 @@ import GlobalSearch from "@/components/layout/GlobalSearch";
 import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { alpha } from "@mui/material/styles";
 import { useQuery } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetchJson";
 import { slugify } from "@/lib/slugUtils";
 import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
@@ -143,7 +144,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   // Squadre della stagione corrente per i link dinamici del dropdown
   const { data: allTeams } = useQuery<{ id: string; name: string; season: string }[]>({
     queryKey: ["competitive-teams"],
-    queryFn: () => fetch("/api/competitive-teams").then((r) => r.json()),
+    // Su un errore (anche un 429) la query fallisce e le squadre restano
+    // vuote: prima il corpo di errore finiva in `allTeams` e il `.filter`
+    // qui sotto faceva cadere l'intero sito nell'errore critico.
+    queryFn: () => fetchJson("/api/competitive-teams"),
   });
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
   const squadreLinks = [
