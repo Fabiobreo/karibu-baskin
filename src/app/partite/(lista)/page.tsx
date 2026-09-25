@@ -276,9 +276,8 @@ export default async function PartitePage({ searchParams }: Props) {
                                 textAlign: "right",
                                 flex: "1 1 0",
                                 minWidth: 0,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
+                                // I nomi lunghi vanno a capo invece di essere tagliati (UX-26).
+                                overflowWrap: "break-word",
                               }}
                             >
                               {leftName}
@@ -301,9 +300,8 @@ export default async function PartitePage({ searchParams }: Props) {
                                 textAlign: "left",
                                 flex: "1 1 0",
                                 minWidth: 0,
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
+                                // I nomi lunghi vanno a capo invece di essere tagliati (UX-26).
+                                overflowWrap: "break-word",
                               }}
                             >
                               {rightName}
@@ -342,9 +340,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                   variant="caption"
                                   sx={{
                                     fontSize: "0.75rem",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    overflowWrap: "break-word",
                                   }}
                                 >
                                   {m.venue}

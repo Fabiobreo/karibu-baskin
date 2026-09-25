@@ -45,6 +45,6 @@ Alcune modifiche dei ticket precedenti sono coperte da test ma **non sono state 
 ## Rimasto fuori
 
 - Due notifiche in-app sono scritte direttamente dentro una transazione e **non** passano dall'interruttore: eliminazione di un figlio (`api/children/[childId]`) e risposta a una richiesta di collegamento (`api/link-requests/[requestId]/respond`). Nessuna delle quattro prove le tocca. Neanche le email (Resend) sono coperte.
-- Visti durante le prove, da correggere altrove: caselle di "Ti riconosco!" senza nome accessibile, card che sparisce dopo un collegamento parziale, testo al plurale con una sola iscrizione (UX-06); nome lungo dell'avversaria troncato senza modo di leggerlo in `/partite` (UX-17).
+- Visti durante le prove, da correggere altrove: caselle di "Ti riconosco!" senza nome accessibile, card che sparisce dopo un collegamento parziale, testo al plurale con una sola iscrizione (UX-06). Il nome lungo dell'avversaria troncato in `/partite` (UX-17) è stato invece corretto subito dopo: nomi e luogo vanno a capo.
 - Il commento di `sessionDateSlug` in `src/lib/slugUtils.ts` descrive il formato "2025-03-15T18:00", ma il form admin salva "202503151800" e la funzione non è usata fuori dai test.
 - Schermate a pagina scorsa: il pannello browser in emulazione mobile cattura male le pagine scorse (fascia vuota sopra l'header); gli esiti sono stati letti dal DOM e dal database.
