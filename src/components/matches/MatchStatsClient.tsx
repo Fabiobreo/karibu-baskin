@@ -25,7 +25,8 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { alpha } from "@mui/material/styles";
 import { contrastText } from "@/lib/colorUtils";
 import { STAT_FIELDS_BY_ROLE, computePoints, type StatField } from "@/lib/schemas/match";
@@ -493,20 +494,10 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                                 {row.name}
                               </Typography>
                               {row.sportRole && (
-                                <Chip
-                                  label={sportRoleLabel(
-                                    row.sportRole,
-                                    row.sportRoleVariant ?? null
-                                  )}
-                                  size="small"
-                                  sx={{
-                                    bgcolor: ROLE_COLORS[row.sportRole],
-                                    color: contrastText(ROLE_COLORS[row.sportRole]),
-                                    fontWeight: 600,
-                                    fontSize: "0.75rem",
-                                    height: 20,
-                                    mt: 0.2,
-                                  }}
+                                <RoleBadge
+                                  role={row.sportRole}
+                                  variant={row.sportRoleVariant ?? null}
+                                  sx={{ mt: 0.2 }}
                                 />
                               )}
                             </Box>

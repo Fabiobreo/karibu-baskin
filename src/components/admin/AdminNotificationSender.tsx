@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import { ROLE_LABELS, ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 
 interface Team {
@@ -262,7 +262,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
                         width: 10,
                         height: 10,
                         borderRadius: "50%",
-                        bgcolor: ROLE_COLORS[r],
+                        bgcolor: roleColor(r),
                         flexShrink: 0,
                       }}
                     />

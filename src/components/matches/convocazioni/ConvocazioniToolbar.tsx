@@ -1,7 +1,7 @@
 "use client";
 import { Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLES, roleColor } from "@/lib/constants";
 
 /** Toolbar sticky: conteggio convocati, copertura ruoli e azioni Tutti/Nessuno/Salva. */
 export default function ConvocazioniToolbar({
@@ -64,13 +64,13 @@ export default function ConvocazioniToolbar({
               label={`R${r}: ${count}`}
               size="small"
               sx={{
-                bgcolor: count > 0 ? ROLE_COLORS[r] : "transparent",
+                bgcolor: count > 0 ? roleColor(r) : "transparent",
                 color: count > 0 ? "common.white" : "text.secondary",
                 fontWeight: 700,
                 fontSize: "0.75rem",
                 border: "1px solid",
                 // Ruolo scoperto: chip vuoto con il bordo, non solo il colore.
-                borderColor: count > 0 ? ROLE_COLORS[r] : "divider",
+                borderColor: count > 0 ? roleColor(r) : "divider",
               }}
             />
           );

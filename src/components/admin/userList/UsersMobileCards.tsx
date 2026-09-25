@@ -3,7 +3,8 @@ import { Avatar, Box, Chip, IconButton, Tooltip, Typography } from "@mui/materia
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel, roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type AdminRow } from "@/components/admin/userList/userListShared";
@@ -81,24 +82,15 @@ export default function UsersMobileCards({
                   />
                   <AthleteStatusChip status={row.athleteStatus} />
                   {row.sportRole ? (
-                    <Chip
-                      label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[row.sportRole],
-                        color: "common.white",
-                        fontWeight: 700,
-                        fontSize: "0.75rem",
-                      }}
-                    />
+                    <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
                   ) : row.sportRoleSuggested ? (
                     <Chip
                       label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
                       size="small"
                       variant="outlined"
                       sx={{
-                        borderColor: ROLE_COLORS[row.sportRoleSuggested],
-                        color: ROLE_COLORS[row.sportRoleSuggested],
+                        borderColor: roleColor(row.sportRoleSuggested),
+                        color: roleColor(row.sportRoleSuggested),
                         fontWeight: 700,
                         fontSize: "0.75rem",
                       }}

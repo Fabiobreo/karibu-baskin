@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import RoleBadge from "@/components/common/RoleBadge";
 import {
   Box,
   Typography,
@@ -14,7 +15,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import FamilyRestroomIcon from "@mui/icons-material/FamilyRestroom";
 import { useToast } from "@/context/ToastContext";
-import { ROLE_COLORS } from "@/lib/constants";
+
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { format } from "date-fns";
@@ -152,16 +153,10 @@ export default function LinkRequestsSection() {
                     : ""}
                 </Typography>
                 {req.child.sportRole && (
-                  <Chip
-                    label={sportRoleLabel(req.child.sportRole, req.child.sportRoleVariant)}
-                    size="small"
-                    sx={{
-                      mt: 0.5,
-                      bgcolor: ROLE_COLORS[req.child.sportRole],
-                      color: "common.white",
-                      fontWeight: 700,
-                      fontSize: "0.75rem",
-                    }}
+                  <RoleBadge
+                    role={req.child.sportRole}
+                    variant={req.child.sportRoleVariant}
+                    sx={{ mt: 0.5 }}
                   />
                 )}
               </Box>

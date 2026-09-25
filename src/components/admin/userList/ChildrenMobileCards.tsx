@@ -2,7 +2,8 @@
 import { Avatar, Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
@@ -65,18 +66,7 @@ export default function ChildrenMobileCards({
               </Typography>
               <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
                 <AthleteStatusChip status={row.athleteStatus} />
-                {row.sportRole && (
-                  <Chip
-                    label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                    size="small"
-                    sx={{
-                      bgcolor: ROLE_COLORS[row.sportRole],
-                      color: "common.white",
-                      fontWeight: 700,
-                      fontSize: "0.75rem",
-                    }}
-                  />
-                )}
+                {row.sportRole && <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />}
                 {team && (
                   <Chip
                     label={team.name}

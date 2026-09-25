@@ -12,7 +12,7 @@ import {
   Chip,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
-import { ROLE_COLORS, ROLE_LABELS, ROLES } from "@/lib/constants";
+import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 
 interface CompetitiveTeam {
@@ -126,16 +126,16 @@ export default function SessionRestrictionEditor({
                 py: 0.5,
                 borderRadius: "6px",
                 border: "1px solid",
-                borderColor: selected ? ROLE_COLORS[r] : "divider",
-                bgcolor: selected ? ROLE_COLORS[r] : "transparent",
+                borderColor: selected ? roleColor(r) : "divider",
+                bgcolor: selected ? roleColor(r) : "transparent",
                 color: selected ? "common.white" : "text.secondary",
                 fontWeight: 600,
                 fontSize: "0.75rem",
                 cursor: disabled ? "default" : "pointer",
                 transition: "all 0.15s",
                 "&:hover:not(:disabled)": {
-                  borderColor: ROLE_COLORS[r],
-                  color: selected ? "common.white" : ROLE_COLORS[r],
+                  borderColor: roleColor(r),
+                  color: selected ? "common.white" : roleColor(r),
                 },
               }}
             >
@@ -229,16 +229,16 @@ export default function SessionRestrictionEditor({
                     py: 0.5,
                     borderRadius: "6px",
                     border: "1px solid",
-                    borderColor: selected ? ROLE_COLORS[r] : "divider",
-                    bgcolor: selected ? ROLE_COLORS[r] : "transparent",
+                    borderColor: selected ? roleColor(r) : "divider",
+                    bgcolor: selected ? roleColor(r) : "transparent",
                     color: selected ? "common.white" : "text.secondary",
                     fontWeight: 600,
                     fontSize: "0.75rem",
                     cursor: disabled ? "default" : "pointer",
                     transition: "all 0.15s",
                     "&:hover:not(:disabled)": {
-                      borderColor: ROLE_COLORS[r],
-                      color: selected ? "common.white" : ROLE_COLORS[r],
+                      borderColor: roleColor(r),
+                      color: selected ? "common.white" : roleColor(r),
                     },
                   }}
                 >

@@ -5,7 +5,6 @@ import {
   Avatar,
   Box,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -13,7 +12,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel, roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import type { LoanCandidate } from "@/lib/matches/callupContext";
 
 function candidateKey(c: LoanCandidate): string {
@@ -73,7 +73,7 @@ export default function ConvocazioniLoanDialog({
                     height: 28,
                     fontSize: 12,
                     mr: 1,
-                    bgcolor: role ? ROLE_COLORS[role] : "grey.400",
+                    bgcolor: role ? roleColor(role) : "grey.400",
                   }}
                 >
                   {o.candidate.name[0]}
@@ -86,19 +86,7 @@ export default function ConvocazioniLoanDialog({
                     {o.teamName}
                   </Typography>
                 </Box>
-                {role && (
-                  <Chip
-                    label={sportRoleLabel(role, o.candidate.sportRoleVariant)}
-                    size="small"
-                    sx={{
-                      bgcolor: ROLE_COLORS[role],
-                      color: "common.white",
-                      fontWeight: 600,
-                      fontSize: "0.75rem",
-                      height: 20,
-                    }}
-                  />
-                )}
+                {role && <RoleBadge role={role} variant={o.candidate.sportRoleVariant} />}
               </Box>
             );
           }}

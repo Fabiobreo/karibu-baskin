@@ -4,7 +4,7 @@ import { Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LockIcon from "@mui/icons-material/Lock";
 import { useTranslations } from "next-intl";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 import CallupRow from "@/components/matches/CallupRow";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
 
@@ -119,7 +119,7 @@ export default function CallupsListSection({
                   width: 10,
                   height: 10,
                   borderRadius: "50%",
-                  bgcolor: ROLE_COLORS[role],
+                  bgcolor: roleColor(role),
                   flexShrink: 0,
                 }}
               />

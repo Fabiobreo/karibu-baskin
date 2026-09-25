@@ -39,7 +39,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
@@ -909,8 +909,8 @@ export default async function MatchDetailPage({ params }: Props) {
                             px: 0.75,
                             py: 0.125,
                             borderRadius: 0.5,
-                            bgcolor: ROLE_COLORS[role],
-                            color: "common.white",
+                            bgcolor: roleColor(role),
+                            color: ROLE_TEXT_COLOR,
                             fontSize: "0.75rem",
                             fontWeight: 700,
                           }}

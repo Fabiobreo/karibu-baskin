@@ -1,7 +1,8 @@
-import { Avatar, Box, Chip, Paper, Tooltip, Typography } from "@mui/material";
+import { Avatar, Box, Paper, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import RoleBadge from "@/components/common/RoleBadge";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { ROLE_COLORS } from "@/lib/constants";
+
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 
@@ -62,20 +63,7 @@ export default async function AthleteCard({
             </Tooltip>
           )}
         </Box>
-        {roleNum && (
-          <Chip
-            label={sportRoleLabel(roleNum, roleVariant ?? null)}
-            size="small"
-            sx={{
-              mt: 0.4,
-              bgcolor: ROLE_COLORS[roleNum],
-              color: "common.white",
-              fontWeight: 700,
-              fontSize: "0.75rem",
-              height: 20,
-            }}
-          />
-        )}
+        {roleNum && <RoleBadge role={roleNum} variant={roleVariant ?? null} sx={{ mt: 0.4 }} />}
       </Box>
     </Paper>
   );

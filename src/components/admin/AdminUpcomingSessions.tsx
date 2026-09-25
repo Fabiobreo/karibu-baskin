@@ -9,7 +9,7 @@ import { it } from "date-fns/locale";
 import ManageParticipantsDialog, {
   type ParticipantRegistration,
 } from "@/components/admin/ManageParticipantsDialog";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 
 export interface AdminUpcomingSessionRow {
   id: string;
@@ -78,7 +78,7 @@ function UpcomingCard({ s }: { s: AdminUpcomingSessionRow }) {
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    bgcolor: ROLE_COLORS[a.role] ?? "text.secondary",
+                    bgcolor: roleColor(a.role) ?? "text.secondary",
                     ml: "8px !important",
                   }}
                 />

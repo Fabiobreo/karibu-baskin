@@ -5,7 +5,7 @@ import { Box, Paper, Typography, Avatar, Button, Stack, Tabs, Tab, Chip } from "
 import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import { useTranslations } from "next-intl";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 import type { SimPlayer } from "@/components/teams/MatchSimulator";
 
 const pkey = (p: SimPlayer) => `${p.kind}-${p.id}`;
@@ -65,7 +65,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                     width: 9,
                     height: 9,
                     borderRadius: "50%",
-                    bgcolor: typeof k === "number" ? ROLE_COLORS[k] : "text.secondary",
+                    bgcolor: typeof k === "number" ? roleColor(k) : "text.secondary",
                   }}
                 />
                 <span>{roleLabel(k)}</span>

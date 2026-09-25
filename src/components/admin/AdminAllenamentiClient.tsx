@@ -26,7 +26,7 @@ import AdminSessionTeams from "@/components/admin/AdminSessionTeams";
 import ManageParticipantsDialog, {
   type ParticipantRegistration,
 } from "@/components/admin/ManageParticipantsDialog";
-import { ROLE_COLORS, ROLE_LABELS } from "@/lib/constants";
+import { ROLE_LABELS, roleColor } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import type { TeamsData } from "@/lib/schemas";
 
@@ -92,7 +92,7 @@ function AttendanceList({ athletes }: { athletes: Athlete[] }) {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
       {athletes.map((a) => {
         const effective = a.id in overrides ? overrides[a.id] : a.attended;
-        const color = ROLE_COLORS[a.role] ?? "#9E9E9E";
+        const color = roleColor(a.role) ?? "#9E9E9E";
         const isToggling = toggling === a.id;
 
         return (

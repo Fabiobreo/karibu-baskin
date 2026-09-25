@@ -24,7 +24,7 @@ import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
+import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -97,8 +97,8 @@ function RoleBadge({
         alignItems: "center",
         borderRadius: "16px",
         overflow: "hidden",
-        bgcolor: ROLE_COLORS[role],
-        color: "common.white",
+        bgcolor: roleColor(role),
+        color: ROLE_TEXT_COLOR,
         fontSize: "0.8rem",
         lineHeight: 1,
         opacity: count === 0 ? 0.28 : 1,
@@ -478,12 +478,12 @@ function TeamEditor({
                         sx={{
                           fontWeight: 600,
                           fontSize: "0.78rem",
-                          bgcolor: isSelected ? "text.primary" : `${ROLE_COLORS[role]}22`,
+                          bgcolor: isSelected ? "text.primary" : `${roleColor(role)}22`,
                           color: isSelected ? "background.paper" : "text.primary",
-                          border: `1px solid ${ROLE_COLORS[role]}`,
+                          border: `1px solid ${roleColor(role)}`,
                           cursor: "pointer",
                           "&:hover": {
-                            bgcolor: isSelected ? "text.primary" : `${ROLE_COLORS[role]}44`,
+                            bgcolor: isSelected ? "text.primary" : `${roleColor(role)}44`,
                           },
                         }}
                       />
@@ -574,12 +574,12 @@ function TeamEditor({
                           sx={{
                             fontWeight: 600,
                             fontSize: "0.78rem",
-                            bgcolor: isSelected ? m.color : `${ROLE_COLORS[role]}22`,
+                            bgcolor: isSelected ? m.color : `${roleColor(role)}22`,
                             color: isSelected ? "common.white" : "text.primary",
-                            border: `1px solid ${isSelected ? m.color : ROLE_COLORS[role]}`,
+                            border: `1px solid ${isSelected ? m.color : roleColor(role)}`,
                             boxShadow: isSelected ? `0 0 0 2px ${m.color}66` : "none",
                             cursor: "pointer",
-                            "&:hover": { bgcolor: isSelected ? m.color : `${ROLE_COLORS[role]}44` },
+                            "&:hover": { bgcolor: isSelected ? m.color : `${roleColor(role)}44` },
                           }}
                         />
                       );

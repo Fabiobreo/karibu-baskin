@@ -17,7 +17,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useRouter } from "next/navigation";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { ROLE_LABELS, ROLE_COLORS } from "@/lib/constants";
+import { ROLE_LABELS, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 
 export default function AdminNuovoUtenteClient() {
@@ -138,8 +138,8 @@ export default function AdminNuovoUtenteClient() {
                         label={ROLE_LABELS[parseInt(val) as keyof typeof ROLE_LABELS]}
                         size="small"
                         sx={{
-                          bgcolor: ROLE_COLORS[parseInt(val)],
-                          color: "common.white",
+                          bgcolor: roleColor(parseInt(val)),
+                          color: ROLE_TEXT_COLOR,
                           fontWeight: 700,
                         }}
                       />
@@ -156,7 +156,7 @@ export default function AdminNuovoUtenteClient() {
                       <Chip
                         label={ROLE_LABELS[r as keyof typeof ROLE_LABELS]}
                         size="small"
-                        sx={{ bgcolor: ROLE_COLORS[r], color: "common.white", fontWeight: 700 }}
+                        sx={{ bgcolor: roleColor(r), color: ROLE_TEXT_COLOR, fontWeight: 700 }}
                       />
                     </MenuItem>
                   ))}

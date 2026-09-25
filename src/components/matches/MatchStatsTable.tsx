@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import RoleBadge from "@/components/common/RoleBadge";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import {
   Box,
@@ -12,13 +13,12 @@ import {
   TablePagination,
   Paper,
   Avatar,
-  Chip,
   Typography,
 } from "@mui/material";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
-import { ROLE_COLORS } from "@/lib/constants";
+
 import { contrastText } from "@/lib/colorUtils";
 
 export interface MatchStatRow {
@@ -138,20 +138,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                             {name}
                           </Typography>
                         )}
-                        {role && (
-                          <Chip
-                            label={sportRoleLabel(role, variant)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[role],
-                              color: contrastText(ROLE_COLORS[role]),
-                              fontWeight: 600,
-                              fontSize: "0.75rem",
-                              height: 20,
-                              mt: 0.2,
-                            }}
-                          />
-                        )}
+                        {role && <RoleBadge role={role} variant={variant} sx={{ mt: 0.2 }} />}
                         {stat.notes && (
                           <Typography
                             variant="caption"

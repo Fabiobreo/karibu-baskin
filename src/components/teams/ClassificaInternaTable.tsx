@@ -22,7 +22,8 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
@@ -279,12 +280,12 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 fontWeight: 700,
                 cursor: "pointer",
                 fontSize: "0.75rem",
-                bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
-                color: roleFilter === r ? contrastText(ROLE_COLORS[r]) : "text.primary",
+                bgcolor: roleFilter === r ? roleColor(r) : "transparent",
+                color: roleFilter === r ? contrastText(roleColor(r)) : "text.primary",
                 border: "1px solid",
-                borderColor: roleFilter === r ? ROLE_COLORS[r] : "divider",
+                borderColor: roleFilter === r ? roleColor(r) : "divider",
                 "&:hover": {
-                  bgcolor: roleFilter === r ? ROLE_COLORS[r] : "action.hover",
+                  bgcolor: roleFilter === r ? roleColor(r) : "action.hover",
                 },
               }}
             />
@@ -418,16 +419,9 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           }}
                         >
                           {row.sportRole && (
-                            <Chip
-                              label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
-                              size="small"
-                              sx={{
-                                bgcolor: ROLE_COLORS[row.sportRole],
-                                color: contrastText(ROLE_COLORS[row.sportRole]),
-                                fontWeight: 600,
-                                fontSize: "0.75rem",
-                                height: 20,
-                              }}
+                            <RoleBadge
+                              role={row.sportRole}
+                              variant={row.sportRoleVariant ?? null}
                             />
                           )}
                           {row.teams.map((t) => (
@@ -555,17 +549,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                     )}
                     <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.25 }}>
                       {row.sportRole && (
-                        <Chip
-                          label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}
-                          size="small"
-                          sx={{
-                            bgcolor: ROLE_COLORS[row.sportRole],
-                            color: "common.white",
-                            fontWeight: 600,
-                            fontSize: "0.75rem",
-                            height: 20,
-                          }}
-                        />
+                        <RoleBadge role={row.sportRole} variant={row.sportRoleVariant ?? null} />
                       )}
                       {row.teams.map((t) => (
                         <Chip

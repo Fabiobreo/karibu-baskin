@@ -20,7 +20,8 @@ import WarningIcon from "@mui/icons-material/Warning";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel, roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import AdminAnonymousRegistrations from "@/components/admin/AdminAnonymousRegistrations";
 
@@ -190,15 +191,9 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                     </TableCell>
                     <TableCell align="center">
                       {row.sportRole ? (
-                        <Chip
-                          label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? undefined)}
-                          size="small"
-                          sx={{
-                            bgcolor: ROLE_COLORS[row.sportRole],
-                            color: "common.white",
-                            fontWeight: 700,
-                            fontSize: "0.75rem",
-                          }}
+                        <RoleBadge
+                          role={row.sportRole}
+                          variant={row.sportRoleVariant ?? undefined}
                         />
                       ) : row.kind === "user" && row.sportRoleSuggested ? (
                         <Chip
@@ -206,8 +201,8 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           size="small"
                           variant="outlined"
                           sx={{
-                            borderColor: ROLE_COLORS[row.sportRoleSuggested],
-                            color: ROLE_COLORS[row.sportRoleSuggested],
+                            borderColor: roleColor(row.sportRoleSuggested),
+                            color: roleColor(row.sportRoleSuggested),
                             fontWeight: 700,
                             fontSize: "0.75rem",
                           }}
@@ -295,15 +290,9 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                         />
                       )}
                       {row.sportRole && (
-                        <Chip
-                          label={sportRoleLabel(row.sportRole, row.sportRoleVariant ?? undefined)}
-                          size="small"
-                          sx={{
-                            bgcolor: ROLE_COLORS[row.sportRole],
-                            color: "common.white",
-                            fontWeight: 700,
-                            fontSize: "0.75rem",
-                          }}
+                        <RoleBadge
+                          role={row.sportRole}
+                          variant={row.sportRoleVariant ?? undefined}
                         />
                       )}
                     </Box>

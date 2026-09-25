@@ -20,7 +20,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import HeightIcon from "@mui/icons-material/Height";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import { TRUESKILL } from "@/lib/rating/trueskill";
 import { optimizeLineup } from "@/lib/rating/lineupOptimizer";
 import type { CandidateInput } from "@/lib/matches/callupStats";
@@ -237,7 +237,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
                 avatar={
                   <Avatar
                     src={p.image ?? undefined}
-                    sx={{ bgcolor: p.sportRole ? ROLE_COLORS[p.sportRole] : "grey.400" }}
+                    sx={{ bgcolor: p.sportRole ? roleColor(p.sportRole) : "grey.400" }}
                   >
                     {p.name[0]}
                   </Avatar>
@@ -257,14 +257,14 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
 
 function PlayerRow({ player: p }: { player: CandidateInput }) {
   const mu = (p.ratingMu ?? TRUESKILL.MU).toFixed(1);
-  const roleColor = p.sportRole ? ROLE_COLORS[p.sportRole] : "grey.400";
+  const roleTint = p.sportRole ? roleColor(p.sportRole) : "grey.400";
   const hasRating = p.ratingMu != null;
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <Avatar
         src={p.image ?? undefined}
-        sx={{ width: 28, height: 28, fontSize: 11, bgcolor: roleColor }}
+        sx={{ width: 28, height: 28, fontSize: 11, bgcolor: roleTint }}
       >
         {p.name[0]}
       </Avatar>
@@ -276,7 +276,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
           label={sportRoleLabel(p.sportRole, p.sportRoleVariant)}
           size="small"
           sx={{
-            bgcolor: roleColor,
+            bgcolor: roleTint,
             color: "common.white",
             fontWeight: 700,
             fontSize: "0.75rem",
@@ -354,8 +354,8 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
         label={`R${entry.role}`}
         size="small"
         sx={{
-          bgcolor: ROLE_COLORS[entry.role],
-          color: "common.white",
+          bgcolor: roleColor(entry.role),
+          color: ROLE_TEXT_COLOR,
           fontWeight: 700,
           fontSize: "0.75rem",
           height: 20,
@@ -376,7 +376,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
                 fontSize: "0.75rem",
                 height: 22,
                 bgcolor: (theme) =>
-                  alpha(ROLE_COLORS[entry.role] ?? theme.palette.primary.main, 0.15),
+                  alpha(roleColor(entry.role) ?? theme.palette.primary.main, 0.15),
                 color: "text.primary",
               }}
             />

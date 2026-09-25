@@ -32,12 +32,14 @@ import { useRouter } from "next/navigation";
 import { differenceInYears } from "date-fns";
 import {
   sportRoleLabel,
-  ROLE_COLORS,
   ROLE_GROUPS,
   ROLES,
   roleGroupOf,
   type RoleGroupKey,
+  roleColor,
+  ROLE_TEXT_COLOR,
 } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
 import { contrastText } from "@/lib/colorUtils";
 import type { Gender } from "@prisma/client";
@@ -433,8 +435,8 @@ export default function AdminRosaClient({
                 sx={{
                   fontWeight: 700,
                   ...(filterRole === r && {
-                    bgcolor: ROLE_COLORS[r],
-                    color: "common.white",
+                    bgcolor: roleColor(r),
+                    color: ROLE_TEXT_COLOR,
                   }),
                 }}
               />
@@ -552,7 +554,7 @@ function GroupSection({
 }) {
   const isShortfall = shortfall > 0;
   const isMet = required > 0 && shortfall === 0;
-  const roleColor = representativeRole == null ? "#9e9e9e" : ROLE_COLORS[representativeRole];
+  const roleTint = representativeRole == null ? "#9e9e9e" : roleColor(representativeRole);
 
   return (
     <Box>
@@ -564,7 +566,7 @@ function GroupSection({
           mb: 1,
           pb: 0.5,
           borderBottom: "2px solid",
-          borderColor: roleColor,
+          borderColor: roleTint,
         }}
       >
         <Box
@@ -572,7 +574,7 @@ function GroupSection({
             width: 10,
             height: 10,
             borderRadius: "50%",
-            bgcolor: roleColor,
+            bgcolor: roleTint,
             flexShrink: 0,
           }}
         />
@@ -692,17 +694,7 @@ function MemberRow({
         </Box>
         <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", mt: 0.25 }}>
           {athlete.sportRole && (
-            <Chip
-              label={sportRoleLabel(athlete.sportRole, athlete.sportRoleVariant)}
-              size="small"
-              sx={{
-                bgcolor: ROLE_COLORS[athlete.sportRole],
-                color: "common.white",
-                fontWeight: 700,
-                fontSize: "0.75rem",
-                height: 20,
-              }}
-            />
+            <RoleBadge role={athlete.sportRole} variant={athlete.sportRoleVariant} />
           )}
           {gShort && (
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
@@ -801,17 +793,7 @@ function PoolRow({
         </Box>
         <Box sx={{ display: "flex", gap: 0.5, alignItems: "center", mt: 0.25 }}>
           {athlete.sportRole ? (
-            <Chip
-              label={sportRoleLabel(athlete.sportRole, athlete.sportRoleVariant)}
-              size="small"
-              sx={{
-                bgcolor: ROLE_COLORS[athlete.sportRole],
-                color: "common.white",
-                fontWeight: 700,
-                fontSize: "0.75rem",
-                height: 20,
-              }}
-            />
+            <RoleBadge role={athlete.sportRole} variant={athlete.sportRoleVariant} />
           ) : (
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
               Ruolo non assegnato

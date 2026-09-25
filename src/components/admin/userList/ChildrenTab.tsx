@@ -5,7 +5,6 @@ import {
   Avatar,
   Box,
   Button,
-  Chip,
   IconButton,
   InputAdornment,
   Table,
@@ -24,7 +23,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { ROLE_COLORS, sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
+import { sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import RatingBadge from "@/components/rating/RatingBadge";
 import {
   AthleteStatusChip,
@@ -221,16 +221,7 @@ export default function ChildrenTab({
                 {/* Ruolo Baskin */}
                 <TableCell align="center">
                   {row.sportRole ? (
-                    <Chip
-                      label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[row.sportRole],
-                        color: "common.white",
-                        fontWeight: 700,
-                        fontSize: "0.75rem",
-                      }}
-                    />
+                    <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
                   ) : (
                     <Typography variant="body2" color="text.secondary">
                       —

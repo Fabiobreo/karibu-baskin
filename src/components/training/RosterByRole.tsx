@@ -20,7 +20,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
-import { ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLES, roleColor } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -571,14 +571,14 @@ export default function RosterByRole({
                       width: 10,
                       height: 10,
                       borderRadius: "50%",
-                      bgcolor: ROLE_COLORS[role],
+                      bgcolor: roleColor(role),
                       flexShrink: 0,
                     }}
                   />
                   <Typography
                     variant="overline"
                     fontWeight={700}
-                    sx={{ color: ROLE_COLORS[role], letterSpacing: "0.08em", lineHeight: 1 }}
+                    sx={{ color: roleColor(role), letterSpacing: "0.08em", lineHeight: 1 }}
                   >
                     {roleLabel(role)}
                   </Typography>
@@ -609,7 +609,7 @@ export default function RosterByRole({
                       <AthletePill
                         key={reg.id}
                         reg={effectiveReg}
-                        roleColor={ROLE_COLORS[role]}
+                        roleColor={roleColor(role) ?? "grey.500"}
                         highlighted={highlighted}
                         canDelete={canDelete}
                         isDeleting={deletingId === reg.id}

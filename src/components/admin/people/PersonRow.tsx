@@ -1,7 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import { Avatar, Box, Typography } from "@mui/material";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 
 interface PersonRowProps {
@@ -30,7 +30,7 @@ export default function PersonRow({
   children,
   dimmed,
 }: PersonRowProps) {
-  const roleColor = sportRole ? ROLE_COLORS[sportRole] : undefined;
+  const roleTint = sportRole ? roleColor(sportRole) : undefined;
   return (
     <Box sx={{ borderBottom: "1px solid", borderColor: "divider" }}>
       <Box
@@ -50,8 +50,8 @@ export default function PersonRow({
             height: 36,
             fontSize: 14,
             fontWeight: 800,
-            bgcolor: roleColor ?? "action.selected",
-            color: roleColor ? contrastText(roleColor) : "text.secondary",
+            bgcolor: roleTint ?? "action.selected",
+            color: roleTint ? contrastText(roleTint) : "text.secondary",
           }}
         >
           {sportRole ?? name[0]?.toUpperCase()}

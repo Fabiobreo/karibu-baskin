@@ -1,10 +1,11 @@
 "use client";
 
-import { Avatar, Box, Chip, Paper, Typography } from "@mui/material";
+import { Avatar, Box, Paper, Typography } from "@mui/material";
+import RoleBadge from "@/components/common/RoleBadge";
 import StarIcon from "@mui/icons-material/Star";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ROLE_COLORS } from "@/lib/constants";
+
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
 
@@ -66,17 +67,10 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                 {name}
               </Typography>
               {role && (
-                <Chip
-                  label={sportRoleLabel(role, athlete?.sportRoleVariant ?? null)}
-                  size="small"
-                  sx={{
-                    bgcolor: ROLE_COLORS[role],
-                    color: "common.white",
-                    fontWeight: 600,
-                    fontSize: "0.75rem",
-                    height: 20,
-                    mt: 0.5,
-                  }}
+                <RoleBadge
+                  role={role}
+                  variant={athlete?.sportRoleVariant ?? null}
+                  sx={{ mt: 0.5 }}
                 />
               )}
               <Typography

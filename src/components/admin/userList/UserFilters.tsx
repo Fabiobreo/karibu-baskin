@@ -18,7 +18,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel, roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { ALL_APP_ROLES, type TeamInfo } from "@/components/admin/userList/userListShared";
 
@@ -188,9 +188,9 @@ export default function UserFilters({
                     sx={{
                       cursor: "pointer",
                       fontWeight: active ? 700 : 400,
-                      bgcolor: active ? ROLE_COLORS[r] : undefined,
+                      bgcolor: active ? roleColor(r) : undefined,
                       color: active ? "common.white" : undefined,
-                      borderColor: active ? ROLE_COLORS[r] : undefined,
+                      borderColor: active ? roleColor(r) : undefined,
                     }}
                   />
                 );

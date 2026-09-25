@@ -1,6 +1,6 @@
 "use client";
 import { Box, Chip, Paper, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
-import { ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLES, roleColor } from "@/lib/constants";
 
 export type ConvocazioniSortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
 
@@ -49,9 +49,9 @@ export default function ConvocazioniFilters({
               fontWeight: 700,
               cursor: "pointer",
               fontSize: "0.75rem",
-              bgcolor: roleFilter === r ? ROLE_COLORS[r] : "transparent",
+              bgcolor: roleFilter === r ? roleColor(r) : "transparent",
               color: roleFilter === r ? "common.white" : "text.primary",
-              border: `1px solid ${roleFilter === r ? ROLE_COLORS[r] : "transparent"}`,
+              border: `1px solid ${roleFilter === r ? roleColor(r) : "transparent"}`,
             }}
           />
         ))}

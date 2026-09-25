@@ -37,6 +37,7 @@
   },
   "roles": {
     "role": "Ruolo {n}",
+    "roleWord": "Ruolo",
     "sportRole": "Ruolo {n}{v}",
     "genderMale": "Maschio",
     "genderFemale": "Femmina",

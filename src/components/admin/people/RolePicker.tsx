@@ -1,6 +1,6 @@
 "use client";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 
 interface RolePickerProps {
@@ -50,8 +50,8 @@ export default function RolePicker({
           aria-label={`Ruolo ${r}`}
           sx={{
             "&.Mui-selected, &.Mui-selected:hover": {
-              bgcolor: ROLE_COLORS[r],
-              color: contrastText(ROLE_COLORS[r]),
+              bgcolor: roleColor(r),
+              color: contrastText(roleColor(r)),
             },
           }}
         >

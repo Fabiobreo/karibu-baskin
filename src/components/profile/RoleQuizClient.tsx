@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import SportRoleQuestionnaire, {
   type SportRoleResult,
 } from "@/components/training/SportRoleQuestionnaire";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 import { readError } from "@/lib/fetchJson";
 import { useToast } from "@/context/ToastContext";
 import type { RoleInfo } from "@/lib/content/baskinInfo";
@@ -133,7 +133,7 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
   const info = rolesInfo.find((r) => r.role === result.role);
   // "Ruolo 3: Il Protagonista" → "Il Protagonista": il numero è già nel chip.
   const roleName = info ? info.label.split(": ").slice(1).join(": ") || info.tag : null;
-  const color = ROLE_COLORS[result.role];
+  const color = roleColor(result.role);
 
   return (
     <Paper

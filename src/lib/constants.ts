@@ -41,17 +41,33 @@ export const ROLE_LABELS: Record<number, string> = {
   5: "Ruolo 5",
 };
 
-// Vincolo: tutti i colori devono restare abbastanza scuri da reggere testo bianco
-// (i call-site usano color: "#fff" fisso; per colori dinamici dal DB usare contrastText di colorUtils)
-export const ROLE_COLORS: Record<number, string> = {
-  1: "#1565C0", // blu scuro
-  2: "#2E7D32", // verde scuro
-  // Stesso riempimento del bottone primario (UX-07): con #E65100 il testo
-  // bianco si fermava a 3,79:1. Il ridisegno dei colori dei ruoli e' UX-11.
-  3: "#C84B00", // arancio scuro
-  4: "#6A1B9A", // viola
-  5: "#C62828", // rosso scuro
+// Colori dei ruoli Baskin (UX-11): puramente estetici, in palestra i ruoli non
+// si distinguono per colore. Tinte tenui armonizzate col nero, scelte perche'
+// non si confondano con il verde della vittoria, il rosso della sconfitta e
+// degli errori, l'arancio delle azioni. Tutte reggono il testo bianco del
+// badge (da 6,05:1 a 8,86:1).
+// Non si importano direttamente: si passa da `roleColor` / `roleColorSx` o
+// dal componente `RoleBadge`, che danno anche il colore del testo.
+const ROLE_COLORS: Record<number, string> = {
+  1: "#3D5A80", // blu ardesia
+  2: "#2F6B73", // petrolio
+  3: "#555A96", // indaco
+  4: "#7A4E7A", // prugna
+  5: "#4A4A4A", // grafite
 };
+
+/** Colore di testo sopra un riempimento `roleColor` (sempre bianco). */
+export const ROLE_TEXT_COLOR = "common.white";
+
+/** Colore del ruolo (pallini, bordi, fasce), o `undefined` se il ruolo non c'e'. */
+export function roleColor(role: number | null | undefined): string | undefined {
+  return role == null ? undefined : ROLE_COLORS[role];
+}
+
+/** Riempimento del ruolo con il suo colore di testo, da spargere in `sx`. */
+export function roleColorSx(role: number | null | undefined) {
+  return { bgcolor: roleColor(role), color: ROLE_TEXT_COLOR } as const;
+}
 
 export const ROLES = [1, 2, 3, 4, 5] as const;
 export type Role = (typeof ROLES)[number];

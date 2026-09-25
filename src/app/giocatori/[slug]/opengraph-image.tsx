@@ -10,12 +10,13 @@ export const contentType = "image/png";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Copia di ROLE_COLORS (src/lib/constants.ts): Satori non legge il tema.
 const ROLE_COLORS: Record<number, string> = {
-  1: "#1565C0",
-  2: "#2E7D32",
-  3: "#E65100",
-  4: "#6A1B9A",
-  5: "#C62828",
+  1: "#3D5A80",
+  2: "#2F6B73",
+  3: "#555A96",
+  4: "#7A4E7A",
+  5: "#4A4A4A",
 };
 
 export default async function OgImage({ params }: Props) {

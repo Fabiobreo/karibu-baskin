@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import RoleBadge from "@/components/common/RoleBadge";
 import {
   Avatar,
   Box,
@@ -17,7 +18,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import { useToast } from "@/context/ToastContext";
-import { ROLE_COLORS } from "@/lib/constants";
+
 import { contrastText } from "@/lib/colorUtils";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -126,16 +127,7 @@ export default function ParentChildLinker({
                       sx={{ fontSize: "0.75rem", fontWeight: 600 }}
                     />
                     {child.sportRole && (
-                      <Chip
-                        label={sportRoleLabel(child.sportRole, child.sportRoleVariant)}
-                        size="small"
-                        sx={{
-                          bgcolor: ROLE_COLORS[child.sportRole],
-                          color: "common.white",
-                          fontWeight: 700,
-                          fontSize: "0.75rem",
-                        }}
-                      />
+                      <RoleBadge role={child.sportRole} variant={child.sportRoleVariant} />
                     )}
                     {child.teamMemberships
                       ?.filter((m) => m.team.season === currentSeason)

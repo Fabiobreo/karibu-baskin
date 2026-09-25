@@ -28,7 +28,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ROLE_COLORS, sportRoleLabel as sportRoleLabelRaw } from "@/lib/constants";
+import { sportRoleLabel as sportRoleLabelRaw, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadgeState } from "@/lib/rating/badges";
@@ -604,8 +605,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    bgcolor: ROLE_COLORS[player.sportRole],
-                    color: "common.white",
+                    bgcolor: roleColor(player.sportRole),
+                    color: ROLE_TEXT_COLOR,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -660,16 +661,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 }}
               >
                 {player.sportRole && (
-                  <Chip
-                    label={sportRoleLabel(player.sportRole, player.sportRoleVariant ?? null)}
-                    size="small"
-                    sx={{
-                      bgcolor: ROLE_COLORS[player.sportRole],
-                      color: "common.white",
-                      fontWeight: 800,
-                      fontSize: "0.75rem",
-                    }}
-                  />
+                  <RoleBadge role={player.sportRole} variant={player.sportRoleVariant ?? null} />
                 )}
                 {currentTeams.map((m) => (
                   <Chip
@@ -927,7 +919,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       c.sportRole ? (
                         <Avatar
                           sx={{
-                            bgcolor: `${ROLE_COLORS[c.sportRole]} !important`,
+                            bgcolor: `${roleColor(c.sportRole)} !important`,
                             color: "common.white !important",
                             fontWeight: 700,
                           }}
@@ -956,20 +948,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             )}
             {player.sportRole && (
               <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow
-                  label={t("baskinRole")}
-                  value={
-                    <Chip
-                      label={roleLabel(player.sportRole)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[player.sportRole],
-                        color: "common.white",
-                        fontWeight: 700,
-                      }}
-                    />
-                  }
-                />
+                <InfoRow label={t("baskinRole")} value={<RoleBadge role={player.sportRole} />} />
               </Grid>
             )}
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -1007,15 +986,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               {player.sportRoleHistory.map((entry, i) => (
                 <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Box>
-                    <Chip
-                      label={roleLabel(entry.sportRole)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[entry.sportRole],
-                        color: "common.white",
-                        fontWeight: 700,
-                      }}
-                    />
+                    <RoleBadge role={entry.sportRole} />
                     <Typography
                       variant="caption"
                       color="text.secondary"

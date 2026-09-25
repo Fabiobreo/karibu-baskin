@@ -16,7 +16,7 @@ import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import TimerIcon from "@mui/icons-material/Timer";
 import StarIcon from "@mui/icons-material/Star";
 import GradeIcon from "@mui/icons-material/Grade";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
 import { getRolesInfo, getBaskinRules } from "@/lib/content/baskinInfo";
 import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 import { buildMetadata } from "@/lib/seo";
@@ -167,7 +167,7 @@ export default async function IlBaskinPage() {
                   sx={{
                     px: 2.5,
                     py: 1.5,
-                    backgroundColor: ROLE_COLORS[r.role],
+                    backgroundColor: roleColor(r.role),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",

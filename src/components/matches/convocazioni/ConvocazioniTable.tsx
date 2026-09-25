@@ -17,7 +17,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import StarIcon from "@mui/icons-material/Star";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import { ROLE_COLORS, sportRoleLabel } from "@/lib/constants";
+import { sportRoleLabel, roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 
 /** Tabella dei candidati disponibili: selezione con click riga + statistiche presenze/convocazioni. */
@@ -117,7 +118,7 @@ export default function ConvocazioniTable({
                           width: 30,
                           height: 30,
                           fontSize: 12,
-                          bgcolor: role ? ROLE_COLORS[role] : "grey.400",
+                          bgcolor: role ? roleColor(role) : "grey.400",
                         }}
                       >
                         {row.candidate.name[0]}
@@ -188,20 +189,7 @@ export default function ConvocazioniTable({
                             </Tooltip>
                           )}
                         </Box>
-                        {role && (
-                          <Chip
-                            label={sportRoleLabel(role, variant)}
-                            size="small"
-                            sx={{
-                              bgcolor: ROLE_COLORS[role],
-                              color: "common.white",
-                              fontWeight: 600,
-                              fontSize: "0.75rem",
-                              height: 20,
-                              mt: 0.25,
-                            }}
-                          />
-                        )}
+                        {role && <RoleBadge role={role} variant={variant} sx={{ mt: 0.25 }} />}
                       </Box>
                     </Box>
                   </TableCell>

@@ -28,7 +28,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Link from "next/link";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import AccentText from "@/components/common/AccentText";
 import { slugify } from "@/lib/slugUtils";
@@ -959,8 +959,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                               width: 28,
                               height: 28,
                               borderRadius: "50%",
-                              bgcolor: ROLE_COLORS[roleNum],
-                              color: "common.white",
+                              bgcolor: roleColor(roleNum),
+                              color: ROLE_TEXT_COLOR,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",

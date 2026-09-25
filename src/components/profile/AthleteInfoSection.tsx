@@ -1,8 +1,9 @@
-import { Box, Chip, Divider, Paper, Stack, Typography } from "@mui/material";
+import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { getEntityLabels } from "@/lib/entityLabels";
-import { ROLE_COLORS } from "@/lib/constants";
+import { roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import ProfileRow from "@/components/profile/ProfileRow";
 import { format } from "date-fns";
 import type { Gender } from "@prisma/client";
@@ -37,11 +38,7 @@ export default async function AthleteInfoSection({
         <Stack spacing={2}>
           {sportRole && (
             <ProfileRow label={tPlayers("baskinRole")}>
-              <Chip
-                label={roleLabel(sportRole)}
-                size="small"
-                sx={{ bgcolor: ROLE_COLORS[sportRole], color: "common.white", fontWeight: 700 }}
-              />
+              <RoleBadge role={sportRole} />
             </ProfileRow>
           )}
           {gender && (
@@ -73,10 +70,7 @@ export default async function AthleteInfoSection({
                 <Stack spacing={0.5}>
                   {roleHistory.map((h, i) => (
                     <Typography key={i} variant="caption" color="text.secondary">
-                      <Box
-                        component="span"
-                        sx={{ color: ROLE_COLORS[h.sportRole], fontWeight: 700 }}
-                      >
+                      <Box component="span" sx={{ color: roleColor(h.sportRole), fontWeight: 700 }}>
                         {roleLabel(h.sportRole)}
                       </Box>
                       {" · "}

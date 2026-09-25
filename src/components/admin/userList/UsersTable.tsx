@@ -22,7 +22,8 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { ROLE_COLORS, sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
+import { sportRoleLabel, GENDER_LABELS_SHORT, roleColor } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import RatingBadge from "@/components/rating/RatingBadge";
 import {
   ALL_APP_ROLES,
@@ -200,16 +201,7 @@ export default function UsersTable({
                 {/* Ruolo Baskin */}
                 <TableCell align="center">
                   {row.sportRole ? (
-                    <Chip
-                      label={sportRoleLabel(row.sportRole, row.sportRoleVariant)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[row.sportRole],
-                        color: "common.white",
-                        fontWeight: 700,
-                        fontSize: "0.75rem",
-                      }}
-                    />
+                    <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
                   ) : row.sportRoleSuggested ? (
                     <Box
                       sx={{
@@ -224,8 +216,8 @@ export default function UsersTable({
                         size="small"
                         variant="outlined"
                         sx={{
-                          borderColor: ROLE_COLORS[row.sportRoleSuggested],
-                          color: ROLE_COLORS[row.sportRoleSuggested],
+                          borderColor: roleColor(row.sportRoleSuggested),
+                          color: roleColor(row.sportRoleSuggested),
                           fontWeight: 700,
                           fontSize: "0.75rem",
                         }}

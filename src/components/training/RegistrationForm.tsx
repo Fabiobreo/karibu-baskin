@@ -16,7 +16,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import LockIcon from "@mui/icons-material/Lock";
-import { ROLE_COLORS, ROLES } from "@/lib/constants";
+import { ROLES, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
@@ -504,10 +505,10 @@ export default function RegistrationForm({
                             border: "1px solid !important",
                             borderColor: "divider !important",
                             "&.Mui-selected": {
-                              backgroundColor: ROLE_COLORS[r],
-                              color: "common.white",
-                              borderColor: `${ROLE_COLORS[r]} !important`,
-                              "&:hover": { backgroundColor: ROLE_COLORS[r], opacity: 0.9 },
+                              backgroundColor: roleColor(r),
+                              color: ROLE_TEXT_COLOR,
+                              borderColor: `${roleColor(r)} !important`,
+                              "&:hover": { backgroundColor: roleColor(r), opacity: 0.9 },
                             },
                           }}
                         >
@@ -548,16 +549,7 @@ export default function RegistrationForm({
                   <Typography variant="body2" color="text.secondary">
                     {hasConfirmedRole ? t("roleLabel") : t("roleSuggested")}
                   </Typography>
-                  <Chip
-                    label={sportRoleLabel(chosenRole.role, chosenRole.variant)}
-                    size="small"
-                    sx={{
-                      bgcolor: ROLE_COLORS[chosenRole.role],
-                      color: "common.white",
-                      fontWeight: 700,
-                      fontSize: "0.78rem",
-                    }}
-                  />
+                  <RoleBadge role={chosenRole.role} variant={chosenRole.variant} />
                 </Box>
 
                 {!hasConfirmedRole && subject === "self" && (

@@ -39,7 +39,8 @@ import { it } from "date-fns/locale";
 import { useState, useTransition } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter } from "next/navigation";
-import { ROLE_COLORS, sportRoleLabel, SPORT_ROLE_VARIANT_LABELS } from "@/lib/constants";
+import { sportRoleLabel, SPORT_ROLE_VARIANT_LABELS } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
 
 type AnonReg = {
@@ -534,16 +535,7 @@ export default function AdminAnonymousRegistrations({
                 </MenuItem>
                 {[1, 2, 3, 4, 5].map((r) => (
                   <MenuItem key={r} value={r.toString()}>
-                    <Chip
-                      label={sportRoleLabel(r)}
-                      size="small"
-                      sx={{
-                        bgcolor: ROLE_COLORS[r],
-                        color: "common.white",
-                        fontWeight: 700,
-                        fontSize: "0.75rem",
-                      }}
-                    />
+                    <RoleBadge role={r} />
                   </MenuItem>
                 ))}
               </Select>

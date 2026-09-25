@@ -9,7 +9,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { SITE_HOST } from "@/lib/siteUrl";
 import type { TeamsData } from "./TeamDisplay";
-import { ROLE_COLORS, ROLES, TEAM_META } from "@/lib/constants";
+import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 
 interface Props {
   teams: TeamsData;
@@ -223,8 +223,8 @@ export default function ShareTeamsButton({
                             fontWeight: 800,
                             letterSpacing: 1,
                             textTransform: "uppercase",
-                            color: "#fff",
-                            background: ROLE_COLORS[role],
+                            color: ROLE_TEXT_COLOR,
+                            background: roleColor(role),
                             borderRadius: 3,
                             padding: "2px 5px",
                             marginBottom: 5,

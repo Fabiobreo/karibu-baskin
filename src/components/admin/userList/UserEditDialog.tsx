@@ -22,12 +22,8 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import {
-  ROLE_COLORS,
-  SPORT_ROLE_VARIANT_LABELS,
-  sportRoleLabel,
-  ATHLETE_STATUS_LABELS,
-} from "@/lib/constants";
+import { SPORT_ROLE_VARIANT_LABELS, sportRoleLabel, ATHLETE_STATUS_LABELS } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
 import type {
   AdminRow,
@@ -413,16 +409,7 @@ export default function UserEditDialog({
               </MenuItem>
               {[1, 2, 3, 4, 5].map((r) => (
                 <MenuItem key={r} value={r.toString()}>
-                  <Chip
-                    label={sportRoleLabel(r)}
-                    size="small"
-                    sx={{
-                      bgcolor: ROLE_COLORS[r],
-                      color: "common.white",
-                      fontWeight: 700,
-                      fontSize: "0.75rem",
-                    }}
-                  />
+                  <RoleBadge role={r} />
                 </MenuItem>
               ))}
             </Select>

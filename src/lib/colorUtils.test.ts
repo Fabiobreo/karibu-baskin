@@ -28,7 +28,7 @@ describe("contrastText", () => {
   it("restituisce bianco su sfondi scuri", () => {
     expect(contrastText("#000000")).toBe(WHITE);
     expect(contrastText("#1A1A1A")).toBe(WHITE); // nero squadra
-    expect(contrastText("#1565C0")).toBe(WHITE); // blu ROLE_COLORS
+    expect(contrastText("#1565C0")).toBe(WHITE); // blu scuro
     expect(contrastText("#00f")).toBe(WHITE); // blu puro (shorthand)
     expect(contrastText("#546E7A")).toBe(WHITE); // blu-grigio squadra
   });
