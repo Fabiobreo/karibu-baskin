@@ -580,7 +580,14 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   }}
                 >
                   {[
-                    { label: t("colPoints"), value: totPoints, primary: true },
+                    {
+                      label: t("colPoints"),
+                      value: totPoints,
+                      primary: true,
+                      // Come nella tabella desktop: la legenda annuncia i punti in prestito (UX-24).
+                      detail:
+                        row.loanPoints > 0 ? t("loanDetail", { count: row.loanPoints }) : null,
+                    },
                     { label: t("colAvg"), value: formatDecimal(avg, locale) },
                     { label: t("colAccuracy"), value: accuracyLabel },
                     { label: t("colMatches"), value: totMatches },
@@ -598,26 +605,47 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           },
                         ]
                       : []),
-                  ].map(({ label, value, primary }) => (
-                    <Box key={label} sx={{ textAlign: "center" }}>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        display="block"
-                        sx={{ fontSize: "0.75rem", lineHeight: 1.2 }}
-                      >
-                        {label}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        fontWeight={primary ? 800 : 600}
-                        color="text.primary"
-                        sx={{ fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}
-                      >
-                        {value}
-                      </Typography>
-                    </Box>
-                  ))}
+                  ].map(
+                    ({
+                      label,
+                      value,
+                      primary,
+                      detail,
+                    }: {
+                      label: string;
+                      value: string | number;
+                      primary?: boolean;
+                      detail?: string | null;
+                    }) => (
+                      <Box key={label} sx={{ textAlign: "center" }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                          sx={{ fontSize: "0.75rem", lineHeight: 1.2 }}
+                        >
+                          {label}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight={primary ? 800 : 600}
+                          color="text.primary"
+                          sx={{ fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}
+                        >
+                          {value}
+                        </Typography>
+                        {detail && (
+                          <Typography
+                            variant="caption"
+                            display="block"
+                            sx={{ color: "text.secondary", fontWeight: 600, lineHeight: 1.2 }}
+                          >
+                            {detail}
+                          </Typography>
+                        )}
+                      </Box>
+                    )
+                  )}
                 </Box>
               </Box>
             );

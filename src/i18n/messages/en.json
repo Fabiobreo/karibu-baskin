@@ -109,7 +109,10 @@
     "tabellinoError": "Error generating scoresheet",
     "teamsTooltip": "Share teams",
     "teamsGenerating": "Generating image...",
-    "teamsSubject": "Teams: {title}"
+    "teamsSubject": "Teams: {title}",
+    "playerIntro": "🏀 {name} at Karibu Baskin",
+    "playerPoints": "📊 {points} total points · {avg} per game over {count, plural, one {# game} other {# games}}",
+    "playerMedals": "🏆 {count, plural, one {# top scorer medal} other {# top scorer medals}}"
   },
   "calendarSub": {
     "title": "Subscribe to calendar",

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 vi.mock("@/lib/matches/myAvailabilities", () => ({ countPendingAvailabilities: vi.fn() }));
 
-import { pickNextAction, type OpenSession, type Subject } from "./nextAction";
+import { pickNextAction, type OpenSession, type Subject, showsNextAction } from "./nextAction";
 
 const base = {
   href: "/allenamento/x",
@@ -105,5 +105,21 @@ describe("pickNextAction", () => {
         registered: null,
       })
     ).toEqual({ kind: "allSet" });
+  });
+});
+
+describe("showsNextAction", () => {
+  it("atleti e genitori la vedono sempre", () => {
+    expect(showsNextAction("ATHLETE", null)).toBe(true);
+    expect(showsNextAction("PARENT", null)).toBe(true);
+  });
+  it("lo staff solo se gioca", () => {
+    expect(showsNextAction("COACH", 3)).toBe(true);
+    expect(showsNextAction("ADMIN", 5)).toBe(true);
+    expect(showsNextAction("COACH", null)).toBe(false);
+  });
+  it("mai ai GUEST e agli anonimi", () => {
+    expect(showsNextAction("GUEST", 3)).toBe(false);
+    expect(showsNextAction(null, null)).toBe(false);
   });
 });

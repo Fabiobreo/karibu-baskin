@@ -5,7 +5,7 @@ import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
 import { socialBrandColor } from "@/lib/heroStyles";
@@ -32,20 +32,18 @@ export default function PlayerShareButtons({
   // Colore della squadra come fondo, etichetta bianca: fondo scurito se serve (UX-22).
   const fill = readableFill(playerColor, { preferWhite: true });
   const t = useTranslations("share");
+  const locale = useLocale();
   const [busy, setBusy] = useState(false);
 
   function buildMessage(): { title: string; text: string; url: string } {
     const url = typeof window !== "undefined" ? window.location.href : `/giocatori/${slug}`;
     const title = `${playerName} · Karibu Baskin`;
-    const parts: string[] = [`🏀 ${playerName} sul Karibu Baskin`];
+    const parts: string[] = [t("playerIntro", { name: playerName })];
     if (matchesPlayed > 0) {
-      // Il testo condiviso e' ancora solo in italiano, quindi virgola italiana.
-      const avg = formatDecimal(totalPoints / matchesPlayed, "it");
-      parts.push(`📊 ${totalPoints} punti totali · ${avg} a partita su ${matchesPlayed} partite`);
+      const avg = formatDecimal(totalPoints / matchesPlayed, locale);
+      parts.push(t("playerPoints", { points: totalPoints, avg, count: matchesPlayed }));
     }
-    if (medalsCount > 0) {
-      parts.push(`🏆 ${medalsCount} ${medalsCount === 1 ? "medaglia" : "medaglie"} top scorer`);
-    }
+    if (medalsCount > 0) parts.push(t("playerMedals", { count: medalsCount }));
     parts.push(url);
     return { title, text: parts.join("\n"), url };
   }

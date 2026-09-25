@@ -88,6 +88,16 @@ export function pickNextAction(input: {
   return { kind: "allSet" };
 }
 
+/**
+ * Chi vede la card "La tua prossima cosa da fare" (UX-16, UX-24): atleti e
+ * genitori, e lo staff che gioca (ha un ruolo Baskin). Allo staff che non
+ * gioca resta il banner delle disponibilità.
+ */
+export function showsNextAction(appRole: string | null, sportRole: number | null): boolean {
+  if (appRole === "ATHLETE" || appRole === "PARENT") return true;
+  return (appRole === "COACH" || appRole === "ADMIN") && sportRole != null;
+}
+
 function href(s: { id: string; dateSlug: string | null }) {
   return `/allenamento/${s.dateSlug ?? s.id}`;
 }

@@ -34,6 +34,7 @@ import {
 import SimulatorResult from "@/components/teams/SimulatorResult";
 import SimulatorChecklist from "@/components/teams/SimulatorChecklist";
 import SimulatorPool from "@/components/teams/SimulatorPool";
+import RoleBadge from "@/components/common/RoleBadge";
 
 /**
  * Giocatore selezionabile nel simulatore.
@@ -366,13 +367,9 @@ function SideColumn({
               <Avatar src={p.image ?? undefined} sx={{ width: 28, height: 28, fontSize: 13 }}>
                 {p.name[0]}
               </Avatar>
-              {p.sportRole != null && (
-                <Chip
-                  label={`R${p.sportRole}`}
-                  size="small"
-                  sx={{ height: 20, fontSize: 12, fontWeight: 700 }}
-                />
-              )}
+              {/* Numero del ruolo col badge di sempre, "Ruolo N" per chi usa un
+                  lettore di schermo: niente piu' la sigla "R1" (UX-24). */}
+              {p.sportRole != null && <RoleBadge role={p.sportRole} />}
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography variant="body2" noWrap>
                   {p.name}

@@ -109,7 +109,10 @@
     "tabellinoError": "Errore generazione tabellino",
     "teamsTooltip": "Condividi squadre",
     "teamsGenerating": "Generando immagine...",
-    "teamsSubject": "Squadre: {title}"
+    "teamsSubject": "Squadre: {title}",
+    "playerIntro": "🏀 {name} sul Karibu Baskin",
+    "playerPoints": "📊 {points} punti totali · {avg} a partita su {count, plural, one {# partita} other {# partite}}",
+    "playerMedals": "🏆 {count, plural, one {# medaglia} other {# medaglie}} top scorer"
   },
   "calendarSub": {
     "title": "Abbonati al calendario",

@@ -16,6 +16,8 @@ import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
 import GuestOnboardingSkeleton from "@/components/common/GuestOnboardingSkeleton";
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
 import NextActionSection from "@/components/common/NextActionSection";
+import { showsNextAction } from "@/lib/nextAction";
+import { prisma } from "@/lib/db";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -217,7 +219,14 @@ export default async function HomePage() {
   // cosa da fare per atleti e genitori, i primi passi per chi e' in attesa,
   // l'invito a provare per chi non ha fatto l'accesso.
   const firstName = userSession?.user?.name?.trim().split(/\s+/)[0] || null;
-  const isAthleteOrParent = appRole === "ATHLETE" || appRole === "PARENT";
+  // Lo staff che gioca vede la card come gli atleti (UX-24): il ruolo Baskin
+  // non e' nella sessione, e la query serve solo allo staff.
+  const staffSportRole =
+    isStaff && userId
+      ? ((await prisma.user.findUnique({ where: { id: userId }, select: { sportRole: true } }))
+          ?.sportRole ?? null)
+      : null;
+  const showNextAction = showsNextAction(appRole, staffSportRole);
   const isGuest = appRole === "GUEST" && !!userId;
 
   return (
@@ -230,7 +239,7 @@ export default async function HomePage() {
         </Suspense>
       )}
 
-      {isAthleteOrParent && userId ? (
+      {showNextAction && userId && appRole ? (
         <>
           <HeroSection member={{ firstName }} />
           <Suspense fallback={<GuestOnboardingSkeleton />}>

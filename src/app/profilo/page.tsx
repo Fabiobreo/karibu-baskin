@@ -28,6 +28,7 @@ import NotificationPrefsPanel from "@/components/profile/NotificationPrefsPanel"
 import { mergePrefs } from "@/lib/notifications/notifPrefs";
 import LinkRequestsSection from "@/components/profile/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/training/ClaimAnonymousCard";
+import { showsNextAction } from "@/lib/nextAction";
 import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
 import NextActionSection from "@/components/common/NextActionSection";
 import ProfileNameEditor from "@/components/profile/ProfileNameEditor";
@@ -151,30 +152,34 @@ export default async function ProfiloPage() {
   // È il motivo principale per cui un atleta apre il sito, e nel profilo non
   // c'era. Per un genitore le righe sono quelle dei figli collegati.
   const childIds = children.map((c) => c.id);
-  const nextSessionQuery = prisma.trainingSession.findFirst({
-    where: { date: { gte: new Date() } },
-    orderBy: { date: "asc" },
-    select: {
-      id: true,
-      title: true,
-      date: true,
-      dateSlug: true,
-      registrationOpen: true,
-      allowedRoles: true,
-      restrictTeamId: true,
-      openRoles: true,
-      team: { select: { name: true } },
-      registrations: {
-        where: {
-          OR: [
-            { userId: user.id },
-            ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
-          ],
+  // Chi vede la card "prossima cosa da fare" non usa questa query (UX-24).
+  const showNextAction = showsNextAction(user.appRole, user.sportRole);
+  const nextSessionQuery = showNextAction
+    ? null
+    : prisma.trainingSession.findFirst({
+        where: { date: { gte: new Date() } },
+        orderBy: { date: "asc" },
+        select: {
+          id: true,
+          title: true,
+          date: true,
+          dateSlug: true,
+          registrationOpen: true,
+          allowedRoles: true,
+          restrictTeamId: true,
+          openRoles: true,
+          team: { select: { name: true } },
+          registrations: {
+            where: {
+              OR: [
+                { userId: user.id },
+                ...(childIds.length > 0 ? [{ childId: { in: childIds } }] : []),
+              ],
+            },
+            select: { id: true, userId: true, childId: true },
+          },
         },
-        select: { id: true, userId: true, childId: true },
-      },
-    },
-  });
+      });
 
   // Iscrizioni anonime con stesso nome (per proposta di collegamento)
   const anonymousMatchesQuery = user.name
@@ -276,8 +281,6 @@ export default async function ProfiloPage() {
     }
   }
 
-  const isAthleteOrParent = user.appRole === "ATHLETE" || user.appRole === "PARENT";
-
   // Segnaposto dei badge: stesso Paper outlined di BadgeShowcase.
   const badgesSkeleton = <Skeleton variant="rounded" height={180} sx={{ mb: 3 }} />;
 
@@ -366,9 +369,9 @@ export default async function ProfiloPage() {
         )}
       </Paper>
       {/* Identita' in cima, poi la prossima cosa da fare (UX-16), poi "Ti
-          riconosco!". Atleti e genitori: la stessa card della home; lo staff
-          tiene la card del prossimo allenamento. */}
-      {isAthleteOrParent ? (
+          riconosco!". Atleti, genitori e staff che gioca: la stessa card della
+          home; lo staff che non gioca tiene la card del prossimo allenamento. */}
+      {showNextAction ? (
         <Box sx={{ mb: 3 }}>
           <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
             <NextActionSection userId={user.id} appRole={user.appRole} />

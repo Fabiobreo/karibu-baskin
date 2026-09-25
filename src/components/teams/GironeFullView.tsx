@@ -102,6 +102,12 @@ export default function GironeFullView({
     LOSS: tMatches("resultLossShort"),
     DRAW: tMatches("resultDrawShort"),
   };
+  // Per esteso: nome accessibile dei chip e legenda sotto il calendario (UX-24).
+  const RESULT_FULL: Record<string, string> = {
+    WIN: tMatches("resultWin"),
+    LOSS: tMatches("resultLoss"),
+    DRAW: tMatches("resultDraw"),
+  };
   const router = useRouter();
   const seasonParam = season.replace("-", "");
   const teamById = useMemo(() => new Map(ourTeams.map((tm) => [tm.id, tm] as const)), [ourTeams]);
@@ -375,6 +381,8 @@ export default function GironeFullView({
                           {m.result && (
                             <Chip
                               label={RESULT_LABELS[m.result]}
+                              aria-label={RESULT_FULL[m.result]}
+                              title={RESULT_FULL[m.result]}
                               size="small"
                               sx={{
                                 bgcolor: RESULT_COLORS[m.result],
@@ -421,6 +429,16 @@ export default function GironeFullView({
                   ))}
                 </TableBody>
               </Table>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                component="p"
+                sx={{ px: 2, py: 1 }}
+              >
+                {(["WIN", "DRAW", "LOSS"] as const)
+                  .map((r) => `${RESULT_LABELS[r]} = ${RESULT_FULL[r]}`)
+                  .join(" · ")}
+              </Typography>
             </Box>
           )}
         </>
