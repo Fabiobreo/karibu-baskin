@@ -1,31 +1,12 @@
 "use client";
-import { useState } from "react";
 import { heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import { useTranslations, useLocale } from "next-intl";
-import {
-  Box,
-  Typography,
-  Chip,
-  Button,
-  IconButton,
-  Tooltip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Alert,
-  Divider,
-  CircularProgress,
-  Breadcrumbs,
-  Link as MuiLink,
-} from "@mui/material";
+import { Box, Typography, Chip, Button, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
-import EditIcon from "@mui/icons-material/Edit";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import SettingsIcon from "@mui/icons-material/Settings";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -34,20 +15,9 @@ import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import ShareSection from "@/components/common/ShareSection";
 import { mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
-import SessionRestrictionEditor, {
-  seasonForDate,
-  type RestrictionValue,
-} from "@/components/training/SessionRestrictionEditor";
-import { toLocalDateString, toLocalTimeString, sessionEndDate } from "@/lib/dateUtils";
-import { readError } from "@/lib/fetchJson";
+import { sessionEndDate } from "@/lib/dateUtils";
 import { formatRoleNumbers } from "@/lib/roleList";
 import { SITE_URL } from "@/lib/siteUrl";
-
-const DEFAULT_RESTRICTIONS: RestrictionValue = {
-  allowedRoles: [],
-  restrictTeamId: null,
-  openRoles: [],
-};
 
 interface Session {
   id: string;
@@ -113,7 +83,6 @@ interface Props {
   sessionEnd: Date | null;
   isStaff: boolean;
   countdown: string | null;
-  onSessionSaved: (newDateSlug: string) => void;
 }
 
 export default function AllenamientoHero({
@@ -122,7 +91,6 @@ export default function AllenamientoHero({
   sessionEnd,
   isStaff,
   countdown,
-  onSessionSaved,
 }: Props) {
   const tNav = useTranslations("nav");
   const t = useTranslations("trainings");
@@ -144,76 +112,6 @@ export default function AllenamientoHero({
   // l'href di WhatsApp renderizzato senza link restava tale anche dopo
   // l'idratazione (React non corregge gli attributi in caso di mismatch).
   const sessionUrl = `${SITE_URL}/allenamento/${session.dateSlug ?? session.id}`;
-
-  const [editOpen, setEditOpen] = useState(false);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDate, setEditDate] = useState("");
-  const [editTime, setEditTime] = useState("");
-  const [editEndTime, setEditEndTime] = useState("");
-  const [editRestrictions, setEditRestrictions] = useState<RestrictionValue>(DEFAULT_RESTRICTIONS);
-  const [editError, setEditError] = useState("");
-  const [editLoading, setEditLoading] = useState(false);
-
-  function openEdit() {
-    const date = new Date(session.date);
-    const end = session.endTime ? new Date(session.endTime) : null;
-    setEditTitle(session.title);
-    setEditDate(toLocalDateString(date));
-    setEditTime(toLocalTimeString(date));
-    setEditEndTime(end ? toLocalTimeString(end) : "");
-    setEditRestrictions({
-      allowedRoles: session.allowedRoles ?? [],
-      restrictTeamId: session.restrictTeamId ?? null,
-      openRoles: session.openRoles ?? [],
-    });
-    setEditError("");
-    setEditOpen(true);
-  }
-
-  async function handleSaveEdit() {
-    if (!editTitle.trim()) {
-      setEditError(t("titleRequired"));
-      return;
-    }
-    if (!editDate) {
-      setEditError(t("dateRequired"));
-      return;
-    }
-    if (editEndTime && editEndTime <= editTime) {
-      setEditError(t("endAfterStart"));
-      return;
-    }
-    setEditLoading(true);
-    setEditError("");
-    try {
-      const dateTime = new Date(`${editDate}T${editTime}:00`);
-      const endDateTime = editEndTime ? new Date(`${editDate}T${editEndTime}:00`) : null;
-      const dateSlug = `${editDate}${editTime}`.replace(/-/g, "").replace(":", "");
-      const res = await fetch(`/api/sessions/${session.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: editTitle.trim(),
-          date: dateTime.toISOString(),
-          endTime: endDateTime?.toISOString() ?? null,
-          dateSlug,
-          allowedRoles: editRestrictions.allowedRoles,
-          restrictTeamId: editRestrictions.restrictTeamId,
-          openRoles: editRestrictions.openRoles,
-        }),
-      });
-      if (!res.ok) {
-        setEditError(await readError(res));
-        return;
-      }
-      setEditOpen(false);
-      onSessionSaved(dateSlug);
-    } catch {
-      setEditError(tCommon("networkError"));
-    } finally {
-      setEditLoading(false);
-    }
-  }
 
   return (
     <>
@@ -239,22 +137,23 @@ export default function AllenamientoHero({
               zIndex: 2,
             }}
           >
-            <Tooltip title="Modifica allenamento">
-              <IconButton
-                onClick={openEdit}
-                size="small"
-                aria-label="Modifica allenamento"
-                sx={{
-                  color: "common.white",
-                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
-                  border: "1px solid",
-                  borderColor: (theme) => alpha(theme.palette.common.white, 0.2),
-                  "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.white, 0.2) },
-                }}
-              >
-                <EditIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
+            {/* Una sola strada per gestire l'allenamento: l'admin (UX-23). La
+                matita con il suo dialog di modifica, senza il Luogo, e' sparita. */}
+            <Button
+              href={`/admin/allenamenti?apri=${session.id}`}
+              size="small"
+              startIcon={<SettingsIcon sx={{ fontSize: 18 }} />}
+              sx={{
+                color: "common.white",
+                fontWeight: 700,
+                bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
+                border: "1px solid",
+                borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
+                "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.white, 0.2) },
+              }}
+            >
+              {t("manageRoster")}
+            </Button>
           </Box>
         )}
 
@@ -266,7 +165,7 @@ export default function AllenamientoHero({
             position: "relative",
             zIndex: 2,
             mb: { xs: 2, md: 2.5 },
-            pr: isStaff ? { xs: 5, md: 6 } : 0,
+            pr: isStaff ? { xs: 14, md: 15 } : 0,
             minWidth: 0,
           }}
         >
@@ -493,97 +392,6 @@ export default function AllenamientoHero({
           </Box>
         </Box>
       </Box>
-
-      {/* Dialog: modifica allenamento */}
-      <Dialog
-        open={editOpen}
-        onClose={() => !editLoading && setEditOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle fontWeight={700}>Modifica allenamento</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-            {editError && <Alert severity="error">{editError}</Alert>}
-            <TextField
-              label="Titolo"
-              value={editTitle}
-              onChange={(e) => {
-                setEditTitle(e.target.value);
-                setEditError("");
-              }}
-              fullWidth
-              size="small"
-              disabled={editLoading}
-              autoFocus
-            />
-            <TextField
-              label="Data"
-              type="date"
-              value={editDate}
-              onChange={(e) => {
-                setEditDate(e.target.value);
-                setEditError("");
-              }}
-              size="small"
-              fullWidth
-              slotProps={{ inputLabel: { shrink: true } }}
-              disabled={editLoading}
-            />
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <TextField
-                label="Inizio"
-                type="time"
-                value={editTime}
-                onChange={(e) => {
-                  setEditTime(e.target.value);
-                  setEditError("");
-                }}
-                size="small"
-                slotProps={{ inputLabel: { shrink: true } }}
-                disabled={editLoading}
-                sx={{ flex: 1 }}
-              />
-              <TextField
-                label="Fine"
-                type="time"
-                value={editEndTime}
-                onChange={(e) => {
-                  setEditEndTime(e.target.value);
-                  setEditError("");
-                }}
-                size="small"
-                slotProps={{ inputLabel: { shrink: true } }}
-                disabled={editLoading}
-                sx={{ flex: 1 }}
-              />
-            </Box>
-            <Divider />
-            <SessionRestrictionEditor
-              value={editRestrictions}
-              onChange={setEditRestrictions}
-              disabled={editLoading}
-              seasonFilter={editDate ? seasonForDate(new Date(editDate)) : undefined}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-          <Button onClick={() => setEditOpen(false)} disabled={editLoading} color="inherit">
-            Annulla
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSaveEdit}
-            disabled={editLoading}
-            startIcon={
-              editLoading ? <CircularProgress size={16} color="inherit" /> : <EventAvailableIcon />
-            }
-            sx={{ px: 3 }}
-          >
-            {editLoading ? "Salvataggio..." : "Salva modifiche"}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

@@ -1,6 +1,6 @@
 # UX-23 · Pagina del singolo allenamento allineata all'admin
 
-**Ondata:** 3 · **Stima:** S · **Dipende da:** UX-14, UX-15 · **Stato:** da fare
+**Ondata:** 3 · **Stima:** S · **Dipende da:** UX-14, UX-15 · **Stato:** fatto (commit su `develop`): nell'hero, per lo staff, "Gestisci" verso `/admin/allenamenti?apri=<id>` al posto della matita; eliminato il dialog di modifica duplicato
 
 ## Problema
 
@@ -23,3 +23,14 @@ Due strade per la stessa cosa, con comportamenti diversi.
 - Nel codice un solo dialog di modifica dell'allenamento.
 - Dalla pagina dell'allenamento lo staff arriva alla gestione completa (Luogo compreso) in un tocco.
 - Nessuna funzione persa: ogni azione oggi possibile dalla pagina resta raggiungibile.
+
+## Esito
+
+- **Hero (`AllenamentoHero`):** la matita e il suo dialog di modifica (circa 150 righe, senza il campo Luogo) sono spariti. Al loro posto, per lo staff, un bottone "Gestisci" (chiave già esistente `trainings.manageRoster`) verso `/admin/allenamenti?apri=<id>`, che apre l'allenamento espanso: da lì "Modifica" usa `SessionEditDialog`, con il Luogo. Nel codice resta un solo dialog di modifica.
+- `SessionPageClient`: tolti `onSessionSaved` e il cambio di URL dopo il salvataggio, non più necessari.
+- **Squadre (punto 3):** restano sulla pagina pubblica, perché la pagina e l'admin usano già lo stesso componente (`TeamDisplay` con `TeamsHeader`, lo stesso di `AdminSessionTeams`) e servono in palestra da telefono. Lo stesso vale per "Apri/Chiudi iscrizioni" e "Gestisci iscritti": nessuna funzione persa.
+- Verifica con Playwright (admin, desktop e 360 px): il bottone porta a `/admin/allenamenti?apri=ux-training-open` con l'allenamento aperto; pagina larga 360 px su mobile. `tsc` verde.
+
+## Rimasto fuori
+
+- Nulla di funzionale. Gli avvisi ESLint sui `fontSize` letterali dei due file restano per UX-27.

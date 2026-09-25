@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Container, Typography, Box, Paper, Skeleton, Alert, Grid2 as Grid } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import RegistrationForm, {
@@ -72,7 +72,6 @@ export default function SessionPageClient({
   const t = useTranslations("trainings");
   const { teamColorLabel } = useEntityLabels();
   const { session: sessionParam } = useParams<{ session: string }>();
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null | undefined>(undefined);
@@ -289,14 +288,6 @@ export default function SessionPageClient({
     }
   }
 
-  function handleSessionSaved(newDateSlug: string) {
-    if (newDateSlug !== sessionParam) {
-      router.replace(`/allenamento/${newDateSlug}`);
-    } else {
-      void refetchSession();
-    }
-  }
-
   const slugMap = Object.fromEntries(
     registrations.filter((r) => r.userSlug).map((r) => [r.id, r.userSlug!])
   );
@@ -390,7 +381,6 @@ export default function SessionPageClient({
           sessionEnd={sessionEnd}
           isStaff={isStaff}
           countdown={countdown}
-          onSessionSaved={handleSessionSaved}
         />
       ) : null}
 
