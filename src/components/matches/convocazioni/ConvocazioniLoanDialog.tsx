@@ -15,6 +15,7 @@ import {
 import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import type { LoanCandidate } from "@/lib/matches/callupContext";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 function candidateKey(c: LoanCandidate): string {
   return `${c.candidate.kind}-${c.candidate.id}`;
@@ -71,7 +72,7 @@ export default function ConvocazioniLoanDialog({
                   sx={{
                     width: 28,
                     height: 28,
-                    fontSize: 12,
+                    fontSize: TYPE_SCALE.xs,
                     mr: 1,
                     bgcolor: role ? roleColor(role) : "grey.400",
                   }}

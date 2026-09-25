@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useTranslations } from "next-intl";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   /** ISO date (timestamp), inviata dal server per evitare mismatch */
@@ -33,7 +34,7 @@ export default function MatchCountdown({ targetIso }: Props) {
 
   if (!parts) {
     return (
-      <Typography sx={{ color: "common.white", fontWeight: 800, fontSize: "0.95rem" }}>
+      <Typography sx={{ color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.md }}>
         {t("countdownInProgress")}
       </Typography>
     );
@@ -62,7 +63,7 @@ export default function MatchCountdown({ targetIso }: Props) {
         sx={{
           color: "common.white",
           fontWeight: 700,
-          fontSize: { xs: "0.78rem", md: "0.85rem" },
+          fontSize: { xs: TYPE_SCALE.xs, md: TYPE_SCALE.sm },
           letterSpacing: "0.02em",
           fontVariantNumeric: "tabular-nums",
         }}

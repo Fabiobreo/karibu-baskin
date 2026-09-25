@@ -17,6 +17,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useState, useEffect } from "react";
 import type { MatchResult } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const RESULT_LABELS: Record<MatchResult, string> = {
   WIN: "Vittoria",
@@ -148,8 +149,8 @@ export default function MatchResultDialog({
             value={ourScore}
             onChange={(e) => setOurScore(e.target.value)}
             slotProps={{
-              htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1.1rem" } },
-              inputLabel: { sx: { fontSize: "0.85rem" } },
+              htmlInput: { min: 0, style: { textAlign: "center", fontSize: TYPE_SCALE.lg } },
+              inputLabel: { sx: { fontSize: TYPE_SCALE.sm } },
             }}
             sx={{ width: 150 }}
             autoFocus
@@ -164,8 +165,8 @@ export default function MatchResultDialog({
             value={theirScore}
             onChange={(e) => setTheirScore(e.target.value)}
             slotProps={{
-              htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1.1rem" } },
-              inputLabel: { sx: { fontSize: "0.85rem" } },
+              htmlInput: { min: 0, style: { textAlign: "center", fontSize: TYPE_SCALE.lg } },
+              inputLabel: { sx: { fontSize: TYPE_SCALE.sm } },
             }}
             sx={{ width: 150 }}
           />
@@ -179,7 +180,7 @@ export default function MatchResultDialog({
                 bgcolor: RESULT_COLORS[derived],
                 color: "match.onFill",
                 fontWeight: 700,
-                fontSize: "0.85rem",
+                fontSize: TYPE_SCALE.sm,
                 px: 1.5,
               }}
             />

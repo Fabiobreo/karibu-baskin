@@ -27,6 +27,7 @@ import type {
   OpponentPhysicality,
 } from "@/lib/schemas/match";
 import { OPPONENT_MU_PRESETS } from "@/lib/matches/matchQuality";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",
@@ -257,7 +258,7 @@ export default function OpponentProfileDialog({
                 key={preset}
                 value={preset}
                 color={strengthPreset === preset ? STRENGTH_PRESET_COLORS[preset] : undefined}
-                sx={{ px: 2, fontSize: "0.78rem" }}
+                sx={{ px: 2, fontSize: TYPE_SCALE.xs }}
               >
                 {STRENGTH_PRESET_LABELS[preset]}
               </ToggleButton>
@@ -317,7 +318,7 @@ export default function OpponentProfileDialog({
                             key={s}
                             value={s}
                             color={assessment.strength === s ? STRENGTH_COLORS[s] : undefined}
-                            sx={{ px: 1.5, py: 0.5, fontSize: "0.75rem" }}
+                            sx={{ px: 1.5, py: 0.5, fontSize: TYPE_SCALE.xs }}
                           >
                             {STRENGTH_LABELS[s]}
                           </ToggleButton>
@@ -344,7 +345,7 @@ export default function OpponentProfileDialog({
                             key={p}
                             value={p}
                             color={assessment.physicality === p ? PHYSICALITY_COLORS[p] : undefined}
-                            sx={{ px: 1.5, py: 0.5, fontSize: "0.75rem" }}
+                            sx={{ px: 1.5, py: 0.5, fontSize: TYPE_SCALE.xs }}
                           >
                             {PHYSICALITY_LABELS[p]}
                           </ToggleButton>

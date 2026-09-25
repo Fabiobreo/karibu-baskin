@@ -3,6 +3,7 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Riga di un convocato: avatar, nome, eventuale variante ruolo e punti se la partita è giocata. */
 export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore: boolean }) {
@@ -17,7 +18,7 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
 
   const inner = (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25 }}>
-      <Avatar src={image ?? undefined} sx={{ width: 38, height: 38, fontSize: 14 }}>
+      <Avatar src={image ?? undefined} sx={{ width: 38, height: 38, fontSize: TYPE_SCALE.sm }}>
         {name[0]}
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -25,7 +26,7 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
           {name}
         </Typography>
         {variant && (
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
             {`var. ${variant}`}
           </Typography>
         )}
@@ -33,11 +34,11 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
       {hasScore && c.stat !== null && (
         <Box sx={{ textAlign: "right", flexShrink: 0 }}>
           <Typography
-            sx={{ fontSize: "1.15rem", fontWeight: 900, color: "text.primary", lineHeight: 1 }}
+            sx={{ fontSize: TYPE_SCALE.lg, fontWeight: 900, color: "text.primary", lineHeight: 1 }}
           >
             {c.stat.points}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
             pt
           </Typography>
         </Box>

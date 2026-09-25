@@ -10,6 +10,7 @@ import type { Locale } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { onHover } from "@/lib/hoverStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export interface MatchCardData {
   id: string;
@@ -122,7 +123,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                   sx={{
                     color: "text.primary",
                     lineHeight: 1.1,
-                    fontSize: { xs: "1.05rem", md: "1.15rem" },
+                    fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
                   }}
                 >
                   {relativeLabel(m.date, now, tCommon, dateLocale)}

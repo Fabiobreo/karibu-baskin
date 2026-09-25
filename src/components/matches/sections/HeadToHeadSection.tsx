@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PrevMatchPreview } from "@/components/matches/matchDetailTypes";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Scontri diretti con lo stesso avversario (partite precedenti con esito). */
 export default function HeadToHeadSection({
@@ -38,7 +39,7 @@ export default function HeadToHeadSection({
           letterSpacing: "0.08em",
           display: "block",
           mb: 1.5,
-          fontSize: "0.75rem",
+          fontSize: TYPE_SCALE.xs,
         }}
       >
         {t("headToHead", { opponentName })}
@@ -63,14 +64,14 @@ export default function HeadToHeadSection({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ minWidth: 88, fontWeight: 600, fontSize: "0.75rem" }}
+                sx={{ minWidth: 88, fontWeight: 600, fontSize: TYPE_SCALE.xs }}
               >
                 {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
               </Typography>
               <Typography
                 variant="body2"
                 fontWeight={800}
-                sx={{ minWidth: 52, fontSize: "0.85rem" }}
+                sx={{ minWidth: 52, fontSize: TYPE_SCALE.sm }}
               >
                 {score}
               </Typography>
@@ -82,7 +83,7 @@ export default function HeadToHeadSection({
                     bgcolor: resMeta.color,
                     color: "common.white",
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     height: 20,
                   }}
                 />
@@ -101,7 +102,7 @@ export default function HeadToHeadSection({
                 ) : (
                   <FlightIcon sx={{ fontSize: 13 }} />
                 )}
-                <Typography variant="caption" sx={{ fontSize: "0.75rem" }}>
+                <Typography variant="caption" sx={{ fontSize: TYPE_SCALE.xs }}>
                   {m.isHome ? t("home") : t("away")}
                 </Typography>
               </Box>

@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Card dei top 3 marcatori della partita (visibili a tutti se la partita è giocata). */
 export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
@@ -26,7 +27,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
           letterSpacing: "0.08em",
           display: "block",
           mb: 1.5,
-          fontSize: "0.75rem",
+          fontSize: TYPE_SCALE.xs,
         }}
       >
         {t("topScorers")}
@@ -59,11 +60,11 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               )}
               <Avatar
                 src={image ?? undefined}
-                sx={{ width: 44, height: 44, fontSize: 16, mx: "auto", mb: 1 }}
+                sx={{ width: 44, height: 44, fontSize: TYPE_SCALE.md, mx: "auto", mb: 1 }}
               >
                 {name[0]}
               </Avatar>
-              <Typography variant="body2" fontWeight={700} noWrap sx={{ fontSize: "0.8rem" }}>
+              <Typography variant="body2" fontWeight={700} noWrap sx={{ fontSize: TYPE_SCALE.xs }}>
                 {name}
               </Typography>
               {role && (
@@ -75,7 +76,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               )}
               <Typography
                 sx={{
-                  fontSize: "1.8rem",
+                  fontSize: TYPE_SCALE["3xl"],
                   fontWeight: 900,
                   color: "text.primary",
                   lineHeight: 1.1,
@@ -88,7 +89,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                 variant="caption"
                 color="text.secondary"
                 fontWeight={600}
-                sx={{ fontSize: "0.75rem" }}
+                sx={{ fontSize: TYPE_SCALE.xs }}
               >
                 {t("pointsUnit")}
               </Typography>

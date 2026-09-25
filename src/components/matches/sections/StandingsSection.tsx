@@ -15,6 +15,7 @@ import Link from "next/link";
 import StatAbbr from "@/components/teams/StatAbbr";
 import { useTranslations } from "next-intl";
 import type { StandingEntry } from "@/lib/season/standings";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Classifica compatta del girone con la nostra squadra evidenziata. */
 export default function StandingsSection({
@@ -37,7 +38,7 @@ export default function StandingsSection({
           variant="caption"
           color="text.secondary"
           fontWeight={700}
-          sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: "0.75rem" }}
+          sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: TYPE_SCALE.xs }}
         >
           {t("groupStandings")}
           {groupName ? ` · ${groupName}` : ""}
@@ -48,7 +49,7 @@ export default function StandingsSection({
             sx={{
               color: "primary.onLight",
               fontWeight: 700,
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               "&:hover": { textDecoration: "underline" },
             }}
           >
@@ -63,7 +64,7 @@ export default function StandingsSection({
               <TableCell
                 sx={{
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   color: "text.secondary",
                   py: 0.75,
                   width: 28,
@@ -71,7 +72,7 @@ export default function StandingsSection({
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.75 }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, py: 0.75 }}>
                 {tStandings("colTeam")}
               </TableCell>
               {(["colPlayed", "colWins", "colDraws", "colLosses"] as const).map((key) => (
@@ -80,7 +81,7 @@ export default function StandingsSection({
                   align="center"
                   sx={{
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     color: "text.secondary",
                     py: 0.75,
                     width: 28,
@@ -93,7 +94,7 @@ export default function StandingsSection({
                 align="center"
                 sx={{
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   color: "primary.onLight",
                   py: 0.75,
                   width: 36,
@@ -114,16 +115,18 @@ export default function StandingsSection({
                 }}
               >
                 <TableCell
-                  sx={{ fontSize: "0.75rem", color: "text.secondary", fontWeight: 700, py: 1 }}
+                  sx={{ fontSize: TYPE_SCALE.xs, color: "text.secondary", fontWeight: 700, py: 1 }}
                 >
                   {i + 1}
                 </TableCell>
-                <TableCell sx={{ fontSize: "0.8rem", fontWeight: row.isOurs ? 800 : 500, py: 1 }}>
+                <TableCell
+                  sx={{ fontSize: TYPE_SCALE.xs, fontWeight: row.isOurs ? 800 : 500, py: 1 }}
+                >
                   {row.name}
                   {row.isOurs && (
                     <Box
                       component="span"
-                      sx={{ ml: 0.5, fontSize: "0.75rem", color: "primary.main" }}
+                      sx={{ ml: 0.5, fontSize: TYPE_SCALE.xs, color: "primary.main" }}
                     >
                       ●
                     </Box>
@@ -134,7 +137,7 @@ export default function StandingsSection({
                     key={j}
                     align="center"
                     sx={{
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       color: "text.secondary",
                       py: 1,
                       fontVariantNumeric: "tabular-nums",
@@ -146,7 +149,7 @@ export default function StandingsSection({
                 <TableCell
                   align="center"
                   sx={{
-                    fontSize: "0.82rem",
+                    fontSize: TYPE_SCALE.sm,
                     fontWeight: 800,
                     color: "primary.onLight",
                     py: 1,

@@ -20,6 +20,7 @@ import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 import { contrastText } from "@/lib/colorUtils";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export interface MatchStatRow {
   id: string;
@@ -75,18 +76,25 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
-                sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
+                sx={{
+                  width: 28,
+                  fontWeight: 700,
+                  fontSize: TYPE_SCALE.xs,
+                  color: "text.secondary",
+                }}
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>{t("statPlayer")}</TableCell>
+              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
+                {t("statPlayer")}
+              </TableCell>
               {COLS.map((col) => (
                 <TableCell
                   key={col.key as string}
                   align="center"
                   sx={{
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     color: col.primary ? "primary.onLight" : undefined,
                   }}
                   title={col.title}
@@ -108,12 +116,17 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
 
               return (
                 <TableRow key={stat.id} hover>
-                  <TableCell sx={{ color: "text.secondary", fontWeight: 700, fontSize: "0.78rem" }}>
+                  <TableCell
+                    sx={{ color: "text.secondary", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
+                  >
                     {globalOffset + i + 1}
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Avatar src={image ?? undefined} sx={{ width: 24, height: 24, fontSize: 10 }}>
+                      <Avatar
+                        src={image ?? undefined}
+                        sx={{ width: 24, height: 24, fontSize: TYPE_SCALE.xs }}
+                      >
                         {name[0]}
                       </Avatar>
                       <Box>
@@ -126,7 +139,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                               variant="body2"
                               fontWeight={700}
                               sx={{
-                                fontSize: "0.8rem",
+                                fontSize: TYPE_SCALE.xs,
                                 "&:hover": { textDecoration: "underline" },
                               }}
                             >
@@ -134,7 +147,11 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                             </Typography>
                           </Link>
                         ) : (
-                          <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.8rem" }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{ fontSize: TYPE_SCALE.xs }}
+                          >
                             {name}
                           </Typography>
                         )}
@@ -147,7 +164,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                               display: "block",
                               mt: 0.3,
                               fontStyle: "italic",
-                              fontSize: "0.75rem",
+                              fontSize: TYPE_SCALE.xs,
                               maxWidth: 200,
                               lineHeight: 1.3,
                             }}
@@ -174,7 +191,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                         key={col.key as string}
                         align="center"
                         sx={{
-                          fontSize: "0.82rem",
+                          fontSize: TYPE_SCALE.sm,
                           fontWeight: col.primary ? 800 : 400,
                           // Statistica che non vale per il ruolo: la cella dice "—".
                           color: col.primary

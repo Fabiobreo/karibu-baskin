@@ -14,6 +14,7 @@ import type {
 } from "@/components/matches/matchDetailTypes";
 import MatchCallupsTab from "@/components/matches/tabs/MatchCallupsTab";
 import MatchStatsTab from "@/components/matches/tabs/MatchStatsTab";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   notes: string | null;
@@ -82,13 +83,13 @@ export default function MatchDetailTabs({
             icon={<GroupsIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
             label={`${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`}
-            sx={{ minHeight: 48, fontSize: "0.82rem", fontWeight: 600 }}
+            sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm, fontWeight: 600 }}
           />
           <Tab
             icon={<LeaderboardIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
             label={`${t("tabStats")}${hasStats ? ` (${stats.length})` : ""}`}
-            sx={{ minHeight: 48, fontSize: "0.82rem", fontWeight: 600 }}
+            sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm, fontWeight: 600 }}
           />
         </Tabs>
       </Box>

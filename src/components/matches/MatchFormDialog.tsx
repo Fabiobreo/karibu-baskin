@@ -33,6 +33,7 @@ import type { MatchType } from "@prisma/client";
 import { seasonForDate } from "@/components/training/SessionRestrictionEditor";
 import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export type MatchFormTeam = {
   id: string;
@@ -584,7 +585,7 @@ export default function MatchFormDialog({
                         <Chip
                           label={opt.isMixed ? "tutti i giocatori" : "interna"}
                           size="small"
-                          sx={{ fontSize: "0.75rem", height: 20, fontWeight: 700 }}
+                          sx={{ fontSize: TYPE_SCALE.xs, height: 20, fontWeight: 700 }}
                         />
                       </Box>
                     </li>

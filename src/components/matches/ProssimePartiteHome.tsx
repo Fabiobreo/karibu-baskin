@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { withDbRetry } from "@/lib/dbRetry";
 import ProssimePartiteCards from "./ProssimePartiteCards";
 import { getTranslations } from "next-intl/server";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const DAYS_AHEAD = 14;
 const IMMINENT_HOURS = 48;
@@ -72,7 +73,7 @@ export default async function ProssimePartiteHome() {
               variant="h5"
               component="h2"
               fontWeight={800}
-              sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
+              sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE["2xl"], md: TYPE_SCALE["2xl"] } }}
             >
               {t("homeUpcoming")}
             </Typography>

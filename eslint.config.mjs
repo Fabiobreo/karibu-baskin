@@ -50,12 +50,13 @@ export default [
         },
         // UX-10: le dimensioni del testo vengono dalla scala del tema
         // (variant, o sx={{ typography: "caption" }}). Esclusi i tag *Icon,
-        // dove fontSize e' la dimensione dell'icona. Gli avvisi di oggi sono i
-        // letterali ancora da migrare per area: il numero deve solo scendere.
+        // dove fontSize e' la dimensione dell'icona, e "inherit", che non e' una
+        // dimensione. Dove serve solo la dimensione: TYPE_SCALE (UX-27).
         {
           selector:
-            "JSXOpeningElement:not([name.name=/Icon$/]) > JSXAttribute[name.name=/^(sx|InputProps|slotProps)$/] Property[key.name='fontSize'] Literal",
-          message: "fontSize letterale: usa variant o sx={{ typography: '…' }} (scala in theme.ts)",
+            "JSXOpeningElement:not([name.name=/Icon$/]) > JSXAttribute[name.name=/^(sx|InputProps|slotProps)$/] Property[key.name='fontSize'] Literal:not([value='inherit'])",
+          message:
+            "fontSize letterale: usa variant, sx={{ typography: '…' }} o TYPE_SCALE da @/lib/typeScale",
         },
       ],
     },

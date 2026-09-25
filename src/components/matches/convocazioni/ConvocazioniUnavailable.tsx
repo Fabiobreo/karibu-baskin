@@ -3,6 +3,7 @@ import { Box, Chip, Stack, Typography } from "@mui/material";
 import { alpha, type Theme } from "@mui/material/styles";
 import { ROLES, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Giocatori che hanno dichiarato "non disponibile": chip compatti per ruolo, non selezionabili. */
 export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneStatRow[] }) {
@@ -46,7 +47,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                   bgcolor: roleColor(r),
                   color: ROLE_TEXT_COLOR,
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   height: 20,
                   minWidth: 32,
                 }}
@@ -74,7 +75,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                 bgcolor: "grey.400",
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 height: 20,
                 minWidth: 32,
               }}

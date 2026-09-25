@@ -8,6 +8,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
 import type { Locale } from "date-fns";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const IMMINENT_HOURS = 48;
 
@@ -37,7 +38,7 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
 
   if (!hasMounted) {
     return (
-      <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
+      <Typography variant="body2" fontWeight={800} sx={{ fontSize: TYPE_SCALE.sm }}>
         {format(date, "EEEE d MMM", { locale: dateLocale }).replace(/^./, (c) => c.toUpperCase())}
       </Typography>
     );
@@ -48,7 +49,7 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-      <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
+      <Typography variant="body2" fontWeight={800} sx={{ fontSize: TYPE_SCALE.sm }}>
         {relativeLabel(date, now, tCommon, dateLocale)}
       </Typography>
       {isImminent && (
@@ -58,7 +59,7 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
           size="small"
           sx={{
             fontWeight: 800,
-            fontSize: "0.75rem",
+            fontSize: TYPE_SCALE.xs,
             height: 20,
             // Riempimento tenue + testo arancione accessibile: l'etichetta
             // bianca su primary.main si fermava a 3,79:1.

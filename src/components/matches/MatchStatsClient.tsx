@@ -36,6 +36,7 @@ import { STAT_FIELDS_BY_ROLE, computePoints, type StatField } from "@/lib/schema
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface CalledPlayer {
   id: string;
@@ -468,13 +469,15 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
               <Table size="small" sx={{ minWidth: 760 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "action.hover" }}>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Giocatore</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
+                      Giocatore
+                    </TableCell>
                     {STAT_COLS.map((col) => (
                       <TableCell
                         key={col.key}
                         align="center"
                         title={col.title}
-                        sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 52 }}
+                        sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, minWidth: 52 }}
                       >
                         {col.label}
                       </TableCell>
@@ -484,7 +487,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                       title="Punti calcolati (2pt×2 + 3pt×3 + TL)"
                       sx={{
                         fontWeight: 700,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         minWidth: 52,
                         color: "primary.onLight",
                       }}
@@ -492,7 +495,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                       Pt
                     </TableCell>
                     <TableCell
-                      sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 120 }}
+                      sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, minWidth: 120 }}
                       title="Note (opzionale)"
                     >
                       Note
@@ -508,7 +511,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             <Avatar
                               src={row.image ?? undefined}
-                              sx={{ width: 24, height: 24, fontSize: 10 }}
+                              sx={{ width: 24, height: 24, fontSize: TYPE_SCALE.xs }}
                             >
                               {row.name[0]}
                             </Avatar>
@@ -516,7 +519,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                               <Typography
                                 variant="body2"
                                 fontWeight={600}
-                                sx={{ fontSize: "0.82rem" }}
+                                sx={{ fontSize: TYPE_SCALE.sm }}
                               >
                                 {row.name}
                               </Typography>
@@ -557,13 +560,13 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                                       },
                                     },
                                   }}
-                                  sx={{ "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
+                                  sx={{ "& .MuiOutlinedInput-root": { fontSize: TYPE_SCALE.sm } }}
                                 />
                               ) : (
                                 <Typography
                                   variant="body2"
                                   color="text.secondary"
-                                  sx={{ fontSize: "0.78rem" }}
+                                  sx={{ fontSize: TYPE_SCALE.xs }}
                                   title={
                                     row.sportRole
                                       ? `Non applicabile per ${sportRoleLabel(row.sportRole, row.sportRoleVariant ?? null)}`
@@ -583,7 +586,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                             px: 0.5,
                             fontWeight: 800,
                             color: "primary.onLight",
-                            fontSize: "0.9rem",
+                            fontSize: TYPE_SCALE.sm,
                           }}
                         >
                           {pts}
@@ -603,7 +606,10 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                                 style: { padding: "4px 8px" },
                               },
                             }}
-                            sx={{ width: 140, "& .MuiOutlinedInput-root": { fontSize: "0.78rem" } }}
+                            sx={{
+                              width: 140,
+                              "& .MuiOutlinedInput-root": { fontSize: TYPE_SCALE.xs },
+                            }}
                           />
                         </TableCell>
                       </TableRow>
@@ -613,7 +619,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                 <TableFooter>
                   <TableRow sx={{ bgcolor: "action.hover" }}>
                     <TableCell
-                      sx={{ fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
+                      sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, color: "text.secondary" }}
                     >
                       Totale
                     </TableCell>
@@ -621,14 +627,14 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                       <TableCell
                         key={col.key}
                         align="center"
-                        sx={{ fontWeight: 800, fontSize: "0.82rem", color: "text.primary" }}
+                        sx={{ fontWeight: 800, fontSize: TYPE_SCALE.sm, color: "text.primary" }}
                       >
                         {totals[col.key]}
                       </TableCell>
                     ))}
                     <TableCell
                       align="center"
-                      sx={{ fontWeight: 800, fontSize: "0.9rem", color: "primary.onLight" }}
+                      sx={{ fontWeight: 800, fontSize: TYPE_SCALE.sm, color: "primary.onLight" }}
                     >
                       {totals.points}
                     </TableCell>

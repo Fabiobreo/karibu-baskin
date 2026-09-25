@@ -28,6 +28,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useToast } from "@/context/ToastContext";
 import type { MatchType } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export interface AvailabilityEntity {
   kind: "user" | "child";
@@ -298,19 +299,19 @@ function CompactMatchRow({
         ) : (
           <FlightIcon sx={{ fontSize: 14, color: "text.secondary" }} />
         )}
-        <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.88rem" }}>
+        <Typography variant="body2" fontWeight={700} sx={{ fontSize: TYPE_SCALE.sm }}>
           vs {m.opponentLabel}
         </Typography>
         {/* Etichetta per esteso: "Amich." e "Camp." non si capiscono. */}
         <Chip
           label={matchTypeLabel(m.matchType)}
           size="small"
-          sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+          sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
         />
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ ml: "auto", fontWeight: 600, fontSize: "0.75rem" }}
+          sx={{ ml: "auto", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
         >
           {formatShortDate(m.date, tCommon, dateLocale)}
         </Typography>
@@ -348,7 +349,7 @@ function CompactMatchRow({
                   variant="body2"
                   fontWeight={500}
                   noWrap
-                  sx={{ fontSize: "0.82rem" }}
+                  sx={{ fontSize: TYPE_SCALE.sm }}
                   title={`${entity.name} · ${entity.teamName}`}
                 >
                   {m.entities.length > 1 ? entity.name : entity.teamName}
@@ -390,7 +391,7 @@ function CompactMatchRow({
                     "& .MuiToggleButton-root": {
                       py: 0.25,
                       px: 1,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       fontWeight: 700,
                       textTransform: "none",
                       border: "1px solid",

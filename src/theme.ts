@@ -2,6 +2,7 @@
 import { alpha, createTheme } from "@mui/material/styles";
 import { heroGradient } from "@/lib/heroStyles";
 import LinkBehavior from "@/components/common/LinkBehavior";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
 export { heroGradient };
@@ -417,11 +418,11 @@ const sharedTypography = {
   subtitle1: { fontWeight: 500 },
   // Scala del testo corrente (UX-10): 14px per il corpo secondario, 12px e'
   // il minimo per qualunque testo (didascalie, meta, chip).
-  body2: { fontSize: "0.875rem" },
-  caption: { fontSize: "0.75rem", lineHeight: 1.5 },
+  body2: { fontSize: TYPE_SCALE.sm },
+  caption: { fontSize: TYPE_SCALE.xs, lineHeight: 1.5 },
   // Occhiello maiuscoletto sopra i titoli: un solo letterSpacing per tutto il
   // sito (prima sette valori diversi riscritti a mano).
-  overline: { fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.08em", lineHeight: 1.6 },
+  overline: { fontSize: TYPE_SCALE.xs, fontWeight: 700, letterSpacing: "0.08em", lineHeight: 1.6 },
   // Numeri grandi (tabelloni, punti, statistiche): la dimensione la sceglie
   // chi la usa, qui peso, interlinea e cifre a larghezza fissa.
   stat: {

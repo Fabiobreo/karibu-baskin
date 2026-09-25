@@ -1,6 +1,7 @@
 "use client";
 import { Box, Chip, Paper, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { ROLES, roleColor } from "@/lib/constants";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export type ConvocazioniSortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
 
@@ -37,7 +38,7 @@ export default function ConvocazioniFilters({
           variant={roleFilter === null ? "filled" : "outlined"}
           color={roleFilter === null ? "primary" : "default"}
           onClick={() => onRoleFilterChange(null)}
-          sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.75rem" }}
+          sx={{ fontWeight: 600, cursor: "pointer", fontSize: TYPE_SCALE.xs }}
         />
         {ROLES.map((r) => (
           <Chip
@@ -48,7 +49,7 @@ export default function ConvocazioniFilters({
             sx={{
               fontWeight: 700,
               cursor: "pointer",
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               bgcolor: roleFilter === r ? roleColor(r) : "transparent",
               color: roleFilter === r ? "common.white" : "text.primary",
               border: `1px solid ${roleFilter === r ? roleColor(r) : "transparent"}`,
@@ -73,7 +74,7 @@ export default function ConvocazioniFilters({
           onChange={(_, v) => v && onSortKeyChange(v as ConvocazioniSortKey)}
           sx={{
             "& .MuiToggleButton-root": {
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               textTransform: "none",
               py: 0.25,
               px: 1,

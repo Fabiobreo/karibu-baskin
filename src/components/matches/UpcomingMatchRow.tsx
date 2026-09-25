@@ -10,6 +10,7 @@ import { useHasMounted } from "@/lib/useHasMounted";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { MatchResult } from "@prisma/client";
 import { useTranslations } from "next-intl";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export type AnyMatchProp = {
   id: string;
@@ -82,10 +83,10 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
         }}
       >
         <Box sx={{ minWidth: 90, flexShrink: 0 }}>
-          <Typography variant="body2" fontWeight={800} sx={{ fontSize: "0.85rem" }}>
+          <Typography variant="body2" fontWeight={800} sx={{ fontSize: TYPE_SCALE.sm }}>
             {relativeLabel(match.date, now, tCommon, dateLocale)}
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
             {format(new Date(match.date), "EEEE d MMMM · HH:mm", { locale: dateLocale })}
           </Typography>
         </Box>
@@ -136,7 +137,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           label={match.isHome ? tMatches("home") : tMatches("away")}
           size="small"
           variant="outlined"
-          sx={{ fontSize: "0.75rem", height: 22 }}
+          sx={{ fontSize: TYPE_SCALE.xs, height: 22 }}
         />
         <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
       </Paper>
