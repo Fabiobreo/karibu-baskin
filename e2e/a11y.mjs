@@ -11,6 +11,10 @@
  * profilo + pagina + viewport + regola: una regola già nota che colpisce più
  * nodi di prima viene segnalata ma non fa fallire.
  *
+ * Su mobile misura anche la larghezza (UX-20): a 360 px la pagina non deve
+ * essere più larga dello schermo. Axe non lo vede e le schermate a pagina
+ * intera nemmeno; una pagina che sborda fa fallire lo script, senza baseline.
+ *
  * Opzioni:
  *   --update-baseline   riscrive la baseline con le violazioni gravi di adesso
  *   --only=anon,athlete filtra i profili
@@ -60,6 +64,9 @@ const SCAN_CSS = `
   nextjs-portal, .tsqd-parent-container, .tsqd-open-btn-container { display: none !important; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 `;
+
+// Il telefono più stretto su cui misurare lo sbordamento orizzontale (UX-20).
+const NARROW_WIDTH = 360;
 
 const PIXEL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
@@ -240,6 +247,45 @@ async function scan(page) {
     .filter((v) => v.nodes > 0);
 }
 
+/**
+ * Larghezza della pagina a NARROW_WIDTH. Con `isMobile` il viewport di layout
+ * segue il contenuto, quindi si confronta `scrollWidth` con la larghezza
+ * impostata, non con `clientWidth`. Se sborda, restituisce anche gli elementi
+ * più a destra che non stanno dentro un antenato con `overflow` nascosto.
+ */
+async function measureOverflow(page, vp) {
+  await page.setViewportSize({ width: NARROW_WIDTH, height: vp.viewport.height });
+  try {
+    await page.waitForTimeout(300);
+    return await page.evaluate((limit) => {
+      const width = document.documentElement.scrollWidth;
+      if (width <= limit) return { width, culprits: [] };
+      const contained = (el) => {
+        for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+          const cs = getComputedStyle(p);
+          if (["hidden", "clip", "auto", "scroll"].includes(cs.overflowX)) return true;
+          if (cs.position === "fixed") return true;
+        }
+        return false;
+      };
+      const culprits = [...document.body.querySelectorAll("*")]
+        .filter((el) => getComputedStyle(el).position !== "fixed")
+        .filter((el) => el.getBoundingClientRect().right > limit + 1 && !contained(el))
+        .sort((a, b) => b.getBoundingClientRect().right - a.getBoundingClientRect().right)
+        .slice(0, 3)
+        .map((el) => {
+          const cls = String(el.className).split(" ").slice(0, 2).join(".");
+          const text = el.textContent.trim().slice(0, 30);
+          const right = Math.round(el.getBoundingClientRect().right);
+          return `${el.tagName.toLowerCase()}${cls ? "." + cls : ""} "${text}" → ${right}px`;
+        });
+      return { width, culprits };
+    }, NARROW_WIDTH);
+  } finally {
+    await page.setViewportSize(vp.viewport);
+  }
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -313,9 +359,19 @@ async function main() {
         try {
           await gotoWithRetry(page, path);
           const violations = await scan(page);
-          report.push({ profile: profile.name, page: label, path, viewport: vp.name, violations });
+          const measured = vp.isMobile ? await measureOverflow(page, vp) : null;
+          const overflow = measured && measured.width > NARROW_WIDTH ? measured : null;
+          report.push({
+            profile: profile.name,
+            page: label,
+            path,
+            viewport: vp.name,
+            violations,
+            ...(overflow ? { overflow } : {}),
+          });
           const grave = violations.filter((v) => GRAVE.has(v.impact)).length;
-          console.log(`${violations.length} regole violate (${grave} gravi)`);
+          const wide = overflow ? `, SBORDA: ${overflow.width}px a ${NARROW_WIDTH}px` : "";
+          console.log(`${violations.length} regole violate (${grave} gravi)${wide}`);
         } catch (err) {
           console.log(`ERRORE: ${err.message.split("\n")[0]}`);
           report.push({
@@ -340,6 +396,10 @@ async function main() {
     if (r.error) {
       console.log(`  errore: ${r.error}`);
       continue;
+    }
+    if (r.overflow) {
+      console.log(`  SBORDA    larga ${r.overflow.width}px a ${NARROW_WIDTH}px`);
+      for (const c of r.overflow.culprits) console.log(`            ${c}`);
     }
     if (r.violations.length === 0) console.log("  nessuna violazione");
     for (const v of r.violations) {
@@ -396,6 +456,7 @@ async function main() {
   }
   const risolte = Object.keys(baseline).filter((k) => isMeasured(k) && !current[k]);
   const errori = report.filter((r) => r.error);
+  const larghe = report.filter((r) => r.overflow);
 
   if (peggiorate.length) {
     console.log("\nRegole già in baseline che colpiscono più nodi (non bloccante):");
@@ -409,13 +470,17 @@ async function main() {
   if (errori.length) {
     console.log(`\n${errori.length} pagine non misurate per errore.`);
   }
+  if (larghe.length) {
+    console.log(`\nPagine più larghe dello schermo a ${NARROW_WIDTH}px (UX-20):`);
+    for (const r of larghe) console.log(`  ${r.profile} · ${r.page}: ${r.overflow.width}px`);
+  }
   if (nuove.length) {
     console.log("\nNuove violazioni gravi (non in baseline):");
     for (const n of nuove) console.log(`  ${n}`);
     return 1;
   }
   console.log("\nNessuna nuova violazione grave.");
-  return errori.length ? 1 : 0;
+  return errori.length || larghe.length ? 1 : 0;
 }
 
 main()

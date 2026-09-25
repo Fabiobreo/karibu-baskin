@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { visuallyHidden } from "@mui/utils";
 import { useTranslations } from "next-intl";
 import { roleColorSx } from "@/lib/constants";
 
@@ -13,19 +14,6 @@ interface RoleBadgeProps {
   showLabel?: boolean;
   sx?: SxProps<Theme>;
 }
-
-// Testo per i soli lettori di schermo: fuori dalla vista ma nel flusso.
-const visuallyHidden = {
-  position: "absolute",
-  width: 1,
-  height: 1,
-  p: 0,
-  m: -1,
-  overflow: "hidden",
-  clip: "rect(0 0 0 0)",
-  whiteSpace: "nowrap",
-  border: 0,
-} as const;
 
 /**
  * Badge del ruolo Baskin (UX-11). Il **numero** e' l'elemento principale e si
@@ -48,7 +36,15 @@ export default function RoleBadge({
     <Box
       component="span"
       sx={[
-        { display: "inline-flex", alignItems: "center", gap: 0.75, verticalAlign: "middle" },
+        {
+          // Ancora per il testo nascosto (UX-20): senza, lo span assoluto si
+          // posiziona rispetto a un antenato lontano e allarga la pagina su mobile.
+          position: "relative",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.75,
+          verticalAlign: "middle",
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
@@ -61,6 +57,7 @@ export default function RoleBadge({
           {t("roleWord")}
         </Box>
       )}
+      {/* Per i soli lettori di schermo. Valori in px: nel `sx` `width: 1` vale 100%. */}
       <Box component="span" sx={visuallyHidden}>
         {t("sportRole", { n: role, v: variant ?? "" })}
       </Box>

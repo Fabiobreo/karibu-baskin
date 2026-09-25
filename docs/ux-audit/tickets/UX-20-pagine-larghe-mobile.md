@@ -1,6 +1,6 @@
 # UX-20 · Pagine più larghe dello schermo su mobile
 
-**Ondata:** 3 · **Stima:** S · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 3 · **Stima:** S · **Dipende da:** nessuno · **Stato:** fatto (commit su `develop`): testo nascosto di `RoleBadge` e `GuestOnboardingCard` sul `visuallyHidden` di `@mui/utils` con contenitore `relative`; `npm run a11y` misura ogni pagina mobile a 360 px e fallisce se sborda
 
 ## Problema
 
@@ -28,3 +28,15 @@ A 360 px alcune pagine sono più larghe dello schermo: si trascinano di lato e l
 - A 360 px `scrollWidth === clientWidth` su tutte le pagine di UX-01, per anonimo, atleta e admin.
 - Il lettore di schermo legge ancora "Ruolo 5" sul badge.
 - Il controllo del punto 4 fallisce se si toglie la correzione del punto 1.
+
+## Esito
+
+- **Causa vera, più precisa di quella scritta sopra.** Nel `visuallyHidden` locale di `RoleBadge` c'era `width: 1` e `m: -1`: nel `sx` di MUI `width: 1` vale **100%** e `m: -1` vale **-8 px**. Lo span "Ruolo 5" era quindi largo quanto il blocco di riferimento (un antenato lontano, perché il badge non era `relative`) e partiva dal badge: da qui i 647 px.
+- `RoleBadge` e `GuestOnboardingCard` usano ora il `visuallyHidden` di `@mui/utils` (valori in px, già usato in `/partite/[slug]`); i due oggetti locali sono spariti. Il contenitore del badge e il titolo del passo di onboarding sono `position: relative`, così il testo nascosto resta comunque dentro.
+- `/marcatori` e `/partite/[slug]` (463 px, non era in tabella) sbordavano per lo stesso badge: con la correzione sono a 360 px. In `/partite` la tabella statistiche è più larga, ma scorre nel suo contenitore.
+- `e2e/a11y.mjs`: nel giro mobile, dopo axe, la pagina viene ristretta a 360 px e si confronta `scrollWidth` con 360 (non con `clientWidth`, che su telefono segue il contenuto). Se sborda lo segnala con i tre elementi più a destra non contenuti da un `overflow` e lo script esce con 1, senza baseline.
+- Verifiche: senza la correzione di `RoleBadge` lo script fallisce (giocatore 647 px con colpevole "Ruolo 5", partita 463, marcatori 466); con la correzione `npm run a11y` passa su tutte le pagine di anonimo, atleta e admin. Il lettore di schermo trova ancora "Ruolo 5" (albero di accessibilità). `tsc` e `npm test` verdi.
+
+## Rimasto fuori
+
+- Nessun `visuallyHidden` condiviso nuovo: basta quello di `@mui/utils`. Chi scrive un testo nascosto a mano con valori numerici nel `sx` ricade nello stesso errore; non c'è una regola ESLint che lo impedisca.

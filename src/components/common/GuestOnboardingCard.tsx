@@ -1,6 +1,7 @@
 "use client";
 import { Box, Button, LinearProgress, Paper, Stack, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { visuallyHidden } from "@mui/utils";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -206,7 +207,8 @@ export default function GuestOnboardingCard({
                   <Typography
                     variant="body1"
                     fontWeight={700}
-                    sx={{ color: isDone ? "text.secondary" : "text.primary" }}
+                    // `relative`: il testo nascosto dello stato resta dentro il titolo (UX-20).
+                    sx={{ position: "relative", color: isDone ? "text.secondary" : "text.primary" }}
                   >
                     <Box component="span" sx={visuallyHidden}>
                       {t(`status_${step.status}`)}:{" "}
@@ -238,15 +240,3 @@ export default function GuestOnboardingCard({
     </Paper>
   );
 }
-
-const visuallyHidden = {
-  position: "absolute",
-  width: "1px",
-  height: "1px",
-  margin: "-1px",
-  padding: 0,
-  border: 0,
-  overflow: "hidden",
-  clipPath: "inset(50%)",
-  whiteSpace: "nowrap",
-} as const;
