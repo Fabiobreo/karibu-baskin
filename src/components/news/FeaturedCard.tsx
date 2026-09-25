@@ -10,6 +10,7 @@ import type { PostItem } from "@/components/news/LatestNewsHero";
 import { onHover } from "@/lib/hoverStyles";
 import { alpha } from "@mui/material/styles";
 import { brandColor } from "@/lib/heroStyles";
+import CoverFallback from "@/components/common/CoverFallback";
 
 const FEATURED_TEASER_LEN = 160;
 
@@ -41,7 +42,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           overflow: "hidden",
           border: "1px solid",
           borderColor: "divider",
-          bgcolor: post.imageUrl ? "common.black" : "background.paper",
+          bgcolor: "common.black",
           transition: "transform 0.2s, border-color 0.15s",
           ...onHover({
             borderColor: "primary.main",
@@ -72,27 +73,9 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
             />
           </>
         ) : (
-          <>
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                bgcolor: "grey.900",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                top: "50%",
-                right: { xs: -40, md: -60 },
-                transform: "translateY(-50%)",
-                color: "rgba(255,255,255,0.05)",
-                pointerEvents: "none",
-              }}
-            >
-              <ArticleIcon sx={{ fontSize: { xs: 240, md: 320 } }} />
-            </Box>
-          </>
+          // Senza foto: impaginazione solo testo sul fondo degli hero, senza
+          // l'icona gigante che sembrava uno skeleton rimasto a meta' (UX-19).
+          <CoverFallback />
         )}
 
         <Box
@@ -146,8 +129,10 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
                 color: "rgba(255,255,255,0.92)",
                 lineHeight: 1.55,
                 mb: 1.5,
-                display: { xs: "none", sm: "-webkit-box" },
-                WebkitLineClamp: 2,
+                // Senza foto il testo e' tutto il contenuto: estratto anche su
+                // mobile e una riga in piu'.
+                display: post.imageUrl ? { xs: "none", sm: "-webkit-box" } : "-webkit-box",
+                WebkitLineClamp: post.imageUrl ? 2 : 3,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 textShadow: "0 1px 4px rgba(0,0,0,0.5)",

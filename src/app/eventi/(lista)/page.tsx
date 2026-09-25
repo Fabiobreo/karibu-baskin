@@ -8,6 +8,7 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
+import CoverFallback from "@/components/common/CoverFallback";
 import { splitEventsByTime } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
@@ -51,16 +52,7 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
           ...onHover({ transform: "translateY(-3px)", boxShadow: 4 }),
         }}
       >
-        <Box
-          sx={{
-            position: "relative",
-            aspectRatio: "16 / 9",
-            bgcolor: "action.hover",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <Box sx={{ position: "relative", aspectRatio: "16 / 9", overflow: "hidden" }}>
           {ev.imageUrl ? (
             <Box
               component="img"
@@ -69,7 +61,11 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
               sx={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <EventIcon sx={{ fontSize: 48, color: "text.disabled" }} />
+            <CoverFallback
+              weekday={format(ev.date, "EEEE", { locale: dl })}
+              day={format(ev.date, "d", { locale: dl })}
+              month={format(ev.date, "MMMM yyyy", { locale: dl })}
+            />
           )}
         </Box>
         <Box sx={{ p: 2 }}>
@@ -160,7 +156,7 @@ export default async function EventiPage() {
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {events.length === 0 ? (
           <EmptyState
-            icon={<EventIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+            icon={<EventIcon sx={{ fontSize: 56, color: "text.secondary" }} />}
             title={t("empty")}
           />
         ) : (
