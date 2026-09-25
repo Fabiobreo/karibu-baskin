@@ -1,4 +1,21 @@
 {
+  "nextAction": {
+    "overline": "Your next thing to do",
+    "availabilityTitle": "{count, plural, one {You have # match to answer} other {You have # matches to answer}}",
+    "availabilityBody": "Tell the staff whether you will be there: they need it for the call-ups.",
+    "availabilityAction": "Answer now",
+    "registerTitle": "Sign up for {title}",
+    "registerTitleChild": "Sign {name} up for {title}",
+    "registerAction": "Sign up",
+    "registerActionChild": "Sign {name} up",
+    "registeredTitle": "You are registered for {title}",
+    "registeredTitleWith": "You are registered for {title} with {names}",
+    "registeredTitleOthers": "You registered {names} for {title}",
+    "registeredAction": "Open the training",
+    "allSetTitle": "You are all set",
+    "allSetBody": "Nothing to do for now: we will let you know when registrations open.",
+    "allSetAction": "See the calendar"
+  },
   "common": {
     "sponsorsLabel": "Sponsors",
     "sponsorsPause": "Pause the sponsor strip",
@@ -1327,6 +1344,7 @@
     "teamsPrivate": "The teams for this session are reserved for Karibu members.",
     "homeNoneSoon": "No training sessions scheduled in the coming weeks. Want to give it a try? Write to us and we will let you know when we start again.",
     "homeNoneSoonCta": "Come and try",
+    "homeNoneSoonMember": "No training sessions scheduled in the coming weeks: we will let you know when registrations open.",
     "homeSeeCalendar": "See the calendar",
     "rosterPrivateGuest": "Registered athletes and teams are visible to Karibu members.",
     "teamsPrivateGuest": "The teams for this session are visible to Karibu members.",
@@ -1337,6 +1355,7 @@
     "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",
     "upcomingTrainings": "Upcoming trainings",
     "heroTryCta": "Come and try",
+    "heroHello": "Hi {name}!",
     "whatIsBaskin": "What is Baskin?",
     "birthdaySingular": "{name}'s birthday today",
     "birthdayPlural": "Celebrating today",

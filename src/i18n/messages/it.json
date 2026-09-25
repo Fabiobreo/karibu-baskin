@@ -1,4 +1,21 @@
 {
+  "nextAction": {
+    "overline": "La tua prossima cosa da fare",
+    "availabilityTitle": "{count, plural, one {Hai # partita a cui rispondere} other {Hai # partite a cui rispondere}}",
+    "availabilityBody": "Di' allo staff se ci sarai: serve per le convocazioni.",
+    "availabilityAction": "Rispondi ora",
+    "registerTitle": "Iscriviti a {title}",
+    "registerTitleChild": "Iscrivi {name} a {title}",
+    "registerAction": "Iscriviti",
+    "registerActionChild": "Iscrivi {name}",
+    "registeredTitle": "Sei iscritto a {title}",
+    "registeredTitleWith": "Sei iscritto a {title} con {names}",
+    "registeredTitleOthers": "Hai iscritto {names} a {title}",
+    "registeredAction": "Apri l'allenamento",
+    "allSetTitle": "Sei a posto",
+    "allSetBody": "Per ora non c'è niente da fare: ti avvisiamo quando si aprono le iscrizioni.",
+    "allSetAction": "Vedi il calendario"
+  },
   "common": {
     "sponsorsLabel": "Sponsor",
     "sponsorsPause": "Metti in pausa lo scorrimento degli sponsor",
@@ -1327,6 +1344,7 @@
     "teamsPrivate": "Le squadre di questo allenamento sono riservate ai membri del Karibu.",
     "homeNoneSoon": "Nessun allenamento in programma nelle prossime settimane. Vuoi venire a provare? Scrivici e ti diciamo quando si riparte.",
     "homeNoneSoonCta": "Vieni a provare",
+    "homeNoneSoonMember": "Nessun allenamento in programma nelle prossime settimane: ti avvisiamo quando si aprono le iscrizioni.",
     "homeSeeCalendar": "Vedi il calendario",
     "rosterPrivateGuest": "Iscritti e squadre sono visibili ai tesserati del Karibu.",
     "teamsPrivateGuest": "Le squadre di questo allenamento sono visibili ai tesserati del Karibu.",
@@ -1337,6 +1355,7 @@
     "heroSubtitle": "Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.",
     "upcomingTrainings": "Prossimi allenamenti",
     "heroTryCta": "Vieni a provare",
+    "heroHello": "Ciao {name}!",
     "whatIsBaskin": "Cos'è il Baskin?",
     "birthdaySingular": "{name} compie gli anni oggi",
     "birthdayPlural": "Oggi festeggiano",

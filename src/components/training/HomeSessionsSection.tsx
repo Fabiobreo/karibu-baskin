@@ -11,11 +11,14 @@ export default function HomeSessionsSection({
   upcoming: initUpcoming,
   registrationIdBySession,
   isStaff,
+  isMember = false,
 }: {
   inCorso: SessionWithCount[];
   upcoming: SessionWithCount[];
   registrationIdBySession: Record<string, string>;
   isStaff: boolean;
+  /** Tesserato: niente inviti a "venire a provare" (UX-16). */
+  isMember?: boolean;
 }) {
   const t = useTranslations("trainings");
   // Niente stato locale ne' azioni staff: le squadre e il resto si gestiscono
@@ -97,12 +100,14 @@ export default function HomeSessionsSection({
             </Box>
           </Box>
           <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 560 }}>
-            {t("homeNoneSoon")}
+            {isMember ? t("homeNoneSoonMember") : t("homeNoneSoon")}
           </Typography>
           <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-            <Button href={TRY_IT_HREF} variant="contained">
-              {t("homeNoneSoonCta")}
-            </Button>
+            {!isMember && (
+              <Button href={TRY_IT_HREF} variant="contained">
+                {t("homeNoneSoonCta")}
+              </Button>
+            )}
             <Button href="/calendario" variant="outlined">
               {t("homeSeeCalendar")}
             </Button>

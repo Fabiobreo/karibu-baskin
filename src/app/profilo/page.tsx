@@ -29,6 +29,7 @@ import { mergePrefs } from "@/lib/notifications/notifPrefs";
 import LinkRequestsSection from "@/components/profile/LinkRequestsSection";
 import ClaimAnonymousCard from "@/components/training/ClaimAnonymousCard";
 import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
+import NextActionSection from "@/components/common/NextActionSection";
 import ProfileNameEditor from "@/components/profile/ProfileNameEditor";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import AthleteInfoSection from "@/components/profile/AthleteInfoSection";
@@ -275,38 +276,26 @@ export default async function ProfiloPage() {
     }
   }
 
+  const isAthleteOrParent = user.appRole === "ATHLETE" || user.appRole === "PARENT";
+
   // Segnaposto dei badge: stesso Paper outlined di BadgeShowcase.
   const badgesSkeleton = <Skeleton variant="rounded" height={180} sx={{ mb: 3 }} />;
 
   // ── Contenuto tab "Profilo": card principale + dati atleta + presenze ──
+  // "Ti riconosco!": dopo identita' e prossima azione (UX-16).
+  const claimCard = anonymousMatches.length > 0 && (
+    <ClaimAnonymousCard
+      registrations={anonymousMatches.map((r) => ({
+        id: r.id,
+        title: r.session.title,
+        date: r.session.date,
+        dateSlug: r.session.dateSlug,
+      }))}
+    />
+  );
+
   const profileTab = (
     <>
-      {nextTraining ? (
-        <NextTrainingCard training={nextTraining} subjects={trainingSubjects} />
-      ) : (
-        // La domanda "quando è il prossimo allenamento?" deve avere una
-        // risposta anche quando la risposta è "nessuno".
-        <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-            <Typography
-              variant="overline"
-              fontWeight={800}
-              color="text.secondary"
-              sx={{ letterSpacing: "0.08em" }}
-            >
-              {t("nextTraining")}
-            </Typography>
-          </Box>
-          <Typography variant="body2" fontWeight={700}>
-            {t("nextTrainingNone")}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t("nextTrainingNoneDesc")}
-          </Typography>
-        </Paper>
-      )}
-
       <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
           <ProfileAvatarEditor
@@ -376,6 +365,45 @@ export default async function ProfiloPage() {
           </Typography>
         )}
       </Paper>
+      {/* Identita' in cima, poi la prossima cosa da fare (UX-16), poi "Ti
+          riconosco!". Atleti e genitori: la stessa card della home; lo staff
+          tiene la card del prossimo allenamento. */}
+      {isAthleteOrParent ? (
+        <Box sx={{ mb: 3 }}>
+          <Suspense fallback={<Skeleton variant="rounded" height={120} />}>
+            <NextActionSection userId={user.id} appRole={user.appRole} />
+          </Suspense>
+        </Box>
+      ) : (
+        <>
+          {nextTraining ? (
+            <NextTrainingCard training={nextTraining} subjects={trainingSubjects} />
+          ) : (
+            // La domanda "quando è il prossimo allenamento?" deve avere una
+            // risposta anche quando la risposta è "nessuno".
+            <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
+                <Typography
+                  variant="overline"
+                  fontWeight={800}
+                  color="text.secondary"
+                  sx={{ letterSpacing: "0.08em" }}
+                >
+                  {t("nextTraining")}
+                </Typography>
+              </Box>
+              <Typography variant="body2" fontWeight={700}>
+                {t("nextTrainingNone")}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t("nextTrainingNoneDesc")}
+              </Typography>
+            </Paper>
+          )}
+        </>
+      )}
+      {claimCard}
 
       {isAthlete && (
         <AthleteInfoSection
@@ -525,17 +553,6 @@ export default async function ProfiloPage() {
               <GuestOnboardingSection userId={user.id} />
             </Suspense>
           </Box>
-        )}
-
-        {anonymousMatches.length > 0 && (
-          <ClaimAnonymousCard
-            registrations={anonymousMatches.map((r) => ({
-              id: r.id,
-              title: r.session.title,
-              date: r.session.date,
-              dateSlug: r.session.dateSlug,
-            }))}
-          />
         )}
 
         {/* Richieste di collegamento in attesa — sopra le tab, si nasconde da sola se vuota */}

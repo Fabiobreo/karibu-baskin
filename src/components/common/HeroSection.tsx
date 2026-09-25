@@ -21,9 +21,16 @@ interface HeroSectionProps {
    * provare" invece che alla lista degli allenamenti.
    */
   visitor?: boolean;
+  /**
+   * Tesserato (UX-16): hero compatta come per gli ospiti, cosi' la card "La tua
+   * prossima cosa da fare" che la sormonta si vede senza scorrere.
+   */
+  member?: { firstName: string | null };
 }
 
-export default function HeroSection({ guest, visitor = false }: HeroSectionProps) {
+export default function HeroSection({ guest, visitor = false, member }: HeroSectionProps) {
+  // Hero bassa quando sopra c'e' una card da far vedere subito.
+  const compact = !!guest || !!member;
   const t = useTranslations("home");
   const tGuest = useTranslations("guestOnboarding");
   return (
@@ -32,7 +39,7 @@ export default function HeroSection({ guest, visitor = false }: HeroSectionProps
         position: "relative",
         // Non a tutta altezza: cosi' il bordo della sezione sotto si intravede
         // senza scorrere, e l'indicatore "scorri" non serve piu'.
-        minHeight: guest ? { xs: "64svh", md: "62vh" } : { xs: "82svh", md: "80vh" },
+        minHeight: compact ? { xs: "64svh", md: "62vh" } : { xs: "82svh", md: "80vh" },
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -67,7 +74,7 @@ export default function HeroSection({ guest, visitor = false }: HeroSectionProps
           zIndex: 1,
           // Con la card sovrapposta serve spazio sotto le CTA.
           pt: { xs: 8, md: 12 },
-          pb: guest ? { xs: 12, md: 16 } : { xs: 8, md: 12 },
+          pb: compact ? { xs: 12, md: 16 } : { xs: 8, md: 12 },
           textAlign: "center",
           display: "flex",
           flexDirection: "column",
@@ -83,7 +90,7 @@ export default function HeroSection({ guest, visitor = false }: HeroSectionProps
             vede, ed è vera (ripete il sottotitolo), non testo nascosto per i
             motori. Gli spazi tra gli span servono al testo accessibile: nei
             flex item non si vedono, ma senza si leggerebbe "KaribuBaskin". */}
-        {guest && (
+        {(guest || member?.firstName) && (
           <Typography
             sx={{
               color: "common.white",
@@ -93,9 +100,11 @@ export default function HeroSection({ guest, visitor = false }: HeroSectionProps
               textShadow: "0 1px 8px rgba(0,0,0,0.5)",
             }}
           >
-            {guest.firstName
-              ? tGuest("heroGreeting", { name: guest.firstName })
-              : tGuest("heroGreetingNoName")}
+            {guest
+              ? guest.firstName
+                ? tGuest("heroGreeting", { name: guest.firstName })
+                : tGuest("heroGreetingNoName")
+              : t("heroHello", { name: member?.firstName ?? "" })}
           </Typography>
         )}
         <Typography
@@ -107,7 +116,7 @@ export default function HeroSection({ guest, visitor = false }: HeroSectionProps
               : { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
             lineHeight: 0.95,
             letterSpacing: "-0.03em",
-            mb: guest ? 2.5 : 3.5,
+            mb: compact ? 2.5 : 3.5,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -153,7 +162,7 @@ export default function HeroSection({ guest, visitor = false }: HeroSectionProps
             fontWeight: 400,
             fontSize: { xs: "1rem", md: "1.15rem" },
             lineHeight: 1.65,
-            mb: guest ? 4 : 5,
+            mb: compact ? 4 : 5,
             maxWidth: 480,
             textShadow: "0 1px 8px rgba(0,0,0,0.4)",
           }}

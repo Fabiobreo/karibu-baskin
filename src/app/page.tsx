@@ -15,6 +15,7 @@ import BirthdayBanner from "@/components/common/BirthdayBanner";
 import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
 import GuestOnboardingSkeleton from "@/components/common/GuestOnboardingSkeleton";
 import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityBanner";
+import NextActionSection from "@/components/common/NextActionSection";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import GroupsIcon from "@mui/icons-material/Groups";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -211,70 +212,58 @@ export default async function HomePage() {
     </Box>
   );
 
-  // Home operativa per i membri: hero + prima gli allenamenti e le cose da fare
-  if (isMember) {
-    return (
-      <>
-        <JsonLd data={organizationJsonLd()} />
-        {/* Banner che il più delle volte non c'è: niente skeleton, compaiono
-            solo se servono. */}
-        <Suspense fallback={null}>
-          <BirthdayBanner />
-        </Suspense>
-        <HeroSection />
-        {userId && (
-          <Suspense fallback={null}>
-            <PendingAvailabilityBanner userId={userId} />
-          </Suspense>
-        )}
-        {sessionsBlock}
-        {matchesBlock}
-        {newsBlock}
-        <LoSapeviCard />
-        {chiSiamoBlock}
-      </>
-    );
-  }
+  // Stessa struttura per tutti (UX-16): prevedibile, e genitore e figlio usano
+  // spesso lo stesso telefono. Cambia solo cio' che sta in cima: la prossima
+  // cosa da fare per atleti e genitori, i primi passi per chi e' in attesa,
+  // l'invito a provare per chi non ha fatto l'accesso.
+  const firstName = userSession?.user?.name?.trim().split(/\s+/)[0] || null;
+  const isAthleteOrParent = appRole === "ATHLETE" || appRole === "PARENT";
+  const isGuest = appRole === "GUEST" && !!userId;
 
-  // Account in attesa di conferma: non è un visitatore da convincere (si è
-  // appena iscritto) né ancora un tesserato. Hero col suo nome, poi i primi
-  // passi e subito gli allenamenti, l'unica cosa che può già fare. Niente
-  // "Unisciti a noi": l'ha appena fatto.
-  if (appRole === "GUEST" && userId) {
-    const firstName = userSession?.user?.name?.trim().split(/\s+/)[0] || null;
-    return (
-      <>
-        <JsonLd data={organizationJsonLd()} />
-        <HeroSection guest={{ firstName }} />
-        <Suspense fallback={<GuestOnboardingSkeleton />}>
-          <GuestOnboardingSection userId={userId} overlapHero />
-        </Suspense>
-        {sessionsBlock}
-        {matchesBlock}
-        {newsBlock}
-        <LoSapeviCard />
-        {chiSiamoBlock}
-      </>
-    );
-  }
-
-  // Home istituzionale per gli anonimi
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
-      <HeroSection visitor />
+      {isMember && (
+        // Banner che il più delle volte non c'è: niente skeleton.
+        <Suspense fallback={null}>
+          <BirthdayBanner />
+        </Suspense>
+      )}
 
-      {newsBlock}
-
-      {matchesBlock}
+      {isAthleteOrParent && userId ? (
+        <>
+          <HeroSection member={{ firstName }} />
+          <Suspense fallback={<GuestOnboardingSkeleton />}>
+            <NextActionSection userId={userId} appRole={appRole} overlapHero />
+          </Suspense>
+        </>
+      ) : isGuest && userId ? (
+        <>
+          <HeroSection guest={{ firstName }} />
+          <Suspense fallback={<GuestOnboardingSkeleton />}>
+            <GuestOnboardingSection userId={userId} overlapHero />
+          </Suspense>
+        </>
+      ) : (
+        <>
+          <HeroSection visitor={!userId} />
+          {/* Staff: le disponibilita' da dare restano in un banner. */}
+          {isStaff && userId && (
+            <Suspense fallback={null}>
+              <PendingAvailabilityBanner userId={userId} />
+            </Suspense>
+          )}
+        </>
+      )}
 
       {sessionsBlock}
-
+      {matchesBlock}
+      {newsBlock}
       <LoSapeviCard />
-
       {chiSiamoBlock}
 
-      <JoinUsCta />
+      {/* L'invito a unirsi e' solo per chi non ha ancora un account. */}
+      {!userId && <JoinUsCta />}
     </>
   );
 }

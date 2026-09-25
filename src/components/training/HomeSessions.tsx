@@ -80,6 +80,7 @@ export default async function HomeSessions({ userId, isMember, isStaff }: HomeSe
       upcoming={upcoming}
       registrationIdBySession={registrationIdBySession}
       isStaff={isStaff}
+      isMember={isMember}
     />
   );
 }
