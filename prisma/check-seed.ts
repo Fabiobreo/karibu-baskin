@@ -3,9 +3,11 @@
  *
  * I dati di sviluppo arrivano da due script — `prisma/seed.ts` (utenti
  * `@mock.test`, figli `mock-*`) e `prisma/scripts/simulate-trueskill.ts`
- * (utenti `@sim.test`, squadre con il marcatore "(sim)") — più eventuali post
- * segnaposto scritti a mano. Nessuno di questi deve arrivare in produzione, ma
- * finora non c'era modo di verificarlo se non guardando a occhio.
+ * (utenti `@sim.test`, squadre con il marcatore "(sim)") — più
+ * `prisma/scripts/seed-ux-checks.ts` (utenti `@ux.test`, allenamenti e
+ * avversarie "[UX]", UX-26) ed eventuali post segnaposto scritti a mano.
+ * Nessuno di questi deve arrivare in produzione, ma finora non c'era modo di
+ * verificarlo se non guardando a occhio.
  *
  * Uso:
  *   npm run db:check-seed          # usa DATABASE_URL dell'ambiente corrente
@@ -16,15 +18,16 @@
  */
 import { PrismaClient } from "@prisma/client";
 
-const TEST_EMAIL_DOMAINS = ["@mock.test", "@sim.test"];
+const TEST_EMAIL_DOMAINS = ["@mock.test", "@sim.test", "@ux.test"];
 const SIM_MARKER = "(sim)";
+const UX_MARKER = "[UX]";
 
 async function main() {
   const prisma = new PrismaClient();
   try {
     const testEmail = TEST_EMAIL_DOMAINS.map((domain) => ({ email: { endsWith: domain } }));
 
-    const [users, children, posts, teams] = await Promise.all([
+    const [users, children, posts, teams, uxTrainings, uxOpponents] = await Promise.all([
       prisma.user.count({ where: { OR: testEmail } }),
       prisma.child.count({
         where: {
@@ -44,6 +47,8 @@ async function main() {
         },
       }),
       prisma.competitiveTeam.count({ where: { name: { contains: SIM_MARKER } } }),
+      prisma.trainingSession.count({ where: { title: { startsWith: UX_MARKER } } }),
+      prisma.opposingTeam.count({ where: { name: { startsWith: UX_MARKER } } }),
     ]);
 
     const findings: Array<[label: string, count: number]> = [
@@ -51,6 +56,8 @@ async function main() {
       ["figli di prova (id mock-* o genitore di prova)", children],
       ["post pubblicati con testo segnaposto (lorem)", posts],
       [`squadre di simulazione (nome con "${SIM_MARKER}")`, teams],
+      [`allenamenti di prova (titolo "${UX_MARKER}")`, uxTrainings],
+      [`avversarie di prova (nome "${UX_MARKER}")`, uxOpponents],
     ];
 
     for (const [label, count] of findings) {

@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { prisma } from "@/lib/db";
+import { logSkippedNotification, notificationsDisabled } from "./devSwitch";
 import { mergePrefs, type ControllableNotifType } from "./notifPrefs";
 
 // Lazy-init: if VAPID keys are missing (e.g. during testing), push is disabled rather
@@ -48,6 +49,12 @@ async function dispatchToSubs(
   subs: { endpoint: string; p256dh: string; auth: string }[],
   data: string
 ) {
+  // Unico punto da cui partono tutte le push: qui basta un controllo (UX-26).
+  if (notificationsDisabled()) {
+    const { title } = JSON.parse(data) as { title: string };
+    logSkippedNotification("push", `"${title}" a ${subs.length} dispositivi`);
+    return { sent: 0, removed: 0 };
+  }
   const results = await Promise.allSettled(
     subs.map((sub) =>
       webpush.sendNotification(

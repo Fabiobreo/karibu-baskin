@@ -52,7 +52,7 @@ Verifica con Playwright, prima e dopo, desktop e mobile: nastro sponsor e footer
 
 **Rimasto fuori**
 
-- Punto 1 verificato solo nel codice: serve un utente con iscrizioni anonime da collegare, che nel DB di sviluppo non c'e'.
+- ~~Punto 1 verificato solo nel codice~~ Provato nel browser con i dati di UX-26 (25/09/2026): caselle vuote, "Collega selezionati (0)" disattivato, collegamento riuscito. Visti nella prova e non corretti: le caselle hanno come nome accessibile solo "on"; dopo il collegamento la card sparisce anche se resta un'iscrizione da collegare (torna ricaricando); con una sola iscrizione il testo resta al plurale ("Seleziona quelli…").
 - `toFixed` restano negli strumenti TrueSkill per lo staff (`LineupOptimizerSection`, `RatingBadge`), solo in italiano, e nelle coordinate SVG, dove sono corretti.
 - "pt" resta scritto a mano accanto a qualche numero (pagina squadra, `LeaderCard`): e' uguale in inglese, ma andrebbe nei dizionari.
 - Il testo di condivisione del profilo (`PlayerShareButtons`) e' tutto in italiano scritto a mano: da portare nei dizionari.

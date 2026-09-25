@@ -425,6 +425,7 @@ IG_BUSINESS_ACCOUNT_ID=          # Gallery: ID account Instagram Business
 YOUTUBE_CHANNEL_ID=               # Gallery: ID canale YouTube (feed RSS, sezione video)
 ENABLE_TEST_LOGIN=                # "true" per abilitare login fittizio (solo dev)
 TEST_PASSWORD=                    # Password per il login di test (default: karibu-test)
+DISABLE_NOTIFICATIONS=            # "true" spegne push e notifiche in-app (solo dev, ignorata in produzione)
 SENTRY_ORG=                       # Sentry: organizzazione (build/upload source map)
 SENTRY_PROJECT=                   # Sentry: progetto
 SENTRY_AUTH_TOKEN=                # Sentry: token upload source map (solo CI)
@@ -522,6 +523,7 @@ Dal giugno 2026 il progetto usa **Prisma Migrate** (non più `db push`). Lo stor
 - **Build script:** `prisma migrate deploy` nel build applica al DB di produzione le migration committate non ancora applicate. **Mai più `db push` in prod** (rischio data-loss silenzioso): ogni cambiamento di schema passa da una migration. Vedi [Workflow migrazioni](#workflow-migrazioni-db)
 - **TypeScript strict:** abilitato — nessuna eccezione; risolvere tutti gli errori prima del push
 - **Turbopack cache corrotta:** se si vedono errori `.sst` nei log, usare `npm run dev:clean`
+- **Dati per le prove UX:** `npm run db:seed-ux` / `npm run db:clean-ux` (`prisma/scripts/seed-ux-checks.ts`, idempotente): genitore con figlio senza ruolo, atleta con iscrizioni anonime, allenamento aperto, partite future con avversarie dal nome lungo, tutto `@ux.test` / "[UX]". Con `DISABLE_NOTIFICATIONS=true` si prova il ciclo di vita dell'allenamento senza avvisare nessuno
 - **Mock users:** `prisma/seed.ts` crea utenti di test (es. `npx tsx prisma/seed.ts 15`) e `prisma/scripts/simulate-trueskill.ts` utenti `@sim.test` e squadre "(sim)". Prima di andare in produzione eseguire `npm run db:check-seed` con `DATABASE_URL` puntato al DB di produzione: esce con codice 1 se trova utenti di prova, figli `mock-*`, squadre di simulazione o post segnaposto (`lorem`). Contro il DB di sviluppo è normale che fallisca
 - **`NextResponse.cookies.set()` bug Turbopack:** non usarlo per impostare cookie di sessione — usare `res.headers.set("Set-Cookie", ...)` con stringa manuale
 - **`Prisma.DbNull`:** usare `Prisma.DbNull` (importato da `@prisma/client`) per settare a null campi JSON nullable — `null` TypeScript non funziona con Prisma per i Json field

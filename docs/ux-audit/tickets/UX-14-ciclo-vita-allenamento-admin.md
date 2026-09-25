@@ -48,6 +48,6 @@ Il box informativo dell'admin dice di usare il Calendario o la pagina Allenament
 
 **Rimasto fuori**
 
-- Non ho provato **nel browser** creazione, apertura iscrizioni e squadre di un allenamento futuro: mandano notifiche push e in-app agli utenti del database di sviluppo. Usano le stesse API di prima, gia' coperte dai test.
+- ~~Non ho provato nel browser creazione, apertura iscrizioni e squadre di un allenamento futuro~~ Provati con UX-26 (25/09/2026) con `DISABLE_NOTIFICATIONS=true`: "Nuovo allenamento", "Apri iscrizioni" (dialog "Apri e notifica"), 8 iscritti, "Crea squadre"; la card passa a "Iscrizioni aperte · Squadre create" e nel database non è stata scritta nessuna notifica.
 - La pagina di un singolo allenamento (`/allenamento/[id]`) ha ancora, per lo staff, la matita di modifica nell'hero (`AllenamentoHero`) e i controlli delle squadre: il ticket chiedeva di ridurre solo `/allenamenti`. Si possono portare a "Gestisci" allo stesso modo.
 - `AllenamentoHero` ha una sua copia del dialog di modifica: potrebbe usare `SessionEditDialog`.

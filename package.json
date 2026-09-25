@@ -12,6 +12,8 @@
     "db:generate": "prisma generate",
     "db:studio": "prisma studio",
     "db:check-seed": "npx tsx prisma/check-seed.ts",
+    "db:seed-ux": "npx tsx prisma/scripts/seed-ux-checks.ts seed",
+    "db:clean-ux": "npx tsx prisma/scripts/seed-ux-checks.ts clean",
     "email:dev": "email dev --dir src/emails --port 3333",
     "test": "vitest run",
     "test:watch": "vitest",

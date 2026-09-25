@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { AppNotificationType } from "@prisma/client";
+import { logSkippedNotification, notificationsDisabled } from "./devSwitch";
 
 export interface AppNotificationPayload {
   type: AppNotificationType;
@@ -10,6 +11,9 @@ export interface AppNotificationPayload {
 }
 
 export async function createAppNotification(payload: AppNotificationPayload): Promise<void> {
+  if (notificationsDisabled()) {
+    return logSkippedNotification("in-app", `"${payload.title}"`);
+  }
   await prisma.appNotification.create({ data: payload });
 }
 
@@ -18,6 +22,9 @@ export async function createTargetedAppNotifications(
   payload: Omit<AppNotificationPayload, "targetUserId">
 ): Promise<void> {
   if (userIds.length === 0) return;
+  if (notificationsDisabled()) {
+    return logSkippedNotification("in-app", `"${payload.title}" a ${userIds.length} utenti`);
+  }
   await prisma.appNotification.createMany({
     data: userIds.map((targetUserId) => ({ ...payload, targetUserId })),
   });
