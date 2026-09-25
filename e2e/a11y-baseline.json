@@ -1,19 +1,11 @@
 {
   "admin|allenamenti|desktop|color-contrast": {
     "impact": "serious",
-    "nodes": 33
-  },
-  "admin|allenamenti|desktop|target-size": {
-    "impact": "serious",
-    "nodes": 10
+    "nodes": 15
   },
   "admin|allenamenti|mobile|color-contrast": {
     "impact": "serious",
-    "nodes": 18
-  },
-  "admin|allenamenti|mobile|target-size": {
-    "impact": "serious",
-    "nodes": 10
+    "nodes": 15
   },
   "admin|dashboard|desktop|color-contrast": {
     "impact": "serious",

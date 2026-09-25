@@ -10,6 +10,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { SITE_HOST } from "@/lib/siteUrl";
 import type { TeamsData } from "./TeamDisplay";
 import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 
 interface Props {
   teams: TeamsData;
@@ -337,7 +338,7 @@ export default function ShareTeamsButton({
             onClick={handleShare}
             disabled={loading}
             aria-label={tShare("teamsTooltip")}
-            sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
+            sx={{ ...TOUCH_TARGET_MIN, opacity: 0.7, "&:hover": { opacity: 1 } }}
           >
             {loading ? <CircularProgress size={16} /> : <ShareIcon fontSize="small" />}
           </IconButton>

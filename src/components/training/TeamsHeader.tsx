@@ -5,6 +5,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import type { TeamsData } from "@/components/training/TeamDisplay";
 import ShareTeamsButton from "@/components/training/ShareTeamsButton";
+import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 
 export default function TeamsHeader({
   teams,
@@ -52,7 +53,7 @@ export default function TeamsHeader({
                 size="small"
                 onClick={onEditTeams}
                 aria-label="Modifica squadre"
-                sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
+                sx={{ ...TOUCH_TARGET_MIN, opacity: 0.7, "&:hover": { opacity: 1 } }}
               >
                 <EditIcon fontSize="small" />
               </IconButton>
@@ -67,7 +68,7 @@ export default function TeamsHeader({
                   onClick={onRemoveTeams}
                   disabled={removingTeams}
                   aria-label="Rimuovi squadre create"
-                  sx={{ opacity: 0.7, "&:hover": { opacity: 1 } }}
+                  sx={{ ...TOUCH_TARGET_MIN, opacity: 0.7, "&:hover": { opacity: 1 } }}
                 >
                   {removingTeams ? (
                     <CircularProgress size={16} color="error" />

@@ -75,6 +75,9 @@ interface Props {
   /** Se presente, il pannello di creazione offre anche "Componi a mano":
    *  squadre vuote e subito in modifica. */
   onEnterEditMode?: () => void;
+  /** Chiamata prima di creare le squadre (es. per salvare le presenze ancora
+   *  in sospeso, che il server usa per escludere gli assenti). */
+  beforeGenerate?: () => Promise<void>;
 }
 
 // ── Badge ruolo (riutilizzato in entrambi i layout) ───────────────────────────
@@ -625,6 +628,7 @@ export default function TeamDisplay({
   onTeamsGenerated,
   athletes,
   onEnterEditMode,
+  beforeGenerate,
 }: Props) {
   const t = useTranslations("trainings");
   const [generating, setGenerating] = useState(false);
@@ -636,6 +640,7 @@ export default function TeamDisplay({
   async function handleGenerate() {
     setGenerating(true);
     try {
+      await beforeGenerate?.();
       const res = await fetch(`/api/teams/${sessionId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -651,8 +656,11 @@ export default function TeamDisplay({
         const err = await res.json().catch(() => ({}));
         showToast({ message: err.error ?? "Errore nella creazione", severity: "error" });
       }
-    } catch {
-      showToast({ message: "Errore di rete, riprova", severity: "error" });
+    } catch (err) {
+      showToast({
+        message: err instanceof Error ? err.message : "Errore di rete, riprova",
+        severity: "error",
+      });
     } finally {
       setGenerating(false);
     }
@@ -771,10 +779,11 @@ export default function TeamDisplay({
               if (val) setNumTeams(val as 2 | 3);
             }}
           >
-            <ToggleButton value={2} sx={{ px: 3, fontWeight: 600 }}>
+            {/* 44px: si usa dal telefono, a bordo campo (UX-13). */}
+            <ToggleButton value={2} sx={{ px: 3, minHeight: 44, fontWeight: 600 }}>
               {t("teams2")}
             </ToggleButton>
-            <ToggleButton value={3} sx={{ px: 3, fontWeight: 600 }}>
+            <ToggleButton value={3} sx={{ px: 3, minHeight: 44, fontWeight: 600 }}>
               {t("teams3")}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -784,6 +793,7 @@ export default function TeamDisplay({
             onClick={handleGenerate}
             disabled={generating || !registrationIds?.length}
             startIcon={generating ? <CircularProgress size={16} color="inherit" /> : <GroupsIcon />}
+            sx={{ minHeight: 44 }}
           >
             {generating ? t("teamsCreating") : t("teamsCreateBtn")}
           </Button>
@@ -794,6 +804,7 @@ export default function TeamDisplay({
               size="small"
               onClick={handleCreateEmpty}
               disabled={generating || !registrationIds?.length}
+              sx={{ minHeight: 44 }}
             >
               {t("teamsCreateManual")}
             </Button>

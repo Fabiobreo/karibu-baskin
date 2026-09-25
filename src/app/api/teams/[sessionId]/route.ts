@@ -61,7 +61,10 @@ export async function POST(
   // Chi è segnato assente non gioca: conta per le squadre ricreate a
   // allenamento finito, dalla pagina "da completare".
   const registrations = await prisma.registration.findMany({
-    where: { sessionId, NOT: { attended: false } },
+    // Non `NOT: { attended: false }`: in SQL `NOT (attended = false)` scarta
+    // anche i NULL, cioe' chi non e' ancora stato segnato (quasi sempre tutti),
+    // e la generazione rispondeva "Nessun atleta iscritto".
+    where: { sessionId, OR: [{ attended: null }, { attended: true }] },
     orderBy: [{ role: "asc" }, { createdAt: "asc" }],
     include: {
       user: { select: { gender: true, ratingMu: true } },

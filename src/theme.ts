@@ -606,6 +606,10 @@ function buildComponents(mode: "light" | "dark") {
         },
       },
     },
+    MuiToggleButton: {
+      // Come le tab (UX-07): niente maiuscolo forzato del default MUI.
+      styleOverrides: { root: { textTransform: "none" } },
+    },
     MuiTab: {
       // La tab selezionata e' testo: MUI la colora con `primary.main`, che si
       // ferma a 3,79:1 su bianco e 4,40:1 su #1E1E1E. L'indicatore sotto resta

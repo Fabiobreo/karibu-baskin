@@ -2,40 +2,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
-  Typography,
+  Chip,
+  Link as MuiLink,
   Paper,
-  IconButton,
-  Tooltip,
-  CircularProgress,
-  Divider,
-  Button,
+  Typography,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
-import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import TouchAppIcon from "@mui/icons-material/TouchApp";
-import Link from "next/link";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import TrainingMatchResults from "@/components/training/TrainingMatchResults";
-import AdminSessionTeams from "@/components/admin/AdminSessionTeams";
-import ManageParticipantsDialog, {
-  type ParticipantRegistration,
-} from "@/components/admin/ManageParticipantsDialog";
-import { ROLE_LABELS, roleColor } from "@/lib/constants";
-import { useToast } from "@/context/ToastContext";
+import TrainingCloseForm, { type CloseAthlete } from "@/components/admin/TrainingCloseForm";
+import type { ParticipantRegistration } from "@/components/admin/ManageParticipantsDialog";
+import { closeStatus, type SavedResult } from "@/lib/trainingClose";
 import type { TeamsData } from "@/lib/schemas";
-
-interface Athlete {
-  id: string;
-  name: string;
-  role: number;
-  attended: boolean | null;
-}
 
 export interface AdminSessionRow {
   id: string;
@@ -44,357 +28,84 @@ export interface AdminSessionRow {
   dateSlug: string | null;
   athleteCount: number;
   presentCount: number;
-  athletes: Athlete[];
+  athletes: CloseAthlete[];
   registrations: ParticipantRegistration[];
   expectedResults: number;
+  results: SavedResult[];
   teams: TeamsData | null;
 }
 
-// ── Lista presenze ────────────────────────────────────────────────────────────
+// ── Riga chiusa: cosa manca, a colpo d'occhio ────────────────────────────────
 
-function AttendanceList({ athletes }: { athletes: Athlete[] }) {
-  const [overrides, setOverrides] = useState<Record<string, boolean | null>>({});
-  const [toggling, setToggling] = useState<string | null>(null);
-  const { showToast } = useToast();
-
-  async function handleToggle(a: Athlete) {
-    const current = a.id in overrides ? overrides[a.id] : a.attended;
-    const next = current == null ? true : current === true ? false : null;
-    setToggling(a.id);
-    setOverrides((prev) => ({ ...prev, [a.id]: next }));
-    try {
-      const res = await fetch(`/api/registrations/${a.id}/attendance`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attended: next }),
-      });
-      if (!res.ok) {
-        setOverrides((prev) => ({ ...prev, [a.id]: current ?? null }));
-        showToast({ message: "Errore nell'aggiornamento", severity: "error" });
-      }
-    } catch {
-      setOverrides((prev) => ({ ...prev, [a.id]: current ?? null }));
-      showToast({ message: "Errore di rete", severity: "error" });
-    } finally {
-      setToggling(null);
-    }
-  }
-
-  if (athletes.length === 0) {
-    return (
-      <Typography variant="caption" color="text.secondary">
-        Nessun iscritto
-      </Typography>
-    );
-  }
-
-  return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25 }}>
-      {athletes.map((a) => {
-        const effective = a.id in overrides ? overrides[a.id] : a.attended;
-        const color = roleColor(a.role) ?? "#9E9E9E";
-        const isToggling = toggling === a.id;
-
-        return (
-          <Box
-            key={a.id}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.75,
-              py: 0.25,
-              px: 0.5,
-              borderRadius: 1,
-              "&:hover": { bgcolor: "action.hover" },
-            }}
-          >
-            <Box
-              sx={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                bgcolor: color,
-                flexShrink: 0,
-              }}
-            />
-            <Typography
-              variant="body2"
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                overflowWrap: "anywhere",
-                fontSize: "0.82rem",
-                // Assente: grigio leggibile piu' barrato, non solo il colore (UX-09).
-                color: effective === false ? "text.secondary" : "text.primary",
-                textDecoration: effective === false ? "line-through" : "none",
-              }}
-            >
-              {a.name}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ fontSize: "0.75rem", mr: 0.25 }}
-            >
-              {ROLE_LABELS[a.role]}
-            </Typography>
-            <Tooltip
-              title={
-                effective === true
-                  ? "Presente (clicca per segnare assente)"
-                  : effective === false
-                    ? "Assente (clicca per resettare)"
-                    : "Non marcato (clicca per segnare presente)"
-              }
-              arrow
-              placement="left"
-            >
-              <span>
-                {/* 44px pieni: e' l'azione piu' ripetuta della pagina e si
-                    usa col pollice, in palestra. */}
-                <IconButton
-                  onClick={() => handleToggle(a)}
-                  disabled={isToggling}
-                  aria-label={
-                    effective === true
-                      ? `${a.name}: presente`
-                      : effective === false
-                        ? `${a.name}: assente`
-                        : `${a.name}: non marcato`
-                  }
-                  sx={{ width: 44, height: 44, color: "inherit" }}
-                >
-                  {isToggling ? (
-                    <CircularProgress size={22} />
-                  ) : effective === true ? (
-                    <CheckCircleIcon sx={{ fontSize: 26, color: "success.main" }} />
-                  ) : effective === false ? (
-                    <CancelIcon sx={{ fontSize: 26, color: "error.main" }} />
-                  ) : (
-                    <RadioButtonUncheckedIcon sx={{ fontSize: 26, color: "text.secondary" }} />
-                  )}
-                </IconButton>
-              </span>
-            </Tooltip>
-          </Box>
-        );
-      })}
-    </Box>
+function SessionSummary({ s }: { s: AdminSessionRow }) {
+  const status = closeStatus(
+    s.athletes,
+    s.expectedResults,
+    s.results.filter((r) => r.matchup).length
   );
-}
-
-// ── Card sessione ─────────────────────────────────────────────────────────────
-
-function SessionCard({ s, onComplete }: { s: AdminSessionRow; onComplete: () => void }) {
-  const href = `/allenamento/${s.dateSlug ?? s.id}`;
-  const hasAthletes = s.athleteCount > 0;
-  const [confirming, setConfirming] = useState(false);
-  const [concluding, setConcluding] = useState(false);
-  const [managing, setManaging] = useState(false);
-  const { showToast } = useToast();
-  const router = useRouter();
-
-  async function handleConclude() {
-    setConcluding(true);
-    try {
-      const res = await fetch(`/api/sessions/${s.id}/conclude`, { method: "POST" });
-      if (res.ok) {
-        onComplete();
-      } else {
-        showToast({ message: "Errore durante la conclusione", severity: "error" });
-        setConfirming(false);
-      }
-    } catch {
-      showToast({ message: "Errore di rete", severity: "error" });
-      setConfirming(false);
-    } finally {
-      setConcluding(false);
-    }
-  }
-
   return (
-    <Paper variant="outlined" sx={{ overflow: "hidden" }}>
-      {/* Header */}
-      <Box
-        sx={{
-          px: 2.5,
-          py: 1.5,
-          borderBottom: "1px solid",
-          borderColor: "divider",
-          bgcolor: (theme) =>
-            theme.palette.mode === "dark" ? theme.palette.background.paper : theme.palette.grey[50],
-          display: "flex",
-          alignItems: "baseline",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
-        <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
-          <Typography
-            variant="subtitle1"
-            fontWeight={700}
-            sx={{ "&:hover": { textDecoration: "underline" } }}
-          >
-            {s.title}
-          </Typography>
-        </Link>
-        <Typography variant="caption" color="text.secondary">
-          {format(new Date(s.date), "EEEE d MMMM yyyy", { locale: it })}
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", minWidth: 0 }}>
+      <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
+        <Typography variant="subtitle1" component="h3" fontWeight={700}>
+          {s.title}
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ "&::first-letter": { textTransform: "uppercase" } }}
+        >
+          {format(new Date(s.date), "EEEE d MMMM", { locale: it })} · {s.athleteCount}{" "}
+          {s.athleteCount === 1 ? "iscritto" : "iscritti"}
         </Typography>
       </Box>
-
-      {/* Body: due colonne quando c'e' qualcosa da mettere nella seconda.
-          minmax(0, 1fr) e non 1fr: una colonna 1fr non scende sotto la
-          larghezza minima del contenuto, e su mobile il form punteggi
-          allargava la card oltre lo schermo. */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "minmax(0, 1fr)",
-            md: hasAthletes ? "repeat(2, minmax(0, 1fr))" : "minmax(0, 1fr)",
-          },
-        }}
-      >
-        {/* Colonna sinistra: presenze */}
-        <Box
-          sx={{
-            p: { xs: 2, sm: 2.5 },
-            borderRight: { md: hasAthletes ? "1px solid" : "none" },
-            borderColor: { md: "divider" },
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography
-              variant="overline"
-              fontWeight={700}
-              color="text.secondary"
-              sx={{ letterSpacing: "0.08em", flex: 1 }}
-            >
-              Presenze: {s.presentCount}/{s.athleteCount}
-            </Typography>
-            {/* Chi c'era ma non si era iscritto si aggiunge da qui, gia'
-                presente; chi e' iscritto per errore si toglie. */}
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<ManageAccountsIcon />}
-              onClick={() => setManaging(true)}
-              sx={{ minHeight: 36, fontWeight: 700, flexShrink: 0 }}
-            >
-              Iscritti
-            </Button>
-          </Box>
-          <Divider sx={{ my: 1 }} />
-          {/* key: dopo una modifica agli iscritti la lista riparte dai dati
-              del server invece che dagli override locali delle presenze. */}
-          <AttendanceList key={s.athletes.map((a) => a.id).join()} athletes={s.athletes} />
-          <ManageParticipantsDialog
-            open={managing}
-            onClose={() => setManaging(false)}
-            sessionId={s.id}
-            sessionTitle={s.title}
-            sessionDate={s.date}
-            isPast
-            registrations={s.registrations}
-            onChanged={() => router.refresh()}
+      <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+        {status.unmarked > 0 && (
+          <Chip
+            size="small"
+            variant="outlined"
+            color="warning"
+            label={`Presenze da segnare: ${status.unmarked}`}
           />
-        </Box>
-
-        {/* Colonna destra: risultati. Senza iscritti non c'e' nessuna
-            partitella da registrare, e il form chiedeva "Arancioni vs Neri"
-            anche sugli allenamenti con zero presenze. */}
-        {hasAthletes && (
-          <Box sx={{ p: { xs: 2, sm: 2.5 }, pt: { xs: 0, md: 2.5 } }}>
-            {/* Squadre prima dei risultati: le partitelle si registrano per
-                squadra, e qui si creano o si correggono. */}
-            <Box sx={{ mb: 3 }}>
-              <AdminSessionTeams
-                sessionId={s.id}
-                sessionTitle={s.title}
-                sessionDate={s.date}
-                initialTeams={s.teams}
-                athletes={s.athletes
-                  .filter((a) => a.attended !== false)
-                  .map(({ id, name, role }) => ({ id, name, role }))}
-                coaches={s.registrations
-                  .filter((r) => r.registeredAsCoach)
-                  .map((r) => ({ id: r.id, name: r.name }))}
-              />
-            </Box>
-            <TrainingMatchResults sessionId={s.id} isStaff={true} teams={s.teams} />
-          </Box>
+        )}
+        {status.missingResults > 0 && (
+          <Chip
+            size="small"
+            variant="outlined"
+            color="warning"
+            label={
+              status.missingResults === 1
+                ? "1 risultato mancante"
+                : `${status.missingResults} risultati mancanti`
+            }
+          />
+        )}
+        {s.expectedResults === 0 && s.athleteCount > 0 && (
+          <Chip size="small" variant="outlined" label="Squadre da creare" />
+        )}
+        {status.unmarked === 0 && status.missingResults === 0 && s.expectedResults > 0 && (
+          <Chip
+            size="small"
+            variant="outlined"
+            color="success"
+            icon={<CheckCircleIcon />}
+            label="Pronto da concludere"
+          />
         )}
       </Box>
-
-      {/* Footer: concludi */}
-      <Box
-        sx={{
-          px: 2.5,
-          py: 1.5,
-          borderTop: "1px solid",
-          borderColor: "divider",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          flexWrap: "wrap",
-          gap: 1.5,
-          bgcolor: (theme) =>
-            confirming
-              ? alpha(theme.palette.success.main, 0.08)
-              : theme.palette.mode === "dark"
-                ? theme.palette.background.default
-                : theme.palette.grey[50],
-          transition: "background-color 0.2s",
-        }}
-      >
-        {confirming ? (
-          <>
-            <Typography variant="body2" fontWeight={600} color="success.dark">
-              Confermi di aver completato la gestione?
-            </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              color="inherit"
-              onClick={() => setConfirming(false)}
-              disabled={concluding}
-            >
-              Annulla
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              onClick={handleConclude}
-              disabled={concluding}
-              startIcon={
-                concluding ? <CircularProgress size={13} color="inherit" /> : <DoneAllIcon />
-              }
-            >
-              {concluding ? "Salvataggio..." : "Sì, concludi"}
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<DoneAllIcon />}
-            onClick={() => setConfirming(true)}
-            sx={{ fontWeight: 700 }}
-          >
-            Concludi allenamento
-          </Button>
-        )}
-      </Box>
-    </Paper>
+    </Box>
   );
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+/**
+ * Allenamenti da completare (UX-13): una riga chiusa per allenamento, se ne
+ * apre una sola alla volta. Prima erano tutte card aperte: con 27 allenamenti
+ * la pagina arrivava a 21.000 px su mobile.
+ */
 export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSessionRow[] }) {
   const router = useRouter();
+  const [openId, setOpenId] = useState<string | null>(null);
 
   if (sessions.length === 0) {
     return (
@@ -408,8 +119,7 @@ export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSe
     );
   }
 
-  // Quindici allenamenti arretrati di fila sono troppi da scorrere: il mese e'
-  // il raggruppamento naturale, e le sessioni arrivano gia' ordinate per data.
+  // Il mese e' il raggruppamento naturale; le sessioni arrivano gia' ordinate.
   const months: { key: string; label: string; items: AdminSessionRow[] }[] = [];
   for (const s of sessions) {
     const d = new Date(s.date);
@@ -420,48 +130,76 @@ export default function AdminAllenamentiClient({ sessions }: { sessions: AdminSe
   }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {/* La legenda del ciclo a tre stati stava dentro ogni card, ripetuta
-          quindici volte e in un grigio troppo chiaro. Una volta sola, qui. */}
-      <Paper
-        variant="outlined"
-        sx={{
-          px: 2,
-          py: 1.25,
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          bgcolor: "action.hover",
-        }}
-      >
-        <TouchAppIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-        <Typography variant="body2" color="text.secondary">
-          Nelle presenze, tocca il pallino per ciclare:{" "}
-          <Box component="span" sx={{ color: "success.main", fontWeight: 700 }}>
-            presente
-          </Box>{" "}
-          →{" "}
-          <Box component="span" sx={{ color: "error.main", fontWeight: 700 }}>
-            assente
-          </Box>{" "}
-          → non marcato.
-        </Typography>
-      </Paper>
-
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {months.map((m) => (
-        <Box key={m.key} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box key={m.key}>
           <Typography
             variant="overline"
             component="h2"
-            fontWeight={800}
             color="text.secondary"
-            sx={{ letterSpacing: "0.1em", textTransform: "capitalize" }}
+            sx={{ display: "block", textTransform: "capitalize", mb: 1 }}
           >
             {m.label} · {m.items.length}
           </Typography>
-          {m.items.map((s) => (
-            <SessionCard key={s.id} s={s} onComplete={() => router.refresh()} />
-          ))}
+          {m.items.map((s) => {
+            const open = openId === s.id;
+            return (
+              <Accordion
+                key={s.id}
+                expanded={open}
+                onChange={(_, expanded) => setOpenId(expanded ? s.id : null)}
+                disableGutters
+                slotProps={{ transition: { unmountOnExit: true } }}
+                sx={{
+                  "&::before": { display: "none" },
+                  mb: 1,
+                  border: "1px solid",
+                  borderColor: "divider",
+                }}
+                elevation={0}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls={`chiusura-${s.id}`}
+                  id={`riga-${s.id}`}
+                  sx={{ minHeight: 64, "& .MuiAccordionSummary-content": { minWidth: 0 } }}
+                >
+                  <SessionSummary s={s} />
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                  <Box sx={{ mb: 2 }}>
+                    <MuiLink
+                      href={`/allenamento/${s.dateSlug ?? s.id}`}
+                      variant="body2"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        minHeight: 44,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Apri la pagina dell&apos;allenamento
+                      <OpenInNewIcon fontSize="small" />
+                    </MuiLink>
+                  </Box>
+                  <TrainingCloseForm
+                    sessionId={s.id}
+                    title={s.title}
+                    date={s.date}
+                    athletes={s.athletes}
+                    registrations={s.registrations}
+                    teams={s.teams}
+                    results={s.results}
+                    onSaved={(concluded) => {
+                      if (concluded) setOpenId(null);
+                      router.refresh();
+                    }}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
         </Box>
       ))}
     </Box>

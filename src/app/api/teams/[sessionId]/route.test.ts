@@ -142,7 +142,12 @@ describe("POST /api/teams/[sessionId]", () => {
     p.registration.findMany.mockResolvedValue(athletes);
     await POST(makePost(), mockParams);
     const [args] = p.registration.findMany.mock.calls[0] as [{ where: unknown }];
-    expect(args.where).toEqual({ sessionId: "sess-1", NOT: { attended: false } });
+    // I non segnati (NULL) vanno inclusi esplicitamente: NOT { attended: false }
+    // in SQL li scarterebbe insieme agli assenti.
+    expect(args.where).toEqual({
+      sessionId: "sess-1",
+      OR: [{ attended: null }, { attended: true }],
+    });
   });
 
   it("non notifica le squadre di un allenamento già finito", async () => {

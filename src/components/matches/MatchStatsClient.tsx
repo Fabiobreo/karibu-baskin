@@ -27,6 +27,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { sportRoleLabel } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
+import MatchStatsMobileCards from "@/components/matches/MatchStatsMobileCards";
 import { alpha } from "@mui/material/styles";
 import { contrastText } from "@/lib/colorUtils";
 import { STAT_FIELDS_BY_ROLE, computePoints, type StatField } from "@/lib/schemas/match";
@@ -416,6 +417,9 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                     sx={{
                       fontWeight: 700,
                       cursor: "pointer",
+                      // 44px: si sceglie dal telefono (UX-13).
+                      height: 44,
+                      borderRadius: 22,
                       bgcolor: (theme) => (selected ? theme.palette.medal.gold : "transparent"),
                       color: (theme) =>
                         selected
@@ -436,7 +440,26 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
             </Box>
           </Paper>
 
-          <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
+          {/* Telefono: una card per giocatore con contatori −/+ (UX-13). */}
+          <Box sx={{ display: { xs: "block", md: "none" } }}>
+            <MatchStatsMobileCards
+              rows={rows}
+              cols={STAT_COLS}
+              isAllowed={isAllowed}
+              points={(r) => rowPoints(r as StatRow)}
+              onChange={update}
+              onNote={updateNote}
+            />
+            <Typography variant="body2" fontWeight={700} sx={{ mt: 1.5, textAlign: "right" }}>
+              Totale: {totals.points} pt
+            </Typography>
+          </Box>
+
+          <Paper
+            elevation={0}
+            variant="outlined"
+            sx={{ overflow: "hidden", display: { xs: "none", md: "block" } }}
+          >
             <Box sx={{ overflowX: "auto" }}>
               <Table size="small" sx={{ minWidth: 760 }}>
                 <TableHead>
@@ -629,13 +652,14 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
 
       {!loading && rows.length > 0 && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mt: 3 }}>
-          <Button onClick={handleCancel} disabled={saving}>
+          <Button onClick={handleCancel} disabled={saving} sx={{ minHeight: 44 }}>
             Annulla
           </Button>
           <Button
             variant="contained"
             onClick={handleSave}
             disabled={saving}
+            sx={{ minHeight: 44 }}
             startIcon={saving ? <CircularProgress size={16} /> : undefined}
           >
             Salva statistiche

@@ -14,6 +14,8 @@ interface AdminSessionTeamsProps {
   /** Iscritti come atleti (non allenatori), nell'ordine del roster. */
   athletes: TeamAthlete[];
   coaches: { id: string; name: string }[];
+  /** Vedi `TeamDisplay.beforeGenerate`. */
+  beforeGenerate?: () => Promise<void>;
 }
 
 /**
@@ -29,6 +31,7 @@ export default function AdminSessionTeams({
   initialTeams,
   athletes,
   coaches,
+  beforeGenerate,
 }: AdminSessionTeamsProps) {
   const [teams, setTeams] = useState<TeamsData | null>(initialTeams);
   const [editMode, setEditMode] = useState(false);
@@ -92,6 +95,7 @@ export default function AdminSessionTeams({
         onEnterEditMode={() => setEditMode(true)}
         onTeamsGenerated={handleTeamsChanged}
         athletes={athletes}
+        beforeGenerate={beforeGenerate}
       />
       {ConfirmDialog}
     </>
