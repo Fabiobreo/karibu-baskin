@@ -55,9 +55,10 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
   const tMatches = useTranslations("matches");
   const dateLocale = useActiveDateLocale();
   const now = new Date();
-  const leftName = match.isHome ? teamName : match.opponent.name;
-  const rightName = match.isHome ? match.opponent.name : teamName;
-  const leftIsUs = match.isHome;
+  // La nostra squadra sempre a sinistra: casa/trasferta lo dice il chip (UX-18).
+  const leftName = teamName;
+  const rightName = match.opponent.name;
+  const leftIsUs = true;
 
   return (
     <Link href={`/partite/${match.slug ?? match.id}`} style={{ textDecoration: "none" }}>

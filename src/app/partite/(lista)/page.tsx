@@ -207,9 +207,11 @@ export default async function PartitePage({ searchParams }: Props) {
               <Stack spacing={1}>
                 {team.matches.map((m) => {
                   const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? t("opponent");
-                  const leftName = m.isHome ? m.team.name : opponentName;
-                  const rightName = m.isHome ? opponentName : m.team.name;
-                  const leftIsUs = m.isHome;
+                  // La nostra squadra sempre a sinistra: casa/trasferta lo
+                  // dice il chip (UX-18).
+                  const leftName = m.team.name;
+                  const rightName = opponentName;
+                  const leftIsUs = true;
                   return (
                     <Link
                       key={m.id}

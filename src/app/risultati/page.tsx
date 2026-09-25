@@ -1,16 +1,13 @@
 import { prisma } from "@/lib/db";
-import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
+import { Container, Typography, Box, Chip, Stack } from "@mui/material";
+import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
-import HomeIcon from "@mui/icons-material/Home";
-import FlightIcon from "@mui/icons-material/Flight";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import { getActiveSeason } from "@/lib/season/activeSeason";
-import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -390,154 +387,27 @@ function MatchCard({
   dateLocale: import("date-fns").Locale;
   matchResultLabel: (r: "WIN" | "LOSS" | "DRAW") => string;
 }) {
-  const meta = m.result ? MATCH_RESULT_META[m.result] : null;
-
-  const opponentName = m.opponent?.name ?? m.opponentTeam?.name ?? tFn("opponent");
-  // Ordine casa/trasferta: in casa Karibu a sinistra, in trasferta Karibu a destra.
-  const leftName = m.isHome ? m.team.name : opponentName;
-  const rightName = m.isHome ? opponentName : m.team.name;
-  const leftScore = m.isHome ? m.ourScore : m.theirScore;
-  const rightScore = m.isHome ? m.theirScore : m.ourScore;
-  const leftIsUs = m.isHome;
+  const typeLabel =
+    (
+      {
+        LEAGUE: tFn("typeLeague"),
+        TOURNAMENT: tFn("typeTournament"),
+        FRIENDLY: tFn("typeFriendly"),
+      } as Record<string, string>
+    )[m.matchType] ?? m.matchType;
 
   return (
-    <Link href={`/partite/${m.slug ?? m.id}`} style={{ textDecoration: "none" }}>
-      <Paper
-        elevation={0}
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          overflow: "hidden",
-          cursor: "pointer",
-          transition: "box-shadow 0.15s, border-color 0.15s",
-          "&:hover": {
-            boxShadow: 2,
-            borderColor: "text.disabled",
-          },
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "stretch" }}>
-          {/* Barra colore risultato */}
-          <Box sx={{ width: 5, flexShrink: 0, bgcolor: meta?.color ?? "action.hover" }} />
-
-          <Box
-            sx={{
-              flex: 1,
-              px: 2,
-              py: 1.5,
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-              flexWrap: "wrap",
-            }}
-          >
-            {/* Data */}
-            <Box sx={{ minWidth: 90, flexShrink: 0 }}>
-              <Typography variant="body2" fontWeight={700} sx={{ fontSize: "0.82rem" }}>
-                {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.4, mt: 0.2 }}>
-                {m.isHome ? (
-                  <HomeIcon sx={{ fontSize: 11, color: "text.secondary" }} />
-                ) : (
-                  <FlightIcon sx={{ fontSize: 11, color: "text.secondary" }} />
-                )}
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
-                  {m.isHome ? tFn("home") : tFn("away")} ·{" "}
-                  {(
-                    {
-                      LEAGUE: tFn("typeLeague"),
-                      TOURNAMENT: tFn("typeTournament"),
-                      FRIENDLY: tFn("typeFriendly"),
-                    } as Record<string, string>
-                  )[m.matchType] ?? m.matchType}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Match-up: SquadraSx PunteggioSx – PunteggioDx SquadraDx */}
-            <Box
-              sx={{
-                flex: 1,
-                minWidth: 200,
-                display: "flex",
-                alignItems: "center",
-                gap: 1.25,
-                justifyContent: "center",
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: leftIsUs ? 800 : 600,
-                  color: leftIsUs ? "text.primary" : "text.secondary",
-                  textAlign: "right",
-                  flex: "1 1 0",
-                  minWidth: 0,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {leftName}
-              </Typography>
-              {leftScore !== null && rightScore !== null ? (
-                <Typography
-                  fontWeight={900}
-                  sx={{
-                    fontSize: "1.15rem",
-                    fontVariantNumeric: "tabular-nums",
-                    lineHeight: 1,
-                    flexShrink: 0,
-                    px: 0.5,
-                  }}
-                >
-                  {leftScore}–{rightScore}
-                </Typography>
-              ) : (
-                <Typography
-                  sx={{ color: "text.secondary", fontWeight: 700, fontSize: "0.85rem", px: 0.5 }}
-                >
-                  vs
-                </Typography>
-              )}
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: leftIsUs ? 600 : 800,
-                  color: leftIsUs ? "text.secondary" : "text.primary",
-                  textAlign: "left",
-                  flex: "1 1 0",
-                  minWidth: 0,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {rightName}
-              </Typography>
-            </Box>
-
-            {/* Esito */}
-            <Box sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 1 }}>
-              {meta && m.result && (
-                <Chip
-                  label={matchResultLabel(m.result)}
-                  size="small"
-                  sx={{
-                    bgcolor: meta.bg,
-                    color: meta.color,
-                    fontWeight: 800,
-                    fontSize: "0.75rem",
-                    height: 22,
-                  }}
-                />
-              )}
-              <ChevronRightIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-            </Box>
-          </Box>
-        </Box>
-      </Paper>
-    </Link>
+    <PlayedMatchRow
+      href={`/partite/${m.slug ?? m.id}`}
+      dateLabel={format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
+      metaLabel={`${m.isHome ? tFn("home") : tFn("away")} · ${typeLabel}`}
+      isHome={m.isHome}
+      ourName={m.team.name}
+      theirName={m.opponent?.name ?? m.opponentTeam?.name ?? tFn("opponent")}
+      ourScore={m.ourScore}
+      theirScore={m.theirScore}
+      result={m.result}
+      resultLabel={m.result ? matchResultLabel(m.result) : null}
+    />
   );
 }
