@@ -25,7 +25,7 @@ type Dict = Record<string, unknown>;
  * giocatore. Gli altri segnaposto restano come {nome}.
  */
 function readable(msg: string): string {
-  const m = msg.match(/^\{who, select, (\w+) \{(.*)\} other \{(.*)\}\}$/s);
+  const m = msg.match(/^\{who, select, (\w+) \{([\s\S]*)\} other \{([\s\S]*)\}\}$/);
   if (!m) return msg.replace(/\{name\}/g, "{nome}");
   const [, key, first, other] = m;
   const self = key === "self" ? first : other;
