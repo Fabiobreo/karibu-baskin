@@ -15,6 +15,7 @@ import { loadBadgeInput } from "@/lib/rating/badgeService";
 import { computeBadges } from "@/lib/rating/badges";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Confronto giocatori",
@@ -115,7 +116,14 @@ function CompareHeader({ p }: { p: ComparePlayer }) {
       <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
         <Avatar
           src={p.image ?? undefined}
-          sx={{ width: 64, height: 64, mx: "auto", mb: 1, fontSize: 26, cursor: "pointer" }}
+          sx={{
+            width: 64,
+            height: 64,
+            mx: "auto",
+            mb: 1,
+            fontSize: TYPE_SCALE.xl3,
+            cursor: "pointer",
+          }}
         >
           {p.name[0]}
         </Avatar>

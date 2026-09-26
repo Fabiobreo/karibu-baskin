@@ -17,6 +17,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { brandColor } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Prossime partite",
@@ -90,10 +91,7 @@ export default async function PartitePage({ searchParams }: Props) {
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <CalendarTodayIcon sx={{ fontSize: 30, color: "primary.main" }} />
-          <Typography
-            variant="overline"
-            sx={{ color: "primary.light", letterSpacing: "0.12em", fontWeight: 700 }}
-          >
+          <Typography variant="overline" sx={{ color: "primary.light" }}>
             {t("upcomingHeroChip")}
           </Typography>
         </Box>
@@ -101,7 +99,7 @@ export default async function PartitePage({ searchParams }: Props) {
           variant="h3"
           component="h1"
           fontWeight={800}
-          sx={{ mb: 1, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+          sx={{ mb: 1, fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("upcomingTitle")}
         </Typography>
@@ -134,7 +132,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   size="small"
                   variant={season === s ? "filled" : "outlined"}
                   color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.75rem" }}
+                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                 />
               </Link>
             ))}
@@ -196,7 +194,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   sx={{
                     ml: "auto",
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     height: 20,
                     bgcolor: alpha(brandColor.orange, 0.1),
                     color: "primary.main",
@@ -249,7 +247,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ fontSize: "0.75rem", display: "block" }}
+                              sx={{ fontSize: TYPE_SCALE.xs, display: "block" }}
                             >
                               {format(new Date(m.date), "EEEE d MMMM · HH:mm", {
                                 locale: dateLocale,
@@ -286,7 +284,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               sx={{
                                 color: "text.secondary",
                                 fontWeight: 700,
-                                fontSize: "0.85rem",
+                                fontSize: TYPE_SCALE.sm,
                                 px: 0.5,
                               }}
                             >
@@ -323,7 +321,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               label={m.isHome ? t("home") : t("away")}
                               size="small"
                               variant="outlined"
-                              sx={{ fontSize: "0.75rem", height: 22 }}
+                              sx={{ fontSize: TYPE_SCALE.xs, height: 22 }}
                             />
                             {m.venue && (
                               <Box
@@ -339,7 +337,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: "0.75rem",
+                                    fontSize: TYPE_SCALE.xs,
                                     overflowWrap: "break-word",
                                   }}
                                 >
@@ -352,7 +350,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               size="small"
                               variant="outlined"
                               sx={{
-                                fontSize: "0.75rem",
+                                fontSize: TYPE_SCALE.xs,
                                 height: 20,
                                 color: "text.secondary",
                                 borderColor: "divider",

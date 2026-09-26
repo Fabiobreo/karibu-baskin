@@ -48,6 +48,7 @@ import type { Metadata } from "next";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -587,7 +588,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 sx={{
                   width: { xs: 110, md: 140 },
                   height: { xs: 110, md: 140 },
-                  fontSize: { xs: 42, md: 54 },
+                  fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
                   fontWeight: 800,
                   bgcolor: playerColor,
                   border: `4px solid ${playerColor}`,
@@ -611,7 +612,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     alignItems: "center",
                     justifyContent: "center",
                     fontWeight: 900,
-                    fontSize: "1.2rem",
+                    fontSize: TYPE_SCALE.xl,
                     border: "3px solid",
                     borderColor: "secondary.main",
                     boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
@@ -629,7 +630,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 sx={{
                   color: playerColor,
                   fontWeight: 800,
-                  letterSpacing: "0.14em",
                   lineHeight: 1,
                   textShadow: "0 1px 2px rgba(0,0,0,0.5)",
                 }}
@@ -641,7 +641,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 component="h1"
                 fontWeight={900}
                 sx={{
-                  fontSize: { xs: "2.2rem", md: "3.4rem" },
+                  fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl6 },
                   lineHeight: 1.05,
                   mt: 0.5,
                   textShadow: "0 2px 6px rgba(0,0,0,0.4)",
@@ -682,7 +682,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       bgcolor: m.team.color ?? "text.primary",
                       color: contrastText(m.team.color),
                       fontWeight: 700,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                     }}
                   />
                 ))}
@@ -756,7 +756,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         <Box sx={{ lineHeight: 1 }}>
                           <Typography
                             sx={{
-                              fontSize: "0.75rem",
+                              fontSize: TYPE_SCALE.xs,
                               fontWeight: 800,
                               color: medalColorToken,
                               textTransform: "uppercase",
@@ -768,7 +768,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           </Typography>
                           <Typography
                             sx={{
-                              fontSize: "0.75rem",
+                              fontSize: TYPE_SCALE.xs,
                               fontWeight: 600,
                               color: "rgba(255,255,255,0.75)",
                             }}
@@ -787,7 +787,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         bgcolor: alpha(brandColor.white, 0.1),
                         color: "common.white",
                         fontWeight: 700,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                       }}
                     />
                   )}
@@ -808,7 +808,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
                     <Typography
                       sx={{
-                        fontSize: { xs: "2.4rem", md: "3rem" },
+                        fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
                         fontWeight: 900,
                         color: "common.white",
                         lineHeight: 1,
@@ -820,7 +820,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "0.78rem",
+                        fontSize: TYPE_SCALE.xs,
                         fontWeight: 700,
                         color: "rgba(255,255,255,0.75)",
                         textTransform: "uppercase",
@@ -833,7 +833,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
                     <Typography
                       sx={{
-                        fontSize: { xs: "1.4rem", md: "1.7rem" },
+                        fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
                         fontWeight: 800,
                         color: playerColor,
                         lineHeight: 1,
@@ -844,7 +844,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         fontWeight: 700,
                         color: "rgba(255,255,255,0.75)",
                       }}
@@ -855,7 +855,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
                     <Typography
                       sx={{
-                        fontSize: { xs: "1.4rem", md: "1.7rem" },
+                        fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
                         fontWeight: 800,
                         color: "common.white",
                         lineHeight: 1,
@@ -866,7 +866,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         fontWeight: 700,
                         color: "rgba(255,255,255,0.75)",
                       }}
@@ -1019,12 +1019,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               }}
             >
               <Box>
-                <Typography
-                  variant="overline"
-                  color="text.secondary"
-                  fontWeight={700}
-                  sx={{ letterSpacing: "0.1em" }}
-                >
+                <Typography variant="overline" color="text.secondary">
                   {t("statistics")}
                 </Typography>
                 <Typography variant="h4" fontWeight={800}>
@@ -1101,7 +1096,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       variant="h4"
                       fontWeight={800}
-                      sx={{ color: s.color, fontSize: { xs: "1.6rem", md: "1.8rem" } }}
+                      sx={{
+                        color: s.color,
+                        fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
+                      }}
                     >
                       {s.value}
                     </Typography>
@@ -1126,7 +1124,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <Typography
                   variant="overline"
                   color="text.secondary"
-                  sx={{ fontWeight: 700, display: "block", mb: 1 }}
+                  sx={{ display: "block", mb: 1 }}
                 >
                   {t("pointsTrend")}
                 </Typography>
@@ -1154,10 +1152,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Box sx={{ mb: 5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-                <Typography
-                  variant="overline"
-                  sx={{ color: "medal.gold", fontWeight: 700, letterSpacing: "0.1em" }}
-                >
+                <Typography variant="overline" sx={{ color: "medal.gold" }}>
                   {t("honors")}
                 </Typography>
               </Box>
@@ -1211,7 +1206,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                               fontWeight: 800,
                               textTransform: "uppercase",
                               letterSpacing: "0.06em",
-                              fontSize: "0.75rem",
+                              fontSize: TYPE_SCALE.xs,
                               display: "block",
                             }}
                           >
@@ -1240,12 +1235,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Box sx={{ mb: 5 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <GroupsIcon color="primary" />
-                <Typography
-                  variant="overline"
-                  color="text.secondary"
-                  fontWeight={700}
-                  sx={{ letterSpacing: "0.1em" }}
-                >
+                <Typography variant="overline" color="text.secondary">
                   {t("teamsSection")}
                 </Typography>
               </Box>
@@ -1308,7 +1298,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           label={`Stagione ${m.team.season}`}
                           size="small"
                           variant="outlined"
-                          sx={{ fontWeight: 600, fontSize: "0.75rem" }}
+                          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                         />
                       </Box>
                     </Paper>
@@ -1326,12 +1316,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <SportsSoccerIcon color="primary" />
-                <Typography
-                  variant="overline"
-                  color="text.secondary"
-                  fontWeight={700}
-                  sx={{ letterSpacing: "0.1em" }}
-                >
+                <Typography variant="overline" color="text.secondary">
                   {t("matches")}
                 </Typography>
               </Box>
@@ -1402,7 +1387,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                     backgroundColor: MATCH_RESULT_META[ms.match.result].color,
                                     color: "match.onFill",
                                     fontWeight: 700,
-                                    fontSize: "0.75rem",
+                                    fontSize: TYPE_SCALE.xs,
                                   }}
                                 />
                               )}
@@ -1489,7 +1474,7 @@ function StatItem({ label, value }: { label: string; value: number }) {
       <Typography
         variant="caption"
         color="text.secondary"
-        sx={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em" }}
+        sx={{ fontSize: TYPE_SCALE.xs, textTransform: "uppercase", letterSpacing: "0.05em" }}
       >
         {label}
       </Typography>

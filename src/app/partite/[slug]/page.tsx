@@ -45,6 +45,7 @@ import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const revalidate = 3600;
 
@@ -571,7 +572,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 sx={{
                   color: alpha(brandColor.white, 0.6),
                   borderColor: alpha(brandColor.white, 0.2),
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                 }}
               />
             </Box>
@@ -597,7 +598,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       >
                         <Typography
                           sx={{
-                            fontSize: { xs: "1.8rem", md: "2.8rem" },
+                            fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
                             fontWeight: 900,
                             lineHeight: 1.05,
                             color: "common.white",
@@ -615,7 +616,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       >
                         <Typography
                           sx={{
-                            fontSize: { xs: "1.8rem", md: "2.8rem" },
+                            fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
                             fontWeight: 900,
                             lineHeight: 1.05,
                             color: alpha(brandColor.white, 0.92),
@@ -633,7 +634,7 @@ export default async function MatchDetailPage({ params }: Props) {
                           flex: "0 0 auto",
                           color: alpha(brandColor.white, 0.65),
                           fontWeight: 800,
-                          fontSize: { xs: "1.2rem", md: "1.6rem" },
+                          fontSize: { xs: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 },
                           letterSpacing: "0.05em",
                         }}
                       >
@@ -698,7 +699,7 @@ export default async function MatchDetailPage({ params }: Props) {
                     <Box key="us" sx={{ textAlign: "center", minWidth: 100 }}>
                       <Typography
                         sx={{
-                          fontSize: { xs: "3.5rem", md: "5rem" },
+                          fontSize: { xs: TYPE_SCALE.xl7, md: TYPE_SCALE.xl8 },
                           fontWeight: 900,
                           lineHeight: 1,
                           color: "common.white",
@@ -729,7 +730,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: "2.7rem", md: "3.8rem" },
+                          fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl7 },
                           fontWeight: 700,
                           lineHeight: 1,
                           color: alpha(brandColor.white, 0.92),
@@ -748,7 +749,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             bgcolor: meta.color,
                             color: "match.onFill",
                             fontWeight: 800,
-                            fontSize: "0.85rem",
+                            fontSize: TYPE_SCALE.sm,
                             height: 32,
                             px: 1,
                           }}
@@ -758,7 +759,7 @@ export default async function MatchDetailPage({ params }: Props) {
                           sx={{
                             color: alpha(brandColor.white, 0.65),
                             fontWeight: 700,
-                            fontSize: "1.4rem",
+                            fontSize: TYPE_SCALE.xl2,
                           }}
                         >
                           vs
@@ -860,11 +861,7 @@ export default async function MatchDetailPage({ params }: Props) {
               }}
             >
               <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-              <Typography
-                variant="overline"
-                fontWeight={800}
-                sx={{ color: "medal.gold", letterSpacing: "0.12em" }}
-              >
+              <Typography variant="overline" fontWeight={800} sx={{ color: "medal.gold" }}>
                 {t("mvp")}
               </Typography>
               <EmojiEventsIcon sx={{ color: "medal.gold" }} />
@@ -915,7 +912,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             borderRadius: 0.5,
                             bgcolor: roleColor(role),
                             color: ROLE_TEXT_COLOR,
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             fontWeight: 700,
                           }}
                         >
