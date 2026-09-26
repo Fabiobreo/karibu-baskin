@@ -15,6 +15,7 @@ import type {
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { computeStandings } from "@/lib/season/standings";
 import { buildMetadata } from "@/lib/seo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Classifiche",
@@ -122,12 +123,7 @@ export default async function ClassifichePage() {
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-          <Typography
-            variant="overline"
-            color="primary.light"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.12em" }}
-          >
+          <Typography variant="overline" color="primary.light">
             {t("leagueChip")}
           </Typography>
         </Box>
@@ -135,7 +131,7 @@ export default async function ClassifichePage() {
           variant="h3"
           component="h1"
           fontWeight={800}
-          sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+          sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("pageTitle")}
         </Typography>
@@ -151,7 +147,7 @@ export default async function ClassifichePage() {
             sx={{
               color: "rgba(255,255,255,0.7)",
               borderColor: "rgba(255,255,255,0.3)",
-              fontSize: "0.78rem",
+              fontSize: TYPE_SCALE.xs,
               "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
             }}
           >
@@ -164,7 +160,7 @@ export default async function ClassifichePage() {
             sx={{
               color: "rgba(255,255,255,0.7)",
               borderColor: "rgba(255,255,255,0.3)",
-              fontSize: "0.78rem",
+              fontSize: TYPE_SCALE.xs,
               "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
             }}
           >
@@ -177,7 +173,7 @@ export default async function ClassifichePage() {
             sx={{
               color: "rgba(255,255,255,0.7)",
               borderColor: "rgba(255,255,255,0.3)",
-              fontSize: "0.78rem",
+              fontSize: TYPE_SCALE.xs,
               "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
             }}
           >

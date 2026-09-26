@@ -20,6 +20,7 @@ import { roleColor } from "@/lib/constants";
 import { getRolesInfo, getBaskinRules } from "@/lib/content/baskinInfo";
 import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 import { buildMetadata } from "@/lib/seo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata = buildMetadata({
   title: "Il Baskin",
@@ -53,19 +54,14 @@ export default async function IlBaskinPage() {
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Storia */}
         <Box sx={{ mb: 5 }}>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("ilbaskin.origins")}
           </Typography>
           <Typography
             variant="h4"
             component="h2"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 2, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 2, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("ilbaskin.born2001")}
           </Typography>
@@ -81,19 +77,14 @@ export default async function IlBaskinPage() {
 
         {/* Regole */}
         <Box sx={{ mb: 7 }}>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("ilbaskin.howItWorks")}
           </Typography>
           <Typography
             variant="h4"
             component="h2"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("ilbaskin.mainRules")}
           </Typography>
@@ -146,19 +137,14 @@ export default async function IlBaskinPage() {
 
         {/* I ruoli */}
         <Box>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("ilbaskin.thePlayers")}
           </Typography>
           <Typography
             variant="h4"
             component="h2"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("ilbaskin.the5Roles")}
           </Typography>
@@ -200,7 +186,7 @@ export default async function IlBaskinPage() {
                       backgroundColor: "rgba(255,255,255,0.2)",
                       color: "common.white",
                       fontWeight: 600,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                     }}
                   />
                 </Box>
@@ -246,7 +232,7 @@ export default async function IlBaskinPage() {
                               display: "block",
                               textTransform: "uppercase",
                               letterSpacing: "0.06em",
-                              fontSize: "0.75rem",
+                              fontSize: TYPE_SCALE.xs,
                             }}
                           >
                             {info.label}
@@ -254,7 +240,7 @@ export default async function IlBaskinPage() {
                           <Typography
                             variant="body2"
                             fontWeight={600}
-                            sx={{ fontSize: "0.8rem", mt: 0.25 }}
+                            sx={{ fontSize: TYPE_SCALE.xs, mt: 0.25 }}
                           >
                             {info.value}
                           </Typography>

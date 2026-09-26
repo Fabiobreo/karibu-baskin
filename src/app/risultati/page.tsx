@@ -12,6 +12,7 @@ import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Risultati",
@@ -114,12 +115,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
           <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-          <Typography
-            variant="overline"
-            color="primary.light"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.12em" }}
-          >
+          <Typography variant="overline" color="primary.light">
             {t("resultsHeroChip")}
           </Typography>
         </Box>
@@ -127,7 +123,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
           variant="h3"
           component="h1"
           fontWeight={800}
-          sx={{ mb: 2, fontSize: { xs: "1.9rem", md: "2.6rem" } }}
+          sx={{ mb: 2, fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("resultsTitle")}
         </Typography>
@@ -161,7 +157,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       bgcolor: "match.win",
                       color: "match.onFill",
                       fontWeight: 800,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       height: 20,
                     }}
                   />
@@ -173,7 +169,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         bgcolor: "match.draw",
                         color: "match.onFill",
                         fontWeight: 800,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         height: 20,
                       }}
                     />
@@ -185,7 +181,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       bgcolor: "match.loss",
                       color: "match.onFill",
                       fontWeight: 800,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       height: 20,
                     }}
                   />
@@ -219,7 +215,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   size="small"
                   variant={season === s ? "filled" : "outlined"}
                   color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: "0.75rem" }}
+                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                 />
               </Link>
             ))}
@@ -285,7 +281,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         bgcolor: "match.winBg",
                         color: "match.win",
                         fontWeight: 800,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         height: 20,
                       }}
                     />
@@ -297,7 +293,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                           bgcolor: "match.drawBg",
                           color: "match.draw",
                           fontWeight: 800,
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                           height: 20,
                         }}
                       />
@@ -309,7 +305,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         bgcolor: "match.lossBg",
                         color: "match.loss",
                         fontWeight: 800,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         height: 20,
                       }}
                     />

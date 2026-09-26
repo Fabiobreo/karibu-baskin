@@ -149,7 +149,7 @@ export default function NotificheClient({
               variant="overline"
               fontWeight={800}
               color="text.secondary"
-              sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
+              sx={{ display: "block", mb: 1 }}
             >
               {groupLabel[group.key]} ({group.items.length})
             </Typography>

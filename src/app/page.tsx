@@ -24,6 +24,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarIcon from "@mui/icons-material/Star";
 import { buildMetadata } from "@/lib/seo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata = buildMetadata({
   description:
@@ -90,19 +91,14 @@ export default async function HomePage() {
       <Container maxWidth="md">
         {/* Valori */}
         <Box sx={{ mb: 8 }}>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("whoWeAre")}
           </Typography>
           <Typography
             variant="h4"
             component="h2"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("whatWeBelieve")}
           </Typography>
@@ -132,19 +128,14 @@ export default async function HomePage() {
 
         {/* Storia */}
         <Box>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("ourHistory")}
           </Typography>
           <Typography
             variant="h4"
             component="h2"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("tenYears")}
           </Typography>

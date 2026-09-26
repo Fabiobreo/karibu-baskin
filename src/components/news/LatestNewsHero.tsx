@@ -6,6 +6,7 @@ import NewspaperIcon from "@mui/icons-material/Newspaper";
 import { getTranslations } from "next-intl/server";
 import FeaturedCard from "@/components/news/FeaturedCard";
 import SideCard from "@/components/news/SideCard";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export type PostItem = {
   id: string;
@@ -50,19 +51,14 @@ export default async function LatestNewsHero() {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
           <NewspaperIcon sx={{ color: "text.secondary", fontSize: 32 }} />
           <Box>
-            <Typography
-              variant="overline"
-              color="text.secondary"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
-            >
+            <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1 }}>
               {t("updates")}
             </Typography>
             <Typography
               variant="h5"
               component="h2"
               fontWeight={800}
-              sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
+              sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
             >
               {t("latestNews")}
             </Typography>

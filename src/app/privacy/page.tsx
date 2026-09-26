@@ -3,6 +3,7 @@ import { Container, Typography, Box, Paper, Divider } from "@mui/material";
 import Link from "next/link";
 import { SITE_HOST } from "@/lib/siteUrl";
 import { buildMetadata } from "@/lib/seo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Informativa Privacy",
@@ -17,14 +18,14 @@ export default function PrivacyPage() {
   return (
     <>
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography variant="overline" color="text.secondary" fontWeight={700}>
+        <Typography variant="overline" color="text.secondary">
           Documento legale
         </Typography>
         <Typography
           variant="h3"
           component="h1"
           fontWeight={800}
-          sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.8rem", md: "2.4rem" } }}
+          sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 } }}
         >
           Informativa sulla privacy
         </Typography>

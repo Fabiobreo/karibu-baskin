@@ -18,6 +18,7 @@ import Image from "next/image";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata = buildMetadata({
   title: "Sponsor",
@@ -78,18 +79,13 @@ export default async function SponsorPage() {
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Sponsor attuali */}
         <Box sx={{ mb: 7 }}>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("sponsor.thanksTo")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("sponsor.ourSponsors")}
           </Typography>
@@ -154,7 +150,7 @@ export default async function SponsorPage() {
                     <Chip
                       label={sponsorsContent[i].category}
                       size="small"
-                      sx={{ mb: 1, fontWeight: 600, fontSize: "0.75rem" }}
+                      sx={{ mb: 1, fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                     />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
                       <Typography variant="subtitle1" fontWeight={700} noWrap>
@@ -178,18 +174,13 @@ export default async function SponsorPage() {
 
         {/* Diventa sponsor */}
         <Box>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("sponsor.joinUs")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("sponsor.becomeSponsor")}
           </Typography>

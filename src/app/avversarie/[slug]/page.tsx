@@ -31,6 +31,7 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { contrastText } from "@/lib/colorUtils";
 import { auth } from "@/lib/authjs";
 import OpposingTeamEditButton from "@/components/matches/OpposingTeamEditButton";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const revalidate = 60;
 
@@ -277,7 +278,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   size="small"
                   variant={s === currentSeason ? "filled" : "outlined"}
                   color={s === currentSeason ? "primary" : "default"}
-                  sx={{ fontWeight: 600, fontSize: "0.75rem", height: 22 }}
+                  sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, height: 22 }}
                 />
               ))}
             </Box>
@@ -386,7 +387,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                fontSize: "0.75rem",
+                                fontSize: TYPE_SCALE.xs,
                                 fontWeight: 800,
                                 cursor: m.slug ? "pointer" : "default",
                               }}
@@ -520,14 +521,14 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                   bgcolor: m.team.color ?? "primary.main",
                                   color: contrastText(m.team.color),
                                   fontWeight: 700,
-                                  fontSize: "0.75rem",
+                                  fontSize: TYPE_SCALE.xs,
                                   height: 20,
                                 }}
                               />
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
-                                sx={{ fontSize: "0.75rem" }}
+                                sx={{ fontSize: TYPE_SCALE.xs }}
                               >
                                 {matchTypeLabel(m.matchType)}
                                 {m.matchday ? ` · G${m.matchday}` : ""}
@@ -561,7 +562,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                   bgcolor: MATCH_RESULT_META[m.result].color,
                                   color: "match.onFill",
                                   fontWeight: 700,
-                                  fontSize: "0.75rem",
+                                  fontSize: TYPE_SCALE.xs,
                                   height: 20,
                                   minWidth: 28,
                                 }}

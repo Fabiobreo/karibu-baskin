@@ -13,6 +13,7 @@ import { splitEventsByTime } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Eventi",
@@ -73,7 +74,7 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
             label={dateLabel}
             size="small"
             variant="outlined"
-            sx={{ fontWeight: 700, fontSize: "0.75rem", mb: 1 }}
+            sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, mb: 1 }}
           />
           <Typography
             variant="subtitle1"
@@ -113,7 +114,7 @@ function EventSection({
         variant="overline"
         component="h2"
         color="text.secondary"
-        sx={{ fontWeight: 700, mb: 1.5, display: "block" }}
+        sx={{ mb: 1.5, display: "block" }}
       >
         {title}
       </Typography>

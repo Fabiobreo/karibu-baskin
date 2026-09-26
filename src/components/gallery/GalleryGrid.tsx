@@ -19,6 +19,7 @@ import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import Image from "next/image";
 import { onHover } from "@/lib/hoverStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export interface GalleryPost {
   id: string;
@@ -191,7 +192,7 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                       borderRadius: 5,
                       bgcolor: "rgba(0,0,0,0.55)",
                       color: "common.white",
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                     }}
                   >
                     {slide + 1} / {openPost.blobUrls.length}

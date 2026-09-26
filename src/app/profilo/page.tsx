@@ -49,6 +49,7 @@ import NextTrainingCard, {
 } from "@/components/profile/NextTrainingCard";
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 import { userHasPublicProfile } from "@/lib/publicProfile";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata = buildMetadata({
   title: "Il mio profilo",
@@ -344,7 +345,7 @@ export default async function ProfiloPage() {
                 size="small"
                 variant="outlined"
                 startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-                sx={{ fontSize: "0.78rem", fontWeight: 600 }}
+                sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}
               >
                 {t("publicProfile")}
               </Button>
@@ -355,7 +356,7 @@ export default async function ProfiloPage() {
               size="small"
               variant="outlined"
               startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
-              sx={{ fontSize: "0.78rem", fontWeight: 600 }}
+              sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}
             >
               {t("myAvailabilities")}
             </Button>
@@ -387,12 +388,7 @@ export default async function ProfiloPage() {
             <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                <Typography
-                  variant="overline"
-                  fontWeight={800}
-                  color="text.secondary"
-                  sx={{ letterSpacing: "0.08em" }}
-                >
+                <Typography variant="overline" fontWeight={800} color="text.secondary">
                   {t("nextTraining")}
                 </Typography>
               </Box>

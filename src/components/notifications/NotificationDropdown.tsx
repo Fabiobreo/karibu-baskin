@@ -4,6 +4,7 @@ import { Box, Button, Divider, List, Skeleton, Typography } from "@mui/material"
 import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/NotificationContext";
 import NotificationItem from "./NotificationItem";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface NotifItem {
   id: string;
@@ -77,7 +78,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
         <Typography variant="subtitle1" fontWeight={700}>
           Notifiche
         </Typography>
-        <Button size="small" onClick={handleMarkAllRead} sx={{ fontSize: "0.75rem" }}>
+        <Button size="small" onClick={handleMarkAllRead} sx={{ fontSize: TYPE_SCALE.xs }}>
           Segna tutte lette
         </Button>
       </Box>
@@ -113,7 +114,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
         <Button
           fullWidth
           size="small"
-          sx={{ py: 1.25, fontSize: "0.8rem" }}
+          sx={{ py: 1.25, fontSize: TYPE_SCALE.xs }}
           onClick={() => {
             router.push("/notifiche");
             onClose();

@@ -11,6 +11,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { alpha } from "@mui/material/styles";
 import { brandColor } from "@/lib/heroStyles";
 import CoverFallback from "@/components/common/CoverFallback";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const FEATURED_TEASER_LEN = 160;
 
@@ -113,7 +114,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
             fontWeight={800}
             sx={{
               color: "common.white",
-              fontSize: { xs: "1.3rem", sm: "1.5rem", md: "1.75rem" },
+              fontSize: { xs: TYPE_SCALE.xl, sm: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
               lineHeight: 1.2,
               mb: 1,
               textShadow: "0 2px 8px rgba(0,0,0,0.4)",

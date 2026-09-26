@@ -25,6 +25,7 @@ import Link from "next/link";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
 import PollWidget from "@/components/news/PollWidget";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const revalidate = 60;
 
@@ -214,7 +215,7 @@ export default async function NewsSlugPage({ params }: Props) {
             },
             "& a": { color: "primary.main" },
             "& strong": { fontWeight: 700 },
-            fontSize: "1rem",
+            fontSize: TYPE_SCALE.md,
             lineHeight: 1.7,
             color: "text.primary",
           }}

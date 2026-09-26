@@ -25,6 +25,7 @@ import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface PostEditorProps {
   value: string;
@@ -215,7 +216,7 @@ export default function PostEditor({
             px: 1.5,
             py: 1.5,
             outline: "none",
-            fontSize: "1rem",
+            fontSize: TYPE_SCALE.md,
             lineHeight: 1.6,
             color: "text.primary",
             "& p": { my: 0.5 },

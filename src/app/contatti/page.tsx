@@ -32,6 +32,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import MapEmbed from "@/components/common/MapEmbed";
 import { onHover } from "@/lib/hoverStyles";
 import { heroGradient } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
@@ -207,7 +208,7 @@ export default function ContattiPage() {
                     color: active ? "primary.onLight" : "text.secondary",
                     borderBottom: active ? "2px solid" : "2px solid transparent",
                     borderColor: active ? "primary.main" : "transparent",
-                    fontSize: "0.88rem",
+                    fontSize: TYPE_SCALE.sm,
                     transition: "all 0.15s",
                     "&:hover": { bgcolor: "transparent", color: "text.primary" },
                   }}
@@ -231,18 +232,13 @@ export default function ContattiPage() {
           <TryItSection />
 
           {/* Titolo sezione */}
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("contatti.letsTalk")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 4, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 4, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("contatti.contactUs")}
           </Typography>
@@ -283,7 +279,7 @@ export default function ContattiPage() {
                     sx={{
                       textTransform: "uppercase",
                       letterSpacing: "0.06em",
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                     }}
                   >
                     {c.label}
@@ -343,12 +339,7 @@ export default function ContattiPage() {
           <Grid container spacing={4}>
             {/* Sinistra: mappa + sede */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em" }}
-              >
+              <Typography variant="overline" color="text.secondary">
                 {t("contatti.visitUs")}
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
@@ -372,12 +363,7 @@ export default function ContattiPage() {
 
             {/* Destra: social + dati legali */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em" }}
-              >
+              <Typography variant="overline" color="text.secondary">
                 {t("contatti.followUs")}
               </Typography>
               <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
@@ -415,7 +401,7 @@ export default function ContattiPage() {
                           textTransform: "uppercase",
                           letterSpacing: "0.06em",
                           display: "block",
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                         }}
                       >
                         {s.label}
@@ -469,18 +455,13 @@ export default function ContattiPage() {
       >
         <Container maxWidth="md">
           {/* Sponsor attuali — logo strip */}
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("contatti.thanksTo")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("contatti.ourPartners")}
           </Typography>
@@ -537,18 +518,13 @@ export default function ContattiPage() {
           <Divider sx={{ mb: 7 }} />
 
           {/* Diventa sponsor */}
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             {t("contatti.joinUs")}
           </Typography>
           <Typography
             variant="h4"
             fontWeight={800}
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: "1.6rem", md: "2rem" } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("contatti.becomeSponsor")}
           </Typography>
