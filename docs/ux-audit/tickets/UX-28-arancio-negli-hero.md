@@ -21,6 +21,8 @@ Inoltre `calendar.match`, `match.draw` e `primary.dark` restano su `#BF360C` inv
 
 Servono schermate di confronto (in `docs/ux-audit/img/`) di home, `/risultati` e `/il-baskin` con le tre opzioni, prima di scegliere.
 
+Tavole pronte (27/09/2026, tema chiaro, desktop): [home](../img/ux28-home.png), [/risultati](../img/ux28-risultati.png), [/il-baskin](../img/ux28-il-baskin.png). Le opzioni A e B sono simulate nella pagina: diventano neutre solo icone e occhielli non toccabili (dentro gli hero `rgba(255,255,255,0.72)`, fuori `text.secondary`); dati, titoli, marchio e tutto ciò che si tocca restano come sono.
+
 ## Cosa fare (dopo la decisione)
 
 1. Applicare l'opzione scelta dai componenti condivisi (`PageHero`, `EntityHero`, occhiello di sezione) invece che pagina per pagina.
