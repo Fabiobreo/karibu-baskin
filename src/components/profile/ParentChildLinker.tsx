@@ -30,6 +30,7 @@ import ChildLinkDialog from "@/components/profile/dialogs/ChildLinkDialog";
 
 // Re-export per i consumer esistenti (es. pagina profilo)
 export type { ChildData } from "@/components/profile/childLinkerShared";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface ParentChildLinkerProps {
   initialChildren: ChildData[];
@@ -110,7 +111,7 @@ export default function ParentChildLinker({
                     height: 44,
                     flexShrink: 0,
                     bgcolor: child.userId ? "primary.main" : "grey.400",
-                    fontSize: 17,
+                    fontSize: TYPE_SCALE.lg,
                     mt: 0.25,
                   }}
                 >
@@ -124,7 +125,7 @@ export default function ParentChildLinker({
                     <Chip
                       label={t("athlete")}
                       size="small"
-                      sx={{ fontSize: "0.75rem", fontWeight: 600 }}
+                      sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}
                     />
                     {child.sportRole && (
                       <RoleBadge role={child.sportRole} variant={child.sportRoleVariant} />
@@ -140,7 +141,7 @@ export default function ParentChildLinker({
                             bgcolor: m.team.color ?? "primary.main",
                             color: contrastText(m.team.color),
                             fontWeight: 700,
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                           }}
                         />
                       ))}
@@ -149,7 +150,7 @@ export default function ParentChildLinker({
                         label={genderLabel(child.gender)}
                         size="small"
                         variant="outlined"
-                        sx={{ fontSize: "0.75rem" }}
+                        sx={{ fontSize: TYPE_SCALE.xs }}
                       />
                     )}
                     {child.userId ? (
@@ -158,7 +159,7 @@ export default function ParentChildLinker({
                         size="small"
                         color="success"
                         variant="outlined"
-                        sx={{ fontSize: "0.75rem" }}
+                        sx={{ fontSize: TYPE_SCALE.xs }}
                       />
                     ) : child.pendingRequestId ? (
                       <Chip
@@ -166,7 +167,7 @@ export default function ParentChildLinker({
                         size="small"
                         color="warning"
                         variant="outlined"
-                        sx={{ fontSize: "0.75rem" }}
+                        sx={{ fontSize: TYPE_SCALE.xs }}
                       />
                     ) : (
                       <Chip
@@ -174,7 +175,7 @@ export default function ParentChildLinker({
                         size="small"
                         variant="outlined"
                         sx={{
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                           color: "text.secondary",
                           borderColor: "divider",
                         }}

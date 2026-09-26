@@ -2,6 +2,7 @@ import { Box, Typography, Paper, LinearProgress } from "@mui/material";
 import { useTranslations } from "next-intl";
 import type { Badge, LockedBadge } from "@/lib/rating/badges";
 import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export type EarnedBadgeView = Badge & {
   /** Frase del traguardo raggiunto ("Hai segnato 10 punti in una partita"). */
@@ -82,11 +83,13 @@ export default function BadgeShowcase({
                   bgcolor: c.bg,
                 }}
               >
-                <Typography sx={{ fontSize: "1.1rem", lineHeight: 1 }}>{badge.emoji}</Typography>
+                <Typography sx={{ fontSize: TYPE_SCALE.lg, lineHeight: 1 }}>
+                  {badge.emoji}
+                </Typography>
                 <Box>
                   <Typography
                     sx={{
-                      fontSize: "0.8125rem",
+                      fontSize: TYPE_SCALE.sm,
                       fontWeight: 800,
                       color: c.text,
                       display: "block",
@@ -120,11 +123,7 @@ export default function BadgeShowcase({
       {next.length > 0 && (
         <Box sx={{ mt: earned.length > 0 ? 3 : 2 }}>
           {nextTitle && (
-            <Typography
-              variant="overline"
-              color="text.secondary"
-              sx={{ fontWeight: 700, display: "block", mb: 1 }}
-            >
+            <Typography variant="overline" color="text.secondary" sx={{ display: "block", mb: 1 }}>
               {nextTitle}
             </Typography>
           )}
@@ -134,17 +133,22 @@ export default function BadgeShowcase({
                 {/* I "prossimi" sono desaturati: si distinguono dagli sbloccati
                     senza doverne leggere l'etichetta. */}
                 <Typography
-                  sx={{ fontSize: "1.1rem", lineHeight: 1, filter: "grayscale(1)", opacity: 0.7 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.lg,
+                    lineHeight: 1,
+                    filter: "grayscale(1)",
+                    opacity: 0.7,
+                  }}
                 >
                   {badge.emoji}
                 </Typography>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 0.25 }}>
-                    <Typography sx={{ fontSize: "0.8125rem", fontWeight: 700 }} noWrap>
+                    <Typography sx={{ fontSize: TYPE_SCALE.sm, fontWeight: 700 }} noWrap>
                       {badge.label}
                     </Typography>
                     <Typography
-                      sx={{ fontSize: "0.75rem", color: "text.secondary", flexShrink: 0 }}
+                      sx={{ fontSize: TYPE_SCALE.xs, color: "text.secondary", flexShrink: 0 }}
                     >
                       {badge.current}/{badge.target}
                     </Typography>

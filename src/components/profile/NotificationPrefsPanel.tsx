@@ -20,6 +20,7 @@ import {
   type NotifPrefs,
   type ControllableNotifType,
 } from "@/lib/notifications/notifPrefs";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -151,7 +152,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
           {t("unsupported")}
         </Typography>
       ) : pushStatus === "denied" ? (
-        <Alert severity="warning" sx={{ fontSize: "0.8rem" }}>
+        <Alert severity="warning" sx={{ fontSize: TYPE_SCALE.xs }}>
           {t("denied")}
         </Alert>
       ) : (

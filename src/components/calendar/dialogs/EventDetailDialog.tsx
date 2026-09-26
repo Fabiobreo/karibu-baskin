@@ -26,6 +26,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
@@ -124,7 +125,7 @@ export default function EventDetailDialog({
               bgcolor: alpha(fg, 0.22),
               color: fg,
               fontWeight: 700,
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               mb: 0.5,
             }}
           />
@@ -221,7 +222,9 @@ export default function EventDetailDialog({
 function InfoRow({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.25 }}>
-      <Box sx={{ color: "text.secondary", mt: "1px", "& svg": { fontSize: "1.1rem" } }}>{icon}</Box>
+      <Box sx={{ color: "text.secondary", mt: "1px", "& svg": { fontSize: TYPE_SCALE.lg } }}>
+        {icon}
+      </Box>
       <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
         {text}
       </Typography>

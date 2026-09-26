@@ -7,6 +7,7 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import type { DaySegment } from "@/components/calendar/calendarShared";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Chip evento nella cella della griglia (desktop). */
 export default function EventChip({
@@ -84,7 +85,7 @@ export default function EventChip({
           noWrap
           sx={{
             color: fg,
-            fontSize: "0.75rem",
+            fontSize: TYPE_SCALE.xs,
             // Un filo di peso in piu' sugli impegni propri: rinforza l'eco
             // senza aggiungere altra grafica in un chip alto 18px.
             fontWeight: isOwnTeam ? 700 : 600,

@@ -18,6 +18,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useToast } from "@/context/ToastContext";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface SubscribeCalendarDialogProps {
   open: boolean;
@@ -87,7 +88,10 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 value={httpsUrl}
                 size="small"
                 fullWidth
-                InputProps={{ readOnly: true, sx: { fontFamily: "monospace", fontSize: 13 } }}
+                InputProps={{
+                  readOnly: true,
+                  sx: { fontFamily: "monospace", fontSize: TYPE_SCALE.sm },
+                }}
                 onFocus={(e) => e.target.select()}
               />
               <Button

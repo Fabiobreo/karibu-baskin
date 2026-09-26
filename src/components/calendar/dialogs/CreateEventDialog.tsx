@@ -35,6 +35,7 @@ import SessionRestrictionEditor, {
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // Dialog riservato allo staff → testi in italiano per scelta (come l'admin)
 
@@ -290,14 +291,14 @@ export default function CreateEventDialog({
             label="Allenamento"
             icon={<SportsBasketballIcon sx={{ fontSize: "1rem" }} />}
             iconPosition="start"
-            sx={{ fontSize: "0.78rem", minHeight: 48 }}
+            sx={{ fontSize: TYPE_SCALE.xs, minHeight: 48 }}
           />
           <Tab
             value="event"
             label="Evento"
             icon={<EventNoteIcon sx={{ fontSize: "1rem" }} />}
             iconPosition="start"
-            sx={{ fontSize: "0.78rem", minHeight: 48 }}
+            sx={{ fontSize: TYPE_SCALE.xs, minHeight: 48 }}
           />
           {isAdmin && (
             <Tab
@@ -305,7 +306,7 @@ export default function CreateEventDialog({
               label="Partita"
               icon={<EmojiEventsIcon sx={{ fontSize: "1rem" }} />}
               iconPosition="start"
-              sx={{ fontSize: "0.78rem", minHeight: 48 }}
+              sx={{ fontSize: TYPE_SCALE.xs, minHeight: 48 }}
             />
           )}
         </Tabs>

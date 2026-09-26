@@ -39,6 +39,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CreateEventDialog from "@/components/calendar/dialogs/CreateEventDialog";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // v2: le chiavi dei filtri sono cambiate (type:<tipo> e team:<id> al posto di
 // "training" e "match:<colore>"). Chiave nuova così i filtri vecchi salvati sui
@@ -216,7 +217,7 @@ export default function CalendarClient({
             textTransform: "capitalize",
             minWidth: { xs: 130, sm: 220 },
             textAlign: "center",
-            fontSize: { xs: "1.05rem", sm: "1.5rem" },
+            fontSize: { xs: TYPE_SCALE.md, sm: TYPE_SCALE.xl2 },
           }}
         >
           {format(new Date(year, month), "MMMM yyyy", { locale: dateLocale })}
@@ -233,7 +234,7 @@ export default function CalendarClient({
             color: "primary.onLight",
             fontWeight: 600,
             "&:hover": { textDecoration: "underline" },
-            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+            fontSize: { xs: TYPE_SCALE.xs, sm: TYPE_SCALE.sm },
           }}
         >
           {t("todayBtn")}
@@ -267,7 +268,7 @@ export default function CalendarClient({
               color: "text.secondary",
               fontWeight: 700,
               py: 1,
-              fontSize: { xs: "0.75rem", sm: "0.8rem" },
+              fontSize: { xs: TYPE_SCALE.xs, sm: TYPE_SCALE.xs },
             }}
           >
             {d}
@@ -376,7 +377,7 @@ export default function CalendarClient({
                       : inMonth
                         ? "text.primary"
                         : "text.secondary",
-                    fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                    fontSize: { xs: TYPE_SCALE.xs, sm: TYPE_SCALE.xs },
                     mb: "3px",
                     flexShrink: 0,
                   }}
@@ -409,7 +410,7 @@ export default function CalendarClient({
                   {extra > 0 && (
                     <Typography
                       variant="caption"
-                      sx={{ color: "text.secondary", fontSize: "0.75rem", pl: "3px" }}
+                      sx={{ color: "text.secondary", fontSize: TYPE_SCALE.xs, pl: "3px" }}
                     >
                       {t("moreEvents", { count: extra })}
                     </Typography>
@@ -474,7 +475,7 @@ export default function CalendarClient({
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         color: "text.secondary",
                         textAlign: "center",
                         lineHeight: "12px",

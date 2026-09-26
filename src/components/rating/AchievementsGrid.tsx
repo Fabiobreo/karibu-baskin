@@ -10,6 +10,7 @@ import {
   type BadgeProgress,
   type BadgeTier,
 } from "@/lib/rating/badges";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export type AchievementItem = BadgeProgress & {
   /** Frase del traguardo raggiunto, al posto del criterio quando e' sbloccato. */
@@ -77,7 +78,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
       <Typography
         component="span"
         sx={{
-          fontSize: { xs: "2rem", sm: "2.4rem" },
+          fontSize: { xs: TYPE_SCALE.xl4, sm: TYPE_SCALE.xl5 },
           lineHeight: 1,
           mb: 1,
           filter: earned ? "none" : "grayscale(1)",
@@ -88,7 +89,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
 
       <Typography
         sx={{
-          fontSize: "0.875rem",
+          fontSize: TYPE_SCALE.sm,
           fontWeight: 800,
           color: earned ? c.text : "text.secondary",
           lineHeight: 1.25,
@@ -102,7 +103,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
       <Typography
         sx={{
           color: "text.secondary",
-          fontSize: "0.75rem",
+          fontSize: TYPE_SCALE.xs,
           lineHeight: 1.35,
           display: "block",
           mt: 0.5,
@@ -116,7 +117,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
         <Typography
           sx={{
             color: "text.secondary",
-            fontSize: "0.75rem",
+            fontSize: TYPE_SCALE.xs,
             lineHeight: 1.35,
             display: "block",
             mt: 0.5,
@@ -137,7 +138,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
             sx={{ height: 5, borderRadius: 3 }}
           />
           <Typography
-            sx={{ color: "text.secondary", fontSize: "0.75rem", mt: 0.25, display: "block" }}
+            sx={{ color: "text.secondary", fontSize: TYPE_SCALE.xs, mt: 0.25, display: "block" }}
           >
             {item.current}/{item.target}
           </Typography>
@@ -160,10 +161,7 @@ export default function AchievementsGrid({ items, categoryLabels }: Achievements
       <BadgeTierLegend />
       {groups.map((group) => (
         <Box key={group.category}>
-          <Typography
-            variant="overline"
-            sx={{ fontWeight: 700, color: "text.secondary", display: "block", mb: 1 }}
-          >
+          <Typography variant="overline" sx={{ color: "text.secondary", display: "block", mb: 1 }}>
             {group.label} · {group.items.filter((b) => b.earned).length}/{group.items.length}
           </Typography>
           <Box

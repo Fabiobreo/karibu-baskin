@@ -1,6 +1,7 @@
 "use client";
 import Box from "@mui/material/Box";
 import { useTranslations } from "next-intl";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Primo elemento focusabile del body: invisibile finche non riceve il focus,
@@ -37,7 +38,7 @@ export default function SkipToContent() {
         bgcolor: "primary.dark",
         color: "primary.contrastText",
         fontWeight: 700,
-        fontSize: "0.9rem",
+        fontSize: TYPE_SCALE.sm,
         textDecoration: "none",
         "&:focus": {
           width: "auto",

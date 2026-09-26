@@ -14,6 +14,7 @@ import { roleColor } from "@/lib/constants";
 import { readError } from "@/lib/fetchJson";
 import { useToast } from "@/context/ToastContext";
 import type { RoleInfo } from "@/lib/content/baskinInfo";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface RoleQuizClientProps {
   /** Ruolo confermato dallo staff: se c'è, niente questionario. */
@@ -140,18 +141,13 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
       variant="outlined"
       sx={{ p: { xs: 2.5, md: 4 }, borderTop: "4px solid", borderTopColor: color }}
     >
-      <Typography
-        variant="overline"
-        color="text.secondary"
-        fontWeight={700}
-        sx={{ letterSpacing: "0.1em" }}
-      >
+      <Typography variant="overline" color="text.secondary">
         {kind === "confirmed" ? t("confirmedOverline") : t("suggestedOverline")}
       </Typography>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", mt: 0.5 }}>
         <Chip
           label={tRoles("sportRole", { n: result.role, v: result.variant ?? "" })}
-          sx={{ bgcolor: color, color: "common.white", fontWeight: 800, fontSize: "0.9rem" }}
+          sx={{ bgcolor: color, color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.sm }}
         />
         {roleName && (
           <Typography variant="h5" component="h2" fontWeight={800}>

@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface ResultItem {
   name: string;
@@ -132,11 +133,7 @@ export default function GlobalSearch() {
               groups.map((g) =>
                 data[g.key].length === 0 ? null : (
                   <Box key={g.key} sx={{ mb: 1 }}>
-                    <Typography
-                      variant="overline"
-                      color="text.secondary"
-                      sx={{ fontWeight: 700, px: 1 }}
-                    >
+                    <Typography variant="overline" color="text.secondary" sx={{ px: 1 }}>
                       {g.label}
                     </Typography>
                     <List dense disablePadding>
@@ -149,7 +146,7 @@ export default function GlobalSearch() {
                           {g.key === "players" || g.key === "opponents" ? (
                             <Avatar
                               src={item.image ?? undefined}
-                              sx={{ width: 28, height: 28, fontSize: 13 }}
+                              sx={{ width: 28, height: 28, fontSize: TYPE_SCALE.sm }}
                             >
                               {item.name[0]}
                             </Avatar>

@@ -38,6 +38,7 @@ import {
   type AddStep,
   type ChildData,
 } from "@/components/profile/childLinkerShared";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface ChildAddDialogProps {
   onClose: () => void;
@@ -243,7 +244,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
                       <ListItemAvatar>
                         <Avatar
                           src={u.image ?? undefined}
-                          sx={{ width: 36, height: 36, fontSize: 15 }}
+                          sx={{ width: 36, height: 36, fontSize: TYPE_SCALE.md }}
                         >
                           {(u.name ?? "?")[0].toUpperCase()}
                         </Avatar>
@@ -300,7 +301,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               >
                 <Avatar
                   src={foundUser.image ?? undefined}
-                  sx={{ width: 48, height: 48, flexShrink: 0, fontSize: 20 }}
+                  sx={{ width: 48, height: 48, flexShrink: 0, fontSize: TYPE_SCALE.xl }}
                 >
                   {(confirmName || "?")[0].toUpperCase()}
                 </Avatar>

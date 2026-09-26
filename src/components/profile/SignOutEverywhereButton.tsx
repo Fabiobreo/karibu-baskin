@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * "Esci da tutti i dispositivi" (KB-16).
@@ -45,7 +46,7 @@ export default function SignOutEverywhereButton() {
         size="small"
         variant="outlined"
         onClick={() => setOpen(true)}
-        sx={{ fontSize: "0.78rem" }}
+        sx={{ fontSize: TYPE_SCALE.xs }}
       >
         {t("signOutEverywhere")}
       </Button>

@@ -9,6 +9,7 @@ import { seasonForDate } from "@/components/training/SessionRestrictionEditor";
 import type { TeamInfo } from "@/components/calendar/calendarShared";
 import { contrastText } from "@/lib/colorUtils";
 import { decorationSx, teamFilterKey, typeColor, typeFilterKey } from "@/lib/calendar/eventColors";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface CalendarLegendProps {
   teams: TeamInfo[];
@@ -71,7 +72,7 @@ export default function CalendarLegend({
                     height: 20,
                     bgcolor: color,
                     borderRadius: "4px",
-                    "& svg": { fontSize: "0.8rem", color: contrastText(color) },
+                    "& svg": { fontSize: TYPE_SCALE.xs, color: contrastText(color) },
                   }}
                 >
                   {icon}

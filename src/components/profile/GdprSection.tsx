@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
 import SignOutEverywhereButton from "@/components/profile/SignOutEverywhereButton";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /** Sezione Privacy del profilo: export dati (art. 20) e richiesta cancellazione (art. 17). */
 export default async function GdprSection({ email }: { email: string }) {
@@ -18,7 +19,7 @@ export default async function GdprSection({ email }: { email: string }) {
           download
           size="small"
           variant="outlined"
-          sx={{ fontSize: "0.78rem" }}
+          sx={{ fontSize: TYPE_SCALE.xs }}
         >
           {t("downloadData")}
         </Button>
@@ -42,7 +43,7 @@ export default async function GdprSection({ email }: { email: string }) {
           size="small"
           color="error"
           variant="outlined"
-          sx={{ fontSize: "0.78rem" }}
+          sx={{ fontSize: TYPE_SCALE.xs }}
         >
           {t("deleteAccount")}
         </Button>

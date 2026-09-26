@@ -132,12 +132,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3, borderColor: "primary.main" }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
         <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-        <Typography
-          variant="overline"
-          fontWeight={800}
-          color="text.secondary"
-          sx={{ letterSpacing: "0.08em" }}
-        >
+        <Typography variant="overline" fontWeight={800} color="text.secondary">
           {t("nextTraining")}
         </Typography>
       </Box>

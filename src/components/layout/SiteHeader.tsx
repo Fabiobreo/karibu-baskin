@@ -54,6 +54,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetchJson";
 import { slugify } from "@/lib/slugUtils";
 import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // href-only — le label vengono da t() dentro il componente
 const NAV_HREFS = [
@@ -214,7 +215,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   display: "block",
                   color: "common.white",
                   lineHeight: 1.1,
-                  fontSize: "0.9rem",
+                  fontSize: TYPE_SCALE.sm,
                 }}
               >
                 Karibu Baskin
@@ -225,7 +226,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 sx={{
                   display: "block",
                   color: (theme) => alpha(theme.palette.common.white, 0.5),
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   letterSpacing: "0.07em",
                   textTransform: "uppercase",
                 }}
@@ -265,7 +266,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       ? "common.white"
                       : (theme) => alpha(theme.palette.common.white, 0.6),
                     fontWeight: active ? 700 : 500,
-                    fontSize: "0.85rem",
+                    fontSize: TYPE_SCALE.sm,
                     borderBottom: active ? "2px solid" : "2px solid transparent",
                     borderBottomColor: active ? "primary.main" : "transparent",
                     borderRadius: 0,
@@ -290,7 +291,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: partiteActive ? 700 : 500,
-                fontSize: "0.85rem",
+                fontSize: TYPE_SCALE.sm,
                 borderBottom: partiteActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: partiteActive ? "primary.main" : "transparent",
                 borderRadius: 0,
@@ -316,7 +317,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   selected={pathname === pl.href}
                   aria-current={pathname === pl.href ? "page" : undefined}
                   onClick={() => setPartiteAnchor(null)}
-                  sx={{ fontSize: "0.9rem", fontWeight: pathname === pl.href ? 700 : 400 }}
+                  sx={{ fontSize: TYPE_SCALE.sm, fontWeight: pathname === pl.href ? 700 : 400 }}
                 >
                   {t(pl.key)}
                 </MenuItem>
@@ -333,7 +334,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: squadreActive ? 700 : 500,
-                fontSize: "0.85rem",
+                fontSize: TYPE_SCALE.sm,
                 borderBottom: squadreActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: squadreActive ? "primary.main" : "transparent",
                 borderRadius: 0,
@@ -359,7 +360,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   selected={pathname === sl.href}
                   aria-current={pathname === sl.href ? "page" : undefined}
                   onClick={() => setSquadreAnchor(null)}
-                  sx={{ fontSize: "0.9rem", fontWeight: pathname === sl.href ? 700 : 400 }}
+                  sx={{ fontSize: TYPE_SCALE.sm, fontWeight: pathname === sl.href ? 700 : 400 }}
                 >
                   {sl.label}
                 </MenuItem>
@@ -376,7 +377,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: ilBaskinActive ? 700 : 500,
-                fontSize: "0.85rem",
+                fontSize: TYPE_SCALE.sm,
                 borderBottom: ilBaskinActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: ilBaskinActive ? "primary.main" : "transparent",
                 borderRadius: 0,
@@ -403,7 +404,11 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   aria-current={pathname === bl.href ? "page" : undefined}
                   disabled={bl.disabled}
                   onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
-                  sx={{ fontSize: "0.9rem", fontWeight: pathname === bl.href ? 700 : 400, gap: 1 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === bl.href ? 700 : 400,
+                    gap: 1,
+                  }}
                 >
                   {t(bl.key)}
                   {bl.badge && (
@@ -411,7 +416,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       component="span"
                       sx={{
                         ml: "auto",
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         px: 0.6,
                         py: 0.1,
                         borderRadius: 0.5,
@@ -439,7 +444,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
                 fontWeight: contattiActive ? 700 : 500,
-                fontSize: "0.85rem",
+                fontSize: TYPE_SCALE.sm,
                 borderBottom: contattiActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: contattiActive ? "primary.main" : "transparent",
                 borderRadius: 0,
@@ -465,7 +470,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   selected={pathname === cl.href}
                   aria-current={pathname === cl.href ? "page" : undefined}
                   onClick={() => setContattiAnchor(null)}
-                  sx={{ fontSize: "0.9rem", fontWeight: pathname === cl.href ? 700 : 400 }}
+                  sx={{ fontSize: TYPE_SCALE.sm, fontWeight: pathname === cl.href ? 700 : 400 }}
                 >
                   {t(cl.key)}
                 </MenuItem>
@@ -511,7 +516,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                     sx={{
                       width: 34,
                       height: 34,
-                      fontSize: "0.8rem",
+                      fontSize: TYPE_SCALE.xs,
                       bgcolor: "primary.dark",
                       cursor: "pointer",
                     }}
@@ -596,7 +601,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   sx={{
                     color: "common.white",
                     borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
-                    fontSize: "0.8rem",
+                    fontSize: TYPE_SCALE.xs,
                     "&:hover": { borderColor: "common.white" },
                   }}
                 >
@@ -651,7 +656,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
             sx={{
               color: (theme) => alpha(theme.palette.common.white, 0.5),
               textTransform: "uppercase",
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               letterSpacing: "0.08em",
             }}
           >
@@ -910,7 +915,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                         <Box
                           component="span"
                           sx={{
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             px: 0.6,
                             py: 0.1,
                             borderRadius: 0.5,
@@ -1069,7 +1074,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               }}
             >
               <LanguageIcon fontSize="small" />
-              <Typography sx={{ fontSize: "0.9rem" }}>{t("language")}</Typography>
+              <Typography sx={{ fontSize: TYPE_SCALE.sm }}>{t("language")}</Typography>
             </Box>
             <LanguageSwitcher onDark />
           </Box>

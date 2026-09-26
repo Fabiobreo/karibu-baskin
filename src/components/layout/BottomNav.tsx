@@ -10,6 +10,7 @@ import NotificationsIcon from "@mui/icons-material/NotificationsNone";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useSession } from "next-auth/react";
 import { useNotifications } from "@/context/NotificationContext";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default function BottomNav() {
   const t = useTranslations("nav");
@@ -69,7 +70,7 @@ export default function BottomNav() {
             color: "text.secondary",
             minWidth: 0,
             "& .MuiBottomNavigationAction-label": {
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               mt: "2px",
             },
           },
@@ -134,7 +135,7 @@ export default function BottomNav() {
                 sx={{
                   width: 24,
                   height: 24,
-                  fontSize: "0.65rem",
+                  fontSize: TYPE_SCALE.xs,
                   bgcolor: active === "/profilo" ? "primary.main" : "action.selected",
                   color: active === "/profilo" ? "primary.contrastText" : "text.primary",
                 }}
