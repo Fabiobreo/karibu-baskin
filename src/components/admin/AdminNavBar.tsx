@@ -3,6 +3,7 @@ import { Box, Container, Tab, Tabs, Typography } from "@mui/material";
 import ShieldIcon from "@mui/icons-material/Shield";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // Sezioni principali del pannello; gli strumenti (export, audit, …) restano
 // raggiungibili dalla dashboard per non affollare la barra.
@@ -67,7 +68,7 @@ export default function AdminNavBar() {
                 fontWeight: 800,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 color: "adminBand.accent",
                 display: { xs: "none", md: "block" },
               }}
@@ -92,7 +93,7 @@ export default function AdminNavBar() {
                 minHeight: 44,
                 textTransform: "none",
                 fontWeight: 600,
-                fontSize: "0.85rem",
+                fontSize: TYPE_SCALE.sm,
                 px: 1.75,
                 // Etichette a contrasto pieno (MUI le metterebbe su
                 // text.secondary): la selezionata si distingue per colore,

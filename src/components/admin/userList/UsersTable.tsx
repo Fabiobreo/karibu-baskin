@@ -34,6 +34,7 @@ import {
   type TeamInfo,
   type UserEntry,
 } from "@/components/admin/userList/userListShared";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface UsersTableProps {
   rows: AdminRow[];
@@ -146,7 +147,7 @@ export default function UsersTable({
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                     <Avatar
                       src={row.image ?? undefined}
-                      sx={{ width: 30, height: 30, fontSize: 13 }}
+                      sx={{ width: 30, height: 30, fontSize: TYPE_SCALE.sm }}
                     >
                       {(row.name ?? "?")[0].toUpperCase()}
                     </Avatar>
@@ -175,7 +176,7 @@ export default function UsersTable({
                     size="small"
                     onChange={(e) => onRoleChange(row.id, e.target.value as AppRole)}
                     inputProps={{ "aria-label": `Ruolo utente di ${row.name ?? row.email}` }}
-                    sx={{ minWidth: 110, fontSize: "0.8rem" }}
+                    sx={{ minWidth: 110, fontSize: TYPE_SCALE.xs }}
                     renderValue={(val) => (
                       <Chip
                         label={ROLE_LABELS_IT[val as AppRole]}
@@ -219,7 +220,7 @@ export default function UsersTable({
                           borderColor: roleColor(row.sportRoleSuggested),
                           color: roleColor(row.sportRoleSuggested),
                           fontWeight: 700,
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                         }}
                         title="Autovalutazione da confermare"
                       />

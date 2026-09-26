@@ -389,7 +389,7 @@ function StepTitle({ n, children }: { n: number; children: React.ReactNode }) {
       component="h2"
       fontWeight={800}
       color="text.secondary"
-      sx={{ display: "block", mb: 1, letterSpacing: "0.08em" }}
+      sx={{ display: "block", mb: 1 }}
     >
       {n}. {children}
     </Typography>

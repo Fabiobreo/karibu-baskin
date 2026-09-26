@@ -8,6 +8,7 @@ import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
 import { guardianNames } from "@/lib/guardianNames";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type ChildRow = ChildEntry & { kind: "child" };
 
@@ -53,7 +54,13 @@ export default function ChildrenMobileCards({
             }}
           >
             <Avatar
-              sx={{ width: 36, height: 36, fontSize: 14, bgcolor: "grey.400", flexShrink: 0 }}
+              sx={{
+                width: 36,
+                height: 36,
+                fontSize: TYPE_SCALE.sm,
+                bgcolor: "grey.400",
+                flexShrink: 0,
+              }}
             >
               {row.name[0].toUpperCase()}
             </Avatar>
@@ -75,7 +82,7 @@ export default function ChildrenMobileCards({
                       bgcolor: team.color ?? "primary.main",
                       color: contrastText(team.color),
                       fontWeight: 600,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                     }}
                   />
                 )}
@@ -84,7 +91,7 @@ export default function ChildrenMobileCards({
                     size="small"
                     variant="outlined"
                     label={<RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />}
-                    sx={{ fontSize: "0.75rem" }}
+                    sx={{ fontSize: TYPE_SCALE.xs }}
                   />
                 )}
               </Box>

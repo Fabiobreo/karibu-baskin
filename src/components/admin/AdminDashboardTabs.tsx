@@ -24,6 +24,7 @@ import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import AdminAnonymousRegistrations from "@/components/admin/AdminAnonymousRegistrations";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type RecentUser = {
   kind: "user";
@@ -96,7 +97,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
               <span>Ultimi iscritti</span>
             </Box>
           }
-          sx={{ minHeight: 44, fontSize: "0.82rem", fontWeight: 600, textTransform: "none" }}
+          sx={{ minHeight: 44, fontSize: TYPE_SCALE.sm, fontWeight: 600, textTransform: "none" }}
         />
         <Tab
           label={
@@ -108,12 +109,12 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                   label={anonNoEmail > 0 ? `${anonNoEmail} senza email` : anonCount}
                   size="small"
                   color={anonNoEmail > 0 ? "warning" : "default"}
-                  sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
                 />
               )}
             </Box>
           }
-          sx={{ minHeight: 44, fontSize: "0.82rem", fontWeight: 600, textTransform: "none" }}
+          sx={{ minHeight: 44, fontSize: TYPE_SCALE.sm, fontWeight: 600, textTransform: "none" }}
         />
       </Tabs>
 
@@ -161,7 +162,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                         sx={{
                           width: 30,
                           height: 30,
-                          fontSize: 13,
+                          fontSize: TYPE_SCALE.sm,
                           bgcolor: row.kind === "child" ? "grey.400" : undefined,
                         }}
                       >
@@ -205,7 +206,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                             // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
                             color: "text.primary",
                             fontWeight: 700,
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                           }}
                         />
                       ) : (
@@ -260,7 +261,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                     sx={{
                       width: 32,
                       height: 32,
-                      fontSize: 13,
+                      fontSize: TYPE_SCALE.sm,
                       bgcolor: row.kind === "child" ? "grey.400" : undefined,
                       flexShrink: 0,
                     }}
@@ -281,13 +282,13 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
                           size="small"
                           color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
-                          sx={{ fontWeight: 600, fontSize: "0.75rem" }}
+                          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                         />
                       ) : (
                         <Chip
                           label="Atleta"
                           size="small"
-                          sx={{ fontWeight: 600, fontSize: "0.75rem" }}
+                          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                         />
                       )}
                       {row.sportRole && (

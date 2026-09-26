@@ -23,6 +23,7 @@ import Link from "next/link";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { onHover } from "@/lib/hoverStyles";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const revalidate = 30;
 
@@ -221,9 +222,7 @@ function NavSection({ title, children }: { title: string; children: React.ReactN
         variant="overline"
         component="h2"
         sx={{
-          fontWeight: 700,
           color: "text.secondary",
-          letterSpacing: 1,
           display: "block",
           mb: 1,
         }}
@@ -287,7 +286,7 @@ function StatCard({
           <Typography
             component="p"
             sx={{
-              fontSize: "2.2rem",
+              fontSize: TYPE_SCALE.xl4,
               fontWeight: 900,
               lineHeight: 1,
               color,
@@ -341,7 +340,9 @@ function NavLink({
           ...onHover({ borderColor: "text.disabled", bgcolor: "action.hover" }),
         }}
       >
-        <Box sx={{ color: "text.secondary", display: "flex", "& svg": { fontSize: 18 } }}>
+        <Box
+          sx={{ color: "text.secondary", display: "flex", "& svg": { fontSize: TYPE_SCALE.lg } }}
+        >
           {icon}
         </Box>
         <Typography variant="body2" fontWeight={600} noWrap sx={{ flex: 1, minWidth: 0 }}>
@@ -352,7 +353,7 @@ function NavLink({
             label={badge}
             size="small"
             color="warning"
-            sx={{ fontWeight: 700, height: 20, fontSize: "0.75rem" }}
+            sx={{ fontWeight: 700, height: 20, fontSize: TYPE_SCALE.xs }}
           />
         )}
       </Box>

@@ -2,6 +2,7 @@
 import { Box, Chip, MenuItem, Select, Typography } from "@mui/material";
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import { ATHLETE_STATUS_CHIP_COLORS, ATHLETE_STATUS_LABELS } from "@/lib/constants";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // ── Tipi condivisi della gestione utenti ─────────────────────────────────────
 
@@ -91,7 +92,7 @@ export function AthleteStatusChip({ status }: { status: AthleteStatus | null }) 
       size="small"
       color={ATHLETE_STATUS_CHIP_COLORS[status]}
       variant="outlined"
-      sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+      sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
     />
   );
 }
@@ -121,7 +122,7 @@ export function TeamCellSelect({
       displayEmpty
       inputProps={{ "aria-label": ariaLabel }}
       onChange={(e) => onChange(e.target.value)}
-      sx={{ minWidth: 110, fontSize: "0.8rem" }}
+      sx={{ minWidth: 110, fontSize: TYPE_SCALE.xs }}
       renderValue={(val) => {
         if (!val)
           return (

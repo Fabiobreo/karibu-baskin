@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Avatar, Box, Typography } from "@mui/material";
 import { roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface PersonRowProps {
   name: string;
@@ -48,7 +49,7 @@ export default function PersonRow({
           sx={{
             width: 36,
             height: 36,
-            fontSize: 14,
+            fontSize: TYPE_SCALE.sm,
             fontWeight: 800,
             bgcolor: roleTint ?? "action.selected",
             color: roleTint ? contrastText(roleTint) : "text.secondary",

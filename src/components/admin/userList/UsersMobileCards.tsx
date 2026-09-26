@@ -8,6 +8,7 @@ import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type AdminRow } from "@/components/admin/userList/userListShared";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface UsersMobileCardsProps {
   rows: AdminRow[];
@@ -62,7 +63,7 @@ export default function UsersMobileCards({
             >
               <Avatar
                 src={row.image ?? undefined}
-                sx={{ width: 36, height: 36, fontSize: 14, flexShrink: 0 }}
+                sx={{ width: 36, height: 36, fontSize: TYPE_SCALE.sm, flexShrink: 0 }}
               >
                 {(row.name ?? "?")[0].toUpperCase()}
               </Avatar>
@@ -78,7 +79,7 @@ export default function UsersMobileCards({
                     label={ROLE_LABELS_IT[row.appRole]}
                     size="small"
                     color={ROLE_CHIP_COLORS[row.appRole]}
-                    sx={{ fontWeight: 600, fontSize: "0.75rem" }}
+                    sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
                   />
                   <AthleteStatusChip status={row.athleteStatus} />
                   {row.sportRole ? (
@@ -93,7 +94,7 @@ export default function UsersMobileCards({
                         // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
                         color: "text.primary",
                         fontWeight: 700,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                       }}
                     />
                   ) : null}
@@ -105,7 +106,7 @@ export default function UsersMobileCards({
                         bgcolor: team.color ?? "primary.main",
                         color: contrastText(team.color),
                         fontWeight: 600,
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                       }}
                     />
                   )}
@@ -114,7 +115,7 @@ export default function UsersMobileCards({
                       size="small"
                       variant="outlined"
                       label={<RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />}
-                      sx={{ fontSize: "0.75rem" }}
+                      sx={{ fontSize: TYPE_SCALE.xs }}
                     />
                   )}
                 </Box>

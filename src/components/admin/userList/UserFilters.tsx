@@ -21,6 +21,7 @@ import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import { sportRoleLabel, roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { ALL_APP_ROLES, type TeamInfo } from "@/components/admin/userList/userListShared";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface UserFiltersProps {
   search: string;
@@ -214,16 +215,16 @@ export default function UserFilters({
               size="small"
               onChange={(_e, val) => onGenderChange(val ?? "")}
             >
-              <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 Tutti
               </ToggleButton>
-              <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 M
               </ToggleButton>
-              <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 F
               </ToggleButton>
-              <ToggleButton value="none" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="none" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 N/D
               </ToggleButton>
             </ToggleButtonGroup>
@@ -245,16 +246,16 @@ export default function UserFilters({
               size="small"
               onChange={(_e, val) => onAthleteStatusChange(val ?? "")}
             >
-              <ToggleButton value="" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 Tutti
               </ToggleButton>
-              <ToggleButton value="active" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="active" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 Attivi
               </ToggleButton>
-              <ToggleButton value="INACTIVE_SEASON" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="INACTIVE_SEASON" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 In pausa
               </ToggleButton>
-              <ToggleButton value="FORMER" sx={{ px: 1.5, fontSize: "0.75rem" }}>
+              <ToggleButton value="FORMER" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
                 Ex
               </ToggleButton>
             </ToggleButtonGroup>

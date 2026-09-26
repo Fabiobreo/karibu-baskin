@@ -37,6 +37,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/constants";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -215,7 +216,7 @@ function JsonDiff({
           sx={{
             p: 1.5,
             fontFamily: "monospace",
-            fontSize: "0.78rem",
+            fontSize: TYPE_SCALE.xs,
             wordBreak: "break-all",
             minHeight: 60,
           }}
@@ -255,7 +256,7 @@ function JsonDiff({
           sx={{
             p: 1.5,
             fontFamily: "monospace",
-            fontSize: "0.78rem",
+            fontSize: TYPE_SCALE.xs,
             wordBreak: "break-all",
             minHeight: 60,
           }}
@@ -495,7 +496,7 @@ export default function AuditLogClient() {
                           label={ACTION_LABELS[item.action] ?? item.action}
                           color={ACTION_COLORS[item.action] ?? "default"}
                           size="small"
-                          sx={{ fontSize: "0.75rem" }}
+                          sx={{ fontSize: TYPE_SCALE.xs }}
                         />
                       </TableCell>
                       <TableCell>
@@ -572,7 +573,7 @@ export default function AuditLogClient() {
                       label={ACTION_LABELS[item.action] ?? item.action}
                       color={ACTION_COLORS[item.action] ?? "default"}
                       size="small"
-                      sx={{ fontSize: "0.75rem", maxWidth: "100%" }}
+                      sx={{ fontSize: TYPE_SCALE.xs, maxWidth: "100%" }}
                     />
                     <Typography
                       variant="caption"

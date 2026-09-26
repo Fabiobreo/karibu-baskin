@@ -23,6 +23,7 @@ import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type Category = "APP" | "ALLENAMENTI" | "PARTITE_EVENTI" | "ALTRO";
 type Status = "NUOVO" | "LETTO" | "ARCHIVIATO";
@@ -268,7 +269,7 @@ export default function AdminSuggerimentiClient({
                       <Box key={n.id} sx={{ display: "flex", gap: 1.25 }}>
                         <Avatar
                           src={n.author.customImage ?? n.author.image ?? undefined}
-                          sx={{ width: 32, height: 32, fontSize: "0.8rem" }}
+                          sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.xs }}
                         >
                           {n.author.name?.[0]?.toUpperCase() ?? "?"}
                         </Avatar>

@@ -6,6 +6,7 @@ import {
   METRICS_WINDOW_DAYS,
   loadAdminMetrics,
 } from "@/lib/metrics/loadAdminMetrics";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // Metriche sempre fresche: sono poche query aggregate, e un numero vecchio di
 // mezz'ora sarebbe più confuso che utile.
@@ -124,7 +125,7 @@ function MetricSection({ title, children }: { title: string; children: React.Rea
       <Typography
         variant="overline"
         component="h2"
-        sx={{ fontWeight: 700, color: "text.secondary", letterSpacing: 1, display: "block", mb: 1 }}
+        sx={{ color: "text.secondary", display: "block", mb: 1 }}
       >
         {title}
       </Typography>
@@ -167,7 +168,7 @@ function MetricTile({
       <Typography
         component="p"
         sx={{
-          fontSize: "2rem",
+          fontSize: TYPE_SCALE.xl4,
           fontWeight: 900,
           lineHeight: 1,
           color: "admin.tools",

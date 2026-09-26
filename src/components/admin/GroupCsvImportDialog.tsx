@@ -24,6 +24,7 @@ import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import UploadIcon from "@mui/icons-material/Upload";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface OpposingTeam {
   id: string;
@@ -229,7 +230,7 @@ export default function GroupCsvImportDialog({
               value={csvText}
               onChange={(e) => setCsvText(e.target.value)}
               placeholder={"1\t2025-10-05\tTeam Alfa\t58\t62\tTeam Beta"}
-              sx={{ fontFamily: "monospace", fontSize: "0.82rem" }}
+              sx={{ fontFamily: "monospace", fontSize: TYPE_SCALE.sm }}
             />
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1.5 }}>
               <Button
@@ -273,14 +274,16 @@ export default function GroupCsvImportDialog({
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ bgcolor: "action.hover" }}>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>G.</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Data</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Casa</TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 700, fontSize: "0.75rem" }}>
+                      <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>G.</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>Data</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>Casa</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
                         Ris.
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Ospiti</TableCell>
-                      <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem" }}>Stato</TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
+                        Ospiti
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>Stato</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -293,17 +296,19 @@ export default function GroupCsvImportDialog({
                             : undefined,
                         }}
                       >
-                        <TableCell sx={{ fontSize: "0.78rem" }}>{row.matchday ?? "—"}</TableCell>
-                        <TableCell sx={{ fontSize: "0.78rem" }}>{row.date ?? "—"}</TableCell>
-                        <TableCell sx={{ fontSize: "0.78rem", fontWeight: 600 }}>
+                        <TableCell sx={{ fontSize: TYPE_SCALE.xs }}>
+                          {row.matchday ?? "—"}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: TYPE_SCALE.xs }}>{row.date ?? "—"}</TableCell>
+                        <TableCell sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}>
                           {row.homeTeamName}
                         </TableCell>
-                        <TableCell align="center" sx={{ fontSize: "0.78rem", fontWeight: 700 }}>
+                        <TableCell align="center" sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 700 }}>
                           {row.homeScore !== null && row.awayScore !== null
                             ? `${row.homeScore} – ${row.awayScore}`
                             : "—"}
                         </TableCell>
-                        <TableCell sx={{ fontSize: "0.78rem", fontWeight: 600 }}>
+                        <TableCell sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}>
                           {row.awayTeamName}
                         </TableCell>
                         <TableCell>
@@ -312,14 +317,14 @@ export default function GroupCsvImportDialog({
                               label={row.error}
                               size="small"
                               color="error"
-                              sx={{ fontSize: "0.75rem", height: 20 }}
+                              sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
                             />
                           ) : (
                             <Chip
                               label="OK"
                               size="small"
                               color="success"
-                              sx={{ fontSize: "0.75rem", height: 20 }}
+                              sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
                             />
                           )}
                         </TableCell>

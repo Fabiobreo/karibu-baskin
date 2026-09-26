@@ -33,6 +33,7 @@ import {
   type TeamInfo,
 } from "@/components/admin/userList/userListShared";
 import ChildrenMobileCards from "@/components/admin/userList/ChildrenMobileCards";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type ChildRow = ChildEntry & { kind: "child" };
 type ChildSortColumn = "name" | "createdAt" | "sportRole";
@@ -188,7 +189,9 @@ export default function ChildrenTab({
                 {/* Nome */}
                 <TableCell>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: "grey.400" }}>
+                    <Avatar
+                      sx={{ width: 30, height: 30, fontSize: TYPE_SCALE.sm, bgcolor: "grey.400" }}
+                    >
                       {row.name[0].toUpperCase()}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>

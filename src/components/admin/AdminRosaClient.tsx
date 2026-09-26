@@ -44,6 +44,7 @@ import { useToast } from "@/context/ToastContext";
 import { contrastText } from "@/lib/colorUtils";
 import type { Gender } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
@@ -659,7 +660,7 @@ function MemberRow({
         sx={{
           width: 32,
           height: 32,
-          fontSize: 13,
+          fontSize: TYPE_SCALE.sm,
           bgcolor: teamColor,
           color: contrastText(teamColor),
         }}
@@ -675,7 +676,7 @@ function MemberRow({
             <Chip
               label="Figlio"
               size="small"
-              sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+              sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
             />
           )}
           {m.isCaptain && (
@@ -684,7 +685,7 @@ function MemberRow({
               size="small"
               sx={{
                 height: 20,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 bgcolor: "medal.gold",
                 color: "common.white",
                 fontWeight: 700,
@@ -697,12 +698,12 @@ function MemberRow({
             <RoleBadge role={athlete.sportRole} variant={athlete.sportRoleVariant} />
           )}
           {gShort && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
               {gShort}
             </Typography>
           )}
           {age != null && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
               · {age}a
             </Typography>
           )}
@@ -765,7 +766,10 @@ function PoolRow({
         "&:hover": { bgcolor: "action.hover" },
       }}
     >
-      <Avatar src={athlete.image ?? undefined} sx={{ width: 30, height: 30, fontSize: 12 }}>
+      <Avatar
+        src={athlete.image ?? undefined}
+        sx={{ width: 30, height: 30, fontSize: TYPE_SCALE.xs }}
+      >
         {name[0]?.toUpperCase()}
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -777,7 +781,7 @@ function PoolRow({
             <Chip
               label="Figlio"
               size="small"
-              sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+              sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
             />
           )}
           {otherTeamName && (
@@ -786,7 +790,7 @@ function PoolRow({
                 label={otherTeamName}
                 size="small"
                 color="warning"
-                sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+                sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
               />
             </Tooltip>
           )}
@@ -795,17 +799,17 @@ function PoolRow({
           {athlete.sportRole ? (
             <RoleBadge role={athlete.sportRole} variant={athlete.sportRoleVariant} />
           ) : (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
               Ruolo non assegnato
             </Typography>
           )}
           {gShort && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
               {gShort}
             </Typography>
           )}
           {age != null && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
               · {age}a
             </Typography>
           )}

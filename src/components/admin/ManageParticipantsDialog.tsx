@@ -344,13 +344,7 @@ export default function ManageParticipantsDialog({
         ) : (
           // ── Iscritti attuali ────────────────────────────────────────────
           <Box>
-            <Typography
-              variant="overline"
-              color="text.secondary"
-              fontWeight={700}
-              component="p"
-              sx={{ pt: 1.5 }}
-            >
+            <Typography variant="overline" color="text.secondary" component="p" sx={{ pt: 1.5 }}>
               {athletes} {athletes === 1 ? "atleta" : "atleti"}
               {isPast && ` · ${present} presenti`}
             </Typography>

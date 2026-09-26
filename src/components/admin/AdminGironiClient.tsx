@@ -31,6 +31,7 @@ import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { contrastText } from "@/lib/colorUtils";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type CompetitiveTeamLite = { id: string; name: string; color: string | null; season: string };
 type GroupCompetitiveTeam = { competitiveTeam: CompetitiveTeamLite };
@@ -235,7 +236,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                                 bgcolor: t.color ?? "primary.main",
                                 color: contrastText(t.color),
                                 fontWeight: 700,
-                                fontSize: "0.75rem",
+                                fontSize: TYPE_SCALE.xs,
                               }}
                             />
                           ))}

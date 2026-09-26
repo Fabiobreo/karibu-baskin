@@ -2,6 +2,7 @@
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface RolePickerProps {
   value: number | null;
@@ -39,7 +40,7 @@ export default function RolePicker({
       sx={{ "& .MuiToggleButton-root": { minHeight: 44, fontWeight: 800 } }}
     >
       {allowNone && (
-        <ToggleButton value={0} sx={{ fontWeight: 600, fontSize: "0.75rem", flex: 1.4 }}>
+        <ToggleButton value={0} sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, flex: 1.4 }}>
           Non so
         </ToggleButton>
       )}

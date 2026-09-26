@@ -40,6 +40,7 @@ import ImageUploader from "@/components/common/ImageUploader";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor } from "@/lib/heroStyles";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
@@ -725,7 +726,7 @@ function TeamCard({
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ lineHeight: 1.65, fontSize: "0.83rem" }}
+            sx={{ lineHeight: 1.65, fontSize: TYPE_SCALE.sm }}
           >
             {team.description}
           </Typography>

@@ -42,6 +42,7 @@ import { useRouter } from "next/navigation";
 import { sportRoleLabel, SPORT_ROLE_VARIANT_LABELS } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type AnonReg = {
   id: string;
@@ -257,7 +258,7 @@ export default function AdminAnonymousRegistrations({
                     sx={{
                       width: 30,
                       height: 30,
-                      fontSize: 13,
+                      fontSize: TYPE_SCALE.sm,
                       bgcolor: !group.hasEmail ? "warning.light" : "grey.400",
                     }}
                   >
@@ -298,7 +299,7 @@ export default function AdminAnonymousRegistrations({
                           label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
                           size="small"
                           sx={{
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             fontWeight: 600,
                             cursor: "pointer",
                             "a:hover > &": { bgcolor: "action.focus" },
@@ -363,7 +364,7 @@ export default function AdminAnonymousRegistrations({
                   sx={{
                     width: 30,
                     height: 30,
-                    fontSize: 13,
+                    fontSize: TYPE_SCALE.sm,
                     bgcolor: !group.hasEmail ? "warning.light" : "grey.400",
                     flexShrink: 0,
                   }}
@@ -423,7 +424,7 @@ export default function AdminAnonymousRegistrations({
                       label={format(new Date(reg.session.date), "d MMM yy", { locale: it })}
                       size="small"
                       sx={{
-                        fontSize: "0.75rem",
+                        fontSize: TYPE_SCALE.xs,
                         fontWeight: 600,
                         cursor: "pointer",
                         "a:hover > &": { bgcolor: "action.focus" },
