@@ -27,7 +27,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
         variant="overline"
         color="error"
         fontWeight={800}
-        sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
+        sx={{ display: "block", mb: 1 }}
       >
         Non disponibili ({rows.length})
       </Typography>

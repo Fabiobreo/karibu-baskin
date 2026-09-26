@@ -250,12 +250,7 @@ export default function ConvocazioniClient({
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
           <GroupsIcon color="primary" />
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em" }}
-          >
+          <Typography variant="overline" color="text.secondary">
             Convocazioni
           </Typography>
         </Box>

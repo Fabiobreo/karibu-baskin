@@ -76,7 +76,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               )}
               <Typography
                 sx={{
-                  fontSize: TYPE_SCALE["3xl"],
+                  fontSize: TYPE_SCALE.xl3,
                   fontWeight: 900,
                   color: "text.primary",
                   lineHeight: 1.1,

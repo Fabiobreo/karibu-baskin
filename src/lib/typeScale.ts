@@ -21,23 +21,23 @@ export const TYPE_SCALE = {
   /** 20 px (`h6`) */
   xl: "1.25rem",
   /** 24 px (`h5`) */
-  "2xl": "1.5rem",
+  xl2: "1.5rem",
   /** 28 px */
-  "3xl": "1.75rem",
+  xl3: "1.75rem",
   /** 32 px */
-  "4xl": "2rem",
+  xl4: "2rem",
   /** 40 px */
-  "5xl": "2.5rem",
+  xl5: "2.5rem",
   /** 48 px */
-  "6xl": "3rem",
+  xl6: "3rem",
   /** 64 px */
-  "7xl": "4rem",
+  xl7: "4rem",
   /** 80 px */
-  "8xl": "5rem",
+  xl8: "5rem",
   /** 96 px */
-  "9xl": "6rem",
+  xl9: "6rem",
   /** 144 px: solo numeri decorativi (404). */
-  "10xl": "9rem",
+  xl10: "9rem",
 } as const;
 
 export type TypeStep = keyof typeof TYPE_SCALE;
