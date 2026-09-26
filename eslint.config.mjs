@@ -16,13 +16,13 @@ export default [
   {
     // I colori vanno presi dai token del tema (vedi CLAUDE.md): un letterale
     // esadecimale dentro `sx` rompe il tema chiaro/scuro e sfugge alle
-    // verifiche di contrasto. E' un **warning**, non un errore: i file
-    // rimasti da bonificare sono ancora parecchi e la build non deve
-    // rompersi, ma ogni file che si tocca va ripulito.
+    // verifiche di contrasto.
     files: ["src/**/*.tsx", "src/**/*.ts"],
     rules: {
+      // In `error` da UX-27: colori, text.disabled e fontSize letterali sono a
+      // zero, e non devono tornare.
       "no-restricted-syntax": [
-        "warn",
+        "error",
         {
           selector: "JSXAttribute[name.name='sx'] Literal[value=/#[0-9a-fA-F]{3,8}/]",
           message:
