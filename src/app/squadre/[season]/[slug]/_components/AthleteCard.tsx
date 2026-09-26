@@ -5,6 +5,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default async function AthleteCard({
   name,
@@ -45,7 +46,7 @@ export default async function AthleteCard({
           height: 48,
           bgcolor: teamColor,
           color: contrastText(teamColor),
-          fontSize: 18,
+          fontSize: TYPE_SCALE.lg,
           fontWeight: 800,
           flexShrink: 0,
         }}

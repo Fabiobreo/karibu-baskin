@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Box, Popover, TextField, Button, Typography, CircularProgress } from "@mui/material";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   groupId: string;
@@ -86,7 +87,7 @@ export default function GroupMatchInlineScore({
           minWidth: 0,
           px: 0.75,
           py: 0,
-          fontSize: "0.75rem",
+          fontSize: TYPE_SCALE.xs,
           fontWeight: 600,
           textTransform: "none",
           color: hasScore ? "text.primary" : "primary.main",
@@ -112,8 +113,8 @@ export default function GroupMatchInlineScore({
               value={home}
               onChange={(e) => setHome(e.target.value)}
               slotProps={{
-                htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1rem" } },
-                inputLabel: { sx: { fontSize: "0.75rem" } },
+                htmlInput: { min: 0, style: { textAlign: "center", fontSize: TYPE_SCALE.md } },
+                inputLabel: { sx: { fontSize: TYPE_SCALE.xs } },
               }}
               sx={{ width: 95 }}
               autoFocus
@@ -128,8 +129,8 @@ export default function GroupMatchInlineScore({
               value={away}
               onChange={(e) => setAway(e.target.value)}
               slotProps={{
-                htmlInput: { min: 0, style: { textAlign: "center", fontSize: "1rem" } },
-                inputLabel: { sx: { fontSize: "0.75rem" } },
+                htmlInput: { min: 0, style: { textAlign: "center", fontSize: TYPE_SCALE.md } },
+                inputLabel: { sx: { fontSize: TYPE_SCALE.xs } },
               }}
               sx={{ width: 95 }}
             />

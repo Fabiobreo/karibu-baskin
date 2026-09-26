@@ -7,6 +7,7 @@ import MaleIcon from "@mui/icons-material/Male";
 import { useTranslations } from "next-intl";
 import { roleColor } from "@/lib/constants";
 import type { SimPlayer } from "@/components/teams/MatchSimulator";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const pkey = (p: SimPlayer) => `${p.kind}-${p.id}`;
 
@@ -74,7 +75,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                 <Chip
                   label={groups.get(k)?.length ?? 0}
                   size="small"
-                  sx={{ height: 20, fontSize: 12, fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
                 />
               </Box>
             }
@@ -90,7 +91,10 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
             variant="outlined"
             sx={{ p: 1, display: "flex", alignItems: "center", gap: 1.5, borderRadius: 2 }}
           >
-            <Avatar src={p.image ?? undefined} sx={{ width: 36, height: 36, fontSize: 15 }}>
+            <Avatar
+              src={p.image ?? undefined}
+              sx={{ width: 36, height: 36, fontSize: TYPE_SCALE.md }}
+            >
               {p.name[0]}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -104,7 +108,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                 label={p.teamName}
                 size="small"
                 variant="outlined"
-                sx={{ height: 20, fontSize: 12, fontWeight: 600, mt: 0.25 }}
+                sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 600, mt: 0.25 }}
               />
             </Box>
             <Button

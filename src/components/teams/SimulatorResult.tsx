@@ -6,6 +6,7 @@ import IosShareIcon from "@mui/icons-material/IosShare";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useTranslations } from "next-intl";
 import type { SimResult } from "@/lib/rating/matchSimulator";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface SimulatorResultProps {
   result: SimResult;
@@ -138,7 +139,7 @@ function TeamScore({
           opacity: win ? 1 : 0.55,
           fontVariantNumeric: "tabular-nums",
           lineHeight: 1,
-          fontSize: { xs: "2.6rem", md: "3.4rem" },
+          fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
         }}
       >
         {score}

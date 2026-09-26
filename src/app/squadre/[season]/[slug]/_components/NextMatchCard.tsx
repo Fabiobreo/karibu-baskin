@@ -13,6 +13,7 @@ import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./types";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default async function NextMatchCard({
   match,
@@ -107,7 +108,7 @@ export default async function NextMatchCard({
                 color: contrastText(teamColor),
                 px: 1,
                 py: 0.4,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 fontWeight: 800,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
@@ -118,7 +119,7 @@ export default async function NextMatchCard({
             <Box sx={{ px: 1, py: 0.75 }}>
               <Typography
                 sx={{
-                  fontSize: { xs: "1.7rem", md: "2rem" },
+                  fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 },
                   fontWeight: 900,
                   color: "text.primary",
                   lineHeight: 1,
@@ -129,7 +130,7 @@ export default async function NextMatchCard({
               </Typography>
               <Typography
                 sx={{
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   fontWeight: 800,
                   color: "text.secondary",
                   letterSpacing: "0.1em",
@@ -158,7 +159,6 @@ export default async function NextMatchCard({
                 sx={{
                   color: teamColor,
                   fontWeight: 800,
-                  letterSpacing: "0.12em",
                   lineHeight: 1,
                 }}
               >
@@ -171,14 +171,14 @@ export default async function NextMatchCard({
                   bgcolor: "common.white",
                   color: "grey.900",
                   fontWeight: 800,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   height: 20,
                 }}
               />
             </Box>
             <Typography
               sx={{
-                fontSize: { xs: "1rem", md: "1.15rem" },
+                fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
                 fontWeight: 800,
                 color: "common.white",
                 lineHeight: 1.2,
@@ -200,17 +200,17 @@ export default async function NextMatchCard({
             >
               <Typography
                 sx={{
-                  fontSize: "0.78rem",
+                  fontSize: TYPE_SCALE.xs,
                   fontWeight: 700,
                   color: "common.white",
                 }}
               >
                 ⏱ {format(new Date(match.date), "HH:mm")}
               </Typography>
-              <Typography sx={{ color: "text.secondary", fontSize: "0.78rem" }}>·</Typography>
+              <Typography sx={{ color: "text.secondary", fontSize: TYPE_SCALE.xs }}>·</Typography>
               <Typography
                 sx={{
-                  fontSize: "0.78rem",
+                  fontSize: TYPE_SCALE.xs,
                   fontWeight: 700,
                   color: isImminent ? teamColor : "text.secondary",
                 }}
@@ -232,7 +232,7 @@ export default async function NextMatchCard({
                     bgcolor: teamColor,
                     color: contrastText(teamColor),
                     fontWeight: 800,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     height: 20,
                     letterSpacing: "0.04em",
                   }}
@@ -263,7 +263,7 @@ export default async function NextMatchCard({
             )}
             <Typography
               sx={{
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 fontWeight: 800,
                 color: "common.white",
                 textTransform: "uppercase",
@@ -309,7 +309,7 @@ export default async function NextMatchCard({
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
-                fontSize: { xs: "1.4rem", md: "1.7rem" },
+                fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
                 boxShadow: `0 3px 10px ${alpha(teamColor, 0.33)}`,
               }}
             >
@@ -322,14 +322,14 @@ export default async function NextMatchCard({
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
               }}
             >
               Karibu
             </Typography>
             <Typography
               sx={{
-                fontSize: { xs: "0.95rem", md: "1.15rem" },
+                fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
                 fontWeight: 900,
                 lineHeight: 1.15,
                 textAlign: "center",
@@ -362,7 +362,7 @@ export default async function NextMatchCard({
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
-                fontSize: { xs: "0.85rem", md: "1rem" },
+                fontSize: { xs: TYPE_SCALE.sm, md: TYPE_SCALE.md },
                 letterSpacing: "0.05em",
                 border: `3px solid ${teamColor}`,
                 boxShadow: `0 2px 8px ${alpha(brandColor.black, 0.2)}`,
@@ -397,7 +397,7 @@ export default async function NextMatchCard({
                 alignItems: "center",
                 justifyContent: "center",
                 fontWeight: 900,
-                fontSize: { xs: "1.4rem", md: "1.7rem" },
+                fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
                 boxShadow: `0 3px 10px ${alpha(brandColor.black, 0.2)}`,
               }}
             >
@@ -410,14 +410,14 @@ export default async function NextMatchCard({
                 fontWeight: 800,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
               }}
             >
               {t("opponent")}
             </Typography>
             <Typography
               sx={{
-                fontSize: { xs: "0.95rem", md: "1.15rem" },
+                fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
                 fontWeight: 900,
                 lineHeight: 1.15,
                 textAlign: "center",
@@ -471,7 +471,7 @@ export default async function NextMatchCard({
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                   }}
                 >
                   {t("firstLeg")}
@@ -487,13 +487,13 @@ export default async function NextMatchCard({
                     py: 0.25,
                     borderRadius: 1,
                     fontWeight: 800,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                   }}
                 >
                   <Box
                     component="span"
                     sx={{
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       letterSpacing: "0.06em",
                       textTransform: "uppercase",
                       opacity: 0.95,
@@ -505,12 +505,12 @@ export default async function NextMatchCard({
                         ? t("lostShort")
                         : t("drawShort")}
                   </Box>
-                  <Box component="span" sx={{ opacity: 0.5, fontSize: "0.75rem" }}>
+                  <Box component="span" sx={{ opacity: 0.5, fontSize: TYPE_SCALE.xs }}>
                     ·
                   </Box>
                   <Box
                     component="span"
-                    sx={{ fontVariantNumeric: "tabular-nums", fontSize: "0.78rem" }}
+                    sx={{ fontVariantNumeric: "tabular-nums", fontSize: TYPE_SCALE.xs }}
                   >
                     {prev.isHome ? prevOurScore : prevTheirScore}–
                     {prev.isHome ? prevTheirScore : prevOurScore}

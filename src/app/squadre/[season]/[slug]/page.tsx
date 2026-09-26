@@ -44,6 +44,7 @@ import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
 import { brandColor, heroBottomBorder, heroImage, heroText, heroTint } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type Props = {
   params: Promise<{ season: string; slug: string }>;
@@ -447,7 +448,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             >
               <Typography
                 sx={{
-                  fontSize: { xs: "2.4rem", sm: "3.2rem" },
+                  fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
                   fontWeight: 900,
                   color: contrastText(teamColor),
                   lineHeight: 1,
@@ -468,14 +469,14 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   fontWeight: 700,
                   bgcolor: teamColor,
                   color: contrastText(teamColor),
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                 }}
               />
               <Typography
                 variant="h3"
                 component="h1"
                 fontWeight={900}
-                sx={{ fontSize: { xs: "1.9rem", md: "2.6rem" }, lineHeight: 1.1 }}
+                sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 }, lineHeight: 1.1 }}
               >
                 {team.name}
               </Typography>
@@ -511,13 +512,16 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         borderRadius: 999,
                       }}
                     >
-                      <Typography fontWeight={900} sx={{ color: "match.onFill", fontSize: "1rem" }}>
+                      <Typography
+                        fontWeight={900}
+                        sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
+                      >
                         {wins}
                       </Typography>
                       <Typography
                         sx={{
                           color: "match.onFill",
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                           fontWeight: 700,
                           textTransform: "lowercase",
                         }}
@@ -539,14 +543,14 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       >
                         <Typography
                           fontWeight={900}
-                          sx={{ color: "match.onFill", fontSize: "1rem" }}
+                          sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
                         >
                           {draws}
                         </Typography>
                         <Typography
                           sx={{
                             color: "match.onFill",
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             fontWeight: 700,
                             textTransform: "lowercase",
                           }}
@@ -566,13 +570,16 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         borderRadius: 999,
                       }}
                     >
-                      <Typography fontWeight={900} sx={{ color: "match.onFill", fontSize: "1rem" }}>
+                      <Typography
+                        fontWeight={900}
+                        sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
+                      >
                         {losses}
                       </Typography>
                       <Typography
                         sx={{
                           color: "match.onFill",
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                           fontWeight: 700,
                           textTransform: "lowercase",
                         }}
@@ -632,11 +639,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               }}
             >
               <Box>
-                <AccentText
-                  variant="overline"
-                  accent={teamColor}
-                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
-                >
+                <AccentText variant="overline" accent={teamColor}>
                   Statistiche
                 </AccentText>
                 <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5 }}>
@@ -658,7 +661,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       size="small"
                       variant={!includeFriendlies ? "filled" : "outlined"}
                       color={!includeFriendlies ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: "0.75rem" }}
+                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
                     />
                   </Link>
                   <Link
@@ -671,7 +674,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       size="small"
                       variant={includeFriendlies ? "filled" : "outlined"}
                       color={includeFriendlies ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: "0.75rem" }}
+                      sx={{ cursor: "pointer", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
                     />
                   </Link>
                 </Box>
@@ -864,11 +867,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           <Box sx={{ mb: 6 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
               <StarIcon sx={{ color: teamColor }} />
-              <AccentText
-                variant="overline"
-                accent={teamColor}
-                sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
-              >
+              <AccentText variant="overline" accent={teamColor}>
                 {t("leaders")}
               </AccentText>
             </Box>
@@ -926,11 +925,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <GroupsIcon sx={{ color: teamColor }} />
-                <AccentText
-                  variant="overline"
-                  accent={teamColor}
-                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
-                >
+                <AccentText variant="overline" accent={teamColor}>
                   {t("rosterSection")}
                 </AccentText>
               </Box>
@@ -965,7 +960,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                               alignItems: "center",
                               justifyContent: "center",
                               fontWeight: 900,
-                              fontSize: "0.85rem",
+                              fontSize: TYPE_SCALE.sm,
                             }}
                           >
                             {roleNum}
@@ -1049,11 +1044,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <EmojiEventsIcon sx={{ color: teamColor }} />
-                <AccentText
-                  variant="overline"
-                  accent={teamColor}
-                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
-                >
+                <AccentText variant="overline" accent={teamColor}>
                   {t("historySection")}
                 </AccentText>
               </Box>
@@ -1080,11 +1071,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <CalendarTodayIcon sx={{ color: teamColor }} />
-                <AccentText
-                  variant="overline"
-                  accent={teamColor}
-                  sx={{ fontWeight: 700, letterSpacing: "0.1em" }}
-                >
+                <AccentText variant="overline" accent={teamColor}>
                   {t("upcomingSection")}
                 </AccentText>
               </Box>

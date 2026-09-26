@@ -25,6 +25,7 @@ import { TRUESKILL } from "@/lib/rating/trueskill";
 import { optimizeLineup } from "@/lib/rating/lineupOptimizer";
 import type { CandidateInput } from "@/lib/matches/callupStats";
 import type { LineupResult, RoleDepthEntry } from "@/lib/rating/lineupOptimizer";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // Gap μ oltre il quale scatta il warning rischio falli
 const GAP_WARNING_THRESHOLD = 6;
@@ -89,7 +90,7 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
               Seleziona almeno 6 giocatori con ruolo assegnato per visualizzare l&apos;analisi.
             </Typography>
           ) : result === null || result.feasibleCount === 0 ? (
-            <Alert severity="warning" sx={{ fontSize: "0.82rem" }}>
+            <Alert severity="warning" sx={{ fontSize: TYPE_SCALE.sm }}>
               Nessuna formazione valida trovata. Controlla i vincoli regolamentari (R1/R2 esclusivi,
               somma ruoli ≤ 23, genere su R4/R5).
             </Alert>
@@ -153,18 +154,13 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-        <Typography
-          variant="overline"
-          fontWeight={800}
-          color="text.secondary"
-          sx={{ letterSpacing: "0.08em" }}
-        >
+        <Typography variant="overline" fontWeight={800} color="text.secondary">
           Formazione Ottimale
         </Typography>
         <Chip
           label={`Σμ ${lineup.muSum.toFixed(1)}`}
           size="small"
-          sx={{ fontWeight: 700, fontSize: "0.75rem", height: 20 }}
+          sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, height: 20 }}
         />
         {winLabel && (
           <Chip
@@ -172,7 +168,7 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
             size="small"
             sx={{
               fontWeight: 700,
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               height: 20,
               bgcolor:
                 winLabel === "Favoriti"
@@ -217,7 +213,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
         <Chip
           label={`Σμ ${lineup.muSum.toFixed(1)}`}
           size="small"
-          sx={{ fontWeight: 600, fontSize: "0.75rem", height: 20 }}
+          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, height: 20 }}
         />
         {lineup.winProbability != null && (
           <Typography variant="caption" color="text.secondary">
@@ -244,7 +240,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
                 }
                 label={p.name.split(" ")[0]}
                 size="small"
-                sx={{ fontSize: "0.75rem", fontWeight: 600, height: 26 }}
+                sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600, height: 26 }}
               />
             </Tooltip>
           ))}
@@ -264,11 +260,11 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <Avatar
         src={p.image ?? undefined}
-        sx={{ width: 28, height: 28, fontSize: 11, bgcolor: roleTint }}
+        sx={{ width: 28, height: 28, fontSize: TYPE_SCALE.xs, bgcolor: roleTint }}
       >
         {p.name[0]}
       </Avatar>
-      <Typography variant="body2" fontWeight={600} sx={{ flex: 1, fontSize: "0.84rem" }}>
+      <Typography variant="body2" fontWeight={600} sx={{ flex: 1, fontSize: TYPE_SCALE.sm }}>
         {p.name}
       </Typography>
       {p.sportRole && (
@@ -279,7 +275,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
             bgcolor: roleTint,
             color: "common.white",
             fontWeight: 700,
-            fontSize: "0.75rem",
+            fontSize: TYPE_SCALE.xs,
             height: 20,
           }}
         />
@@ -302,7 +298,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
         <Tooltip title={`Altezza: ${p.height} cm`}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
             <HeightIcon sx={{ fontSize: 13, color: "text.secondary" }} />
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
               {p.height}
             </Typography>
           </Box>
@@ -321,7 +317,7 @@ function RoleDepthPanel({ entries }: { entries: RoleDepthEntry[] }) {
         variant="overline"
         fontWeight={800}
         color="text.secondary"
-        sx={{ letterSpacing: "0.08em", display: "block", mb: 1 }}
+        sx={{ display: "block", mb: 1 }}
       >
         Profondità per Ruolo
       </Typography>
@@ -357,7 +353,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
           bgcolor: roleColor(entry.role),
           color: ROLE_TEXT_COLOR,
           fontWeight: 700,
-          fontSize: "0.75rem",
+          fontSize: TYPE_SCALE.xs,
           height: 20,
           minWidth: 32,
           flexShrink: 0,
@@ -373,7 +369,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               size="small"
               sx={{
                 fontWeight: 700,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 height: 22,
                 bgcolor: (theme) =>
                   alpha(roleColor(entry.role) ?? theme.palette.primary.main, 0.15),
@@ -421,7 +417,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
                 size="small"
                 sx={{
                   fontWeight: 600,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   height: 22,
                   bgcolor: "action.hover",
                   color: "text.secondary",
@@ -441,7 +437,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               variant="caption"
               color="match.loss"
               fontWeight={700}
-              sx={{ fontSize: "0.75rem" }}
+              sx={{ fontSize: TYPE_SCALE.xs }}
             >
               −{entry.gap.toFixed(1)}
             </Typography>

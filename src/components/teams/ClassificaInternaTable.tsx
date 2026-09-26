@@ -29,6 +29,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export interface PlayerStatRow {
   /** Id del giocatore (User o Child). */
@@ -247,12 +248,12 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                  <SearchIcon sx={{ fontSize: TYPE_SCALE.md, color: "text.secondary" }} />
                 </InputAdornment>
               ),
             },
           }}
-          sx={{ width: 200, "& .MuiOutlinedInput-root": { fontSize: "0.82rem" } }}
+          sx={{ width: 200, "& .MuiOutlinedInput-root": { fontSize: TYPE_SCALE.sm } }}
         />
         <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
           <Typography
@@ -269,7 +270,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             variant={roleFilter === null ? "filled" : "outlined"}
             color={roleFilter === null ? "primary" : "default"}
             onClick={() => handleRoleFilter(null)}
-            sx={{ fontWeight: 600, cursor: "pointer", fontSize: "0.75rem" }}
+            sx={{ fontWeight: 600, cursor: "pointer", fontSize: TYPE_SCALE.xs }}
           />
           {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
             <Chip
@@ -281,7 +282,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               sx={{
                 fontWeight: 700,
                 cursor: "pointer",
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 bgcolor: roleFilter === r ? roleColor(r) : "transparent",
                 color: roleFilter === r ? contrastText(roleColor(r)) : "text.primary",
                 border: "1px solid",
@@ -333,11 +334,16 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
-                sx={{ width: 28, fontWeight: 700, fontSize: "0.75rem", color: "text.secondary" }}
+                sx={{
+                  width: 28,
+                  fontWeight: 700,
+                  fontSize: TYPE_SCALE.xs,
+                  color: "text.secondary",
+                }}
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: "0.75rem", minWidth: 200 }}>
+              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, minWidth: 200 }}>
                 {t("colPlayer")}
               </TableCell>
               {COLS.map((col) => (
@@ -346,7 +352,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   align="center"
                   sx={{
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     whiteSpace: "nowrap",
                     px: 1,
                   }}
@@ -356,7 +362,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                     direction={sortBy === col.key ? sortDir : "desc"}
                     onClick={() => handleSort(col.key)}
                     title={col.title}
-                    sx={{ "& .MuiTableSortLabel-icon": { fontSize: "0.75rem" } }}
+                    sx={{ "& .MuiTableSortLabel-icon": { fontSize: TYPE_SCALE.xs } }}
                   >
                     {col.label}
                   </TableSortLabel>
@@ -378,14 +384,16 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             ) : (
               paginated.map((row, i) => (
                 <TableRow key={row.id} hover>
-                  <TableCell sx={{ color: "text.secondary", fontWeight: 700, fontSize: "0.8rem" }}>
+                  <TableCell
+                    sx={{ color: "text.secondary", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
+                  >
                     {page * rowsPerPage + i + 1}
                   </TableCell>
                   <TableCell sx={{ minWidth: 200 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Avatar
                         src={row.image ?? undefined}
-                        sx={{ width: 26, height: 26, fontSize: 11 }}
+                        sx={{ width: 26, height: 26, fontSize: TYPE_SCALE.xs }}
                       >
                         {(row.name ?? "?")[0]}
                       </Avatar>
@@ -400,14 +408,18 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                               fontWeight={700}
                               sx={{
                                 "&:hover": { textDecoration: "underline" },
-                                fontSize: "0.82rem",
+                                fontSize: TYPE_SCALE.sm,
                               }}
                             >
                               {row.name}
                             </Typography>
                           </Link>
                         ) : (
-                          <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.82rem" }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{ fontSize: TYPE_SCALE.sm }}
+                          >
                             {row.name}
                           </Typography>
                         )}
@@ -435,7 +447,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                                 bgcolor: t.color ?? "primary.main",
                                 color: contrastText(t.color),
                                 fontWeight: 600,
-                                fontSize: "0.75rem",
+                                fontSize: TYPE_SCALE.xs,
                                 height: 20,
                               }}
                             />
@@ -463,7 +475,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         sx={{
                           fontWeight: isActive ? 700 : 400,
                           color: isActive ? "primary.onLight" : "text.primary",
-                          fontSize: "0.82rem",
+                          fontSize: TYPE_SCALE.sm,
                           whiteSpace: "nowrap",
                           px: 1,
                           // Cifre a larghezza fissa: senza, le colonne
@@ -476,7 +488,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           <Typography
                             component="span"
                             display="block"
-                            sx={{ fontSize: "0.75rem", color: "text.secondary", fontWeight: 600 }}
+                            sx={{
+                              fontSize: TYPE_SCALE.xs,
+                              color: "text.secondary",
+                              fontWeight: 600,
+                            }}
                           >
                             {t("loanDetail", { count: loan })}
                           </Typography>
@@ -526,7 +542,10 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   >
                     {rank}
                   </Typography>
-                  <Avatar src={row.image ?? undefined} sx={{ width: 32, height: 32, fontSize: 13 }}>
+                  <Avatar
+                    src={row.image ?? undefined}
+                    sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}
+                  >
                     {(row.name ?? "?")[0]}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -562,7 +581,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                             bgcolor: t.color ?? "primary.main",
                             color: contrastText(t.color),
                             fontWeight: 600,
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             height: 20,
                           }}
                         />
@@ -622,7 +641,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           variant="caption"
                           color="text.secondary"
                           display="block"
-                          sx={{ fontSize: "0.75rem", lineHeight: 1.2 }}
+                          sx={{ fontSize: TYPE_SCALE.xs, lineHeight: 1.2 }}
                         >
                           {label}
                         </Typography>
@@ -630,7 +649,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           variant="body2"
                           fontWeight={primary ? 800 : 600}
                           color="text.primary"
-                          sx={{ fontSize: "0.82rem", fontVariantNumeric: "tabular-nums" }}
+                          sx={{ fontSize: TYPE_SCALE.sm, fontVariantNumeric: "tabular-nums" }}
                         >
                           {value}
                         </Typography>

@@ -6,6 +6,7 @@ import { brandColor } from "@/lib/heroStyles";
 import MedalDisc from "@/components/rating/MedalDisc";
 import AccentText from "@/components/common/AccentText";
 import { onHover } from "@/lib/hoverStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default function LeaderCard({
   rank,
@@ -58,7 +59,7 @@ export default function LeaderCard({
           height: 52,
           bgcolor: teamColor,
           color: contrastText(teamColor),
-          fontSize: 20,
+          fontSize: TYPE_SCALE.xl,
           fontWeight: 800,
         }}
       >

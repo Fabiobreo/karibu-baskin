@@ -28,6 +28,7 @@ import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
   title: "Squadre",
@@ -87,7 +88,7 @@ export default async function SquadrePage() {
                   component="p"
                   fontWeight={800}
                   color="text.primary"
-                  sx={{ fontSize: { xs: "1.8rem", md: "2.2rem" } }}
+                  sx={{ fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
                 >
                   {s.value}
                 </Typography>
@@ -124,12 +125,7 @@ export default async function SquadrePage() {
                   sx={{ fontWeight: 700 }}
                 />
               )}
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em" }}
-              >
+              <Typography variant="overline" color="text.secondary">
                 {t("seasonLabel")} {displaySeason}
               </Typography>
             </Box>
@@ -142,7 +138,7 @@ export default async function SquadrePage() {
               variant="h4"
               component="h2"
               fontWeight={800}
-              sx={{ mb: 3, fontSize: { xs: "1.7rem", md: "2.1rem" } }}
+              sx={{ mb: 3, fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
             >
               {t("ourTeams")}
             </Typography>

@@ -35,6 +35,7 @@ import SimulatorResult from "@/components/teams/SimulatorResult";
 import SimulatorChecklist from "@/components/teams/SimulatorChecklist";
 import SimulatorPool from "@/components/teams/SimulatorPool";
 import RoleBadge from "@/components/common/RoleBadge";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Giocatore selezionabile nel simulatore.
@@ -300,12 +301,7 @@ export default function MatchSimulator({ teams, initial = EMPTY_INITIAL }: Match
       <Divider sx={{ my: 3 }} />
 
       {/* Pool disponibili — raggruppato per ruolo */}
-      <Typography
-        variant="overline"
-        color="text.secondary"
-        fontWeight={700}
-        sx={{ letterSpacing: "0.1em" }}
-      >
+      <Typography variant="overline" color="text.secondary">
         {t("allPlayers")}
       </Typography>
       {available.length === 0 ? (
@@ -364,7 +360,10 @@ function SideColumn({
         <Stack spacing={0.75}>
           {players.map((p) => (
             <Box key={keyOf(p)} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar src={p.image ?? undefined} sx={{ width: 28, height: 28, fontSize: 13 }}>
+              <Avatar
+                src={p.image ?? undefined}
+                sx={{ width: 28, height: 28, fontSize: TYPE_SCALE.sm }}
+              >
                 {p.name[0]}
               </Avatar>
               {/* Numero del ruolo col badge di sempre, "Ruolo N" per chi usa un

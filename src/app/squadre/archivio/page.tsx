@@ -95,10 +95,8 @@ export default async function SquadreArchivioPage() {
                 {i > 0 && <Divider sx={{ mb: 6 }} />}
                 <Typography
                   variant="overline"
-                  fontWeight={700}
                   sx={{
                     color: "text.secondary",
-                    letterSpacing: "0.1em",
                     display: "block",
                     mb: 1.5,
                   }}
