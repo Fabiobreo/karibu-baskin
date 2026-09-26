@@ -7,6 +7,7 @@ import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import { useLocale, useTranslations } from "next-intl";
 import type { GuestOnboarding, OnboardingStep } from "@/lib/guestOnboarding";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface GuestOnboardingCardProps {
   data: GuestOnboarding;
@@ -124,12 +125,7 @@ export default function GuestOnboardingCard({
         }}
       >
         <Box>
-          <Typography
-            variant="overline"
-            color="text.secondary"
-            fontWeight={700}
-            sx={{ letterSpacing: "0.1em", lineHeight: 1.5 }}
-          >
+          <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1.5 }}>
             {t("overline")}
           </Typography>
           <Typography
@@ -137,7 +133,7 @@ export default function GuestOnboardingCard({
             variant="h5"
             component="h2"
             fontWeight={800}
-            sx={{ fontSize: { xs: "1.25rem", md: "1.5rem" } }}
+            sx={{ fontSize: { xs: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 } }}
           >
             {t("title")}
           </Typography>

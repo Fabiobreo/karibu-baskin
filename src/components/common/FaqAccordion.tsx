@@ -14,6 +14,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
 import { useTranslations } from "next-intl";
 import type { FaqCategory } from "@/lib/content/faqs";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface FaqAccordionProps {
   faqs: FaqCategory[];
@@ -50,7 +51,7 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
           input: {
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                <SearchIcon sx={{ fontSize: TYPE_SCALE.lg, color: "text.secondary" }} />
               </InputAdornment>
             ),
           },
@@ -65,7 +66,7 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
               <Typography
                 variant="overline"
                 color="text.secondary"
-                sx={{ fontWeight: 700, mb: 1, display: "block" }}
+                sx={{ mb: 1, display: "block" }}
               >
                 {section.category}
               </Typography>

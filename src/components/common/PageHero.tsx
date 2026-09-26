@@ -2,6 +2,7 @@ import { Box, Chip, Container, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { brandColor, heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface PageHeroProps {
   title?: string;
@@ -74,7 +75,10 @@ export default function PageHero({
               variant="h3"
               component="h1"
               fontWeight={800}
-              sx={{ mb: subtitle || children ? 2 : 0, fontSize: { xs: "2rem", md: "2.8rem" } }}
+              sx={{
+                mb: subtitle || children ? 2 : 0,
+                fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
+              }}
             >
               {title}
             </Typography>
@@ -87,7 +91,7 @@ export default function PageHero({
                   fontWeight: 400,
                   maxWidth: align === "center" ? subtitleMaxWidth : undefined,
                   mx: align === "center" ? "auto" : undefined,
-                  fontSize: { xs: "1rem", md: "1.1rem" },
+                  fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
                 }}
               >
                 {subtitle}

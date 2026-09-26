@@ -10,6 +10,7 @@ import {
   Alert,
 } from "@mui/material";
 import BugReportIcon from "@mui/icons-material/BugReport";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   const [email, setEmail] = useState("");
@@ -57,7 +58,7 @@ export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: str
         icon={<BugReportIcon fontSize="inherit" />}
         severity="warning"
         variant="outlined"
-        sx={{ mb: 2, fontSize: "0.75rem", py: 0.5 }}
+        sx={{ mb: 2, fontSize: TYPE_SCALE.xs, py: 0.5 }}
       >
         Modalità test: non disponibile in produzione
       </Alert>

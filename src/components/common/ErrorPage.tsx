@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { alpha } from "@mui/material/styles";
 import Image from "next/image";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // Testi di riserva, in italiano come ogni URL senza cookie. Servono quando la
 // pagina di errore viene resa fuori dal NextIntlClientProvider: succede con le
@@ -71,7 +72,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
         <Typography
           sx={{
             fontWeight: 900,
-            fontSize: { xs: "6rem", md: "9rem" },
+            fontSize: { xs: TYPE_SCALE.xl9, md: TYPE_SCALE.xl10 },
             color: "primary.main",
             lineHeight: 1,
             mt: 2,
@@ -88,7 +89,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       <Typography
         variant="h5"
         fontWeight={800}
-        sx={{ mt: code ? 1 : 3, mb: 1.5, fontSize: { xs: "1.2rem", md: "1.5rem" } }}
+        sx={{ mt: code ? 1 : 3, mb: 1.5, fontSize: { xs: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 } }}
       >
         {title}
       </Typography>
@@ -100,7 +101,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
           mb: 4,
           maxWidth: 380,
           lineHeight: 1.7,
-          fontSize: "0.95rem",
+          fontSize: TYPE_SCALE.md,
         }}
       >
         {description}
@@ -111,7 +112,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
         <Typography
           sx={{
             color: "rgba(255,255,255,0.25)",
-            fontSize: "0.75rem",
+            fontSize: TYPE_SCALE.xs,
             fontFamily: "monospace",
             mb: 2,
             mt: -2,

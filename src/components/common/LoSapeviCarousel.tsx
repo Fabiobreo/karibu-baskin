@@ -8,6 +8,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
 import { heroGradient } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 const INTERVAL_MS = 7000;
 
@@ -133,9 +134,7 @@ export default function LoSapeviCarousel() {
               variant="overline"
               sx={{
                 color: "text.secondary",
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 display: "block",
                 mb: 0.25,
               }}
@@ -195,7 +194,7 @@ export default function LoSapeviCarousel() {
                 color: "common.white",
                 border: "1px solid",
                 borderColor: "rgba(255,255,255,0.3)",
-                "& svg": { fontSize: 16 },
+                "& svg": { fontSize: TYPE_SCALE.md },
                 "&:hover": {
                   bgcolor: "rgba(255,255,255,0.14)",
                   borderColor: "rgba(255,255,255,0.6)",

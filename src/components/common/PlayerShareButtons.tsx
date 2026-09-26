@@ -10,6 +10,7 @@ import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
 import { socialBrandColor } from "@/lib/heroStyles";
 import { readableFill } from "@/lib/colorUtils";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   playerName: string;
@@ -97,7 +98,7 @@ export default function PlayerShareButtons({
           bgcolor: fill.bg,
           color: fill.fg,
           fontWeight: 700,
-          fontSize: "0.78rem",
+          fontSize: TYPE_SCALE.xs,
           textTransform: "none",
           px: 1.75,
           py: 0.5,

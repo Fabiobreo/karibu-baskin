@@ -1,6 +1,7 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import { getTranslations } from "next-intl/server";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Invito a provare, in fondo alla home pubblica.
@@ -26,7 +27,7 @@ export default async function JoinUsCta() {
           variant="h4"
           component="h2"
           fontWeight={800}
-          sx={{ mb: 1.5, fontSize: { xs: "1.6rem", md: "2rem" } }}
+          sx={{ mb: 1.5, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
         >
           {t("joinTitle")}
         </Typography>

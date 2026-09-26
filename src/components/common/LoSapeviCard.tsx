@@ -6,6 +6,7 @@ import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
 import { heroGradient } from "@/lib/heroStyles";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Mostra un fatto casuale al mount — cambia ad ogni refresh di pagina.
@@ -65,11 +66,9 @@ export default function LoSapeviCard() {
               variant="overline"
               sx={{
                 color: "text.secondary",
-                fontWeight: 700,
-                letterSpacing: "0.12em",
                 display: "block",
                 mb: 0.25,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
               }}
             >
               {t("didYouKnow")}

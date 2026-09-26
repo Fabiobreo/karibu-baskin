@@ -4,6 +4,7 @@ import { Box, Typography, Button, Container } from "@mui/material";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 function scrollToAllenamenti() {
   document.getElementById("allenamenti")?.scrollIntoView({ behavior: "smooth" });
@@ -95,7 +96,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
             sx={{
               color: "common.white",
               fontWeight: 700,
-              fontSize: { xs: "1.1rem", md: "1.35rem" },
+              fontSize: { xs: TYPE_SCALE.lg, md: TYPE_SCALE.xl },
               mb: 1.5,
               textShadow: "0 1px 8px rgba(0,0,0,0.5)",
             }}
@@ -112,8 +113,8 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
           sx={{
             fontWeight: 900,
             fontSize: guest
-              ? { xs: "3rem", sm: "4rem", md: "5rem" }
-              : { xs: "3.8rem", sm: "5rem", md: "6.5rem" },
+              ? { xs: TYPE_SCALE.xl6, sm: TYPE_SCALE.xl7, md: TYPE_SCALE.xl8 }
+              : { xs: TYPE_SCALE.xl7, sm: TYPE_SCALE.xl8, md: TYPE_SCALE.xl9 },
             lineHeight: 0.95,
             letterSpacing: "-0.03em",
             mb: compact ? 2.5 : 3.5,
@@ -160,7 +161,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
           sx={{
             color: "rgba(255,255,255,0.78)",
             fontWeight: 400,
-            fontSize: { xs: "1rem", md: "1.15rem" },
+            fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
             lineHeight: 1.65,
             mb: compact ? 4 : 5,
             maxWidth: 480,
@@ -180,7 +181,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
               fontWeight: 700,
               px: 3.5,
               py: 1.4,
-              fontSize: "0.95rem",
+              fontSize: TYPE_SCALE.sm,
               borderRadius: 2,
               boxShadow: (theme) => `0 4px 22px ${alpha(theme.palette.primary.main, 0.55)}`,
               "&:hover": {
@@ -202,7 +203,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
               fontWeight: 600,
               px: 3,
               py: 1.4,
-              fontSize: "0.95rem",
+              fontSize: TYPE_SCALE.sm,
               borderRadius: 2,
               color: "common.white",
               borderColor: "rgba(255,255,255,0.35)",

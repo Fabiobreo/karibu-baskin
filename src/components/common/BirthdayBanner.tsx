@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { heroGradient } from "@/lib/heroStyles";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default async function BirthdayBanner() {
   const now = new Date();
@@ -59,7 +60,7 @@ export default async function BirthdayBanner() {
             textAlign: "center",
           }}
         >
-          <Typography sx={{ fontSize: "1.4rem", lineHeight: 1 }}>🎂</Typography>
+          <Typography sx={{ fontSize: TYPE_SCALE.xl2, lineHeight: 1 }}>🎂</Typography>
           <Typography variant="body2" fontWeight={700}>
             {celebrants.length === 1 ? (
               <>

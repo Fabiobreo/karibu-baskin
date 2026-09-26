@@ -3,6 +3,7 @@ import { Button, CircularProgress } from "@mui/material";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Pulsante di accesso Google.
@@ -49,7 +50,7 @@ export default function GoogleSignInButton({ callbackUrl = "/" }: { callbackUrl?
       sx={{
         textTransform: "none",
         fontWeight: 700,
-        fontSize: "0.95rem",
+        fontSize: TYPE_SCALE.md,
         py: 1.25,
         // Fondo chiaro e bordo tenue: e' la variante "light" prevista dalle
         // linee guida, e l'ombra la stacca dal magic link senza ricolorarla.
