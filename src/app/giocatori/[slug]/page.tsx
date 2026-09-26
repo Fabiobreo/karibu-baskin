@@ -937,7 +937,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
         {/* Info atleta */}
         <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-          <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+          <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
             {t("athleteInfo")}
           </Typography>
           <Grid container spacing={2}>
@@ -1022,7 +1022,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <Typography variant="overline" color="text.secondary">
                   {t("statistics")}
                 </Typography>
-                <Typography variant="h4" fontWeight={800}>
+                <Typography component="h2" variant="h4" fontWeight={800}>
                   {t("competitive")}
                 </Typography>
               </Box>
@@ -1094,6 +1094,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     sx={{ p: 2, textAlign: "center", border: "1px solid", borderColor: "divider" }}
                   >
                     <Typography
+                      component="p"
                       variant="h4"
                       fontWeight={800}
                       sx={{
@@ -1156,7 +1157,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {t("honors")}
                 </Typography>
               </Box>
-              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography component="h2" variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {t("medals")}
               </Typography>
               <Grid container spacing={2}>
@@ -1239,7 +1240,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {t("teamsSection")}
                 </Typography>
               </Box>
-              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography component="h2" variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {t("competitiveHistory")}
               </Typography>
               <Stack spacing={1.5}>
@@ -1320,7 +1321,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {t("matches")}
                 </Typography>
               </Box>
-              <Typography variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography component="h2" variant="h4" fontWeight={800} sx={{ mb: 3 }}>
                 {t("matchStats")}
               </Typography>
               <Stack spacing={1.5}>
@@ -1435,7 +1436,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {player.teamMemberships.length === 0 && !hasStats && (
           <Box sx={{ textAlign: "center", py: 8 }}>
             <SportsSoccerIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
+            <Typography component="p" variant="h6" color="text.secondary">
               {t("noStats")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -1468,7 +1469,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 function StatItem({ label, value }: { label: string; value: number }) {
   return (
     <Box sx={{ textAlign: "center" }}>
-      <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>
+      <Typography component="p" variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>
         {value}
       </Typography>
       <Typography

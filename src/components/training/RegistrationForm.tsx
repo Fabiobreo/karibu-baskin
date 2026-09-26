@@ -220,7 +220,7 @@ export default function RegistrationForm({
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
+      <Typography component="h2" variant="h6" gutterBottom>
         {t("register")}
       </Typography>
 

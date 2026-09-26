@@ -69,7 +69,7 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
         <HowToRegIcon color="warning" />
-        <Typography variant="subtitle1" fontWeight={700}>
+        <Typography component="h2" variant="subtitle1" fontWeight={700}>
           Nuovi account da approvare
         </Typography>
         <Chip label={guests.length} size="small" color="warning" sx={{ fontWeight: 700 }} />

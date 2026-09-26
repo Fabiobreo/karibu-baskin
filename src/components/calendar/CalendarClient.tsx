@@ -211,6 +211,7 @@ export default function CalendarClient({
           <ChevronLeftIcon />
         </IconButton>
         <Typography
+          component="h2"
           variant="h5"
           fontWeight={700}
           sx={{

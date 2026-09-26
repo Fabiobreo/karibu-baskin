@@ -85,6 +85,7 @@ export default function SessionCard({
   isRegistered = false,
   myRegistrationId = null,
   isStaff = false,
+  headingComponent = "h3",
 }: {
   session: SessionWithCount;
   hero?: boolean;
@@ -93,6 +94,8 @@ export default function SessionCard({
   isRegistered?: boolean;
   myRegistrationId?: string | null;
   isStaff?: boolean;
+  /** Livello del titolo: h3 sotto una sezione (home), h2 dove la lista sta subito sotto l'h1. */
+  headingComponent?: "h2" | "h3";
 }) {
   const [teamsOpen, setTeamsOpen] = useState(false);
   const dateLocale = useActiveDateLocale();
@@ -203,7 +206,7 @@ export default function SessionCard({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, minWidth: 0 }}>
             <Typography
               variant={hero ? "h4" : "subtitle1"}
-              component="h3"
+              component={headingComponent}
               fontWeight={hero ? 800 : 700}
               noWrap={!hero}
               sx={{

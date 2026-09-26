@@ -124,7 +124,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
           <Box
             sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}
           >
-            <Typography variant="subtitle1" fontWeight={700}>
+            <Typography component="h2" variant="subtitle1" fontWeight={700}>
               Ultimi iscritti
             </Typography>
             <Link href="/admin/utenti" style={{ textDecoration: "none" }}>

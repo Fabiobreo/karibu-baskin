@@ -504,6 +504,7 @@ export default function AllenamentiClient({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {inCorso.map((s) => (
               <SessionCard
+                headingComponent="h2"
                 key={s.id}
                 session={s}
                 live
@@ -534,6 +535,7 @@ export default function AllenamentiClient({
           >
             {heroSessions.map((s) => (
               <SessionHeroCard
+                headingComponent="h2"
                 key={s.id}
                 session={s}
                 isRegistered={registeredSet.has(s.id)}

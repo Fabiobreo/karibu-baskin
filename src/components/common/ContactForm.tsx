@@ -53,7 +53,7 @@ export default function ContactForm() {
       noValidate
       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
-      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h3" variant="subtitle1" fontWeight={700} gutterBottom>
         {t("formTitle")}
       </Typography>
       {state.error && (

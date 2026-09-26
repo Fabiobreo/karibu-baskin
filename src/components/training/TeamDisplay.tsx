@@ -269,7 +269,7 @@ export function AlignedTeamGrid({
           gap: 1,
         }}
       >
-        <Typography variant="h6" sx={{ color: "common.white", fontWeight: 700 }}>
+        <Typography component="h3" variant="h6" sx={{ color: "common.white", fontWeight: 700 }}>
           {teamColorLabel(m.key)}
         </Typography>
         <Chip
@@ -455,7 +455,7 @@ function TeamEditor({
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="subtitle2" fontWeight={700}>
+                <Typography component="h3" variant="subtitle2" fontWeight={700}>
                   {t("editorUnassigned")}
                 </Typography>
                 <Chip
@@ -535,7 +535,11 @@ function TeamEditor({
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="subtitle2" sx={{ color: "common.white", fontWeight: 700 }}>
+                  <Typography
+                    component="h3"
+                    variant="subtitle2"
+                    sx={{ color: "common.white", fontWeight: 700 }}
+                  >
                     {teamColorLabel(m.key)}
                   </Typography>
                   <Chip

@@ -119,7 +119,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
     <Paper elevation={2} sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
         <NotificationsActiveIcon fontSize="small" color="action" />
-        <Typography variant="subtitle1" fontWeight={700}>
+        <Typography component="h2" variant="subtitle1" fontWeight={700}>
           Invia notifica push
         </Typography>
       </Box>

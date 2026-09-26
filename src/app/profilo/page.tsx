@@ -445,7 +445,7 @@ export default async function ProfiloPage() {
   // ── Contenuto tab "Famiglia" (solo PARENT/ADMIN) ──
   const familyTab = isParent ? (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
         {t("myChildren")}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -461,7 +461,7 @@ export default async function ProfiloPage() {
   const parentsTab =
     myParents.length > 0 ? (
       <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+        <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
           {t("myParents")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -506,7 +506,7 @@ export default async function ProfiloPage() {
   // ── Contenuto tab "Notifiche" ──
   const notificationsTab = (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
         {t("notificationsSection")}
       </Typography>
       <NotificationPrefsPanel initialPrefs={mergePrefs(user.notifPrefs)} />

@@ -33,7 +33,7 @@ export default function TeamsHeader({
   const t = useTranslations("nav");
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-      <Typography variant="h6" fontWeight={700}>
+      <Typography component="h2" variant="h6" fontWeight={700}>
         {t("teams")}
       </Typography>
       {teams && (

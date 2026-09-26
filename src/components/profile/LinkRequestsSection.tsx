@@ -112,7 +112,7 @@ export default function LinkRequestsSection() {
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         <FamilyRestroomIcon color="warning" fontSize="small" />
-        <Typography variant="subtitle1" fontWeight={700}>
+        <Typography component="h2" variant="subtitle1" fontWeight={700}>
           {t("title")}
         </Typography>
         <Chip label={requests.length} size="small" color="warning" sx={{ fontWeight: 700 }} />

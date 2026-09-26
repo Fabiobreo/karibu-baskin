@@ -417,7 +417,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
         }}
       >
         <SportsBasketballIcon sx={{ fontSize: 18, color: "primary.main" }} />
-        <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
+        <Typography component="h2" variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
           {t("matchResultsTitle")}
         </Typography>
         {savedCount > 0 && (

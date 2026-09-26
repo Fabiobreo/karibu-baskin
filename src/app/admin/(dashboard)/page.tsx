@@ -295,7 +295,7 @@ function StatCard({
           >
             {value}
           </Typography>
-          <Typography variant="subtitle2" fontWeight={700} sx={{ mt: 0.5 }}>
+          <Typography component="p" variant="subtitle2" fontWeight={700} sx={{ mt: 0.5 }}>
             {label}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>

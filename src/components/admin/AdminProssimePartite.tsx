@@ -50,7 +50,7 @@ export default async function AdminProssimePartite() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
         <GroupAddIcon sx={{ color: "primary.main" }} />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle1" fontWeight={700}>
+          <Typography component="h2" variant="subtitle1" fontWeight={700}>
             Partite imminenti
           </Typography>
         </Box>

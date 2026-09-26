@@ -83,6 +83,7 @@ export default async function SponsorPage() {
             {t("sponsor.thanksTo")}
           </Typography>
           <Typography
+            component="h2"
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
@@ -178,6 +179,7 @@ export default async function SponsorPage() {
             {t("sponsor.joinUs")}
           </Typography>
           <Typography
+            component="h2"
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
@@ -204,7 +206,12 @@ export default async function SponsorPage() {
                 >
                   <HandshakeIcon sx={{ color: "primary.main", flexShrink: 0, mt: 0.3 }} />
                   <Box>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.25 }}>
+                    <Typography
+                      component="h3"
+                      variant="subtitle2"
+                      fontWeight={700}
+                      sx={{ mb: 0.25 }}
+                    >
                       {p.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -231,7 +238,7 @@ export default async function SponsorPage() {
             }}
           >
             <Box>
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+              <Typography component="h3" variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
                 {t("sponsor.interestedSponsor")}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>

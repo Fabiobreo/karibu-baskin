@@ -265,7 +265,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       flexShrink: 0,
                     }}
                   />
-                  <Typography variant="h6" fontWeight={800}>
+                  <Typography component="h2" variant="h6" fontWeight={800}>
                     {team.name}
                   </Typography>
                   {team.championship && (

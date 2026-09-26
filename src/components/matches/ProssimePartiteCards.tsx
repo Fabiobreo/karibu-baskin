@@ -118,6 +118,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                   />
                 )}
                 <Typography
+                  component="p"
                   variant="h6"
                   fontWeight={800}
                   sx={{

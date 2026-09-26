@@ -12,7 +12,7 @@ export default function EmptyState({ icon, title, message, action }: EmptyStateP
   return (
     <Box sx={{ textAlign: "center", py: 8 }}>
       {icon && <Box sx={{ mb: 2 }}>{icon}</Box>}
-      <Typography variant="h6" color="text.secondary">
+      <Typography component="p" variant="h6" color="text.secondary">
         {title}
       </Typography>
       {message && (

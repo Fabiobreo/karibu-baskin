@@ -236,6 +236,7 @@ export default function ContattiPage() {
             {t("contatti.letsTalk")}
           </Typography>
           <Typography
+            component="h2"
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 4, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
@@ -342,7 +343,7 @@ export default function ContattiPage() {
               <Typography variant="overline" color="text.secondary">
                 {t("contatti.visitUs")}
               </Typography>
-              <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
+              <Typography component="h3" variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
                 {t("contatti.ourVenue")}
               </Typography>
               <Box sx={{ mb: 2 }}>
@@ -366,7 +367,7 @@ export default function ContattiPage() {
               <Typography variant="overline" color="text.secondary">
                 {t("contatti.followUs")}
               </Typography>
-              <Typography variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
+              <Typography component="h3" variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
                 {t("contatti.social")}
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 4 }}>
@@ -459,6 +460,7 @@ export default function ContattiPage() {
             {t("contatti.thanksTo")}
           </Typography>
           <Typography
+            component="h2"
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
@@ -522,6 +524,7 @@ export default function ContattiPage() {
             {t("contatti.joinUs")}
           </Typography>
           <Typography
+            component="h2"
             variant="h4"
             fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
@@ -551,7 +554,12 @@ export default function ContattiPage() {
                     <HandshakeIcon />
                   </Box>
                   <Box>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 0.25 }}>
+                    <Typography
+                      component="h3"
+                      variant="subtitle2"
+                      fontWeight={700}
+                      sx={{ mb: 0.25 }}
+                    >
                       {p.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -577,7 +585,7 @@ export default function ContattiPage() {
             }}
           >
             <Box>
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+              <Typography component="h3" variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
                 {t("contatti.interestedSponsor")}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>

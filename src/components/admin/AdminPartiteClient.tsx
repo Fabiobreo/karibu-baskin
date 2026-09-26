@@ -166,7 +166,7 @@ function SectionHeader({
       }}
     >
       {icon}
-      <Typography variant="subtitle2" fontWeight={700}>
+      <Typography component="h2" variant="subtitle2" fontWeight={700}>
         {label}
       </Typography>
     </Box>
@@ -767,7 +767,7 @@ function LeagueView({
               gap: 1,
             }}
           >
-            <Typography variant="subtitle2" fontWeight={700}>
+            <Typography component="h2" variant="subtitle2" fontWeight={700}>
               {sec.groupName}
             </Typography>
             {sec.groupId && (

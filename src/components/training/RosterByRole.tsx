@@ -510,7 +510,7 @@ export default function RosterByRole({
             theme.palette.mode === "dark" ? theme.palette.background.paper : theme.palette.grey[50],
         }}
       >
-        <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
+        <Typography component="h2" variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
           {t("roster")}
         </Typography>
         {/* Nessun conteggio se la lettura è fallita: "0 atleti" accanto al

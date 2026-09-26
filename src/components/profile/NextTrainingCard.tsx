@@ -137,7 +137,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
         </Typography>
       </Box>
 
-      <Typography variant="h6" fontWeight={800} sx={{ lineHeight: 1.25 }}>
+      <Typography component="h2" variant="h6" fontWeight={800} sx={{ lineHeight: 1.25 }}>
         {training.title}
       </Typography>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mt: 0.5 }}>

@@ -87,7 +87,7 @@ export default function ProfileNameEditor({ name, editable }: ProfileNameEditorP
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
-      <Typography variant="h6" fontWeight={700} noWrap>
+      <Typography component="h2" variant="h6" fontWeight={700} noWrap>
         {name ?? "—"}
       </Typography>
       {editable && (

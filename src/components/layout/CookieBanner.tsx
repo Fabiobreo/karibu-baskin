@@ -53,6 +53,7 @@ export default function CookieBanner() {
         />
         <Box>
           <Typography
+            component="h2"
             variant="subtitle2"
             fontWeight={700}
             gutterBottom

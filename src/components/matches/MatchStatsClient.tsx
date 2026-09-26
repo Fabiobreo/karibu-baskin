@@ -381,7 +381,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
           <Paper elevation={0} variant="outlined" sx={{ p: 2, mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
               <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-              <Typography variant="subtitle1" fontWeight={700}>
+              <Typography component="h2" variant="subtitle1" fontWeight={700}>
                 MVP della partita
               </Typography>
               <Chip

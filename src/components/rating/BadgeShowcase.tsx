@@ -51,7 +51,7 @@ export default function BadgeShowcase({
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
         {title}
       </Typography>
       {earned.length > 0 && <BadgeTierLegend />}
