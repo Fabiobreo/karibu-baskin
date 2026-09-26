@@ -35,6 +35,7 @@ export type {
   ChildInfo,
   OptimisticReg,
 } from "@/hooks/useRegistrationForm";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   sessionId: string;
@@ -243,10 +244,10 @@ export default function RegistrationForm({
             }}
             size="small"
           >
-            <ToggleButton value="athlete" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
+            <ToggleButton value="athlete" sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, px: 2 }}>
               {t("athlete")}
             </ToggleButton>
-            <ToggleButton value="coach" sx={{ fontWeight: 600, fontSize: "0.8rem", px: 2 }}>
+            <ToggleButton value="coach" sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, px: 2 }}>
               {t("coachRole")}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -258,7 +259,7 @@ export default function RegistrationForm({
         <Alert
           severity={restrictionBlock ? "error" : "info"}
           icon={<LockIcon fontSize="small" />}
-          sx={{ mb: 2, fontSize: "0.8rem", "& .MuiAlert-message": { whiteSpace: "pre-line" } }}
+          sx={{ mb: 2, fontSize: TYPE_SCALE.xs, "& .MuiAlert-message": { whiteSpace: "pre-line" } }}
         >
           {restrictionInfo}
         </Alert>
@@ -334,7 +335,7 @@ export default function RegistrationForm({
             {/* Intestazione soggetto */}
             {currentUser && !hasChildren && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
+                <Avatar sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}>
                   {(currentUser.name ?? "?")[0].toUpperCase()}
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
@@ -360,7 +361,7 @@ export default function RegistrationForm({
                           size="small"
                           sx={{
                             height: 20,
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             fontWeight: 700,
                             bgcolor: m.teamColor ?? "primary.main",
                             color: contrastText(m.teamColor),
@@ -375,7 +376,7 @@ export default function RegistrationForm({
             {/* Intestazione figlio selezionato (genitore) */}
             {selectedChild && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                <Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>
+                <Avatar sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}>
                   <ChildCareIcon sx={{ fontSize: 18 }} />
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
@@ -394,7 +395,7 @@ export default function RegistrationForm({
                             size="small"
                             sx={{
                               height: 20,
-                              fontSize: "0.75rem",
+                              fontSize: TYPE_SCALE.xs,
                               fontWeight: 700,
                               bgcolor: m.teamColor ?? "primary.main",
                               color: contrastText(m.teamColor),
@@ -510,7 +511,7 @@ export default function RegistrationForm({
                           size="small"
                           sx={{
                             fontWeight: 600,
-                            fontSize: "0.75rem",
+                            fontSize: TYPE_SCALE.xs,
                             py: 0.5,
                             px: 1.5,
                             borderRadius: "6px !important",
@@ -574,7 +575,7 @@ export default function RegistrationForm({
                         setChosenRole(null);
                         setPhase("questionnaire");
                       }}
-                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.onLight" }}
+                      sx={{ fontSize: TYPE_SCALE.xs, px: 0, color: "primary.onLight" }}
                     >
                       {t("redoQuestionnaire")}
                     </Button>
@@ -597,7 +598,7 @@ export default function RegistrationForm({
                         setChosenRole(null);
                         setPhase("questionnaire");
                       }}
-                      sx={{ fontSize: "0.78rem", px: 0, color: "primary.onLight" }}
+                      sx={{ fontSize: TYPE_SCALE.xs, px: 0, color: "primary.onLight" }}
                     >
                       {t("changeRole")}
                     </Button>

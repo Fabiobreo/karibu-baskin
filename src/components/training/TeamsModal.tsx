@@ -14,6 +14,7 @@ import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import CloseIcon from "@mui/icons-material/Close";
 import { AlignedTeamGrid, MobileTeamTabs } from "@/components/training/TeamDisplay";
 import ShareTeamsButton from "@/components/training/ShareTeamsButton";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Athlete {
   id: string;
@@ -98,7 +99,7 @@ export default function TeamsModal({
                   size="small"
                   label={c.name}
                   variant="outlined"
-                  sx={{ fontSize: "0.75rem" }}
+                  sx={{ fontSize: TYPE_SCALE.xs }}
                 />
               ))}
             </Box>

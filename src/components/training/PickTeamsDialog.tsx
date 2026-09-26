@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   open: boolean;
@@ -31,7 +32,7 @@ export default function PickTeamsDialog({ open, sessionTitle, onClose, onConfirm
             variant="contained"
             fullWidth
             onClick={() => onConfirm(2)}
-            sx={{ py: 1.5, fontSize: "1rem" }}
+            sx={{ py: 1.5, fontSize: TYPE_SCALE.md }}
           >
             2 squadre
           </Button>
@@ -39,7 +40,7 @@ export default function PickTeamsDialog({ open, sessionTitle, onClose, onConfirm
             variant="outlined"
             fullWidth
             onClick={() => onConfirm(3)}
-            sx={{ py: 1.5, fontSize: "1rem" }}
+            sx={{ py: 1.5, fontSize: TYPE_SCALE.md }}
           >
             3 squadre
           </Button>

@@ -5,6 +5,7 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default function HomeSessionsSection({
   inCorso: initInCorso,
@@ -49,11 +50,7 @@ export default function HomeSessionsSection({
                 animation: "pulse 1.4s ease-in-out infinite",
               }}
             />
-            <Typography
-              variant="overline"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.1em", color: "status.liveText" }}
-            >
+            <Typography variant="overline" sx={{ color: "status.liveText" }}>
               {t("live")}
             </Typography>
           </Box>
@@ -81,19 +78,14 @@ export default function HomeSessionsSection({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
             <SportsBasketballIcon sx={{ color: "primary.main", fontSize: 32 }} />
             <Box>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
-              >
+              <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1 }}>
                 {t("gym")}
               </Typography>
               <Typography
                 variant="h5"
                 component="h2"
                 fontWeight={800}
-                sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
+                sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
               >
                 {t("next")}
               </Typography>
@@ -120,19 +112,14 @@ export default function HomeSessionsSection({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
             <SportsBasketballIcon sx={{ color: "primary.main", fontSize: 32 }} />
             <Box>
-              <Typography
-                variant="overline"
-                color="text.secondary"
-                fontWeight={700}
-                sx={{ letterSpacing: "0.1em", lineHeight: 1 }}
-              >
+              <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1 }}>
                 {t("gym")}
               </Typography>
               <Typography
                 variant="h5"
                 component="h2"
                 fontWeight={800}
-                sx={{ mt: 0.25, fontSize: { xs: "1.4rem", md: "1.6rem" } }}
+                sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
               >
                 {t("next")}
               </Typography>

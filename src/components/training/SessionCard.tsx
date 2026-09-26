@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import TeamsModal from "@/components/training/TeamsModal";
 import { TEAM_META } from "@/lib/constants";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Athlete {
   id: string;
@@ -208,7 +209,7 @@ export default function SessionCard({
               sx={{
                 color: muted ? "text.primary" : "common.white",
                 lineHeight: 1.2,
-                ...(hero && { fontSize: { xs: "1.3rem", sm: "1.5rem" } }),
+                ...(hero && { fontSize: { xs: TYPE_SCALE.xl, sm: TYPE_SCALE.xl2 } }),
               }}
             >
               {s.title}
@@ -236,7 +237,7 @@ export default function SessionCard({
                   bgcolor: "status.pending",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                 }}
               />
             )}
@@ -249,7 +250,7 @@ export default function SessionCard({
                   bgcolor: "status.closed",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                 }}
               />
             )}
@@ -260,7 +261,7 @@ export default function SessionCard({
                 bgcolor: muted ? "action.selected" : status.color,
                 color: muted ? "text.secondary" : status.labelColor,
                 fontWeight: 700,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
               }}
             />
             {/* Lo staff gestisce l'allenamento dall'admin (UX-14): qui solo un
@@ -396,7 +397,7 @@ export default function SessionCard({
                   href={href}
                   variant="contained"
                   size="small"
-                  sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.4 }}
+                  sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, py: 0.4 }}
                 >
                   {t("signUp")}
                 </Button>
@@ -407,7 +408,7 @@ export default function SessionCard({
                   size="small"
                   startIcon={<SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
                   onClick={() => setTeamsOpen(true)}
-                  sx={{ fontWeight: 600, fontSize: "0.75rem", py: 0.4 }}
+                  sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, py: 0.4 }}
                 >
                   {t("viewTeamsBtn")}
                 </Button>

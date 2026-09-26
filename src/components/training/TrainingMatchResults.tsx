@@ -21,6 +21,7 @@ import { useToast } from "@/context/ToastContext";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useTranslations } from "next-intl";
 import type { TeamsData } from "@/components/training/TeamDisplay";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 type MatchupKey = "AB" | "AC" | "BC";
 
@@ -220,7 +221,7 @@ function MatchupSlot({
           <Typography
             color="text.secondary"
             fontWeight={700}
-            sx={{ fontSize: "0.8rem", display: { xs: "none", sm: "block" } }}
+            sx={{ fontSize: TYPE_SCALE.xs, display: { xs: "none", sm: "block" } }}
           >
             vs
           </Typography>
@@ -316,7 +317,7 @@ function MatchupSlot({
                 fontWeight: winner === 1 ? 700 : 500,
                 border: "1px solid",
                 borderColor: team1.color,
-                fontSize: "0.8rem",
+                fontSize: TYPE_SCALE.xs,
               }}
             />
             <Typography variant="caption" color="text.secondary" fontWeight={700}>
@@ -331,7 +332,7 @@ function MatchupSlot({
                 fontWeight: winner === 2 ? 700 : 500,
                 border: "1px solid",
                 borderColor: team2.color,
-                fontSize: "0.8rem",
+                fontSize: TYPE_SCALE.xs,
               }}
             />
             {winner === 0 && (

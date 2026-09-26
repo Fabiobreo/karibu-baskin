@@ -39,6 +39,7 @@ import { sessionEndDate } from "@/lib/dateUtils";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { TEAM_META } from "@/lib/constants";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 function findMyTeam(teams: SessionWithCount["teams"], registrationId: string | null) {
   if (!teams || !registrationId) return null;
@@ -156,7 +157,7 @@ function SessionRow({
               fontWeight: 700,
               lineHeight: 1,
               textTransform: "uppercase",
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               letterSpacing: "0.05em",
             }}
           >
@@ -164,7 +165,7 @@ function SessionRow({
           </Typography>
           <Typography
             fontWeight={800}
-            sx={{ lineHeight: 1.1, fontSize: { xs: "1.1rem", sm: "1.2rem" } }}
+            sx={{ lineHeight: 1.1, fontSize: { xs: TYPE_SCALE.lg, sm: TYPE_SCALE.xl } }}
           >
             {format(date, "d")}
           </Typography>
@@ -176,7 +177,7 @@ function SessionRow({
               fontWeight: 700,
               lineHeight: 1,
               textTransform: "uppercase",
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               letterSpacing: "0.05em",
             }}
           >
@@ -203,7 +204,7 @@ function SessionRow({
                   bgcolor: "status.pending",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   height: 20,
                   "& .MuiChip-icon": { ml: 0.5 },
                 }}
@@ -218,7 +219,7 @@ function SessionRow({
                   bgcolor: "status.closed",
                   color: "common.white",
                   fontWeight: 700,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                   height: 20,
                   "& .MuiChip-icon": { ml: 0.5 },
                 }}
@@ -276,7 +277,7 @@ function SessionRow({
                 bgcolor: myTeam.color,
                 color: "common.white",
                 fontWeight: 700,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 height: 20,
               }}
             />
@@ -496,11 +497,7 @@ export default function AllenamentiClient({
                 animation: "pulse 1.4s ease-in-out infinite",
               }}
             />
-            <Typography
-              variant="overline"
-              fontWeight={700}
-              sx={{ letterSpacing: "0.1em", color: "status.liveText" }}
-            >
+            <Typography variant="overline" sx={{ color: "status.liveText" }}>
               {t("live")}
             </Typography>
           </Box>
@@ -523,11 +520,7 @@ export default function AllenamentiClient({
       {upcoming.length > 0 && (
         <>
           <Box sx={{ mb: 2 }}>
-            <Typography
-              variant="overline"
-              fontWeight={700}
-              sx={{ color: "text.secondary", letterSpacing: "0.1em" }}
-            >
+            <Typography variant="overline" sx={{ color: "text.secondary" }}>
               {t("next")}
             </Typography>
           </Box>
@@ -565,11 +558,11 @@ export default function AllenamentiClient({
                 ? t("upcomingCount", { count: restUpcoming.length })
                 : t("upcoming")
             }
-            sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.875rem" }}
+            sx={{ fontWeight: 700, textTransform: "none", fontSize: TYPE_SCALE.sm }}
           />
           <Tab
             label={past.length > 0 ? t("pastCount", { count: past.length }) : t("past")}
-            sx={{ fontWeight: 700, textTransform: "none", fontSize: "0.875rem" }}
+            sx={{ fontWeight: 700, textTransform: "none", fontSize: TYPE_SCALE.sm }}
           />
         </Tabs>
 
@@ -607,7 +600,7 @@ export default function AllenamentiClient({
                         className="year-label"
                         fontWeight={800}
                         sx={{
-                          fontSize: "1.1rem",
+                          fontSize: TYPE_SCALE.lg,
                           lineHeight: 1,
                           color: isYearOpen ? "text.primary" : "text.secondary",
                           transition: "color 0.15s",
@@ -657,10 +650,8 @@ export default function AllenamentiClient({
                                 <Typography
                                   className="month-label"
                                   variant="overline"
-                                  fontWeight={700}
                                   sx={{
                                     color: isOpen ? "text.primary" : "text.secondary",
-                                    letterSpacing: "0.1em",
                                     lineHeight: 1,
                                     whiteSpace: "nowrap",
                                     transition: "color 0.15s",
@@ -750,7 +741,7 @@ export default function AllenamentiClient({
                         className="year-label"
                         fontWeight={800}
                         sx={{
-                          fontSize: "1.1rem",
+                          fontSize: TYPE_SCALE.lg,
                           lineHeight: 1,
                           color: isYearOpen ? "text.primary" : "text.secondary",
                           transition: "color 0.15s",
@@ -800,10 +791,8 @@ export default function AllenamentiClient({
                                 <Typography
                                   className="month-label"
                                   variant="overline"
-                                  fontWeight={700}
                                   sx={{
                                     color: isOpen ? "text.primary" : "text.secondary",
-                                    letterSpacing: "0.1em",
                                     lineHeight: 1,
                                     whiteSpace: "nowrap",
                                     transition: "color 0.15s",

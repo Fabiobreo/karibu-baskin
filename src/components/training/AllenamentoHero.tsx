@@ -18,6 +18,7 @@ import { mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { formatRoleNumbers } from "@/lib/roleList";
 import { SITE_URL } from "@/lib/siteUrl";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Session {
   id: string;
@@ -219,7 +220,7 @@ export default function AllenamientoHero({
             sx={{
               fontWeight: 800,
               lineHeight: 1.15,
-              fontSize: { xs: "1.7rem", sm: "2.2rem", md: "2.6rem" },
+              fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
               mb: 1.5,
             }}
           >
@@ -255,7 +256,7 @@ export default function AllenamientoHero({
                       bgcolor: "status.pending",
                       color: "common.white",
                       fontWeight: 700,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       letterSpacing: 0.5,
                     }}
                   />
@@ -270,7 +271,7 @@ export default function AllenamientoHero({
                     bgcolor: "status.closed",
                     color: "common.white",
                     fontWeight: 700,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     letterSpacing: 0.5,
                   }}
                 />
@@ -283,7 +284,7 @@ export default function AllenamientoHero({
                 bgcolor: status.bgcolor,
                 color: status.color,
                 fontWeight: 700,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 letterSpacing: 0.5,
               }}
             />
@@ -301,7 +302,7 @@ export default function AllenamientoHero({
                   bgcolor: "warning.light",
                   color: "warning.contrastText",
                   fontWeight: 600,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                 }}
               />
             )}
@@ -317,7 +318,7 @@ export default function AllenamientoHero({
                   bgcolor: "success.light",
                   color: "success.contrastText",
                   fontWeight: 600,
-                  fontSize: "0.75rem",
+                  fontSize: TYPE_SCALE.xs,
                 }}
               />
             )}

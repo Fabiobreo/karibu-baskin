@@ -30,6 +30,7 @@ import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import QueryErrorState from "@/components/common/QueryErrorState";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Colore della squadra come riempimento sotto un'etichetta bianca: l'arancio
@@ -109,7 +110,7 @@ function RoleBadge({
         overflow: "hidden",
         bgcolor: roleColor(role),
         color: ROLE_TEXT_COLOR,
-        fontSize: "0.8rem",
+        fontSize: TYPE_SCALE.xs,
         lineHeight: 1,
         opacity: count === 0 ? 0.28 : 1,
       }}
@@ -152,7 +153,7 @@ export function MobileTeamTabs({
         variant="fullWidth"
         sx={{
           "& .MuiTabs-indicator": { backgroundColor: activeColor, height: 3 },
-          "& .MuiTab-root": { fontWeight: 700, fontSize: "0.75rem", minHeight: 48 },
+          "& .MuiTab-root": { fontWeight: 700, fontSize: TYPE_SCALE.xs, minHeight: 48 },
           // Il nome della squadra è testo sul fondo del tema: l'arancio pieno fa
           // 3,78:1 sul bianco e i "Neri" sparirebbero in scuro (UX-22).
           "& .MuiTab-root.Mui-selected": {
@@ -180,7 +181,7 @@ export function MobileTeamTabs({
                   size="small"
                   sx={{
                     height: 20,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     fontWeight: 700,
                     bgcolor: tab === i ? teamFill(m.color) : "action.selected",
                     color: tab === i ? "common.white" : "text.secondary",
@@ -460,7 +461,7 @@ function TeamEditor({
                 <Chip
                   label={pool.length}
                   size="small"
-                  sx={{ height: 20, fontSize: "0.75rem", fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
                 />
               </Box>
               {!!selected && selected.fromKey !== "pool" && (
@@ -469,7 +470,7 @@ function TeamEditor({
                   variant="outlined"
                   disabled={saving}
                   onClick={() => moveTo("pool")}
-                  sx={{ fontWeight: 700, fontSize: "0.75rem", py: 0.25, minWidth: 90 }}
+                  sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, py: 0.25, minWidth: 90 }}
                 >
                   {saving ? <CircularProgress size={14} color="inherit" /> : t("editorRemove")}
                 </Button>
@@ -492,7 +493,7 @@ function TeamEditor({
                         }
                         sx={{
                           fontWeight: 600,
-                          fontSize: "0.78rem",
+                          fontSize: TYPE_SCALE.xs,
                           bgcolor: isSelected ? "text.primary" : `${roleColor(role)}22`,
                           color: isSelected ? "background.paper" : "text.primary",
                           border: `1px solid ${roleColor(role)}`,
@@ -543,7 +544,7 @@ function TeamEditor({
                     variant="outlined"
                     sx={{
                       height: 20,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       fontWeight: 700,
                       color: "common.white",
                       borderColor: "common.white",
@@ -560,7 +561,7 @@ function TeamEditor({
                       bgcolor: "common.white",
                       color: teamFill(m.color),
                       fontWeight: 700,
-                      fontSize: "0.75rem",
+                      fontSize: TYPE_SCALE.xs,
                       py: 0.25,
                       minWidth: 90,
                       "&:hover": { bgcolor: "rgba(255,255,255,0.88)" },
@@ -589,7 +590,7 @@ function TeamEditor({
                           }
                           sx={{
                             fontWeight: 600,
-                            fontSize: "0.78rem",
+                            fontSize: TYPE_SCALE.xs,
                             bgcolor: isSelected ? m.color : `${roleColor(role)}22`,
                             color: isSelected ? "common.white" : "text.primary",
                             border: `1px solid ${isSelected ? m.color : roleColor(role)}`,
@@ -928,7 +929,7 @@ export default function TeamDisplay({
                     )
                   }
                   variant="outlined"
-                  sx={{ fontSize: "0.75rem" }}
+                  sx={{ fontSize: TYPE_SCALE.xs }}
                 />
               );
             })}

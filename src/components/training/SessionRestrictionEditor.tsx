@@ -14,6 +14,7 @@ import {
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface CompetitiveTeam {
   id: string;
@@ -102,7 +103,7 @@ export default function SessionRestrictionEditor({
             label="attive"
             size="small"
             color="warning"
-            sx={{ fontSize: "0.75rem", height: 20 }}
+            sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
           />
         )}
       </Box>
@@ -130,7 +131,7 @@ export default function SessionRestrictionEditor({
                 bgcolor: selected ? roleColor(r) : "transparent",
                 color: selected ? "common.white" : "text.secondary",
                 fontWeight: 600,
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 cursor: disabled ? "default" : "pointer",
                 transition: "all 0.15s",
                 "&:hover:not(:disabled)": {
@@ -233,7 +234,7 @@ export default function SessionRestrictionEditor({
                     bgcolor: selected ? roleColor(r) : "transparent",
                     color: selected ? "common.white" : "text.secondary",
                     fontWeight: 600,
-                    fontSize: "0.75rem",
+                    fontSize: TYPE_SCALE.xs,
                     cursor: disabled ? "default" : "pointer",
                     transition: "all 0.15s",
                     "&:hover:not(:disabled)": {

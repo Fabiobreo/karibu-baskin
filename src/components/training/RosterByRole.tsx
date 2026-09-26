@@ -27,6 +27,7 @@ import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { readError } from "@/lib/fetchJson";
 import QueryErrorState from "@/components/common/QueryErrorState";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Registration {
   id: string;
@@ -149,7 +150,7 @@ function AthletePill({
         }}
       >
         <Typography
-          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.75rem", lineHeight: 1 }}
+          sx={{ color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.xs, lineHeight: 1 }}
         >
           {initial}
         </Typography>
@@ -165,7 +166,7 @@ function AthletePill({
               color: "inherit",
               textDecoration: "none",
               fontWeight: highlighted ? 700 : 500,
-              fontSize: "0.82rem",
+              fontSize: TYPE_SCALE.sm,
               whiteSpace: "nowrap",
               "&:hover": { textDecoration: "underline" },
             }}
@@ -174,7 +175,11 @@ function AthletePill({
           </Box>
         ) : (
           <Typography
-            sx={{ fontWeight: highlighted ? 700 : 500, fontSize: "0.82rem", whiteSpace: "nowrap" }}
+            sx={{
+              fontWeight: highlighted ? 700 : 500,
+              fontSize: TYPE_SCALE.sm,
+              whiteSpace: "nowrap",
+            }}
           >
             {reg.name}
           </Typography>
@@ -249,7 +254,7 @@ function AthletePill({
             display: "block",
             px: 1,
             mt: 0.25,
-            fontSize: "0.75rem",
+            fontSize: TYPE_SCALE.xs,
             fontStyle: "italic",
             color: "text.secondary",
             wordBreak: "break-word",
@@ -602,10 +607,9 @@ export default function RosterByRole({
                   />
                   <Typography
                     variant="overline"
-                    fontWeight={700}
                     // Il colore del ruolo sta nel pallino: come testo, in scuro, i ruoli
                     // più scuri scendevano sotto 2:1 (UX-22).
-                    sx={{ color: "text.primary", letterSpacing: "0.08em", lineHeight: 1 }}
+                    sx={{ color: "text.primary", lineHeight: 1 }}
                   >
                     {roleLabel(role)}
                   </Typography>
@@ -701,7 +705,7 @@ export default function RosterByRole({
                         }}
                       >
                         <Typography
-                          sx={{ color: "common.white", fontWeight: 800, fontSize: "0.75rem" }}
+                          sx={{ color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.xs }}
                         >
                           {reg.name[0]?.toUpperCase() ?? "?"}
                         </Typography>
@@ -709,7 +713,7 @@ export default function RosterByRole({
                       <Typography
                         sx={{
                           px: 1,
-                          fontSize: "0.82rem",
+                          fontSize: TYPE_SCALE.sm,
                           fontWeight: isOwn ? 700 : 500,
                           color: isOwn ? "common.white" : "text.primary",
                           whiteSpace: "nowrap",
@@ -756,7 +760,7 @@ export default function RosterByRole({
                           display: "block",
                           px: 1,
                           mt: 0.25,
-                          fontSize: "0.75rem",
+                          fontSize: TYPE_SCALE.xs,
                           fontStyle: "italic",
                           color: "text.secondary",
                           wordBreak: "break-word",
