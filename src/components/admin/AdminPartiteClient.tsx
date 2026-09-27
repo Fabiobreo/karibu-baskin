@@ -115,11 +115,12 @@ const RESULT_LABELS: Record<MatchResult, string> = {
   LOSS: "Sconfitta",
   DRAW: "Pareggio",
 };
+// Riempimenti del tema, con `match.onFill` come etichetta: in scuro i fondi
+// sono chiari e il bianco non reggerebbe.
 const RESULT_COLORS: Record<MatchResult, string> = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
-  // Riempimento arancio del tema: #E65100 col bianco si fermava a 3,78:1 (UX-22).
-  DRAW: "primary.fill",
+  WIN: "match.win",
+  LOSS: "match.loss",
+  DRAW: "match.draw",
 };
 
 /** Una partita è "prossima" se la sua data è nel futuro rispetto a `now` (ms). */
@@ -259,7 +260,7 @@ function MatchMobileCard({
                 size="small"
                 sx={{
                   backgroundColor: RESULT_COLORS[m.result],
-                  color: "common.white",
+                  color: "match.onFill",
                   fontWeight: 700,
                   fontSize: TYPE_SCALE.xs,
                   height: 20,
@@ -942,7 +943,7 @@ function MatchRowAndContext({
               size="small"
               sx={{
                 backgroundColor: RESULT_COLORS[m.result],
-                color: "common.white",
+                color: "match.onFill",
                 fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
               }}
@@ -1155,7 +1156,7 @@ function FlatMatchRow({
             size="small"
             sx={{
               backgroundColor: RESULT_COLORS[m.result],
-              color: "common.white",
+              color: "match.onFill",
               fontWeight: 700,
               fontSize: TYPE_SCALE.xs,
             }}

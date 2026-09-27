@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { slugify, sessionDateSlug } from "./slugUtils";
+import { slugify } from "./slugUtils";
 
 describe("slugify()", () => {
   it("minuscolo e trattino per spazi", () => {
@@ -52,21 +52,5 @@ describe("slugify()", () => {
   it("caratteri italiani comuni", () => {
     expect(slugify("Città Nuova")).toBe("citta-nuova");
     expect(slugify("Perché sì")).toBe("perche-si");
-  });
-});
-
-describe("sessionDateSlug()", () => {
-  it("concatena date e time con T", () => {
-    expect(sessionDateSlug("2025-03-15", "18:00")).toBe("2025-03-15T18:00");
-  });
-
-  it("funziona con orari diversi", () => {
-    expect(sessionDateSlug("2025-12-31", "09:30")).toBe("2025-12-31T09:30");
-  });
-
-  it("non modifica i valori passati", () => {
-    const d = "2025-01-01";
-    const t = "20:00";
-    expect(sessionDateSlug(d, t)).toBe("2025-01-01T20:00");
   });
 });

@@ -62,14 +62,6 @@ export async function generateChildSlug(name: string): Promise<string> {
 }
 
 /**
- * Genera il dateSlug per una TrainingSession a partire dai valori locali del form.
- * es. date="2025-03-15", time="18:00" → "2025-03-15T18:00"
- */
-export function sessionDateSlug(date: string, time: string): string {
-  return `${date}T${time}`;
-}
-
-/**
  * Genera uno slug univoco per una squadra avversaria a partire dal nome.
  * Se "basket-vicenza" esiste già, prova "basket-vicenza-2", "basket-vicenza-3", ecc.
  * Restituisce stringa vuota se il nome non produce uno slug valido.

@@ -526,7 +526,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           textTransform: "lowercase",
                         }}
                       >
-                        {wins === 1 ? "vittoria" : "vittorie"}
+                        {t("winsWord", { count: wins })}
                       </Typography>
                     </Box>
                     {draws > 0 && (
@@ -555,7 +555,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                             textTransform: "lowercase",
                           }}
                         >
-                          {draws === 1 ? "pareggio" : "pareggi"}
+                          {t("drawsWord", { count: draws })}
                         </Typography>
                       </Box>
                     )}
@@ -584,7 +584,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           textTransform: "lowercase",
                         }}
                       >
-                        {losses === 1 ? "sconfitta" : "sconfitte"}
+                        {t("lossesWord", { count: losses })}
                       </Typography>
                     </Box>
                   </>

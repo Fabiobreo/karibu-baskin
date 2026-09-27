@@ -445,6 +445,9 @@
     "victories": "{count, plural, one {# win} other {# wins}}",
     "draws": "{count, plural, one {# draw} other {# draws}}",
     "losses": "{count, plural, one {# loss} other {# losses}}",
+    "winsWord": "{count, plural, one {win} other {wins}}",
+    "drawsWord": "{count, plural, one {draw} other {draws}}",
+    "lossesWord": "{count, plural, one {loss} other {losses}}",
     "streakWins": "{count, plural, one {win} other {wins}}",
     "streakLosses": "{count, plural, one {loss} other {losses}}",
     "streakDraws": "{count, plural, one {draw} other {draws}}",
@@ -482,7 +485,8 @@
     "emptyTitle": "No squad available",
     "emptyDesc": "The current season's teams don't have any players yet.",
     "ruleGenderMix": "One woman and one man among roles 4 and 5",
-    "simulateError": "Could not simulate the match. Please try again."
+    "simulateError": "Could not simulate the match. Please try again.",
+    "removePlayer": "Remove {name} from the team"
   },
   "players": {
     "notFound": "Player not found",
@@ -1325,7 +1329,6 @@
     "presentCount": "{count, plural, one {# present} other {# present}}",
     "noAthletes": "No athletes registered yet.",
     "coachesPresent": "Coaches present",
-    "removeRegistration": "Remove registration",
     "attendancePresent": "Present (click to mark absent)",
     "attendanceAbsent": "Absent (click to reset)",
     "attendanceUnmarked": "Unmarked (click to mark present)",

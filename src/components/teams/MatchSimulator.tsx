@@ -332,6 +332,7 @@ function SideColumn({
   emptyText: string;
   countLabel: string;
 }) {
+  const t = useTranslations("simulator");
   return (
     <Paper
       variant="outlined"
@@ -386,7 +387,11 @@ function SideColumn({
                 <FemaleIcon sx={{ fontSize: 15, color: "secondary.main" }} />
               )}
               {p.gender === "MALE" && <MaleIcon sx={{ fontSize: 15, color: "text.secondary" }} />}
-              <IconButton size="small" onClick={() => onRemove(keyOf(p))} aria-label="remove">
+              <IconButton
+                size="small"
+                onClick={() => onRemove(keyOf(p))}
+                aria-label={t("removePlayer", { name: p.name })}
+              >
                 <CloseIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Box>

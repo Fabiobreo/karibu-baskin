@@ -445,6 +445,9 @@
     "victories": "{count, plural, one {# vittoria} other {# vittorie}}",
     "draws": "{count, plural, one {# pareggio} other {# pareggi}}",
     "losses": "{count, plural, one {# sconfitta} other {# sconfitte}}",
+    "winsWord": "{count, plural, one {vittoria} other {vittorie}}",
+    "drawsWord": "{count, plural, one {pareggio} other {pareggi}}",
+    "lossesWord": "{count, plural, one {sconfitta} other {sconfitte}}",
     "streakWins": "{count, plural, one {vittoria} other {vittorie}}",
     "streakLosses": "{count, plural, one {sconfitta} other {sconfitte}}",
     "streakDraws": "{count, plural, one {pareggio} other {pareggi}}",
@@ -482,7 +485,8 @@
     "emptyTitle": "Nessuna rosa disponibile",
     "emptyDesc": "Le squadre della stagione corrente non hanno ancora giocatori in rosa.",
     "ruleGenderMix": "Una donna e un uomo tra i ruoli 4 e 5",
-    "simulateError": "Non è stato possibile simulare la sfida. Riprova."
+    "simulateError": "Non è stato possibile simulare la sfida. Riprova.",
+    "removePlayer": "Togli {name} dalla squadra"
   },
   "players": {
     "notFound": "Giocatore non trovato",
@@ -1325,7 +1329,6 @@
     "presentCount": "{count, plural, one {# presente} other {# presenti}}",
     "noAthletes": "Nessun atleta iscritto ancora.",
     "coachesPresent": "Allenatori presenti",
-    "removeRegistration": "Rimuovi iscrizione",
     "attendancePresent": "Presente (clicca per segnare assente)",
     "attendanceAbsent": "Assente (clicca per resettare)",
     "attendanceUnmarked": "Non marcato (clicca per segnare presente)",
