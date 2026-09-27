@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { heroText } from "@/lib/heroStyles";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Stack, Button } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
@@ -122,8 +123,8 @@ export default async function ClassifichePage() {
       {/* Hero */}
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-          <Typography variant="overline" color="primary.light">
+          <EmojiEventsIcon sx={{ fontSize: 32, color: heroText.secondary }} />
+          <Typography variant="overline" sx={{ color: heroText.secondary }}>
             {t("leagueChip")}
           </Typography>
         </Box>

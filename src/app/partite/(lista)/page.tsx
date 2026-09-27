@@ -16,7 +16,7 @@ import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
-import { brandColor } from "@/lib/heroStyles";
+import { brandColor, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
 export const metadata: Metadata = buildMetadata({
@@ -90,8 +90,8 @@ export default async function PartitePage({ searchParams }: Props) {
     <>
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <CalendarTodayIcon sx={{ fontSize: 30, color: "primary.main" }} />
-          <Typography variant="overline" sx={{ color: "primary.light" }}>
+          <CalendarTodayIcon sx={{ fontSize: 30, color: heroText.secondary }} />
+          <Typography variant="overline" sx={{ color: heroText.secondary }}>
             {t("upcomingHeroChip")}
           </Typography>
         </Box>

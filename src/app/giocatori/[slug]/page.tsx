@@ -19,7 +19,7 @@ import {
   Alert,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { brandColor, heroBottomBorder, heroMedal, heroTint } from "@/lib/heroStyles";
+import { brandColor, heroBottomBorder, heroMedal, heroTint, heroText } from "@/lib/heroStyles";
 import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -628,7 +628,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               <Typography
                 variant="overline"
                 sx={{
-                  color: playerColor,
+                  // Occhielli degli hero neutri (UX-28, opzione B): il colore
+                  // della squadra resta sull'anello dell'avatar.
+                  color: heroText.secondary,
                   fontWeight: 800,
                   lineHeight: 1,
                   textShadow: "0 1px 2px rgba(0,0,0,0.5)",

@@ -664,8 +664,8 @@ export default async function MatchDetailPage({ params }: Props) {
                         size="small"
                         sx={{
                           fontWeight: 800,
-                          // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
-                          bgcolor: "primary.dark",
+                          // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
+                          bgcolor: "primary.fill",
                           color: "common.white",
                           letterSpacing: "0.05em",
                           height: 26,

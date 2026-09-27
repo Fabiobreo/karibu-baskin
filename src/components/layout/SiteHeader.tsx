@@ -517,7 +517,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       width: 34,
                       height: 34,
                       fontSize: TYPE_SCALE.xs,
-                      bgcolor: "primary.dark",
+                      bgcolor: "primary.fill",
                       cursor: "pointer",
                     }}
                   >

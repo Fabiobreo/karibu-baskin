@@ -60,8 +60,8 @@ function getSessionStatus(
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0)
-    // Etichetta bianca: `primary.dark` (5,60:1), non `main` (3,79:1).
-    return { label: t("todayBang"), bgcolor: "primary.dark", color: "common.white" };
+    // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
+    return { label: t("todayBang"), bgcolor: "primary.fill", color: "common.white" };
   // "Domani" e "Tra N giorni" stavano sul ciano di default di MUI, fuori dalla
   // palette arancione/nera: passano al nero del tema, che resta distinto sia
   // dall'arancione di "Oggi" sia dal grigio di "Concluso".

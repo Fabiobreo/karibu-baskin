@@ -8,16 +8,17 @@ Audit grafico, UX e di usabilità del sito, con contro-revisione di tre revisori
 
 ## Decisioni già prese
 
-| Tema                    | Decisione                                                                                                                                                                                                                           |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Colori della squadra    | Arancione e nero restano i colori principali.                                                                                                                                                                                       |
-| Sponsor                 | Visibilità invariata ovunque (nastro in ogni pagina, foto dell'hero, pagina `/sponsor`, sezione in Contatti): è quella promessa agli sponsor. Unica eccezione: il nastro sparisce dall'admin.                                       |
-| Colori dei ruoli Baskin | Puramente estetici: in palestra i ruoli non si distinguono per colore. Si possono ridisegnare liberamente.                                                                                                                          |
-| Lingua                  | Il selettore resta visibile anche a chi non ha fatto l'accesso. Solo il tema chiaro/scuro va in un pannello "Aspetto".                                                                                                              |
-| Home                    | Stessa struttura per tutti; per i tesserati si aggiunge in cima una card con la prossima azione. Niente home diverse per ruolo.                                                                                                     |
-| Traguardi               | Le emoji restano (riconoscibili per chi legge poco); si correggono i testi.                                                                                                                                                         |
-| Dati di prova           | Il sito di sviluppo ha dati finti: calendario vuoto, orari strani, "Lorem ipsum" e simili non sono difetti.                                                                                                                         |
-| Bottone primario        | Variante **B**: testo bianco su `#C84B00` (stessa tinta della maglia, 4,71:1), hover `#A83F00` (6,22:1). Scartata la A (nero su `#E65100`). Confronto in [img/](img/), dettagli in [UX-07](tickets/UX-07-tema-bottone-primario.md). |
+| Tema                    | Decisione                                                                                                                                                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Colori della squadra    | Arancione e nero restano i colori principali.                                                                                                                                                                                                        |
+| Sponsor                 | Visibilità invariata ovunque (nastro in ogni pagina, foto dell'hero, pagina `/sponsor`, sezione in Contatti): è quella promessa agli sponsor. Unica eccezione: il nastro sparisce dall'admin.                                                        |
+| Colori dei ruoli Baskin | Puramente estetici: in palestra i ruoli non si distinguono per colore. Si possono ridisegnare liberamente.                                                                                                                                           |
+| Lingua                  | Il selettore resta visibile anche a chi non ha fatto l'accesso. Solo il tema chiaro/scuro va in un pannello "Aspetto".                                                                                                                               |
+| Home                    | Stessa struttura per tutti; per i tesserati si aggiunge in cima una card con la prossima azione. Niente home diverse per ruolo.                                                                                                                      |
+| Traguardi               | Le emoji restano (riconoscibili per chi legge poco); si correggono i testi.                                                                                                                                                                          |
+| Dati di prova           | Il sito di sviluppo ha dati finti: calendario vuoto, orari strani, "Lorem ipsum" e simili non sono difetti.                                                                                                                                          |
+| Bottone primario        | Variante **B**: testo bianco su `#C84B00` (stessa tinta della maglia, 4,71:1), hover `#A83F00` (6,22:1). Scartata la A (nero su `#E65100`). Confronto in [img/](img/), dettagli in [UX-07](tickets/UX-07-tema-bottone-primario.md).                  |
+| Arancio negli hero      | Opzione **B** di [UX-28](tickets/UX-28-arancio-negli-hero.md) (27/09/2026): occhielli e icone degli hero neutri (`heroText.secondary`); le icone decorative nelle sezioni chiare restano arancioni come tocco di marchio. Confronto in [img/](img/). |
 
 ## Piano
 
@@ -71,9 +72,9 @@ Raccoglie i "Rimasto fuori" dei ticket precedenti e un difetto trovato durante l
 | [UX-25](tickets/UX-25-errori-vicino-all-elemento.md) | Errori accanto all'elemento, nei flussi principali         | M                  | UX-05        |
 | [UX-26](tickets/UX-26-dati-di-prova-verifiche.md)    | Dati di prova per le verifiche rimaste in sospeso          | S                  |              |
 | [UX-27](tickets/UX-27-tipografia-per-area.md)        | Migrazione tipografica per area e livelli dei titoli       | L (PR per area)    | UX-10        |
-| [UX-28](tickets/UX-28-arancio-negli-hero.md)         | Arancio su elementi non toccabili: hero e icone decorative | S, **da decidere** | UX-07, UX-08 |
+| [UX-28](tickets/UX-28-arancio-negli-hero.md)         | Arancio su elementi non toccabili: hero e icone decorative | S                  | UX-07, UX-08 |
 
-UX-21 aspetta il club e UX-28 una decisione: si possono avviare in parallelo agli altri. UX-26 conviene farlo presto, perché sblocca le prove nel browser rimaste in sospeso per UX-06, UX-14 e UX-17.
+UX-21 aspetta il club; per UX-28 è stata scelta l'opzione B. UX-26 conviene farlo presto, perché sblocca le prove nel browser rimaste in sospeso per UX-06, UX-14 e UX-17.
 
 ### Parcheggiati (da rivalutare dopo le ondate 0-2)
 

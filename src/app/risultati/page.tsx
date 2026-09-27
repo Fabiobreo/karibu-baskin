@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { heroText } from "@/lib/heroStyles";
 import { Container, Typography, Box, Chip, Stack } from "@mui/material";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
 import PageHero from "@/components/common/PageHero";
@@ -114,8 +115,8 @@ export default async function RisultatiPage({ searchParams }: Props) {
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <EmojiEventsIcon sx={{ fontSize: 32, color: "primary.main" }} />
-          <Typography variant="overline" color="primary.light">
+          <EmojiEventsIcon sx={{ fontSize: 32, color: heroText.secondary }} />
+          <Typography variant="overline" sx={{ color: heroText.secondary }}>
             {t("resultsHeroChip")}
           </Typography>
         </Box>

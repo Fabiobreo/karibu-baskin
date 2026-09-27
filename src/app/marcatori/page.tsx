@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { heroText } from "@/lib/heroStyles";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { isMinor, isMinorChild } from "@/lib/minors";
@@ -266,8 +267,8 @@ export default async function MarcatoriPage({ searchParams }: Props) {
       {/* Hero */}
       <PageHero py={{ xs: 5, md: 7 }} align="left">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <LeaderboardIcon sx={{ fontSize: 32, color: "primary.main" }} />
-          <Typography variant="overline" color="primary.light">
+          <LeaderboardIcon sx={{ fontSize: 32, color: heroText.secondary }} />
+          <Typography variant="overline" sx={{ color: heroText.secondary }}>
             {t("heroChip")}
           </Typography>
         </Box>

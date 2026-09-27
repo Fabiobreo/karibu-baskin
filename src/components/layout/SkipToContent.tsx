@@ -33,9 +33,10 @@ export default function SkipToContent() {
         px: 0,
         py: 0,
         borderRadius: 1,
-        // Testo bianco: `primary.dark` (5,60:1). Su `primary.main` si fermava a
-        // 3,79:1, proprio sul link pensato per chi naviga da tastiera.
-        bgcolor: "primary.dark",
+        // Testo bianco sul riempimento arancio unico (UX-28): 4,71:1. Su
+        // `primary.main` si fermava a 3,79:1, proprio sul link pensato per chi
+        // naviga da tastiera.
+        bgcolor: "primary.fill",
         color: "primary.contrastText",
         fontWeight: 700,
         fontSize: TYPE_SCALE.sm,
