@@ -1,5 +1,5 @@
 "use client";
-import { alpha, createTheme } from "@mui/material/styles";
+import { alpha, createTheme, type Theme } from "@mui/material/styles";
 import { heroGradient } from "@/lib/heroStyles";
 import LinkBehavior from "@/components/common/LinkBehavior";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -508,9 +508,16 @@ function buildComponents(mode: "light" | "dark") {
         // un triplo contorno. Il campo ha gia' il suo indicatore, il bordo a 2px
         // di `.Mui-focused`: gli diamo l'arancione accessibile del tema (5,60:1
         // in chiaro, 7,15:1 in scuro) invece di `primary.main` (3,7:1 in scuro).
-        root: {
+        //
+        // Fondo pieno, dal tema: trasparente, sul fondo beige della pagina il
+        // campo sembrava disattivato accanto alle card bianche, e si vedeva
+        // solo per il bordo sottile. Dentro una card non cambia nulla (e' gia'
+        // di quel colore); in scuro `paper` stacca il campo da #121212 come
+        // fanno le card.
+        root: ({ theme }: { theme: Theme }) => ({
+          backgroundColor: theme.palette.background.paper,
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: orangeText },
-        },
+        }),
       },
     },
     MuiInputBase: {
@@ -624,6 +631,16 @@ function buildComponents(mode: "light" | "dark") {
           boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
           borderRadius: "0 !important",
         },
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        // Il binario di una barra di avanzamento e' neutro: col default MUI
+        // (arancio schiarito) una barra a 0/5 sembrava piena. Solo le
+        // determinate; il caricamento indeterminato resta com'e'.
+        root: ({ theme }: { theme: Theme }) => ({
+          "&.MuiLinearProgress-determinate": { backgroundColor: theme.palette.action.selected },
+        }),
       },
     },
     MuiToggleButton: {

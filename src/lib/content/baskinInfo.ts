@@ -68,10 +68,10 @@ const ROLES_INFO_IT: RoleInfo[] = [
       "Quando corre con la palla fa almeno 2 palleggi.",
       "Tira nel canestro alto a lato del campo o nel canestro grande.",
       "Nel canestro a lato vale 2 punti. Nel canestro grande vale 3 punti.",
-      "Lo può marcare solo un giocatore di Ruolo 3.",
+      "Solo un giocatore di Ruolo 3 può marcarlo.",
     ],
     description:
-      "Atleta con disabilità che ha uso delle mani, cammino e corsa non fluida con scarso equilibrio. I Ruoli 4 e 5 non possono marcarlo (difesa illegale). Tira nel canestro laterale alto (fuori area) o nel canestro tradizionale. Ogni volta che corre con la palla deve eseguire almeno 2 palleggi durante la corsa. Non contano le infrazioni di passi e doppio, ma ogni tiro effettuato senza i 2 palleggi è annullato. Non può essere marcato da ruoli 4 o 5.",
+      "Atleta con disabilità che ha uso delle mani, cammino e corsa non fluida con scarso equilibrio. I Ruoli 4 e 5 non possono marcarlo (difesa illegale). Tira nel canestro laterale alto (fuori area) o nel canestro tradizionale. Ogni volta che corre con la palla deve eseguire almeno 2 palleggi durante la corsa. Non contano le infrazioni di passi e doppio, ma ogni tiro effettuato senza i 2 palleggi è annullato.",
   },
   {
     role: 4,
@@ -84,10 +84,10 @@ const ROLES_INFO_IT: RoleInfo[] = [
       "Corre e palleggia bene.",
       "Tira solo nel canestro grande.",
       "Prima di tirare si ferma.",
-      "Lo possono marcare i giocatori di Ruolo 3 e di Ruolo 4.",
+      "Possono marcarlo i giocatori di Ruolo 3 e di Ruolo 4.",
     ],
     description:
-      "Atleta con uso delle mani, cammino e corsa fluida con palleggio regolare. Tira esclusivamente nei canestri tradizionali. Il Ruolo 5 non può marcarlo (difesa illegale). Prima di tirare deve obbligatoriamente effettuare un arresto. Valgono le infrazioni di passi e doppio (ma non i passi di partenza). Non può essere marcato da ruoli 5.",
+      "Atleta con uso delle mani, cammino e corsa fluida con palleggio regolare. Tira esclusivamente nei canestri tradizionali. Il Ruolo 5 non può marcarlo (difesa illegale). Prima di tirare deve obbligatoriamente effettuare un arresto. Valgono le infrazioni di passi e doppio (ma non i passi di partenza).",
   },
   {
     role: 5,
@@ -157,7 +157,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
       "Only a Role 3 player can mark them.",
     ],
     description:
-      "An athlete with a disability who has use of their hands and a non-fluid walk and run with poor balance. Roles 4 and 5 cannot mark them (illegal defence). They shoot at the high side basket (outside the area) or at the traditional basket. Every time they run with the ball they must take at least 2 dribbles while running. Travelling and double-dribble violations don't count, but any shot taken without the 2 dribbles is annulled. They cannot be marked by roles 4 or 5.",
+      "An athlete with a disability who has use of their hands and a non-fluid walk and run with poor balance. Roles 4 and 5 cannot mark them (illegal defence). They shoot at the high side basket (outside the area) or at the traditional basket. Every time they run with the ball they must take at least 2 dribbles while running. Travelling and double-dribble violations don't count, but any shot taken without the 2 dribbles is annulled.",
   },
   {
     role: 4,
@@ -173,7 +173,7 @@ const ROLES_INFO_EN: RoleInfo[] = [
       "Role 3 and Role 4 players can mark them.",
     ],
     description:
-      "An athlete with use of their hands and a fluid walk and run with regular dribbling. They shoot exclusively at the traditional baskets. Role 5 cannot mark them (illegal defence). Before shooting they must come to a stop. Travelling and double-dribble violations apply (but not the starting steps). They cannot be marked by role 5.",
+      "An athlete with use of their hands and a fluid walk and run with regular dribbling. They shoot exclusively at the traditional baskets. Role 5 cannot mark them (illegal defence). Before shooting they must come to a stop. Travelling and double-dribble violations apply (but not the starting steps).",
   },
   {
     role: 5,
@@ -218,7 +218,7 @@ const RULES_IT: RuleInfo[] = [
       "Una squadra ha fino a 14 giocatori.",
       "In campo giocano in 6.",
       "Sommando i numeri dei ruoli in campo, il totale non supera 23.",
-      "In campo ci sono sempre un pivot, un Ruolo 3 e almeno due Ruolo 5.",
+      "In campo ci sono sempre un pivot (Ruolo 1 o 2), un Ruolo 3 e almeno due Ruolo 5.",
       "Tra i Ruoli 4 e 5 in campo ci sono almeno una donna e un uomo.",
     ],
   },
@@ -227,8 +227,8 @@ const RULES_IT: RuleInfo[] = [
     items: [
       "Nessuno può marcare i Ruoli 1 e 2.",
       "I Ruoli 1 e 2 hanno una zona tutta loro.",
-      "Un Ruolo 3 lo può marcare solo un Ruolo 3.",
-      "Un Ruolo 4 non lo può marcare un Ruolo 5.",
+      "Solo un Ruolo 3 può marcare un Ruolo 3.",
+      "Un Ruolo 5 non può marcare un Ruolo 4.",
     ],
   },
   {
@@ -276,7 +276,7 @@ const RULES_EN: RuleInfo[] = [
       "A team has up to 14 players.",
       "6 players are on the court.",
       "If you add up the role numbers on the court, the total is 23 or less.",
-      "On the court there is always a pivot, a Role 3 and at least two Role 5.",
+      "On the court there is always a pivot (Role 1 or 2), a Role 3 and at least two Role 5 players.",
       "Among Roles 4 and 5 on the court there are at least one woman and one man.",
     ],
   },

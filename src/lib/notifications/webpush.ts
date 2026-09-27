@@ -137,11 +137,17 @@ export async function sendPushToUsers(
  * Se sportRole è fornito, filtra solo i membri con quel ruolo.
  * Se sportRoles (array) è fornito, filtra per uno qualsiasi dei ruoli nell'array.
  */
-export async function sendPushToFilter(
-  filter: { teamId?: string | null; sportRole?: number | null; sportRoles?: number[] },
-  payload: PushPayload,
-  notifType?: ControllableNotifType
-) {
+/**
+ * Utenti raggiunti da un filtro squadra/ruolo: i tesserati diretti e, per i
+ * figli, i loro genitori (e l'account del figlio, se ne ha uno). `null` se il
+ * filtro è vuoto, cioè "tutti". La usano il push e la notifica in-app, così
+ * arrivano alle stesse persone.
+ */
+export async function resolveFilterUserIds(filter: {
+  teamId?: string | null;
+  sportRole?: number | null;
+  sportRoles?: number[];
+}): Promise<string[] | null> {
   const { teamId } = filter;
   const roleFilter = filter.sportRoles?.length
     ? filter.sportRoles
@@ -149,9 +155,7 @@ export async function sendPushToFilter(
       ? [filter.sportRole]
       : null;
 
-  if (!teamId && !roleFilter) {
-    return sendPushToAll(payload, false, notifType);
-  }
+  if (!teamId && !roleFilter) return null;
 
   const userIds = new Set<string>();
 
@@ -203,7 +207,17 @@ export async function sendPushToFilter(
     }
   }
 
-  return sendPushToUsers([...userIds], payload, notifType);
+  return [...userIds];
+}
+
+export async function sendPushToFilter(
+  filter: { teamId?: string | null; sportRole?: number | null; sportRoles?: number[] },
+  payload: PushPayload,
+  notifType?: ControllableNotifType
+) {
+  const userIds = await resolveFilterUserIds(filter);
+  if (userIds === null) return sendPushToAll(payload, false, notifType);
+  return sendPushToUsers(userIds, payload, notifType);
 }
 
 export async function sendPushToTeam(

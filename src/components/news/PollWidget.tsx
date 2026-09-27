@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import LockIcon from "@mui/icons-material/Lock";
+import { alpha } from "@mui/material/styles";
 import { formatDistanceToNow } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useToast } from "@/context/ToastContext";
@@ -116,7 +117,9 @@ export default function PollWidget({
         border: "1px solid",
         borderColor: "divider",
         borderRadius: 2,
-        bgcolor: "action.hover",
+        // Fondo pieno come le altre card: con il velo grigio di action.hover il
+        // sondaggio, l'unica cosa della pagina da usare, sembrava disattivato.
+        bgcolor: "background.paper",
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, flexWrap: "wrap" }}>
@@ -202,7 +205,12 @@ export default function PollWidget({
                       borderRadius: 4,
                       bgcolor: "action.selected",
                       "& .MuiLinearProgress-bar": {
-                        bgcolor: voted ? "primary.main" : "action.disabled",
+                        // Le opzioni non votate restano neutre (colorarle
+                        // spingerebbe verso chi vince), ma non "disattivate".
+                        bgcolor: (theme) =>
+                          voted
+                            ? theme.palette.primary.main
+                            : alpha(theme.palette.text.secondary, 0.45),
                       },
                     }}
                   />
@@ -272,7 +280,9 @@ export default function PollWidget({
                 variant="contained"
                 size="large"
                 onClick={handleVote}
-                disabled={saving || (!isLoggedIn ? false : selected.length === 0)}
+                // Attivo anche senza scelta: premuto a vuoto dice "Seleziona almeno
+                // un'opzione" (handleVote), un bottone grigio non spiega niente.
+                disabled={saving}
                 startIcon={<HowToVoteIcon />}
               >
                 {!isLoggedIn ? t("loginBtn") : hasVoted ? t("updateVote") : t("vote")}

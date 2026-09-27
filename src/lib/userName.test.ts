@@ -16,7 +16,7 @@ const p = prisma as unknown as { user: { findUnique: Mock; update: Mock } };
 const mockSlug = generateUserSlug as Mock;
 const mockPush = sendPushToAll as Mock;
 
-const magicLinkUser = { name: null, slug: null, appRole: "GUEST", accounts: [] };
+const magicLinkUser = { name: null, slug: null, appRole: "GUEST" };
 
 describe("setOwnName", () => {
   beforeEach(() => {
@@ -51,22 +51,6 @@ describe("setOwnName", () => {
     p.user.findUnique.mockResolvedValue({ ...magicLinkUser, appRole: "ATHLETE" });
     await setOwnName("u1", "Anna Bianchi");
     expect(mockPush).not.toHaveBeenCalled();
-  });
-
-  it("403 se il nome arriva da Google", async () => {
-    p.user.findUnique.mockResolvedValue({
-      ...magicLinkUser,
-      name: "Anna Bianchi",
-      accounts: [{ id: "acc" }],
-    });
-    const res = await setOwnName("u1", "Altro Nome");
-    expect(res).toMatchObject({ ok: false, status: 403 });
-    expect(p.user.update).not.toHaveBeenCalled();
-  });
-
-  it("con Google ma senza nome, il nome si può mettere", async () => {
-    p.user.findUnique.mockResolvedValue({ ...magicLinkUser, accounts: [{ id: "acc" }] });
-    expect((await setOwnName("u1", "Anna Bianchi")).ok).toBe(true);
   });
 
   it("404 se l'utente non esiste", async () => {

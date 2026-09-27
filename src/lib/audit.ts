@@ -43,7 +43,8 @@ export type AuditAction =
   | "ADD_REGISTRATION"
   | "CREATE_CHILD"
   | "LINK_GUARDIAN"
-  | "UNLINK_GUARDIAN";
+  | "UNLINK_GUARDIAN"
+  | "SEND_NOTIFICATION";
 
 interface LogAuditInput {
   actorId: string;

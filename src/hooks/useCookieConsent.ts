@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export type ConsentChoice = {
   maps: boolean;
@@ -7,6 +7,9 @@ export type ConsentChoice = {
 
 const STORAGE_KEY = "kb-cookie-consent";
 const VERSION = 1;
+// Il banner e la mappa usano ognuno la propria istanza dell'hook: senza un
+// avviso, accettare dal banner non caricava la mappa aperta nella stessa pagina.
+const CHANGE_EVENT = "kb-cookie-consent-change";
 
 type Stored = ConsentChoice & { v: number };
 
@@ -23,6 +26,15 @@ function readStored(): Stored | null {
   }
 }
 
+function writeStored(maps: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ maps, v: VERSION } satisfies Stored));
+  } catch {
+    // Storage bloccato: la scelta vale solo per questa pagina.
+  }
+  window.dispatchEvent(new CustomEvent<ConsentChoice>(CHANGE_EVENT, { detail: { maps } }));
+}
+
 export function useCookieConsent() {
   const [decided, setDecided] = useState(() => readStored() !== null);
   const [consent, setConsent] = useState<ConsentChoice>(() => {
@@ -30,19 +42,18 @@ export function useCookieConsent() {
     return stored ? { maps: stored.maps } : { maps: false };
   });
 
-  const accept = useCallback(() => {
-    const value: Stored = { maps: true, v: VERSION };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-    setConsent({ maps: true });
-    setDecided(true);
+  useEffect(() => {
+    function onChange(e: Event) {
+      const detail = (e as CustomEvent<ConsentChoice>).detail;
+      setConsent({ maps: detail.maps });
+      setDecided(true);
+    }
+    window.addEventListener(CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(CHANGE_EVENT, onChange);
   }, []);
 
-  const reject = useCallback(() => {
-    const value: Stored = { maps: false, v: VERSION };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-    setConsent({ maps: false });
-    setDecided(true);
-  }, []);
+  const accept = useCallback(() => writeStored(true), []);
+  const reject = useCallback(() => writeStored(false), []);
 
   return { decided, consent, accept, reject };
 }

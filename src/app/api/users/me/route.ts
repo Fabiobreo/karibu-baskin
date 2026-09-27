@@ -71,8 +71,8 @@ export async function PUT(req: Request) {
   const userId = session.user.id;
 
   try {
-    // Nome inserito dall'utente (magic link, o correzione dal profilo): regole
-    // su Google, slug e notifica allo staff stanno tutte in setOwnName.
+    // Nome inserito dall'utente (primo accesso, o correzione dal profilo):
+    // slug e notifica allo staff stanno in setOwnName.
     if (name !== undefined) {
       const result = await setOwnName(userId, name);
       if (!result.ok) {

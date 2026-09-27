@@ -14,15 +14,15 @@ const FAQS_IT: FaqCategory[] = [
     items: [
       {
         q: "Cos'è il Baskin?",
-        a: "Il Baskin (Basket Inclusivo) è uno sport di squadra nato in Italia nel 2001 che permette a persone con e senza disabilità di giocare insieme nella stessa squadra, con pari dignità. Ogni giocatore ha un ruolo specifico adatto alle proprie capacità.",
+        a: "Il Baskin (basket inclusivo) è nato in Italia nel 2001. È uno sport di squadra: persone con e senza disabilità giocano insieme, nella stessa squadra. Ognuno ha un ruolo adatto alle sue capacità.",
       },
       {
         q: "Chi può giocare a Baskin?",
-        a: "Tutti! Il Baskin è pensato per essere inclusivo: giocatori con disabilità fisiche o cognitive e giocatori normodotati condividono il campo nella stessa squadra. Non è necessaria alcuna esperienza sportiva pregressa.",
+        a: "Tutti! Persone con disabilità fisica o cognitiva e persone senza disabilità giocano nella stessa squadra. Non serve aver già fatto sport.",
       },
       {
         q: "Come funzionano i ruoli?",
-        a: "I giocatori sono suddivisi in 5 ruoli (R1–R5) in base alle proprie abilità motorie e cognitive. Ogni ruolo ha regole specifiche che garantiscono a tutti di partecipare attivamente al gioco. Il ruolo viene assegnato dagli allenatori dopo un periodo di osservazione.",
+        a: "Ci sono 5 ruoli, da 1 a 5. Ogni giocatore ha il ruolo adatto alle sue capacità. Ogni ruolo ha le sue regole: così tutti giocano davvero. Il ruolo lo sceglie lo staff dopo averti visto giocare. Puoi farti un'idea con il questionario del ruolo.",
       },
     ],
   },
@@ -39,7 +39,7 @@ const FAQS_IT: FaqCategory[] = [
       },
       {
         q: "È necessario avere una diagnosi per partecipare?",
-        a: "No. Il Baskin accoglie tutti. Non è richiesta alcuna certificazione medica per partecipare agli allenamenti. Per le gare agonistiche ufficiali possono essere necessari documenti specifici. Il nostro staff ti guiderà.",
+        a: "No. Il Baskin accoglie tutti. Per allenarti non serve nessun certificato medico. Per le partite ufficiali possono servire dei documenti: te lo spiega lo staff.",
       },
     ],
   },
@@ -48,15 +48,15 @@ const FAQS_IT: FaqCategory[] = [
     items: [
       {
         q: "Come mi iscrivo a un allenamento?",
-        a: "Accedi con il tuo account Google, vai sulla pagina dell'allenamento e clicca su 'Iscriviti'. Puoi anche iscrivere i tuoi figli dalla sezione Profilo.",
+        a: "Accedi con Google o con il link che ti mandiamo per email. Poi apri la pagina dell'allenamento e tocca «Iscriviti». Da lì puoi iscrivere anche i tuoi figli.",
       },
       {
         q: "Posso disdire un'iscrizione?",
         a: "Sì, puoi cancellare la tua iscrizione dalla pagina dell'allenamento fino all'orario di inizio.",
       },
       {
-        q: "Non riesco ad accedere con Google, cosa faccio?",
-        a: "Assicurati di usare lo stesso account Google con cui ti sei registrato/a in precedenza. Se il problema persiste, scrivici dalla pagina Contatti.",
+        q: "Non riesco ad accedere. Cosa faccio?",
+        a: "Se non hai Google, accedi con l'email: scrivi il tuo indirizzo e ti mandiamo un link. Se hai già un account, usa la stessa email di sempre. Se ancora non funziona, scrivici dalla pagina Contatti.",
       },
     ],
   },
@@ -68,15 +68,15 @@ const FAQS_EN: FaqCategory[] = [
     items: [
       {
         q: "What is Baskin?",
-        a: "Baskin (Inclusive Basketball) is a team sport born in Italy in 2001 that lets people with and without disabilities play together on the same team, with equal dignity. Each player has a specific role suited to their abilities.",
+        a: "Baskin (inclusive basketball) was born in Italy in 2001. It is a team sport: people with and without disabilities play together, on the same team. Everyone has a role that suits their abilities.",
       },
       {
         q: "Who can play Baskin?",
-        a: "Everyone! Baskin is designed to be inclusive: players with physical or cognitive disabilities and able-bodied players share the court on the same team. No prior sports experience is required.",
+        a: "Everyone! People with physical or cognitive disabilities and people without disabilities play on the same team. You do not need to have played sport before.",
       },
       {
         q: "How do the roles work?",
-        a: "Players are divided into 5 roles (R1–R5) based on their motor and cognitive abilities. Each role has specific rules that ensure everyone takes an active part in the game. The role is assigned by the coaches after a period of observation.",
+        a: "There are 5 roles, from 1 to 5. Each player has the role that suits their abilities. Each role has its own rules, so everyone really plays. The staff chooses the role after seeing you play. You can get an idea with the role questionnaire.",
       },
     ],
   },
@@ -85,32 +85,32 @@ const FAQS_EN: FaqCategory[] = [
     items: [
       {
         q: "How can I join the team?",
-        a: "You can come and try a training session with no commitment! Write to us from the Contacts page or just show up at the gym. We'll explain everything on the spot.",
+        a: "You can come and try a training session with no commitment! Write to us from the Contact page or just show up at the gym. We'll explain everything on the spot.",
       },
       {
         q: "Where and when do you train?",
-        a: "Trainings take place in Montecchio Maggiore (VI). You can check the calendar on the website for up-to-date dates and times.",
+        a: "Training sessions take place in Montecchio Maggiore (VI). You can check the calendar on the website for up-to-date dates and times.",
       },
       {
         q: "Do I need a diagnosis to take part?",
-        a: "No. Baskin welcomes everyone. No medical certification is required to take part in training sessions. For official competitive matches specific documents may be needed. Our staff will guide you.",
+        a: "No. Baskin welcomes everyone. You do not need a medical certificate to train. For official matches you may need some documents: the staff will explain.",
       },
     ],
   },
   {
-    category: "Registration & app",
+    category: "Sign-ups & app",
     items: [
       {
-        q: "How do I register for a training?",
-        a: "Log in with your Google account, go to the training page and click 'Register'. You can also register your children from the Profile section.",
+        q: "How do I sign up for a training session?",
+        a: 'Sign in with Google or with the link we email you. Then open the training session and tap "Sign up". From there you can also sign up your children.',
       },
       {
-        q: "Can I cancel a registration?",
-        a: "Yes, you can cancel your registration from the training page up until the start time.",
+        q: "Can I cancel a sign-up?",
+        a: "Yes, you can cancel your sign-up from the training session page up until the start time.",
       },
       {
-        q: "I can't log in with Google, what do I do?",
-        a: "Make sure you're using the same Google account you registered with before. If the problem persists, write to us from the Contacts page.",
+        q: "I can't sign in. What do I do?",
+        a: "If you don't use Google, sign in with your email: type your address and we send you a link. If you already have an account, use the same email as always. If it still doesn't work, write to us from the Contact page.",
       },
     ],
   },

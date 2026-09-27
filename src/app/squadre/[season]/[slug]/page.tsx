@@ -3,7 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { formatDecimal } from "@/lib/numberFormat";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
-import { isMemberRole } from "@/lib/authRoles";
+import { hasRole, isMemberRole } from "@/lib/authRoles";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { publicSubjects } from "@/lib/minors";
 import {
@@ -183,6 +184,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   // Tutela dei minori: chi non è tesserato non vede i minori nella rosa né nei
   // tabellini; il numero totale di atleti resta, perché non identifica nessuno.
   const viewerIsMember = isMemberRole(session?.user?.appRole);
+  const viewerIsStaff = !!session?.user && hasRole(session.user.appRole, "COACH");
   const totalMembers = team.memberships.length;
   team.memberships = publicSubjects(team.memberships, viewerIsMember);
   const hiddenMinors = totalMembers - team.memberships.length;
@@ -389,12 +391,25 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           overflow: "hidden",
         }}
       >
+        {viewerIsStaff && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: { xs: 12, md: 16 },
+              right: { xs: 12, md: 20 },
+              zIndex: 3,
+            }}
+          >
+            <StaffManageButton href={`/admin/squadre/${team.id}/rosa`} label={t("manage")} />
+          </Box>
+        )}
         <Box
           sx={{
             position: "absolute",
             top: { xs: 12, md: 16 },
             left: { xs: 12, md: 20 },
-            right: { xs: 60, md: 80 },
+            // Spazio a destra per "Gestisci" dello staff.
+            right: viewerIsStaff ? { xs: 140, md: 160 } : { xs: 60, md: 80 },
             zIndex: 2,
           }}
         >

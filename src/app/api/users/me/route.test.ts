@@ -148,10 +148,10 @@ describe("PUT /api/users/me (nome)", () => {
     expect(mockSetOwnName).not.toHaveBeenCalled();
   });
 
-  it("riporta il rifiuto di setOwnName (nome gestito da Google)", async () => {
-    mockSetOwnName.mockResolvedValue({ ok: false, status: 403, error: "Google" });
+  it("riporta il rifiuto di setOwnName (utente non trovato)", async () => {
+    mockSetOwnName.mockResolvedValue({ ok: false, status: 404, error: "Utente non trovato" });
     const res = await put({ name: "Anna Bianchi" });
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
     expect(p.user.update).not.toHaveBeenCalled();
   });
 });

@@ -111,6 +111,7 @@ const ACTION_LABELS: Record<string, string> = {
   CREATE_CHILD: "Creazione figlio (staff)",
   LINK_GUARDIAN: "Genitore collegato a un figlio",
   UNLINK_GUARDIAN: "Genitore scollegato da un figlio",
+  SEND_NOTIFICATION: "Avviso inviato",
 };
 
 const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" | "info"> = {
@@ -154,6 +155,7 @@ const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" 
   CREATE_CHILD: "success",
   LINK_GUARDIAN: "success",
   UNLINK_GUARDIAN: "warning",
+  SEND_NOTIFICATION: "info",
 };
 
 const TARGET_TYPE_LABELS: Record<string, string> = {
@@ -167,6 +169,7 @@ const TARGET_TYPE_LABELS: Record<string, string> = {
   TrainingSession: "Allenamento",
   Group: "Girone",
   OpposingTeam: "Squadra avversaria",
+  Notification: "Avviso",
 };
 
 const ALL_ACTIONS = Object.keys(ACTION_LABELS);

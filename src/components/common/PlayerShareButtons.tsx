@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Button, IconButton, Tooltip } from "@mui/material";
+import { Box, Button } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ShareIcon from "@mui/icons-material/Share";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
-import { socialBrandColor } from "@/lib/heroStyles";
+import { brandColor } from "@/lib/heroStyles";
 import { readableFill } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
@@ -81,12 +81,6 @@ export default function PlayerShareButtons({
     }
   }
 
-  function handleWhatsApp() {
-    const msg = buildMessage();
-    const waUrl = `https://wa.me/?text=${encodeURIComponent(msg.text)}`;
-    if (typeof window !== "undefined") window.open(waUrl, "_blank", "noopener");
-  }
-
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
       <Button
@@ -108,36 +102,32 @@ export default function PlayerShareButtons({
       >
         {t("share")}
       </Button>
-      <Tooltip title={t("whatsapp")}>
-        <IconButton
-          size="small"
-          onClick={handleWhatsApp}
-          sx={{
-            bgcolor: "rgba(0,0,0,0.35)",
-            color: socialBrandColor.whatsapp,
-            border: "1px solid rgba(255,255,255,0.15)",
-            "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
-          }}
-          aria-label={t("shareWhatsapp")}
-        >
-          <WhatsAppIcon sx={{ fontSize: 16 }} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={t("copyLink")}>
-        <IconButton
-          size="small"
-          onClick={handleCopy}
-          sx={{
-            bgcolor: "rgba(0,0,0,0.35)",
-            color: "common.white",
-            border: "1px solid rgba(255,255,255,0.15)",
-            "&:hover": { bgcolor: "rgba(0,0,0,0.5)" },
-          }}
-          aria-label={t("copyProfileLink")}
-        >
-          <ContentCopyIcon sx={{ fontSize: 14 }} />
-        </IconButton>
-      </Tooltip>
+      {/* "Condividi" apre gia' WhatsApp e le altre app sul telefono: accanto
+          resta solo "Copia link", con etichetta e bordo chiaro, perche' le
+          icone scure sul fondo scuro dell'hero quasi non si vedevano. */}
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={handleCopy}
+        startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
+        aria-label={t("copyProfileLink")}
+        sx={{
+          color: "common.white",
+          borderColor: alpha(brandColor.white, 0.5),
+          fontWeight: 700,
+          fontSize: TYPE_SCALE.xs,
+          textTransform: "none",
+          px: 1.5,
+          py: 0.5,
+          borderRadius: 999,
+          "&:hover": {
+            borderColor: brandColor.white,
+            bgcolor: alpha(brandColor.white, 0.08),
+          },
+        }}
+      >
+        {t("copyLink")}
+      </Button>
     </Box>
   );
 }

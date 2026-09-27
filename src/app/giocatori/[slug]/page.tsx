@@ -23,7 +23,7 @@ import { brandColor, heroBottomBorder, heroMedal, heroTint, heroText } from "@/l
 import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
@@ -181,7 +181,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     t,
     tTeams,
     locale,
-    { roleLabel, sportRoleLabel, genderLabel, matchResultLabel },
+    { sportRoleLabel, matchResultLabel },
     currentSeason,
     badgeI18n,
     userRow,
@@ -281,13 +281,22 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       };
 
   const currentTeams = player.teamMemberships.filter((m) => m.team.season === currentSeason);
-  // Squadra da usare come genitore nel breadcrumb: quella della stagione in
-  // corso, altrimenti la piu' recente a cui il giocatore e' appartenuto.
-  const breadcrumbTeam =
-    currentTeams[0]?.team ??
-    [...player.teamMemberships].sort((a, b) => b.team.season.localeCompare(a.team.season))[0]
-      ?.team ??
-    null;
+  // Squadre dalla stagione piu' recente: la query le ordina per data di
+  // iscrizione, che non segue le stagioni (una rosa passata si puo' creare dopo).
+  const membershipsBySeason = [...player.teamMemberships].sort((a, b) =>
+    b.team.season.localeCompare(a.team.season)
+  );
+  const latestMembership = membershipsBySeason[0] ?? null;
+  // Squadre nell'hero: quelle della stagione in corso, altrimenti l'ultima a
+  // cui il giocatore e' appartenuto (con la stagione accanto al nome).
+  const heroTeams =
+    currentTeams.length > 0 ? currentTeams : latestMembership ? [latestMembership] : [];
+  // Squadra da usare come genitore nel breadcrumb, con la stessa regola.
+  const breadcrumbTeam = heroTeams[0]?.team ?? null;
+  const careerMatches = player.matchStats.length;
+  // Allenamenti: le presenze se lo staff le ha segnate, altrimenti le iscrizioni.
+  const attendedCount = player.registrations.length;
+  const trainingsValue = attendedCount > 0 ? attendedCount : player._count.registrations;
 
   // Medaglie: calcola se l'utente è 1°/2°/3° top scorer per ciascuna (squadra, stagione)
   const teamSeasonPairs = player.teamMemberships.map((m) => ({
@@ -545,7 +554,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 e' la sua squadra. Senza squadra ci si ferma a "Squadre". */}
             {breadcrumbTeam && (
               <MuiLink
-                href={`/squadre/${breadcrumbTeam.season.replace("-", "")}/${slugify(breadcrumbTeam.name)}`}
+                href={teamHref(breadcrumbTeam)}
                 underline="hover"
                 variant="body2"
                 sx={{
@@ -652,43 +661,66 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 {player.name ?? "—"}
               </Typography>
 
-              {/* Ruolo + squadra corrente */}
-              <Box
-                sx={{
-                  mt: 1.5,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.75,
-                  alignItems: "center",
-                }}
-              >
-                {player.sportRole && (
-                  <RoleBadge role={player.sportRole} variant={player.sportRoleVariant ?? null} />
-                )}
-                {currentTeams.map((m) => (
-                  <Chip
-                    key={m.id}
-                    icon={
-                      m.isCaptain ? (
-                        <EmojiEventsIcon
-                          sx={{
-                            fontSize: "0.95rem !important",
-                            color: `${heroMedal.gold} !important`,
-                          }}
-                        />
-                      ) : undefined
-                    }
-                    label={m.team.name}
-                    size="small"
-                    sx={{
-                      bgcolor: m.team.color ?? "text.primary",
-                      color: contrastText(m.team.color),
-                      fontWeight: 700,
-                      fontSize: TYPE_SCALE.xs,
-                    }}
-                  />
-                ))}
-              </Box>
+              {/* Ruolo per esteso + squadra. Il numero da solo (c'e' gia' sul
+                  bollino dell'avatar) a chi non conosce il Baskin non dice nulla. */}
+              {(player.sportRole || heroTeams.length > 0) && (
+                <Box
+                  sx={{
+                    mt: 1.5,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    alignItems: "center",
+                  }}
+                >
+                  {player.sportRole && (
+                    <Typography
+                      variant="body1"
+                      sx={{ color: heroText.primary, fontWeight: 700, lineHeight: 1 }}
+                    >
+                      {sportRoleLabel(player.sportRole, player.sportRoleVariant)}
+                    </Typography>
+                  )}
+                  {player.sportRole && heroTeams.length > 0 && (
+                    <Box component="span" aria-hidden="true" sx={{ color: heroText.muted }}>
+                      ·
+                    </Box>
+                  )}
+                  {heroTeams.map((m) => (
+                    // Niente `clickable`: il link e' gia' l'elemento da toccare.
+                    <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
+                      <Chip
+                        icon={
+                          m.isCaptain ? (
+                            <EmojiEventsIcon
+                              sx={{
+                                fontSize: "0.95rem !important",
+                                color: `${heroMedal.gold} !important`,
+                              }}
+                            />
+                          ) : undefined
+                        }
+                        // Una squadra di una stagione passata porta la stagione:
+                        // senza, sembrerebbe quella in cui gioca adesso.
+                        label={
+                          m.team.season === currentSeason
+                            ? m.team.name
+                            : `${m.team.name} · ${m.team.season}`
+                        }
+                        size="small"
+                        sx={{
+                          bgcolor: m.team.color ?? "text.primary",
+                          color: contrastText(m.team.color),
+                          fontWeight: 700,
+                          fontSize: TYPE_SCALE.xs,
+                          cursor: "pointer",
+                          "a:hover > &": { opacity: 0.9 },
+                        }}
+                      />
+                    </Link>
+                  ))}
+                </Box>
+              )}
 
               {/* Medaglie top scorer */}
               {medals.length > 0 && (
@@ -873,7 +905,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         color: "rgba(255,255,255,0.75)",
                       }}
                     >
-                      {matchesPlayed === 1 ? "partita" : "partite"}
+                      {t("matchesCount", { count: matchesPlayed })}
                     </Typography>
                   </Box>
                 </Box>
@@ -937,43 +969,64 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           </Paper>
         )}
 
-        {/* Info atleta */}
-        <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-          <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
-            {t("athleteInfo")}
-          </Typography>
-          <Grid container spacing={2}>
-            {player.gender && (
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow label={t("gender")} value={genderLabel(player.gender)} />
-              </Grid>
-            )}
-            {player.sportRole && (
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <InfoRow label={t("baskinRole")} value={<RoleBadge role={player.sportRole} />} />
-              </Grid>
-            )}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <InfoRow
-                label={t("trainingsLabel")}
-                value={
-                  player.registrations.length > 0
-                    ? `${player._count.registrations} iscrizioni · ${player.registrations.length} presenze`
-                    : `${player._count.registrations}`
-                }
-              />
-            </Grid>
-          </Grid>
-        </Paper>
+        {/* Riepilogo: numeri in riquadri. Punti e partite della carriera
+            stanno gia' nell'hero; qui allenamenti e MVP. Chi non ha ancora
+            giocato ha una riga di stato al posto dei numeri a zero. */}
+        <Box
+          component="section"
+          aria-label={t("athleteInfo")}
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+            gap: 2,
+            mb: 5,
+          }}
+        >
+          <SummaryTile
+            value={trainingsValue}
+            label={t("trainingsLabel")}
+            note={
+              attendedCount > 0 && player._count.registrations > attendedCount
+                ? t("trainingsOf", { count: player._count.registrations })
+                : undefined
+            }
+          />
+          {careerMatches > 0 ? (
+            player._count.matchMvps > 0 && (
+              <SummaryTile value={player._count.matchMvps} label={t("mvpLabel")} />
+            )
+          ) : (
+            <Paper
+              elevation={0}
+              variant="outlined"
+              sx={{
+                gridColumn: { sm: "span 2" },
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <Typography variant="body1" fontWeight={700}>
+                {t("notPlayedYet", { name: player.name ?? "" })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t("notPlayedYetDesc")}
+              </Typography>
+            </Paper>
+          )}
+        </Box>
 
-        {/* Badge / achievement */}
+        {/* Badge / achievement. Senza partite i traguardi sono tutti a zero:
+            se ne mostra solo il prossimo, non una lista di barre vuote. */}
         {(earnedBadgesView.length > 0 || lockedBadgesView.length > 0) && (
           <Box sx={{ mb: 5 }}>
             <BadgeShowcase
               earned={earnedBadgesView}
               locked={lockedBadgesView}
               title={t("achievements")}
-              nextTitle={t("nextAchievements")}
+              nextTitle={careerMatches > 0 ? t("nextAchievements") : t("firstAchievement")}
+              maxNext={careerMatches > 0 ? 3 : 1}
             />
           </Box>
         )}
@@ -1246,12 +1299,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 {t("competitiveHistory")}
               </Typography>
               <Stack spacing={1.5}>
-                {player.teamMemberships.map((m) => (
-                  <Link
-                    key={m.id}
-                    href={`/squadre/${m.team.season}/${slugify(m.team.name)}`}
-                    style={{ textDecoration: "none" }}
-                  >
+                {membershipsBySeason.map((m) => (
+                  <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
                     <Paper
                       elevation={0}
                       sx={{
@@ -1318,7 +1367,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             <Divider sx={{ mb: 5 }} />
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <SportsSoccerIcon color="primary" />
+                <SportsBasketballIcon color="primary" />
                 <Typography variant="overline" color="text.secondary">
                   {t("matches")}
                 </Typography>
@@ -1434,37 +1483,49 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             </Box>
           </>
         )}
-
-        {player.teamMemberships.length === 0 && !hasStats && (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <SportsSoccerIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography component="p" variant="h6" color="text.secondary">
-              {t("noStats")}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {t("noStatsDesc")}
-            </Typography>
-          </Box>
-        )}
       </Container>
     </>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+/** URL pubblico di una squadra: la stagione senza trattino, come nelle liste. */
+function teamHref(team: { name: string; season: string }): string {
+  return `/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`;
+}
+
+/** Riquadro numerico del riepilogo: numero grande, etichetta sotto. */
+function SummaryTile({ value, label, note }: { value: number; label: string; note?: string }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}>
-      <Typography variant="body2" color="text.secondary">
+    <Paper
+      elevation={0}
+      variant="outlined"
+      sx={{ p: 2, textAlign: "center", display: "flex", flexDirection: "column" }}
+    >
+      <Typography
+        component="p"
+        variant="h4"
+        fontWeight={800}
+        sx={{
+          fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
+          lineHeight: 1.1,
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {value}
+      </Typography>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}
+      >
         {label}
       </Typography>
-      {typeof value === "string" ? (
-        <Typography variant="body2" fontWeight={600}>
-          {value}
+      {note && (
+        <Typography variant="caption" color="text.secondary">
+          {note}
         </Typography>
-      ) : (
-        value
       )}
-    </Box>
+    </Paper>
   );
 }
 

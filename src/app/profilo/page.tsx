@@ -131,9 +131,6 @@ export default async function ProfiloPage() {
         select: { session: { select: { date: true } } },
       },
       _count: { select: { registrations: true, matchStats: true } },
-      // Con Google il nome arriva da lì e viene riscritto a ogni accesso: si
-      // modifica dal profilo solo senza account Google (magic link).
-      accounts: { where: { provider: "google" }, select: { id: true }, take: 1 },
     },
   });
 
@@ -307,7 +304,7 @@ export default async function ProfiloPage() {
             customImage={user.customImage ?? null}
           />
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <ProfileNameEditor name={user.name} editable={user.accounts.length === 0} />
+            <ProfileNameEditor name={user.name} />
             <Typography variant="body2" color="text.secondary" noWrap>
               {user.email}
             </Typography>

@@ -1,12 +1,11 @@
 "use client";
 import { heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import { useTranslations, useLocale } from "next-intl";
-import { Box, Typography, Chip, Button, Breadcrumbs, Link as MuiLink } from "@mui/material";
+import { Box, Typography, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
-import SettingsIcon from "@mui/icons-material/Settings";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -14,6 +13,7 @@ import NextLink from "next/link";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import ShareSection from "@/components/common/ShareSection";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import { mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { formatRoleNumbers } from "@/lib/roleList";
@@ -140,21 +140,10 @@ export default function AllenamientoHero({
           >
             {/* Una sola strada per gestire l'allenamento: l'admin (UX-23). La
                 matita con il suo dialog di modifica, senza il Luogo, e' sparita. */}
-            <Button
+            <StaffManageButton
               href={`/admin/allenamenti?apri=${session.id}`}
-              size="small"
-              startIcon={<SettingsIcon sx={{ fontSize: 18 }} />}
-              sx={{
-                color: "common.white",
-                fontWeight: 700,
-                bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
-                border: "1px solid",
-                borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
-                "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.white, 0.2) },
-              }}
-            >
-              {t("manageRoster")}
-            </Button>
+              label={t("manageRoster")}
+            />
           </Box>
         )}
 

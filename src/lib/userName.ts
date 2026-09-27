@@ -4,7 +4,7 @@ import { sendPushToAll } from "@/lib/notifications/webpush";
 
 export type SetOwnNameResult =
   | { ok: true; name: string }
-  | { ok: false; status: 403 | 404; error: string };
+  | { ok: false; status: 404; error: string };
 
 /**
  * Testo della notifica allo staff per un nuovo account. Neutro rispetto al
@@ -18,9 +18,8 @@ export function newUserPushBody(nameOrEmail: string): string {
  * Chi entra col magic link nasce senza nome: Auth.js ha solo l'email. Il nome
  * lo inserisce l'utente (dialog al primo accesso, profilo, form d'iscrizione).
  *
- * - Con un account Google collegato il nome arriva da Google e viene
- *   riscritto a ogni accesso: modificarlo qui sparirebbe al login dopo, quindi
- *   si accetta solo se manca del tutto.
+ * - Vale anche con un account Google collegato: Google riempie il nome solo
+ *   se manca (callback `signIn` in authjs.ts), non lo riscrive a ogni accesso.
  * - Lo slug si genera la prima volta; un cambio di nome successivo non lo
  *   tocca, per non rompere i link al profilo pubblico.
  * - La notifica "nuovo utente" allo staff parte qui, quando il nome c'è: alla
@@ -30,23 +29,11 @@ export function newUserPushBody(nameOrEmail: string): string {
 export async function setOwnName(userId: string, name: string): Promise<SetOwnNameResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
-      name: true,
-      slug: true,
-      appRole: true,
-      accounts: { where: { provider: "google" }, select: { id: true }, take: 1 },
-    },
+    select: { name: true, slug: true, appRole: true },
   });
   if (!user) return { ok: false, status: 404, error: "Utente non trovato" };
 
   const hadName = !!user.name?.trim();
-  if (hadName && user.accounts.length > 0) {
-    return {
-      ok: false,
-      status: 403,
-      error: "Il nome arriva dal tuo account Google: per cambiarlo, modificalo lì",
-    };
-  }
 
   const slug = user.slug ? null : await generateUserSlug(name);
   await prisma.user.update({

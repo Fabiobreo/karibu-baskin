@@ -1,5 +1,10 @@
-import { sendPushToAll, sendPushToTeam, sendPushToFilter } from "@/lib/notifications/webpush";
-import { createAppNotification } from "@/lib/notifications/appNotifications";
+import { sendPushToAll, sendPushToUsers } from "@/lib/notifications/webpush";
+import { loadSessionAudience } from "@/lib/notifications/sessionAudience";
+import { hasRestrictions } from "@/lib/registrationRestrictions";
+import {
+  createAppNotification,
+  createTargetedAppNotifications,
+} from "@/lib/notifications/appNotifications";
 import { formatRomeDayLabel, formatRomeTime } from "@/lib/dateUtils";
 
 export interface SessionNotifyInput {
@@ -10,6 +15,7 @@ export interface SessionNotifyInput {
   dateSlug: string | null;
   allowedRoles: number[];
   restrictTeamId: string | null;
+  openRoles: number[];
 }
 
 type NotifKind = "new" | "updated" | "closed";
@@ -29,22 +35,8 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
         : "🏀 Iscrizioni aperte";
   const pushPayload = { title: pushTitle, body, url, type: "NEW_TRAINING" };
 
-  if (session.restrictTeamId) {
-    sendPushToTeam(session.restrictTeamId, pushPayload, "NEW_TRAINING").catch((err) =>
-      console.error("[push] session open (team)", err)
-    );
-  } else if (session.allowedRoles.length > 0) {
-    sendPushToFilter({ sportRoles: session.allowedRoles }, pushPayload, "NEW_TRAINING").catch(
-      (err) => console.error("[push] session open (roles)", err)
-    );
-  } else {
-    sendPushToAll(pushPayload, false, "NEW_TRAINING").catch((err) =>
-      console.error("[push] session open", err)
-    );
-  }
-
-  createAppNotification({
-    type: "NEW_TRAINING",
+  const appNotification = {
+    type: "NEW_TRAINING" as const,
     title:
       kind === "updated"
         ? "Allenamento aggiornato"
@@ -53,5 +45,34 @@ export function notifySessionOpen(session: SessionNotifyInput, kind: NotifKind =
           : "Nuovo allenamento",
     body,
     url,
-  }).catch((err) => console.error("[notification] session open", err));
+  };
+
+  const restrictions = {
+    allowedRoles: session.allowedRoles,
+    restrictTeamId: session.restrictTeamId,
+    openRoles: session.openRoles,
+  };
+
+  if (!hasRestrictions(restrictions)) {
+    sendPushToAll(pushPayload, false, "NEW_TRAINING").catch((err) =>
+      console.error("[push] session open", err)
+    );
+    createAppNotification(appNotification).catch((err) =>
+      console.error("[notification] session open", err)
+    );
+    return;
+  }
+
+  // Allenamento riservato: l'avviso (push e in-app, alle stesse persone) va a
+  // chi può davvero iscriversi, con le regole di checkRegistrationAllowed:
+  // ruoli ammessi, squadra, ruoli sempre aperti (openRoles).
+  loadSessionAudience(restrictions)
+    .then((userIds) => {
+      const ids = userIds ?? [];
+      sendPushToUsers(ids, pushPayload, "NEW_TRAINING").catch((err) =>
+        console.error("[push] session open (filtered)", err)
+      );
+      return createTargetedAppNotifications(ids, appNotification);
+    })
+    .catch((err) => console.error("[notification] session open (filtered)", err));
 }

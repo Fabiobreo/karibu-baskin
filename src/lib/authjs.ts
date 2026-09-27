@@ -44,28 +44,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Ad ogni accesso Google aggiorna nome e foto profilo nel DB.
-      // Se l'utente non ha ancora uno slug, lo genera ora.
-      // Fire-and-forget: non blocca mai il login se fallisce.
+      // Ad ogni accesso Google aggiorna la foto profilo nel DB. Il nome lo
+      // prende da Google solo se manca: quello scritto dallo staff o
+      // dall'utente non va sovrascritto. Se l'utente non ha ancora uno slug,
+      // lo genera ora. Fire-and-forget: non blocca mai il login se fallisce.
       if (account?.provider === "google" && profile && user.email) {
         const picture = (profile as { picture?: string }).picture;
         (async () => {
-          // Recupera l'utente per verificare se ha già uno slug
           const dbUser = await prisma.user.findUnique({
             where: { email: user.email! },
-            select: { id: true, slug: true },
+            select: { id: true, slug: true, name: true },
           });
           if (!dbUser) return;
 
-          const slugToSet =
-            !dbUser.slug && (profile.name ?? user.name)
-              ? await generateUserSlug(profile.name ?? user.name ?? "")
-              : null;
+          const nameToSet = !dbUser.name?.trim() && profile.name ? profile.name : null;
+          const slugSource = dbUser.name?.trim() || nameToSet;
+          const slugToSet = !dbUser.slug && slugSource ? await generateUserSlug(slugSource) : null;
 
           await prisma.user.update({
             where: { id: dbUser.id },
             data: {
-              ...(profile.name ? { name: profile.name } : {}),
+              ...(nameToSet ? { name: nameToSet } : {}),
               ...(picture ? { image: picture } : {}),
               ...(slugToSet ? { slug: slugToSet } : {}),
             },

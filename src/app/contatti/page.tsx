@@ -20,7 +20,6 @@ import SuggestionForm from "@/components/common/SuggestionForm";
 import Image from "next/image";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
@@ -29,7 +28,6 @@ import MessageIcon from "@mui/icons-material/Message";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import MapEmbed from "@/components/common/MapEmbed";
 import { onHover } from "@/lib/hoverStyles";
 import { heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -336,41 +334,24 @@ export default function ContattiPage() {
 
           <Divider sx={{ mb: 5 }} />
 
-          {/* Mappa + Sede + Social */}
+          {/* Social + dati legali. La sede con la mappa sta in "Vieni a provare",
+              in cima alla pagina: qui sarebbe stata un doppione. */}
           <Grid container spacing={4}>
-            {/* Sinistra: mappa + sede */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Typography variant="overline" color="text.secondary">
-                {t("contatti.visitUs")}
-              </Typography>
-              <Typography component="h3" variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
-                {t("contatti.ourVenue")}
-              </Typography>
-              <Box sx={{ mb: 2 }}>
-                <MapEmbed height={220} />
-              </Box>
-              <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
-                <LocationOnIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
-                <Box>
-                  <Typography variant="body2" fontWeight={700}>
-                    Polisportivo Gino Cosaro
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Via del Vigo, 11 - 36075 Montecchio Maggiore (VI)
-                  </Typography>
-                </Box>
-              </Box>
-            </Grid>
-
-            {/* Destra: social + dati legali */}
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={12}>
               <Typography variant="overline" color="text.secondary">
                 {t("contatti.followUs")}
               </Typography>
               <Typography component="h3" variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
                 {t("contatti.social")}
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 4 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+                  gap: 1.5,
+                  mb: 4,
+                }}
+              >
                 {SOCIAL.map((s) => (
                   <Paper
                     key={s.label}

@@ -131,13 +131,13 @@ export default function BadgeShowcase({
             {next.map((badge) => (
               <Box key={badge.id} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                 {/* I "prossimi" sono desaturati: si distinguono dagli sbloccati
-                    senza doverne leggere l'etichetta. */}
+                    senza doverne leggere l'etichetta. Il grigio basta a dire
+                    "bloccato": con meno opacita' l'icona quasi spariva. */}
                 <Typography
                   sx={{
                     fontSize: TYPE_SCALE.lg,
                     lineHeight: 1,
                     filter: "grayscale(1)",
-                    opacity: 0.7,
                   }}
                 >
                   {badge.emoji}

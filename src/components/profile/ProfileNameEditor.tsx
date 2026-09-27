@@ -10,16 +10,13 @@ import { readError } from "@/lib/fetchJson";
 
 interface ProfileNameEditorProps {
   name: string | null;
-  /** false con un account Google collegato: il nome lo riscrive Google a ogni accesso. */
-  editable: boolean;
 }
 
 /**
- * Nome nella card del profilo. Chi entra col magic link il nome l'ha scritto a
- * mano al primo accesso: qui può correggerlo. Per gli account Google resta in
- * sola lettura, perché la modifica sparirebbe al login successivo.
+ * Nome nella card del profilo, modificabile da chiunque: Google riempie il nome
+ * solo se manca, quindi una correzione fatta qui resta anche dopo il login.
  */
-export default function ProfileNameEditor({ name, editable }: ProfileNameEditorProps) {
+export default function ProfileNameEditor({ name }: ProfileNameEditorProps) {
   const t = useTranslations("profile");
   const router = useRouter();
   const { showToast } = useToast();
@@ -90,13 +87,11 @@ export default function ProfileNameEditor({ name, editable }: ProfileNameEditorP
       <Typography component="h2" variant="h6" fontWeight={700} noWrap>
         {name ?? "—"}
       </Typography>
-      {editable && (
-        <Tooltip title={t("nameEdit")}>
-          <IconButton size="small" aria-label={t("nameEdit")} onClick={() => setEditing(true)}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      )}
+      <Tooltip title={t("nameEdit")}>
+        <IconButton size="small" aria-label={t("nameEdit")} onClick={() => setEditing(true)}>
+          <EditIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 }

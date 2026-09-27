@@ -15,12 +15,11 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CollectionsIcon from "@mui/icons-material/Collections";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import InsightsIcon from "@mui/icons-material/Insights";
+import CampaignIcon from "@mui/icons-material/Campaign";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
-import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
 import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
-import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { onHover } from "@/lib/hoverStyles";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -176,6 +175,7 @@ export default async function AdminPage() {
             label="Suggerimenti"
             badge={newSuggestionsCount}
           />
+          <NavLink href="/admin/avvisi" icon={<CampaignIcon />} label="Avviso urgente" />
           <NavLink href="/admin/audit" icon={<HistoryIcon />} label="Registro attività" />
         </NavSection>
       </Box>
@@ -209,8 +209,6 @@ export default async function AdminPage() {
       <AdminProssimePartite />
 
       <AdminDashboardTabs recentAll={recentAll} registrations={recentAnonymous} />
-
-      <AdminNotificationSender currentSeason={await getCurrentSeasonLabel()} />
     </Box>
   );
 }
