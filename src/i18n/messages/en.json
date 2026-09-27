@@ -1201,7 +1201,7 @@
     "summarySelfWith": "You are registered together with {names}",
     "summaryOthers": "You registered {names}",
     "questionnaire": {
-      "intro": "Answer a few questions. They help us find the right Baskin role, from 1 to 5. We don't save your answers, only the role. Then the staff confirms the role.",
+      "intro": "Answer a few questions, they help us find the right Baskin role, from 1 to 5. Then the staff will confirm it during the training.",
       "previousAnswer": "Your previous answer: {role}. You can update it below.",
       "mobility": {
         "question": "{who, select, child {How does {name} move when doing sport?} other {How do you move when you do sport?}}",

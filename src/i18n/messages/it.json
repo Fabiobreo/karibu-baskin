@@ -1201,7 +1201,7 @@
     "summarySelfWith": "Sei iscritto insieme a {names}",
     "summaryOthers": "Hai iscritto {names}",
     "questionnaire": {
-      "intro": "Rispondi a qualche domanda. Serve a trovare il ruolo Baskin giusto, da 1 a 5. Non salviamo le risposte, solo il ruolo. Poi lo staff conferma il ruolo.",
+      "intro": "Rispondi a qualche domanda, serve a trovare il ruolo Baskin giusto, da 1 a 5. Poi lo staff lo confermerà durante l'allenamento.",
       "previousAnswer": "La tua risposta precedente: {role}. Puoi aggiornarla qui sotto.",
       "mobility": {
         "question": "{who, select, child {Come si muove {name} quando fa sport?} other {Come ti muovi quando fai sport?}}",
