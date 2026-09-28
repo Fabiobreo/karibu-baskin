@@ -2,6 +2,7 @@
 import { heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import { useTranslations, useLocale } from "next-intl";
 import { Box, Typography, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import { alpha } from "@mui/material/styles";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -282,9 +283,22 @@ export default function AllenamientoHero({
               <Chip
                 icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
                 label={
-                  session.restrictTeam
-                    ? `${t("onlyTeam", { team: session.restrictTeam.name })}${allowedRolesLabel ? ` · ${allowedRolesLabel}` : ""}`
-                    : allowedRolesLabel
+                  session.restrictTeam ? (
+                    <>
+                      {t.rich("onlyTeam", {
+                        team: session.restrictTeam.name,
+                        name: (chunks) => (
+                          <>
+                            <TeamColorDot color={session.restrictTeam?.color} />
+                            {chunks}
+                          </>
+                        ),
+                      })}
+                      {allowedRolesLabel ? ` · ${allowedRolesLabel}` : ""}
+                    </>
+                  ) : (
+                    allowedRolesLabel
+                  )
                 }
                 size="small"
                 sx={{

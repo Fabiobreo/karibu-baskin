@@ -2,7 +2,6 @@ import { getTranslations } from "next-intl/server";
 import { Box, Container, Typography } from "@mui/material";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CalendarClient from "@/components/calendar/CalendarClient";
-import SubscribeCalendarButton from "@/components/calendar/SubscribeCalendarButton";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
@@ -52,23 +51,11 @@ export default async function CalendarioPage() {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 1.5,
-            mb: 3,
-            flexWrap: "wrap",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <CalendarMonthIcon color="primary" />
-            <Typography variant="h4" component="h1" fontWeight={800}>
-              {t("calendar")}
-            </Typography>
-          </Box>
-          <SubscribeCalendarButton />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+          <CalendarMonthIcon color="primary" />
+          <Typography variant="h4" component="h1" fontWeight={800}>
+            {t("calendar")}
+          </Typography>
         </Box>
         <CalendarClient isStaff={isStaff} isAdmin={isAdmin} teams={teams} myTeamIds={myTeamIds} />
       </Container>

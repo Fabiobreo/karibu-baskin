@@ -35,6 +35,7 @@ import {
   type UserEntry,
 } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { joinNames } from "@/lib/guardianNames";
 
 interface UsersTableProps {
   rows: AdminRow[];
@@ -164,6 +165,17 @@ export default function UsersTable({
                       >
                         {row.email}
                       </Typography>
+                      {row.childNames && row.childNames.length > 0 && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          title={`Genitore di ${joinNames(row.childNames)}`}
+                          sx={{ display: "block", fontStyle: "italic" }}
+                        >
+                          Genitore di {joinNames(row.childNames)}
+                        </Typography>
+                      )}
                       <AthleteStatusChip status={row.athleteStatus} />
                     </Box>
                   </Box>

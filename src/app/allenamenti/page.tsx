@@ -5,9 +5,14 @@ import { prisma } from "@/lib/db";
 import { Container, Typography } from "@mui/material";
 import AllenamentiClient from "@/components/training/AllenamentiClient";
 import { parseTeamsData } from "@/lib/schemas";
-import type { TeamsData } from "@/components/training/TeamDisplay";
 import type { Metadata } from "next";
-import { getSeasonStartDate } from "@/lib/season/seasonUtils";
+import {
+  isSeasonLabel,
+  seasonsBetween,
+  trainingSeasonOf,
+  trainingSeasonRange,
+} from "@/lib/trainingList";
+import { sessionEndDate } from "@/lib/dateUtils";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
@@ -32,79 +37,93 @@ export default async function AllenamentiPage({
   // Le squadre contengono i nominativi degli atleti: solo per i tesserati.
   const isMember = isMemberRole(userSession?.user?.appRole);
 
-  // Di default solo la stagione corrente; ?all=1 carica anche le stagioni precedenti
-  const { all } = await searchParams;
-  const showAllSeasons = all === "1";
-  const seasonStart = getSeasonStartDate();
+  // Prossimi: sempre tutti. Passati: una stagione alla volta (?stagione=2025-26),
+  // cosi' la pagina non carica mai tutto lo storico insieme.
+  const currentSeason = trainingSeasonOf(now);
+  const { stagione } = await searchParams;
+  const season = isSeasonLabel(stagione) ? stagione : currentSeason;
+  const range = trainingSeasonRange(season);
+  // Un allenamento puo' essere ancora in corso: si prende qualche ora indietro
+  // e si divide sotto con l'orario di fine vero.
+  const activeFrom = new Date(now.getTime() - 12 * 60 * 60 * 1000);
 
-  const [rawSessions, previousSeasonsCount] = await Promise.all([
+  const sessionInclude = {
+    _count: { select: { registrations: true } },
+    restrictTeam: { select: { id: true, name: true, color: true } },
+  } as const;
+
+  const [activeRaw, pastRaw, firstTraining] = await Promise.all([
     prisma.trainingSession.findMany({
-      where: showAllSeasons ? undefined : { date: { gte: seasonStart } },
+      where: { date: { gte: activeFrom } },
       orderBy: { date: "asc" },
+      include: sessionInclude,
+    }),
+    prisma.trainingSession.findMany({
+      where: { date: { gte: range.start, lt: range.end < now ? range.end : now } },
+      orderBy: { date: "desc" },
       include: {
-        _count: { select: { registrations: true } },
-        restrictTeam: { select: { id: true, name: true, color: true } },
+        ...sessionInclude,
+        matchResults: {
+          select: { matchup: true, scoreA: true, scoreB: true },
+          orderBy: { createdAt: "asc" },
+        },
       },
     }),
-    showAllSeasons
-      ? Promise.resolve(0)
-      : prisma.trainingSession.count({ where: { date: { lt: seasonStart } } }),
+    prisma.trainingSession.findFirst({ orderBy: { date: "asc" }, select: { date: true } }),
   ]);
 
-  const sessions = rawSessions.map((s) => ({
+  const withTeams = <T extends { teams: unknown }>(s: T) => ({
     ...s,
     teams: isMember ? parseTeamsData(s.teams) : null,
+  });
+  const endOf = (s: { date: Date; endTime: Date | null }) => sessionEndDate(s.date, s.endTime);
+
+  const active = activeRaw.map(withTeams);
+  const inCorso = active.filter((s) => now >= s.date && now <= endOf(s));
+  const upcoming = active.filter((s) => s.date > now);
+  const pastSessions = pastRaw.filter((s) => endOf(s) < now);
+  const pastIds = pastSessions.map((s) => s.id);
+  const activeIds = [...inCorso, ...upcoming].map((s) => s.id);
+
+  const [presentBySession, activeRegs, myPastRegs] = await Promise.all([
+    pastIds.length > 0
+      ? prisma.registration.groupBy({
+          by: ["sessionId"],
+          where: { sessionId: { in: pastIds }, attended: true },
+          _count: { _all: true },
+        })
+      : Promise.resolve([]),
+    userId && activeIds.length > 0
+      ? prisma.registration.findMany({
+          where: { userId, sessionId: { in: activeIds } },
+          select: { id: true, sessionId: true },
+        })
+      : Promise.resolve([]),
+    // "C'eri": iscritto e non segnato assente (chi non e' stato segnato conta).
+    userId && pastIds.length > 0
+      ? prisma.registration.findMany({
+          where: { userId, sessionId: { in: pastIds }, NOT: { attended: false } },
+          select: { sessionId: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const presentCount = new Map(presentBySession.map((r) => [r.sessionId, r._count._all]));
+  const mine = new Set(myPastRegs.map((r) => r.sessionId));
+  const past = pastSessions.map(({ matchResults, ...s }) => ({
+    ...withTeams(s),
+    results: matchResults,
+    presentCount: presentCount.get(s.id) ?? 0,
+    wasThere: mine.has(s.id),
   }));
 
-  const inCorso = sessions.filter((s) => {
-    const start = new Date(s.date);
-    const end = s.endTime ? new Date(s.endTime) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
-    return now >= start && now <= end;
-  });
-
-  const upcoming = sessions.filter((s) => new Date(s.date) > now);
-
-  const past = sessions
-    .filter((s) => {
-      const end = s.endTime
-        ? new Date(s.endTime)
-        : new Date(new Date(s.date).getTime() + 2 * 60 * 60 * 1000);
-      return end < now;
-    })
-    .reverse();
-
-  let registeredSessionIds: string[] = [];
-  // mappa sessionId → registrationId (per trovare la squadra dell'utente)
-  let registrationIdBySession: Record<string, string> = {};
-  let seasonAttended = 0;
-  let seasonTotal = 0;
-
-  if (userId) {
-    seasonTotal = sessions.filter((s) => {
-      const d = new Date(s.date);
-      return d >= seasonStart && d < now;
-    }).length;
-
-    // Sessioni attive (in corso + prossime) — query per ID esatto, senza finestra temporale
-    const activeSessionIds = [...inCorso, ...upcoming].map((s) => s.id);
-
-    const [activeRegs, pastRegs] = await Promise.all([
-      activeSessionIds.length > 0
-        ? prisma.registration.findMany({
-            where: { userId, sessionId: { in: activeSessionIds } },
-            select: { id: true, sessionId: true },
-          })
-        : Promise.resolve([]),
-      prisma.registration.findMany({
-        where: { userId, session: { date: { gte: seasonStart, lt: now } } },
-        select: { sessionId: true },
-      }),
-    ]);
-
-    registeredSessionIds = activeRegs.map((r) => r.sessionId);
-    registrationIdBySession = Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]));
-    seasonAttended = pastRegs.length;
-  }
+  const seasons = seasonsBetween(
+    firstTraining ? trainingSeasonOf(firstTraining.date) : currentSeason,
+    currentSeason
+  );
+  // Una stagione chiesta a mano fuori elenco resta selezionabile.
+  if (!seasons.includes(season)) seasons.push(season);
+  seasons.sort((a, b) => b.localeCompare(a));
 
   return (
     <>
@@ -116,13 +135,12 @@ export default async function AllenamentiPage({
           inCorso={inCorso}
           upcoming={upcoming}
           past={past}
-          registeredSessionIds={registeredSessionIds}
-          registrationIdBySession={registrationIdBySession}
-          seasonAttended={seasonAttended}
-          seasonTotal={seasonTotal}
-          isLoggedIn={!!userId}
+          seasons={seasons}
+          season={season}
+          attendedCount={userId ? mine.size : null}
+          registeredSessionIds={activeRegs.map((r) => r.sessionId)}
+          registrationIdBySession={Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]))}
           isStaff={isStaff}
-          previousSeasonsCount={previousSeasonsCount}
         />
       </Container>
     </>

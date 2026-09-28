@@ -97,6 +97,11 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     ratingSigma: true,
     createdAt: true,
     _count: { select: { registrations: true } },
+    // Figli collegati: sotto il nome del genitore compare "Genitore di …".
+    guardianOf: {
+      orderBy: { createdAt: "asc" as const },
+      select: { child: { select: { name: true } } },
+    },
     sportRoleHistory: {
       orderBy: { changedAt: "desc" as const },
       select: { sportRole: true, changedAt: true },
@@ -187,7 +192,10 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       <GuestApprovalInbox guests={pendingGuests} />
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         <AdminUserList
-          users={users}
+          users={users.map(({ guardianOf, ...u }) => ({
+            ...u,
+            childNames: guardianOf.map((g) => g.child.name),
+          }))}
           childEntries={childEntries.map(({ guardians, ...c }) => ({
             ...c,
             guardians: guardianList({ guardians }),

@@ -9,6 +9,7 @@ import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type AdminRow } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { joinNames } from "@/lib/guardianNames";
 
 interface UsersMobileCardsProps {
   rows: AdminRow[];
@@ -74,6 +75,16 @@ export default function UsersMobileCards({
                 <Typography variant="caption" color="text.secondary" noWrap display="block">
                   {row.email}
                 </Typography>
+                {row.childNames && row.childNames.length > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    display="block"
+                    sx={{ fontStyle: "italic" }}
+                  >
+                    Genitore di {joinNames(row.childNames)}
+                  </Typography>
+                )}
                 <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
                   <Chip
                     label={ROLE_LABELS_IT[row.appRole]}

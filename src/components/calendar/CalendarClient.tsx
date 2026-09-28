@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
-import { Box, Typography, IconButton, Skeleton, Button } from "@mui/material";
+import { Box, Typography, IconButton, Skeleton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -35,8 +35,8 @@ import EventChip from "@/components/calendar/EventChip";
 import CalendarLegend from "@/components/calendar/CalendarLegend";
 import EventDetailDialog from "@/components/calendar/dialogs/EventDetailDialog";
 import DayEventsDialog from "@/components/calendar/dialogs/DayEventsDialog";
-import AddIcon from "@mui/icons-material/Add";
 import CreateEventDialog from "@/components/calendar/dialogs/CreateEventDialog";
+import SubscribeCalendarButton from "@/components/calendar/SubscribeCalendarButton";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -204,7 +204,7 @@ export default function CalendarClient({
   return (
     <Box>
       {/* Intestazione mese */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, mb: 2 }}>
         {/* 44x44: sono l'interazione principale della pagina e stanno
             vicine fra loro. L'icona resta piccola, cresce l'area. */}
         <IconButton onClick={prevMonth} aria-label={t("prevMonth")} sx={TOUCH_TARGET}>
@@ -240,22 +240,9 @@ export default function CalendarClient({
         >
           {t("todayBtn")}
         </Typography>
-        {/* Oltre al clic sul giorno, che non si vede (UX-14): un bottone esplicito. */}
-        {isStaff && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            aria-label={t("newItemHint")}
-            onClick={() => {
-              const today = new Date();
-              const inShownMonth = today.getFullYear() === year && today.getMonth() === month;
-              setCreateDay(inShownMonth ? today : new Date(year, month, 1));
-            }}
-            sx={{ ml: "auto", minHeight: 44 }}
-          >
-            {t("newItem")}
-          </Button>
-        )}
+        <Box sx={{ ml: "auto" }}>
+          <SubscribeCalendarButton />
+        </Box>
       </Box>
 
       {/* Etichette giorni settimana */}

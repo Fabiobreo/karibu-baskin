@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { formatRoleNumbers } from "@/lib/roleList";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 import { Box, Typography, Paper, Chip, Button, IconButton, Tooltip } from "@mui/material";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -347,9 +348,24 @@ export default function SessionCard({
                 <Chip
                   icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
                   label={
-                    s.restrictTeam
-                      ? `${t("onlyTeam", { team: s.restrictTeam.name })}${s.allowedRoles?.length ? ` · ${s.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}` : ""}`
-                      : s.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
+                    s.restrictTeam ? (
+                      <>
+                        {t.rich("onlyTeam", {
+                          team: s.restrictTeam.name,
+                          name: (chunks) => (
+                            <>
+                              <TeamColorDot color={s.restrictTeam?.color} />
+                              {chunks}
+                            </>
+                          ),
+                        })}
+                        {s.allowedRoles?.length
+                          ? ` · ${s.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}`
+                          : ""}
+                      </>
+                    ) : (
+                      s.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
+                    )
                   }
                   size="small"
                   sx={{

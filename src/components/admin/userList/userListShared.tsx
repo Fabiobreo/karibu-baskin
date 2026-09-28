@@ -48,6 +48,8 @@ export interface UserEntry {
   _count: { registrations: number };
   sportRoleHistory: RoleHistoryEntry[];
   teamMemberships: MembershipInfo[];
+  /** Figli di cui e' genitore, nell'ordine di collegamento. */
+  childNames?: string[];
 }
 
 export interface ChildEntry {
