@@ -240,7 +240,7 @@ async function seed() {
     title: `${UX_MARKER} Evento di prova`,
     slug: "ux-evento-di-prova",
     date: saturdayAfter(12, 10),
-    description: "Evento per provare la risposta Ci sarò / Forse / No.",
+    description: "Evento per provare le risposte della famiglia: presenza, pranzo ed esterni.",
     allowGuests: true,
     maxGuests: 2,
   };

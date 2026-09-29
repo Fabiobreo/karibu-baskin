@@ -138,15 +138,19 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                 Evento principale
               </Typography>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                {(["GOING", "MAYBE", "NOT_GOING"] as const).map((s) => (
-                  <Chip
-                    key={s}
-                    label={`${STATUS_META[s].label} · ${data.totals[s]}`}
-                    color={STATUS_META[s].color}
-                    variant={s === "GOING" ? "filled" : "outlined"}
-                    sx={{ fontWeight: 700 }}
-                  />
-                ))}
+                {/* "Forse" non si puo' piu' scegliere: resta solo se qualcuno l'ha
+                    dato prima. */}
+                {(["GOING", "MAYBE", "NOT_GOING"] as const)
+                  .filter((s) => s !== "MAYBE" || data.totals.MAYBE > 0)
+                  .map((s) => (
+                    <Chip
+                      key={s}
+                      label={`${STATUS_META[s].label} · ${data.totals[s]}`}
+                      color={STATUS_META[s].color}
+                      variant={s === "GOING" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 700 }}
+                    />
+                  ))}
                 {data.totals.guests > 0 && (
                   <Chip label={`Esterni · ${data.totals.guests}`} variant="outlined" />
                 )}

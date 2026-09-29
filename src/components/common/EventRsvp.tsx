@@ -5,7 +5,6 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
   IconButton,
   InputBase,
   Menu,
@@ -18,7 +17,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -38,6 +36,8 @@ import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 import type { GuestRsvp, MemberRsvp } from "@/lib/eventRsvp";
 
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
+/** Risposta a una domanda: si', no, o non ancora data. */
+type Answer = boolean | null;
 
 export interface EventOptionView {
   id: string;
@@ -61,96 +61,121 @@ interface EventRsvpProps {
 }
 
 // ── Stato del modulo ──────────────────────────────────────────────────────────
+//
+// Ogni persona risponde a una domanda per riga: presenza all'evento, poi ogni
+// extra, sempre Si'/No. Niente "Forse": "Da rispondere" dice gia' "non so
+// ancora", e la risposta si cambia fino all'evento. Nei dati un extra non
+// spuntato di chi ha risposto all'evento e' un No; di chi non ha risposto e'
+// "da rispondere".
 
-interface PersonDraft {
-  status: Status | null;
-  optionIds: string[];
+interface Draft {
+  event: Answer;
+  extras: Record<string, Answer>;
   note: string;
   noteOpen: boolean;
 }
-interface GuestDraft extends Omit<PersonDraft, "status"> {
+interface GuestDraft extends Draft {
   /** Chiave locale stabile anche per gli esterni non ancora salvati. */
   localKey: string;
   id?: string;
   name: string;
-  status: Status;
 }
 interface SavedState {
   members: MemberRsvp[];
   guests: GuestRsvp[];
 }
 
-const toPeople = (members: MemberRsvp[]) =>
-  Object.fromEntries(
-    members.map((m) => [
-      m.key,
-      { status: m.status, optionIds: m.optionIds, note: m.note ?? "", noteOpen: !!m.note },
-    ])
-  ) as Record<string, PersonDraft>;
+/** Stato salvato → risposte. Un "Forse" di prima torna "da rispondere". */
+function toDraft(
+  status: Status | null,
+  optionIds: string[],
+  note: string | null,
+  options: EventOptionView[]
+): Draft {
+  const event: Answer = status === "GOING" ? true : status === "NOT_GOING" ? false : null;
+  return {
+    event,
+    extras: Object.fromEntries(
+      options.map((o) => [o.id, optionIds.includes(o.id) ? true : event === null ? null : false])
+    ),
+    note: note ?? "",
+    noteOpen: !!note,
+  };
+}
 
-const toGuests = (guests: GuestRsvp[]): GuestDraft[] =>
+const toPeople = (members: MemberRsvp[], options: EventOptionView[]) =>
+  Object.fromEntries(
+    members.map((m) => [m.key, toDraft(m.status, m.optionIds, m.note, options)])
+  ) as Record<string, Draft>;
+
+const toGuests = (guests: GuestRsvp[], options: EventOptionView[]): GuestDraft[] =>
   guests.map((g) => ({
+    ...toDraft(g.status, g.optionIds, g.note, options),
     localKey: g.id,
     id: g.id,
     name: g.name ?? "",
-    status: g.status === "NOT_GOING" ? "NOT_GOING" : "GOING",
-    optionIds: g.optionIds,
-    note: g.note ?? "",
-    noteOpen: !!g.note,
   }));
 
+const chosenExtras = (d: Draft) =>
+  Object.entries(d.extras)
+    .filter(([, v]) => v === true)
+    .map(([id]) => id);
+
+const toStatus = (a: Answer): Status | null => (a === null ? null : a ? "GOING" : "NOT_GOING");
+
 // Confronto per "modifiche non salvate": solo cio' che si invia.
-const fingerprint = (people: Record<string, PersonDraft>, guests: GuestDraft[]) =>
+const fingerprint = (people: Record<string, Draft>, guests: GuestDraft[]) =>
   JSON.stringify([
-    Object.entries(people).map(([k, p]) => [k, p.status, [...p.optionIds].sort(), p.note.trim()]),
-    guests.map((g) => [
-      g.id ?? "",
-      g.name.trim(),
-      g.status,
-      [...g.optionIds].sort(),
-      g.note.trim(),
-    ]),
+    Object.entries(people).map(([k, d]) => [k, d.event, d.extras, d.note.trim()]),
+    guests.map((g) => [g.id ?? "", g.name.trim(), g.event, g.extras, g.note.trim()]),
   ]);
 
-const toggle = (list: string[], id: string) =>
-  list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+/** Cosa manca a una persona per poter salvare (null = a posto). */
+function missingIn(d: Draft, isGuest: boolean): "event" | "extras" | "nothing" | null {
+  const extras = Object.values(d.extras);
+  if (isGuest) {
+    if (d.event === null) return "event";
+    if (extras.some((v) => v === null)) return "extras";
+    // Un esterno che non viene a niente non ha senso: si toglie.
+    if (d.event === false && !extras.some((v) => v === true)) return "nothing";
+    return null;
+  }
+  const touched = d.event !== null || extras.some((v) => v !== null);
+  if (!touched) return null; // non risponde (ancora): va bene
+  if (d.event === null) return "event";
+  if (extras.some((v) => v === null)) return "extras";
+  return null;
+}
 
 // ── Pezzi ─────────────────────────────────────────────────────────────────────
 
-/**
- * Scelta a segmenti: una riga sola, lo stato scelto ben visibile. Ripremere la
- * voce scelta la toglie ("Da rispondere"), e la scheda lo scrive.
- */
-function Segmented<T extends string>({
+/** Si'/No a segmenti: una riga, la scelta in arancio. */
+function YesNo({
   value,
-  choices,
   label,
   disabled,
-  allowEmpty,
   onChange,
 }: {
-  value: T | null;
-  choices: { value: T; label: string }[];
+  value: Answer;
   label: string;
   disabled: boolean;
-  allowEmpty: boolean;
-  onChange: (value: T | null) => void;
+  onChange: (value: boolean) => void;
 }) {
+  const t = useTranslations("events");
   return (
     <ToggleButtonGroup
       exclusive
       fullWidth
       size="small"
-      value={value}
+      value={value === null ? null : value ? "yes" : "no"}
       disabled={disabled}
       aria-label={label}
-      onChange={(_e, v: T | null) => (v !== null || allowEmpty) && onChange(v)}
+      onChange={(_e, v: "yes" | "no" | null) => v && onChange(v === "yes")}
       sx={{
         "& .MuiToggleButton-root": {
           textTransform: "none",
           fontWeight: 700,
-          py: 0.75,
-          minHeight: 40,
+          minHeight: 44,
         },
         "& .MuiToggleButton-root.Mui-selected": {
           bgcolor: "primary.fill",
@@ -159,55 +184,47 @@ function Segmented<T extends string>({
         },
       }}
     >
-      {choices.map((c) => (
-        <ToggleButton key={c.value} value={c.value}>
-          {c.label}
-        </ToggleButton>
-      ))}
+      <ToggleButton value="yes">{t("yes")}</ToggleButton>
+      <ToggleButton value="no">{t("no")}</ToggleButton>
     </ToggleButtonGroup>
   );
 }
 
-function ExtraChips({
-  options,
-  selected,
+/** Una domanda: etichetta sopra, Si'/No sotto. Se manca la risposta lo dice. */
+function Question({
+  label,
+  hint,
+  value,
+  missing,
   disabled,
-  onToggle,
+  onChange,
 }: {
-  options: EventOptionView[];
-  selected: string[];
+  label: string;
+  hint?: string | null;
+  value: Answer;
+  missing: boolean;
   disabled: boolean;
-  onToggle: (id: string) => void;
+  onChange: (value: boolean) => void;
 }) {
-  const dl = useActiveDateLocale();
-  if (options.length === 0) return null;
+  const t = useTranslations("events");
   return (
-    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-      {options.map((o) => {
-        const on = selected.includes(o.id);
-        const when = o.startsAt ? formatRome(o.startsAt, "EEE HH:mm", { locale: dl }) : null;
-        return (
-          <Chip
-            key={o.id}
-            label={when ? `${o.label} · ${when}` : o.label}
-            icon={on ? <CheckIcon /> : undefined}
-            variant={on ? "filled" : "outlined"}
-            onClick={() => onToggle(o.id)}
-            disabled={disabled}
-            aria-pressed={on}
-            // Stesso arancio dei segmenti scelti: "scelto" si legge uguale ovunque.
-            sx={{
-              fontWeight: 700,
-              ...(on && {
-                bgcolor: "primary.fill",
-                color: "common.white",
-                "& .MuiChip-icon": { color: "common.white" },
-                "&:hover": { bgcolor: "primary.dark" },
-              }),
-            }}
-          />
-        );
-      })}
+    <Box>
+      <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 0.5, flexWrap: "wrap" }}>
+        <Typography variant="body2" fontWeight={700}>
+          {label}
+        </Typography>
+        {hint && (
+          <Typography variant="caption" color="text.secondary">
+            {hint}
+          </Typography>
+        )}
+        {missing && (
+          <Typography variant="caption" color="warning.main" fontWeight={700}>
+            {t("toAnswer")}
+          </Typography>
+        )}
+      </Box>
+      <YesNo value={value} label={label} disabled={disabled} onChange={onChange} />
     </Box>
   );
 }
@@ -262,7 +279,7 @@ function PersonCard({
         p: 1.5,
         display: "flex",
         flexDirection: "column",
-        gap: 1.25,
+        gap: 1.5,
         minWidth: 0,
       }}
     >
@@ -272,14 +289,53 @@ function PersonCard({
   );
 }
 
+/** Le domande di una scheda: presenza all'evento, poi un extra per riga. */
+function Questions({
+  draft,
+  options,
+  disabled,
+  onChange,
+}: {
+  draft: Draft;
+  options: EventOptionView[];
+  disabled: boolean;
+  onChange: (patch: Partial<Draft>) => void;
+}) {
+  const t = useTranslations("events");
+  const dl = useActiveDateLocale();
+  // Le righe "da rispondere" si segnalano solo quando la persona ha iniziato.
+  const started = draft.event !== null || Object.values(draft.extras).some((v) => v !== null);
+  return (
+    <>
+      <Question
+        label={t("eventPresence")}
+        value={draft.event}
+        missing={started && draft.event === null}
+        disabled={disabled}
+        onChange={(v) => onChange({ event: v })}
+      />
+      {options.map((o) => (
+        <Question
+          key={o.id}
+          label={o.label}
+          hint={o.startsAt ? formatRome(o.startsAt, "EEE d MMM, HH:mm", { locale: dl }) : null}
+          value={draft.extras[o.id] ?? null}
+          missing={started && (draft.extras[o.id] ?? null) === null}
+          disabled={disabled}
+          onChange={(v) => onChange({ extras: { ...draft.extras, [o.id]: v } })}
+        />
+      ))}
+    </>
+  );
+}
+
 // ── Riepilogo dopo il salvataggio ─────────────────────────────────────────────
 
 function summaryText(
   t: ReturnType<typeof useTranslations>,
   status: Status | null,
   optionIds: string[],
-  options: EventOptionView[],
-  guest: boolean
+  options: EventOptionView[]
 ): string | null {
   const extras = options.filter((o) => optionIds.includes(o.id)).map((o) => o.label);
   if (!status) return null;
@@ -288,8 +344,20 @@ function summaryText(
     const list = extras.map((e) => e.charAt(0).toLowerCase() + e.slice(1)).join(", ");
     return extras.length ? t("onlyList", { list }) : t("summaryNo");
   }
-  const base = status === "GOING" ? (guest ? t("summaryGuestYes") : t("summaryYes")) : t("maybe");
+  // "Forse" resta per le risposte date prima che sparisse dal modulo.
+  const base = status === "GOING" ? t("summaryYes") : t("maybe");
   return [base, ...extras].join(" · ");
+}
+
+function footerSummary(
+  t: ReturnType<typeof useTranslations>,
+  going: number,
+  extraCounts: { label: string; count: number }[]
+): string {
+  return [
+    t("footerGoing", { count: going }),
+    ...extraCounts.map((e) => t("footerOption", { label: e.label, count: e.count })),
+  ].join(" · ");
 }
 
 function RsvpSummary({
@@ -302,9 +370,12 @@ function RsvpSummary({
   onEdit: () => void;
 }) {
   const t = useTranslations("events");
-  const going =
-    saved.members.filter((m) => m.status === "GOING").length +
-    saved.guests.filter((g) => g.status === "GOING").length;
+  const all = [...saved.members, ...saved.guests];
+  const going = all.filter((p) => p.status === "GOING").length;
+  const extraCounts = options.map((o) => ({
+    label: o.label,
+    count: all.filter((p) => p.optionIds.includes(o.id)).length,
+  }));
   return (
     <Stack spacing={1.5}>
       <Alert
@@ -315,9 +386,7 @@ function RsvpSummary({
         <Typography variant="body2" fontWeight={700}>
           {t("sentTitle")}
         </Typography>
-        <Typography variant="caption">
-          {footerSummary(t, saved.members, saved.guests, options, going)}
-        </Typography>
+        <Typography variant="caption">{footerSummary(t, going, extraCounts)}</Typography>
       </Alert>
       <Box>
         {[
@@ -325,13 +394,13 @@ function RsvpSummary({
             key: m.key as string,
             name: m.isSelf ? t("me") : m.name,
             guest: false,
-            text: summaryText(t, m.status, m.optionIds, options, false),
+            text: summaryText(t, m.status, m.optionIds, options),
           })),
           ...saved.guests.map((g, i) => ({
             key: g.id,
             name: g.name || t("guestFallback", { n: i + 1 }),
             guest: true,
-            text: summaryText(t, g.status, g.optionIds, options, true),
+            text: summaryText(t, g.status, g.optionIds, options),
           })),
         ].map((r) => (
           <Box
@@ -376,25 +445,6 @@ function RsvpSummary({
   );
 }
 
-function footerSummary(
-  t: ReturnType<typeof useTranslations>,
-  members: { status: Status | null; optionIds: string[] }[],
-  guests: { status: Status; optionIds: string[] }[],
-  options: EventOptionView[],
-  going: number
-): string {
-  const all = [...members, ...guests];
-  return [
-    t("footerGoing", { count: going }),
-    ...options.map((o) =>
-      t("footerOption", {
-        label: o.label,
-        count: all.filter((p) => p.optionIds.includes(o.id)).length,
-      })
-    ),
-  ].join(" · ");
-}
-
 // ── Modulo ────────────────────────────────────────────────────────────────────
 
 function RsvpForm({
@@ -414,20 +464,21 @@ function RsvpForm({
     members: initialMembers,
     guests: initialGuests,
   });
-  const [people, setPeople] = useState(() => toPeople(initialMembers));
-  const [guests, setGuests] = useState(() => toGuests(initialGuests));
+  const [people, setPeople] = useState(() => toPeople(initialMembers, options));
+  const [guests, setGuests] = useState(() => toGuests(initialGuests, options));
   const [nextGuest, setNextGuest] = useState(1);
   const [menu, setMenu] = useState<{ anchor: HTMLElement; localKey: string } | null>(null);
 
   const members = saved.members;
   const hasExtras = options.length > 0;
-  // Una persona sola, niente extra ne' esterni: basta Si'/Forse/No, salvato subito.
+  // Una persona sola, niente extra ne' esterni: basta Si'/No, salvato subito.
   const simple = members.length === 1 && !hasExtras && !allowGuests;
   const answeredBefore = members.some((m) => m.status) || saved.guests.length > 0;
   const [editing, setEditing] = useState(!answeredBefore);
 
   const dirty =
-    fingerprint(people, guests) !== fingerprint(toPeople(saved.members), toGuests(saved.guests));
+    fingerprint(people, guests) !==
+    fingerprint(toPeople(saved.members, options), toGuests(saved.guests, options));
 
   // Uscire con modifiche non salvate: il browser chiede conferma.
   useEffect(() => {
@@ -437,7 +488,7 @@ function RsvpForm({
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty, simple]);
 
-  const setPerson = (key: string, patch: Partial<PersonDraft>) =>
+  const setPerson = (key: string, patch: Partial<Draft>) =>
     setPeople((p) => ({ ...p, [key]: { ...p[key], ...patch } }));
   const setGuest = (localKey: string, patch: Partial<GuestDraft>) =>
     setGuests((gs) => gs.map((g) => (g.localKey === localKey ? { ...g, ...patch } : g)));
@@ -445,18 +496,23 @@ function RsvpForm({
     g.name.trim() || t("guestFallback", { n: i + 1 });
   const canAddGuest = allowGuests && (maxGuests === null || guests.length < maxGuests);
 
-  // Chi ha scelto un extra deve dire se viene all'evento; un esterno "solo
-  // agli extra" deve averne almeno uno.
-  const personMissing = members.find(
-    (m) => !people[m.key].status && people[m.key].optionIds.length > 0
-  );
-  const guestMissing = guests.findIndex(
-    (g) => hasExtras && g.status === "NOT_GOING" && g.optionIds.length === 0
-  );
-  const blocked = !!personMissing || guestMissing >= 0;
+  // La prima cosa che manca, per il messaggio accanto a Salva.
+  const problem = (() => {
+    for (const m of members) {
+      if (missingIn(people[m.key], false)) {
+        return m.isSelf ? t("missingSelf") : t("missingFor", { name: m.name });
+      }
+    }
+    for (const [i, g] of guests.entries()) {
+      const miss = missingIn(g, true);
+      if (miss === "nothing") return t("guestNothing", { name: guestLabel(g, i) });
+      if (miss) return t("missingFor", { name: guestLabel(g, i) });
+    }
+    return null;
+  })();
 
   const mutation = useMutation({
-    mutationFn: async (vars?: { people: Record<string, PersonDraft> }) => {
+    mutationFn: async (vars?: { people: Record<string, Draft> }) => {
       const source = vars?.people ?? people;
       const res = await fetch(`/api/events/${eventId}/rsvp`, {
         method: "PUT",
@@ -464,16 +520,15 @@ function RsvpForm({
         body: JSON.stringify({
           people: members.map((m) => ({
             key: m.key,
-            status: source[m.key].status,
-            optionIds: source[m.key].optionIds,
+            status: toStatus(source[m.key].event),
+            optionIds: chosenExtras(source[m.key]),
             note: source[m.key].note.trim() || null,
           })),
           guests: guests.map((g) => ({
             id: g.id,
             name: g.name.trim() || null,
-            // Senza extra un esterno viene e basta.
-            status: hasExtras ? g.status : "GOING",
-            optionIds: g.optionIds,
+            status: toStatus(g.event),
+            optionIds: chosenExtras(g),
             note: g.note.trim() || null,
           })),
         }),
@@ -484,8 +539,8 @@ function RsvpForm({
     onSuccess: (state) => {
       // Si riparte dallo stato salvato: id degli esterni nuovi, "risposto da".
       setSaved({ members: state.members, guests: state.guests });
-      setPeople(toPeople(state.members));
-      setGuests(toGuests(state.guests));
+      setPeople(toPeople(state.members, options));
+      setGuests(toGuests(state.guests, options));
       onGoingChange(state.going);
       if (!simple) setEditing(false);
       showToast({ message: t("saved"), severity: "success" });
@@ -493,16 +548,6 @@ function RsvpForm({
     // L'errore resta sotto il salvataggio (UX-25).
   });
   const busy = mutation.isPending;
-
-  const statusChoices: { value: Status; label: string }[] = [
-    { value: "GOING", label: t("yes") },
-    { value: "MAYBE", label: t("maybe") },
-    { value: "NOT_GOING", label: t("no") },
-  ];
-  const guestChoices: { value: Status; label: string }[] = [
-    { value: "GOING", label: t("atEvent") },
-    { value: "NOT_GOING", label: t("onlyExtras") },
-  ];
 
   const errorBox = mutation.isError && (
     <InlineError
@@ -519,14 +564,12 @@ function RsvpForm({
     const m = members[0];
     return (
       <Stack spacing={1}>
-        <Segmented
-          value={people[m.key].status}
-          choices={statusChoices}
-          label={t("rsvpTitle")}
+        <YesNo
+          value={people[m.key].event}
+          label={t("eventPresence")}
           disabled={busy}
-          allowEmpty={false}
-          onChange={(status) => {
-            const next = { ...people, [m.key]: { ...people[m.key], status } };
+          onChange={(v) => {
+            const next = { ...people, [m.key]: { ...people[m.key], event: v } };
             setPeople(next);
             mutation.mutate({ people: next });
           }}
@@ -541,9 +584,12 @@ function RsvpForm({
     return <RsvpSummary saved={saved} options={options} onEdit={() => setEditing(true)} />;
   }
 
-  const draftGoing =
-    members.filter((m) => people[m.key].status === "GOING").length +
-    guests.filter((g) => !hasExtras || g.status === "GOING").length;
+  const drafts: Draft[] = [...Object.values(people), ...guests];
+  const draftGoing = drafts.filter((d) => d.event === true).length;
+  const extraCounts = options.map((o) => ({
+    label: o.label,
+    count: drafts.filter((d) => d.extras[o.id] === true).length,
+  }));
 
   return (
     <Stack spacing={2}>
@@ -554,9 +600,7 @@ function RsvpForm({
           disabled={busy}
           onClick={() =>
             setPeople((p) =>
-              Object.fromEntries(
-                Object.entries(p).map(([k, v]) => [k, { ...v, status: "GOING" as Status }])
-              )
+              Object.fromEntries(Object.entries(p).map(([k, d]) => [k, { ...d, event: true }]))
             )
           }
           sx={{ alignSelf: { xs: "stretch", sm: "flex-start" }, fontWeight: 700 }}
@@ -565,7 +609,7 @@ function RsvpForm({
         </Button>
       )}
 
-      {/* Schede: una per persona, con tutto quello che la riguarda. */}
+      {/* Schede: una per persona, una domanda per riga. */}
       <Box
         sx={{
           display: "grid",
@@ -574,67 +618,46 @@ function RsvpForm({
         }}
       >
         {members.map((m) => {
-          const p = people[m.key];
-          const missing = !p.status && p.optionIds.length > 0;
+          const d = people[m.key];
           return (
             <PersonCard
               key={m.key}
               header={
                 <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="subtitle2" fontWeight={800} noWrap>
+                    <Typography variant="subtitle1" fontWeight={800} noWrap>
                       {m.isSelf ? t("me") : m.name}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" component="div">
-                      {m.respondedByName
-                        ? t("respondedBy", { name: m.respondedByName })
-                        : !p.status
-                          ? t("toAnswer")
-                          : " "}
-                    </Typography>
+                    {m.respondedByName && (
+                      <Typography variant="caption" color="text.secondary" component="div">
+                        {t("respondedBy", { name: m.respondedByName })}
+                      </Typography>
+                    )}
                   </Box>
                   <NoteToggle
-                    open={p.noteOpen}
-                    hasNote={!!p.note.trim()}
+                    open={d.noteOpen}
+                    hasNote={!!d.note.trim()}
                     disabled={busy}
-                    onClick={() => setPerson(m.key, { noteOpen: !p.noteOpen })}
+                    onClick={() => setPerson(m.key, { noteOpen: !d.noteOpen })}
                   />
                 </Box>
               }
             >
-              <Segmented
-                value={p.status}
-                choices={statusChoices}
-                label={t("statusFor", { name: m.isSelf ? t("me") : m.name })}
-                disabled={busy}
-                allowEmpty
-                onChange={(status) => setPerson(m.key, { status })}
-              />
-              <ExtraChips
+              <Questions
+                draft={d}
                 options={options}
-                selected={p.optionIds}
                 disabled={busy}
-                onToggle={(id) => setPerson(m.key, { optionIds: toggle(p.optionIds, id) })}
+                onChange={(patch) => setPerson(m.key, patch)}
               />
-              {p.status === "NOT_GOING" && p.optionIds.length > 0 && (
-                <Typography variant="caption" color="text.secondary">
-                  {t("onlyExtras")}
-                </Typography>
-              )}
-              {missing && (
-                <Typography variant="caption" color="warning.main">
-                  {t("chooseYesMaybeNo")}
-                </Typography>
-              )}
-              {p.noteOpen && (
+              {d.noteOpen && (
                 <TextField
                   size="small"
                   multiline
-                  value={p.note}
+                  value={d.note}
                   onChange={(e) => setPerson(m.key, { note: e.target.value })}
                   placeholder={t("notePlaceholder")}
                   disabled={busy}
-                  autoFocus={!p.note}
+                  autoFocus={!d.note}
                 />
               )}
             </PersonCard>
@@ -656,7 +679,7 @@ function RsvpForm({
                     disabled={busy}
                     inputProps={{ maxLength: 80, "aria-label": t("guestName") }}
                     sx={{
-                      typography: "subtitle2",
+                      typography: "subtitle1",
                       fontWeight: 800,
                       width: "100%",
                       "& input": { p: 0 },
@@ -683,25 +706,15 @@ function RsvpForm({
               </Box>
             }
           >
-            {hasExtras && (
-              <Segmented
-                value={g.status}
-                choices={guestChoices}
-                label={t("statusFor", { name: guestLabel(g, i) })}
-                disabled={busy}
-                allowEmpty={false}
-                onChange={(status) => status && setGuest(g.localKey, { status })}
-              />
-            )}
-            <ExtraChips
+            <Questions
+              draft={g}
               options={options}
-              selected={g.optionIds}
               disabled={busy}
-              onToggle={(id) => setGuest(g.localKey, { optionIds: toggle(g.optionIds, id) })}
+              onChange={(patch) => setGuest(g.localKey, patch)}
             />
-            {guestMissing === i && (
+            {missingIn(g, true) === "nothing" && (
               <Typography variant="caption" color="warning.main">
-                {t("guestExtrasNeeded", { name: guestLabel(g, i) })}
+                {t("guestNothing", { name: guestLabel(g, i) })}
               </Typography>
             )}
             {g.noteOpen && (
@@ -742,8 +755,8 @@ function RsvpForm({
                 {
                   localKey: `new-${nextGuest}`,
                   name: "",
-                  status: "GOING",
-                  optionIds: [],
+                  event: null,
+                  extras: Object.fromEntries(options.map((o) => [o.id, null])),
                   note: "",
                   noteOpen: false,
                 },
@@ -781,7 +794,7 @@ function RsvpForm({
         >
           <Box sx={{ minWidth: 0 }}>
             <Typography variant="body2" fontWeight={700}>
-              {footerSummary(t, Object.values(people), guests, options, draftGoing)}
+              {footerSummary(t, draftGoing, extraCounts)}
             </Typography>
             {dirty && (
               <Typography variant="caption" color="text.secondary">
@@ -794,8 +807,8 @@ function RsvpForm({
               <Button
                 onClick={() => {
                   // Annulla: si torna alle risposte salvate.
-                  setPeople(toPeople(saved.members));
-                  setGuests(toGuests(saved.guests));
+                  setPeople(toPeople(saved.members, options));
+                  setGuests(toGuests(saved.guests, options));
                   setEditing(false);
                 }}
                 disabled={busy}
@@ -806,18 +819,16 @@ function RsvpForm({
             <Button
               variant="contained"
               onClick={() => mutation.mutate(undefined)}
-              disabled={busy || blocked || !dirty}
+              disabled={busy || !!problem || !dirty}
               sx={{ fontWeight: 700 }}
             >
               {t("save")}
             </Button>
           </Box>
         </Box>
-        {personMissing && (
+        {problem && (
           <Typography variant="caption" color="warning.main" sx={{ display: "block", mt: 0.5 }}>
-            {personMissing.isSelf
-              ? t("statusNeededSelf")
-              : t("statusNeeded", { name: personMissing.name })}
+            {problem}
           </Typography>
         )}
         {errorBox}
