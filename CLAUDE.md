@@ -48,6 +48,8 @@ npm run email:dev    # Preview React Email (porta 3333)
 npx tsc --noEmit     # type check — SEMPRE prima di fare push
 ```
 
+> **Ticket UX:** audit, riaudit e ticket stanno in `docs/ux-audit/`. "Lavoriamo sul prossimo ticket" = il primo ticket disponibile secondo la tabella "Ordine di lavoro" in `docs/ux-audit/README.md` (regole di scelta e di lavoro sono lì).
+
 > **Accessibilità:** `npm run a11y` (script `e2e/a11y.mjs`) misura con axe-core le pagine elencate nel ticket UX-01 e scrive il dettaglio in `test-results/a11y/report.json`. Utenti da `E2E_ATHLETE_EMAIL`/`E2E_ADMIN_EMAIL`, altrimenti il primo ATHLETE e il primo ADMIN del DB. Quando un ticket risolve delle violazioni, rigenerare la baseline con `npm run a11y -- --update-baseline` e committarla.
 
 > **Importante:** eseguire sempre `tsc --noEmit` (dopo aver eliminato `.next/`) prima di committare. Il `build` script esegue `prisma migrate deploy`, che applica al DB di produzione **solo** le migration committate in `prisma/migrations/` non ancora applicate. **Non** sincronizza più lo schema automaticamente: ogni modifica a `schema.prisma` deve essere accompagnata da una migration (vedi [Workflow migrazioni](#workflow-migrazioni-db)).

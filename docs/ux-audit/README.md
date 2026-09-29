@@ -90,7 +90,7 @@ Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono mi
 | [UX-32](tickets/UX-32-tre-intestazioni.md)        | Tre modelli di intestazione di pagina                                          | L     | UX-30        |
 | [UX-33](tickets/UX-33-home-tesserato.md)          | Home: testa del tesserato senza foto, niente duplicati                         | M     | UX-32        |
 | [UX-34](tickets/UX-34-form-iscrizione.md)         | Form d'iscrizione: testo unico, scelta accesso o ospite, form in prima colonna | S     |              |
-| [UX-35](tickets/UX-35-tabellino-simmetrico.md)    | Tabellino della partita simmetrico                                             | S     | UX-29        |
+| [UX-35](tickets/UX-35-tabellino-simmetrico.md)    | Tabellino della partita simmetrico                                             | S     |              |
 | [UX-36](tickets/UX-36-navigazione-partite.md)     | Navigazione di sezione Partite, titoli senza doppioni                          | M     | UX-32        |
 | [UX-37](tickets/UX-37-griglia-e-righe.md)         | Griglia unica e righe partita a colonne fisse                                  | M     | UX-32        |
 | [UX-38](tickets/UX-38-copertine-e-stati-vuoti.md) | Copertine tipografiche e stati vuoti compatti                                  | S     | UX-19        |
@@ -99,7 +99,32 @@ Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono mi
 | [UX-41](tickets/UX-41-il-baskin-schema.md)        | `/il-baskin` con uno schema del campo                                          | M     | UX-21, UX-29 |
 | [UX-42](tickets/UX-42-area-utente.md)             | Area utente: notifiche, profilo, selettore "per chi"                           | S     | UX-32        |
 
-UX-34 e UX-35 sono piccoli e indipendenti: si possono fare subito, in parallelo al lavoro sul sistema.
+#### Ordine di lavoro
+
+Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di questa lista** che soddisfa tutte e tre le condizioni:
+
+1. ha **Stato: da fare** nell'intestazione del file;
+2. tutti i ticket in "Dipende da" sono **fatti**;
+3. non ha una decisione aperta (colonna "In attesa di").
+
+Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
+
+| #   | Ticket | Perché in questa posizione                                       | In attesa di                                  |
+| --- | ------ | ---------------------------------------------------------------- | --------------------------------------------- |
+| 1   | UX-34  | Piccolo, indipendente, sulla conversione principale (iscrizione) |                                               |
+| 2   | UX-35  | Piccolo, indipendente, sulla pagina più condivisa                |                                               |
+| 3   | UX-30  | Base di sistema: raggi e bottoni, prima delle intestazioni       |                                               |
+| 4   | UX-31  | Base di sistema: pesi tipografici e regola ESLint                |                                               |
+| 5   | UX-29  | Base di sistema: colori                                          | decisione A/B sul colore squadra (nel ticket) |
+| 6   | UX-32  | Tre intestazioni: sblocca 33, 36, 37, 40, 42                     |                                               |
+| 7   | UX-37  | Griglia e righe, subito dopo le intestazioni                     |                                               |
+| 8   | UX-33  | Home del tesserato                                               |                                               |
+| 9   | UX-36  | Navigazione Partite                                              | dove vanno numeri e storia del club           |
+| 10  | UX-38  | Copertine e stati vuoti                                          |                                               |
+| 11  | UX-42  | Area utente                                                      |                                               |
+| 12  | UX-40  | Admin (PR separate per punto)                                    |                                               |
+| 13  | UX-39  | Footer e nastro sponsor                                          | club: nastro fermo sulle pagine d'uso         |
+| 14  | UX-41  | `/il-baskin` con lo schema del campo                             | testi rivisti dal club (UX-21)                |
 
 ### Parcheggiati (da rivalutare dopo le ondate 0-2)
 

@@ -1,6 +1,6 @@
 # UX-35 · Tabellino della partita simmetrico
 
-**Ondata:** 4 · **Stima:** S · **Dipende da:** UX-29 · **Stato:** da fare
+**Ondata:** 4 · **Stima:** S · **Dipende da:** nessuno · **Stato:** da fare
 
 ## Problema
 
