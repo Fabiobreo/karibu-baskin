@@ -336,6 +336,7 @@
     "matchCount": "{count, plural, one {# match} other {# matches}}",
     "tabCallups": "Call-ups",
     "tabStats": "Stats",
+    "manage": "Manage",
     "manageCallups": "Manage call-ups",
     "topScorers": "Top scorers",
     "pointsUnit": "points",

@@ -184,14 +184,10 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
               </Box>
             )}
 
-            {/* Chi gioca: chi ha un ruolo Baskin, anche se nell'app e' un genitore */}
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, flexWrap: "wrap" }}>
                 <Typography variant="subtitle2" fontWeight={800}>
                   Chi gioca
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  chi ha un ruolo Baskin
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>

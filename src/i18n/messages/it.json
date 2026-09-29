@@ -336,6 +336,7 @@
     "matchCount": "{count, plural, one {# partita} other {# partite}}",
     "tabCallups": "Convocati",
     "tabStats": "Statistiche",
+    "manage": "Gestisci",
     "manageCallups": "Gestisci convocati",
     "topScorers": "Top marcatori",
     "pointsUnit": "punti",

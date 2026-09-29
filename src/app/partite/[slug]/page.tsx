@@ -19,7 +19,7 @@ import {
   heroTint,
 } from "@/lib/heroStyles";
 import { visuallyHidden } from "@mui/utils";
-import MatchEditButton from "@/components/matches/MatchEditButton";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
 import MatchAvailabilityCard, {
   type MatchAvailabilityEntity,
@@ -209,7 +209,7 @@ export default async function MatchDetailPage({ params }: Props) {
   // Nome avversario normalizzato (esterno o squadra interna)
   const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? t("opponent");
 
-  const isStaffEarly = session?.user?.appRole === "COACH" || session?.user?.appRole === "ADMIN";
+  const isStaff = session?.user?.appRole === "COACH" || session?.user?.appRole === "ADMIN";
 
   // Filtro avversario per scontri diretti
   const opponentWhere = match.opponentId
@@ -295,78 +295,48 @@ export default async function MatchDetailPage({ params }: Props) {
       .filter((e): e is MatchAvailabilityEntity => e !== null);
   }
 
-  const [
-    prevMatchesRaw,
-    ourGroupMatchesRaw,
-    groupMatchesRaw,
-    opposingTeamsForEdit,
-    internalTeamsForEdit,
-    groupsForEdit,
-    availabilityEntities,
-  ] = await Promise.all([
-    opponentWhere
-      ? prisma.match.findMany({
-          where: { id: { not: match.id }, teamId: match.team.id, ...opponentWhere },
-          select: {
-            id: true,
-            slug: true,
-            date: true,
-            ourScore: true,
-            theirScore: true,
-            result: true,
-            isHome: true,
-          },
-          orderBy: { date: "desc" },
-          take: 5,
-        })
-      : Promise.resolve([]),
-    match.groupId
-      ? prisma.match.findMany({
-          where: { groupId: match.groupId, teamId: match.team.id },
-          select: {
-            ourScore: true,
-            theirScore: true,
-            teamId: true,
-            opponent: { select: { id: true, name: true } },
-          },
-        })
-      : Promise.resolve([]),
-    match.groupId
-      ? prisma.groupMatch.findMany({
-          where: { groupId: match.groupId },
-          select: {
-            homeScore: true,
-            awayScore: true,
-            homeTeam: { select: { id: true, name: true } },
-            awayTeam: { select: { id: true, name: true } },
-          },
-        })
-      : Promise.resolve([]),
-    isStaffEarly
-      ? prisma.opposingTeam.findMany({
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, city: true },
-        })
-      : Promise.resolve([]),
-    isStaffEarly
-      ? prisma.competitiveTeam.findMany({
-          where: { id: { not: match.team.id }, season: match.team.season },
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, season: true },
-        })
-      : Promise.resolve([]),
-    isStaffEarly
-      ? prisma.group.findMany({
-          where: {
-            competitiveTeams: { some: { competitiveTeamId: match.team.id } },
-            season: match.team.season,
-          },
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, championship: true, season: true },
-        })
-      : Promise.resolve([]),
-    loadAvailabilityEntities(),
-  ]);
+  const [prevMatchesRaw, ourGroupMatchesRaw, groupMatchesRaw, availabilityEntities] =
+    await Promise.all([
+      opponentWhere
+        ? prisma.match.findMany({
+            where: { id: { not: match.id }, teamId: match.team.id, ...opponentWhere },
+            select: {
+              id: true,
+              slug: true,
+              date: true,
+              ourScore: true,
+              theirScore: true,
+              result: true,
+              isHome: true,
+            },
+            orderBy: { date: "desc" },
+            take: 5,
+          })
+        : Promise.resolve([]),
+      match.groupId
+        ? prisma.match.findMany({
+            where: { groupId: match.groupId, teamId: match.team.id },
+            select: {
+              ourScore: true,
+              theirScore: true,
+              teamId: true,
+              opponent: { select: { id: true, name: true } },
+            },
+          })
+        : Promise.resolve([]),
+      match.groupId
+        ? prisma.groupMatch.findMany({
+            where: { groupId: match.groupId },
+            select: {
+              homeScore: true,
+              awayScore: true,
+              homeTeam: { select: { id: true, name: true } },
+              awayTeam: { select: { id: true, name: true } },
+            },
+          })
+        : Promise.resolve([]),
+      loadAvailabilityEntities(),
+    ]);
 
   const groupStandings =
     match.groupId && ourGroupMatchesRaw.length > 0
@@ -390,7 +360,6 @@ export default async function MatchDetailPage({ params }: Props) {
   // I convocati sono visibili solo agli utenti loggati con un ruolo
   // diverso da GUEST. Gli ospiti e gli anonimi vedono un invito al login.
   const canSeeCallups = !!session?.user && session.user.appRole !== "GUEST";
-  const isStaff = isStaffEarly;
 
   const meta = match.result ? MATCH_RESULT_META[match.result] : null;
 
@@ -484,27 +453,10 @@ export default async function MatchDetailPage({ params }: Props) {
               filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${formatRome(new Date(match.date), "yyyy-MM-dd")}.png`}
             />
           )}
+          {/* Una sola strada per gestire la partita: l'admin, come per allenamenti,
+              eventi e squadre (UX-23). */}
           {isStaff && (
-            <MatchEditButton
-              matchId={match.id}
-              initial={{
-                date: match.date,
-                isHome: match.isHome,
-                venue: match.venue,
-                matchType: match.matchType,
-                ourScore: match.ourScore,
-                theirScore: match.theirScore,
-                result: match.result,
-                notes: match.notes,
-                matchday: match.matchday,
-                opponentId: match.opponentId ?? null,
-                opponentTeamId: match.opponentTeamId ?? null,
-                groupId: match.groupId,
-              }}
-              opposingTeams={opposingTeamsForEdit}
-              internalTeams={internalTeamsForEdit}
-              groups={groupsForEdit}
-            />
+            <StaffManageButton href={`/admin/partite?edit=${match.id}`} label={t("manage")} />
           )}
         </Box>
 
