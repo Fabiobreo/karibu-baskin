@@ -4,13 +4,9 @@ import { prisma } from "@/lib/db";
 import { EventAttendanceSchema } from "@/lib/schemas";
 import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { guardianOf } from "@/lib/guardians";
+import { isEventPast } from "@/lib/events";
 
 type Params = { params: Promise<{ eventId: string }> };
-
-// Fine entro cui un evento è ancora "futuro" (per multi-giorno usa endDate).
-function isPast(event: { date: Date; endDate: Date | null }): boolean {
-  return (event.endDate ?? event.date).getTime() <= Date.now();
-}
 
 // GET /api/events/[eventId]/attendance
 // Ritorna i conteggi per stato + la risposta dell'utente (self + figli).
@@ -78,7 +74,7 @@ export async function PUT(req: Request, { params }: Params) {
     select: { id: true, date: true, endDate: true },
   });
   if (!event) return NextResponse.json({ error: "Evento non trovato" }, { status: 404 });
-  if (isPast(event)) {
+  if (isEventPast(event)) {
     return NextResponse.json(
       { error: "Non puoi modificare la presenza per un evento già concluso" },
       { status: 400 }

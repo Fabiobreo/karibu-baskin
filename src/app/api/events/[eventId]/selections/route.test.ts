@@ -19,6 +19,7 @@ import { auth } from "@/lib/authjs";
 
 type PrismaMock = {
   event: { findUnique: Mock };
+  eventAttendance: { upsert: Mock };
   child: { findFirst: Mock };
   $transaction: Mock;
 };
@@ -80,5 +81,35 @@ describe("PUT /api/events/[eventId]/selections", () => {
     const res = await PUT(makePut({ optionIds: ["o1", "o2"], note: "vegano" }), params);
     expect(res.status).toBe(200);
     expect(p.$transaction).toHaveBeenCalled();
+  });
+
+  it("salva lo stato scelto indipendentemente dalle opzioni (solo pranzo)", async () => {
+    const res = await PUT(makePut({ status: "NOT_GOING", optionIds: ["o1"] }), params);
+    expect(res.status).toBe(200);
+    expect(p.eventAttendance.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ status: "NOT_GOING" }),
+        update: expect.objectContaining({ status: "NOT_GOING" }),
+      })
+    );
+  });
+
+  it("salva la presenza all'evento senza nessuna opzione", async () => {
+    await PUT(makePut({ status: "GOING", optionIds: [] }), params);
+    expect(p.eventAttendance.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.objectContaining({ status: "GOING" }) })
+    );
+  });
+
+  it("senza status ricava lo stato dalle opzioni (pagine della versione precedente)", async () => {
+    await PUT(makePut({ optionIds: ["o1"] }), params);
+    expect(p.eventAttendance.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.objectContaining({ status: "GOING" }) })
+    );
+  });
+
+  it("400 con uno stato non valido", async () => {
+    const res = await PUT(makePut({ status: "BOH", optionIds: [] }), params);
+    expect(res.status).toBe(400);
   });
 });

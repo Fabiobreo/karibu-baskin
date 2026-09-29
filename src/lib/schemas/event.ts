@@ -20,8 +20,10 @@ export const EventUpdateSchema = EventBaseSchema.extend({
   date: isoDateTime().optional(),
 });
 
+const AttendanceStatusSchema = z.enum(["GOING", "MAYBE", "NOT_GOING"]);
+
 export const EventAttendanceSchema = z.object({
-  status: z.enum(["GOING", "MAYBE", "NOT_GOING"]),
+  status: AttendanceStatusSchema,
   // Se valorizzato, l'utente risponde per conto di un proprio figlio.
   childId: z.string().optional(),
 });
@@ -42,8 +44,13 @@ export const EventOptionsReplaceSchema = z.object({
   options: z.array(EventOptionInputSchema).max(50),
 });
 
-// Selezione del partecipante: quali opzioni + note (per sé o per un figlio).
+// Risposta a un evento con opzioni: presenza all'evento, opzioni (extra) e note,
+// per sé o per un figlio. Presenza e opzioni sono indipendenti: si può venire
+// all'evento senza il pranzo, o solo al pranzo.
 export const EventSelectionsSchema = z.object({
+  // Facoltativo solo per le pagine della versione precedente, ancora aperte:
+  // senza, lo stato si ricava dalle opzioni come prima.
+  status: AttendanceStatusSchema.optional(),
   optionIds: z.array(z.string()).max(50),
   childId: z.string().optional(),
   note: z.string().max(500).nullable().optional(),

@@ -8,10 +8,11 @@ import { guardianOf } from "@/lib/guardians";
 type Params = { params: Promise<{ eventId: string }> };
 
 // PUT /api/events/[eventId]/selections
-// Body: { optionIds: string[], childId?: string, note?: string }
-// Sostituisce in blocco le opzioni selezionate dal partecipante per l'evento e
-// aggiorna la riga di presenza (status GOING se almeno un'opzione, NOT_GOING
-// altrimenti) con le eventuali note.
+// Body: { status?, optionIds: string[], childId?: string, note?: string }
+// Sostituisce in blocco le opzioni selezionate dal partecipante e aggiorna la
+// riga di presenza con lo stato scelto e le note. Presenza e opzioni sono
+// indipendenti (evento senza pranzo, solo pranzo…). Senza `status` (pagine
+// della versione precedente) lo stato si ricava dalle opzioni come prima.
 export async function PUT(req: Request, { params }: Params) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -28,7 +29,7 @@ export async function PUT(req: Request, { params }: Params) {
       { status: 400 }
     );
   }
-  const { optionIds, childId, note } = parsed.data;
+  const { status: requestedStatus, optionIds, childId, note } = parsed.data;
 
   const event = await prisma.event.findUnique({
     where: { id: eventId },
@@ -62,7 +63,7 @@ export async function PUT(req: Request, { params }: Params) {
   const attendanceWhere = childId
     ? { eventId_childId: { eventId, childId } }
     : { eventId_userId: { eventId, userId } };
-  const status = optionIds.length > 0 ? "GOING" : "NOT_GOING";
+  const status = requestedStatus ?? (optionIds.length > 0 ? "GOING" : "NOT_GOING");
   const cleanNote = note?.trim() || null;
 
   await prisma.$transaction([

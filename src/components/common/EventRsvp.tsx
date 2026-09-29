@@ -16,13 +16,13 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { format } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
 import InlineError from "@/components/common/InlineError";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { readError } from "@/lib/fetchJson";
+import { formatRome } from "@/lib/dateUtils";
 
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
 
@@ -61,46 +61,85 @@ const STATUS_OPTIONS: {
   { value: "NOT_GOING", icon: <CancelIcon fontSize="small" />, color: "error" },
 ];
 
-// ── Modalità "opzioni": checklist + note, con salvataggio per partecipante ──
+// Ci sarò / Forse / Non ci sarò: gli stessi bottoni con e senza opzioni.
+function StatusButtons({
+  value,
+  disabled,
+  onSelect,
+}: {
+  value: Status | undefined;
+  disabled: boolean;
+  onSelect: (status: Status) => void;
+}) {
+  const t = useTranslations("events");
+  const label = (s: Status) =>
+    s === "GOING" ? t("going") : s === "MAYBE" ? t("maybe") : t("notGoing");
+  return (
+    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+      {STATUS_OPTIONS.map((opt) => {
+        const selected = value === opt.value;
+        return (
+          <Button
+            key={opt.value}
+            size="small"
+            variant={selected ? "contained" : "outlined"}
+            color={selected ? opt.color : "inherit"}
+            startIcon={opt.icon}
+            disabled={disabled}
+            aria-pressed={selected}
+            onClick={() => onSelect(opt.value)}
+            sx={{ fontWeight: 700, borderRadius: 2, textTransform: "none" }}
+          >
+            {label(opt.value)}
+          </Button>
+        );
+      })}
+    </Box>
+  );
+}
+
+// ── Modalità "opzioni": presenza all'evento + extra + note, un solo salvataggio ──
+// Presenza e opzioni sono indipendenti: si può venire all'evento senza il
+// pranzo, o solo al pranzo senza l'evento.
 function SubjectOptionsForm({
   eventId,
   subject,
   options,
-  onCountDelta,
+  onStatusSaved,
 }: {
   eventId: string;
   subject: EventRsvpSubject;
   options: EventOptionView[];
-  onCountDelta: (delta: number) => void;
+  onStatusSaved: (prev: Status | undefined, next: Status) => void;
 }) {
   const t = useTranslations("events");
   const { showToast } = useToast();
   const dl = useActiveDateLocale();
+  const [status, setStatus] = useState<Status | undefined>(subject.status);
+  const [savedStatus, setSavedStatus] = useState<Status | undefined>(subject.status);
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set(subject.selectedOptionIds ?? [])
   );
   const [note, setNote] = useState(subject.note ?? "");
-  const [savedGoing, setSavedGoing] = useState((subject.selectedOptionIds?.length ?? 0) > 0);
 
   const mutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (next: Status) => {
       const res = await fetch(`/api/events/${eventId}/selections`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          status: next,
           optionIds: [...selected],
           childId: subject.childId ?? undefined,
           note: note.trim() || null,
         }),
       });
       if (!res.ok) throw new Error(await readError(res));
+      return next;
     },
-    onSuccess: () => {
-      const nowGoing = selected.size > 0;
-      if (nowGoing !== savedGoing) {
-        onCountDelta(nowGoing ? 1 : -1);
-        setSavedGoing(nowGoing);
-      }
+    onSuccess: (next) => {
+      onStatusSaved(savedStatus, next);
+      setSavedStatus(next);
       showToast({ message: t("saved"), severity: "success" });
     },
     // L'errore resta sotto "Salva" di questo partecipante (UX-25).
@@ -118,6 +157,16 @@ function SubjectOptionsForm({
     <Box>
       <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
         {subject.childId ? subject.name : t("me")}
+      </Typography>
+      <StatusButtons value={status} disabled={mutation.isPending} onSelect={setStatus} />
+
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        fontWeight={700}
+        sx={{ display: "block", mt: 2 }}
+      >
+        {t("optionsHint")}
       </Typography>
       <FormGroup>
         {options.map((o) => (
@@ -140,7 +189,7 @@ function SubjectOptionsForm({
                     color="text.secondary"
                     sx={{ ml: 1 }}
                   >
-                    {format(new Date(o.startsAt), "EEE d MMM, HH:mm", { locale: dl })}
+                    {formatRome(o.startsAt, "EEE d MMM, HH:mm", { locale: dl })}
                   </Typography>
                 )}
               </Box>
@@ -158,20 +207,28 @@ function SubjectOptionsForm({
         placeholder={t("notePlaceholder")}
         sx={{ mt: 1 }}
       />
-      <Button
-        variant="contained"
-        size="small"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate()}
-        sx={{ mt: 1.5, fontWeight: 700, borderRadius: 2 }}
-      >
-        {t("save")}
-      </Button>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.5, flexWrap: "wrap" }}>
+        <Button
+          variant="contained"
+          size="small"
+          disabled={mutation.isPending || !status}
+          onClick={() => status && mutation.mutate(status)}
+          sx={{ fontWeight: 700, borderRadius: 2 }}
+        >
+          {t("save")}
+        </Button>
+        {/* Senza uno stato non si salva: "solo pranzo" e' "Non ci saro'" + Pranzo. */}
+        {!status && (
+          <Typography variant="caption" color="text.secondary">
+            {t("chooseStatusFirst")}
+          </Typography>
+        )}
+      </Box>
       {mutation.isError && (
         <InlineError
           title={t("rsvpNotSaved")}
           message={mutation.error instanceof Error ? mutation.error.message : t("saveError")}
-          onRetry={() => mutation.mutate()}
+          onRetry={() => status && mutation.mutate(status)}
           onClose={() => mutation.reset()}
           retrying={mutation.isPending}
         />
@@ -223,9 +280,6 @@ export default function EventRsvp({
     message: string;
   } | null>(null);
 
-  const label = (s: Status) =>
-    s === "GOING" ? t("going") : s === "MAYBE" ? t("maybe") : t("notGoing");
-
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
       <Box
@@ -266,7 +320,9 @@ export default function EventRsvp({
               eventId={eventId}
               subject={subj}
               options={options}
-              onCountDelta={(d) => setGoingCount((c) => c + d)}
+              onStatusSaved={(prev, next) =>
+                setGoingCount((c) => c + (next === "GOING" ? 1 : 0) - (prev === "GOING" ? 1 : 0))
+              }
             />
           ))}
         </Stack>
@@ -287,27 +343,11 @@ export default function EventRsvp({
                     {subj.childId ? subj.name : t("me")}
                   </Typography>
                 )}
-                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                  {STATUS_OPTIONS.map((opt) => {
-                    const selected = current === opt.value;
-                    return (
-                      <Button
-                        key={opt.value}
-                        size="small"
-                        variant={selected ? "contained" : "outlined"}
-                        color={selected ? opt.color : "inherit"}
-                        startIcon={opt.icon}
-                        disabled={statusMutation.isPending}
-                        onClick={() =>
-                          statusMutation.mutate({ childId: subj.childId, status: opt.value })
-                        }
-                        sx={{ fontWeight: 700, borderRadius: 2, textTransform: "none" }}
-                      >
-                        {label(opt.value)}
-                      </Button>
-                    );
-                  })}
-                </Box>
+                <StatusButtons
+                  value={current}
+                  disabled={statusMutation.isPending}
+                  onSelect={(status) => statusMutation.mutate({ childId: subj.childId, status })}
+                />
                 {failure && (failure.vars.childId ?? "self") === key && (
                   <InlineError
                     title={t("rsvpNotSaved")}

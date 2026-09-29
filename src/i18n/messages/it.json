@@ -759,7 +759,8 @@
     "rsvpNotSaved": "Risposta non salvata.",
     "save": "Salva",
     "notePlaceholder": "Note (allergie, esigenze…)",
-    "optionsHint": "Seleziona a cosa parteciperai",
+    "optionsHint": "Segna anche a cosa partecipi (facoltativo)",
+    "chooseStatusFirst": "Scegli prima se ci sarai all'evento.",
     "manage": "Gestisci",
     "manageAll": "Gestisci eventi",
     "manageOne": "Gestisci {title} in admin"
