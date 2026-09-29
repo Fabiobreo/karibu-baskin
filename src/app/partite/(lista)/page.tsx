@@ -9,7 +9,6 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
-import { format } from "date-fns";
 import type { Metadata } from "next";
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import MatchTimeCell from "@/components/matches/MatchTimeCell";
@@ -18,6 +17,7 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { brandColor, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 export const metadata: Metadata = buildMetadata({
   title: "Prossime partite",
@@ -249,7 +249,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               color="text.secondary"
                               sx={{ fontSize: TYPE_SCALE.xs, display: "block" }}
                             >
-                              {format(new Date(m.date), "EEEE d MMMM · HH:mm", {
+                              {formatRome(new Date(m.date), "EEEE d MMMM · HH:mm", {
                                 locale: dateLocale,
                               })}
                             </Typography>

@@ -5,7 +5,6 @@ import FlightIcon from "@mui/icons-material/Flight";
 import BoltIcon from "@mui/icons-material/Bolt";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
-import { format } from "date-fns";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { contrastText } from "@/lib/colorUtils";
@@ -14,6 +13,7 @@ import type { AnyMatch } from "./types";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 export default async function NextMatchCard({
   match,
@@ -114,7 +114,7 @@ export default async function NextMatchCard({
                 textTransform: "uppercase",
               }}
             >
-              {format(new Date(match.date), "EEE", { locale: dateLocale })}
+              {formatRome(new Date(match.date), "EEE", { locale: dateLocale })}
             </Box>
             <Box sx={{ px: 1, py: 0.75 }}>
               <Typography
@@ -126,7 +126,7 @@ export default async function NextMatchCard({
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {format(new Date(match.date), "d")}
+                {formatRome(new Date(match.date), "d")}
               </Typography>
               <Typography
                 sx={{
@@ -138,7 +138,7 @@ export default async function NextMatchCard({
                   mt: 0.25,
                 }}
               >
-                {format(new Date(match.date), "MMM", { locale: dateLocale })}
+                {formatRome(new Date(match.date), "MMM", { locale: dateLocale })}
               </Typography>
             </Box>
           </Box>
@@ -184,7 +184,7 @@ export default async function NextMatchCard({
                 lineHeight: 1.2,
               }}
             >
-              {format(new Date(match.date), "EEEE d MMMM", { locale: dateLocale }).replace(
+              {formatRome(new Date(match.date), "EEEE d MMMM", { locale: dateLocale }).replace(
                 /^./,
                 (c) => c.toUpperCase()
               )}
@@ -205,7 +205,7 @@ export default async function NextMatchCard({
                   color: "common.white",
                 }}
               >
-                ⏱ {format(new Date(match.date), "HH:mm")}
+                ⏱ {formatRome(new Date(match.date), "HH:mm")}
               </Typography>
               <Typography sx={{ color: "text.secondary", fontSize: TYPE_SCALE.xs }}>·</Typography>
               <Typography
@@ -517,7 +517,7 @@ export default async function NextMatchCard({
                   </Box>
                 </Box>
                 <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
-                  {format(new Date(prev.date), "d MMM", { locale: dateLocale })}
+                  {formatRome(new Date(prev.date), "d MMM", { locale: dateLocale })}
                 </Typography>
               </Box>
             )}

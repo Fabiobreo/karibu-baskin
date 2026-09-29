@@ -30,7 +30,8 @@ import PlaceIcon from "@mui/icons-material/Place";
 import { useState, useTransition, useEffect } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
+import { formatRome } from "@/lib/dateUtils";
+import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 import { it } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -116,14 +117,14 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       (ev.options ?? []).map((o) => ({
         id: o.id,
         label: o.label,
-        startsAt: o.startsAt ? format(new Date(o.startsAt), "yyyy-MM-dd'T'HH:mm") : "",
+        startsAt: isoToLocalInput(o.startsAt),
         kind: o.kind ?? "ALTRO",
       }))
     );
     reset({
       title: ev.title,
-      date: format(new Date(ev.date), "yyyy-MM-dd'T'HH:mm"),
-      endDate: ev.endDate ? format(new Date(ev.endDate), "yyyy-MM-dd'T'HH:mm") : "",
+      date: isoToLocalInput(ev.date),
+      endDate: isoToLocalInput(ev.endDate),
       location: ev.location ?? "",
       description: ev.description ?? "",
     });
@@ -149,8 +150,10 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const onSubmit = async (values: EventFormValues) => {
     const body = {
       title: values.title.trim(),
-      date: values.date,
-      endDate: values.endDate || null,
+      // L'input `datetime-local` non ha fuso: senza conversione il server (UTC)
+      // leggerebbe "18:00" come 18:00 UTC, cioè le 20:00 a Roma.
+      date: localInputToIso(values.date),
+      endDate: localInputToIso(values.endDate),
       location: values.location?.trim() || null,
       description: values.description?.trim() || null,
       imageUrl: imageUrl ?? null,
@@ -183,7 +186,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       .map((o, i) => ({
         id: o.id,
         label: o.label.trim(),
-        startsAt: o.startsAt || null,
+        startsAt: localInputToIso(o.startsAt),
         kind: o.kind,
         order: i,
       }));
@@ -248,13 +251,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
               {paginatedEvents.map((ev) => (
                 <TableRow key={ev.id} hover>
                   <TableCell sx={{ fontWeight: 600 }}>{ev.title}</TableCell>
-                  <TableCell>
-                    {format(new Date(ev.date), "d MMM yyyy, HH:mm", { locale: it })}
-                  </TableCell>
+                  <TableCell>{formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}</TableCell>
                   <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                    {ev.endDate
-                      ? format(new Date(ev.endDate), "d MMM yyyy, HH:mm", { locale: it })
-                      : "—"}
+                    {ev.endDate ? formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it }) : "—"}
                   </TableCell>
                   <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                     {ev.location ? (
@@ -329,9 +328,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                     {ev.title}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" display="block">
-                    {format(new Date(ev.date), "d MMM yyyy, HH:mm", { locale: it })}
+                    {formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}
                     {ev.endDate &&
-                      ` – ${format(new Date(ev.endDate), "d MMM yyyy, HH:mm", { locale: it })}`}
+                      ` – ${formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it })}`}
                   </Typography>
                   {ev.location && (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>

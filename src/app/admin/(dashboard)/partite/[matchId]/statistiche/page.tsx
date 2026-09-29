@@ -3,9 +3,9 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import MatchStatsClient from "@/components/matches/MatchStatsClient";
-import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { Metadata } from "next";
+import { formatRome } from "@/lib/dateUtils";
 
 export const metadata: Metadata = { title: "Statistiche partita | Admin" };
 
@@ -29,7 +29,7 @@ export default async function MatchStatsPage({ params }: Params) {
   if (!match) notFound();
 
   const opponentLabel = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
-  const matchLabel = `${match.team.name} vs ${opponentLabel} (${format(match.date, "d MMM yyyy", { locale: it })})`;
+  const matchLabel = `${match.team.name} vs ${opponentLabel} (${formatRome(match.date, "d MMM yyyy", { locale: it })})`;
 
   return <MatchStatsClient matchId={matchId} matchLabel={matchLabel} ourScore={match.ourScore} />;
 }

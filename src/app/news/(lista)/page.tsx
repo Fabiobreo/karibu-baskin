@@ -3,7 +3,6 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { Box, Typography, Container, Chip, Paper, Button } from "@mui/material";
 import Link from "next/link";
-import { format } from "date-fns";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
@@ -12,6 +11,7 @@ import AddIcon from "@mui/icons-material/Add";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import { buildMetadata } from "@/lib/seo";
+import { formatRome } from "@/lib/dateUtils";
 
 export const metadata = buildMetadata({
   title: "News",
@@ -122,7 +122,7 @@ export default async function NewsPage() {
                         </Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
                           <Typography variant="caption" color="text.secondary">
-                            {format(new Date(post.publishedAt!), "d MMMM yyyy", {
+                            {formatRome(new Date(post.publishedAt!), "d MMMM yyyy", {
                               locale: dateLocale,
                             })}
                           </Typography>

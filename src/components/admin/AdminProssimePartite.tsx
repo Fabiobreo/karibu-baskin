@@ -3,23 +3,21 @@ import { Box, Paper, Typography, Chip, Stack } from "@mui/material";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { MIN_CALLUPS } from "@/lib/constants";
+import { formatRome, romeCalendarDaysBetween } from "@/lib/dateUtils";
 
 const DAYS_AHEAD = 7;
 
 function relativeShort(date: Date, now: Date): string {
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diffDays = Math.round((startOfDate.getTime() - startOfToday.getTime()) / 86_400_000);
+  const diffDays = romeCalendarDaysBetween(now, date);
   if (diffDays === 0) return "Oggi";
   if (diffDays === 1) return "Domani";
   if (diffDays > 1 && diffDays <= 6) {
-    return format(date, "EEEE", { locale: it }).replace(/^./, (c) => c.toUpperCase());
+    return formatRome(date, "EEEE", { locale: it }).replace(/^./, (c) => c.toUpperCase());
   }
-  return format(date, "d MMM", { locale: it });
+  return formatRome(date, "d MMM", { locale: it });
 }
 
 export default async function AdminProssimePartite() {
@@ -117,7 +115,7 @@ export default async function AdminProssimePartite() {
                     {m.team.name} vs {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {relativeShort(m.date, now)} · {format(m.date, "HH:mm")}
+                    {relativeShort(m.date, now)} · {formatRome(m.date, "HH:mm")}
                   </Typography>
                 </Box>
                 <Chip

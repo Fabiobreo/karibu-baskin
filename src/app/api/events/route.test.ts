@@ -104,7 +104,7 @@ describe("POST /api/events", () => {
     const req = new Request("http://localhost/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Test", date: "2025-07-10" }),
+      body: JSON.stringify({ title: "Test", date: "2025-07-10T00:00:00.000Z" }),
     });
     const res = await POST(req);
     expect(res.status).toBe(403);
@@ -116,7 +116,7 @@ describe("POST /api/events", () => {
     const req = new Request("http://localhost/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: "2025-07-10" }),
+      body: JSON.stringify({ date: "2025-07-10T00:00:00.000Z" }),
     });
     const res = await POST(req);
     expect(res.status).toBe(400);
@@ -127,7 +127,7 @@ describe("POST /api/events", () => {
     const req = new Request("http://localhost/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "", date: "2025-07-10" }),
+      body: JSON.stringify({ title: "", date: "2025-07-10T00:00:00.000Z" }),
     });
     const res = await POST(req);
     expect(res.status).toBe(400);
@@ -151,7 +151,11 @@ describe("POST /api/events", () => {
     const req = new Request("http://localhost/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "  Torneo  ", date: "2025-07-10", location: "  Palazzetto  " }),
+      body: JSON.stringify({
+        title: "  Torneo  ",
+        date: "2025-07-10T00:00:00.000Z",
+        location: "  Palazzetto  ",
+      }),
     });
     const res = await POST(req);
     expect(res.status).toBe(201);
@@ -167,14 +171,14 @@ describe("POST /api/events", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: "Trasferta",
-        date: "2025-08-01",
-        endDate: "2025-08-03",
+        date: "2025-08-01T00:00:00.000Z",
+        endDate: "2025-08-03T00:00:00.000Z",
         description: "Tre giorni di gare",
       }),
     });
     await POST(req);
     const call = p.event.create.mock.calls[0][0].data;
-    expect(call.endDate).toEqual(new Date("2025-08-03"));
+    expect(call.endDate).toEqual(new Date("2025-08-03T00:00:00.000Z"));
     expect(call.description).toBe("Tre giorni di gare");
   });
 
@@ -183,7 +187,7 @@ describe("POST /api/events", () => {
     const req = new Request("http://localhost/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: "Evento", date: "2025-07-10" }),
+      body: JSON.stringify({ title: "Evento", date: "2025-07-10T00:00:00.000Z" }),
     });
     await POST(req);
     const call = p.event.create.mock.calls[0][0].data;

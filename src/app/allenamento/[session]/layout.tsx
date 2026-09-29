@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { buildMetadata } from "@/lib/seo";
+import { formatRome } from "@/lib/dateUtils";
 
 // La pagina è un Client Component e non può esportare metadata. Stanno qui perché
 // è il link più condiviso del sito: senza, l'anteprima mostrava la homepage.
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
   }
 
-  const when = format(new Date(training.date), "EEEE d MMMM 'alle' HH:mm", { locale: it });
+  const when = formatRome(new Date(training.date), "EEEE d MMMM 'alle' HH:mm", { locale: it });
   const who = training.team ? `${training.team.name} del Karibu Baskin` : "del Karibu Baskin";
 
   return buildMetadata({

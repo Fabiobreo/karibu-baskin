@@ -19,7 +19,6 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import StadiumIcon from "@mui/icons-material/Stadium";
 import Link from "next/link";
 import EntityHero from "@/components/common/EntityHero";
-import { format } from "date-fns";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -32,6 +31,7 @@ import { contrastText } from "@/lib/colorUtils";
 import { auth } from "@/lib/authjs";
 import OpposingTeamEditButton from "@/components/matches/OpposingTeamEditButton";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 export const revalidate = 60;
 
@@ -377,7 +377,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         {last5.map((m) => {
                           const badge = (
                             <Box
-                              title={`${format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })} · ${m.ourScore}–${m.theirScore}`}
+                              title={`${formatRome(new Date(m.date), "d MMM yyyy", { locale: dateLocale })} · ${m.ourScore}–${m.theirScore}`}
                               sx={{
                                 width: 28,
                                 height: 28,
@@ -484,7 +484,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         >
                           <Box sx={{ minWidth: 90 }}>
                             <Typography variant="body2" fontWeight={700}>
-                              {format(new Date(m.date), "d MMM yy", { locale: dateLocale })}
+                              {formatRome(new Date(m.date), "d MMM yy", { locale: dateLocale })}
                             </Typography>
                             <Box
                               sx={{

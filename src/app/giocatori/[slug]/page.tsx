@@ -27,7 +27,6 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
-import { format } from "date-fns";
 import { sportRoleLabel as sportRoleLabelRaw, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
@@ -49,6 +48,7 @@ import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -444,7 +444,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
     return {
       ...badgeI18n.translate(b),
       unlockedAtLabel: at
-        ? t("unlockedOn", { date: format(at, "d MMM yyyy", { locale: dateLocale }) })
+        ? t("unlockedOn", { date: formatRome(at, "d MMM yyyy", { locale: dateLocale }) })
         : null,
     };
   });
@@ -1047,7 +1047,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       color="text.secondary"
                       sx={{ display: "block", textAlign: "center", mt: 0.25 }}
                     >
-                      {format(new Date(entry.changedAt), "MMM yyyy", { locale: dateLocale })}
+                      {formatRome(new Date(entry.changedAt), "MMM yyyy", { locale: dateLocale })}
                     </Typography>
                   </Box>
                   {i < player.sportRoleHistory.length - 1 && (
@@ -1422,7 +1422,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                   "Avversario"}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {format(new Date(ms.match.date), "d MMMM yyyy", {
+                                {formatRome(new Date(ms.match.date), "d MMMM yyyy", {
                                   locale: dateLocale,
                                 })}
                                 {ms.match.ourScore !== null && ms.match.theirScore !== null

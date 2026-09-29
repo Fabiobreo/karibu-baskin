@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 import { prisma } from "@/lib/db";
-import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { publicSubjects } from "@/lib/minors";
+import { formatRome } from "@/lib/dateUtils";
 
 // Node runtime (default) — necessario perché usiamo Prisma.
 export const dynamic = "force-dynamic";
@@ -193,7 +193,7 @@ export async function GET(_req: Request, { params }: Params) {
           justifyContent: "center",
         }}
       >
-        {format(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
+        {formatRome(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
       </div>
 
       {/* Score block */}

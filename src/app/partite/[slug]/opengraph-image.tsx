@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
 import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
-import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { formatRome } from "@/lib/dateUtils";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -229,7 +229,7 @@ export default async function OgImage({ params }: Props) {
       <div
         style={{ fontSize: 26, color: "rgba(255,255,255,0.5)", fontWeight: 600, display: "flex" }}
       >
-        {format(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
+        {formatRome(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
       </div>
     </div>,
     { ...size, fonts }

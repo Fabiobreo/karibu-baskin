@@ -27,7 +27,6 @@ import MatchAvailabilityCard, {
 import MatchCountdown from "@/components/matches/MatchCountdown";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
 import type { Metadata } from "next";
 import { slugify } from "@/lib/slugUtils";
 import { computeStandings } from "@/lib/season/standings";
@@ -46,6 +45,7 @@ import { getEntityLabels } from "@/lib/entityLabels";
 import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 export const revalidate = 3600;
 
@@ -166,7 +166,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const score = match.ourScore !== null ? `${match.ourScore}–${match.theirScore}` : "vs";
   const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
-  const when = format(new Date(match.date), "d MMMM yyyy", { locale: dateLocale });
+  const when = formatRome(new Date(match.date), "d MMMM yyyy", { locale: dateLocale });
   return buildMetadata({
     title: `${match.team.name} ${score} ${opponentName}`,
     description: `Dettaglio della partita ${match.team.name} contro ${opponentName} del ${when}: risultato, tabellino e statistiche.`,
@@ -481,7 +481,7 @@ export default async function MatchDetailPage({ params }: Props) {
           {hasScore && (
             <MatchTabellinoButton
               matchId={match.id}
-              filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${format(new Date(match.date), "yyyy-MM-dd")}.png`}
+              filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${formatRome(new Date(match.date), "yyyy-MM-dd")}.png`}
             />
           )}
           {isStaff && (
@@ -792,7 +792,9 @@ export default async function MatchDetailPage({ params }: Props) {
               >
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
                 <Typography variant="caption" fontWeight={600}>
-                  {format(new Date(match.date), "EEEE d MMMM yyyy · HH:mm", { locale: dateLocale })}
+                  {formatRome(new Date(match.date), "EEEE d MMMM yyyy · HH:mm", {
+                    locale: dateLocale,
+                  })}
                 </Typography>
               </Box>
               <Box

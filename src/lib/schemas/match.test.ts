@@ -33,7 +33,7 @@ describe("MatchCreateSchema", () => {
   const valid = {
     teamId: "team-1",
     opponentId: "opp-1",
-    date: "2025-06-15T18:00",
+    date: "2025-06-15T18:00:00+02:00",
   };
 
   it("accetta un payload minimo valido", () => {

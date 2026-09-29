@@ -27,7 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 import type { MatchType, MatchResult } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 
@@ -85,7 +85,7 @@ export default function MatchEditButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [date, setDate] = useState(format(new Date(initial.date), "yyyy-MM-dd'T'HH:mm"));
+  const [date, setDate] = useState(isoToLocalInput(initial.date));
   const [isHome, setIsHome] = useState(initial.isHome);
   const [venue, setVenue] = useState(initial.venue ?? "");
   const [matchType, setMatchType] = useState<MatchType>(initial.matchType);
@@ -121,7 +121,7 @@ export default function MatchEditButton({
   }
 
   function reset() {
-    setDate(format(new Date(initial.date), "yyyy-MM-dd'T'HH:mm"));
+    setDate(isoToLocalInput(initial.date));
     setIsHome(initial.isHome);
     setVenue(initial.venue ?? "");
     setMatchType(initial.matchType);
@@ -164,7 +164,8 @@ export default function MatchEditButton({
     setLoading(true);
     try {
       const payload = {
-        date,
+        // Da `datetime-local` (senza fuso) a ISO: il server gira in UTC.
+        date: localInputToIso(date),
         opponentId: opponentKind === "external" ? opponentId : null,
         opponentTeamId: opponentKind === "internal" ? opponentTeamId : null,
         isHome,

@@ -3,7 +3,7 @@ import { SessionCreateSchema, SessionUpdateSchema } from "./session";
 
 const validCreate = {
   title: "Allenamento martedì",
-  date: "2025-09-16T19:00",
+  date: "2025-09-16T19:00:00+02:00",
 };
 
 describe("SessionCreateSchema", () => {
@@ -14,7 +14,7 @@ describe("SessionCreateSchema", () => {
   it("accetta un payload completo", () => {
     const full = {
       ...validCreate,
-      endTime: "2025-09-16T21:00",
+      endTime: "2025-09-16T21:00:00+02:00",
       dateSlug: "2025-09-16",
       allowedRoles: [1, 2, 3],
       restrictTeamId: "team-abc",

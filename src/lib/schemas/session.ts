@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoDateTime } from "./dateTime";
 
 const sportRoleArray = z.array(z.number().int().min(1).max(5)).optional();
 
@@ -34,8 +35,8 @@ export function parseTeamsData(value: unknown): TeamsData | null {
 
 export const SessionCreateSchema = z.object({
   title: z.string().min(1, "Titolo obbligatorio").max(200),
-  date: z.string().min(1, "Data obbligatoria"),
-  endTime: z.string().optional(),
+  date: isoDateTime(),
+  endTime: isoDateTime().nullable().optional(),
   // Luogo (UX-15): vuoto = sede abituale del club.
   location: z.string().trim().max(200).nullable().optional(),
   dateSlug: z.string().optional(),
@@ -47,8 +48,8 @@ export const SessionCreateSchema = z.object({
 
 export const SessionUpdateSchema = z.object({
   title: z.string().min(1, "Il titolo non può essere vuoto").max(200).optional(),
-  date: z.string().min(1).optional(),
-  endTime: z.string().nullable().optional(),
+  date: isoDateTime().optional(),
+  endTime: isoDateTime().nullable().optional(),
   location: z.string().trim().max(200).nullable().optional(),
   dateSlug: z.string().optional(),
   allowedRoles: sportRoleArray,

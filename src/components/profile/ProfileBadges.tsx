@@ -38,6 +38,7 @@ export default async function ProfileBadges({
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "Europe/Rome",
   });
   const { earned, locked } = computeBadgeState(input);
   const unlockedMap = new Map(rows.map((r) => [r.badgeId, r.unlockedAt]));

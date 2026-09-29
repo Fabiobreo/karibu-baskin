@@ -6,7 +6,6 @@ import PlaceIcon from "@mui/icons-material/Place";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
-import { format } from "date-fns";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import JsonLd from "@/components/common/JsonLd";
@@ -19,6 +18,7 @@ import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { guardianOf } from "@/lib/guardians";
+import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
 
 export const revalidate = 0;
 
@@ -76,10 +76,10 @@ export default async function EventoPage({ params }: Props) {
   if (!ev) notFound();
 
   const dl = getDateFnsLocale(locale);
-  const multiDay = ev.endDate && ev.endDate.toDateString() !== ev.date.toDateString();
+  const multiDay = ev.endDate && !isSameRomeDay(ev.endDate, ev.date);
   const dateLabel = multiDay
-    ? `${format(ev.date, "d MMM yyyy", { locale: dl })} – ${format(ev.endDate!, "d MMM yyyy", { locale: dl })}`
-    : format(ev.date, "EEEE d MMMM yyyy · HH:mm", { locale: dl });
+    ? `${formatRome(ev.date, "d MMM yyyy", { locale: dl })} – ${formatRome(ev.endDate!, "d MMM yyyy", { locale: dl })}`
+    : formatRome(ev.date, "EEEE d MMMM yyyy · HH:mm", { locale: dl });
   const isPast = isEventPast(ev);
 
   // Sessione + figli per il RSVP

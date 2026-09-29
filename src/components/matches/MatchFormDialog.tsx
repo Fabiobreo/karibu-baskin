@@ -28,7 +28,7 @@ import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { format } from "date-fns";
+import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
 import type { MatchType } from "@prisma/client";
 import { seasonForDate } from "@/components/training/SessionRestrictionEditor";
 import ImageUploader from "@/components/common/ImageUploader";
@@ -257,7 +257,7 @@ export default function MatchFormDialog({
     if (editMatch) {
       resetMatchForm({
         teamId: editMatch.teamId,
-        date: format(new Date(editMatch.date), "yyyy-MM-dd'T'HH:mm"),
+        date: isoToLocalInput(editMatch.date),
         isHome: editMatch.isHome,
         venue: editMatch.venue ?? "",
         matchType: editMatch.matchType,
@@ -344,7 +344,8 @@ export default function MatchFormDialog({
       teamId: values.teamId,
       opponentId,
       opponentTeamId,
-      date: values.date,
+      // Da `datetime-local` (senza fuso) a ISO: il server gira in UTC.
+      date: localInputToIso(values.date),
       isHome: values.isHome,
       venue: values.venue || null,
       matchType: internal ? "FRIENDLY" : values.matchType,

@@ -6,7 +6,7 @@ import { EventCreateSchema, EventUpdateSchema } from "./event";
 describe("EventCreateSchema", () => {
   const valid = {
     title: "Torneo di primavera",
-    date: "2025-04-20T09:00",
+    date: "2025-04-20T09:00:00+02:00",
   };
 
   it("accetta un payload minimo valido", () => {
@@ -16,7 +16,7 @@ describe("EventCreateSchema", () => {
   it("accetta un payload completo", () => {
     const full = {
       ...valid,
-      endDate: "2025-04-20T18:00",
+      endDate: "2025-04-20T18:00:00+02:00",
       location: "Palasport Montecchio",
       description: "Torneo amichevole di primavera",
     };
@@ -44,7 +44,7 @@ describe("EventCreateSchema", () => {
     const result = EventCreateSchema.safeParse({ ...valid, date: "" });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toContain("Data obbligatoria");
+      expect(result.error.issues[0].message).toContain("Data e ora non valide");
     }
   });
 

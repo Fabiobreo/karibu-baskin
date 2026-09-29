@@ -56,6 +56,7 @@ async function AchievementSection({ player, name }: AchievementSectionProps) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "Europe/Rome",
   });
 
   const unlockedMap = new Map(rows.map((r) => [r.badgeId, r.unlockedAt]));

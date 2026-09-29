@@ -3,7 +3,6 @@ import PlaceIcon from "@mui/icons-material/Place";
 import EventIcon from "@mui/icons-material/Event";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
-import { format } from "date-fns";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import PageHero from "@/components/common/PageHero";
@@ -14,6 +13,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
 
 export const metadata: Metadata = buildMetadata({
   title: "Eventi",
@@ -35,10 +35,10 @@ type EventRow = {
 
 function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
   const dl = getDateFnsLocale(locale);
-  const multiDay = ev.endDate && ev.endDate.toDateString() !== ev.date.toDateString();
+  const multiDay = ev.endDate && !isSameRomeDay(ev.endDate, ev.date);
   const dateLabel = multiDay
-    ? `${format(ev.date, "d MMM", { locale: dl })} – ${format(ev.endDate!, "d MMM yyyy", { locale: dl })}`
-    : format(ev.date, "EEE d MMM yyyy · HH:mm", { locale: dl });
+    ? `${formatRome(ev.date, "d MMM", { locale: dl })} – ${formatRome(ev.endDate!, "d MMM yyyy", { locale: dl })}`
+    : formatRome(ev.date, "EEE d MMM yyyy · HH:mm", { locale: dl });
 
   return (
     <Link href={`/eventi/${ev.slug ?? ev.id}`} style={{ textDecoration: "none" }}>
@@ -63,9 +63,9 @@ function EventCard({ ev, locale }: { ev: EventRow; locale: string }) {
             />
           ) : (
             <CoverFallback
-              weekday={format(ev.date, "EEEE", { locale: dl })}
-              day={format(ev.date, "d", { locale: dl })}
-              month={format(ev.date, "MMMM yyyy", { locale: dl })}
+              weekday={formatRome(ev.date, "EEEE", { locale: dl })}
+              day={formatRome(ev.date, "d", { locale: dl })}
+              month={formatRome(ev.date, "MMMM yyyy", { locale: dl })}
             />
           )}
         </Box>

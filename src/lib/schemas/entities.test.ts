@@ -134,7 +134,7 @@ describe("ChildPatchSchema", () => {
 // --- EventCreateSchema ---
 
 describe("EventCreateSchema", () => {
-  const base = { title: "Torneo estivo", date: "2025-07-15" };
+  const base = { title: "Torneo estivo", date: "2025-07-14T22:00:00.000Z" };
 
   it("accetta un payload minimo valido", () => {
     expect(EventCreateSchema.safeParse(base).success).toBe(true);
@@ -143,7 +143,7 @@ describe("EventCreateSchema", () => {
   it("accetta un payload completo", () => {
     const full = {
       ...base,
-      endDate: "2025-07-16",
+      endDate: "2025-07-15T22:00:00.000Z",
       location: "Palazzetto dello Sport",
       description: "Torneo di fine anno con 8 squadre partecipanti.",
     };

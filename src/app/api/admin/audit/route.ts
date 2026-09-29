@@ -74,7 +74,8 @@ async function resolveTargetLabels(
             select: { id: true, date: true, slug: true },
           });
           rows.forEach((r) => {
-            const label = r.slug ?? new Date(r.date).toLocaleDateString("it-IT");
+            const label =
+              r.slug ?? new Date(r.date).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" });
             result[`Match:${r.id}`] = label;
           });
           break;
@@ -96,7 +97,7 @@ async function resolveTargetLabels(
           });
           rows.forEach((r) => {
             result[`TrainingSession:${r.id}`] =
-              `${r.title} (${new Date(r.date).toLocaleDateString("it-IT")})`;
+              `${r.title} (${new Date(r.date).toLocaleDateString("it-IT", { timeZone: "Europe/Rome" })})`;
           });
           break;
         }

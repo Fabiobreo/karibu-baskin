@@ -6,7 +6,6 @@ import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
-import { format } from "date-fns";
 import type { Metadata } from "next";
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { getEntityLabels } from "@/lib/entityLabels";
@@ -14,6 +13,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 export const metadata: Metadata = buildMetadata({
   title: "Risultati",
@@ -396,7 +396,7 @@ function MatchCard({
   return (
     <PlayedMatchRow
       href={`/partite/${m.slug ?? m.id}`}
-      dateLabel={format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
+      dateLabel={formatRome(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
       metaLabel={`${m.isHome ? tFn("home") : tFn("away")} · ${typeLabel}`}
       isHome={m.isHome}
       ourName={m.team.name}

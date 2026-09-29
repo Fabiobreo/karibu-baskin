@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoDateTime } from "./dateTime";
 import { MatchType, MatchResult } from "@prisma/client";
 
 /** Derives WIN/LOSS/DRAW from raw scores. */
@@ -51,7 +52,7 @@ export const MatchCreateSchema = MatchBaseSchema.extend({
   // Esattamente uno tra opponentId (esterno) e opponentTeamId (interno) dev'essere fornito.
   opponentId: z.string().min(1).nullable().optional(),
   opponentTeamId: z.string().min(1).nullable().optional(),
-  date: z.string().datetime({ offset: true }).or(z.string().min(1)),
+  date: isoDateTime(),
   ourScore: z.number().int().min(0).nullable().optional(),
   theirScore: z.number().int().min(0).nullable().optional(),
 })
@@ -70,7 +71,7 @@ export const MatchCreateSchema = MatchBaseSchema.extend({
 
 export const MatchUpdateSchema = MatchBaseSchema.extend({
   teamId: z.string().min(1).optional(),
-  date: z.string().min(1).optional(),
+  date: isoDateTime().optional(),
   opponentId: z.string().min(1).nullable().optional(),
   opponentTeamId: z.string().min(1).nullable().optional(),
   ourScore: z.number().int().min(0).nullable().optional(),

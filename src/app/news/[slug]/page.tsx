@@ -18,7 +18,6 @@ import {
   Tooltip,
   Link as MuiLink,
 } from "@mui/material";
-import { format } from "date-fns";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import Link from "next/link";
@@ -26,6 +25,7 @@ import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import EditIcon from "@mui/icons-material/Edit";
 import PollWidget from "@/components/news/PollWidget";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { formatRome } from "@/lib/dateUtils";
 
 export const revalidate = 60;
 
@@ -174,7 +174,7 @@ export default async function NewsSlugPage({ params }: Props) {
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
           <Typography variant="caption" color="text.secondary">
-            {format(new Date(post.publishedAt!), "d MMMM yyyy", { locale: dateLocale })}
+            {formatRome(new Date(post.publishedAt!), "d MMMM yyyy", { locale: dateLocale })}
           </Typography>
           {post.author.name && (
             <>

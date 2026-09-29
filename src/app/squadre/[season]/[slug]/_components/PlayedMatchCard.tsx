@@ -1,9 +1,9 @@
-import { format } from "date-fns";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { getEntityLabels } from "@/lib/entityLabels";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
 import type { AnyMatch } from "./types";
+import { formatRome } from "@/lib/dateUtils";
 
 export default async function PlayedMatchCard({
   match,
@@ -27,7 +27,7 @@ export default async function PlayedMatchCard({
   return (
     <PlayedMatchRow
       href={`/partite/${match.slug ?? match.id}`}
-      dateLabel={format(new Date(match.date), "d MMM yyyy", { locale: dateLocale })}
+      dateLabel={formatRome(new Date(match.date), "d MMM yyyy", { locale: dateLocale })}
       metaLabel={`${match.isHome ? t("home") : t("away")} · ${matchTypeLabel(match.matchType)}`}
       isHome={match.isHome}
       ourName={teamName}

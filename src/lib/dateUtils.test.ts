@@ -5,6 +5,9 @@ import {
   sessionEndDate,
   formatRomeDayLabel,
   formatRomeTime,
+  formatRome,
+  isSameRomeDay,
+  romeCalendarDaysBetween,
 } from "./dateUtils";
 
 describe("toLocalDateString()", () => {
@@ -82,5 +85,42 @@ describe("formatRomeTime / formatRomeDayLabel", () => {
     const d = new Date("2026-09-21T22:30:00Z");
     expect(formatRomeTime(d)).toBe("00:30");
     expect(formatRomeDayLabel(d)).toBe("martedì 22 settembre");
+  });
+});
+
+describe("formatRome()", () => {
+  it("formatta nel fuso di Roma con l'ora legale", () => {
+    expect(formatRome(new Date("2026-10-05T16:00:00Z"), "yyyy-MM-dd HH:mm")).toBe(
+      "2026-10-05 18:00"
+    );
+  });
+
+  it("formatta nel fuso di Roma con l'ora solare", () => {
+    expect(formatRome(new Date("2026-12-05T17:00:00Z"), "HH:mm")).toBe("18:00");
+  });
+
+  it("la mezzanotte di Roma resta nello stesso giorno", () => {
+    // Evento a giornata intera creato dal calendario: 00:00 a Roma = 22:00Z del giorno prima.
+    expect(formatRome(new Date("2026-10-04T22:00:00Z"), "d MMM yyyy HH:mm")).toBe(
+      "5 Oct 2026 00:00"
+    );
+  });
+});
+
+describe("isSameRomeDay()", () => {
+  it("confronta i giorni di calendario di Roma, non UTC", () => {
+    const start = new Date("2026-10-04T22:00:00Z"); // 5 ottobre, 00:00 a Roma
+    const end = new Date("2026-10-05T20:00:00Z"); // 5 ottobre, 22:00 a Roma
+    expect(isSameRomeDay(start, end)).toBe(true);
+    expect(isSameRomeDay(start, new Date("2026-10-05T22:00:00Z"))).toBe(false);
+  });
+});
+
+describe("romeCalendarDaysBetween()", () => {
+  it("conta i giorni secondo il calendario di Roma", () => {
+    const now = new Date("2026-10-04T21:30:00Z"); // 4 ottobre, 23:30 a Roma
+    expect(romeCalendarDaysBetween(now, new Date("2026-10-04T21:45:00Z"))).toBe(0);
+    // 00:15 del 5 ottobre a Roma, ma ancora il 4 in UTC
+    expect(romeCalendarDaysBetween(now, new Date("2026-10-04T22:15:00Z"))).toBe(1);
   });
 });
