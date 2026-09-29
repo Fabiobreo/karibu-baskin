@@ -1,0 +1,1910 @@
+{
+  "data": "2026-09-24",
+  "nota": "Misure grezze dell'audit UX di settembre 2026 (dev server, dati di sviluppo). Vedi RIAUDIT.md per metodo e avvertenze.",
+  "axe": {
+    "desktop anon /": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 3
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /allenamenti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /allenamento/202706081800": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /calendario": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 6
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /partite/montekki-vs-orsi-bassano-2026-06-30": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 5
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /risultati": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 18
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /marcatori": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 40
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /giocatori/marco-verdi": {
+      "regole": {
+        "aria-progressbar-name": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 12
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 2
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "page-has-heading-one": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /contatti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 9
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 2
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /login": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop anon /eventi": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 18
+    },
+    "desktop athlete /": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop athlete /profilo": {
+      "regole": {
+        "aria-progressbar-name": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 10
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop athlete /profilo/disponibilita": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop athlete /allenamento/202607151800": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 4
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop athlete /notifiche": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 9
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "list": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop admin /admin": {
+      "regole": {
+        "aria-input-field-name": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 9
+        },
+        "empty-table-header": {
+          "impatto": "minor",
+          "nodi": 1
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 2
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop admin /admin/allenamenti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 138
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 6
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 10
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop admin /admin/partite": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 50
+        },
+        "empty-table-header": {
+          "impatto": "minor",
+          "nodi": 2
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop admin /admin/utenti": {
+      "regole": {
+        "aria-input-field-name": {
+          "impatto": "serious",
+          "nodi": 50
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 32
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 3
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "desktop admin /admin/partite/cmq6bbt660005ky04tkaozesb/statistiche": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "label": {
+          "impatto": "critical",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "tabPrimaDelContenuto": 19
+    },
+    "mobile anon /": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 3
+        }
+      },
+      "target": {
+        "totale": 38,
+        "sotto44": 10,
+        "sotto24": 3
+      }
+    },
+    "mobile anon /allenamenti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 25,
+        "sotto44": 3,
+        "sotto24": 1
+      }
+    },
+    "mobile anon /allenamento/202706081800": {
+      "regole": {
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 30,
+        "sotto44": 11,
+        "sotto24": 4
+      }
+    },
+    "mobile anon /calendario": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 5
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 29,
+        "sotto44": 7,
+        "sotto24": 5
+      }
+    },
+    "mobile anon /partite/montekki-vs-orsi-bassano-2026-06-30": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 29,
+        "sotto44": 8,
+        "sotto24": 3
+      }
+    },
+    "mobile anon /risultati": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 16
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 41,
+        "sotto44": 6,
+        "sotto24": 2
+      }
+    },
+    "mobile anon /marcatori": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 174
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 64,
+        "sotto44": 45,
+        "sotto24": 27
+      }
+    },
+    "mobile anon /giocatori/marco-verdi": {
+      "regole": {
+        "aria-progressbar-name": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 11
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 2
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "page-has-heading-one": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 36,
+        "sotto44": 10,
+        "sotto24": 4
+      }
+    },
+    "mobile anon /contatti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 8
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 2
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 48,
+        "sotto44": 13,
+        "sotto24": 3
+      }
+    },
+    "mobile anon /login": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 28,
+        "sotto44": 8,
+        "sotto24": 1
+      }
+    },
+    "mobile anon /eventi": {
+      "regole": {
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 28,
+        "sotto44": 3,
+        "sotto24": 1
+      }
+    },
+    "mobile athlete /": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 3
+        }
+      },
+      "target": {
+        "totale": 35,
+        "sotto44": 9,
+        "sotto24": 3
+      }
+    },
+    "mobile athlete /profilo": {
+      "regole": {
+        "aria-progressbar-name": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 10
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 2
+        }
+      },
+      "target": {
+        "totale": 40,
+        "sotto44": 17,
+        "sotto24": 4
+      }
+    },
+    "mobile athlete /profilo/disponibilita": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 2
+        }
+      },
+      "target": {
+        "totale": 25,
+        "sotto44": 5,
+        "sotto24": 2
+      }
+    },
+    "mobile athlete /allenamento/202607151800": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 3
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 31,
+        "sotto44": 9,
+        "sotto24": 3
+      }
+    },
+    "mobile athlete /notifiche": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 8
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "list": {
+          "impatto": "serious",
+          "nodi": 1
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 2
+        }
+      },
+      "target": {
+        "totale": 32,
+        "sotto44": 4,
+        "sotto24": 1
+      }
+    },
+    "mobile admin /admin": {
+      "regole": {
+        "aria-input-field-name": {
+          "impatto": "serious",
+          "nodi": 2
+        },
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 13
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 2
+        },
+        "image-alt": {
+          "impatto": "critical",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 56,
+        "sotto44": 12,
+        "sotto24": 4
+      }
+    },
+    "mobile admin /admin/allenamenti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 107
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 6
+        },
+        "image-alt": {
+          "impatto": "critical",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 11
+        }
+      },
+      "target": {
+        "totale": 311,
+        "sotto44": 196,
+        "sotto24": 15
+      }
+    },
+    "mobile admin /admin/partite": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 17
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-alt": {
+          "impatto": "critical",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 120,
+        "sotto44": 89,
+        "sotto24": 18
+      }
+    },
+    "mobile admin /admin/utenti": {
+      "regole": {
+        "color-contrast": {
+          "impatto": "serious",
+          "nodi": 31
+        },
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-alt": {
+          "impatto": "critical",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 2
+        }
+      },
+      "target": {
+        "totale": 95,
+        "sotto44": 65,
+        "sotto24": 3
+      }
+    },
+    "mobile admin /admin/partite/cmq6bbt660005ky04tkaozesb/statistiche": {
+      "regole": {
+        "heading-order": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "image-alt": {
+          "impatto": "critical",
+          "nodi": 1
+        },
+        "image-redundant-alt": {
+          "impatto": "minor",
+          "nodi": 6
+        },
+        "label": {
+          "impatto": "critical",
+          "nodi": 6
+        },
+        "meta-viewport": {
+          "impatto": "moderate",
+          "nodi": 1
+        },
+        "target-size": {
+          "impatto": "serious",
+          "nodi": 1
+        }
+      },
+      "target": {
+        "totale": 43,
+        "sotto44": 15,
+        "sotto24": 3
+      }
+    }
+  },
+  "dom": {
+    "desktop anon home": {
+      "url": "/",
+      "dimensioniTesto": 20,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 5,
+      "altezzaPx": 4304,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon allenamenti": {
+      "url": "/allenamenti",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 20,
+      "targetSotto32px": 3,
+      "altezzaPx": 900,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon allenamento_futuro": {
+      "url": "/allenamento/202706081800",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 20,
+      "targetSotto32px": 8,
+      "altezzaPx": 1108,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon allenamento_passato": {
+      "url": "/allenamento/202607151800",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 8,
+      "altezzaPx": 1064,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon calendario": {
+      "url": "/calendario",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 7,
+      "altezzaPx": 1467,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon partite": {
+      "url": "/partite",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 26,
+      "targetSotto32px": 8,
+      "altezzaPx": 900,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon partita": {
+      "url": "/partite/karibu-vs-tigri-treviso-2026-10-02",
+      "dimensioniTesto": 16,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 5,
+      "altezzaPx": 1143,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon partita_giocata": {
+      "url": "/partite/montekki-vs-orsi-bassano-2026-06-30",
+      "dimensioniTesto": 16,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 23,
+      "targetSotto32px": 6,
+      "altezzaPx": 1262,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon risultati": {
+      "url": "/risultati",
+      "dimensioniTesto": 14,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 62,
+      "targetSotto32px": 6,
+      "altezzaPx": 2104,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon squadre": {
+      "url": "/squadre",
+      "dimensioniTesto": 17,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1782,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon squadra": {
+      "url": "/squadre (poi clic su main a[href^='/squadre/20'])",
+      "dimensioniTesto": 17,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1782,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon classifiche": {
+      "url": "/classifiche",
+      "dimensioniTesto": 17,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 67,
+      "targetSotto32px": 5,
+      "altezzaPx": 2017,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon marcatori": {
+      "url": "/marcatori",
+      "dimensioniTesto": 16,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 124,
+      "targetSotto32px": 45,
+      "altezzaPx": 2133,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon giocatore": {
+      "url": "/giocatori/marco-verdi",
+      "dimensioniTesto": 23,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 70,
+      "targetSotto32px": 9,
+      "altezzaPx": 3815,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon news": {
+      "url": "/news",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1016,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon news_det": {
+      "url": "/news (poi clic su main a[href^='/news/'])",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1016,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon eventi": {
+      "url": "/eventi",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 3,
+      "altezzaPx": 1403,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon evento": {
+      "url": "/eventi (poi clic su main a[href^='/eventi/'])",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 3,
+      "altezzaPx": 1403,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon il-baskin": {
+      "url": "/il-baskin",
+      "dimensioniTesto": 16,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 39,
+      "targetSotto32px": 3,
+      "altezzaPx": 3483,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon faq": {
+      "url": "/faq",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 4,
+      "altezzaPx": 1618,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon contatti": {
+      "url": "/contatti",
+      "dimensioniTesto": 18,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 3,
+      "altezzaPx": 2813,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon sponsor": {
+      "url": "/sponsor",
+      "dimensioniTesto": 16,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 3,
+      "altezzaPx": 2100,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon gallery": {
+      "url": "/gallery",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1046,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon login": {
+      "url": "/login",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1163,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop anon notfound": {
+      "url": "/pagina-inesistente",
+      "dimensioniTesto": 13,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1211,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon home": {
+      "url": "/",
+      "dimensioniTesto": 16,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 17,
+      "targetSotto32px": 3,
+      "altezzaPx": 4871,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon allenamento_futuro": {
+      "url": "/allenamento/202706081800",
+      "dimensioniTesto": 9,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 6,
+      "altezzaPx": 1189,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon calendario": {
+      "url": "/calendario",
+      "dimensioniTesto": 10,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 58,
+      "targetSotto32px": 5,
+      "altezzaPx": 1316,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon partite": {
+      "url": "/partite",
+      "dimensioniTesto": 10,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 6,
+      "altezzaPx": 850,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon partita": {
+      "url": "/partite/karibu-vs-tigri-treviso-2026-10-02",
+      "dimensioniTesto": 13,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 17,
+      "targetSotto32px": 3,
+      "altezzaPx": 1014,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon risultati": {
+      "url": "/risultati",
+      "dimensioniTesto": 10,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 60,
+      "targetSotto32px": 4,
+      "altezzaPx": 2681,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon classifiche": {
+      "url": "/classifiche",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 61,
+      "targetSotto32px": 3,
+      "altezzaPx": 2415,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon marcatori": {
+      "url": "/marcatori",
+      "dimensioniTesto": 11,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 250,
+      "targetSotto32px": 36,
+      "altezzaPx": 4335,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon giocatore": {
+      "url": "/giocatori/marco-verdi",
+      "dimensioniTesto": 20,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 68,
+      "targetSotto32px": 7,
+      "altezzaPx": 5023,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon eventi": {
+      "url": "/eventi",
+      "dimensioniTesto": 8,
+      "pesiTesto": 4,
+      "nodiTestoSotto12px": 22,
+      "targetSotto32px": 1,
+      "altezzaPx": 2511,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile anon contatti": {
+      "url": "/contatti",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 22,
+      "targetSotto32px": 1,
+      "altezzaPx": 3861,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop guest home": {
+      "url": "/",
+      "dimensioniTesto": 21,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 7,
+      "altezzaPx": 4232,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop guest profilo": {
+      "url": "/profilo",
+      "dimensioniTesto": 16,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 7,
+      "altezzaPx": 1819,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete home": {
+      "url": "/",
+      "dimensioniTesto": 19,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 5,
+      "altezzaPx": 4007,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete profilo": {
+      "url": "/profilo",
+      "dimensioniTesto": 15,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 8,
+      "altezzaPx": 2561,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete disponibilita": {
+      "url": "/profilo/disponibilita",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 4,
+      "altezzaPx": 1065,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete notifiche": {
+      "url": "/notifiche",
+      "dimensioniTesto": 13,
+      "pesiTesto": 4,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 3,
+      "altezzaPx": 1552,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete allenamento_futuro": {
+      "url": "/allenamento/202706081800",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 21,
+      "targetSotto32px": 7,
+      "altezzaPx": 1113,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete allenamento_passato": {
+      "url": "/allenamento/202607151800",
+      "dimensioniTesto": 17,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 27,
+      "targetSotto32px": 8,
+      "altezzaPx": 1178,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete partita_giocata": {
+      "url": "/partite/montekki-vs-orsi-bassano-2026-06-30",
+      "dimensioniTesto": 16,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 5,
+      "altezzaPx": 1000,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete sfida": {
+      "url": "/squadre/sfida",
+      "dimensioniTesto": 16,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 20,
+      "targetSotto32px": 3,
+      "altezzaPx": 1162,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop athlete confronta": {
+      "url": "/giocatori/confronta?a=marco-verdi&b=elena-fontana",
+      "dimensioniTesto": 14,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 7,
+      "altezzaPx": 1323,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile athlete home": {
+      "url": "/",
+      "dimensioniTesto": 15,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 3,
+      "altezzaPx": 4590,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile athlete profilo": {
+      "url": "/profilo",
+      "dimensioniTesto": 11,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 18,
+      "targetSotto32px": 6,
+      "altezzaPx": 3077,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile athlete allenamento_passato": {
+      "url": "/allenamento/202607151800",
+      "dimensioniTesto": 14,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 29,
+      "targetSotto32px": 6,
+      "altezzaPx": 1063,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "mobile athlete partita_giocata": {
+      "url": "/partite/montekki-vs-orsi-bassano-2026-06-30",
+      "dimensioniTesto": 14,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 24,
+      "targetSotto32px": 3,
+      "altezzaPx": 873,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 0
+    },
+    "desktop admin dashboard": {
+      "url": "/admin",
+      "dimensioniTesto": 14,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 25,
+      "targetSotto32px": 8,
+      "altezzaPx": 2183,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin allenamenti": {
+      "url": "/admin/allenamenti",
+      "dimensioniTesto": 19,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 182,
+      "targetSotto32px": 71,
+      "altezzaPx": 16269,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin partite": {
+      "url": "/admin/partite",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 192,
+      "targetSotto32px": 61,
+      "altezzaPx": 2349,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin convocazioni": {
+      "url": "/admin/partite/cmtwy4azq0005vuksz46u5xi2/convocazioni",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 37,
+      "targetSotto32px": 17,
+      "altezzaPx": 1068,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin statistiche": {
+      "url": "/admin/partite/cmq6bbt660005ky04tkaozesb/statistiche",
+      "dimensioniTesto": 15,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 21,
+      "targetSotto32px": 12,
+      "altezzaPx": 900,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin eventi": {
+      "url": "/admin/eventi",
+      "dimensioniTesto": 11,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 5,
+      "altezzaPx": 991,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin squadre": {
+      "url": "/admin/squadre",
+      "dimensioniTesto": 14,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 6,
+      "altezzaPx": 926,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin gironi": {
+      "url": "/admin/gironi",
+      "dimensioniTesto": 11,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 21,
+      "targetSotto32px": 12,
+      "altezzaPx": 900,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin avversarie": {
+      "url": "/admin/avversarie",
+      "dimensioniTesto": 11,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 26,
+      "altezzaPx": 1061,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin news": {
+      "url": "/admin/news",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 7,
+      "altezzaPx": 900,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin gallery": {
+      "url": "/admin/gallery",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 4,
+      "altezzaPx": 1003,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin utenti": {
+      "url": "/admin/utenti",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 44,
+      "targetSotto32px": 60,
+      "altezzaPx": 2327,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin utente": {
+      "url": "/admin/utenti (poi clic su table tbody tr)",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 44,
+      "targetSotto32px": 60,
+      "altezzaPx": 2327,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin metriche": {
+      "url": "/admin/metriche",
+      "dimensioniTesto": 12,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 4,
+      "altezzaPx": 1574,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin sviluppo": {
+      "url": "/admin/sviluppo",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 12,
+      "altezzaPx": 4544,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin audit": {
+      "url": "/admin/audit",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 44,
+      "targetSotto32px": 32,
+      "altezzaPx": 2109,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin esporta": {
+      "url": "/admin/esporta",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 5,
+      "altezzaPx": 1008,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "desktop admin suggerimenti": {
+      "url": "/admin/suggerimenti",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 6,
+      "altezzaPx": 903,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 2
+    },
+    "desktop admin nuovo_utente": {
+      "url": "/admin/utenti/nuovo",
+      "dimensioniTesto": 13,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 8,
+      "altezzaPx": 1068,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "mobile admin dashboard": {
+      "url": "/admin",
+      "dimensioniTesto": 11,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 27,
+      "targetSotto32px": 6,
+      "altezzaPx": 2743,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "mobile admin allenamenti": {
+      "url": "/admin/allenamenti",
+      "dimensioniTesto": 16,
+      "pesiTesto": 6,
+      "nodiTestoSotto12px": 194,
+      "targetSotto32px": 69,
+      "altezzaPx": 21440,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "mobile admin partite": {
+      "url": "/admin/partite",
+      "dimensioniTesto": 10,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 51,
+      "targetSotto32px": 18,
+      "altezzaPx": 2488,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "mobile admin utenti": {
+      "url": "/admin/utenti",
+      "dimensioniTesto": 9,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 68,
+      "targetSotto32px": 3,
+      "altezzaPx": 3750,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "mobile admin convocazioni": {
+      "url": "/admin/partite/cmtwy4azq0005vuksz46u5xi2/convocazioni",
+      "dimensioniTesto": 11,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 35,
+      "targetSotto32px": 10,
+      "altezzaPx": 1274,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    },
+    "mobile admin statistiche": {
+      "url": "/admin/partite/cmq6bbt660005ky04tkaozesb/statistiche",
+      "dimensioniTesto": 12,
+      "pesiTesto": 5,
+      "nodiTestoSotto12px": 19,
+      "targetSotto32px": 10,
+      "altezzaPx": 909,
+      "scrollOrizzontalePx": 0,
+      "immaginiSenzaAlt": 1
+    }
+  }
+}

@@ -5,6 +5,7 @@ Audit grafico, UX e di usabilità del sito, con contro-revisione di tre revisori
 - [AUDIT.md](AUDIT.md): risultati consolidati, già corretti dopo la contro-revisione.
 - [tickets/](tickets/): un file per ticket, autosufficiente (si può implementare senza aver letto l'audit).
 - [img/](img/): tavole di confronto per le decisioni visive.
+- [RIAUDIT.md](RIAUDIT.md): voti e misure del 24/09, metodo e script ([misure/](misure/)) per rifare l'audit e capire se il sito è migliorato.
 
 ## Decisioni già prese
 
