@@ -23,6 +23,7 @@ import {
   isToday,
   addDays,
   getDay,
+  startOfDay,
 } from "date-fns";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import {
@@ -113,17 +114,24 @@ export default function CalendarClient({
   const mine = useMemo(() => new Set(myTeamIds), [myTeamIds]);
   const isOwnTeam = (ev: CalendarEvent) => !!ev.teamId && mine.has(ev.teamId);
 
-  const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const firstDay = startOfMonth(new Date(year, month));
+  const gridStart = startOfWeek(firstDay, { weekStartsOn: 1 });
+  const gridEnd = endOfWeek(endOfMonth(firstDay), { weekStartsOn: 1 });
+  const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
+
+  // Si chiede tutta la griglia, non solo il mese: le celle del mese prima e
+  // dopo mostrano i loro impegni invece di restare vuote. `to` è escluso.
+  const rangeQuery = `from=${gridStart.toISOString()}&to=${startOfDay(addDays(gridEnd, 1)).toISOString()}`;
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/calendar?month=${monthKey}`);
+      const res = await fetch(`/api/calendar?${rangeQuery}`);
       if (res.ok) setEvents(await res.json());
     } finally {
       setLoading(false);
     }
-  }, [monthKey]);
+  }, [rangeQuery]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -146,11 +154,6 @@ export default function CalendarClient({
     setYear(today.getFullYear());
     setMonth(today.getMonth());
   };
-
-  const firstDay = startOfMonth(new Date(year, month));
-  const gridStart = startOfWeek(firstDay, { weekStartsOn: 1 });
-  const gridEnd = endOfWeek(endOfMonth(firstDay), { weekStartsOn: 1 });
-  const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
   const eventsForDay = (day: Date) =>
     events.filter((e) => spansDay(e, day) && isVisible(e, hiddenKeys));

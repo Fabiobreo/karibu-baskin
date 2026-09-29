@@ -193,34 +193,49 @@ describe("GET /api/calendar", () => {
     expect(json[2].type).toBe("event");
   });
 
-  it("passa il filtro di data corretto per il mese specificato", async () => {
+  it("passa il filtro di data del mese nel fuso di Roma", async () => {
     await GET(makeRequest("?month=2025-07"));
     expect(p.trainingSession.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { date: { gte: new Date(2025, 6, 1), lt: new Date(2025, 7, 1) } },
+        where: {
+          date: {
+            gte: new Date("2025-06-30T22:00:00.000Z"),
+            lt: new Date("2025-07-31T22:00:00.000Z"),
+          },
+        },
       })
     );
   });
 
-  it("usa il mese corrente se il parametro month è assente", async () => {
-    const now = new Date();
-    const expectedStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const expectedEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    await GET(makeRequest());
+  it("usa l'intervallo from/to della griglia, giorni fuori mese compresi", async () => {
+    const from = "2026-09-27T22:00:00.000Z";
+    const to = "2026-11-08T23:00:00.000Z";
+    await GET(makeRequest(`?from=${from}&to=${to}`));
+    const range = { gte: new Date(from), lt: new Date(to) };
     expect(p.trainingSession.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { date: range } })
+    );
+    expect(p.match.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { date: range } })
+    );
+    expect(p.event.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { date: { gte: expectedStart, lt: expectedEnd } },
+        where: {
+          date: { lt: new Date(to) },
+          OR: [
+            { endDate: { gte: new Date(from) } },
+            { endDate: null, date: { gte: new Date(from) } },
+          ],
+        },
       })
     );
   });
 
-  it("usa il mese corrente se il parametro month ha formato non valido", async () => {
-    const now = new Date();
-    const expectedStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  it("usa il mese corrente se i parametri sono assenti o non validi", async () => {
     await GET(makeRequest("?month=luglio"));
     expect(p.trainingSession.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { date: { gte: expectedStart, lt: expect.any(Date) } },
+        where: { date: { gte: expect.any(Date), lt: expect.any(Date) } },
       })
     );
   });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { parseCalendarRange } from "@/lib/calendar/calendarRange";
 
 export type CalendarEventType = "training" | "match" | "event";
 
@@ -30,19 +31,9 @@ export async function GET(req: Request) {
   const rl = checkRateLimit(getClientIp(req), "get-calendar", 60, 60_000);
   if (!rl.allowed) return NextResponse.json({ error: "Troppe richieste" }, { status: 429 });
 
-  const { searchParams } = new URL(req.url);
-  const month = searchParams.get("month"); // YYYY-MM
-
-  let start: Date, end: Date;
-  if (month && /^\d{4}-\d{2}$/.test(month)) {
-    const [y, m] = month.split("-").map(Number);
-    start = new Date(y, m - 1, 1);
-    end = new Date(y, m, 1);
-  } else {
-    const now = new Date();
-    start = new Date(now.getFullYear(), now.getMonth(), 1);
-    end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  }
+  // Intervallo [from, to): la griglia mostra settimane intere, anche i giorni
+  // del mese prima e dopo. Dettagli in `parseCalendarRange`.
+  const { from: start, to: end } = parseCalendarRange(new URL(req.url).searchParams);
 
   const [trainings, matches, events] = await Promise.all([
     prisma.trainingSession.findMany({
@@ -81,11 +72,13 @@ export async function GET(req: Request) {
       orderBy: { date: "asc" },
     }),
     prisma.event.findMany({
-      // Un evento è rilevante per il mese se si sovrappone all'intervallo:
-      // inizia prima della fine del mese E (non ha fine OR finisce dopo l'inizio del mese)
+      // Un evento è rilevante se si sovrappone all'intervallo: inizia prima
+      // della fine E finisce dopo l'inizio. Senza fine, dura solo il suo giorno:
+      // conta se inizia dentro l'intervallo (prima un evento senza fine tornava
+      // in tutti i mesi successivi).
       where: {
         date: { lt: end },
-        OR: [{ endDate: null }, { endDate: { gte: start } }],
+        OR: [{ endDate: { gte: start } }, { endDate: null, date: { gte: start } }],
       },
       orderBy: { date: "asc" },
     }),
