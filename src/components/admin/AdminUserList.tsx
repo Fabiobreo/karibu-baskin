@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from "react";
 import { writeRowsPerPageCookie } from "@/lib/rowsPerPage";
+import { joinFilter, parseAppRoles, parseSportRoles } from "@/lib/userFilters";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Box,
@@ -63,11 +64,11 @@ export default function AdminUserList({
 
   // URL-driven filter state (initialised from server-rendered searchParams)
   const [search, setSearch] = useState(currentFilters.search ?? "");
-  const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>(
-    currentFilters.appRole ? [currentFilters.appRole as AppRole] : []
+  const [filterAppRoles, setFilterAppRoles] = useState<AppRole[]>(() =>
+    parseAppRoles(currentFilters.appRole)
   );
-  const [filterSportRoles, setFilterSportRoles] = useState<string[]>(
-    currentFilters.sportRole ? [currentFilters.sportRole] : []
+  const [filterSportRoles, setFilterSportRoles] = useState<string[]>(() =>
+    parseSportRoles(currentFilters.sportRole)
   );
   const [filterGender, setFilterGender] = useState(currentFilters.gender ?? "");
   const [filterTeamId, setFilterTeamId] = useState(currentFilters.teamId ?? "");
@@ -92,8 +93,8 @@ export default function AdminUserList({
       const params = new URLSearchParams();
       const merged = {
         search,
-        appRole: filterAppRoles[0] ?? "",
-        sportRole: filterSportRoles[0] ?? "",
+        appRole: joinFilter(filterAppRoles),
+        sportRole: joinFilter(filterSportRoles),
         gender: filterGender,
         teamId: filterTeamId,
         athleteStatus: filterAthleteStatus,
@@ -273,32 +274,24 @@ export default function AdminUserList({
     if (serverDriven) startTransition(() => router.push(pathname));
   }
 
+  // Scelta multipla anche con la paginazione sul server: nell'URL i valori
+  // vanno separati da virgola (vedi @/lib/userFilters), es. ruoli 4 e 5 insieme.
   function toggleAppRole(role: AppRole) {
-    // Single-select when server-driven (server only supports one appRole filter)
-    const newRoles = serverDriven
-      ? filterAppRoles.includes(role)
-        ? []
-        : [role]
-      : filterAppRoles.includes(role)
-        ? filterAppRoles.filter((r) => r !== role)
-        : [...filterAppRoles, role];
+    const newRoles = filterAppRoles.includes(role)
+      ? filterAppRoles.filter((r) => r !== role)
+      : [...filterAppRoles, role];
     setFilterAppRoles(newRoles);
     setPage(0);
-    if (serverDriven) pushFilters({ appRole: newRoles[0] ?? "", page: 1 });
+    if (serverDriven) pushFilters({ appRole: joinFilter(newRoles), page: 1 });
   }
 
   function toggleSportRole(val: string) {
-    // Single-select when server-driven (server only supports one sportRole filter)
-    const newVals = serverDriven
-      ? filterSportRoles.includes(val)
-        ? []
-        : [val]
-      : filterSportRoles.includes(val)
-        ? filterSportRoles.filter((r) => r !== val)
-        : [...filterSportRoles, val];
+    const newVals = filterSportRoles.includes(val)
+      ? filterSportRoles.filter((r) => r !== val)
+      : [...filterSportRoles, val];
     setFilterSportRoles(newVals);
     setPage(0);
-    if (serverDriven) pushFilters({ sportRole: newVals[0] ?? "", page: 1 });
+    if (serverDriven) pushFilters({ sportRole: joinFilter(newVals), page: 1 });
   }
 
   // ── Azioni tabella ────────────────────────────────────────────────────────

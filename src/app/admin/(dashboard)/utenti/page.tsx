@@ -11,10 +11,10 @@ import { auth } from "@/lib/authjs";
 import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 import { cookies } from "next/headers";
 import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
+import { joinFilter, parseAppRoles, parseSportRoles, sportRoleWhere } from "@/lib/userFilters";
 
 export const revalidate = 60;
 
-const VALID_ROLES: AppRole[] = ["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"];
 const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
 const VALID_ATHLETE_STATUSES: AthleteStatus[] = ["INACTIVE_SEASON", "FORMER"];
 
@@ -23,8 +23,9 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function AdminUtentiPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
   const search = (sp.search as string | undefined)?.trim() ?? "";
-  const appRole = sp.appRole as AppRole | undefined;
-  const sportRole = sp.sportRole as string | undefined;
+  // Piu' valori separati da virgola (es. ruoli Baskin 4 e 5 insieme).
+  const appRoles = parseAppRoles(sp.appRole as string | undefined);
+  const sportRoles = parseSportRoles(sp.sportRole as string | undefined);
   const gender = sp.gender as string | undefined;
   const teamId = sp.teamId as string | undefined;
   const athleteStatus = sp.athleteStatus as string | undefined;
@@ -51,12 +52,10 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       { email: { contains: search, mode: "insensitive" } },
     ];
   }
-  if (appRole && VALID_ROLES.includes(appRole)) where.appRole = appRole;
-  if (sportRole === "none") where.sportRole = null;
-  else if (sportRole) {
-    const n = parseInt(sportRole, 10);
-    if (!isNaN(n)) where.sportRole = n;
-  }
+  if (appRoles.length > 0) where.appRole = { in: appRoles };
+  // In AND: la ricerca usa gia' `where.OR`, e "senza ruolo o ruolo 1" e' un altro OR.
+  const sportRoleCond = sportRoleWhere(sportRoles);
+  if (sportRoleCond) where.AND = [sportRoleCond];
   if (gender === "none") where.gender = null;
   else if (gender && VALID_GENDERS.includes(gender as Gender)) where.gender = gender as Gender;
   if (teamId) where.teamMemberships = { some: { teamId } };
@@ -208,8 +207,8 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           serverLimit={limit}
           currentFilters={{
             search,
-            appRole,
-            sportRole,
+            appRole: joinFilter(appRoles),
+            sportRole: joinFilter(sportRoles),
             gender,
             teamId,
             athleteStatus,
