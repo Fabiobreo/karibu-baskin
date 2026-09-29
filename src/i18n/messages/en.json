@@ -743,7 +743,7 @@
     "posterZoom": "Click to enlarge",
     "posterOpen": "Enlarge the poster",
     "posterClose": "Close",
-    "rsvpTitle": "Will you be there?",
+    "rsvpTitle": "Who's coming?",
     "rsvpLoginPrompt": "Sign in to confirm your attendance.",
     "rsvpLoginCta": "Sign in to reply",
     "rsvpClosed": "Event concluded.",
@@ -762,7 +762,7 @@
     "manage": "Manage",
     "manageAll": "Manage events",
     "manageOne": "Manage {title} in admin",
-    "optionsHint": "Who joins the extras (optional)",
+    "optionsHint": "Optional: tick who joins.",
     "addNote": "Add a note",
     "respondedBy": "Answered by {name}",
     "guestName": "Guest",
@@ -772,7 +772,11 @@
     "guestsHint": "For people who are not on the app. Only you can see your guests.",
     "optionCount": "{count, plural, =0 {nobody} one {# person} other {# people}}",
     "statusNeeded": "Say whether {name} is attending the event.",
-    "statusNeededSelf": "Say whether you are attending the event."
+    "statusNeededSelf": "Say whether you are attending the event.",
+    "mainEvent": "Main event",
+    "extras": "Extras",
+    "onlyExtras": "Extras only",
+    "guestExtrasNeeded": "Choose which extras {name} joins."
   },
   "search": {
     "open": "Search",

@@ -743,7 +743,7 @@
     "posterZoom": "Clic per ingrandire",
     "posterOpen": "Ingrandisci la locandina",
     "posterClose": "Chiudi",
-    "rsvpTitle": "Ci sarai?",
+    "rsvpTitle": "Chi viene?",
     "rsvpLoginPrompt": "Accedi per confermare la tua presenza.",
     "rsvpLoginCta": "Accedi per rispondere",
     "rsvpClosed": "Evento concluso.",
@@ -762,7 +762,7 @@
     "manage": "Gestisci",
     "manageAll": "Gestisci eventi",
     "manageOne": "Gestisci {title} in admin",
-    "optionsHint": "Chi partecipa agli extra (facoltativo)",
+    "optionsHint": "Facoltativi: spunta chi partecipa.",
     "addNote": "Aggiungi nota",
     "respondedBy": "Risposto da {name}",
     "guestName": "Esterno",
@@ -772,7 +772,11 @@
     "guestsHint": "Per chi non è nell'app. Gli esterni li vedi solo tu.",
     "optionCount": "{count, plural, =0 {nessuno} one {# persona} other {# persone}}",
     "statusNeeded": "Indica se {name} viene all'evento.",
-    "statusNeededSelf": "Indica se vieni all'evento."
+    "statusNeededSelf": "Indica se vieni all'evento.",
+    "mainEvent": "Evento principale",
+    "extras": "Extra",
+    "onlyExtras": "Solo agli extra",
+    "guestExtrasNeeded": "Scegli a quali extra partecipa {name}."
   },
   "search": {
     "open": "Cerca",

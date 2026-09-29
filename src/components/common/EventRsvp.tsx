@@ -21,6 +21,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import CloseIcon from "@mui/icons-material/Close";
 import StickyNote2OutlinedIcon from "@mui/icons-material/StickyNote2Outlined";
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import { useMutation } from "@tanstack/react-query";
 import InlineError from "@/components/common/InlineError";
 import { useTranslations } from "next-intl";
@@ -99,6 +100,62 @@ function StatusButtons({
           </Button>
         );
       })}
+    </Box>
+  );
+}
+
+// Esterno: o viene all'evento o solo agli extra. "Forse" non serve e "No"
+// non ha senso: un esterno che non viene si toglie.
+function GuestChoice({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: Status;
+  disabled: boolean;
+  onChange: (status: Status) => void;
+}) {
+  const t = useTranslations("events");
+  const choices: { value: Status; label: string; icon: React.ReactNode }[] = [
+    { value: "GOING", label: t("going"), icon: <CheckCircleIcon fontSize="small" /> },
+    { value: "NOT_GOING", label: t("onlyExtras"), icon: <PlaylistAddCheckIcon fontSize="small" /> },
+  ];
+  return (
+    <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+      {choices.map((c) => {
+        const selected = value === c.value;
+        return (
+          <Button
+            key={c.value}
+            size="small"
+            variant={selected ? "contained" : "outlined"}
+            color={selected ? "success" : "inherit"}
+            startIcon={c.icon}
+            disabled={disabled}
+            aria-pressed={selected}
+            onClick={() => onChange(c.value)}
+            sx={{ fontWeight: 700, borderRadius: 2, textTransform: "none" }}
+          >
+            {c.label}
+          </Button>
+        );
+      })}
+    </Box>
+  );
+}
+
+// Titolo di sezione del modulo: dice cosa si sta chiedendo.
+function SectionTitle({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <Box>
+      <Typography variant="subtitle1" fontWeight={800}>
+        {title}
+      </Typography>
+      {hint && (
+        <Typography variant="caption" color="text.secondary">
+          {hint}
+        </Typography>
+      )}
     </Box>
   );
 }
@@ -213,6 +270,10 @@ function RsvpForm({
   const missingStatus = members.find(
     (m) => !people[m.key].status && people[m.key].optionIds.length > 0
   );
+  const hasExtras = options.length > 0;
+  const guestWithoutExtras = guests.findIndex(
+    (g) => hasExtras && g.status === "NOT_GOING" && g.optionIds.length === 0
+  );
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -229,7 +290,8 @@ function RsvpForm({
           guests: guests.map((g) => ({
             id: g.id,
             name: g.name.trim() || null,
-            status: g.status,
+            // Senza extra un esterno viene e basta.
+            status: hasExtras ? g.status : "GOING",
             optionIds: g.optionIds,
             note: g.note.trim() || null,
           })),
@@ -268,7 +330,8 @@ function RsvpForm({
 
   return (
     <Stack spacing={3}>
-      {/* ── All'evento ── */}
+      {/* ── Evento principale ── */}
+      {hasExtras && <SectionTitle title={t("mainEvent")} />}
       <Stack spacing={2} divider={<Divider flexItem />}>
         {members.map((m) => {
           const p = people[m.key];
@@ -324,12 +387,13 @@ function RsvpForm({
                 </IconButton>
               </Tooltip>
             </Box>
-            {/* Un esterno si aggiunge per portarlo: niente "senza risposta". */}
-            <StatusButtons
-              value={g.status}
-              disabled={busy}
-              onChange={(status) => status && setGuest(g.localKey, { status })}
-            />
+            {hasExtras && (
+              <GuestChoice
+                value={g.status === "NOT_GOING" ? "NOT_GOING" : "GOING"}
+                disabled={busy}
+                onChange={(status) => setGuest(g.localKey, { status })}
+              />
+            )}
             <NoteField
               open={g.noteOpen}
               value={g.note}
@@ -377,9 +441,7 @@ function RsvpForm({
       {/* ── Extra: chi partecipa a ciascuno. Il totale lo danno le spunte. ── */}
       {options.length > 0 && (
         <Stack spacing={2}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>
-            {t("optionsHint")}
-          </Typography>
+          <SectionTitle title={t("extras")} hint={t("optionsHint")} />
           {options.map((o) => {
             const count = everyone.filter((e) => e.checked(o.id)).length;
             return (
@@ -420,12 +482,19 @@ function RsvpForm({
       <Box>
         <Button
           variant="contained"
-          disabled={busy || !!missingStatus}
+          disabled={busy || !!missingStatus || guestWithoutExtras >= 0}
           onClick={() => mutation.mutate()}
           sx={{ fontWeight: 700, borderRadius: 2 }}
         >
           {t("save")}
         </Button>
+        {!missingStatus && guestWithoutExtras >= 0 && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75 }}>
+            {t("guestExtrasNeeded", {
+              name: guestLabel(guests[guestWithoutExtras], guestWithoutExtras),
+            })}
+          </Typography>
+        )}
         {missingStatus && (
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75 }}>
             {missingStatus.isSelf

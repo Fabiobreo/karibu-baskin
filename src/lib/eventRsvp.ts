@@ -177,8 +177,14 @@ export async function saveFamilyRsvp(args: {
       throw new RsvpError(`Indica se ${m.name} viene all'evento`);
     }
   }
+  // Un esterno o viene all'evento (GOING) o viene solo agli extra (NOT_GOING
+  // con almeno un extra): "Forse" non c'e', e chi non viene si toglie.
   for (const g of guests) {
     if (g.optionIds.some((id) => !validOptions.has(id))) throw new RsvpError("Opzione non valida");
+    if (g.status === "MAYBE") throw new RsvpError('Un esterno viene o no: niente "Forse"');
+    if (g.status === "NOT_GOING" && g.optionIds.length === 0) {
+      throw new RsvpError(`Scegli a quali extra partecipa ${g.name?.trim() || "l'esterno"}`);
+    }
   }
   if (guests.length > 0 && !args.allowGuests) {
     throw new RsvpError("Per questo evento non sono ammessi esterni");

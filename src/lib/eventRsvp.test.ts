@@ -143,6 +143,20 @@ describe("saveFamilyRsvp()", () => {
     });
   });
 
+  it('un esterno non puo\' essere "Forse"', async () => {
+    const guests = [{ name: "Chiara", status: "MAYBE" as const, optionIds: [] }];
+    await expect(
+      saveFamilyRsvp({ ...base, people: [], guests, allowGuests: true })
+    ).rejects.toThrow(/Forse/);
+  });
+
+  it('un esterno "solo agli extra" deve avere almeno un extra', async () => {
+    const guests = [{ name: "Chiara", status: "NOT_GOING" as const, optionIds: [] }];
+    await expect(
+      saveFamilyRsvp({ ...base, people: [], guests, allowGuests: true })
+    ).rejects.toThrow(/Chiara/);
+  });
+
   it("non si modifica l'esterno di un altro", async () => {
     const guests = [{ id: "g-altrui", name: "Nonna", status: "GOING" as const, optionIds: [] }];
     await expect(
