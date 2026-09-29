@@ -759,11 +759,20 @@
     "rsvpNotSaved": "Risposta non salvata.",
     "save": "Salva",
     "notePlaceholder": "Note (allergie, esigenze…)",
-    "optionsHint": "Segna anche a cosa partecipi (facoltativo)",
-    "chooseStatusFirst": "Scegli prima se ci sarai all'evento.",
     "manage": "Gestisci",
     "manageAll": "Gestisci eventi",
-    "manageOne": "Gestisci {title} in admin"
+    "manageOne": "Gestisci {title} in admin",
+    "optionsHint": "Chi partecipa agli extra (facoltativo)",
+    "addNote": "Aggiungi nota",
+    "respondedBy": "Risposto da {name}",
+    "guestName": "Esterno",
+    "guestFallback": "Esterno {n}",
+    "addGuest": "Aggiungi esterno",
+    "removeGuest": "Togli {name}",
+    "guestsHint": "Per chi non è nell'app. Gli esterni li vedi solo tu.",
+    "optionCount": "{count, plural, =0 {nessuno} one {# persona} other {# persone}}",
+    "statusNeeded": "Indica se {name} viene all'evento.",
+    "statusNeededSelf": "Indica se vieni all'evento."
   },
   "search": {
     "open": "Cerca",

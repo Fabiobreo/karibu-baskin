@@ -83,7 +83,7 @@ model User {
   authSessions          Session[]
   registrations         Registration[]
   guardianOf            ChildGuardian[]
-  childAccount          Child?                @relation("ChildUser")
+  childAccount          Child?                 @relation("ChildUser")
   sportRoleHistory      SportRoleHistory[]
   pushSubscriptions     PushSubscription[]
   teamMemberships       TeamMembership[]
@@ -92,17 +92,19 @@ model User {
   matchMvps             MatchMvp[]
   matchAvailabilities   MatchAvailability[]
   notificationReads     AppNotificationRead[]
-  targetedNotifications AppNotification[]     @relation("TargetedNotifications")
-  sentLinkRequests      LinkRequest[]         @relation("SentLinkRequests")
-  receivedLinkRequests  LinkRequest[]         @relation("ReceivedLinkRequests")
+  targetedNotifications AppNotification[]      @relation("TargetedNotifications")
+  sentLinkRequests      LinkRequest[]          @relation("SentLinkRequests")
+  receivedLinkRequests  LinkRequest[]          @relation("ReceivedLinkRequests")
   posts                 Post[]
   pollVotes             PollVote[]
   ratingUpdates         RatingUpdate[]
   suggestions           Suggestion[]
   suggestionNotes       SuggestionNote[]
   earnedBadges          EarnedBadge[]
-  eventAttendances      EventAttendance[]
+  eventAttendances      EventAttendance[]      @relation("EventAttendanceUser")
+  eventRsvpsGiven       EventAttendance[]      @relation("EventAttendanceRespondedBy")
   eventOptionSelections EventOptionSelection[]
+  eventGuestsAdded      EventGuest[]
 }
 
 model Account {
@@ -200,21 +202,20 @@ model Child {
 
   // Genitori/tutori: tutti con gli stessi poteri (iscrivere, disponibilità,
   // notifiche, modifica). Almeno uno: vedi @/lib/guardians.
-  guardians           ChildGuardian[]
-  user                User?               @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
-  registrations       Registration[]
-  teamMemberships     TeamMembership[]
-  matchStats          PlayerMatchStats[]
-  callups             MatchCallup[]
-  matchMvps           MatchMvp[]
-  matchAvailabilities MatchAvailability[]
-  linkRequests        LinkRequest[]
-  ratingUpdates       RatingUpdate[]
-  sportRoleHistory    SportRoleHistory[]
-  earnedBadges        EarnedBadge[]
-  eventAttendances    EventAttendance[]
+  guardians             ChildGuardian[]
+  user                  User?                  @relation("ChildUser", fields: [userId], references: [id], onDelete: SetNull)
+  registrations         Registration[]
+  teamMemberships       TeamMembership[]
+  matchStats            PlayerMatchStats[]
+  callups               MatchCallup[]
+  matchMvps             MatchMvp[]
+  matchAvailabilities   MatchAvailability[]
+  linkRequests          LinkRequest[]
+  ratingUpdates         RatingUpdate[]
+  sportRoleHistory      SportRoleHistory[]
+  earnedBadges          EarnedBadge[]
+  eventAttendances      EventAttendance[]
   eventOptionSelections EventOptionSelection[]
-
 }
 
 // Collegamento genitore ↔ figlio. Un figlio può avere più genitori, tutti
@@ -819,8 +820,13 @@ model Event {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // Esterni (chi non e' nell'app: la ragazza, i nonni). Decide lo staff.
+  allowGuests Boolean @default(false)
+  maxGuests   Int? // massimo di esterni per chi risponde; null = nessun limite
+
   attendances EventAttendance[]
   options     EventOption[]
+  guests      EventGuest[]
 
   @@index([date])
 }
@@ -856,41 +862,69 @@ model EventOption {
   @@index([eventId])
 }
 
-// Selezione di una sotto-opzione da parte di un partecipante (User o Child).
-// Una riga = "partecipo a questa opzione".
+// Selezione di una sotto-opzione da parte di un partecipante (User, Child o
+// esterno). Una riga = "partecipo a questa opzione".
 model EventOptionSelection {
   id        String   @id @default(cuid())
   optionId  String
   userId    String?
   childId   String?
+  guestId   String?
   createdAt DateTime @default(now())
 
   option EventOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   user   User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   child  Child?      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  guest  EventGuest? @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
   @@unique([optionId, userId])
   @@unique([optionId, childId])
+  @@unique([optionId, guestId])
   @@index([optionId])
   @@index([userId])
   @@index([childId])
+  @@index([guestId])
 }
 
-// RSVP a un evento generico. Una riga per partecipante (User o Child), come
-// MatchAvailability per le partite. L'autore della riga è il genitore per i figli.
-model EventAttendance {
-  id        String                @id @default(cuid())
+// Esterno portato a un evento da chi risponde (+1): non ha un account ne' una
+// scheda figlio. Lo vede e lo modifica solo chi l'ha aggiunto (e lo staff nel
+// riepilogo), non il resto della famiglia. Nome facoltativo.
+model EventGuest {
+  id        String   @id @default(cuid())
   eventId   String
-  userId    String?
-  childId   String?
-  status    EventAttendanceStatus
-  note      String? // note libere del partecipante (es. allergie, esigenze)
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
+  name      String?
+  addedById String
+  createdAt DateTime @default(now())
 
-  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  child Child? @relation(fields: [childId], references: [id], onDelete: Cascade)
+  event      Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  addedBy    User                   @relation(fields: [addedById], references: [id], onDelete: Cascade)
+  attendance EventAttendance?
+  selections EventOptionSelection[]
+
+  @@index([eventId])
+  @@index([addedById])
+}
+
+// RSVP a un evento generico. Una riga per partecipante (User, Child o esterno),
+// come MatchAvailability per le partite. In famiglia risponde uno per tutti:
+// `respondedById` dice chi ha dato la risposta ("risposto da Giovanna").
+model EventAttendance {
+  id            String                @id @default(cuid())
+  eventId       String
+  userId        String?
+  childId       String?
+  guestId       String?               @unique
+  status        EventAttendanceStatus
+  note          String? // note libere del partecipante (es. allergie, esigenze)
+  respondedById String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User?       @relation("EventAttendanceUser", fields: [userId], references: [id], onDelete: Cascade)
+  child       Child?      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  guest       EventGuest? @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  respondedBy User?       @relation("EventAttendanceRespondedBy", fields: [respondedById], references: [id], onDelete: SetNull)
 
   @@unique([eventId, userId])
   @@unique([eventId, childId])

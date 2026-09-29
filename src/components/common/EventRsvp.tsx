@@ -12,10 +12,15 @@ import {
   FormGroup,
   TextField,
   Divider,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CancelIcon from "@mui/icons-material/Cancel";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+import CloseIcon from "@mui/icons-material/Close";
+import StickyNote2OutlinedIcon from "@mui/icons-material/StickyNote2Outlined";
 import { useMutation } from "@tanstack/react-query";
 import InlineError from "@/components/common/InlineError";
 import { useTranslations } from "next-intl";
@@ -23,6 +28,9 @@ import { useToast } from "@/context/ToastContext";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { readError } from "@/lib/fetchJson";
 import { formatRome } from "@/lib/dateUtils";
+import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
+// Solo tipi: `eventRsvp` usa Prisma e resta sul server.
+import type { GuestRsvp, MemberRsvp } from "@/lib/eventRsvp";
 
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
 
@@ -33,22 +41,18 @@ export interface EventOptionView {
   kind: string;
 }
 
-export interface EventRsvpSubject {
-  /** null = l'utente stesso; altrimenti l'id del figlio. */
-  childId: string | null;
-  name: string;
-  status?: Status;
-  selectedOptionIds?: string[];
-  note?: string | null;
-}
-
 interface EventRsvpProps {
   eventId: string;
   isLoggedIn: boolean;
   isPast: boolean;
-  subjects: EventRsvpSubject[];
+  /** La famiglia di chi guarda (io per primo), con le risposte gia' date. */
+  members: MemberRsvp[];
+  /** Gli esterni aggiunti da chi guarda: gli altri della famiglia non li vedono. */
+  guests: GuestRsvp[];
   options: EventOptionView[];
-  initialCounts: { GOING: number; MAYBE: number; NOT_GOING: number };
+  allowGuests: boolean;
+  maxGuests: number | null;
+  initialGoing: number;
 }
 
 const STATUS_OPTIONS: {
@@ -61,15 +65,16 @@ const STATUS_OPTIONS: {
   { value: "NOT_GOING", icon: <CancelIcon fontSize="small" />, color: "error" },
 ];
 
-// Ci sarò / Forse / Non ci sarò: gli stessi bottoni con e senza opzioni.
+// Ci sarò / Forse / Non ci sarò. Ripremere lo stato scelto lo toglie: la
+// persona torna "senza risposta".
 function StatusButtons({
   value,
   disabled,
-  onSelect,
+  onChange,
 }: {
-  value: Status | undefined;
+  value: Status | null;
   disabled: boolean;
-  onSelect: (status: Status) => void;
+  onChange: (status: Status | null) => void;
 }) {
   const t = useTranslations("events");
   const label = (s: Status) =>
@@ -87,7 +92,7 @@ function StatusButtons({
             startIcon={opt.icon}
             disabled={disabled}
             aria-pressed={selected}
-            onClick={() => onSelect(opt.value)}
+            onClick={() => onChange(selected ? null : opt.value)}
             sx={{ fontWeight: 700, borderRadius: 2, textTransform: "none" }}
           >
             {label(opt.value)}
@@ -98,187 +103,353 @@ function StatusButtons({
   );
 }
 
-// ── Modalità "opzioni": presenza all'evento + extra + note, un solo salvataggio ──
-// Presenza e opzioni sono indipendenti: si può venire all'evento senza il
-// pranzo, o solo al pranzo senza l'evento.
-function SubjectOptionsForm({
-  eventId,
-  subject,
-  options,
-  onStatusSaved,
+// Stato del modulo: una riga per persona della famiglia e una per esterno.
+interface PersonDraft {
+  status: Status | null;
+  optionIds: string[];
+  note: string;
+  noteOpen: boolean;
+}
+interface GuestDraft extends Omit<PersonDraft, "status"> {
+  /** Chiave locale stabile anche per gli esterni non ancora salvati. */
+  localKey: string;
+  id?: string;
+  name: string;
+  status: Status;
+}
+
+const toPeople = (members: MemberRsvp[]) =>
+  Object.fromEntries(
+    members.map((m) => [
+      m.key,
+      { status: m.status, optionIds: m.optionIds, note: m.note ?? "", noteOpen: !!m.note },
+    ])
+  ) as Record<string, PersonDraft>;
+
+const toGuests = (guests: GuestRsvp[]): GuestDraft[] =>
+  guests.map((g) => ({
+    localKey: g.id,
+    id: g.id,
+    name: g.name ?? "",
+    status: g.status,
+    optionIds: g.optionIds,
+    note: g.note ?? "",
+    noteOpen: !!g.note,
+  }));
+
+function NoteField({
+  open,
+  value,
+  disabled,
+  onOpen,
+  onChange,
 }: {
-  eventId: string;
-  subject: EventRsvpSubject;
-  options: EventOptionView[];
-  onStatusSaved: (prev: Status | undefined, next: Status) => void;
+  open: boolean;
+  value: string;
+  disabled: boolean;
+  onOpen: () => void;
+  onChange: (v: string) => void;
+}) {
+  const t = useTranslations("events");
+  if (!open) {
+    return (
+      <Button
+        size="small"
+        startIcon={<StickyNote2OutlinedIcon fontSize="small" />}
+        onClick={onOpen}
+        disabled={disabled}
+        sx={{ alignSelf: "flex-start", textTransform: "none", color: "text.secondary" }}
+      >
+        {t("addNote")}
+      </Button>
+    );
+  }
+  return (
+    <TextField
+      fullWidth
+      size="small"
+      multiline
+      minRows={1}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={t("notePlaceholder")}
+      disabled={disabled}
+    />
+  );
+}
+
+function RsvpForm({
+  eventId,
+  members: initialMembers,
+  guests: initialGuests,
+  options,
+  allowGuests,
+  maxGuests,
+  onGoingChange,
+}: Omit<EventRsvpProps, "isLoggedIn" | "isPast" | "initialGoing"> & {
+  onGoingChange: (going: number) => void;
 }) {
   const t = useTranslations("events");
   const { showToast } = useToast();
   const dl = useActiveDateLocale();
-  const [status, setStatus] = useState<Status | undefined>(subject.status);
-  const [savedStatus, setSavedStatus] = useState<Status | undefined>(subject.status);
-  const [selected, setSelected] = useState<Set<string>>(
-    () => new Set(subject.selectedOptionIds ?? [])
+  const [members, setMembers] = useState(initialMembers);
+  const [people, setPeople] = useState(() => toPeople(initialMembers));
+  const [guests, setGuests] = useState(() => toGuests(initialGuests));
+  const [nextGuest, setNextGuest] = useState(1);
+
+  const guestLabel = (g: GuestDraft, i: number) =>
+    g.name.trim() || t("guestFallback", { n: i + 1 });
+  const canAddGuest = allowGuests && (maxGuests === null || guests.length < maxGuests);
+
+  const setPerson = (key: string, patch: Partial<PersonDraft>) =>
+    setPeople((p) => ({ ...p, [key]: { ...p[key], ...patch } }));
+  const setGuest = (localKey: string, patch: Partial<GuestDraft>) =>
+    setGuests((gs) => gs.map((g) => (g.localKey === localKey ? { ...g, ...patch } : g)));
+  const toggle = (list: string[], id: string) =>
+    list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+
+  // Chi ha spuntato un extra deve dire anche se viene all'evento
+  // ("solo pranzo" = Non ci sarò + Pranzo).
+  const missingStatus = members.find(
+    (m) => !people[m.key].status && people[m.key].optionIds.length > 0
   );
-  const [note, setNote] = useState(subject.note ?? "");
 
   const mutation = useMutation({
-    mutationFn: async (next: Status) => {
-      const res = await fetch(`/api/events/${eventId}/selections`, {
+    mutationFn: async () => {
+      const res = await fetch(`/api/events/${eventId}/rsvp`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: next,
-          optionIds: [...selected],
-          childId: subject.childId ?? undefined,
-          note: note.trim() || null,
+          people: members.map((m) => ({
+            key: m.key,
+            status: people[m.key].status,
+            optionIds: people[m.key].optionIds,
+            note: people[m.key].note.trim() || null,
+          })),
+          guests: guests.map((g) => ({
+            id: g.id,
+            name: g.name.trim() || null,
+            status: g.status,
+            optionIds: g.optionIds,
+            note: g.note.trim() || null,
+          })),
         }),
       });
       if (!res.ok) throw new Error(await readError(res));
-      return next;
+      return (await res.json()) as { members: MemberRsvp[]; guests: GuestRsvp[]; going: number };
     },
-    onSuccess: (next) => {
-      onStatusSaved(savedStatus, next);
-      setSavedStatus(next);
+    onSuccess: (state) => {
+      // Si riparte dallo stato salvato: id degli esterni nuovi, "risposto da".
+      setMembers(state.members);
+      setPeople(toPeople(state.members));
+      setGuests(toGuests(state.guests));
+      onGoingChange(state.going);
       showToast({ message: t("saved"), severity: "success" });
     },
-    // L'errore resta sotto "Salva" di questo partecipante (UX-25).
+    // L'errore resta sotto "Salva" (UX-25).
   });
+  const busy = mutation.isPending;
 
-  const toggle = (id: string) =>
-    setSelected((s) => {
-      const next = new Set(s);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const everyone = [
+    ...members.map((m) => ({
+      key: m.key as string,
+      label: m.isSelf ? t("me") : m.name,
+      checked: (id: string) => people[m.key].optionIds.includes(id),
+      onToggle: (id: string) =>
+        setPerson(m.key, { optionIds: toggle(people[m.key].optionIds, id) }),
+    })),
+    ...guests.map((g, i) => ({
+      key: g.localKey,
+      label: guestLabel(g, i),
+      checked: (id: string) => g.optionIds.includes(id),
+      onToggle: (id: string) => setGuest(g.localKey, { optionIds: toggle(g.optionIds, id) }),
+    })),
+  ];
 
   return (
-    <Box>
-      <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
-        {subject.childId ? subject.name : t("me")}
-      </Typography>
-      <StatusButtons value={status} disabled={mutation.isPending} onSelect={setStatus} />
-
-      <Typography
-        variant="caption"
-        color="text.secondary"
-        fontWeight={700}
-        sx={{ display: "block", mt: 2 }}
-      >
-        {t("optionsHint")}
-      </Typography>
-      <FormGroup>
-        {options.map((o) => (
-          <FormControlLabel
-            key={o.id}
-            control={
-              <Checkbox
-                checked={selected.has(o.id)}
-                onChange={() => toggle(o.id)}
-                disabled={mutation.isPending}
-              />
-            }
-            label={
-              <Box component="span">
-                {o.label}
-                {o.startsAt && (
-                  <Typography
-                    component="span"
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ ml: 1 }}
-                  >
-                    {formatRome(o.startsAt, "EEE d MMM, HH:mm", { locale: dl })}
+    <Stack spacing={3}>
+      {/* ── All'evento ── */}
+      <Stack spacing={2} divider={<Divider flexItem />}>
+        {members.map((m) => {
+          const p = people[m.key];
+          return (
+            <Stack key={m.key} spacing={1}>
+              <Box>
+                <Typography variant="subtitle2" fontWeight={800}>
+                  {m.isSelf ? t("me") : m.name}
+                </Typography>
+                {m.respondedByName && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t("respondedBy", { name: m.respondedByName })}
                   </Typography>
                 )}
               </Box>
-            }
-          />
+              <StatusButtons
+                value={p.status}
+                disabled={busy}
+                onChange={(status) => setPerson(m.key, { status })}
+              />
+              <NoteField
+                open={p.noteOpen}
+                value={p.note}
+                disabled={busy}
+                onOpen={() => setPerson(m.key, { noteOpen: true })}
+                onChange={(note) => setPerson(m.key, { note })}
+              />
+            </Stack>
+          );
+        })}
+
+        {guests.map((g, i) => (
+          <Stack key={g.localKey} spacing={1}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <TextField
+                size="small"
+                value={g.name}
+                onChange={(e) => setGuest(g.localKey, { name: e.target.value })}
+                placeholder={t("guestFallback", { n: i + 1 })}
+                label={t("guestName")}
+                disabled={busy}
+                slotProps={{ htmlInput: { maxLength: 80 } }}
+                sx={{ flex: 1, maxWidth: 320 }}
+              />
+              <Tooltip title={t("removeGuest", { name: guestLabel(g, i) })}>
+                <IconButton
+                  aria-label={t("removeGuest", { name: guestLabel(g, i) })}
+                  onClick={() => setGuests((gs) => gs.filter((x) => x.localKey !== g.localKey))}
+                  disabled={busy}
+                  sx={TOUCH_TARGET_MIN}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            {/* Un esterno si aggiunge per portarlo: niente "senza risposta". */}
+            <StatusButtons
+              value={g.status}
+              disabled={busy}
+              onChange={(status) => status && setGuest(g.localKey, { status })}
+            />
+            <NoteField
+              open={g.noteOpen}
+              value={g.note}
+              disabled={busy}
+              onOpen={() => setGuest(g.localKey, { noteOpen: true })}
+              onChange={(note) => setGuest(g.localKey, { note })}
+            />
+          </Stack>
         ))}
-      </FormGroup>
-      <TextField
-        fullWidth
-        size="small"
-        multiline
-        minRows={1}
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        placeholder={t("notePlaceholder")}
-        sx={{ mt: 1 }}
-      />
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.5, flexWrap: "wrap" }}>
+      </Stack>
+
+      {allowGuests && (
+        <Box>
+          {canAddGuest && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<PersonAddAltIcon />}
+              disabled={busy}
+              onClick={() => {
+                setGuests((gs) => [
+                  ...gs,
+                  {
+                    localKey: `new-${nextGuest}`,
+                    name: "",
+                    status: "GOING",
+                    optionIds: [],
+                    note: "",
+                    noteOpen: false,
+                  },
+                ]);
+                setNextGuest((n) => n + 1);
+              }}
+              sx={{ fontWeight: 700, borderRadius: 2, textTransform: "none" }}
+            >
+              {t("addGuest")}
+            </Button>
+          )}
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75 }}>
+            {t("guestsHint")}
+          </Typography>
+        </Box>
+      )}
+
+      {/* ── Extra: chi partecipa a ciascuno. Il totale lo danno le spunte. ── */}
+      {options.length > 0 && (
+        <Stack spacing={2}>
+          <Typography variant="caption" color="text.secondary" fontWeight={700}>
+            {t("optionsHint")}
+          </Typography>
+          {options.map((o) => {
+            const count = everyone.filter((e) => e.checked(o.id)).length;
+            return (
+              <Box key={o.id}>
+                <Typography variant="subtitle2" fontWeight={800}>
+                  {o.label}
+                  <Typography component="span" variant="body2" color="text.secondary">
+                    {" · "}
+                    {t("optionCount", { count })}
+                  </Typography>
+                </Typography>
+                {o.startsAt && (
+                  <Typography variant="caption" color="text.secondary">
+                    {formatRome(o.startsAt, "EEE d MMM, HH:mm", { locale: dl })}
+                  </Typography>
+                )}
+                <FormGroup row>
+                  {everyone.map((e) => (
+                    <FormControlLabel
+                      key={e.key}
+                      control={
+                        <Checkbox
+                          checked={e.checked(o.id)}
+                          onChange={() => e.onToggle(o.id)}
+                          disabled={busy}
+                        />
+                      }
+                      label={e.label}
+                    />
+                  ))}
+                </FormGroup>
+              </Box>
+            );
+          })}
+        </Stack>
+      )}
+
+      <Box>
         <Button
           variant="contained"
-          size="small"
-          disabled={mutation.isPending || !status}
-          onClick={() => status && mutation.mutate(status)}
+          disabled={busy || !!missingStatus}
+          onClick={() => mutation.mutate()}
           sx={{ fontWeight: 700, borderRadius: 2 }}
         >
           {t("save")}
         </Button>
-        {/* Senza uno stato non si salva: "solo pranzo" e' "Non ci saro'" + Pranzo. */}
-        {!status && (
-          <Typography variant="caption" color="text.secondary">
-            {t("chooseStatusFirst")}
+        {missingStatus && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.75 }}>
+            {missingStatus.isSelf
+              ? t("statusNeededSelf")
+              : t("statusNeeded", { name: missingStatus.name })}
           </Typography>
         )}
+        {mutation.isError && (
+          <InlineError
+            title={t("rsvpNotSaved")}
+            message={mutation.error instanceof Error ? mutation.error.message : t("saveError")}
+            onRetry={() => mutation.mutate()}
+            onClose={() => mutation.reset()}
+            retrying={busy}
+          />
+        )}
       </Box>
-      {mutation.isError && (
-        <InlineError
-          title={t("rsvpNotSaved")}
-          message={mutation.error instanceof Error ? mutation.error.message : t("saveError")}
-          onRetry={() => status && mutation.mutate(status)}
-          onClose={() => mutation.reset()}
-          retrying={mutation.isPending}
-        />
-      )}
-    </Box>
+    </Stack>
   );
 }
 
-export default function EventRsvp({
-  eventId,
-  isLoggedIn,
-  isPast,
-  subjects,
-  options,
-  initialCounts,
-}: EventRsvpProps) {
+export default function EventRsvp({ isLoggedIn, isPast, initialGoing, ...form }: EventRsvpProps) {
   const t = useTranslations("events");
-  const { showToast } = useToast();
-  const hasOptions = options.length > 0;
-  const [statuses, setStatuses] = useState<Record<string, Status | undefined>>(() =>
-    Object.fromEntries(subjects.map((s) => [s.childId ?? "self", s.status]))
-  );
-  const [goingCount, setGoingCount] = useState(initialCounts.GOING);
-
-  const statusMutation = useMutation({
-    mutationFn: async (vars: { childId: string | null; status: Status }) => {
-      const res = await fetch(`/api/events/${eventId}/attendance`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: vars.status, childId: vars.childId ?? undefined }),
-      });
-      if (!res.ok) throw new Error(await readError(res));
-      return vars;
-    },
-    onSuccess: ({ childId, status }) => {
-      const key = childId ?? "self";
-      const prev = statuses[key];
-      setStatuses((s) => ({ ...s, [key]: status }));
-      setGoingCount((c) => c + (status === "GOING" ? 1 : 0) - (prev === "GOING" ? 1 : 0));
-      showToast({ message: t("saved"), severity: "success" });
-    },
-    // L'errore resta sotto i bottoni della persona a cui si riferisce (UX-25).
-    onError: (err, vars) =>
-      setFailure({ vars, message: err instanceof Error ? err.message : t("saveError") }),
-    onMutate: () => setFailure(null),
-  });
-  const [failure, setFailure] = useState<{
-    vars: { childId: string | null; status: Status };
-    message: string;
-  } | null>(null);
+  const [goingCount, setGoingCount] = useState(initialGoing);
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
@@ -312,55 +483,8 @@ export default function EventRsvp({
         <Typography variant="body2" color="text.secondary">
           {t("rsvpClosed")}
         </Typography>
-      ) : hasOptions ? (
-        <Stack spacing={2.5} divider={<Divider flexItem />}>
-          {subjects.map((subj) => (
-            <SubjectOptionsForm
-              key={subj.childId ?? "self"}
-              eventId={eventId}
-              subject={subj}
-              options={options}
-              onStatusSaved={(prev, next) =>
-                setGoingCount((c) => c + (next === "GOING" ? 1 : 0) - (prev === "GOING" ? 1 : 0))
-              }
-            />
-          ))}
-        </Stack>
       ) : (
-        <Stack spacing={2}>
-          {subjects.map((subj) => {
-            const key = subj.childId ?? "self";
-            const current = statuses[key];
-            return (
-              <Box key={key}>
-                {subjects.length > 1 && (
-                  <Typography
-                    variant="caption"
-                    fontWeight={700}
-                    color="text.secondary"
-                    sx={{ display: "block", mb: 0.5 }}
-                  >
-                    {subj.childId ? subj.name : t("me")}
-                  </Typography>
-                )}
-                <StatusButtons
-                  value={current}
-                  disabled={statusMutation.isPending}
-                  onSelect={(status) => statusMutation.mutate({ childId: subj.childId, status })}
-                />
-                {failure && (failure.vars.childId ?? "self") === key && (
-                  <InlineError
-                    title={t("rsvpNotSaved")}
-                    message={failure.message}
-                    onRetry={() => statusMutation.mutate(failure.vars)}
-                    onClose={() => setFailure(null)}
-                    retrying={statusMutation.isPending}
-                  />
-                )}
-              </Box>
-            );
-          })}
-        </Stack>
+        <RsvpForm {...form} onGoingChange={setGoingCount} />
       )}
     </Paper>
   );

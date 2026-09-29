@@ -8,11 +8,12 @@ import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import EventPoster from "@/components/common/EventPoster";
-import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
+import EventRsvp from "@/components/common/EventRsvp";
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
-import { guardianOf } from "@/lib/guardians";
+import { loadFamily } from "@/lib/eventFamily";
+import { loadFamilyRsvp } from "@/lib/eventRsvp";
 
 export const revalidate = 0;
 
@@ -30,6 +31,8 @@ async function findEvent(slug: string) {
       location: true,
       description: true,
       imageUrl: true,
+      allowGuests: true,
+      maxGuests: true,
       options: {
         orderBy: [{ order: "asc" as const }, { startsAt: "asc" as const }],
         select: { id: true, label: true, startsAt: true, kind: true },
@@ -61,90 +64,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EventoPage({ params }: Props) {
   const { slug } = await params;
-  const [t, locale, ev, session] = await Promise.all([
-    getTranslations("events"),
-    getLocale(),
-    findEvent(slug),
-    auth(),
-  ]);
+  const [locale, ev, session] = await Promise.all([getLocale(), findEvent(slug), auth()]);
   if (!ev) notFound();
 
   const isStaff = !!session?.user?.appRole && hasRole(session.user.appRole, "COACH");
   const isPast = isEventPast(ev);
 
-  // Sessione + figli per il RSVP
+  // RSVP: la famiglia di chi guarda (risponde uno per tutti) e i suoi esterni.
+  // La famiglia serve prima delle risposte, ma il conteggio parte subito.
   const userId = session?.user?.id ?? null;
   const optionIds = ev.options.map((o) => o.id);
-
-  // Figli + conteggi + risposte proprie (status/note) + selezioni opzioni
-  // proprie, tutto insieme: le righe dei figli si filtrano sulla relazione
-  // (`guardianOf`) invece di aspettare prima la lista dei loro id.
-  const [children, grouped, mine, mySelections] = await Promise.all([
-    userId
-      ? prisma.child.findMany({
-          where: guardianOf(userId),
-          orderBy: { createdAt: "asc" },
-          select: { id: true, name: true },
-        })
-      : [],
-    prisma.eventAttendance.groupBy({
-      by: ["status"],
-      where: { eventId: ev.id },
-      _count: { _all: true },
-    }),
-    userId
-      ? prisma.eventAttendance.findMany({
-          where: {
-            eventId: ev.id,
-            OR: [{ userId }, { child: guardianOf(userId) }],
-          },
-          select: { userId: true, childId: true, status: true, note: true },
-        })
-      : [],
-    userId && optionIds.length > 0
-      ? prisma.eventOptionSelection.findMany({
-          where: {
-            optionId: { in: optionIds },
-            OR: [{ userId }, { child: guardianOf(userId) }],
-          },
-          select: { optionId: true, userId: true, childId: true },
-        })
-      : [],
+  const [family, going] = await Promise.all([
+    userId ? loadFamily(userId) : [],
+    prisma.eventAttendance.count({ where: { eventId: ev.id, status: "GOING" } }),
   ]);
-
-  const counts = { GOING: 0, MAYBE: 0, NOT_GOING: 0 };
-  for (const g of grouped) counts[g.status] = g._count._all;
-
-  const statusByKey = new Map<string, "GOING" | "MAYBE" | "NOT_GOING">();
-  const noteByKey = new Map<string, string | null>();
-  for (const a of mine) {
-    statusByKey.set(a.childId ?? "self", a.status);
-    noteByKey.set(a.childId ?? "self", a.note);
-  }
-  const selByKey = new Map<string, string[]>();
-  for (const s of mySelections) {
-    const k = s.childId ?? "self";
-    selByKey.set(k, [...(selByKey.get(k) ?? []), s.optionId]);
-  }
-
-  const subjects: EventRsvpSubject[] = userId
-    ? [
-        {
-          childId: null,
-          name: session!.user!.name ?? t("me"),
-          status: statusByKey.get("self"),
-          selectedOptionIds: selByKey.get("self") ?? [],
-          note: noteByKey.get("self") ?? null,
-        },
-        ...children.map((c) => ({
-          childId: c.id,
-          name: c.name,
-          status: statusByKey.get(c.id),
-          selectedOptionIds: selByKey.get(c.id) ?? [],
-          note: noteByKey.get(c.id) ?? null,
-        })),
-      ]
-    : [];
+  const rsvp = userId
+    ? await loadFamilyRsvp(ev.id, userId, family, optionIds)
+    : { members: [], guests: [] };
 
   const optionsView = ev.options.map((o) => ({
     id: o.id,
@@ -209,9 +145,12 @@ export default async function EventoPage({ params }: Props) {
               eventId={ev.id}
               isLoggedIn={!!userId}
               isPast={isPast}
-              subjects={subjects}
+              members={rsvp.members}
+              guests={rsvp.guests}
               options={optionsView}
-              initialCounts={counts}
+              allowGuests={ev.allowGuests}
+              maxGuests={ev.maxGuests}
+              initialGoing={going}
             />
           </Stack>
 

@@ -51,6 +51,8 @@ export async function PUT(req: Request, { params }: Params) {
         ...(body.location !== undefined && { location: body.location?.trim() || null }),
         ...(body.description !== undefined && { description: body.description?.trim() || null }),
         ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
+        ...(body.allowGuests !== undefined && { allowGuests: body.allowGuests }),
+        ...(body.maxGuests !== undefined && { maxGuests: body.maxGuests }),
       },
     });
     if (session?.user?.id) {

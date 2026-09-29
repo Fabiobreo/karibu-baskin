@@ -16,7 +16,11 @@
  *   - un atleta di prova e due allenamenti passati con iscrizioni anonime al
  *     suo nome ("Ti riconosco!" in /profilo confronta il nome, non l'email);
  *   - due partite future, di sabato, con avversarie dal nome lungo;
- *   - un evento futuro con risposta Ci sarò/Forse/No (UX-25).
+ *   - un evento futuro con risposta Ci sarò/Forse/No (UX-25), con un "Pranzo" e
+ *     gli esterni ammessi (massimo 2);
+ *   - una famiglia per la risposta "uno per tutti": due genitori dello stesso
+ *     figlio e una figlia adulta con un suo account e una scheda figlio legata
+ *     a entrambi (come un atleta figlio di tesserati).
  *
  * Per entrare come gli utenti di prova serve `ENABLE_TEST_LOGIN=true`: il
  * login di test in /login accetta le email qui sotto.
@@ -31,6 +35,9 @@ const UX_EMAIL_DOMAIN = "@ux.test";
 const UX_MARKER = "[UX]";
 
 const PARENT = { email: `genitore${UX_EMAIL_DOMAIN}`, name: "Paola Provini" };
+const PARENT2 = { email: `genitore2${UX_EMAIL_DOMAIN}`, name: "Marco Provini" };
+const ADULT_CHILD = { email: `figlia${UX_EMAIL_DOMAIN}`, name: "Giulia Provini" };
+const ADULT_CHILD_ID = "ux-child-adult";
 const ATHLETE = { email: `atleta${UX_EMAIL_DOMAIN}`, name: "Luca Riconoscimento" };
 const CHILD_ID = "ux-child";
 
@@ -42,6 +49,7 @@ const OPPONENTS = [
 ];
 const MATCHES = ["ux-match-1", "ux-match-2"];
 const EVENT_ID = "ux-event";
+const EVENT_LUNCH_ID = "ux-event-lunch";
 
 // ─── Date ───────────────────────────────────────────────────────────────────
 
@@ -130,6 +138,41 @@ async function seed() {
     create: { childId: CHILD_ID, userId: parent.id },
     update: {},
   });
+  // Famiglia per l'RSVP "uno per tutti": secondo genitore e figlia adulta con
+  // account, la cui scheda figlio e' legata al suo account e a entrambi.
+  const parent2 = await prisma.user.upsert({
+    where: { email: PARENT2.email },
+    create: { ...PARENT2, appRole: "PARENT" },
+    update: { name: PARENT2.name, appRole: "PARENT" },
+  });
+  const adultChildUser = await prisma.user.upsert({
+    where: { email: ADULT_CHILD.email },
+    create: { ...ADULT_CHILD, appRole: "ATHLETE", sportRole: 4, gender: "FEMALE" },
+    update: { name: ADULT_CHILD.name, appRole: "ATHLETE" },
+  });
+  const adultChild = {
+    name: ADULT_CHILD.name,
+    gender: "FEMALE" as const,
+    birthDate: new Date("2001-03-02"),
+    userId: adultChildUser.id,
+  };
+  await prisma.child.upsert({
+    where: { id: ADULT_CHILD_ID },
+    create: { id: ADULT_CHILD_ID, ...adultChild },
+    update: adultChild,
+  });
+  for (const [childId, userId] of [
+    [CHILD_ID, parent2.id],
+    [ADULT_CHILD_ID, parent.id],
+    [ADULT_CHILD_ID, parent2.id],
+  ]) {
+    await prisma.childGuardian.upsert({
+      where: { childId_userId: { childId, userId } },
+      create: { childId, userId },
+      update: {},
+    });
+  }
+
   // Se una prova precedente ha iscritto il figlio, si riparte da zero.
   await prisma.registration.deleteMany({ where: { childId: CHILD_ID } });
 
@@ -198,6 +241,8 @@ async function seed() {
     slug: "ux-evento-di-prova",
     date: saturdayAfter(12, 10),
     description: "Evento per provare la risposta Ci sarò / Forse / No.",
+    allowGuests: true,
+    maxGuests: 2,
   };
   await prisma.event.upsert({
     where: { id: EVENT_ID },
@@ -209,13 +254,26 @@ async function seed() {
     where: { sessionId: TRAINING_OPEN, userId: { in: [parent.id, athlete.id] } },
   });
   await prisma.eventAttendance.deleteMany({ where: { eventId: EVENT_ID } });
+  await prisma.eventGuest.deleteMany({ where: { eventId: EVENT_ID } });
+  // Solo il pranzo di prova: le opzioni aggiunte a mano nelle prove si tolgono.
+  await prisma.eventOption.deleteMany({
+    where: { eventId: EVENT_ID, id: { not: EVENT_LUNCH_ID } },
+  });
+  const lunch = { eventId: EVENT_ID, label: "Pranzo", kind: "PASTO" as const, order: 0 };
+  await prisma.eventOption.upsert({
+    where: { id: EVENT_LUNCH_ID },
+    create: { id: EVENT_LUNCH_ID, ...lunch },
+    update: lunch,
+  });
+  await prisma.eventOptionSelection.deleteMany({ where: { optionId: EVENT_LUNCH_ID } });
 
   console.log("Dati di prova UX pronti:");
   console.log(`  genitore      ${PARENT.email} (figlio senza ruolo: ${child.name})`);
+  console.log(`  famiglia      ${PARENT2.email}, ${ADULT_CHILD.email} (stessa famiglia)`);
   console.log(`  atleta        ${ATHLETE.email} (2 iscrizioni anonime da collegare in /profilo)`);
   console.log(`  allenamento   /allenamento/${open.dateSlug}`);
   console.log(`  partite       ${MATCHES.length} contro avversarie "[UX]", squadra ${team.name}`);
-  console.log(`  evento       /eventi/${event.slug}`);
+  console.log(`  evento        /eventi/${event.slug} (Pranzo, esterni ammessi)`);
   console.log(`  utenti id     ${parent.id}, ${athlete.id}`);
 }
 
@@ -239,7 +297,7 @@ async function clean() {
       OR: [
         { sessionId: { in: trainingIds } },
         { userId: { in: userIds } },
-        { childId: CHILD_ID },
+        { childId: { in: [CHILD_ID, ADULT_CHILD_ID] } },
         { anonymousEmail: { endsWith: UX_EMAIL_DOMAIN } },
       ],
     },
@@ -255,7 +313,9 @@ async function clean() {
       OR: [{ id: { in: OPPONENTS.map((o) => o.id) } }, { name: { startsWith: UX_MARKER } }],
     },
   });
-  const children = await prisma.child.deleteMany({ where: { id: CHILD_ID } });
+  const children = await prisma.child.deleteMany({
+    where: { id: { in: [CHILD_ID, ADULT_CHILD_ID] } },
+  });
   const events = await prisma.event.deleteMany({
     where: { OR: [{ id: EVENT_ID }, { title: { startsWith: UX_MARKER } }] },
   });

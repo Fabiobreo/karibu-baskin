@@ -46,6 +46,8 @@ export async function POST(req: Request) {
       location: body.location?.trim() || null,
       description: body.description?.trim() || null,
       imageUrl: body.imageUrl ?? null,
+      allowGuests: body.allowGuests ?? false,
+      maxGuests: body.allowGuests ? (body.maxGuests ?? null) : null,
     },
   });
 

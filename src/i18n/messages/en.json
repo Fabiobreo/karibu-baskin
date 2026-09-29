@@ -759,11 +759,20 @@
     "rsvpNotSaved": "Reply not saved.",
     "save": "Save",
     "notePlaceholder": "Notes (allergies, needs…)",
-    "optionsHint": "Also tick what you'll join (optional)",
-    "chooseStatusFirst": "First choose whether you will attend the event.",
     "manage": "Manage",
     "manageAll": "Manage events",
-    "manageOne": "Manage {title} in admin"
+    "manageOne": "Manage {title} in admin",
+    "optionsHint": "Who joins the extras (optional)",
+    "addNote": "Add a note",
+    "respondedBy": "Answered by {name}",
+    "guestName": "Guest",
+    "guestFallback": "Guest {n}",
+    "addGuest": "Add a guest",
+    "removeGuest": "Remove {name}",
+    "guestsHint": "For people who are not on the app. Only you can see your guests.",
+    "optionCount": "{count, plural, =0 {nobody} one {# person} other {# people}}",
+    "statusNeeded": "Say whether {name} is attending the event.",
+    "statusNeededSelf": "Say whether you are attending the event."
   },
   "search": {
     "open": "Search",

@@ -22,6 +22,8 @@ import {
   TablePagination,
   MenuItem,
   Divider,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -55,6 +57,8 @@ type Event = {
   location?: string | null;
   description?: string | null;
   imageUrl?: string | null;
+  allowGuests?: boolean;
+  maxGuests?: number | null;
   options?: EventOptionRow[];
 };
 
@@ -87,6 +91,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>([]);
+  const [allowGuests, setAllowGuests] = useState(false);
+  // Stringa per l'input numerico: "" = nessun limite.
+  const [maxGuests, setMaxGuests] = useState("");
   const [, startTransition] = useTransition();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useRowsPerPage("events", [10, 25, 50], 10);
@@ -106,6 +113,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
     setEditingId(null);
     setImageUrl(null);
     setOptionDrafts([]);
+    setAllowGuests(false);
+    setMaxGuests("");
     reset({ title: "", date: "", endDate: "", location: "", description: "" });
     setDialogOpen(true);
   };
@@ -113,6 +122,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const openEdit = (ev: Event) => {
     setEditingId(ev.id);
     setImageUrl(ev.imageUrl ?? null);
+    setAllowGuests(!!ev.allowGuests);
+    setMaxGuests(ev.maxGuests ? String(ev.maxGuests) : "");
     setOptionDrafts(
       (ev.options ?? []).map((o) => ({
         id: o.id,
@@ -157,6 +168,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
       location: values.location?.trim() || null,
       description: values.description?.trim() || null,
       imageUrl: imageUrl ?? null,
+      allowGuests,
+      maxGuests: allowGuests && maxGuests ? Number(maxGuests) : null,
     };
 
     const res = editingId
@@ -469,9 +482,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                   color="text.secondary"
                   sx={{ display: "block", mb: 1.5 }}
                 >
-                  Facoltative. Se aggiungi opzioni (es. &quot;Sabato mattina&quot;, &quot;Pranzo
-                  domenica&quot;), i partecipanti spuntano a cosa partecipano invece del semplice
-                  &quot;Ci sarò&quot;.
+                  Facoltative (es. &quot;Sabato mattina&quot;, &quot;Pranzo domenica&quot;). Chi
+                  risponde dice se viene all&apos;evento e, a parte, spunta le opzioni: si può
+                  venire all&apos;evento senza il pranzo, o solo al pranzo.
                 </Typography>
                 <Stack spacing={1.5}>
                   {optionDrafts.map((o, i) => (
@@ -523,6 +536,45 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                     Aggiungi opzione
                   </Button>
                 </Stack>
+              </Box>
+
+              <Divider />
+
+              {/* Esterni (+1): chi non è nell'app, portato da chi risponde */}
+              <Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={allowGuests}
+                      onChange={(e) => setAllowGuests(e.target.checked)}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" fontWeight={600}>
+                      Esterni ammessi
+                    </Typography>
+                  }
+                />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mb: allowGuests ? 1.5 : 0 }}
+                >
+                  Chi risponde può aggiungere persone che non sono nell&apos;app (la ragazza, i
+                  nonni). I famigliari collegati nell&apos;app non servono: compaiono già.
+                </Typography>
+                {allowGuests && (
+                  <TextField
+                    label="Massimo per persona"
+                    type="number"
+                    size="small"
+                    value={maxGuests}
+                    onChange={(e) => setMaxGuests(e.target.value)}
+                    helperText="Vuoto = nessun limite"
+                    slotProps={{ htmlInput: { min: 1, max: 20 } }}
+                    sx={{ width: 200 }}
+                  />
+                )}
               </Box>
             </Stack>
           </DialogContent>

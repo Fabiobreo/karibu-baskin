@@ -6,6 +6,9 @@ const EventBaseSchema = z.object({
   location: z.string().max(200).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
   imageUrl: z.string().url().nullable().optional(),
+  // Esterni (+1): ammessi o no, e quanti al massimo per chi risponde.
+  allowGuests: z.boolean().optional(),
+  maxGuests: z.number().int().min(1).max(20).nullable().optional(),
 });
 
 export const EventCreateSchema = EventBaseSchema.extend({
@@ -54,4 +57,33 @@ export const EventSelectionsSchema = z.object({
   optionIds: z.array(z.string()).max(50),
   childId: z.string().optional(),
   note: z.string().max(500).nullable().optional(),
+});
+
+// Risposta di una famiglia (PUT /api/events/[eventId]/rsvp): una voce per
+// persona della famiglia (`key` da `eventFamily`) e gli esterni di chi
+// risponde, che sostituiscono in blocco quelli salvati.
+const RsvpNoteSchema = z.string().max(500).nullable().optional();
+
+export const EventRsvpSchema = z.object({
+  people: z
+    .array(
+      z.object({
+        key: z.string().regex(/^[uc]:.+$/, "Persona non valida"),
+        status: AttendanceStatusSchema.nullable(),
+        optionIds: z.array(z.string()).max(50),
+        note: RsvpNoteSchema,
+      })
+    )
+    .max(30),
+  guests: z
+    .array(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().max(80).nullable().optional(),
+        status: AttendanceStatusSchema,
+        optionIds: z.array(z.string()).max(50),
+        note: RsvpNoteSchema,
+      })
+    )
+    .max(20),
 });
