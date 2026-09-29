@@ -6,6 +6,7 @@ Audit grafico, UX e di usabilità del sito, con contro-revisione di tre revisori
 - [tickets/](tickets/): un file per ticket, autosufficiente (si può implementare senza aver letto l'audit).
 - [img/](img/): tavole di confronto per le decisioni visive.
 - [RIAUDIT.md](RIAUDIT.md): voti e misure del 24/09, metodo e script ([misure/](misure/)) per rifare l'audit e capire se il sito è migliorato.
+- [RIAUDIT-2026-09-29.md](RIAUDIT-2026-09-29.md): primo riaudit (voti, compiti, misure, verifica dei ticket, problemi aperti e proposta di ondata 4).
 
 ## Decisioni già prese
 
@@ -77,11 +78,34 @@ Raccoglie i "Rimasto fuori" dei ticket precedenti e un difetto trovato durante l
 
 UX-21 aspetta il club; per UX-28 è stata scelta l'opzione B. UX-26 conviene farlo presto, perché sblocca le prove nel browser rimaste in sospeso per UX-06, UX-14 e UX-17.
 
+### Ondata 4 · Coerenza del sistema (dal riaudit del 29/09)
+
+Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono migliorati molto, i voti di aspetto e coerenza no. Riprende due parcheggiati (componenti di layout e shell admin) e corregge le ricadute di UX-06, UX-15, UX-16 e UX-19. Ordine consigliato: prima il sistema (29-32), poi le pagine.
+
+| Ticket                                            | Titolo                                                                         | Stima | Dipende da   |
+| ------------------------------------------------- | ------------------------------------------------------------------------------ | ----- | ------------ |
+| [UX-29](tickets/UX-29-palette-semantica.md)       | Palette semantica chiusa e colori squadra per identità                         | M     |              |
+| [UX-30](tickets/UX-30-raggi-e-bottoni.md)         | Raggi (moltiplicatore del tema) e bottoni 3 × 2 senza alone                    | M     |              |
+| [UX-31](tickets/UX-31-pesi-tipografici.md)        | Pesi tipografici a tre, regola ESLint estesa                                   | M     | UX-27        |
+| [UX-32](tickets/UX-32-tre-intestazioni.md)        | Tre modelli di intestazione di pagina                                          | L     | UX-30        |
+| [UX-33](tickets/UX-33-home-tesserato.md)          | Home: testa del tesserato senza foto, niente duplicati                         | M     | UX-32        |
+| [UX-34](tickets/UX-34-form-iscrizione.md)         | Form d'iscrizione: testo unico, scelta accesso o ospite, form in prima colonna | S     |              |
+| [UX-35](tickets/UX-35-tabellino-simmetrico.md)    | Tabellino della partita simmetrico                                             | S     | UX-29        |
+| [UX-36](tickets/UX-36-navigazione-partite.md)     | Navigazione di sezione Partite, titoli senza doppioni                          | M     | UX-32        |
+| [UX-37](tickets/UX-37-griglia-e-righe.md)         | Griglia unica e righe partita a colonne fisse                                  | M     | UX-32        |
+| [UX-38](tickets/UX-38-copertine-e-stati-vuoti.md) | Copertine tipografiche e stati vuoti compatti                                  | S     | UX-19        |
+| [UX-39](tickets/UX-39-footer-e-nastro-sponsor.md) | Footer a tre colonne e nastro sponsor normalizzato                             | M     |              |
+| [UX-40](tickets/UX-40-admin.md)                   | Admin: header ridotto, tab, azioni fuori dalle righe, linguaggio, target       | L     | UX-32        |
+| [UX-41](tickets/UX-41-il-baskin-schema.md)        | `/il-baskin` con uno schema del campo                                          | M     | UX-21, UX-29 |
+| [UX-42](tickets/UX-42-area-utente.md)             | Area utente: notifiche, profilo, selettore "per chi"                           | S     | UX-32        |
+
+UX-34 e UX-35 sono piccoli e indipendenti: si possono fare subito, in parallelo al lavoro sul sistema.
+
 ### Parcheggiati (da rivalutare dopo le ondate 0-2)
 
-- Riordino del menu principale: servono prove con utenti reali (tree test), le opinioni dei revisori divergono.
-- Migrazione sistematica di tutte le pagine su nuovi componenti (`PageHeader`, `SectionHeader`…): il grosso del beneficio arriva dal tema.
-- Shell admin completamente separata: per ora basta togliere il sito pubblico dall'admin (UX-06).
+- Riordino del menu principale: servono prove con utenti reali (tree test), le opinioni dei revisori divergono. (La navigazione **dentro** la sezione Partite è in UX-36.)
+- ~~Migrazione sistematica di tutte le pagine su nuovi componenti (`PageHeader`, `SectionHeader`…): il grosso del beneficio arriva dal tema.~~ Ripresa in UX-32 e UX-37: il riaudit del 29/09 mostra che il tema da solo non basta.
+- ~~Shell admin completamente separata: per ora basta togliere il sito pubblico dall'admin (UX-06).~~ Ripresa in UX-40 (header ridotto, non una shell nuova).
 - Fondo neutro al posto del crema `#F7F4F1`.
 - Profilo giocatore: dati ripetuti fra hero e griglia statistiche.
 - Immagini OG (Satori) allineate ai nuovi colori.
