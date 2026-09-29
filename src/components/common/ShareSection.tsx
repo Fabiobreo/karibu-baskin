@@ -20,23 +20,25 @@ import { useToast } from "@/context/ToastContext";
 import { socialBrandColor } from "@/lib/heroStyles";
 
 interface Props {
-  sessionTitle: string;
-  sessionUrl: string;
+  title: string;
+  url: string;
+  /** Cosa si condivide: cambia il testo di WhatsApp e l'indicazione sotto il QR. */
+  kind?: "training" | "event";
   dark?: boolean; // stile per sfondi scuri
 }
 
-export default function ShareSection({ sessionTitle, sessionUrl, dark = false }: Props) {
+export default function ShareSection({ title, url, kind = "training", dark = false }: Props) {
   const [qrOpen, setQrOpen] = useState(false);
   const { showToast } = useToast();
   const t = useTranslations("share");
   const tCommon = useTranslations("common");
 
-  const waText = `Iscriviti all'allenamento "${sessionTitle}" di Karibu Baskin 🦊\n${sessionUrl}`;
+  const waText = `${t(kind === "event" ? "waEvent" : "waTraining", { title })}\n${url}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waText)}`;
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(sessionUrl);
+      await navigator.clipboard.writeText(url);
       showToast({ message: t("linkCopied"), severity: "success", duration: 2000 });
     } catch {
       showToast({ message: t("linkCopyFailed"), severity: "error" });
@@ -106,7 +108,7 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
 
       <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ pr: 6 }}>
-          QR Code: {sessionTitle}
+          QR Code: {title}
           <IconButton
             onClick={() => setQrOpen(false)}
             aria-label={tCommon("close")}
@@ -126,10 +128,10 @@ export default function ShareSection({ sessionTitle, sessionUrl, dark = false }:
               mb: 2,
             }}
           >
-            <QRCodeSVG value={sessionUrl} size={200} />
+            <QRCodeSVG value={url} size={200} />
           </Box>
           <Typography variant="body2" color="text.secondary">
-            {t("qrHint")}
+            {t(kind === "event" ? "qrHintEvent" : "qrHint")}
           </Typography>
         </DialogContent>
       </Dialog>

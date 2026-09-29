@@ -392,7 +392,7 @@ export default function AllenamientoHero({
           </Box>
 
           <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <ShareSection sessionTitle={session.title} sessionUrl={sessionUrl} dark />
+            <ShareSection title={session.title} url={sessionUrl} dark />
           </Box>
         </Box>
       </Box>

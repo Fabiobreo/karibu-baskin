@@ -1,26 +1,18 @@
 import { notFound } from "next/navigation";
-import { Container, Box, Typography, Stack, Button } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { common } from "@mui/material/colors";
-import PlaceIcon from "@mui/icons-material/Place";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import Link from "next/link";
+import { Container, Box, Typography, Stack } from "@mui/material";
 import { getTranslations, getLocale } from "next-intl/server";
-import { getDateFnsLocale } from "@/lib/dateLocale";
 import { prisma } from "@/lib/db";
 import JsonLd from "@/components/common/JsonLd";
+import EventHero from "@/components/common/EventHero";
 import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
-import StaffManageButton from "@/components/common/StaffManageButton";
-import PageHero from "@/components/common/PageHero";
 import EventPoster from "@/components/common/EventPoster";
 import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
 import { isEventPast } from "@/lib/events";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { guardianOf } from "@/lib/guardians";
-import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
 
 export const revalidate = 0;
 
@@ -78,11 +70,6 @@ export default async function EventoPage({ params }: Props) {
   if (!ev) notFound();
 
   const isStaff = !!session?.user?.appRole && hasRole(session.user.appRole, "COACH");
-  const dl = getDateFnsLocale(locale);
-  const multiDay = ev.endDate && !isSameRomeDay(ev.endDate, ev.date);
-  const dateLabel = multiDay
-    ? `${formatRome(ev.date, "d MMM yyyy", { locale: dl })} – ${formatRome(ev.endDate!, "d MMM yyyy", { locale: dl })}`
-    : formatRome(ev.date, "EEEE d MMMM yyyy · HH:mm", { locale: dl });
   const isPast = isEventPast(ev);
 
   // Sessione + figli per il RSVP
@@ -166,10 +153,6 @@ export default async function EventoPage({ params }: Props) {
     kind: o.kind as string,
   }));
 
-  const mapsUrl = ev.location
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`
-    : null;
-
   return (
     <>
       <JsonLd
@@ -183,60 +166,20 @@ export default async function EventoPage({ params }: Props) {
           imageUrl: ev.imageUrl,
         })}
       />
-      <PageHero
-        title={ev.title}
-        chip={dateLabel}
-        align="left"
-        py={{ xs: 4, md: 6 }}
-        // Una sola strada per gestire l'evento: l'admin (UX-23), come per gli allenamenti.
-        action={
-          isStaff ? (
-            <StaffManageButton href={`/admin/eventi?edit=${ev.id}`} label={t("manage")} />
-          ) : undefined
-        }
-      >
-        {ev.location && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <PlaceIcon sx={{ color: "primary.main", fontSize: 20 }} />
-            {mapsUrl ? (
-              <Link
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: "none" }}
-              >
-                <Typography
-                  variant="body1"
-                  fontWeight={600}
-                  sx={{
-                    color: "common.white",
-                    textDecoration: "underline",
-                    textDecorationColor: alpha(common.white, 0.4),
-                    textUnderlineOffset: 3,
-                  }}
-                >
-                  {ev.location}
-                </Typography>
-              </Link>
-            ) : (
-              <Typography variant="body1" fontWeight={600} sx={{ color: "common.white" }}>
-                {ev.location}
-              </Typography>
-            )}
-          </Box>
-        )}
-      </PageHero>
+      <EventHero
+        event={{
+          id: ev.id,
+          slug: ev.slug,
+          title: ev.title,
+          date: ev.date,
+          endDate: ev.endDate,
+          location: ev.location,
+        }}
+        isStaff={isStaff}
+        locale={locale}
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Button
-          href="/eventi"
-          size="small"
-          startIcon={<ArrowBackIcon />}
-          sx={{ mb: 2, fontWeight: 600 }}
-        >
-          {t("backToList")}
-        </Button>
-
         {/* Con la locandina: due colonne su desktop (contenuto + locandina intera
             che resta visibile scorrendo); su mobile la locandina è una riga
             compatta prima della descrizione. */}
