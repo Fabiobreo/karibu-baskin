@@ -5,35 +5,7 @@ import { isCoachOrAdmin } from "@/lib/apiAuth";
 import { logAudit } from "@/lib/audit";
 import { ROLE_LABELS, GENDER_LABELS, sportRoleLabel } from "@/lib/constants";
 import type { AppRole, Gender } from "@prisma/client";
-
-// Prefixes formula-trigger characters to prevent CSV injection in Excel/Sheets.
-// Tabs and carriage returns are checked on the raw string; other triggers (=+-@) are
-// checked after trimming spaces so that " =cmd" is also caught.
-function sanitizeCsvValue(s: string): string {
-  const trimmed = s.trimStart();
-  if (/^[\t\r]/.test(s) || /^[=+\-@]/.test(trimmed)) return `'${s}`;
-  return s;
-}
-
-function csvRow(values: (string | number | null | undefined)[]): string {
-  return values
-    .map((v) => {
-      const s = v == null ? "" : String(v);
-      return `"${sanitizeCsvValue(s).replace(/"/g, '""')}"`;
-    })
-    .join(";");
-}
-
-function csvResponse(rows: string[], filename: string): NextResponse {
-  const bom = "\uFEFF"; // BOM for Excel UTF-8
-  const content = bom + rows.join("\r\n");
-  return new NextResponse(content, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-    },
-  });
-}
+import { csvResponse, csvRow } from "@/lib/csv";
 
 const APP_ROLE_IT: Record<AppRole, string> = {
   GUEST: "Ospite",

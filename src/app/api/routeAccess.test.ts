@@ -50,6 +50,7 @@ const ROUTES: Record<string, Access> = {
   events: "public",
   "events/[eventId]/attendance": "public",
   "events/[eventId]/options": "public",
+  "events/[eventId]/responses": "staff",
   groups: "public",
   "groups/[groupId]": "public",
   "link-requests": "self",

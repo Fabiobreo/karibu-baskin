@@ -29,6 +29,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import PlaceIcon from "@mui/icons-material/Place";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
 import { useState, useTransition, useEffect } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -39,6 +40,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import ImageUploader from "@/components/common/ImageUploader";
+import EventResponsesDialog from "@/components/admin/EventResponsesDialog";
 import { readError } from "@/lib/fetchJson";
 
 type EventOptionRow = {
@@ -60,6 +62,8 @@ type Event = {
   allowGuests?: boolean;
   maxGuests?: number | null;
   options?: EventOptionRow[];
+  /** Risposte date (persone ed esterni): la risposta dell'API non lo include. */
+  _count?: { attendances: number };
 };
 
 const OPTION_KINDS = [
@@ -89,6 +93,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [responsesId, setResponsesId] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [optionDrafts, setOptionDrafts] = useState<OptionDraft[]>([]);
   const [allowGuests, setAllowGuests] = useState(false);
@@ -212,7 +217,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
     const savedWithOptions: Event = { ...saved, options: savedOptions };
     if (editingId) {
-      setEvents((prev) => prev.map((e) => (e.id === editingId ? savedWithOptions : e)));
+      setEvents((prev) =>
+        prev.map((e) => (e.id === editingId ? { ...savedWithOptions, _count: e._count } : e))
+      );
     } else {
       setEvents((prev) =>
         [...prev, savedWithOptions].sort(
@@ -257,6 +264,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
                   Luogo
                 </TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Risposte</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
@@ -277,6 +285,16 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                     ) : (
                       "—"
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      startIcon={<HowToRegIcon fontSize="small" />}
+                      onClick={() => setResponsesId(ev.id)}
+                      aria-label={`Risposte a ${ev.title}`}
+                    >
+                      {ev._count?.attendances ?? 0}
+                    </Button>
                   </TableCell>
                   <TableCell align="right">
                     <Tooltip title="Modifica">
@@ -303,7 +321,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
               ))}
               {events.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     Nessun evento ancora creato
                   </TableCell>
                 </TableRow>
@@ -353,6 +371,14 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                       </Typography>
                     </Box>
                   )}
+                  <Button
+                    size="small"
+                    startIcon={<HowToRegIcon fontSize="small" />}
+                    onClick={() => setResponsesId(ev.id)}
+                    sx={{ mt: 0.5, ml: -0.75 }}
+                  >
+                    Risposte · {ev._count?.attendances ?? 0}
+                  </Button>
                 </Box>
                 <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
                   <Tooltip title="Modifica">
@@ -586,6 +612,8 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
           </DialogActions>
         </Box>
       </Dialog>
+
+      <EventResponsesDialog eventId={responsesId} onClose={() => setResponsesId(null)} />
 
       {/* Dialog conferma eliminazione */}
       <Dialog open={deleteId !== null} onClose={() => setDeleteId(null)}>

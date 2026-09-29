@@ -14,6 +14,7 @@ export default async function AdminEventiPage() {
         orderBy: [{ order: "asc" }, { startsAt: "asc" }],
         select: { id: true, label: true, startsAt: true, kind: true, order: true },
       },
+      _count: { select: { attendances: true } },
     },
   });
   return (
