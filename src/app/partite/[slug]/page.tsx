@@ -16,8 +16,10 @@ import {
   heroGradient,
   heroImage,
   heroResultColor,
+  heroText,
   heroTint,
 } from "@/lib/heroStyles";
+import { Fragment } from "react";
 import { visuallyHidden } from "@mui/utils";
 import StaffManageButton from "@/components/common/StaffManageButton";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
@@ -39,8 +41,6 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
-import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
-import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
@@ -56,6 +56,29 @@ const RESULT_GRADIENT: Record<"WIN" | "LOSS" | "DRAW", string> = {
   LOSS: heroTint(heroResultColor.LOSS),
   DRAW: heroGradient.dark,
 };
+
+/** Nome sopra il punteggio: identico per le due squadre (UX-35). */
+const sideNameSx = {
+  alignSelf: "end",
+  color: heroText.primary,
+  fontWeight: 800,
+  lineHeight: 1.15,
+  fontSize: { xs: TYPE_SCALE.md, sm: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 },
+  // Nomi avversari lunghi: a capo fra le parole, sillabando solo se una
+  // parola da sola non ci sta (mai "Dilettantistic-a" a caso).
+  overflowWrap: "break-word",
+  hyphens: "auto",
+} as const;
+
+/** Punteggio: stessa taglia e peso ai due lati, cifre a larghezza fissa. */
+const scoreSx = {
+  alignSelf: "start",
+  color: heroText.primary,
+  fontWeight: 900,
+  lineHeight: 1,
+  fontSize: { xs: TYPE_SCALE.xl6, md: TYPE_SCALE.xl8 },
+  fontVariantNumeric: "tabular-nums",
+} as const;
 
 async function getMatch(slug: string) {
   // Prima prova per slug, poi per id (retrocompatibilità)
@@ -164,11 +187,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       noindex: true,
     });
   }
-  const score = match.ourScore !== null ? `${match.ourScore}–${match.theirScore}` : "vs";
+  // Chi gioca in casa prima, come nel tabellino (UX-35): è il titolo
+  // dell'anteprima quando si condivide il link.
+  const [homeScore, awayScore] = match.isHome
+    ? [match.ourScore, match.theirScore]
+    : [match.theirScore, match.ourScore];
+  const score = homeScore !== null ? `${homeScore}–${awayScore}` : "vs";
   const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
   const when = formatRome(new Date(match.date), "d MMMM yyyy", { locale: dateLocale });
   return buildMetadata({
-    title: `${match.team.name} ${score} ${opponentName}`,
+    title: match.isHome
+      ? `${match.team.name} ${score} ${opponentName}`
+      : `${opponentName} ${score} ${match.team.name}`,
     description: `Dettaglio della partita ${match.team.name} contro ${opponentName} del ${when}: risultato, tabellino e statistiche.`,
     path: `/partite/${match.slug ?? slug}`,
     image: "own",
@@ -361,9 +391,22 @@ export default async function MatchDetailPage({ params }: Props) {
   // diverso da GUEST. Gli ospiti e gli anonimi vedono un invito al login.
   const canSeeCallups = !!session?.user && session.user.appRole !== "GUEST";
 
-  const meta = match.result ? MATCH_RESULT_META[match.result] : null;
-
   const heroBg = match.result ? RESULT_GRADIENT[match.result] : heroGradient.dark;
+
+  // Senza punteggi c'è una riga sola: nomi centrati rispetto all'orario.
+  const upcomingNameSx = isUpcoming ? { alignSelf: "center" } : {};
+  // Nomi lunghi ("Polisportiva Dilettantistica …"): su telefono tutti e due
+  // un gradino più piccoli, così le parole lunghe stanno nella colonna e i
+  // due lati restano identici.
+  const longNames = Math.max(match.team.name.length, opponentName.length) > 22;
+  const nameSizeSx = longNames
+    ? { fontSize: { xs: TYPE_SCALE.sm, sm: TYPE_SCALE.lg, md: TYPE_SCALE.xl2 } }
+    : {};
+
+  // Breadcrumb e h1 con chi gioca in casa prima, come il tabellino (UX-35).
+  const matchupTitle = match.isHome
+    ? `${match.team.name} vs ${opponentName}`
+    : `${opponentName} vs ${match.team.name}`;
 
   const teamSeasonParam = match.team.season.replace("-", "");
   const teamSlug = slugify(match.team.name);
@@ -389,25 +432,36 @@ export default async function MatchDetailPage({ params }: Props) {
         sx={{
           ...heroBottomBorder,
           color: "common.white",
-          pt: { xs: 4, md: 5 },
+          pt: { xs: 1.5, md: 2 },
           pb: { xs: 5, md: 7 },
-          px: 2,
+          px: { xs: 1.5, md: 2.5 },
           position: "relative",
           overflow: "hidden",
         }}
       >
+        {/* Breadcrumb e azioni su una riga propria, sopra il tabellino: prima
+            erano posizionati sopra il contenuto e a 360 px si toccavano (UX-35). */}
         <Box
           sx={{
-            position: "absolute",
-            top: { xs: 12, md: 16 },
-            left: { xs: 12, md: 20 },
-            right: { xs: 60, md: 80 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1.5,
+            minHeight: 40,
+            mb: { xs: 3, md: 4 },
+            position: "relative",
             zIndex: 2,
           }}
         >
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{
+              minWidth: 0,
+              flex: "1 1 auto",
+              "& .MuiBreadcrumbs-ol": { flexWrap: "nowrap" },
+              "& .MuiBreadcrumbs-li:last-of-type": { minWidth: 0 },
+              "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" },
+            }}
           >
             <MuiLink
               href="/partite"
@@ -430,333 +484,218 @@ export default async function MatchDetailPage({ params }: Props) {
               sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
               noWrap
             >
-              {match.team.name} vs {opponentName}
+              {matchupTitle}
             </Typography>
           </Breadcrumbs>
+
+          {/* Azioni: share tabellino + gestione (staff) */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+            {hasScore && (
+              <MatchTabellinoButton
+                matchId={match.id}
+                filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${formatRome(new Date(match.date), "yyyy-MM-dd")}.png`}
+              />
+            )}
+            {/* Una sola strada per gestire la partita: l'admin, come per allenamenti,
+                eventi e squadre (UX-23). */}
+            {isStaff && (
+              <StaffManageButton href={`/admin/partite?edit=${match.id}`} label={t("manage")} />
+            )}
+          </Box>
         </Box>
 
-        {/* Azioni in alto a destra: share tabellino + edit (staff) */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: { xs: 12, md: 16 },
-            right: { xs: 12, md: 20 },
-            zIndex: 2,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          {hasScore && (
-            <MatchTabellinoButton
-              matchId={match.id}
-              filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${formatRome(new Date(match.date), "yyyy-MM-dd")}.png`}
-            />
-          )}
-          {/* Una sola strada per gestire la partita: l'admin, come per allenamenti,
-              eventi e squadre (UX-23). */}
-          {isStaff && (
-            <StaffManageButton href={`/admin/partite?edit=${match.id}`} label={t("manage")} />
-          )}
-        </Box>
-
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          {/* Contenuto centrato */}
+        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1, px: { xs: 0.5, sm: 2 } }}>
           <Box sx={{ textAlign: "center" }}>
             {/* Il titolo della partita e composto da piu blocchi visivi (squadre,
                 punteggio): l'h1 riassume la partita per chi naviga a voce. */}
             <Typography variant="h1" component="h1" sx={visuallyHidden}>
-              {match.team.name} vs {opponentName}
+              {matchupTitle}
             </Typography>
-            {/* Team + championship */}
+
+            {/* Tabellino simmetrico (UX-35): chi gioca in casa a sinistra, come
+                si scrive di solito (è la pagina che si condivide); nelle liste
+                invece noi restiamo sempre a sinistra (UX-18). Nome sopra e
+                punteggio sotto, stessa taglia e peso sui due lati. Nel DOM ogni
+                squadra ha nome e punteggio vicini ("Orsi 52 – Karibu 67"); la
+                griglia li mette su due righe, così i punteggi restano allineati
+                anche quando un nome va a capo. */}
             <Box
               sx={{
-                display: "flex",
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                columnGap: { xs: 1.5, sm: 2, md: 5 },
+                rowGap: { xs: 0.5, md: 1 },
                 alignItems: "center",
-                justifyContent: "center",
-                gap: 1.5,
-                mb: 3,
-                flexWrap: "wrap",
+                maxWidth: 760,
+                mx: "auto",
               }}
             >
-              {match.team.isMixed ? (
-                // La Karibu di stagione non ha una pagina pubblica: solo l'etichetta.
-                <Chip
-                  label={match.team.name}
-                  size="small"
-                  sx={{
-                    bgcolor: match.team.color ?? "primary.main",
-                    color: match.team.color ? contrastText(match.team.color) : "common.white",
-                    fontWeight: 700,
-                  }}
-                />
-              ) : (
-                <Link
-                  href={`/squadre/${teamSeasonParam}/${teamSlug}`}
-                  style={{ textDecoration: "none" }}
-                >
-                  <Chip
-                    label={match.team.name}
-                    size="small"
-                    sx={{
-                      bgcolor: match.team.color ?? "primary.main",
-                      // Il colore squadra arriva dal DB: l'etichetta lo segue.
-                      color: match.team.color ? contrastText(match.team.color) : "common.white",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      "&:hover": { opacity: 0.85 },
-                    }}
-                  />
-                </Link>
-              )}
-              {match.group?.name && (
-                <Typography
-                  variant="caption"
-                  sx={{ color: alpha(brandColor.white, 0.5), fontWeight: 600 }}
-                >
-                  {match.group.name}
-                </Typography>
-              )}
-              <Chip
-                label={matchTypeLabel(match.matchType)}
-                size="small"
-                variant="outlined"
-                sx={{
-                  color: alpha(brandColor.white, 0.6),
-                  borderColor: alpha(brandColor.white, 0.2),
-                  fontSize: TYPE_SCALE.xs,
-                }}
-              />
-            </Box>
-
-            {/* Score block o Matchup upcoming (anche per partite passate senza risultato) */}
-            {!hasScore ? (
-              <Box sx={{ mb: 3 }}>
-                {/* Squadre come main point — in casa: noi vs loro, in trasferta: loro vs noi */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: { xs: 2, md: 5 },
-                    mb: 2.5,
-                  }}
-                >
-                  {(() => {
-                    const us = (
-                      <Box
-                        key="us"
-                        sx={{ textAlign: "center", flex: "1 1 0", minWidth: 0, maxWidth: 280 }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
-                            fontWeight: 900,
-                            lineHeight: 1.05,
-                            color: "common.white",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {match.team.name}
-                        </Typography>
-                      </Box>
-                    );
-                    const them = (
-                      <Box
-                        key="them"
-                        sx={{ textAlign: "center", flex: "1 1 0", minWidth: 0, maxWidth: 280 }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
-                            fontWeight: 900,
-                            lineHeight: 1.05,
-                            color: alpha(brandColor.white, 0.92),
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {opponentName}
-                        </Typography>
-                      </Box>
-                    );
-                    const vs = (
-                      <Typography
-                        key="vs"
-                        sx={{
-                          flex: "0 0 auto",
-                          color: alpha(brandColor.white, 0.65),
-                          fontWeight: 800,
-                          fontSize: { xs: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 },
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        vs
+              {(() => {
+                const side = (
+                  key: string,
+                  name: React.ReactNode,
+                  score: number | null,
+                  column: 1 | 3
+                ) => (
+                  <Fragment key={key}>
+                    <Typography
+                      component="p"
+                      sx={{
+                        ...sideNameSx,
+                        ...nameSizeSx,
+                        ...upcomingNameSx,
+                        gridColumn: column,
+                        gridRow: 1,
+                      }}
+                    >
+                      {name}
+                    </Typography>
+                    {!isUpcoming && (
+                      <Typography component="p" sx={{ ...scoreSx, gridColumn: column, gridRow: 2 }}>
+                        {hasScore ? score : "–"}
                       </Typography>
-                    );
-                    return match.isHome ? [us, vs, them] : [them, vs, us];
-                  })()}
-                </Box>
-
-                {/* Countdown + badge come supporto (solo se la partita è ancora futura) */}
-                {isUpcoming && (
-                  <Box
+                    )}
+                  </Fragment>
+                );
+                const ourName = match.team.isMixed ? (
+                  // La Karibu di stagione non ha una pagina pubblica: solo il nome.
+                  match.team.name
+                ) : (
+                  <MuiLink
+                    href={`/squadre/${teamSeasonParam}/${teamSlug}`}
+                    underline="hover"
+                    color="inherit"
+                  >
+                    {match.team.name}
+                  </MuiLink>
+                );
+                const middle = (
+                  <Typography
+                    key="middle"
+                    component="p"
+                    aria-hidden={!isUpcoming}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 1,
-                      flexWrap: "wrap",
+                      gridColumn: 2,
+                      gridRow: isUpcoming ? 1 : 2,
+                      color: heroText.muted,
+                      fontWeight: 800,
+                      lineHeight: 1,
+                      fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
+                      fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    <MatchCountdown targetIso={new Date(match.date).toISOString()} />
-                    {isImminent && (
-                      <Chip
-                        icon={<BoltIcon sx={{ fontSize: 14 }} />}
-                        label={t("imminent")}
-                        size="small"
-                        sx={{
-                          fontWeight: 800,
-                          // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
-                          bgcolor: "primary.fill",
-                          color: "common.white",
-                          letterSpacing: "0.05em",
-                          height: 26,
-                          animation: "karibuMatchPulse 1.6s ease-in-out infinite",
-                          "@keyframes karibuMatchPulse": {
-                            "0%, 100%": {
-                              boxShadow: `0 0 0 0 ${alpha(brandColor.orange, 0.7)}`,
-                            },
-                            "50%": {
-                              boxShadow: `0 0 0 8px ${alpha(brandColor.orange, 0)}`,
-                            },
-                          },
-                        }}
-                      />
-                    )}
+                    {/* Partita futura: l'orario al posto dei punteggi. */}
+                    {isUpcoming ? formatRome(new Date(match.date), "HH:mm") : "–"}
+                  </Typography>
+                );
+                return match.isHome
+                  ? [
+                      side("us", ourName, match.ourScore, 1),
+                      middle,
+                      side("them", opponentName, match.theirScore, 3),
+                    ]
+                  : [
+                      side("them", opponentName, match.theirScore, 1),
+                      middle,
+                      side("us", ourName, match.ourScore, 3),
+                    ];
+              })()}
+            </Box>
+
+            {/* Esito e competizione in una riga: l'esito resta anche nel colore
+                dell'hero, niente chip al centro del tabellino. */}
+            <Typography
+              component="p"
+              variant="body2"
+              sx={{ mt: { xs: 2.5, md: 3 }, color: heroText.secondary, fontWeight: 600 }}
+            >
+              {[
+                match.result ? (
+                  <Box
+                    key="result"
+                    component="span"
+                    sx={{ color: "common.white", fontWeight: 800 }}
+                  >
+                    {matchResultLabel(match.result)}
                   </Box>
-                )}
-              </Box>
-            ) : (
+                ) : null,
+                matchTypeLabel(match.matchType),
+                match.group?.name ?? null,
+              ]
+                .filter((part) => part !== null)
+                .map((part, i) => (
+                  <Fragment key={i}>
+                    {i > 0 && " · "}
+                    {part}
+                  </Fragment>
+                ))}
+            </Typography>
+
+            {/* Countdown + badge come supporto (solo se la partita è ancora futura) */}
+            {isUpcoming && (
               <Box
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: { xs: 3, md: 6 },
-                  mb: 3,
+                  gap: 1,
+                  flexWrap: "wrap",
+                  mt: 2,
                 }}
               >
-                {(() => {
-                  const us = (
-                    <Box key="us" sx={{ textAlign: "center", minWidth: 100 }}>
-                      <Typography
-                        sx={{
-                          fontSize: { xs: TYPE_SCALE.xl7, md: TYPE_SCALE.xl8 },
-                          fontWeight: 900,
-                          lineHeight: 1,
-                          color: "common.white",
-                        }}
-                      >
-                        {hasScore ? match.ourScore : "–"}
-                      </Typography>
-                    </Box>
-                  );
-                  const them = (
-                    <Box key="them" sx={{ textAlign: "center", minWidth: 100 }}>
-                      {/* La gerarchia "noi contro loro" resta, ma la fa il peso
-                          (700 contro 900) e la dimensione, non un bianco spento:
-                          al 55% il punteggio avversario spariva nel verde della
-                          vittoria. */}
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: alpha(brandColor.white, 0.8),
-                          textTransform: "uppercase",
-                          letterSpacing: "0.08em",
-                          fontWeight: 700,
-                          display: "block",
-                          mb: 0.5,
-                        }}
-                      >
-                        {opponentName}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl7 },
-                          fontWeight: 700,
-                          lineHeight: 1,
-                          color: alpha(brandColor.white, 0.92),
-                        }}
-                      >
-                        {hasScore ? match.theirScore : "–"}
-                      </Typography>
-                    </Box>
-                  );
-                  const middle = (
-                    <Box key="middle" sx={{ textAlign: "center", flex: "0 0 auto" }}>
-                      {meta && match.result ? (
-                        <Chip
-                          label={matchResultLabel(match.result)}
-                          sx={{
-                            bgcolor: meta.color,
-                            color: "match.onFill",
-                            fontWeight: 800,
-                            fontSize: TYPE_SCALE.sm,
-                            height: 32,
-                            px: 1,
-                          }}
-                        />
-                      ) : (
-                        <Typography
-                          sx={{
-                            color: alpha(brandColor.white, 0.65),
-                            fontWeight: 700,
-                            fontSize: TYPE_SCALE.xl2,
-                          }}
-                        >
-                          vs
-                        </Typography>
-                      )}
-                    </Box>
-                  );
-                  return match.isHome ? [us, middle, them] : [them, middle, us];
-                })()}
+                <MatchCountdown targetIso={new Date(match.date).toISOString()} />
+                {isImminent && (
+                  <Chip
+                    icon={<BoltIcon sx={{ fontSize: 14 }} />}
+                    label={t("imminent")}
+                    size="small"
+                    sx={{
+                      fontWeight: 800,
+                      // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
+                      bgcolor: "primary.fill",
+                      color: "common.white",
+                      letterSpacing: "0.05em",
+                      height: 26,
+                      animation: "karibuMatchPulse 1.6s ease-in-out infinite",
+                      "@keyframes karibuMatchPulse": {
+                        "0%, 100%": {
+                          boxShadow: `0 0 0 0 ${alpha(brandColor.orange, 0.7)}`,
+                        },
+                        "50%": {
+                          boxShadow: `0 0 0 8px ${alpha(brandColor.orange, 0)}`,
+                        },
+                      },
+                    }}
+                  />
+                )}
               </Box>
             )}
 
-            {/* Data e luogo */}
+            {/* Riga meta unica: data e ora, casa/trasferta, luogo */}
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 2,
+                columnGap: 2,
+                rowGap: 0.5,
                 flexWrap: "wrap",
+                mt: 2,
+                color: heroText.muted,
               }}
             >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  color: alpha(brandColor.white, 0.5),
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
                 <Typography variant="caption" fontWeight={600}>
-                  {formatRome(new Date(match.date), "EEEE d MMMM yyyy · HH:mm", {
-                    locale: dateLocale,
-                  })}
+                  {/* Partita futura: l'orario sta già al centro del tabellino. */}
+                  {formatRome(
+                    new Date(match.date),
+                    isUpcoming ? "EEEE d MMMM yyyy" : "EEEE d MMMM yyyy · HH:mm",
+                    { locale: dateLocale }
+                  )}
                 </Typography>
               </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  color: alpha(brandColor.white, 0.5),
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 {match.isHome ? (
                   <HomeIcon sx={{ fontSize: 14 }} />
                 ) : (
@@ -767,14 +706,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 </Typography>
               </Box>
               {match.venue && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    color: "rgba(255,255,255,0.5)",
-                  }}
-                >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <PlaceIcon sx={{ fontSize: 14 }} />
                   <Typography variant="caption" fontWeight={600}>
                     {match.venue}
@@ -783,7 +715,6 @@ export default async function MatchDetailPage({ params }: Props) {
               )}
             </Box>
           </Box>
-          {/* fine Box centrato */}
         </Container>
       </Box>
 

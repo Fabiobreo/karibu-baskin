@@ -27,6 +27,12 @@ const RESULT_META = {
   },
 };
 
+const MATCH_TYPE_LABEL: Record<string, string> = {
+  LEAGUE: "Campionato",
+  TOURNAMENT: "Torneo",
+  FRIENDLY: "Amichevole",
+};
+
 const DEFAULT_BG = "linear-gradient(150deg,#1A1A1A 0%,#2D1A0A 60%,#3D2010 100%)";
 
 export default async function OgImage({ params }: Props) {
@@ -43,6 +49,7 @@ export default async function OgImage({ params }: Props) {
       isHome: true,
       matchType: true,
       team: { select: { name: true, color: true } },
+      group: { select: { name: true } },
       opponent: { select: { name: true } },
       opponentTeam: { select: { name: true } },
     },
@@ -75,10 +82,46 @@ export default async function OgImage({ params }: Props) {
   const bg = meta?.bg ?? DEFAULT_BG;
   const teamColor = match.team.color ?? "#E65100";
 
-  const leftTeam = match.isHome ? match.team.name : opponentName;
-  const rightTeam = match.isHome ? opponentName : match.team.name;
-  const leftScore = match.isHome ? match.ourScore : match.theirScore;
-  const rightScore = match.isHome ? match.theirScore : match.ourScore;
+  // Stessa composizione del tabellino della pagina (UX-35): chi gioca in casa
+  // a sinistra, nome sopra e punteggio sotto, esito e competizione in una riga.
+  const home = match.isHome
+    ? { name: match.team.name, score: match.ourScore }
+    : { name: opponentName, score: match.theirScore };
+  const away = match.isHome
+    ? { name: opponentName, score: match.theirScore }
+    : { name: match.team.name, score: match.ourScore };
+  const nameLong = Math.max(match.team.name.length, opponentName.length) > 22;
+  const nameStyle = {
+    fontSize: nameLong ? 36 : 48,
+    fontWeight: 800,
+    lineHeight: 1.1,
+    textAlign: "center" as const,
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: 12,
+  };
+  const scoreStyle = { fontSize: 140, fontWeight: 900, lineHeight: 1, display: "flex" };
+  const side = (name: string, score: number | null) => (
+    <div
+      style={{
+        width: 420,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: hasScore ? "flex-end" : "center",
+      }}
+    >
+      <div style={nameStyle}>{name}</div>
+      {hasScore && <div style={scoreStyle}>{score}</div>}
+    </div>
+  );
+  const detail = [
+    meta?.label ?? null,
+    MATCH_TYPE_LABEL[match.matchType] ?? null,
+    match.group?.name ?? null,
+  ]
+    .filter((x): x is string => !!x)
+    .join(" · ");
 
   return new ImageResponse(
     <div
@@ -92,142 +135,54 @@ export default async function OgImage({ params }: Props) {
         background: bg,
         color: "#fff",
         fontFamily: "Inter, sans-serif",
-        position: "relative",
-        overflow: "hidden",
+        borderBottom: `12px solid ${teamColor}`,
       }}
     >
-      {/* Cerchi decorativi */}
       <div
         style={{
-          position: "absolute",
-          top: -100,
-          right: -100,
-          width: 500,
-          height: 500,
-          borderRadius: "50%",
-          background: `${teamColor}22`,
-          display: "flex",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: -120,
-          left: -120,
-          width: 600,
-          height: 600,
-          borderRadius: "50%",
-          background: `${teamColor}11`,
-          display: "flex",
-        }}
-      />
-
-      {/* Badge tipo partita */}
-      <div
-        style={{
-          background: teamColor,
-          color: "#fff",
           fontSize: 22,
           fontWeight: 700,
-          padding: "8px 28px",
-          borderRadius: 32,
-          marginBottom: 36,
+          letterSpacing: 4,
+          color: "rgba(255,255,255,0.75)",
+          marginBottom: 40,
           display: "flex",
         }}
       >
         KARIBU BASKIN
       </div>
 
-      {/* Nomi squadre e punteggio */}
-      <div style={{ display: "flex", alignItems: "center", gap: 40, marginBottom: 28 }}>
+      {/* Tabellino: [casa · punteggio] – [punteggio · ospiti] */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: hasScore ? "flex-end" : "center",
+          gap: 32,
+          marginBottom: 36,
+        }}
+      >
+        {side(home.name, home.score)}
         <div
           style={{
-            fontSize: 56,
-            fontWeight: 900,
-            textAlign: "right",
-            maxWidth: 380,
-            lineHeight: 1.1,
+            fontSize: hasScore ? 80 : 56,
+            fontWeight: 800,
+            lineHeight: 1,
+            color: "rgba(255,255,255,0.6)",
             display: "flex",
+            paddingBottom: hasScore ? 24 : 16,
           }}
         >
-          {leftTeam}
+          {hasScore ? "–" : formatRome(new Date(match.date), "HH:mm")}
         </div>
-        <div
-          style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 160 }}
-        >
-          {hasScore ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <span style={{ fontSize: 96, fontWeight: 900, lineHeight: 1, display: "flex" }}>
-                {leftScore}
-              </span>
-              <span
-                style={{
-                  fontSize: 48,
-                  color: "rgba(255,255,255,0.4)",
-                  fontWeight: 800,
-                  display: "flex",
-                }}
-              >
-                –
-              </span>
-              <span
-                style={{
-                  fontSize: 96,
-                  fontWeight: 900,
-                  lineHeight: 1,
-                  color: "rgba(255,255,255,0.7)",
-                  display: "flex",
-                }}
-              >
-                {rightScore}
-              </span>
-            </div>
-          ) : (
-            <span
-              style={{
-                fontSize: 64,
-                color: "rgba(255,255,255,0.3)",
-                fontWeight: 800,
-                display: "flex",
-              }}
-            >
-              vs
-            </span>
-          )}
-          {meta && (
-            <div
-              style={{
-                marginTop: 12,
-                background: meta.color,
-                color: "#fff",
-                fontSize: 22,
-                fontWeight: 800,
-                padding: "6px 20px",
-                borderRadius: 20,
-                display: "flex",
-              }}
-            >
-              {meta.label}
-            </div>
-          )}
-        </div>
-        <div
-          style={{
-            fontSize: 56,
-            fontWeight: 900,
-            maxWidth: 380,
-            lineHeight: 1.1,
-            color: "rgba(255,255,255,0.85)",
-            display: "flex",
-          }}
-        >
-          {rightTeam}
-        </div>
+        {side(away.name, away.score)}
       </div>
 
-      {/* Data */}
+      {detail && (
+        <div style={{ fontSize: 30, fontWeight: 700, marginBottom: 14, display: "flex" }}>
+          {detail}
+        </div>
+      )}
       <div
-        style={{ fontSize: 26, color: "rgba(255,255,255,0.5)", fontWeight: 600, display: "flex" }}
+        style={{ fontSize: 26, color: "rgba(255,255,255,0.7)", fontWeight: 600, display: "flex" }}
       >
         {formatRome(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
       </div>
