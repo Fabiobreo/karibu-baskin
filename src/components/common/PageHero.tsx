@@ -13,6 +13,8 @@ interface PageHeroProps {
   py?: { xs: number; md: number };
   maxWidth?: ContainerProps["maxWidth"];
   align?: "center" | "left";
+  /** Azione in alto a destra, es. `StaffManageButton` per lo staff. */
+  action?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -25,6 +27,7 @@ export default function PageHero({
   py = { xs: 6, md: 9 },
   maxWidth = "md",
   align = "center",
+  action,
   children,
 }: PageHeroProps) {
   return (
@@ -54,7 +57,24 @@ export default function PageHero({
           {breadcrumb}
         </Box>
       )}
-      <Container maxWidth={maxWidth} sx={{ position: "relative", zIndex: 1 }}>
+      {action && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: { xs: 12, md: 16 },
+            right: { xs: 12, md: 20 },
+            zIndex: 2,
+          }}
+        >
+          {action}
+        </Box>
+      )}
+      <Container
+        maxWidth={maxWidth}
+        // Su mobile l'azione starebbe sopra il chip della data: il contenuto
+        // scende di una riga, cosi' non si toccano con nessuna data.
+        sx={{ position: "relative", zIndex: 1, pt: action ? { xs: 3, md: 0 } : 0 }}
+      >
         {title ? (
           <>
             {/* Chip neutro: sopra il titolo informa, non si tocca, quindi

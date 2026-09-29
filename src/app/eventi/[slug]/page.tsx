@@ -11,6 +11,8 @@ import { prisma } from "@/lib/db";
 import JsonLd from "@/components/common/JsonLd";
 import { eventJsonLd } from "@/lib/structuredData";
 import { auth } from "@/lib/authjs";
+import { hasRole } from "@/lib/authRoles";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import PageHero from "@/components/common/PageHero";
 import EventPoster from "@/components/common/EventPoster";
 import EventRsvp, { type EventRsvpSubject } from "@/components/common/EventRsvp";
@@ -75,6 +77,7 @@ export default async function EventoPage({ params }: Props) {
   ]);
   if (!ev) notFound();
 
+  const isStaff = !!session?.user?.appRole && hasRole(session.user.appRole, "COACH");
   const dl = getDateFnsLocale(locale);
   const multiDay = ev.endDate && !isSameRomeDay(ev.endDate, ev.date);
   const dateLabel = multiDay
@@ -180,7 +183,18 @@ export default async function EventoPage({ params }: Props) {
           imageUrl: ev.imageUrl,
         })}
       />
-      <PageHero title={ev.title} chip={dateLabel} align="left" py={{ xs: 4, md: 6 }}>
+      <PageHero
+        title={ev.title}
+        chip={dateLabel}
+        align="left"
+        py={{ xs: 4, md: 6 }}
+        // Una sola strada per gestire l'evento: l'admin (UX-23), come per gli allenamenti.
+        action={
+          isStaff ? (
+            <StaffManageButton href={`/admin/eventi?edit=${ev.id}`} label={t("manage")} />
+          ) : undefined
+        }
+      >
         {ev.location && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <PlaceIcon sx={{ color: "primary.main", fontSize: 20 }} />

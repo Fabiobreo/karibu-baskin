@@ -756,7 +756,10 @@
     "rsvpNotSaved": "Reply not saved.",
     "save": "Save",
     "notePlaceholder": "Notes (allergies, needs…)",
-    "optionsHint": "Select what you'll attend"
+    "optionsHint": "Select what you'll attend",
+    "manage": "Manage",
+    "manageAll": "Manage events",
+    "manageOne": "Manage {title} in admin"
   },
   "search": {
     "open": "Search",
