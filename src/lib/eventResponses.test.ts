@@ -6,6 +6,24 @@ import { summarizeResponses, type AttendanceInput } from "./eventResponses";
 
 const lunch = { id: "lunch", label: "Pranzo" };
 
+const person = (name: string, sportRole: number | null = null) => ({
+  name,
+  sportRole,
+  sportRoleVariant: null,
+});
+const childCard = (
+  name: string,
+  userId: string | null,
+  sportRole: number | null = null,
+  accountRole: number | null = null
+) => ({
+  name,
+  userId,
+  sportRole,
+  sportRoleVariant: null,
+  user: userId ? { sportRole: accountRole, sportRoleVariant: null } : null,
+});
+
 function row(p: Partial<AttendanceInput> & { id: string }): AttendanceInput {
   return {
     status: "GOING",
@@ -24,20 +42,20 @@ function row(p: Partial<AttendanceInput> & { id: string }): AttendanceInput {
 
 // Famiglia Provini: Paola risponde per sé e per Marco, Giulia (scheda figlio +
 // account) porta l'esterna Chiara solo al pranzo.
-const paola = row({ id: "a1", userId: "paola", respondedById: "paola", user: { name: "Paola" } });
+const paola = row({ id: "a1", userId: "paola", respondedById: "paola", user: person("Paola") });
 const marco = row({
   id: "a2",
   userId: "marco",
   status: "NOT_GOING",
   respondedById: "paola",
-  user: { name: "Marco" },
+  user: person("Marco", 2),
   respondedBy: { name: "Paola" },
 });
 const giulia = row({
   id: "a3",
   childId: "c-giulia",
   respondedById: "giulia",
-  child: { name: "Giulia", userId: "giulia" },
+  child: childCard("Giulia", "giulia", null, 4),
   note: "vegetariana",
 });
 const chiara = row({
@@ -67,7 +85,7 @@ describe("summarizeResponses()", () => {
   });
 
   it("chi ha scheda figlio e account e' un tesserato, non un figlio", () => {
-    const kid = row({ id: "k", childId: "c-kid", child: { name: "Anna", userId: null } });
+    const kid = row({ id: "k", childId: "c-kid", child: childCard("Anna", null, 1) });
     const r = summarizeResponses([], [giulia, kid], []);
     expect(Object.fromEntries(r.rows.map((x) => [x.name, x.kind]))).toEqual({
       Anna: "child",
@@ -81,7 +99,7 @@ describe("summarizeResponses()", () => {
   });
 
   it("chi ha scheda figlio e account conta una volta sola (vale la scheda)", () => {
-    const legacy = row({ id: "old", userId: "giulia", user: { name: "Giulia" } });
+    const legacy = row({ id: "old", userId: "giulia", user: person("Giulia", 4) });
     const r = summarizeResponses([lunch], [giulia, legacy], []);
     expect(r.rows.map((x) => x.id)).toEqual(["a3"]);
   });
@@ -110,5 +128,17 @@ describe("summarizeResponses()", () => {
     );
     const dup = Object.fromEntries(r.rows.map((x) => [x.id, x.possibleDuplicate]));
     expect(dup).toEqual({ a1: false, n1: true, n2: true, "g-paola": true, "g-solo": false });
+  });
+
+  it("chi gioca: chi ha un ruolo Baskin, dalla scheda o dall'account; mai gli esterni", () => {
+    const roles = Object.fromEntries(result.rows.map((r) => [r.name, r.sportRole]));
+    expect(roles).toEqual({ Giulia: 4, Chiara: null, Paola: null, Marco: 2 });
+  });
+
+  it("conta i giocatori: Ci sarò per ruolo, Forse a parte, No escluso", () => {
+    const maybe = row({ id: "m", userId: "m", status: "MAYBE", user: person("Luca", 3) });
+    const r = summarizeResponses([], [paola, marco, giulia, maybe], []);
+    // Paola non ha ruolo, Marco ha detto No: gioca solo Giulia, Luca forse.
+    expect(r.players).toEqual({ going: 1, maybe: 1, goingByRole: { 4: 1 } });
   });
 });

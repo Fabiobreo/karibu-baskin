@@ -22,8 +22,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import DownloadIcon from "@mui/icons-material/Download";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
+import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import { useQuery } from "@tanstack/react-query";
 import InlineError from "@/components/common/InlineError";
+import RoleBadge from "@/components/common/RoleBadge";
+import { ROLES } from "@/lib/constants";
 import { readError } from "@/lib/fetchJson";
 import type { EventResponses, ResponseRow } from "@/lib/eventResponses";
 
@@ -61,6 +64,8 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [optionFilter, setOptionFilter] = useState<string | null>(null);
+  // Solo chi puo' giocare (ha un ruolo Baskin): per le partite di dimostrazione.
+  const [playersOnly, setPlayersOnly] = useState(false);
 
   const query = useQuery({
     queryKey: ["event-responses", eventId],
@@ -75,15 +80,16 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
 
   const handleClose = () => {
     setOptionFilter(null);
+    setPlayersOnly(false);
     onClose();
   };
 
   const optionLabel = new Map(data?.options.map((o) => [o.id, o.label]));
-  const rows = data
-    ? optionFilter
-      ? data.rows.filter((r) => r.optionIds.includes(optionFilter))
-      : data.rows
-    : [];
+  const rows = (data?.rows ?? []).filter(
+    (r) =>
+      (!optionFilter || r.optionIds.includes(optionFilter)) && (!playersOnly || r.sportRole != null)
+  );
+  const filtered = !!optionFilter || playersOnly;
 
   return (
     <Dialog
@@ -174,11 +180,47 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
               </Box>
             )}
 
+            {/* Chi gioca: chi ha un ruolo Baskin, anche se nell'app e' un genitore */}
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, flexWrap: "wrap" }}>
+                <Typography variant="subtitle2" fontWeight={800}>
+                  Chi gioca
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  chi ha un ruolo Baskin
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
+                <Chip
+                  icon={<SportsBasketballIcon />}
+                  label={`Solo chi gioca · ${data.players.going}${data.players.maybe ? ` (+${data.players.maybe} forse)` : ""}`}
+                  onClick={() => setPlayersOnly((v) => !v)}
+                  color={playersOnly ? "primary" : "default"}
+                  variant={playersOnly ? "filled" : "outlined"}
+                  aria-pressed={playersOnly}
+                  sx={{ fontWeight: 700 }}
+                />
+                {/* Ci sarò per ruolo: servono per comporre le squadre */}
+                {ROLES.map((r) => (
+                  <Box
+                    key={r}
+                    sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+                    aria-label={`Ruolo ${r}: ${data.players.goingByRole[r] ?? 0} ci saranno`}
+                  >
+                    <RoleBadge role={r} />
+                    <Typography variant="body2" fontWeight={700}>
+                      {data.players.goingByRole[r] ?? 0}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+
             <Divider />
 
             {rows.length === 0 ? (
               <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                {optionFilter ? "Nessuno per questo extra." : "Ancora nessuna risposta."}
+                {filtered ? "Nessuno con questi filtri." : "Ancora nessuna risposta."}
               </Typography>
             ) : (
               <Stack divider={<Divider flexItem />}>
@@ -190,7 +232,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                       key={r.id}
                       sx={{
                         py: 1.25,
-                        pl: isGuest && !optionFilter ? 3 : 0,
+                        pl: isGuest && !filtered ? 3 : 0,
                         display: "flex",
                         gap: 1.5,
                         alignItems: "flex-start",
@@ -200,11 +242,14 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                     >
                       <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                          {isGuest && !optionFilter && (
+                          {isGuest && !filtered && (
                             <SubdirectoryArrowRightIcon
                               fontSize="small"
                               sx={{ color: "text.secondary" }}
                             />
+                          )}
+                          {r.sportRole != null && (
+                            <RoleBadge role={r.sportRole} variant={r.sportRoleVariant} />
                           )}
                           <Typography variant="body2" fontWeight={700}>
                             {r.name || "Esterno senza nome"}

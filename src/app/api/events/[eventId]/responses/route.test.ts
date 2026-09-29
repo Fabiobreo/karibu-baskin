@@ -19,6 +19,7 @@ const data = {
   event: { id: "evt-1", slug: "festa", title: "Festa" },
   options: [{ id: "lunch", label: "Pranzo", count: 1, guestCount: 1 }],
   totals: { GOING: 1, MAYBE: 0, NOT_GOING: 1, guests: 1 },
+  players: { going: 1, maybe: 0, goingByRole: { 3: 1 } },
   rows: [
     {
       id: "a1",
@@ -30,6 +31,8 @@ const data = {
       guestOf: null,
       respondedBy: null,
       possibleDuplicate: false,
+      sportRole: 3,
+      sportRoleVariant: "T",
     },
     {
       id: "a2",
@@ -41,6 +44,8 @@ const data = {
       guestOf: "Paola",
       respondedBy: null,
       possibleDuplicate: true,
+      sportRole: null,
+      sportRoleVariant: null,
     },
   ],
 };
@@ -76,12 +81,13 @@ describe("GET /api/events/[eventId]/responses", () => {
     const text = await res.text();
     const lines = text.replace("﻿", "").split("\r\n");
     expect(lines[0]).toBe(
-      '"Nome";"Tipo";"Evento principale";"Pranzo";"Note";"Esterno di";"Risposto da";"Possibile doppione"'
+      '"Nome";"Tipo";"Ruolo Baskin";"Evento principale";"Pranzo";"Note";"Esterno di";"Risposto da";"Possibile doppione"'
     );
-    expect(lines[1]).toBe('"\'=Paola";"Tesserato";"Ci sarò";"";"celiaca";"";"";""');
+    expect(lines[1]).toBe('"\'=Paola";"Tesserato";"Ruolo 3T";"Ci sarò";"";"celiaca";"";"";""');
     expect(lines[2]).toBe(
-      '"Esterno senza nome";"Esterno";"Solo agli extra";"Sì";"";"Paola";"";"Sì"'
+      '"Esterno senza nome";"Esterno";"";"Solo agli extra";"Sì";"";"Paola";"";"Sì"'
     );
     expect(text).toContain('"Pranzo";"1";"di cui esterni: 1"');
+    expect(text).toContain('"Ruolo 3 (ci sarò)";"1"');
   });
 });

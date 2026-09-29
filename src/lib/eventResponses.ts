@@ -10,6 +10,10 @@ import { prisma } from "@/lib/db";
  * Gli esterni li vede solo chi li ha aggiunti, quindi due genitori possono
  * aggiungere la stessa persona senza accorgersene: qui si segnalano gli
  * esterni con lo stesso nome di un altro esterno o di un partecipante.
+ *
+ * Chi gioca: chi ha un ruolo Baskin (1-5), qualunque sia il ruolo nell'app. Un
+ * genitore con un ruolo gioca; uno senza partecipa ma non gioca. Serve per le
+ * partite di dimostrazione, dove conta sapere chi scende in campo.
  */
 
 export type ResponseKind = "user" | "child" | "guest";
@@ -27,11 +31,22 @@ export interface ResponseRow {
   respondedBy: string | null;
   /** Esterno con lo stesso nome di un altro esterno o di un partecipante. */
   possibleDuplicate: boolean;
+  /** Ruolo Baskin: chi ce l'ha puo' giocare. Mai per gli esterni. */
+  sportRole: number | null;
+  sportRoleVariant: string | null;
+}
+
+export interface PlayersSummary {
+  going: number;
+  maybe: number;
+  /** Solo chi ha detto Ci sarò, per ruolo 1-5: per comporre le squadre. */
+  goingByRole: Record<number, number>;
 }
 
 export interface EventResponses {
   options: { id: string; label: string; count: number; guestCount: number }[];
   totals: Record<EventAttendanceStatus, number> & { guests: number };
+  players: PlayersSummary;
   rows: ResponseRow[];
 }
 
@@ -45,8 +60,15 @@ export interface AttendanceInput {
   childId: string | null;
   guestId: string | null;
   respondedById: string | null;
-  user: { name: string | null } | null;
-  child: { name: string; userId: string | null } | null;
+  user: { name: string | null; sportRole: number | null; sportRoleVariant: string | null } | null;
+  child: {
+    name: string;
+    userId: string | null;
+    sportRole: number | null;
+    sportRoleVariant: string | null;
+    /** Account della persona, se ha anche una scheda figlio: il ruolo puo' stare li'. */
+    user: { sportRole: number | null; sportRoleVariant: string | null } | null;
+  } | null;
   guest: { name: string | null; addedById: string; addedBy: { name: string | null } } | null;
   respondedBy: { name: string | null } | null;
 }
@@ -85,6 +107,19 @@ export function summarizeResponses(
       )
       .map((s) => s.optionId);
 
+  // Ruolo della scheda figlio, o in mancanza del suo account.
+  const roleOf = (a: AttendanceInput) => {
+    if (a.guestId) return { sportRole: null, sportRoleVariant: null };
+    if (a.child) {
+      const src = a.child.sportRole != null ? a.child : a.child.user;
+      return { sportRole: src?.sportRole ?? null, sportRoleVariant: src?.sportRoleVariant ?? null };
+    }
+    return {
+      sportRole: a.user?.sportRole ?? null,
+      sportRoleVariant: a.user?.sportRoleVariant ?? null,
+    };
+  };
+
   // Account della persona: serve a capire se ha risposto lei e dove stanno i
   // suoi esterni.
   const accountOf = (a: AttendanceInput) => a.userId ?? a.child?.userId ?? null;
@@ -108,6 +143,7 @@ export function summarizeResponses(
       guestOf: a.guest ? (a.guest.addedBy.name ?? "—") : null,
       respondedBy: kind === "guest" || self ? null : (a.respondedBy?.name ?? null),
       possibleDuplicate: false,
+      ...roleOf(a),
     };
   };
 
@@ -150,7 +186,17 @@ export function summarizeResponses(
   const totals = { GOING: 0, MAYBE: 0, NOT_GOING: 0, guests: guestRows.length };
   for (const r of all) totals[r.status] += 1;
 
+  const players: PlayersSummary = { going: 0, maybe: 0, goingByRole: {} };
+  for (const r of all) {
+    if (r.sportRole == null) continue;
+    if (r.status === "GOING") {
+      players.going += 1;
+      players.goingByRole[r.sportRole] = (players.goingByRole[r.sportRole] ?? 0) + 1;
+    } else if (r.status === "MAYBE") players.maybe += 1;
+  }
+
   return {
+    players,
     options: options.map((o) => {
       const joined = all.filter((r) => r.optionIds.includes(o.id));
       return {
@@ -191,8 +237,16 @@ export async function loadEventResponses(eventId: string) {
         childId: true,
         guestId: true,
         respondedById: true,
-        user: { select: { name: true } },
-        child: { select: { name: true, userId: true } },
+        user: { select: { name: true, sportRole: true, sportRoleVariant: true } },
+        child: {
+          select: {
+            name: true,
+            userId: true,
+            sportRole: true,
+            sportRoleVariant: true,
+            user: { select: { sportRole: true, sportRoleVariant: true } },
+          },
+        },
         guest: { select: { name: true, addedById: true, addedBy: { select: { name: true } } } },
         respondedBy: { select: { name: true } },
       },

@@ -3,6 +3,7 @@ import type { EventAttendanceStatus } from "@prisma/client";
 import { staffGuard } from "@/lib/apiAuth";
 import { loadEventResponses, type ResponseRow } from "@/lib/eventResponses";
 import { csvResponse, csvRow } from "@/lib/csv";
+import { ROLES, sportRoleLabel } from "@/lib/constants";
 
 type Params = { params: Promise<{ eventId: string }> };
 
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     csvRow([
       "Nome",
       "Tipo",
+      "Ruolo Baskin",
       "Evento principale",
       ...options.map((o) => o.label),
       "Note",
@@ -54,6 +56,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       csvRow([
         r.name || "Esterno senza nome",
         KIND_IT[r.kind],
+        r.sportRole != null ? sportRoleLabel(r.sportRole, r.sportRoleVariant) : "",
         statusLabel(r),
         ...options.map((o) => (r.optionIds.includes(o.id) ? "Sì" : "")),
         r.note,
@@ -68,6 +71,11 @@ export async function GET(req: NextRequest, { params }: Params) {
       csvRow([STATUS_IT[s], data.totals[s]])
     ),
     ...options.map((o) => csvRow([o.label, o.count, `di cui esterni: ${o.guestCount}`])),
+    "",
+    csvRow(["Chi gioca (con un ruolo Baskin)"]),
+    csvRow(["Ci sarò", data.players.going]),
+    csvRow(["Forse", data.players.maybe]),
+    ...ROLES.map((r) => csvRow([`Ruolo ${r} (ci sarò)`, data.players.goingByRole[r] ?? 0])),
   ];
   return csvResponse(lines, `risposte-${event.slug ?? event.id}.csv`);
 }
