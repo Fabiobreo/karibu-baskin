@@ -22,7 +22,11 @@ import RoleBadge from "@/components/common/RoleBadge";
 import { contrastText } from "@/lib/colorUtils";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
-import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import LoginIcon from "@mui/icons-material/Login";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import { loginHref } from "@/lib/loginReturn";
 import { useRegistrationForm } from "@/hooks/useRegistrationForm";
 import RegistrationSubjectSelector from "@/components/training/RegistrationSubjectSelector";
 import { useTranslations } from "next-intl";
@@ -110,6 +114,9 @@ export default function RegistrationForm({
     onOptimisticAdd,
     onSubmitError,
   });
+  // Chi non ha fatto l'accesso sceglie prima come iscriversi (UX-34): il form
+  // da ospite compare solo dopo "Continua senza account".
+  const [continueAsGuest, setContinueAsGuest] = useState(false);
 
   // ── Caricamento ──────────────────────────────────────────────────────────────
 
@@ -318,7 +325,9 @@ export default function RegistrationForm({
 
       {/* Form atleta (nascosto in modalità allenatore) */}
       {(!isCoach || coachMode === "athlete") &&
-        (currentSubjectRegistered ? (
+        (!currentUser && !continueAsGuest ? (
+          <SignInOrGuestChoice onGuest={() => setContinueAsGuest(true)} />
+        ) : currentSubjectRegistered ? (
           <Box sx={{ textAlign: "center", py: 1.5 }}>
             <CheckCircleIcon color="success" sx={{ fontSize: 32, mb: 0.5 }} />
             <Typography variant="body2" fontWeight={600}>
@@ -435,6 +444,10 @@ export default function RegistrationForm({
                   onChange={(e) => setAnonymousName(e.target.value)}
                   fullWidth
                   size="small"
+                  autoComplete="name"
+                  // Compare dopo il clic su "Continua senza account": il fuoco
+                  // va al primo campo, non resta su un bottone che non c'è più.
+                  autoFocus
                   slotProps={{ htmlInput: { maxLength: 60 } }}
                   sx={{ mb: 1.5 }}
                   disabled={loading}
@@ -444,6 +457,7 @@ export default function RegistrationForm({
                 <TextField
                   label={t("emailOptional")}
                   type="email"
+                  autoComplete="email"
                   value={anonymousEmail}
                   onChange={(e) => setAnonymousEmail(e.target.value)}
                   fullWidth
@@ -451,33 +465,6 @@ export default function RegistrationForm({
                   slotProps={{ htmlInput: { maxLength: 254 } }}
                   sx={{ mb: 2 }}
                   disabled={loading}
-                  helperText={
-                    <Box
-                      component="span"
-                      sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}
-                    >
-                      <span>{t("hasGoogle")}</span>
-                      <Box
-                        component="button"
-                        type="button"
-                        onClick={() => signIn("google", { callbackUrl: window.location.href })}
-                        sx={{
-                          color: "primary.onLight",
-                          fontWeight: 600,
-                          textDecoration: "none",
-                          background: "none",
-                          border: "none",
-                          p: 0,
-                          cursor: "pointer",
-                          font: "inherit",
-                          fontSize: "inherit",
-                          "&:hover": { textDecoration: "underline" },
-                        }}
-                      >
-                        {t("loginEasier")}
-                      </Box>
-                    </Box>
-                  }
                 />
               </>
             )}
@@ -532,11 +519,8 @@ export default function RegistrationForm({
                   </Box>
                 ) : (
                   <>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-                      {subject !== "self"
-                        ? t("questionnairePromptChild", { name: selectedChild?.name ?? "" })
-                        : t("questionnairePromptSelf")}
-                    </Typography>
+                    {/* L'introduzione la dà il questionario stesso (UX-34):
+                        qui un secondo testo la ripeterebbe. */}
                     <SportRoleQuestionnaire
                       onResult={handleQuestionnaireResult}
                       subjectName={subject !== "self" ? selectedChild?.name : undefined}
@@ -678,6 +662,69 @@ function RegistrationBlocked({ reason }: { reason: string }) {
       <Button href="/contatti" variant="outlined" size="small" sx={{ mt: 1, fontWeight: 700 }}>
         {t("askStaff")}
       </Button>
+    </Box>
+  );
+}
+
+/**
+ * Due strade di pari peso per chi non ha fatto l'accesso (UX-34): accedere,
+ * con ritorno a questa pagina, o iscriversi come ospite. È l'unico invito ad
+ * accedere della pagina.
+ */
+function SignInOrGuestChoice({ onGuest }: { onGuest: () => void }) {
+  const t = useTranslations("trainings");
+  const pathname = usePathname();
+  const optionSx = {
+    justifyContent: "flex-start",
+    textAlign: "left",
+    textTransform: "none",
+    py: 1.25,
+    px: 2,
+    gap: 0.5,
+  } as const;
+  return (
+    <Box>
+      <Typography id="registration-choice" variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
+        {t("signInChoiceTitle")}
+      </Typography>
+      <Box
+        role="group"
+        aria-labelledby="registration-choice"
+        sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+      >
+        <Button
+          href={loginHref(pathname)}
+          variant="outlined"
+          fullWidth
+          startIcon={<LoginIcon />}
+          sx={optionSx}
+        >
+          <Box component="span" sx={{ display: "flex", flexDirection: "column" }}>
+            <Box component="span" sx={{ fontWeight: 700 }}>
+              {t("signInChoiceLogin")}
+            </Box>
+            <Box component="span" sx={{ typography: "caption", color: "text.secondary" }}>
+              {t("signInChoiceLoginHint")}
+            </Box>
+          </Box>
+        </Button>
+        <Button
+          onClick={onGuest}
+          variant="outlined"
+          fullWidth
+          startIcon={<PersonOutlineIcon />}
+          sx={optionSx}
+        >
+          <Box component="span" sx={{ display: "flex", flexDirection: "column" }}>
+            <Box component="span" sx={{ fontWeight: 700 }}>
+              {t("signInChoiceGuest")}
+            </Box>
+            <Box component="span" sx={{ typography: "caption", color: "text.secondary" }}>
+              {t("signInChoiceGuestHint")}
+            </Box>
+          </Box>
+        </Button>
+      </Box>
     </Box>
   );
 }

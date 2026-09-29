@@ -1,6 +1,6 @@
 # UX-34 · Form d'iscrizione: testo unico, scelta accesso o ospite, form in prima colonna
 
-**Ondata:** 4 · **Stima:** S · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 4 · **Stima:** S · **Dipende da:** nessuno · **Stato:** fatto (merge in `develop`, branch `feature/ux-34-form-iscrizione`)
 
 ## Problema
 
@@ -26,3 +26,10 @@ Pagina `/allenamento/[id]` da anonimo, cioè la conversione principale del sito.
 - Da anonimo un solo invito ad accedere nella pagina.
 - A 1440 px il form è il primo blocco dopo l'hero nell'ordine di lettura e di Tab.
 - Testi in `it.json` ed `en.json`; test del form aggiornati; `npm run a11y` verde.
+
+## Decisioni (29/09/2026)
+
+- **Accedi** porta a `/login?callbackUrl=<pagina>`, non direttamente a Google: da lì si entra anche col link via email (Alice, Libero…). `/login` accetta solo percorsi interni (`safeCallbackPath` in `@/lib/loginReturn`, niente open redirect).
+- **Layout desktop:** colonne scambiate (form a sinistra, iscritti e squadre a destra), larghezze invariate. Il form viene prima anche nel DOM, quindi nell'ordine di Tab.
+- **Testo introduttivo:** resta `questionnaire.intro` dentro il questionario, con una variante per il figlio; tolti i prompt del form. Su `/profilo/ruolo` il sottotitolo dell'hero non ripete più "Rispondi a qualche domanda".
+- **Card Iscritti** per anonimi e GUEST: una riga ("8 atleti · I nomi li vedono solo i tesserati del Karibu"), stesso testo per entrambi.

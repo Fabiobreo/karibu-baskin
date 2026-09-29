@@ -482,37 +482,10 @@ export default function SessionPageClient({
             ) : (
               /* ── Stato: default — layout a due colonne su desktop ── */
               <Grid container spacing={3} alignItems="flex-start">
-                {/* Sinistra (desktop): roster + squadre */}
-                <Grid size={{ xs: 12, md: 7 }} sx={{ order: { xs: 2, md: 1 } }}>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                    <SectionErrorBoundary label="Lista iscritti">
-                      <RosterByRole {...rosterProps} />
-                    </SectionErrorBoundary>
-                    {/* Chi non e' tesserato vede un solo invito ad accedere,
-                        nella card Iscritti: niente seconda card Squadre. */}
-                    {!rosterRestriction && (
-                      <SectionErrorBoundary label="Squadre">
-                        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                          <TeamsHeader
-                            teams={teams}
-                            coaches={teamDisplayProps.coaches}
-                            sessionTitle={session?.title}
-                            sessionDate={session?.date}
-                            sessionEndTime={session?.endTime}
-                            isStaff={isStaff}
-                            removingTeams={removingTeams}
-                            onRemoveTeams={handleRemoveTeams}
-                            onEditTeams={() => setEditingTeams(true)}
-                          />
-                          <TeamDisplay {...teamDisplayProps} />
-                        </Paper>
-                      </SectionErrorBoundary>
-                    )}
-                  </Box>
-                </Grid>
-
-                {/* Destra (desktop): form iscrizione sticky */}
-                <Grid size={{ xs: 12, md: 5 }} sx={{ order: { xs: 1, md: 2 } }}>
+                {/* Sinistra (desktop): form iscrizione sticky. Viene per primo anche
+                    nel DOM, quindi nell'ordine di lettura e di Tab: è il
+                    compito principale della pagina (UX-34). */}
+                <Grid size={{ xs: 12, md: 5 }}>
                   <Paper
                     elevation={2}
                     sx={{
@@ -584,6 +557,35 @@ export default function SessionPageClient({
                       )}
                     </SectionErrorBoundary>
                   </Paper>
+                </Grid>
+
+                {/* Destra (desktop): roster + squadre */}
+                <Grid size={{ xs: 12, md: 7 }}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    <SectionErrorBoundary label="Lista iscritti">
+                      <RosterByRole {...rosterProps} />
+                    </SectionErrorBoundary>
+                    {/* Chi non e' tesserato vede un solo invito ad accedere,
+                        in cima al form: niente card Squadre bloccata. */}
+                    {!rosterRestriction && (
+                      <SectionErrorBoundary label="Squadre">
+                        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                          <TeamsHeader
+                            teams={teams}
+                            coaches={teamDisplayProps.coaches}
+                            sessionTitle={session?.title}
+                            sessionDate={session?.date}
+                            sessionEndTime={session?.endTime}
+                            isStaff={isStaff}
+                            removingTeams={removingTeams}
+                            onRemoveTeams={handleRemoveTeams}
+                            onEditTeams={() => setEditingTeams(true)}
+                          />
+                          <TeamDisplay {...teamDisplayProps} />
+                        </Paper>
+                      </SectionErrorBoundary>
+                    )}
+                  </Box>
                 </Grid>
               </Grid>
             )}

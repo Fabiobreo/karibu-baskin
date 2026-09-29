@@ -5,6 +5,7 @@ import GoogleSignInButton from "@/components/common/GoogleSignInButton";
 import MagicLinkForm from "@/components/common/MagicLinkForm";
 import TestLoginForm from "@/components/common/TestLoginForm";
 import { buildMetadata } from "@/lib/seo";
+import { safeCallbackPath } from "@/lib/loginReturn";
 
 export const metadata = buildMetadata({
   title: "Accedi",
@@ -15,8 +16,14 @@ export const metadata = buildMetadata({
 
 const testLoginEnabled = process.env.ENABLE_TEST_LOGIN === "true";
 
-export default async function LoginPage() {
-  const t = await getTranslations("pages");
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string | string[] }>;
+}) {
+  const [t, params] = await Promise.all([getTranslations("pages"), searchParams]);
+  // Chi arriva da una pagina (es. il form d'iscrizione) ci torna dopo l'accesso.
+  const callbackUrl = safeCallbackPath(params.callbackUrl);
 
   return (
     <Container maxWidth="xs" sx={{ pt: 10 }}>
@@ -29,7 +36,7 @@ export default async function LoginPage() {
           {t("login.subtitle")}
         </Typography>
         <Box>
-          <GoogleSignInButton callbackUrl="/" />
+          <GoogleSignInButton callbackUrl={callbackUrl} />
         </Box>
 
         <Divider sx={{ my: 3 }}>
@@ -38,7 +45,7 @@ export default async function LoginPage() {
           </Typography>
         </Divider>
 
-        <MagicLinkForm callbackUrl="/" />
+        <MagicLinkForm callbackUrl={callbackUrl} />
         <Typography
           variant="caption"
           color="text.secondary"
@@ -47,7 +54,7 @@ export default async function LoginPage() {
           {t("login.emailHelp")}
         </Typography>
 
-        {testLoginEnabled && <TestLoginForm callbackUrl="/" />}
+        {testLoginEnabled && <TestLoginForm callbackUrl={callbackUrl} />}
       </Paper>
     </Container>
   );

@@ -135,7 +135,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
       {/* Cornice introduttiva: perché chiediamo e che fine fanno le risposte */}
       {history.length === 1 && (
         <Typography variant="body2" sx={{ mb: 2 }}>
-          {t("intro")}
+          {t("intro", who)}
         </Typography>
       )}
       {initialSuggested && (

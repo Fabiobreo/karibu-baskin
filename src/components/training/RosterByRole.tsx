@@ -504,7 +504,8 @@ export default function RosterByRole({
           gap: 1,
           px: 2,
           py: 1.5,
-          borderBottom: "1px solid",
+          // Per chi non è tesserato la card è solo questa riga (UX-34).
+          borderBottom: restricted && !loading ? "none" : "1px solid",
           borderColor: "divider",
           bgcolor: (theme) =>
             theme.palette.mode === "dark" ? theme.palette.background.paper : theme.palette.grey[50],
@@ -522,6 +523,11 @@ export default function RosterByRole({
             size="small"
             sx={{ fontWeight: 600 }}
           />
+        )}
+        {restricted && !loading && (
+          <Typography variant="body2" color="text.secondary">
+            {t("rosterPrivateShort")}
+          </Typography>
         )}
         {!loadFailed && !restricted && coachRegs.length > 0 && (
           <Chip
@@ -569,20 +575,7 @@ export default function RosterByRole({
           <Skeleton variant="text" width="55%" />
           <Skeleton variant="text" width="35%" />
         </Box>
-      ) : restricted ? (
-        <Box sx={{ px: 2, py: 2.5, display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <Typography color="text.secondary">
-            {restricted === "guest" ? t("rosterPrivateGuest") : t("rosterPrivate")}
-          </Typography>
-          {restricted === "anonymous" && (
-            <Box>
-              <Button href="/login" size="small" variant="contained">
-                {t("rosterPrivateCta")}
-              </Button>
-            </Box>
-          )}
-        </Box>
-      ) : loadFailed ? (
+      ) : restricted ? null : loadFailed ? (
         <QueryErrorState message={t("rosterLoadError")} onRetry={onRetry} compact />
       ) : registrations.length === 0 ? (
         <Typography color="text.secondary" sx={{ px: 2, py: 2.5 }}>
