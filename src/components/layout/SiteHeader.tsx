@@ -26,7 +26,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LogoutIcon from "@mui/icons-material/Logout";
-import HomeIcon from "@mui/icons-material/Home";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -59,9 +58,10 @@ import { heroText } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
-// href-only — le label vengono da t() dentro il componente
+// href-only — le label vengono da t() dentro il componente.
+// Niente voce "Home": ci porta il logo, e lo spazio della barra serve alle voci
+// con il nome (UX-44).
 const NAV_HREFS = [
-  { key: "home" as const, href: "/", iconOnly: true },
   { key: "trainings" as const, href: "/allenamenti" },
   { key: "calendar" as const, href: "/calendario" },
   { key: "events" as const, href: "/eventi" },
@@ -88,6 +88,22 @@ const CONTATTI_HREFS = [
   { key: "faq" as const, href: "/faq" },
   { key: "sponsor" as const, href: "/sponsor" },
 ];
+
+/**
+ * Voci della barra: mai a capo e senza la larghezza minima di MUI (64 px), che
+ * lasciava spazio vuoto attorno a "News" ed "Eventi" (UX-44).
+ */
+const NAV_ITEM_SX = { whiteSpace: "nowrap", minWidth: 0, flexShrink: 0 } as const;
+
+/**
+ * Da qui in su il menu completo sta nella barra (UX-44). Sotto, fino a `md`
+ * (dove compare la barra in basso), il menu compatto: le voci vanno nel
+ * drawer, mentre ricerca, tema, lingua, campanella e avatar restano. A 900 px
+ * le voci sforavano di quasi 100 px anche senza il nome del club.
+ */
+const FULL_NAV = "@media (min-width:1024px)";
+/** Fra il menu completo e `lg` il nome del club lascia spazio alle voci. */
+const NAV_WITHOUT_CLUB_NAME = "@media (min-width:1024px) and (max-width:1199.95px)";
 
 const COLOR_MODE_ORDER = ["light", "dark", "system"] as const;
 type ColorMode = (typeof COLOR_MODE_ORDER)[number];
@@ -212,7 +228,13 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               height={38}
               style={{ objectFit: "contain" }}
             />
-            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+            {/* Fra 1.024 e 1.200 px il nome lascia spazio al menu: resta il logo (UX-44) */}
+            <Box
+              sx={{
+                display: { xs: "none", sm: "block" },
+                [NAV_WITHOUT_CLUB_NAME]: { display: "none" },
+              }}
+            >
               <Typography
                 component="span"
                 variant="subtitle2"
@@ -247,14 +269,15 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
             component="nav"
             aria-label={t("mainNav")}
             sx={{
-              display: { xs: "none", md: "flex" },
+              display: "none",
+              [FULL_NAV]: { display: "flex" },
               gap: 0.5,
               ml: 3,
               flex: 1,
               alignItems: "center",
             }}
           >
-            {/* Voci semplici: Home, Allenamenti, Calendario, News */}
+            {/* Voci semplici: Allenamenti, Calendario, Eventi, News */}
             {NAV_HREFS.map((link) => {
               const active = STARTSWITH_NAV.includes(link.href)
                 ? (pathname?.startsWith(link.href) ?? false)
@@ -266,8 +289,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   href={link.href}
                   size="small"
                   aria-current={active ? "page" : undefined}
-                  aria-label={link.iconOnly ? t(link.key) : undefined}
                   sx={{
+                    ...NAV_ITEM_SX,
                     color: active
                       ? "common.white"
                       : (theme) => alpha(theme.palette.common.white, 0.6),
@@ -277,12 +300,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                     borderBottomColor: active ? "primary.main" : "transparent",
                     borderRadius: 0,
                     pb: "2px",
-                    minWidth: link.iconOnly ? 36 : undefined,
-                    px: link.iconOnly ? 1 : undefined,
                     "&:hover": { color: "common.white", backgroundColor: "transparent" },
                   }}
                 >
-                  {link.iconOnly ? <HomeIcon fontSize="small" /> : t(link.key)}
+                  {t(link.key)}
                 </Button>
               );
             })}
@@ -293,6 +314,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               onClick={(e) => setPartiteAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
+                ...NAV_ITEM_SX,
                 color: partiteActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
@@ -339,6 +361,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               onClick={(e) => setSquadreAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
+                ...NAV_ITEM_SX,
                 color: squadreActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
@@ -385,6 +408,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               onClick={(e) => setIlBaskinAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
+                ...NAV_ITEM_SX,
                 color: ilBaskinActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
@@ -452,6 +476,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               onClick={(e) => setContattiAnchor(e.currentTarget)}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
+                ...NAV_ITEM_SX,
                 color: contattiActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
@@ -493,7 +518,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
             </Menu>
           </Box>
 
-          <Box sx={{ flex: { xs: 1, md: 0 } }} />
+          <Box sx={{ flex: 1, [FULL_NAV]: { flex: 0 } }} />
 
           {/* Ricerca globale — visibile sempre (desktop + mobile) */}
           <GlobalSearch />
@@ -626,19 +651,19 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
             )}
           </Box>
 
-          {/* Hamburger mobile */}
+          {/* Hamburger: mobile e menu compatto fino a 1.024 px */}
           <IconButton
             color="inherit"
             onClick={() => setDrawerOpen(true)}
             aria-label={t("openMenu")}
-            sx={{ ...TOUCH_TARGET, display: { md: "none" } }}
+            sx={{ ...TOUCH_TARGET, [FULL_NAV]: { display: "none" } }}
           >
             <MenuIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
 
-      {/* Drawer mobile — solo pagine secondarie */}
+      {/* Drawer: tutte le voci, su mobile e nel menu compatto */}
       <Drawer
         anchor="right"
         open={drawerOpen}

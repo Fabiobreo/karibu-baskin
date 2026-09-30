@@ -1,6 +1,6 @@
 # UX-44 · Header fra 900 e 1.200 px: la barra non ci sta
 
-**Ondata:** 4 · **Stima:** S · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 4 · **Stima:** S · **Dipende da:** nessuno · **Stato:** fatto (su `develop`)
 
 Nato il 01/10/2026 dalla revisione estetica di fine UX-32/UX-37.
 
@@ -31,3 +31,15 @@ Durante UX-37 i punti 1-3 (con la voce Home tolta) portavano lo sforamento a zer
 - Nessuno sforamento del `Toolbar` a 900, 960, 1.024, 1.199, 1.200, 1.280 e 1.440 px, con e senza accesso.
 - A 1.440 px l'header è identico a oggi.
 - `npm run a11y` verde.
+
+## Esito
+
+Fatti i punti 1-3, con il menu compatto nella forma che non tocca il desktop largo:
+
+- voci senza larghezza minima e mai a capo; voce "Home" tolta (ci porta il logo);
+- **menu compatto sotto 1.024 px** (non fino a 1.200): fra 900 e 1.024 le voci passano nel drawer, che le ha già tutte; ricerca, tema, lingua, campanella e avatar restano nella barra, quindi profilo e notifiche sono raggiungibili anche senza la barra in basso;
+- nome del club nascosto solo fra 1.024 e 1.200 px; nel menu compatto c'è spazio e resta.
+
+Sforamento del `Toolbar` misurato con Playwright (anonimo e admin, italiano e inglese): zero a 600, 899, 900, 960, 1.000, 1.023, 1.024, 1.100, 1.199, 1.200, 1.280 e 1.440 px. Spazio libero nella barra nel caso peggiore (admin, italiano): 35 px a 1.024 e a 1.200, abbastanza per le voci ma non per l'icona Home (40 px). Prima, fra 900 e 960 px, lo sforamento allargava tutta la pagina.
+
+A 1.440 px l'header cambia solo per la Home tolta e per le voci un po' più strette (niente larghezza minima).
