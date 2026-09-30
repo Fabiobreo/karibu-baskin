@@ -15,6 +15,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { AlignedTeamGrid, MobileTeamTabs } from "@/components/training/TeamDisplay";
 import ShareTeamsButton from "@/components/training/ShareTeamsButton";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Athlete {
   id: string;
@@ -87,7 +88,7 @@ export default function TeamsModal({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={700}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ whiteSpace: "nowrap" }}
             >
               {t("teamCoaches")}

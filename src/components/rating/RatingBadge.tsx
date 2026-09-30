@@ -1,4 +1,5 @@
 import { Box, Tooltip, Typography } from "@mui/material";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface RatingBadgeProps {
   /** μ TrueSkill (skill attesa). null = giocatore non ancora valutato. */
@@ -41,7 +42,10 @@ export default function RatingBadge({ mu, sigma, compact }: RatingBadgeProps) {
         <Typography
           variant="body2"
           component="span"
-          sx={{ fontWeight: 600, color: reliable ? "text.primary" : "text.secondary" }}
+          sx={{
+            fontWeight: FONT_WEIGHT.semibold,
+            color: reliable ? "text.primary" : "text.secondary",
+          }}
         >
           {muLabel}
         </Typography>

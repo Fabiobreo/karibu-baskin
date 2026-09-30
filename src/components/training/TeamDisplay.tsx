@@ -32,6 +32,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import QueryErrorState from "@/components/common/QueryErrorState";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /**
  * Colore della squadra come riempimento sotto un'etichetta bianca: l'arancio
@@ -116,8 +117,10 @@ function RoleBadge({
         opacity: count === 0 ? 0.28 : 1,
       }}
     >
-      <Box sx={{ px: 1.25, py: "5px", fontWeight: 700 }}>{label}</Box>
-      <Box sx={{ px: 1.25, py: "5px", fontWeight: 400, bgcolor: "rgba(0,0,0,0.22)" }}>
+      <Box sx={{ px: 1.25, py: "5px", fontWeight: FONT_WEIGHT.semibold }}>{label}</Box>
+      <Box
+        sx={{ px: 1.25, py: "5px", fontWeight: FONT_WEIGHT.regular, bgcolor: "rgba(0,0,0,0.22)" }}
+      >
         {playerLabel}
       </Box>
     </Box>
@@ -154,7 +157,11 @@ export function MobileTeamTabs({
         variant="fullWidth"
         sx={{
           "& .MuiTabs-indicator": { backgroundColor: activeColor, height: 3 },
-          "& .MuiTab-root": { fontWeight: 700, fontSize: TYPE_SCALE.xs, minHeight: 48 },
+          "& .MuiTab-root": {
+            fontWeight: FONT_WEIGHT.semibold,
+            fontSize: TYPE_SCALE.xs,
+            minHeight: 48,
+          },
           // Il nome della squadra è testo sul fondo del tema: l'arancio pieno fa
           // 3,78:1 sul bianco e i "Neri" sparirebbero in scuro (UX-22).
           "& .MuiTab-root.Mui-selected": {
@@ -183,7 +190,6 @@ export function MobileTeamTabs({
                   sx={{
                     height: 20,
                     fontSize: TYPE_SCALE.xs,
-                    fontWeight: 700,
                     bgcolor: tab === i ? teamFill(m.color) : "action.selected",
                     color: tab === i ? "common.white" : "text.secondary",
                   }}
@@ -217,7 +223,11 @@ export function MobileTeamTabs({
                           slug ? (
                             <Link
                               href={`/giocatori/${slug}`}
-                              style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
+                              style={{
+                                color: "inherit",
+                                textDecoration: "none",
+                                fontWeight: FONT_WEIGHT.semibold,
+                              }}
                             >
                               {a.name}
                             </Link>
@@ -270,7 +280,7 @@ export function AlignedTeamGrid({
           gap: 1,
         }}
       >
-        <Typography component="h3" variant="h6" sx={{ color: "common.white", fontWeight: 700 }}>
+        <Typography component="h3" variant="h6" sx={{ color: "common.white" }}>
           {teamColorLabel(m.key)}
         </Typography>
         <Chip
@@ -329,9 +339,13 @@ export function AlignedTeamGrid({
               (slug ? (
                 <Link
                   href={`/giocatori/${slug}`}
-                  style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
+                  style={{
+                    color: "inherit",
+                    textDecoration: "none",
+                    fontWeight: FONT_WEIGHT.semibold,
+                  }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  <Typography variant="body2" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                     {athlete.name}
                   </Typography>
                 </Link>
@@ -456,13 +470,13 @@ function TeamEditor({
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography component="h3" variant="subtitle2" fontWeight={700}>
+                <Typography component="h3" variant="subtitle2">
                   {t("editorUnassigned")}
                 </Typography>
                 <Chip
                   label={pool.length}
                   size="small"
-                  sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
                 />
               </Box>
               {!!selected && selected.fromKey !== "pool" && (
@@ -471,7 +485,7 @@ function TeamEditor({
                   variant="outlined"
                   disabled={saving}
                   onClick={() => moveTo("pool")}
-                  sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, py: 0.25, minWidth: 90 }}
+                  sx={{ fontSize: TYPE_SCALE.xs, py: 0.25, minWidth: 90 }}
                 >
                   {saving ? <CircularProgress size={14} color="inherit" /> : t("editorRemove")}
                 </Button>
@@ -493,7 +507,6 @@ function TeamEditor({
                           setSelected(isSelected ? null : { id: a.id, fromKey: "pool" })
                         }
                         sx={{
-                          fontWeight: 600,
                           fontSize: TYPE_SCALE.xs,
                           bgcolor: isSelected ? "text.primary" : `${roleColor(role)}22`,
                           color: isSelected ? "background.paper" : "text.primary",
@@ -536,11 +549,7 @@ function TeamEditor({
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography
-                    component="h3"
-                    variant="subtitle2"
-                    sx={{ color: "common.white", fontWeight: 700 }}
-                  >
+                  <Typography component="h3" variant="subtitle2" sx={{ color: "common.white" }}>
                     {teamColorLabel(m.key)}
                   </Typography>
                   <Chip
@@ -550,7 +559,6 @@ function TeamEditor({
                     sx={{
                       height: 20,
                       fontSize: TYPE_SCALE.xs,
-                      fontWeight: 700,
                       color: "common.white",
                       borderColor: "common.white",
                     }}
@@ -565,7 +573,6 @@ function TeamEditor({
                     sx={{
                       bgcolor: "common.white",
                       color: teamFill(m.color),
-                      fontWeight: 700,
                       fontSize: TYPE_SCALE.xs,
                       py: 0.25,
                       minWidth: 90,
@@ -594,7 +601,6 @@ function TeamEditor({
                             setSelected(isSelected ? null : { id: a.id, fromKey: key })
                           }
                           sx={{
-                            fontWeight: 600,
                             fontSize: TYPE_SCALE.xs,
                             bgcolor: isSelected ? m.color : `${roleColor(role)}22`,
                             color: isSelected ? "common.white" : "text.primary",
@@ -780,7 +786,7 @@ export default function TeamDisplay({
         }}
       >
         <GroupsIcon sx={{ fontSize: 36, color: "primary.main", mb: 1 }} />
-        <Typography variant="body1" fontWeight={600} gutterBottom>
+        <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold} gutterBottom>
           {t("teamsCreate")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
@@ -799,10 +805,10 @@ export default function TeamDisplay({
             }}
           >
             {/* 44px: si usa dal telefono, a bordo campo (UX-13). */}
-            <ToggleButton value={2} sx={{ px: 3, minHeight: 44, fontWeight: 600 }}>
+            <ToggleButton value={2} sx={{ px: 3, minHeight: 44, fontWeight: FONT_WEIGHT.semibold }}>
               {t("teams2")}
             </ToggleButton>
-            <ToggleButton value={3} sx={{ px: 3, minHeight: 44, fontWeight: 600 }}>
+            <ToggleButton value={3} sx={{ px: 3, minHeight: 44, fontWeight: FONT_WEIGHT.semibold }}>
               {t("teams3")}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -854,7 +860,7 @@ export default function TeamDisplay({
         }}
       >
         <SportsBasketballIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
-        <Typography variant="body1" color="text.secondary" fontWeight={500}>
+        <Typography variant="body1" color="text.secondary">
           {isEnded ? t("teamsNotPublishedPast") : t("teamsNotPublished")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -909,7 +915,7 @@ export default function TeamDisplay({
           <Typography
             variant="caption"
             color="text.secondary"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             sx={{ whiteSpace: "nowrap" }}
           >
             {t("teamCoaches")}
@@ -925,7 +931,11 @@ export default function TeamDisplay({
                     slug ? (
                       <Link
                         href={`/giocatori/${slug}`}
-                        style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}
+                        style={{
+                          color: "inherit",
+                          textDecoration: "none",
+                          fontWeight: FONT_WEIGHT.semibold,
+                        }}
                       >
                         {c.name}
                       </Link>

@@ -76,9 +76,7 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
           flexShrink: 0,
         }}
       >
-        <Typography variant="subtitle1" fontWeight={700}>
-          Notifiche
-        </Typography>
+        <Typography variant="subtitle1">Notifiche</Typography>
         <Button size="small" onClick={handleMarkAllRead} sx={{ fontSize: TYPE_SCALE.xs }}>
           Segna tutte lette
         </Button>

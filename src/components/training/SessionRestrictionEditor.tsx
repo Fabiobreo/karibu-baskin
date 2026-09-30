@@ -16,6 +16,7 @@ import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface CompetitiveTeam {
   id: string;
@@ -96,7 +97,7 @@ export default function SessionRestrictionEditor({
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
         <LockIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-        <Typography variant="body2" fontWeight={600} color="text.secondary">
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} color="text.secondary">
           Restrizioni iscrizione
         </Typography>
         {hasAnyRestriction && (
@@ -131,7 +132,7 @@ export default function SessionRestrictionEditor({
                 borderColor: selected ? roleColor(r) : "divider",
                 bgcolor: selected ? roleColor(r) : "transparent",
                 color: selected ? "common.white" : "text.secondary",
-                fontWeight: 600,
+                fontWeight: FONT_WEIGHT.semibold,
                 fontSize: TYPE_SCALE.xs,
                 cursor: disabled ? "default" : "pointer",
                 transition: "all 0.15s",
@@ -234,7 +235,7 @@ export default function SessionRestrictionEditor({
                     borderColor: selected ? roleColor(r) : "divider",
                     bgcolor: selected ? roleColor(r) : "transparent",
                     color: selected ? "common.white" : "text.secondary",
-                    fontWeight: 600,
+                    fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     cursor: disabled ? "default" : "pointer",
                     transition: "all 0.15s",

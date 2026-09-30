@@ -40,6 +40,7 @@ import {
 } from "@/components/profile/childLinkerShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ChildAddDialogProps {
   onClose: () => void;
@@ -96,7 +97,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>{ADD_TITLES[addStep]}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>{ADD_TITLES[addStep]}</DialogTitle>
 
       <DialogContent>
         {/* Step: scelta metodo */}
@@ -118,7 +119,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               sx={{ justifyContent: "flex-start", py: 1.5 }}
             >
               <Box sx={{ textAlign: "left" }}>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                   {t("searchByEmail")}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -140,7 +141,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               sx={{ justifyContent: "flex-start", py: 1.5 }}
             >
               <Box sx={{ textAlign: "left" }}>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                   {t("searchByName")}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -160,7 +161,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               sx={{ justifyContent: "flex-start", py: 1.5 }}
             >
               <Box sx={{ textAlign: "left" }}>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                   {t("createManually")}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -338,7 +339,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
         {addStep === "sent" && (
           <Stack spacing={2} sx={{ mt: 1, alignItems: "center", textAlign: "center", py: 1 }}>
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 56 }} />
-            <Typography variant="body1" fontWeight={700}>
+            <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
               {t("requestSent")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -363,7 +364,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -387,7 +388,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >

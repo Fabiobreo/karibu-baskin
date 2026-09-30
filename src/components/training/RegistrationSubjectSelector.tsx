@@ -4,6 +4,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import PersonIcon from "@mui/icons-material/Person";
 import type { ChildInfo } from "@/hooks/useRegistrationForm";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   selfName: string;
@@ -27,7 +28,7 @@ export default function RegistrationSubjectSelector({
       <Typography
         variant="caption"
         color="text.secondary"
-        fontWeight={600}
+        fontWeight={FONT_WEIGHT.semibold}
         display="block"
         sx={{ mb: 1 }}
       >
@@ -53,10 +54,10 @@ export default function RegistrationSubjectSelector({
                   borderColor: "success.main",
                   "& .MuiChip-icon": { color: "success.main" },
                   cursor: "default",
-                  fontWeight: 500,
+                  fontWeight: FONT_WEIGHT.regular,
                 }
               : {
-                  fontWeight: subject === "self" ? 700 : 400,
+                  fontWeight: subject === "self" ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                   borderColor: subject === "self" ? "primary.main" : undefined,
                   bgcolor: subject === "self" ? "primary.main" : undefined,
                   color: subject === "self" ? "common.white" : undefined,
@@ -88,10 +89,10 @@ export default function RegistrationSubjectSelector({
                       borderColor: "success.main",
                       "& .MuiChip-icon": { color: "success.main" },
                       cursor: "default",
-                      fontWeight: 500,
+                      fontWeight: FONT_WEIGHT.regular,
                     }
                   : {
-                      fontWeight: isSelected ? 700 : 400,
+                      fontWeight: isSelected ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                       borderColor: isSelected ? "primary.main" : undefined,
                       bgcolor: isSelected ? "primary.main" : undefined,
                       color: isSelected ? "common.white" : undefined,

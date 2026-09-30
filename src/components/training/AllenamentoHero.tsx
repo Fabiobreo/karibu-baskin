@@ -182,7 +182,6 @@ export default function AllenamientoHero({
               variant="body2"
               sx={{
                 color: (theme) => alpha(theme.palette.common.white, 0.6),
-                fontWeight: 500,
                 whiteSpace: "nowrap",
                 "&:hover": { color: "common.white" },
               }}
@@ -193,7 +192,6 @@ export default function AllenamientoHero({
               variant="body2"
               sx={{
                 color: (theme) => alpha(theme.palette.common.white, 0.9),
-                fontWeight: 500,
                 minWidth: 0,
               }}
               noWrap
@@ -208,7 +206,6 @@ export default function AllenamientoHero({
             variant="h4"
             component="h1"
             sx={{
-              fontWeight: 800,
               lineHeight: 1.15,
               fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
               mb: 1.5,
@@ -245,7 +242,6 @@ export default function AllenamientoHero({
                     sx={{
                       bgcolor: "status.pending",
                       color: "common.white",
-                      fontWeight: 700,
                       fontSize: TYPE_SCALE.xs,
                       letterSpacing: 0.5,
                     }}
@@ -260,7 +256,6 @@ export default function AllenamientoHero({
                   sx={{
                     bgcolor: "status.closed",
                     color: "common.white",
-                    fontWeight: 700,
                     fontSize: TYPE_SCALE.xs,
                     letterSpacing: 0.5,
                   }}
@@ -273,7 +268,6 @@ export default function AllenamientoHero({
               sx={{
                 bgcolor: status.bgcolor,
                 color: status.color,
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
                 letterSpacing: 0.5,
               }}
@@ -304,7 +298,6 @@ export default function AllenamientoHero({
                 sx={{
                   bgcolor: "warning.light",
                   color: "warning.contrastText",
-                  fontWeight: 600,
                   fontSize: TYPE_SCALE.xs,
                 }}
               />
@@ -320,7 +313,6 @@ export default function AllenamientoHero({
                 sx={{
                   bgcolor: "success.light",
                   color: "success.contrastText",
-                  fontWeight: 600,
                   fontSize: TYPE_SCALE.xs,
                 }}
               />
@@ -342,7 +334,7 @@ export default function AllenamientoHero({
               />
               <Typography
                 variant="body2"
-                sx={{ color: (theme) => alpha(theme.palette.common.white, 0.75), fontWeight: 500 }}
+                sx={{ color: (theme) => alpha(theme.palette.common.white, 0.75) }}
               >
                 {countdown}
               </Typography>
@@ -361,13 +353,13 @@ export default function AllenamientoHero({
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <CalendarTodayIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <Typography variant="body2">
                 {format(sessionDate, "EEEE d MMMM yyyy", { locale: dateLocale })}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <AccessTimeIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <Typography variant="body2">
                 {format(sessionDate, "HH:mm")}
                 {sessionEnd && `–${format(sessionEnd, "HH:mm")}`}
               </Typography>
@@ -384,7 +376,6 @@ export default function AllenamientoHero({
                 underline="always"
                 variant="body2"
                 aria-label={t("locationMap", { place: trainingLocation(session.location) })}
-                sx={{ fontWeight: 500 }}
               >
                 {trainingLocation(session.location)}
               </MuiLink>

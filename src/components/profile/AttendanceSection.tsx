@@ -17,7 +17,7 @@ export default async function AttendanceSection({
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" gutterBottom>
         {t("trainingAttendance")}
       </Typography>
       {seasons.length === 0 && (
@@ -33,7 +33,6 @@ export default async function AttendanceSection({
               size="small"
               variant={season === currentSeason ? "filled" : "outlined"}
               color={season === currentSeason ? "primary" : "default"}
-              sx={{ fontWeight: 600 }}
             />
           </ProfileRow>
         ))}

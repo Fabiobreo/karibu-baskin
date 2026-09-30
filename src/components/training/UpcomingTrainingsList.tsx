@@ -48,19 +48,13 @@ function RegistrationStatus({
       <Chip
         label={teamColorLabel(myTeam.key)}
         size="small"
-        sx={{ bgcolor: myTeam.color, color: "common.white", fontWeight: 700 }}
+        sx={{ bgcolor: myTeam.color, color: "common.white" }}
       />
     );
   }
   if (registered) {
     return (
-      <Chip
-        icon={<CheckCircleIcon />}
-        label={t("rowRegistered")}
-        size="small"
-        color="success"
-        sx={{ fontWeight: 700 }}
-      />
+      <Chip icon={<CheckCircleIcon />} label={t("rowRegistered")} size="small" color="success" />
     );
   }
   if (s.registrationOpen) {
@@ -69,7 +63,7 @@ function RegistrationStatus({
         label={t("rowRegister")}
         size="small"
         variant="outlined"
-        sx={{ fontWeight: 700, color: "primary.onLight", borderColor: "primary.main" }}
+        sx={{ color: "primary.onLight", borderColor: "primary.main" }}
       />
     );
   }

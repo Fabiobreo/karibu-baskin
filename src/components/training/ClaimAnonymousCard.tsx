@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type Registration = {
   id: string;
@@ -53,7 +54,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <CheckCircleIcon color="success" />
           <Box>
-            <Typography variant="body2" fontWeight={700} color="success.dark">
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} color="success.dark">
               {t("successTitle", { count: claimed })}
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -102,7 +103,7 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
             avviso diceva la cosa sbagliata. */}
         <WavingHandIcon color="primary" sx={{ mt: 0.3, flexShrink: 0 }} />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="body2" fontWeight={700} gutterBottom>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} gutterBottom>
             {t("title")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
@@ -124,7 +125,11 @@ export default function ClaimAnonymousCard({ registrations }: { registrations: R
                   <Box
                     sx={{ display: "flex", alignItems: "baseline", gap: 0.75, flexWrap: "wrap" }}
                   >
-                    <Typography variant="body2" fontWeight={700} sx={{ cursor: "pointer" }}>
+                    <Typography
+                      variant="body2"
+                      fontWeight={FONT_WEIGHT.semibold}
+                      sx={{ cursor: "pointer" }}
+                    >
                       {r.title}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ cursor: "pointer" }}>

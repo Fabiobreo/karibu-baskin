@@ -11,6 +11,7 @@ import { SITE_HOST } from "@/lib/siteUrl";
 import type { TeamsData } from "./TeamDisplay";
 import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   teams: TeamsData;
@@ -128,7 +129,7 @@ export default function ShareTeamsButton({
             <div
               style={{
                 fontSize: 10,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 letterSpacing: 2,
                 textTransform: "uppercase",
                 color: "rgba(255,255,255,0.65)",
@@ -140,7 +141,7 @@ export default function ShareTeamsButton({
             <div
               style={{
                 fontSize: teams.numTeams === 3 ? 17 : 20,
-                fontWeight: 900,
+                fontWeight: FONT_WEIGHT.bold,
                 color: "#fff",
                 lineHeight: 1.2,
               }}
@@ -151,7 +152,7 @@ export default function ShareTeamsButton({
               <div
                 style={{
                   fontSize: 11,
-                  fontWeight: 500,
+                  fontWeight: FONT_WEIGHT.regular,
                   color: "rgba(255,255,255,0.75)",
                   marginTop: 5,
                   textTransform: "capitalize",
@@ -202,7 +203,12 @@ export default function ShareTeamsButton({
                         }}
                       />
                       <span
-                        style={{ fontWeight: 800, fontSize: 13, color: "#111", letterSpacing: 0.3 }}
+                        style={{
+                          fontWeight: FONT_WEIGHT.bold,
+                          fontSize: 13,
+                          color: "#111",
+                          letterSpacing: 0.3,
+                        }}
                       >
                         {teamColorLabel(m.key).toUpperCase()}
                       </span>
@@ -221,7 +227,7 @@ export default function ShareTeamsButton({
                           style={{
                             display: "inline-block",
                             fontSize: 9,
-                            fontWeight: 800,
+                            fontWeight: FONT_WEIGHT.bold,
                             letterSpacing: 1,
                             textTransform: "uppercase",
                             color: ROLE_TEXT_COLOR,
@@ -240,7 +246,7 @@ export default function ShareTeamsButton({
                             style={{
                               fontSize: teams.numTeams === 3 ? 12 : 13,
                               color: "#1a1a1a",
-                              fontWeight: 500,
+                              fontWeight: FONT_WEIGHT.regular,
                               lineHeight: 1.55,
                               paddingLeft: 2,
                             }}
@@ -277,7 +283,7 @@ export default function ShareTeamsButton({
               <span
                 style={{
                   fontSize: 10,
-                  fontWeight: 800,
+                  fontWeight: FONT_WEIGHT.bold,
                   color: "#666",
                   textTransform: "uppercase",
                   letterSpacing: 1,
@@ -286,7 +292,10 @@ export default function ShareTeamsButton({
                 {t("coachesLabel")}
               </span>
               {coaches.map((c) => (
-                <span key={c.id} style={{ fontSize: 12, fontWeight: 600, color: "#444" }}>
+                <span
+                  key={c.id}
+                  style={{ fontSize: 12, fontWeight: FONT_WEIGHT.semibold, color: "#444" }}
+                >
                   {c.name}
                 </span>
               ))}

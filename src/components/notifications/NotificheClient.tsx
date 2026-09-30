@@ -9,6 +9,7 @@ import EmptyState from "@/components/common/EmptyState";
 import { useNotifications } from "@/context/NotificationContext";
 import { useToast } from "@/context/ToastContext";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface NotifItem {
   id: string;
@@ -130,7 +131,6 @@ export default function NotificheClient({
           onClick={handleMarkAllRead}
           disabled={!hasUnread}
           startIcon={<DoneAllIcon sx={{ fontSize: "1rem !important" }} />}
-          sx={{ fontWeight: 700 }}
         >
           {t("notifiche.markAllRead")}
         </Button>
@@ -147,7 +147,7 @@ export default function NotificheClient({
           <Box key={group.key} sx={{ mb: 3 }}>
             <Typography
               variant="overline"
-              fontWeight={800}
+              fontWeight={FONT_WEIGHT.bold}
               color="text.secondary"
               sx={{ display: "block", mb: 1 }}
             >

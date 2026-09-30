@@ -10,6 +10,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import TeamsModal from "@/components/training/TeamsModal";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface TrainingListRowProps {
   session: SessionWithCount;
@@ -94,7 +95,10 @@ export default function TrainingListRow({
           >
             {format(date, "EEE", { locale: dateLocale })}
           </Typography>
-          <Typography fontWeight={800} sx={{ lineHeight: 1.1, fontSize: TYPE_SCALE.xl }}>
+          <Typography
+            fontWeight={FONT_WEIGHT.bold}
+            sx={{ lineHeight: 1.1, fontSize: TYPE_SCALE.xl }}
+          >
             {format(date, "d")}
           </Typography>
           <Typography
@@ -108,7 +112,7 @@ export default function TrainingListRow({
         <Box sx={{ gridArea: "text", minWidth: 0, pointerEvents: "none" }}>
           <Typography
             variant="body1"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             sx={{
               display: "-webkit-box",
               WebkitLineClamp: 2,

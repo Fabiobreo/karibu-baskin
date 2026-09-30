@@ -20,6 +20,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import TeamsModal from "@/components/training/TeamsModal";
 import { TEAM_META } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Athlete {
   id: string;
@@ -208,7 +209,7 @@ export default function SessionCard({
             <Typography
               variant={hero ? "h4" : "subtitle1"}
               component={headingComponent}
-              fontWeight={hero ? 800 : 700}
+              fontWeight={hero ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
               noWrap={!hero}
               sx={{
                 color: muted ? "text.primary" : "common.white",
@@ -240,7 +241,6 @@ export default function SessionCard({
                 sx={{
                   bgcolor: "status.pending",
                   color: "common.white",
-                  fontWeight: 700,
                   fontSize: TYPE_SCALE.xs,
                 }}
               />
@@ -253,7 +253,6 @@ export default function SessionCard({
                 sx={{
                   bgcolor: "status.closed",
                   color: "common.white",
-                  fontWeight: 700,
                   fontSize: TYPE_SCALE.xs,
                 }}
               />
@@ -264,7 +263,6 @@ export default function SessionCard({
               sx={{
                 bgcolor: muted ? "action.selected" : status.color,
                 color: muted ? "text.secondary" : status.labelColor,
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
               }}
             />
@@ -312,13 +310,21 @@ export default function SessionCard({
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
-                <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                <Typography
+                  variant={textVariant}
+                  color="text.secondary"
+                  fontWeight={FONT_WEIGHT.regular}
+                >
                   {format(date, dateFormat, { locale: dateLocale })}
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
-                <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                <Typography
+                  variant={textVariant}
+                  color="text.secondary"
+                  fontWeight={FONT_WEIGHT.regular}
+                >
                   {format(date, "HH:mm")}
                   {endTime && `–${format(endTime, "HH:mm")}`}
                 </Typography>
@@ -328,7 +334,11 @@ export default function SessionCard({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <GroupsIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
-                <Typography variant={textVariant} color="text.secondary" fontWeight={500}>
+                <Typography
+                  variant={textVariant}
+                  color="text.secondary"
+                  fontWeight={FONT_WEIGHT.regular}
+                >
                   {t("registeredCount", { count: s._count.registrations })}
                 </Typography>
               </Box>
@@ -338,7 +348,7 @@ export default function SessionCard({
                   label={t("registeredBadge")}
                   size="small"
                   color="success"
-                  sx={{ fontWeight: 600, fontSize: chipFontSize }}
+                  sx={{ fontSize: chipFontSize }}
                 />
               )}
             </Box>
@@ -370,7 +380,6 @@ export default function SessionCard({
                   size="small"
                   sx={{
                     fontSize: chipFontSize,
-                    fontWeight: 700,
                     bgcolor: "warning.light",
                     color: "warning.contrastText",
                   }}
@@ -389,7 +398,6 @@ export default function SessionCard({
                     size="small"
                     sx={{
                       fontSize: chipFontSize,
-                      fontWeight: 700,
                       bgcolor: "success.light",
                       color: "success.contrastText",
                     }}
@@ -412,7 +420,7 @@ export default function SessionCard({
             >
               {!isRegistered && !muted && isRegOpen && (
                 // 40 px e senza freccia (UX-30): e' l'azione principale della card.
-                <Button href={href} variant="contained" sx={{ fontWeight: 700 }}>
+                <Button href={href} variant="contained">
                   {t("signUp")}
                 </Button>
               )}
@@ -425,7 +433,6 @@ export default function SessionCard({
                   }
                   startIcon={<SportsBasketballIcon />}
                   onClick={() => setTeamsOpen(true)}
-                  sx={{ fontWeight: 600 }}
                 >
                   {t("viewTeamsBtn")}
                 </Button>

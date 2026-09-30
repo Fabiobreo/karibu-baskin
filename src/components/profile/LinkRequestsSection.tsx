@@ -23,6 +23,7 @@ import type { Locale } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { Gender } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface LinkRequest {
   id: string;
@@ -112,10 +113,10 @@ export default function LinkRequestsSection() {
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         <FamilyRestroomIcon color="warning" fontSize="small" />
-        <Typography component="h2" variant="subtitle1" fontWeight={700}>
+        <Typography component="h2" variant="subtitle1">
           {t("title")}
         </Typography>
-        <Chip label={requests.length} size="small" color="warning" sx={{ fontWeight: 700 }} />
+        <Chip label={requests.length} size="small" color="warning" />
       </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {t("desc")}
@@ -131,7 +132,7 @@ export default function LinkRequestsSection() {
                 {(req.parent.name ?? req.parent.email)[0].toUpperCase()}
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={700}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                   {req.parent.name ?? req.parent.email}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" display="block">

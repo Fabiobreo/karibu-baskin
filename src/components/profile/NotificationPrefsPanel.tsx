@@ -22,6 +22,7 @@ import {
 } from "@/lib/notifications/notifPrefs";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -144,7 +145,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
   return (
     <Box>
       {/* ── Sezione push ────────────────────────────────────────────────────── */}
-      <Typography variant="body2" fontWeight={700} sx={{ mb: 1.5 }}>
+      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 1.5 }}>
         {t("pushTitle")}
       </Typography>
 
@@ -177,7 +178,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
               {pushSaving ? "..." : subscribed ? t("deactivate") : t("activate")}
             </Button>
             {subscribed && (
-              <Typography variant="caption" color="success.main" fontWeight={600}>
+              <Typography variant="caption" color="success.main" fontWeight={FONT_WEIGHT.semibold}>
                 {t("activeOnDevice")}
               </Typography>
             )}
@@ -229,7 +230,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
       <Divider sx={{ my: 2 }} />
 
       {/* ── Sezione notifiche in-app ─────────────────────────────────────────── */}
-      <Typography variant="body2" fontWeight={700} sx={{ mb: 1.5 }}>
+      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 1.5 }}>
         {t("inAppTitle")}
       </Typography>
       <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 1.5 }}>

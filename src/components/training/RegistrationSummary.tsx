@@ -59,7 +59,7 @@ export default function RegistrationSummary({
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
         <CheckCircleIcon sx={{ color: "success.main" }} />
-        <Typography variant="subtitle1" component="h2" fontWeight={700}>
+        <Typography variant="subtitle1" component="h2">
           {title}
         </Typography>
       </Box>

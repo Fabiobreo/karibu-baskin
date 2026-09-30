@@ -25,6 +25,7 @@ import RatingSparkline from "@/components/rating/RatingSparkline";
 import { classifyTrend, TREND_META, type TrendLabel } from "@/lib/rating/ratingTrend";
 import { ordinal } from "@/lib/rating/trueskill";
 import { ROLES, sportRoleLabel } from "@/lib/constants";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type SkillBucket = "alta" | "media" | "bassa";
 
@@ -232,7 +233,7 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
             {filtered.map((r) => (
               <TableRow key={`${r.kind}-${r.id}`} hover>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                     {r.name}
                   </Typography>
                 </TableCell>

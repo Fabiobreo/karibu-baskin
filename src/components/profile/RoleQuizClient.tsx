@@ -15,6 +15,7 @@ import { readError } from "@/lib/fetchJson";
 import { useToast } from "@/context/ToastContext";
 import type { RoleInfo } from "@/lib/content/baskinInfo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface RoleQuizClientProps {
   /** Ruolo confermato dallo staff: se c'è, niente questionario. */
@@ -148,10 +149,15 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", mt: 0.5 }}>
         <Chip
           label={tRoles("sportRole", { n: result.role, v: result.variant ?? "" })}
-          sx={{ bgcolor: color, color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.sm }}
+          sx={{
+            bgcolor: color,
+            color: "common.white",
+            fontWeight: FONT_WEIGHT.bold,
+            fontSize: TYPE_SCALE.sm,
+          }}
         />
         {roleName && (
-          <Typography variant="h5" component="h2" fontWeight={800}>
+          <Typography variant="h5" component="h2">
             {roleName}
           </Typography>
         )}
@@ -176,7 +182,12 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
       {children}
       <Box sx={{ mt: 2.5 }}>
         <Link href="/il-baskin" style={{ color: "inherit" }}>
-          <Typography variant="body2" component="span" color="primary.onLight" fontWeight={600}>
+          <Typography
+            variant="body2"
+            component="span"
+            color="primary.onLight"
+            fontWeight={FONT_WEIGHT.semibold}
+          >
             {t("allRoles")}
           </Typography>
         </Link>

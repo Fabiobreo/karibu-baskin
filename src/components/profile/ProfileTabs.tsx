@@ -3,6 +3,7 @@ import { type ReactNode, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Box, Tab, Tabs } from "@mui/material";
 import { useTranslations } from "next-intl";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type TabKey = "profilo" | "famiglia" | "notifiche" | "privacy";
 
@@ -39,7 +40,11 @@ export default function ProfileTabs({ profile, family, notifications, privacy }:
     router.replace(value === "profilo" ? "/profilo" : `/profilo?tab=${value}`, { scroll: false });
   }
 
-  const tabSx = { fontWeight: 700, textTransform: "none", fontSize: "0.875rem" } as const;
+  const tabSx = {
+    fontWeight: FONT_WEIGHT.semibold,
+    textTransform: "none",
+    fontSize: "0.875rem",
+  } as const;
 
   return (
     <Box>

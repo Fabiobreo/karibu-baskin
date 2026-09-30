@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert, Button, Box, Typography, CircularProgress } from "@mui/material";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { useToast } from "@/context/ToastContext";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   sessionId: string;
@@ -49,7 +50,7 @@ export default function OpenRegistrationsAlert({ sessionId, onOpened }: Props) {
         }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="body2" fontWeight={700}>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             Iscrizioni non ancora aperte
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -63,7 +64,7 @@ export default function OpenRegistrationsAlert({ sessionId, onOpened }: Props) {
           color="warning"
           size="small"
           startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <LockOpenIcon />}
-          sx={{ fontWeight: 700, flexShrink: 0 }}
+          sx={{ flexShrink: 0 }}
         >
           {loading ? "Apertura..." : "Apri iscrizioni"}
         </Button>

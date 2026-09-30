@@ -84,7 +84,7 @@ export default function ProfileNameEditor({ name }: ProfileNameEditorProps) {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
-      <Typography component="h2" variant="h6" fontWeight={700} noWrap>
+      <Typography component="h2" variant="h6" noWrap>
         {name ?? "—"}
       </Typography>
       <Tooltip title={t("nameEdit")}>

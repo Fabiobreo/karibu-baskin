@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { ChildData, ChildFormState } from "@/components/profile/childLinkerShared";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ChildEditDialogProps {
   child: ChildData;
@@ -68,7 +69,9 @@ export default function ChildEditDialog({ child, onClose, onSaved }: ChildEditDi
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>{t("editChild", { name: child.name })}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+        {t("editChild", { name: child.name })}
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ mt: 1 }}>
           <TextField
@@ -83,7 +86,7 @@ export default function ChildEditDialog({ child, onClose, onSaved }: ChildEditDi
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -107,7 +110,7 @@ export default function ChildEditDialog({ child, onClose, onSaved }: ChildEditDi
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >

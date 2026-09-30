@@ -79,7 +79,7 @@ export default function PastTrainingsSection({
       // Sotto l'header fisso quando si arriva da #passati.
       sx={{ mt: 6, scrollMarginTop: 88 }}
     >
-      <Typography id="passati-title" component="h2" variant="h5" fontWeight={800} sx={{ mb: 1.5 }}>
+      <Typography id="passati-title" component="h2" variant="h5" sx={{ mb: 1.5 }}>
         {t("pastTitle")}
       </Typography>
 
@@ -102,7 +102,7 @@ export default function PastTrainingsSection({
                 size="small"
                 variant={s === season ? "filled" : "outlined"}
                 color={s === season ? "primary" : "default"}
-                sx={{ cursor: "pointer", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
               />
             </Link>
           ))}
@@ -146,7 +146,6 @@ export default function PastTrainingsSection({
                               size="small"
                               color="success"
                               variant="outlined"
-                              sx={{ fontWeight: 700 }}
                             />
                           ) : null
                         }
@@ -160,7 +159,7 @@ export default function PastTrainingsSection({
 
           {shown < sessions.length && (
             <Box sx={{ textAlign: "center", mt: 2 }}>
-              <Button onClick={() => setShown((n) => n + PAGE)} sx={{ fontWeight: 600 }}>
+              <Button onClick={() => setShown((n) => n + PAGE)}>
                 {t("showMore", { count: Math.min(PAGE, sessions.length - shown) })}
               </Button>
             </Box>

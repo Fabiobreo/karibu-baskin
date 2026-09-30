@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Un iscrivibile: l'utente stesso oppure un figlio collegato. */
 export interface TrainingSubject {
@@ -132,21 +133,24 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3, borderColor: "primary.main" }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
         <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-        <Typography variant="overline" fontWeight={800} color="text.secondary">
+        <Typography variant="overline" fontWeight={FONT_WEIGHT.bold} color="text.secondary">
           {t("nextTraining")}
         </Typography>
       </Box>
 
-      <Typography component="h2" variant="h6" fontWeight={800} sx={{ lineHeight: 1.25 }}>
+      <Typography
+        component="h2"
+        variant="h6"
+        fontWeight={FONT_WEIGHT.bold}
+        sx={{ lineHeight: 1.25 }}
+      >
         {training.title}
       </Typography>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mt: 0.5 }}>
-        <Typography variant="body2" color="text.secondary" fontWeight={600}>
+        <Typography variant="body2" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
           {format(date, "EEEE d MMMM · HH:mm", { locale: dateLocale })}
         </Typography>
-        {training.teamName && (
-          <Chip label={training.teamName} size="small" sx={{ fontWeight: 700 }} />
-        )}
+        {training.teamName && <Chip label={training.teamName} size="small" />}
       </Box>
 
       {!training.registrationOpen && (
@@ -181,7 +185,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
                 ) : (
                   <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
                 )}
-                <Typography variant="body2" fontWeight={600} noWrap>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                   {s.kind === "child"
                     ? isRegistered
                       ? t("childRegistered", { name: s.name })
@@ -200,7 +204,6 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
                   disabled={busy}
                   onClick={() => regId && regId !== "pending" && handleUnregister(s, regId)}
                   startIcon={busy ? <CircularProgress size={14} /> : undefined}
-                  sx={{ fontWeight: 700 }}
                 >
                   {t("unregister")}
                 </Button>
@@ -211,7 +214,6 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
                   disabled={busy}
                   onClick={() => handleRegister(s)}
                   startIcon={busy ? <CircularProgress size={14} color="inherit" /> : undefined}
-                  sx={{ fontWeight: 700 }}
                 >
                   {s.kind === "child" ? t("registerChild", { name: s.name }) : t("register")}
                 </Button>
@@ -239,7 +241,6 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
           href={training.href}
           size="small"
           endIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-          sx={{ fontWeight: 700 }}
         >
           {t("openTraining")}
         </Button>

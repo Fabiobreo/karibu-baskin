@@ -125,13 +125,7 @@ export default function AllenamentiClient({
 
       {/* ── Prossimi ── */}
       <Box component="section" aria-labelledby="prossimi-title">
-        <Typography
-          id="prossimi-title"
-          component="h2"
-          variant="h5"
-          fontWeight={800}
-          sx={{ mb: 1.5 }}
-        >
+        <Typography id="prossimi-title" component="h2" variant="h5" sx={{ mb: 1.5 }}>
           {t("next")}
         </Typography>
         {upcoming.length === 0 ? (

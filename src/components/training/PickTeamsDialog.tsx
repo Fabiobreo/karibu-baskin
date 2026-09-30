@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   open: boolean;
@@ -20,7 +21,7 @@ interface Props {
 export default function PickTeamsDialog({ open, sessionTitle, onClose, onConfirm }: Props) {
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle fontWeight={700}>Quante squadre?</DialogTitle>
+      <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Quante squadre?</DialogTitle>
       <DialogContent>
         {sessionTitle && (
           <DialogContentText>

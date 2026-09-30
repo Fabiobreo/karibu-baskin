@@ -84,7 +84,6 @@ export default function HomeSessionsSection({
               <Typography
                 variant="h5"
                 component="h2"
-                fontWeight={800}
                 sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
               >
                 {t("next")}
@@ -118,7 +117,6 @@ export default function HomeSessionsSection({
               <Typography
                 variant="h5"
                 component="h2"
-                fontWeight={800}
                 sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
               >
                 {t("next")}

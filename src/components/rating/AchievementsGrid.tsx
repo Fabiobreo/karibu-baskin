@@ -12,6 +12,7 @@ import {
 } from "@/lib/rating/badges";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type AchievementItem = BadgeProgress & {
   /** Frase del traguardo raggiunto, al posto del criterio quando e' sbloccato. */
@@ -91,7 +92,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
       <Typography
         sx={{
           fontSize: TYPE_SCALE.sm,
-          fontWeight: 800,
+          fontWeight: FONT_WEIGHT.bold,
           color: earned ? c.text : "text.secondary",
           lineHeight: 1.25,
           display: "block",

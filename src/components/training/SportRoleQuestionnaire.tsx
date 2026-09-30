@@ -9,6 +9,7 @@ import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface SportRoleResult {
   role: number;
@@ -150,7 +151,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
             borderRadius: RADIUS.md,
           }}
         >
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+          <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
             {t("previousAnswer", {
               role: sportRoleLabel(initialSuggested.role, initialSuggested.variant ?? null),
             })}
@@ -165,7 +166,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
         sx={{ height: 3, borderRadius: RADIUS.pill, mb: 2.5, bgcolor: "action.hover" }}
       />
 
-      <Typography variant="body1" fontWeight={600} sx={{ mb: 2 }}>
+      <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 2 }}>
         {t(`${currentStep}.question`, who)}
       </Typography>
 
@@ -205,7 +206,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
                 </Box>
               )}
               <Box>
-                <Typography variant="body2" fontWeight={600}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                   {t(`${currentStep}.${opt.labelKey}`, who)}
                 </Typography>
                 {opt.sublabelKey && (

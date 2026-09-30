@@ -11,6 +11,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface NotificationItemProps {
   notification: {
@@ -60,7 +61,7 @@ export default function NotificationItem({ notification, onRead }: NotificationI
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography
           variant="body2"
-          fontWeight={isRead ? 500 : 700}
+          fontWeight={isRead ? FONT_WEIGHT.regular : FONT_WEIGHT.semibold}
           sx={{
             lineHeight: 1.3,
             mb: 0.25,

@@ -31,6 +31,7 @@ import ChildLinkDialog from "@/components/profile/dialogs/ChildLinkDialog";
 // Re-export per i consumer esistenti (es. pagina profilo)
 export type { ChildData } from "@/components/profile/childLinkerShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ParentChildLinkerProps {
   initialChildren: ChildData[];
@@ -118,15 +119,11 @@ export default function ParentChildLinker({
                   {child.name[0].toUpperCase()}
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={700} noWrap>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                     {child.name}
                   </Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}>
-                    <Chip
-                      label={t("athlete")}
-                      size="small"
-                      sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}
-                    />
+                    <Chip label={t("athlete")} size="small" sx={{ fontSize: TYPE_SCALE.xs }} />
                     {child.sportRole && (
                       <RoleBadge role={child.sportRole} variant={child.sportRoleVariant} />
                     )}
@@ -140,7 +137,6 @@ export default function ParentChildLinker({
                           sx={{
                             bgcolor: m.team.color ?? "primary.main",
                             color: contrastText(m.team.color),
-                            fontWeight: 700,
                             fontSize: TYPE_SCALE.xs,
                           }}
                         />

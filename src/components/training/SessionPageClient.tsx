@@ -28,6 +28,7 @@ import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface Session {
   id: string;
@@ -425,14 +426,14 @@ export default function SessionPageClient({
                     variant="caption"
                     sx={{
                       opacity: 0.8,
-                      fontWeight: 600,
+                      fontWeight: FONT_WEIGHT.semibold,
                       letterSpacing: 0.8,
                       textTransform: "uppercase",
                     }}
                   >
                     {t("myTeam")}
                   </Typography>
-                  <Typography variant="h5" fontWeight={800} sx={{ lineHeight: 1.2 }}>
+                  <Typography variant="h5" sx={{ lineHeight: 1.2 }}>
                     {teamColorLabel(myTeam.key as "teamA" | "teamB" | "teamC")}
                   </Typography>
                 </Box>
@@ -510,7 +511,7 @@ export default function SessionPageClient({
                     <SectionErrorBoundary label="Modulo iscrizione">
                       {session.registrationOpen === false && !isStaff ? (
                         <Box sx={{ textAlign: "center", py: 2 }}>
-                          <Typography variant="h6" fontWeight={700} gutterBottom>
+                          <Typography variant="h6" gutterBottom>
                             {session.registrationOpenedAt
                               ? t("registrationsClosed")
                               : t("comingSoon")}

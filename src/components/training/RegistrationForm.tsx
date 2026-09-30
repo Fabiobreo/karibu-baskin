@@ -41,6 +41,7 @@ export type {
 } from "@/hooks/useRegistrationForm";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   sessionId: string;
@@ -136,7 +137,7 @@ export default function RegistrationForm({
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
-        <Typography variant="body1" fontWeight={600}>
+        <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
           {parentChildren.length === 1
             ? t("alreadyRegisteredParentAndChild", { name: parentChildren[0].name })
             : t("alreadyRegisteredFamilyAll")}
@@ -150,7 +151,7 @@ export default function RegistrationForm({
     return (
       <Box sx={{ textAlign: "center", py: 2 }}>
         <CheckCircleIcon color="success" sx={{ fontSize: 40, mb: 1 }} />
-        <Typography variant="body1" fontWeight={600}>
+        <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
           {t("alreadyRegistered")}
         </Typography>
       </Box>
@@ -238,7 +239,7 @@ export default function RegistrationForm({
           <Typography
             variant="caption"
             color="text.secondary"
-            fontWeight={600}
+            fontWeight={FONT_WEIGHT.semibold}
             display="block"
             sx={{ mb: 0.75 }}
           >
@@ -252,10 +253,16 @@ export default function RegistrationForm({
             }}
             size="small"
           >
-            <ToggleButton value="athlete" sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, px: 2 }}>
+            <ToggleButton
+              value="athlete"
+              sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs, px: 2 }}
+            >
               {t("athlete")}
             </ToggleButton>
-            <ToggleButton value="coach" sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, px: 2 }}>
+            <ToggleButton
+              value="coach"
+              sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs, px: 2 }}
+            >
               {t("coachRole")}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -332,7 +339,7 @@ export default function RegistrationForm({
         ) : currentSubjectRegistered ? (
           <Box sx={{ textAlign: "center", py: 1.5 }}>
             <CheckCircleIcon color="success" sx={{ fontSize: 32, mb: 0.5 }} />
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {subject === "self"
                 ? t("alreadyRegistered")
                 : t("alreadyRegisteredChild", { name: selectedChild?.name ?? "" })}
@@ -350,7 +357,7 @@ export default function RegistrationForm({
                   {(currentUser.name ?? "?")[0].toUpperCase()}
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                     {currentUser.name ?? "Utente"}
                   </Typography>
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.25 }}>
@@ -373,7 +380,6 @@ export default function RegistrationForm({
                           sx={{
                             height: 20,
                             fontSize: TYPE_SCALE.xs,
-                            fontWeight: 700,
                             bgcolor: m.teamColor ?? "primary.main",
                             color: contrastText(m.teamColor),
                             "& .MuiChip-label": { px: 0.75 },
@@ -391,7 +397,7 @@ export default function RegistrationForm({
                   <ChildCareIcon sx={{ fontSize: 18 }} />
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                     {selectedChild.name}
                   </Typography>
                   {selectedChild.teamMemberships.filter((m) => m.teamSeason === currentSeason)
@@ -407,7 +413,6 @@ export default function RegistrationForm({
                             sx={{
                               height: 20,
                               fontSize: TYPE_SCALE.xs,
-                              fontWeight: 700,
                               bgcolor: m.teamColor ?? "primary.main",
                               color: contrastText(m.teamColor),
                               "& .MuiChip-label": { px: 0.75 },
@@ -499,7 +504,7 @@ export default function RegistrationForm({
                           value={r}
                           size="small"
                           sx={{
-                            fontWeight: 600,
+                            fontWeight: FONT_WEIGHT.semibold,
                             fontSize: TYPE_SCALE.xs,
                             py: 0.5,
                             px: 1.5,
@@ -653,7 +658,7 @@ function RegistrationBlocked({ reason }: { reason: string }) {
   return (
     <Box sx={{ textAlign: "center", py: 2 }}>
       <LockIcon sx={{ fontSize: 32, color: "error.main", mb: 0.5 }} />
-      <Typography variant="body1" color="error.main" fontWeight={700}>
+      <Typography variant="body1" color="error.main" fontWeight={FONT_WEIGHT.semibold}>
         {t("cannotRegister")}
       </Typography>
       <Typography variant="body2" color="text.primary" sx={{ mt: 0.75 }}>
@@ -662,7 +667,7 @@ function RegistrationBlocked({ reason }: { reason: string }) {
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
         {t("cannotRegisterHelp")}
       </Typography>
-      <Button href="/contatti" variant="outlined" size="small" sx={{ mt: 1, fontWeight: 700 }}>
+      <Button href="/contatti" variant="outlined" size="small" sx={{ mt: 1 }}>
         {t("askStaff")}
       </Button>
     </Box>
@@ -687,7 +692,12 @@ function SignInOrGuestChoice({ onGuest }: { onGuest: () => void }) {
   } as const;
   return (
     <Box>
-      <Typography id="registration-choice" variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
+      <Typography
+        id="registration-choice"
+        variant="body2"
+        fontWeight={FONT_WEIGHT.semibold}
+        sx={{ mb: 1.5 }}
+      >
         {t("signInChoiceTitle")}
       </Typography>
       <Box
@@ -703,7 +713,7 @@ function SignInOrGuestChoice({ onGuest }: { onGuest: () => void }) {
           sx={optionSx}
         >
           <Box component="span" sx={{ display: "flex", flexDirection: "column" }}>
-            <Box component="span" sx={{ fontWeight: 700 }}>
+            <Box component="span" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
               {t("signInChoiceLogin")}
             </Box>
             <Box component="span" sx={{ typography: "caption", color: "text.secondary" }}>
@@ -719,7 +729,7 @@ function SignInOrGuestChoice({ onGuest }: { onGuest: () => void }) {
           sx={optionSx}
         >
           <Box component="span" sx={{ display: "flex", flexDirection: "column" }}>
-            <Box component="span" sx={{ fontWeight: 700 }}>
+            <Box component="span" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
               {t("signInChoiceGuest")}
             </Box>
             <Box component="span" sx={{ typography: "caption", color: "text.secondary" }}>

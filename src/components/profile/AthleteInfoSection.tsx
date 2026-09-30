@@ -6,6 +6,7 @@ import RoleBadge from "@/components/common/RoleBadge";
 import ProfileRow from "@/components/profile/ProfileRow";
 import { format } from "date-fns";
 import type { Gender } from "@prisma/client";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface AthleteInfoSectionProps {
   sportRole: number | null;
@@ -29,7 +30,7 @@ export default async function AthleteInfoSection({
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" gutterBottom>
         {tPlayers("athleteInfo")}
       </Typography>
 
@@ -60,7 +61,7 @@ export default async function AthleteInfoSection({
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  fontWeight={600}
+                  fontWeight={FONT_WEIGHT.semibold}
                   display="block"
                   gutterBottom
                 >
@@ -69,7 +70,10 @@ export default async function AthleteInfoSection({
                 <Stack spacing={0.5}>
                   {roleHistory.map((h, i) => (
                     <Typography key={i} variant="caption" color="text.secondary">
-                      <Box component="span" sx={{ color: "text.primary", fontWeight: 700 }}>
+                      <Box
+                        component="span"
+                        sx={{ color: "text.primary", fontWeight: FONT_WEIGHT.semibold }}
+                      >
                         {roleLabel(h.sportRole)}
                       </Box>
                       {" · "}

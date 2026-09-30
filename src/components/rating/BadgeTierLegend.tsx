@@ -1,6 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { useTranslations } from "next-intl";
 import type { BadgeTier } from "@/lib/rating/badges";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const TIERS: BadgeTier[] = ["bronze", "silver", "gold"];
 
@@ -29,7 +30,7 @@ export default function BadgeTierLegend() {
                 bgcolor: `medal.${tier}Bg`,
               }}
             />
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {t(`tier_${tier}`)}
             </Typography>
           </Box>

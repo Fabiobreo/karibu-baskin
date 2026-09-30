@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import type { ChildData } from "@/components/profile/childLinkerShared";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ChildLinkDialogProps {
   child: ChildData;
@@ -74,7 +75,9 @@ export default function ChildLinkDialog({
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>{t("linkAccount", { name: child.name })}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+        {t("linkAccount", { name: child.name })}
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {t("linkAccountDesc", { name: child.name })}

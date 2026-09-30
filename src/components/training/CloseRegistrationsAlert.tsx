@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert, Button, Box, Typography, CircularProgress } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
 import { useToast } from "@/context/ToastContext";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   sessionId: string;
@@ -51,7 +52,7 @@ export default function CloseRegistrationsAlert({ sessionId, onClosed }: Props) 
         }}
       >
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="body2" fontWeight={700}>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             Iscrizioni aperte
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -87,7 +88,7 @@ export default function CloseRegistrationsAlert({ sessionId, onClosed }: Props) 
             color="inherit"
             size="small"
             startIcon={<LockIcon />}
-            sx={{ fontWeight: 600, flexShrink: 0 }}
+            sx={{ flexShrink: 0 }}
           >
             Chiudi iscrizioni
           </Button>

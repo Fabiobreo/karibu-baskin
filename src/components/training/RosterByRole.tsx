@@ -29,6 +29,7 @@ import { readError } from "@/lib/fetchJson";
 import QueryErrorState from "@/components/common/QueryErrorState";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Registration {
   id: string;
@@ -151,7 +152,12 @@ function AthletePill({
         }}
       >
         <Typography
-          sx={{ color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.xs, lineHeight: 1 }}
+          sx={{
+            color: "common.white",
+            fontWeight: FONT_WEIGHT.bold,
+            fontSize: TYPE_SCALE.xs,
+            lineHeight: 1,
+          }}
         >
           {initial}
         </Typography>
@@ -166,7 +172,7 @@ function AthletePill({
             sx={{
               color: "inherit",
               textDecoration: "none",
-              fontWeight: highlighted ? 700 : 500,
+              fontWeight: highlighted ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
               fontSize: TYPE_SCALE.sm,
               whiteSpace: "nowrap",
               "&:hover": { textDecoration: "underline" },
@@ -177,7 +183,7 @@ function AthletePill({
         ) : (
           <Typography
             sx={{
-              fontWeight: highlighted ? 700 : 500,
+              fontWeight: highlighted ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
               fontSize: TYPE_SCALE.sm,
               whiteSpace: "nowrap",
             }}
@@ -399,7 +405,7 @@ export default function RosterByRole({
         <Button
           size="small"
           onClick={cancelPending}
-          sx={{ color: "common.white", fontWeight: 700, ml: 0.5, minWidth: 0, p: "2px 8px" }}
+          sx={{ color: "common.white", ml: 0.5, minWidth: 0, p: "2px 8px" }}
         >
           {t("rosterUndo")}
         </Button>
@@ -512,7 +518,7 @@ export default function RosterByRole({
             theme.palette.mode === "dark" ? theme.palette.background.paper : theme.palette.grey[50],
         }}
       >
-        <Typography component="h2" variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
+        <Typography component="h2" variant="h6" sx={{ lineHeight: 1 }}>
           {t("roster")}
         </Typography>
         {/* Nessun conteggio se la lettura è fallita: "0 atleti" accanto al
@@ -522,7 +528,6 @@ export default function RosterByRole({
           <Chip
             label={t("athletes", { count: restricted ? totalCount : athleteRegs.length })}
             size="small"
-            sx={{ fontWeight: 600 }}
           />
         )}
         {restricted && !loading && (
@@ -535,7 +540,6 @@ export default function RosterByRole({
             label={t("coachCount", { count: coachRegs.length })}
             size="small"
             variant="outlined"
-            sx={{ fontWeight: 600 }}
           />
         )}
         {showAttendance && presentCount !== null && (
@@ -545,7 +549,7 @@ export default function RosterByRole({
             size="small"
             color="success"
             variant="outlined"
-            sx={{ fontWeight: 600, ml: onManage ? 0 : "auto" }}
+            sx={{ ml: onManage ? 0 : "auto" }}
           />
         )}
         {isStaff && onManage && !loading && !restricted && (
@@ -554,7 +558,7 @@ export default function RosterByRole({
             variant="outlined"
             startIcon={<ManageAccountsIcon />}
             onClick={onManage}
-            sx={{ ml: "auto", minHeight: 36, fontWeight: 700 }}
+            sx={{ ml: "auto", minHeight: 36 }}
           >
             {t("manageRoster")}
           </Button>
@@ -607,7 +611,11 @@ export default function RosterByRole({
                   >
                     {roleLabel(role)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight={FONT_WEIGHT.semibold}
+                  >
                     {group.length}
                   </Typography>
                   <Divider sx={{ flex: 1 }} />
@@ -660,7 +668,7 @@ export default function RosterByRole({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 sx={{ mb: 0.75, textTransform: "uppercase", letterSpacing: 0.5 }}
               >
@@ -699,7 +707,11 @@ export default function RosterByRole({
                         }}
                       >
                         <Typography
-                          sx={{ color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.xs }}
+                          sx={{
+                            color: "common.white",
+                            fontWeight: FONT_WEIGHT.bold,
+                            fontSize: TYPE_SCALE.xs,
+                          }}
                         >
                           {reg.name[0]?.toUpperCase() ?? "?"}
                         </Typography>
@@ -708,7 +720,7 @@ export default function RosterByRole({
                         sx={{
                           px: 1,
                           fontSize: TYPE_SCALE.sm,
-                          fontWeight: isOwn ? 700 : 500,
+                          fontWeight: isOwn ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                           color: isOwn ? "common.white" : "text.primary",
                           whiteSpace: "nowrap",
                         }}

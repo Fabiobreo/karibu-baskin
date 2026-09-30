@@ -4,6 +4,7 @@ import type { Badge, LockedBadge } from "@/lib/rating/badges";
 import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type EarnedBadgeView = Badge & {
   /** Frase del traguardo raggiunto ("Hai segnato 10 punti in una partita"). */
@@ -52,7 +53,7 @@ export default function BadgeShowcase({
 
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" gutterBottom>
         {title}
       </Typography>
       {earned.length > 0 && <BadgeTierLegend />}
@@ -91,7 +92,7 @@ export default function BadgeShowcase({
                   <Typography
                     sx={{
                       fontSize: TYPE_SCALE.sm,
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                       color: c.text,
                       display: "block",
                       lineHeight: 1.25,
@@ -145,7 +146,10 @@ export default function BadgeShowcase({
                 </Typography>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 0.25 }}>
-                    <Typography sx={{ fontSize: TYPE_SCALE.sm, fontWeight: 700 }} noWrap>
+                    <Typography
+                      sx={{ fontSize: TYPE_SCALE.sm, fontWeight: FONT_WEIGHT.semibold }}
+                      noWrap
+                    >
                       {badge.label}
                     </Typography>
                     <Typography

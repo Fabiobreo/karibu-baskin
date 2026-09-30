@@ -23,6 +23,7 @@ import { useTranslations } from "next-intl";
 import type { TeamsData } from "@/components/training/TeamDisplay";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type MatchupKey = "AB" | "AC" | "BC";
 
@@ -152,7 +153,7 @@ function MatchupSlot({
   const label = (
     <Typography
       variant="caption"
-      fontWeight={700}
+      fontWeight={FONT_WEIGHT.semibold}
       color="text.secondary"
       sx={{ display: "block", mb: 1.25 }}
     >
@@ -195,7 +196,7 @@ function MatchupSlot({
             />
             <Typography
               variant="caption"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ minWidth: 58, flex: { xs: 1, sm: "none" } }}
             >
               {team1Name}
@@ -213,7 +214,7 @@ function MatchupSlot({
                   padding: "4px 8px",
                   textAlign: "center",
                   fontSize: "1.1rem",
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                 },
               }}
               disabled={saving}
@@ -221,7 +222,7 @@ function MatchupSlot({
           </Box>
           <Typography
             color="text.secondary"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             sx={{ fontSize: TYPE_SCALE.xs, display: { xs: "none", sm: "block" } }}
           >
             vs
@@ -238,7 +239,7 @@ function MatchupSlot({
             />
             <Typography
               variant="caption"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ minWidth: 58, flex: { xs: 1, sm: "none" } }}
             >
               {team2Name}
@@ -256,7 +257,7 @@ function MatchupSlot({
                   padding: "4px 8px",
                   textAlign: "center",
                   fontSize: "1.1rem",
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                 },
               }}
               disabled={saving}
@@ -315,13 +316,13 @@ function MatchupSlot({
               sx={{
                 bgcolor: winner === 1 ? team1.color : `${team1.color}22`,
                 color: winner === 1 ? "common.white" : "text.primary",
-                fontWeight: winner === 1 ? 700 : 500,
+                fontWeight: winner === 1 ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 border: "1px solid",
                 borderColor: team1.color,
                 fontSize: TYPE_SCALE.xs,
               }}
             />
-            <Typography variant="caption" color="text.secondary" fontWeight={700}>
+            <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
               vs
             </Typography>
             <Chip
@@ -330,14 +331,18 @@ function MatchupSlot({
               sx={{
                 bgcolor: winner === 2 ? team2.color : `${team2.color}22`,
                 color: winner === 2 ? "common.white" : "text.primary",
-                fontWeight: winner === 2 ? 700 : 500,
+                fontWeight: winner === 2 ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 border: "1px solid",
                 borderColor: team2.color,
                 fontSize: TYPE_SCALE.xs,
               }}
             />
             {winner === 0 && (
-              <Typography variant="caption" color="text.secondary" fontWeight={600}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={FONT_WEIGHT.semibold}
+              >
                 {tm("resultDraw")}
               </Typography>
             )}
@@ -418,7 +423,7 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
         }}
       >
         <SportsBasketballIcon sx={{ fontSize: 18, color: "primary.main" }} />
-        <Typography component="h2" variant="h6" fontWeight={700} sx={{ lineHeight: 1 }}>
+        <Typography component="h2" variant="h6" sx={{ lineHeight: 1 }}>
           {t("matchResultsTitle")}
         </Typography>
         {savedCount > 0 && (
@@ -427,7 +432,6 @@ export default function TrainingMatchResults({ sessionId, isStaff, teams, onResu
             size="small"
             color="success"
             variant="outlined"
-            sx={{ fontWeight: 600 }}
           />
         )}
       </Box>
