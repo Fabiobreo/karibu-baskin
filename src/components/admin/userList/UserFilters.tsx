@@ -1,4 +1,5 @@
 "use client";
+import { ROLE_CHIP_ICONS } from "@/components/common/appRoleIcons";
 import { useState } from "react";
 import {
   Badge,
@@ -17,9 +18,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { AppRole } from "@prisma/client";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { sportRoleLabel, roleColor } from "@/lib/constants";
-import { contrastText } from "@/lib/colorUtils";
+import { ROLE_LABELS_IT, sportRoleLabel } from "@/lib/constants";
+import TeamColorDot from "@/components/teams/TeamColorDot";
+import { teamColor } from "@/lib/teamColors";
 import { ALL_APP_ROLES, type TeamInfo } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -137,23 +138,28 @@ export default function UserFilters({
               Ruolo utente
             </Typography>
             <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-              {ALL_APP_ROLES.map((role) => (
-                <Chip
-                  key={role}
-                  label={ROLE_LABELS_IT[role]}
-                  size="small"
-                  color={filterAppRoles.includes(role) ? ROLE_CHIP_COLORS[role] : "default"}
-                  variant={filterAppRoles.includes(role) ? "filled" : "outlined"}
-                  onClick={() => onToggleAppRole(role)}
-                  aria-pressed={filterAppRoles.includes(role)}
-                  sx={{
-                    cursor: "pointer",
-                    fontWeight: filterAppRoles.includes(role)
-                      ? FONT_WEIGHT.semibold
-                      : FONT_WEIGHT.regular,
-                  }}
-                />
-              ))}
+              {ALL_APP_ROLES.map((role) => {
+                const active = filterAppRoles.includes(role);
+                const Icon = ROLE_CHIP_ICONS[role];
+                return (
+                  <Chip
+                    key={role}
+                    label={ROLE_LABELS_IT[role]}
+                    size="small"
+                    icon={<Icon />}
+                    // Selezionato = stato attivo standard (arancio), non un colore del ruolo.
+                    color={active ? "primary" : "default"}
+                    variant={active ? "filled" : "outlined"}
+                    onClick={() => onToggleAppRole(role)}
+                    aria-pressed={active}
+                    sx={{
+                      cursor: "pointer",
+                      fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                      "& .MuiChip-icon": { color: active ? "inherit" : "text.secondary" },
+                    }}
+                  />
+                );
+              })}
             </Box>
           </Box>
 
@@ -171,6 +177,7 @@ export default function UserFilters({
               <Chip
                 label="Non impostato"
                 size="small"
+                color={filterSportRoles.includes("none") ? "primary" : "default"}
                 variant={filterSportRoles.includes("none") ? "filled" : "outlined"}
                 onClick={() => onToggleSportRole("none")}
                 aria-pressed={filterSportRoles.includes("none")}
@@ -188,15 +195,13 @@ export default function UserFilters({
                     key={r}
                     label={sportRoleLabel(r)}
                     size="small"
+                    color={active ? "primary" : "default"}
                     variant={active ? "filled" : "outlined"}
                     onClick={() => onToggleSportRole(r.toString())}
                     aria-pressed={active}
                     sx={{
                       cursor: "pointer",
                       fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                      bgcolor: active ? roleColor(r) : undefined,
-                      color: active ? "common.white" : undefined,
-                      borderColor: active ? roleColor(r) : undefined,
                     }}
                   />
                 );
@@ -285,33 +290,21 @@ export default function UserFilters({
                       key={t.id}
                       label={t.name}
                       size="small"
+                      color={active ? "primary" : "default"}
                       variant={active ? "filled" : "outlined"}
                       onClick={() => onTeamFilterChange(active ? "" : t.id)}
                       aria-pressed={active}
                       sx={{
                         cursor: "pointer",
                         fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                        ...(active && t.color
-                          ? {
-                              bgcolor: t.color,
-                              color: contrastText(t.color),
-                              borderColor: t.color,
-                            }
-                          : {}),
+                        "& .MuiChip-avatar": { width: "auto", height: "auto", ml: 1, mr: -0.5 },
                       }}
+                      // Il pallino e' l'identita' della squadra; lo stato selezionato e' l'arancio.
                       avatar={
-                        t.color && !active ? (
-                          <Box
-                            component="span"
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: "50%",
-                              bgcolor: t.color,
-                              ml: "6px !important",
-                              mr: "-4px !important",
-                            }}
-                          />
+                        teamColor(t.color) ? (
+                          <Box component="span" sx={{ display: "inline-flex" }}>
+                            <TeamColorDot color={t.color} />
+                          </Box>
                         ) : undefined
                       }
                     />

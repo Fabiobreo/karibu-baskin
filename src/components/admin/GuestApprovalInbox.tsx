@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { Avatar, Box, Button, Chip, CircularProgress, Paper, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
@@ -62,19 +61,16 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
     <Paper
       elevation={0}
       variant="outlined"
-      sx={(theme) => ({
-        p: 2.5,
-        mb: 3,
-        borderColor: "warning.main",
-        bgcolor: alpha(theme.palette.warning.main, 0.05),
-      })}
+      // Richiesta d'azione, non un avviso (UX-29): accento arancio sobrio come
+      // la card "Allenamenti da completare" della dashboard.
+      sx={{ p: 2.5, mb: 3, borderWidth: 2, borderColor: "primary.main" }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-        <HowToRegIcon color="warning" />
+        <HowToRegIcon sx={{ color: "primary.onLight" }} />
         <Typography component="h2" variant="subtitle1">
           Nuovi account da approvare
         </Typography>
-        <Chip label={guests.length} size="small" color="warning" />
+        <Chip label={guests.length} size="small" variant="outlined" />
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {guests.map((g) => {

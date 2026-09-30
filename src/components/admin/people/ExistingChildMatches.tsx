@@ -81,7 +81,6 @@ export default function ExistingChildMatches({
               ) : (
                 <Button
                   variant="contained"
-                  color="warning"
                   onClick={() => onLink(c)}
                   disabled={linkingId !== null}
                   startIcon={busy ? <CircularProgress size={16} color="inherit" /> : <LinkIcon />}

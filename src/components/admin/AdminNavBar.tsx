@@ -24,12 +24,11 @@ const NAV_ITEMS: { label: string; href: string; exact?: boolean }[] = [
  *
  * Cinque etichette (Allenamenti, Partite, Eventi, News, Squadre) sono identiche
  * a quelle del menu pubblico trenta pixel più sopra e portano altrove, e niente
- * diceva di essere passati in area gestione. La barra ora si dichiara: banda
- * tinta d'arancione (`palette.adminBand`), che non si confonde ne' col menu
- * pubblico scuro ne' col corpo della pagina, ed etichetta "Amministrazione" a
- * sinistra. La banda piena #BF360C di prima era un arancione diverso da quello
- * del brand e in dark diventava la superficie piu' vistosa della pagina. Le
- * voci restano corte, che e' quello che serve a una barra scrollabile.
+ * diceva di essere passati in area gestione. La barra ora si dichiara con lo
+ * scudo e l'etichetta "Amministrazione" a sinistra, su una banda neutra
+ * (`palette.adminBand`: carta e divisore). L'arancio resta solo sulla voce
+ * selezionata e sull'indicatore, perche' e' lo stato attivo (UX-29). Le voci
+ * restano corte, che e' quello che serve a una barra scrollabile.
  */
 export default function AdminNavBar() {
   const pathname = usePathname();
@@ -62,7 +61,7 @@ export default function AdminNavBar() {
               pl: { xs: 0.5, sm: 0 },
             }}
           >
-            <ShieldIcon sx={{ fontSize: 18, color: "adminBand.accent" }} />
+            <ShieldIcon sx={{ fontSize: 18, color: "text.secondary" }} />
             <Typography
               variant="caption"
               sx={{
@@ -70,7 +69,7 @@ export default function AdminNavBar() {
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 fontSize: TYPE_SCALE.xs,
-                color: "adminBand.accent",
+                color: "text.secondary",
                 display: { xs: "none", md: "block" },
               }}
             >

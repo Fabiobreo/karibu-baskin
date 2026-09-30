@@ -55,12 +55,9 @@ import MatchResultDialog, {
 import GroupMatchInlineScore from "@/components/teams/GroupMatchInlineScore";
 import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
 import type { OpponentProfile } from "@/lib/schemas/match";
-import { readableFill } from "@/lib/colorUtils";
+import TeamChip from "@/components/teams/TeamChip";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-
-// Chip squadra con etichetta bianca, fondo scurito se serve (UX-22).
-const WHITE_LABEL = { preferWhite: true };
 
 type Team = MatchFormTeam;
 type OpposingTeam = MatchFormOpposingTeam & { ratingMu?: number | null };
@@ -137,9 +134,12 @@ function MatchTimingChip({ upcoming }: { upcoming: boolean }) {
       icon={<EventIcon sx={{ fontSize: "13px !important" }} />}
       label="Prossima"
       size="small"
-      color="info"
       variant="outlined"
-      sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
+      sx={{
+        fontSize: TYPE_SCALE.xs,
+        height: 20,
+        "& .MuiChip-icon": { color: "text.secondary" },
+      }}
     />
   );
 }
@@ -206,9 +206,6 @@ function MatchMobileCard({
         borderBottom: "1px solid",
         borderColor: "divider",
         "&:last-child": { borderBottom: 0 },
-        borderLeft: upcoming ? "3px solid" : "3px solid transparent",
-        borderLeftColor: upcoming ? "info.main" : "transparent",
-        bgcolor: upcoming ? (theme) => alpha(theme.palette.info.main, 0.05) : undefined,
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -901,10 +898,7 @@ function MatchRowAndContext({
   const upcoming = isUpcoming(m, now);
   return (
     <>
-      <TableRow
-        hover
-        sx={upcoming ? { bgcolor: (theme) => alpha(theme.palette.info.main, 0.05) } : undefined}
-      >
+      <TableRow hover>
         <TableCell>
           <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} color="text.secondary">
             {m.matchday ?? "—"}
@@ -926,15 +920,7 @@ function MatchRowAndContext({
           </Box>
         </TableCell>
         <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-          <Chip
-            label={m.team.name}
-            size="small"
-            sx={{
-              backgroundColor: readableFill(m.team.color, WHITE_LABEL).bg,
-              color: readableFill(m.team.color, WHITE_LABEL).fg,
-              fontSize: TYPE_SCALE.xs,
-            }}
-          />
+          <TeamChip name={m.team.name} color={m.team.color} sx={{ fontSize: TYPE_SCALE.xs }} />
         </TableCell>
         <TableCell>
           <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -1109,10 +1095,7 @@ function FlatMatchRow({
   onProfile: (m: Match) => void;
 }) {
   return (
-    <TableRow
-      hover
-      sx={upcoming ? { bgcolor: (theme) => alpha(theme.palette.info.main, 0.05) } : undefined}
-    >
+    <TableRow hover>
       <TableCell>
         <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
           {format(new Date(m.date), "d MMM yyyy", { locale: it })}
@@ -1129,15 +1112,7 @@ function FlatMatchRow({
         </Box>
       </TableCell>
       <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-        <Chip
-          label={m.team.name}
-          size="small"
-          sx={{
-            backgroundColor: readableFill(m.team.color, WHITE_LABEL).bg,
-            color: readableFill(m.team.color, WHITE_LABEL).fg,
-            fontSize: TYPE_SCALE.xs,
-          }}
-        />
+        <TeamChip name={m.team.name} color={m.team.color} sx={{ fontSize: TYPE_SCALE.xs }} />
       </TableCell>
       <TableCell>
         <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -1338,9 +1313,8 @@ function FlatView({
       {upcoming.length > 0 && (
         <Paper elevation={0} variant="outlined">
           <SectionHeader
-            icon={<EventIcon fontSize="small" color="info" />}
+            icon={<EventIcon fontSize="small" sx={{ color: "text.secondary" }} />}
             label={`Prossime (${upcoming.length})`}
-            accent="info.main"
           />
           <FlatMatchesTable
             matches={upcoming}

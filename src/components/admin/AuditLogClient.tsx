@@ -35,6 +35,10 @@ import {
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import type { SxProps, Theme } from "@mui/material/styles";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -115,49 +119,28 @@ const ACTION_LABELS: Record<string, string> = {
   SEND_NOTIFICATION: "Avviso inviato",
 };
 
-const ACTION_COLORS: Record<string, "default" | "error" | "warning" | "success" | "info"> = {
-  UPDATE_ROLE: "info",
-  UPDATE_SPORT_ROLE: "info",
-  DELETE_USER: "error",
-  DELETE_CHILD: "error",
-  DELETE_TEAM: "error",
-  DELETE_MATCH: "error",
-  DELETE_EVENT: "error",
-  ADD_MEMBER: "success",
-  REMOVE_MEMBER: "warning",
-  CREATE_TEAM: "success",
-  UPDATE_TEAM: "info",
-  CREATE_MATCH: "success",
-  UPDATE_MATCH: "info",
-  CREATE_EVENT: "success",
-  UPDATE_EVENT: "info",
-  LINK_ACCEPTED: "success",
-  LINK_REJECTED: "warning",
-  EXPORT_PII: "warning",
-  DELETE_ANONYMOUS_REGS: "error",
-  CREATE_SESSION: "success",
-  UPDATE_SESSION: "info",
-  DELETE_SESSION: "error",
-  CONCLUDE_SESSION: "info",
-  GENERATE_TEAMS: "success",
-  UPDATE_TEAMS: "info",
-  DELETE_TEAMS: "warning",
-  CREATE_TRAINING_MATCH_RESULT: "success",
-  UPDATE_CALLUPS: "info",
-  UPDATE_MATCH_STATS: "info",
-  CREATE_GROUP: "success",
-  UPDATE_GROUP: "info",
-  DELETE_GROUP: "error",
-  CREATE_OPPOSING_TEAM: "success",
-  UPDATE_OPPOSING_TEAM: "info",
-  DELETE_OPPOSING_TEAM: "error",
-  DELETE_REGISTRATION: "warning",
-  ADD_REGISTRATION: "success",
-  CREATE_CHILD: "success",
-  LINK_GUARDIAN: "success",
-  UNLINK_GUARDIAN: "warning",
-  SEND_NOTIFICATION: "info",
-};
+/**
+ * Tipo di azione (UX-29): un tipo non ha una tinta, il chip e' contornato
+ * neutro e lo distingue l'icona (crea / modifica / rimuove), oltre alla parola.
+ */
+function ActionChip({ action, sx }: { action: string; sx?: SxProps<Theme> }) {
+  const Icon = /^(DELETE|REMOVE|UNLINK)_|_REJECTED$/.test(action)
+    ? RemoveCircleOutlineIcon
+    : /^(CREATE|ADD|LINK|GENERATE)_|_ACCEPTED$/.test(action)
+      ? AddCircleOutlineIcon
+      : /^(UPDATE|CONCLUDE)_/.test(action)
+        ? EditOutlinedIcon
+        : null;
+  return (
+    <Chip
+      label={ACTION_LABELS[action] ?? action}
+      size="small"
+      variant="outlined"
+      icon={Icon ? <Icon /> : undefined}
+      sx={[{ "& .MuiChip-icon": { color: "text.secondary" } }, ...(Array.isArray(sx) ? sx : [sx])]}
+    />
+  );
+}
 
 const TARGET_TYPE_LABELS: Record<string, string> = {
   User: "Utente",
@@ -230,10 +213,10 @@ function JsonDiff({
               <Box
                 key={k}
                 sx={{
-                  color:
-                    after && JSON.stringify(before[k]) !== JSON.stringify(after?.[k])
-                      ? "warning.dark"
-                      : "text.primary",
+                  // Valore cambiato: prima barrato e secondario, dopo in evidenza (UX-29).
+                  ...(after && JSON.stringify(before[k]) !== JSON.stringify(after?.[k])
+                    ? { color: "text.secondary", textDecoration: "line-through" }
+                    : { color: "text.primary" }),
                 }}
               >
                 <strong>{k}:</strong> {JSON.stringify(before[k])}
@@ -270,10 +253,11 @@ function JsonDiff({
               <Box
                 key={k}
                 sx={{
-                  color:
+                  color: "text.primary",
+                  fontWeight:
                     before && JSON.stringify(before?.[k]) !== JSON.stringify(after[k])
-                      ? "success.dark"
-                      : "text.primary",
+                      ? FONT_WEIGHT.semibold
+                      : undefined,
                 }}
               >
                 <strong>{k}:</strong> {JSON.stringify(after[k])}
@@ -500,12 +484,7 @@ export default function AuditLogClient() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={ACTION_LABELS[item.action] ?? item.action}
-                          color={ACTION_COLORS[item.action] ?? "default"}
-                          size="small"
-                          sx={{ fontSize: TYPE_SCALE.xs }}
-                        />
+                        <ActionChip action={item.action} sx={{ fontSize: TYPE_SCALE.xs }} />
                       </TableCell>
                       <TableCell>
                         <Typography
@@ -579,10 +558,8 @@ export default function AuditLogClient() {
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
-                    <Chip
-                      label={ACTION_LABELS[item.action] ?? item.action}
-                      color={ACTION_COLORS[item.action] ?? "default"}
-                      size="small"
+                    <ActionChip
+                      action={item.action}
                       sx={{ fontSize: TYPE_SCALE.xs, maxWidth: "100%" }}
                     />
                     <Typography
@@ -638,11 +615,7 @@ export default function AuditLogClient() {
           <>
             <DialogTitle sx={{ pb: 1 }}>
               <Stack direction="row" alignItems="center" gap={1}>
-                <Chip
-                  label={ACTION_LABELS[detail.action] ?? detail.action}
-                  color={ACTION_COLORS[detail.action] ?? "default"}
-                  size="small"
-                />
+                <ActionChip action={detail.action} />
                 <Typography variant="caption" color="text.secondary">
                   {formatDate(detail.createdAt)}
                 </Typography>

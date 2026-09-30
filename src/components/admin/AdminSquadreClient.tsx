@@ -23,7 +23,7 @@ import {
   Alert,
   Grid2 as Grid,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import { alpha, type Theme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -35,26 +35,28 @@ import PeopleIcon from "@mui/icons-material/People";
 import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { slugify } from "@/lib/slugUtils";
-import Link from "next/link";
 import ImageUploader from "@/components/common/ImageUploader";
-import { onHover } from "@/lib/hoverStyles";
-import { brandColor } from "@/lib/heroStyles";
+import CheckIcon from "@mui/icons-material/Check";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import {
+  CLUB_TEAM_TINT,
+  TEAM_TINTS,
+  TEAM_TINT_LABELS,
+  suggestTeamTint,
+  teamColor,
+  teamTint,
+  type TeamTint,
+} from "@/lib/teamColors";
+import StatusPill from "@/components/common/StatusPill";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
-// ── Palette colori squadra ────────────────────────────────────────────────────
+// ── Tinte squadra ──────────────────────────────────────────────────────────────
 
-const TEAM_COLORS = [
-  { label: "Arancione", value: "#FF6D00" },
-  { label: "Blu", value: "#1E88E5" },
-  { label: "Verde", value: "#43A047" },
-  { label: "Rosso", value: "#F44336" },
-  { label: "Viola", value: "#8E24AA" },
-  { label: "Nero", value: "#1A1A1A" },
-  { label: "Grigio", value: "#757575" },
-  { label: "Oro", value: "#FFB300" },
-];
+// Tinte che lo staff puo' scegliere (UX-29): la palette chiusa, tranne
+// l'Ardesia, riservata alla squadra Karibu di stagione.
+const PICKABLE_TINTS: readonly TeamTint[] = TEAM_TINTS.filter((t) => t !== CLUB_TEAM_TINT);
 
 // ── Stagione corrente automatica ──────────────────────────────────────────────
 
@@ -68,6 +70,12 @@ function currentSeasonLabel(): string {
 
 function seasonLabel(startYear: number): string {
   return `${startYear}-${String(startYear + 1).slice(-2)}`;
+}
+
+/** Stagione precedente ("2026-27" -> "2025-26"), o null se il formato non torna. */
+function previousSeason(season: string): string | null {
+  const start = parseInt(season.slice(0, 4), 10);
+  return Number.isNaN(start) ? null : seasonLabel(start - 1);
 }
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
@@ -158,16 +166,19 @@ export default function AdminSquadreClient({
   const [teamForm, setTeamForm] = useState<{
     name: string;
     championship: string;
-    color: string;
+    /** Chiave della tinta; null solo per una squadra storica senza colore. */
+    color: TeamTint | null;
     description: string;
     imageUrl: string | null;
   }>({
     name: "",
     championship: "",
-    color: TEAM_COLORS[0].value,
+    color: null,
     description: "",
     imageUrl: null,
   });
+  // Lo staff ha scelto un colore a mano: da li' il nome non lo ricalcola piu'.
+  const [colorTouched, setColorTouched] = useState(false);
   const [teamError, setTeamError] = useState("");
 
   // Dialog conferma generica
@@ -208,14 +219,26 @@ export default function AdminSquadreClient({
 
   // ── Squadre ───────────────────────────────────────────────────────────────────
 
+  /** Squadre della stagione precedente a quella indicata. */
+  function previousSeasonTeams(season: string) {
+    const prev = previousSeason(season);
+    return teams.filter((t) => t.season === prev);
+  }
+
+  /** Colori gia' usati nella stagione, esclusa la squadra che si modifica. */
+  function sameSeasonColors(season: string, exceptId?: string) {
+    return teams.filter((t) => t.season === season && t.id !== exceptId).map((t) => t.color);
+  }
+
   function openCreate() {
     setTeamForm({
       name: "",
       championship: "",
-      color: TEAM_COLORS[0].value,
+      color: suggestTeamTint("", previousSeasonTeams(activeSeason), sameSeasonColors(activeSeason)),
       description: "",
       imageUrl: null,
     });
+    setColorTouched(false);
     setEditTeam(null);
     setTeamError("");
     setTeamDialog(true);
@@ -225,10 +248,12 @@ export default function AdminSquadreClient({
     setTeamForm({
       name: team.name,
       championship: team.championship ?? "",
-      color: team.color ?? TEAM_COLORS[0].value,
+      // Un vecchio hex si porta sulla tinta della palette: salvando, resta la chiave.
+      color: teamTint(team.color),
       description: team.description ?? "",
       imageUrl: team.imageUrl ?? null,
     });
+    setColorTouched(true);
     setEditTeam(team);
     setTeamError("");
     setTeamDialog(true);
@@ -257,6 +282,24 @@ export default function AdminSquadreClient({
     });
   }
 
+  function handleNameChange(name: string) {
+    setTeamForm((f) => ({
+      ...f,
+      name,
+      // Squadra nuova, colore non ancora scelto a mano: propone la tinta
+      // dell'omonima della stagione prima (o la prima libera).
+      color:
+        !editTeam && !colorTouched
+          ? suggestTeamTint(name, previousSeasonTeams(activeSeason), sameSeasonColors(activeSeason))
+          : f.color,
+    }));
+  }
+
+  function pickColor(tint: TeamTint) {
+    setColorTouched(true);
+    setTeamForm((f) => ({ ...f, color: tint }));
+  }
+
   function handleDeleteTeam(teamId: string, teamName: string) {
     openConfirm(
       "Elimina squadra",
@@ -272,6 +315,16 @@ export default function AdminSquadreClient({
   // ── Computed ──────────────────────────────────────────────────────────────────
 
   const teamsInSeason = teams.filter((t) => t.season === activeSeason);
+
+  // Un'altra squadra della stessa stagione ha gia' la tinta scelta: avviso, non blocco.
+  const formSeason = editTeam ? editTeam.season : activeSeason;
+  const colorClash =
+    teamForm.color != null
+      ? teams.find(
+          (t) =>
+            t.season === formSeason && t.id !== editTeam?.id && teamTint(t.color) === teamForm.color
+        )
+      : undefined;
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
@@ -316,7 +369,7 @@ export default function AdminSquadreClient({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography variant="h5">Stagione {activeSeason}</Typography>
             {activeIsCurrentSeason && (
-              <Chip label="In corso" size="small" icon={<StarIcon />} color="warning" />
+              <StatusPill label="In corso" variant="outlined" icon={<StarIcon />} />
             )}
           </Box>
           <Typography variant="body2" color="text.secondary">
@@ -387,14 +440,10 @@ export default function AdminSquadreClient({
       ) : (
         <Grid container spacing={3}>
           {teamsInSeason.map((team) => {
-            const color = team.color ?? "primary.main";
-            const colorName = TEAM_COLORS.find((c) => c.value === color)?.label;
             return (
               <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
                 <TeamCard
                   team={team}
-                  color={color}
-                  colorName={colorName}
                   onEdit={() => openEdit(team)}
                   onDelete={() => handleDeleteTeam(team.id, team.name)}
                 />
@@ -461,7 +510,7 @@ export default function AdminSquadreClient({
             <TextField
               label="Nome squadra"
               value={teamForm.name}
-              onChange={(e) => setTeamForm((f) => ({ ...f, name: e.target.value }))}
+              onChange={(e) => handleNameChange(e.target.value)}
               fullWidth
               autoFocus
               required
@@ -476,58 +525,90 @@ export default function AdminSquadreClient({
               helperText="Facoltativo: viene mostrato sotto il nome nelle pagine pubbliche"
             />
             <Box>
-              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
-                Colore identificativo
+              <Typography
+                id="team-color-label"
+                variant="body2"
+                fontWeight={FONT_WEIGHT.semibold}
+                sx={{ mb: 0.5 }}
+              >
+                Colore della squadra
               </Typography>
               <Typography
+                id="team-color-help"
                 variant="caption"
                 color="text.secondary"
                 sx={{ display: "block", mb: 1.5 }}
               >
-                Usato per distinguere visivamente la squadra nelle pagine pubbliche e
-                nell&apos;intestazione della card.
+                Distingue la squadra in calendario, classifiche e pagine pubbliche. I colori sono
+                quelli della palette del sito; l&apos;Ardesia è riservata alla squadra Karibu.
               </Typography>
-              <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
-                {TEAM_COLORS.map((c) => (
-                  <Tooltip key={c.value} title={c.label}>
+              <Box
+                role="radiogroup"
+                aria-labelledby="team-color-label"
+                aria-describedby="team-color-help"
+                sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}
+              >
+                {PICKABLE_TINTS.map((tint) => {
+                  const selected = teamForm.color === tint;
+                  return (
                     <Box
-                      onClick={() => setTeamForm((f) => ({ ...f, color: c.value }))}
+                      key={tint}
+                      component="button"
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      aria-label={TEAM_TINT_LABELS[tint]}
+                      title={TEAM_TINT_LABELS[tint]}
+                      onClick={() => pickColor(tint)}
                       sx={{
-                        width: 36,
-                        height: 36,
+                        width: 40,
+                        height: 40,
+                        p: 0,
                         borderRadius: "50%",
-                        backgroundColor: c.value,
+                        bgcolor: `team.${tint}`,
+                        color: "common.white",
                         cursor: "pointer",
-                        border:
-                          teamForm.color === c.value
-                            ? `3px solid ${brandColor.dark}`
-                            : "3px solid transparent",
-                        boxShadow:
-                          teamForm.color === c.value
-                            ? `0 0 0 2px ${brandColor.white}, 0 0 0 4px ${c.value}`
-                            : "0 1px 3px rgba(0,0,0,0.25)",
-                        transition: "all 0.15s",
-                        ...onHover({ transform: "scale(1.15)" }),
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "2px solid",
+                        borderColor: "background.paper",
+                        // Selezionato: anello nel colore del testo, oltre alla spunta.
+                        outline: selected ? "2px solid" : "none",
+                        outlineColor: "text.primary",
+                        "&:focus-visible": {
+                          outline: "3px solid",
+                          outlineColor: "primary.main",
+                          outlineOffset: 2,
+                        },
                       }}
-                    />
-                  </Tooltip>
-                ))}
+                    >
+                      {selected && <CheckIcon fontSize="small" aria-hidden />}
+                    </Box>
+                  );
+                })}
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1.5 }}>
-                <Box
-                  sx={{
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    backgroundColor: teamForm.color,
-                    flexShrink: 0,
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {TEAM_COLORS.find((c) => c.value === teamForm.color)?.label ?? "Personalizzato"}{" "}
-                  selezionato
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 1.5 }}
+              >
+                {teamForm.color
+                  ? `${TEAM_TINT_LABELS[teamForm.color]} selezionato`
+                  : "Nessun colore: scegline uno"}
+              </Typography>
+              {colorClash && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  role="status"
+                  sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}
+                >
+                  <WarningAmberIcon sx={{ fontSize: 16, color: "warning.main" }} aria-hidden />
+                  Anche {colorClash.name} ha questo colore in questa stagione: le due squadre non si
+                  distingueranno a colpo d&apos;occhio.
                 </Typography>
-              </Box>
+              )}
             </Box>
             <TextField
               label="Descrizione"
@@ -606,16 +687,18 @@ export default function AdminSquadreClient({
 
 // ── Card squadra ──────────────────────────────────────────────────────────────
 
+// Icone sopra il riempimento della tinta squadra (etichetta bianca, >= 4,5:1).
+const ON_FILL_ICON_SX = {
+  color: "common.white",
+  "&:hover": { bgcolor: (theme: Theme) => alpha(theme.palette.common.white, 0.15) },
+} as const;
+
 function TeamCard({
   team,
-  color,
-  colorName,
   onEdit,
   onDelete,
 }: {
   team: Team;
-  color: string;
-  colorName: string | undefined;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -623,6 +706,8 @@ function TeamCard({
   const publicHref = `/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`;
   const rosaHref = `/admin/squadre/${team.id}/rosa`;
   const stop = (e: React.MouseEvent) => e.stopPropagation();
+  // Tinta della squadra, o null: intestazione neutra, mai l'arancio (UX-29).
+  const color = teamColor(team.color);
 
   return (
     <Paper
@@ -639,12 +724,19 @@ function TeamCard({
         "&:hover": { boxShadow: 3 },
       }}
     >
-      {/* Intestazione colorata */}
+      {/* Intestazione: riempita con la tinta della squadra, neutra senza */}
       <Box
         sx={{
           px: 2.5,
           py: 2,
-          backgroundColor: color,
+          ...(color
+            ? { bgcolor: color, color: "common.white" }
+            : {
+                bgcolor: "action.hover",
+                color: "text.primary",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              }),
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -654,7 +746,7 @@ function TeamCard({
           <Typography
             variant="h6"
             fontWeight={FONT_WEIGHT.bold}
-            sx={{ color: "common.white", lineHeight: 1.2 }}
+            sx={{ color: "inherit", lineHeight: 1.2 }}
             noWrap
           >
             {team.name}
@@ -663,7 +755,9 @@ function TeamCard({
             <Typography
               variant="caption"
               sx={{
-                color: (theme) => alpha(theme.palette.common.white, 0.75),
+                color: color
+                  ? (theme) => alpha(theme.palette.common.white, 0.85)
+                  : "text.secondary",
               }}
             >
               {team.championship}
@@ -679,13 +773,7 @@ function TeamCard({
                 onEdit();
               }}
               aria-label="Modifica squadra"
-              sx={{
-                color: (theme) => alpha(theme.palette.common.white, 0.7),
-                "&:hover": {
-                  color: "common.white",
-                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
-                },
-              }}
+              sx={color ? ON_FILL_ICON_SX : { color: "text.secondary" }}
             >
               <EditIcon sx={{ fontSize: 16 }} />
             </IconButton>
@@ -698,13 +786,7 @@ function TeamCard({
                 onDelete();
               }}
               aria-label="Elimina squadra"
-              sx={{
-                color: (theme) => alpha(theme.palette.common.white, 0.7),
-                "&:hover": {
-                  color: "common.white",
-                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.15),
-                },
-              }}
+              sx={color ? ON_FILL_ICON_SX : { color: "text.secondary" }}
             >
               <DeleteIcon sx={{ fontSize: 16 }} />
             </IconButton>
@@ -727,7 +809,7 @@ function TeamCard({
         {/* Statistiche */}
         <Box sx={{ display: "flex", gap: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <GroupsIcon sx={{ fontSize: 17, color }} />
+            <GroupsIcon sx={{ fontSize: 17, color: "text.secondary" }} />
             <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {team._count.memberships}
             </Typography>
@@ -749,18 +831,12 @@ function TeamCard({
         {/* Bottone gestione rosa */}
         <Box sx={{ mt: "auto" }}>
           <Button
-            component={Link}
             href={rosaHref}
             variant="outlined"
             size="small"
             fullWidth
             startIcon={<PeopleIcon />}
             onClick={stop}
-            sx={{
-              borderColor: color,
-              color,
-              "&:hover": { borderColor: color, bgcolor: `${color}0f` },
-            }}
           >
             Gestisci rosa
           </Button>

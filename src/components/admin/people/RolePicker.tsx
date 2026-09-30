@@ -1,7 +1,5 @@
 "use client";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { roleColor } from "@/lib/constants";
-import { contrastText } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -29,6 +27,8 @@ export default function RolePicker({
     <ToggleButtonGroup
       exclusive
       fullWidth
+      // Selezionato = stato attivo standard (arancio), non un colore del ruolo (UX-29).
+      color="primary"
       value={value ?? (allowNone ? 0 : null)}
       onChange={(_, v: number | null) => {
         // Un secondo tocco sul ruolo scelto lo deseleziona: con `allowNone`
@@ -49,17 +49,7 @@ export default function RolePicker({
         </ToggleButton>
       )}
       {[1, 2, 3, 4, 5].map((r) => (
-        <ToggleButton
-          key={r}
-          value={r}
-          aria-label={`Ruolo ${r}`}
-          sx={{
-            "&.Mui-selected, &.Mui-selected:hover": {
-              bgcolor: roleColor(r),
-              color: contrastText(roleColor(r)),
-            },
-          }}
-        >
+        <ToggleButton key={r} value={r} aria-label={`Ruolo ${r}`}>
           {r}
         </ToggleButton>
       ))}

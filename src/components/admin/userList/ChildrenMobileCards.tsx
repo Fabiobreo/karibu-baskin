@@ -1,10 +1,10 @@
 "use client";
+import TeamChip from "@/components/teams/TeamChip";
 import { Avatar, Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { sportRoleLabel } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
 import { guardianNames } from "@/lib/guardianNames";
@@ -77,15 +77,7 @@ export default function ChildrenMobileCards({
                 <AthleteStatusChip status={row.athleteStatus} />
                 {row.sportRole && <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />}
                 {team && (
-                  <Chip
-                    label={team.name}
-                    size="small"
-                    sx={{
-                      bgcolor: team.color ?? "primary.main",
-                      color: contrastText(team.color),
-                      fontSize: TYPE_SCALE.xs,
-                    }}
-                  />
+                  <TeamChip name={team.name} color={team.color} sx={{ fontSize: TYPE_SCALE.xs }} />
                 )}
                 {row.ratingMu != null && (
                   <Chip

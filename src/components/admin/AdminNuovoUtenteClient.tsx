@@ -16,8 +16,8 @@ import {
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import { useRouter } from "next/navigation";
 import type { AppRole } from "@prisma/client";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { ROLE_LABELS, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { ROLE_LABELS, roleColorSx } from "@/lib/constants";
+import { AppRoleChip } from "@/components/admin/userList/userListShared";
 import { useToast } from "@/context/ToastContext";
 
 export default function AdminNuovoUtenteClient() {
@@ -102,17 +102,11 @@ export default function AdminNuovoUtenteClient() {
                   label="Ruolo utente"
                   value={form.appRole}
                   onChange={(e) => set("appRole", e.target.value)}
-                  renderValue={(val) => (
-                    <Chip
-                      label={ROLE_LABELS_IT[val as AppRole]}
-                      size="small"
-                      color={ROLE_CHIP_COLORS[val as AppRole]}
-                    />
-                  )}
+                  renderValue={(val) => <AppRoleChip role={val as AppRole} />}
                 >
                   {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                     <MenuItem key={r} value={r}>
-                      <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} />
+                      <AppRoleChip role={r} />
                     </MenuItem>
                   ))}
                 </Select>
@@ -131,10 +125,7 @@ export default function AdminNuovoUtenteClient() {
                       <Chip
                         label={ROLE_LABELS[parseInt(val) as keyof typeof ROLE_LABELS]}
                         size="small"
-                        sx={{
-                          bgcolor: roleColor(parseInt(val)),
-                          color: ROLE_TEXT_COLOR,
-                        }}
+                        sx={roleColorSx(parseInt(val))}
                       />
                     ) : (
                       <em style={{ color: "inherit", opacity: 0.6 }}>Non impostato</em>
@@ -149,7 +140,7 @@ export default function AdminNuovoUtenteClient() {
                       <Chip
                         label={ROLE_LABELS[r as keyof typeof ROLE_LABELS]}
                         size="small"
-                        sx={{ bgcolor: roleColor(r), color: ROLE_TEXT_COLOR }}
+                        sx={roleColorSx(r)}
                       />
                     </MenuItem>
                   ))}

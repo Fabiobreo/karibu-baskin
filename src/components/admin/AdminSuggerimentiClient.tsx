@@ -18,6 +18,7 @@ import ArchiveIcon from "@mui/icons-material/Archive";
 import UnarchiveIcon from "@mui/icons-material/Unarchive";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SendIcon from "@mui/icons-material/Send";
+import StatusPill from "@/components/common/StatusPill";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
@@ -67,10 +68,12 @@ const CATEGORY_LABELS: Record<Category, string> = {
   ALTRO: "Altro",
 };
 
-const STATUS_META: Record<Status, { label: string; color: "warning" | "info" | "default" }> = {
-  NUOVO: { label: "Nuovo", color: "warning" },
-  LETTO: { label: "Letto", color: "info" },
-  ARCHIVIATO: { label: "Archiviato", color: "default" },
+// Stato del suggerimento (UX-29): forma e parola, niente tinte. Nuovo = pieno
+// (e' quello da guardare), Letto = contornato, Archiviato = tenue.
+const STATUS_META: Record<Status, { label: string; variant: "inverted" | "outlined" | "muted" }> = {
+  NUOVO: { label: "Nuovo", variant: "inverted" },
+  LETTO: { label: "Letto", variant: "outlined" },
+  ARCHIVIATO: { label: "Archiviato", variant: "muted" },
 };
 
 const FILTERS: { value: Status | "TUTTI"; label: string }[] = [
@@ -239,10 +242,9 @@ export default function AdminSuggerimentiClient({
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Chip
+                <StatusPill
                   label={STATUS_META[s.status].label}
-                  color={STATUS_META[s.status].color}
-                  size="small"
+                  variant={STATUS_META[s.status].variant}
                 />
                 <Chip label={CATEGORY_LABELS[s.category]} size="small" variant="outlined" />
                 <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>

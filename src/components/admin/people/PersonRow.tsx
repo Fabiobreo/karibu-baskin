@@ -1,8 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import { Avatar, Box, Typography } from "@mui/material";
-import { roleColor } from "@/lib/constants";
-import { contrastText } from "@/lib/colorUtils";
+import { roleColorSx } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -20,7 +19,7 @@ interface PersonRowProps {
 }
 
 /**
- * Riga persona per le liste dello staff: avatar col colore del ruolo, nome,
+ * Riga persona per le liste dello staff: avatar col numero del ruolo, nome,
  * una riga di dettaglio e un'azione. Alta almeno 56px, per il pollice.
  */
 export default function PersonRow({
@@ -32,7 +31,6 @@ export default function PersonRow({
   children,
   dimmed,
 }: PersonRowProps) {
-  const roleTint = sportRole ? roleColor(sportRole) : undefined;
   return (
     <Box sx={{ borderBottom: "1px solid", borderColor: "divider" }}>
       <Box
@@ -52,8 +50,10 @@ export default function PersonRow({
             height: 36,
             fontSize: TYPE_SCALE.sm,
             fontWeight: FONT_WEIGHT.bold,
-            bgcolor: roleTint ?? "action.selected",
-            color: roleTint ? contrastText(roleTint) : "text.secondary",
+            // Ruolo Baskin: grafite per tutti (UX-29); senza ruolo, neutro tenue.
+            ...(sportRole
+              ? roleColorSx(sportRole)
+              : { bgcolor: "action.selected", color: "text.secondary" }),
           }}
         >
           {sportRole ?? name[0]?.toUpperCase()}

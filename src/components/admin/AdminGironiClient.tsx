@@ -30,7 +30,7 @@ import { useState, useTransition } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
 import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
-import { contrastText } from "@/lib/colorUtils";
+import TeamChip from "@/components/teams/TeamChip";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -229,15 +229,11 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                       ) : (
                         <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
                           {g.competitiveTeams.map(({ competitiveTeam: t }) => (
-                            <Chip
+                            <TeamChip
                               key={t.id}
-                              label={t.name}
-                              size="small"
-                              sx={{
-                                bgcolor: t.color ?? "primary.main",
-                                color: contrastText(t.color),
-                                fontSize: TYPE_SCALE.xs,
-                              }}
+                              name={t.name}
+                              color={t.color}
+                              sx={{ fontSize: TYPE_SCALE.xs }}
                             />
                           ))}
                         </Stack>

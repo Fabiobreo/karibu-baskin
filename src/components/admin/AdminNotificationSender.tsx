@@ -17,7 +17,8 @@ import {
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
-import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
+import { ROLE_LABELS, ROLES } from "@/lib/constants";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import { useToast } from "@/context/ToastContext";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -216,17 +217,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
               {teams.map((t) => (
                 <MenuItem key={t.id} value={t.id}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {t.color && (
-                      <Box
-                        sx={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: "50%",
-                          bgcolor: t.color,
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
+                    <TeamColorDot color={t.color} size={10} />
                     {t.name}
                   </Box>
                 </MenuItem>
@@ -256,18 +247,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
               </MenuItem>
               {ROLES.map((r) => (
                 <MenuItem key={r} value={String(r)}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Box
-                      sx={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        bgcolor: roleColor(r),
-                        flexShrink: 0,
-                      }}
-                    />
-                    {ROLE_LABELS[r]}
-                  </Box>
+                  {ROLE_LABELS[r]}
                 </MenuItem>
               ))}
             </Select>

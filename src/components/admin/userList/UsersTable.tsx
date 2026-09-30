@@ -21,13 +21,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import type { AppRole } from "@prisma/client";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { sportRoleLabel, GENDER_LABELS_SHORT, roleColor } from "@/lib/constants";
+import { GENDER_LABELS_SHORT } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import RatingBadge from "@/components/rating/RatingBadge";
 import {
   ALL_APP_ROLES,
+  AppRoleChip,
   AthleteStatusChip,
+  SuggestedRoleChip,
   TeamCellSelect,
   type AdminRow,
   type SortColumn,
@@ -191,17 +192,11 @@ export default function UsersTable({
                     onChange={(e) => onRoleChange(row.id, e.target.value as AppRole)}
                     inputProps={{ "aria-label": `Ruolo utente di ${row.name ?? row.email}` }}
                     sx={{ minWidth: 110, fontSize: TYPE_SCALE.xs }}
-                    renderValue={(val) => (
-                      <Chip
-                        label={ROLE_LABELS_IT[val as AppRole]}
-                        size="small"
-                        color={ROLE_CHIP_COLORS[val as AppRole]}
-                      />
-                    )}
+                    renderValue={(val) => <AppRoleChip role={val as AppRole} />}
                   >
                     {ALL_APP_ROLES.map((r) => (
                       <MenuItem key={r} value={r}>
-                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} />
+                        <AppRoleChip role={r} />
                       </MenuItem>
                     ))}
                   </Select>
@@ -220,16 +215,9 @@ export default function UsersTable({
                         justifyContent: "center",
                       }}
                     >
-                      <Chip
-                        label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          borderColor: roleColor(row.sportRoleSuggested),
-                          color: roleColor(row.sportRoleSuggested),
-                          fontSize: TYPE_SCALE.xs,
-                        }}
-                        title="Autovalutazione da confermare"
+                      <SuggestedRoleChip
+                        role={row.sportRoleSuggested}
+                        variant={row.sportRoleSuggestedVariant}
                       />
                       <Tooltip title="Conferma ruolo">
                         <IconButton

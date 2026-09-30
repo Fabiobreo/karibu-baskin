@@ -1,13 +1,16 @@
 "use client";
+import TeamChip from "@/components/teams/TeamChip";
 import { Avatar, Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
-import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { contrastText } from "@/lib/colorUtils";
 import RatingBadge from "@/components/rating/RatingBadge";
-import { AthleteStatusChip, type AdminRow } from "@/components/admin/userList/userListShared";
+import {
+  AppRoleChip,
+  AthleteStatusChip,
+  SuggestedRoleChip,
+  type AdminRow,
+} from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { joinNames } from "@/lib/guardianNames";
 import { RADIUS } from "@/lib/radius";
@@ -88,37 +91,21 @@ export default function UsersMobileCards({
                   </Typography>
                 )}
                 <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
-                  <Chip
-                    label={ROLE_LABELS_IT[row.appRole]}
-                    size="small"
-                    color={ROLE_CHIP_COLORS[row.appRole]}
-                    sx={{ fontSize: TYPE_SCALE.xs }}
-                  />
+                  <AppRoleChip role={row.appRole} sx={{ fontSize: TYPE_SCALE.xs }} />
                   <AthleteStatusChip status={row.athleteStatus} />
                   {row.sportRole ? (
                     <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
                   ) : row.sportRoleSuggested ? (
-                    <Chip
-                      label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)} ?`}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        borderColor: roleColor(row.sportRoleSuggested),
-                        // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
-                        color: "text.primary",
-                        fontSize: TYPE_SCALE.xs,
-                      }}
+                    <SuggestedRoleChip
+                      role={row.sportRoleSuggested}
+                      variant={row.sportRoleSuggestedVariant}
                     />
                   ) : null}
                   {team && (
-                    <Chip
-                      label={team.name}
-                      size="small"
-                      sx={{
-                        bgcolor: team.color ?? "primary.main",
-                        color: contrastText(team.color),
-                        fontSize: TYPE_SCALE.xs,
-                      }}
+                    <TeamChip
+                      name={team.name}
+                      color={team.color}
+                      sx={{ fontSize: TYPE_SCALE.xs }}
                     />
                   )}
                   {row.ratingMu != null && (

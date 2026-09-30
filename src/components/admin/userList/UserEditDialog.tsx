@@ -21,16 +21,17 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import type { AppRole } from "@prisma/client";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import { SPORT_ROLE_VARIANT_LABELS, sportRoleLabel, ATHLETE_STATUS_LABELS } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
-import type {
-  AdminRow,
-  MembershipInfo,
-  TeamInfo,
-  UserEntry,
+import {
+  AppRoleChip,
+  type AdminRow,
+  type MembershipInfo,
+  type TeamInfo,
+  type UserEntry,
 } from "@/components/admin/userList/userListShared";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import ChildGuardiansSection from "@/components/admin/userList/ChildGuardiansSection";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -353,17 +354,11 @@ export default function UserEditDialog({
                 size="small"
                 value={editState.appRole}
                 onChange={(e) => setEditState((s) => ({ ...s, appRole: e.target.value }))}
-                renderValue={(val) => (
-                  <Chip
-                    label={ROLE_LABELS_IT[val as AppRole]}
-                    size="small"
-                    color={ROLE_CHIP_COLORS[val as AppRole]}
-                  />
-                )}
+                renderValue={(val) => <AppRoleChip role={val as AppRole} />}
               >
                 {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                   <MenuItem key={r} value={r}>
-                    <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} />
+                    <AppRoleChip role={r} />
                   </MenuItem>
                 ))}
               </Select>
@@ -382,8 +377,8 @@ export default function UserEditDialog({
               Ruolo Baskin (1–5)
             </Typography>
             {row.kind === "user" && row.sportRoleSuggested && !row.sportRole && (
-              <Typography variant="caption" color="warning.main" display="block" sx={{ mb: 0.5 }}>
-                Autovalutazione:{" "}
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                Autovalutazione da confermare:{" "}
                 {sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant)}
                 {row.sportRoleSuggestedVariant
                   ? ` · ${SPORT_ROLE_VARIANT_LABELS[row.sportRoleSuggestedVariant] ?? ""}`
@@ -481,18 +476,7 @@ export default function UserEditDialog({
                 {teams.map((t) => (
                   <MenuItem key={t.id} value={t.id}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      {t.color && (
-                        <Box
-                          component="span"
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: "50%",
-                            bgcolor: t.color,
-                            flexShrink: 0,
-                          }}
-                        />
-                      )}
+                      <TeamColorDot color={t.color} size={12} />
                       {t.name}
                     </Box>
                   </MenuItem>

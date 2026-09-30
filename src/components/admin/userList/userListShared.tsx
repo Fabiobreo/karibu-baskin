@@ -1,8 +1,12 @@
 "use client";
+import { ROLE_CHIP_ICONS, ATHLETE_STATUS_CHIP_ICONS } from "@/components/common/appRoleIcons";
 import { Box, Chip, MenuItem, Select, Typography } from "@mui/material";
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
-import { ATHLETE_STATUS_CHIP_COLORS, ATHLETE_STATUS_LABELS } from "@/lib/constants";
+import type { SxProps, Theme } from "@mui/material/styles";
+import { ATHLETE_STATUS_LABELS, ROLE_LABELS_IT, sportRoleLabel } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { teamColor } from "@/lib/teamColors";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 
 // ── Tipi condivisi della gestione utenti ─────────────────────────────────────
 
@@ -88,13 +92,57 @@ export interface CurrentFilters {
 /** Chip per lo stato atleta. Non renderizza nulla se attivo (status null). */
 export function AthleteStatusChip({ status }: { status: AthleteStatus | null }) {
   if (!status) return null;
+  const Icon = ATHLETE_STATUS_CHIP_ICONS[status];
   return (
     <Chip
       label={ATHLETE_STATUS_LABELS[status]}
       size="small"
-      color={ATHLETE_STATUS_CHIP_COLORS[status]}
       variant="outlined"
-      sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
+      icon={<Icon />}
+      sx={{
+        height: 20,
+        fontSize: TYPE_SCALE.xs,
+        "& .MuiChip-icon": { fontSize: TYPE_SCALE.sm, color: "text.secondary" },
+      }}
+    />
+  );
+}
+
+/**
+ * Chip del ruolo utente (UX-29): contornato neutro con l'icona del ruolo. Il
+ * ruolo non ha un colore: lo dicono l'icona e la parola.
+ */
+export function AppRoleChip({ role, sx }: { role: AppRole; sx?: SxProps<Theme> }) {
+  const Icon = ROLE_CHIP_ICONS[role];
+  return (
+    <Chip
+      label={ROLE_LABELS_IT[role]}
+      size="small"
+      variant="outlined"
+      icon={<Icon />}
+      sx={[{ "& .MuiChip-icon": { color: "text.secondary" } }, ...(Array.isArray(sx) ? sx : [sx])]}
+    />
+  );
+}
+
+/**
+ * Ruolo Baskin suggerito dall'atleta, in attesa di conferma dello staff:
+ * bordo tratteggiato e testo secondario, per non confonderlo col ruolo
+ * confermato (`RoleBadge`, pieno).
+ */
+export function SuggestedRoleChip({ role, variant }: { role: number; variant?: string | null }) {
+  return (
+    <Chip
+      label={`${sportRoleLabel(role, variant)} ?`}
+      size="small"
+      variant="outlined"
+      title="Autovalutazione da confermare"
+      sx={{
+        borderStyle: "dashed",
+        borderColor: "text.secondary",
+        color: "text.secondary",
+        fontSize: TYPE_SCALE.xs,
+      }}
     />
   );
 }
@@ -142,18 +190,7 @@ export function TeamCellSelect({
           );
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            {team.color && (
-              <Box
-                component="span"
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  bgcolor: team.color,
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            <TeamColorDot color={team.color} size={10} />
             <Typography variant="body2" noWrap component="span">
               {team.name}
             </Typography>
@@ -167,18 +204,7 @@ export function TeamCellSelect({
       {teams.map((t) => (
         <MenuItem key={t.id} value={t.id}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {t.color && (
-              <Box
-                component="span"
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  bgcolor: t.color,
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            <TeamColorDot color={t.color} size={10} />
             {t.name}
           </Box>
         </MenuItem>

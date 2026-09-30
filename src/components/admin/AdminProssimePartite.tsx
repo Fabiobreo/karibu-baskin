@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { teamColor } from "@/lib/teamColors";
 import { Box, Paper, Typography, Chip, Stack } from "@mui/material";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -82,10 +83,8 @@ export default async function AdminProssimePartite() {
                 p: 1.25,
                 borderRadius: RADIUS.md,
                 border: "1px solid",
-                borderColor: "divider",
-                // Server Component: niente sx a funzione (non serializzabile) →
-                // rgba statico molto tenue, leggibile su tema chiaro e scuro
-                bgcolor: isMissing ? "rgba(211,47,47,0.04)" : "transparent",
+                // Nessun convocato: bordo rosso (valenza negativa), oltre al chip con icona.
+                borderColor: isMissing ? "error.main" : "divider",
               }}
             >
               <Link
@@ -105,7 +104,8 @@ export default async function AdminProssimePartite() {
                     width: 4,
                     alignSelf: "stretch",
                     borderRadius: RADIUS.sm,
-                    backgroundColor: m.team.color,
+                    // Tinta della squadra; senza tinta la fascia resta vuota (nessun segno).
+                    bgcolor: teamColor(m.team.color) ?? "transparent",
                   }}
                 />
                 <Box sx={{ flex: 1, minWidth: 0 }}>

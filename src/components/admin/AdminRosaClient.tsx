@@ -36,12 +36,10 @@ import {
   ROLES,
   roleGroupOf,
   type RoleGroupKey,
-  roleColor,
-  ROLE_TEXT_COLOR,
 } from "@/lib/constants";
+import { teamColor } from "@/lib/teamColors";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
-import { contrastText } from "@/lib/colorUtils";
 import type { Gender } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -126,7 +124,8 @@ export default function AdminRosaClient({
   // Tab mobile
   const [mobileTab, setMobileTab] = useState<"roster" | "pool">("roster");
 
-  const teamColor = team.color ?? "#FF6D00";
+  // Tinta della squadra, o null: senza tinta nessun segno di colore (UX-29).
+  const tint = teamColor(team.color);
 
   // ── Calcoli per la rosa ──────────────────────────────────────────────────────
 
@@ -311,8 +310,14 @@ export default function AdminRosaClient({
         sx={{
           px: 2.5,
           py: 1.5,
-          bgcolor: teamColor,
-          color: contrastText(teamColor),
+          ...(tint
+            ? { bgcolor: tint, color: "common.white" }
+            : {
+                bgcolor: "action.hover",
+                color: "text.primary",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              }),
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -324,10 +329,15 @@ export default function AdminRosaClient({
         <Chip
           label={`${team.memberships.length} ${team.memberships.length === 1 ? "atleta" : "atleti"}`}
           size="small"
-          sx={{
-            bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
-            color: "common.white",
-          }}
+          variant={tint ? "filled" : "outlined"}
+          sx={
+            tint
+              ? {
+                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
+                  color: "common.white",
+                }
+              : undefined
+          }
         />
       </Box>
 
@@ -348,11 +358,10 @@ export default function AdminRosaClient({
                 <GroupSection
                   key={g.key}
                   label={g.label}
-                  representativeRole={g.roles[0]}
                   required={g.min}
                   shortfall={shortfall}
                   members={members}
-                  teamColor={teamColor}
+                  tint={tint}
                   pendingMemberId={pendingMemberId}
                   onRemove={removeMember}
                   onToggleCaptain={toggleCaptain}
@@ -362,11 +371,10 @@ export default function AdminRosaClient({
             {(membersByGroup.get("none") ?? []).length > 0 && (
               <GroupSection
                 label="Senza ruolo"
-                representativeRole={null}
                 required={0}
                 shortfall={0}
                 members={membersByGroup.get("none") ?? []}
-                teamColor={teamColor}
+                tint={tint}
                 pendingMemberId={pendingMemberId}
                 onRemove={removeMember}
                 onToggleCaptain={toggleCaptain}
@@ -433,13 +441,8 @@ export default function AdminRosaClient({
                 label={`R${r}`}
                 size="small"
                 variant={filterRole === r ? "filled" : "outlined"}
+                color={filterRole === r ? "primary" : "default"}
                 onClick={() => setFilterRole(r)}
-                sx={{
-                  ...(filterRole === r && {
-                    bgcolor: roleColor(r),
-                    color: ROLE_TEXT_COLOR,
-                  }),
-                }}
               />
             ))}
           </Box>
@@ -529,29 +532,25 @@ export default function AdminRosaClient({
 
 function GroupSection({
   label,
-  representativeRole,
   required,
   shortfall,
   members,
-  teamColor,
+  tint,
   pendingMemberId,
   onRemove,
   onToggleCaptain,
 }: {
   label: string;
-  /** Ruolo usato per il colore dell'header; null = grigio (senza ruolo) */
-  representativeRole: number | null;
   required: number;
   shortfall: number;
   members: Membership[];
-  teamColor: string;
+  tint: string | null;
   pendingMemberId: string | null;
   onRemove: (m: Membership) => void;
   onToggleCaptain: (m: Membership) => void;
 }) {
   const isShortfall = shortfall > 0;
   const isMet = required > 0 && shortfall === 0;
-  const roleTint = representativeRole == null ? "#9e9e9e" : roleColor(representativeRole);
 
   return (
     <Box>
@@ -563,18 +562,9 @@ function GroupSection({
           mb: 1,
           pb: 0.5,
           borderBottom: "2px solid",
-          borderColor: roleTint,
+          borderColor: "divider",
         }}
       >
-        <Box
-          sx={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            bgcolor: roleTint,
-            flexShrink: 0,
-          }}
-        />
         <Typography variant="subtitle2" fontWeight={FONT_WEIGHT.bold}>
           {label}
         </Typography>
@@ -604,7 +594,7 @@ function GroupSection({
             <MemberRow
               key={m.id}
               membership={m}
-              teamColor={teamColor}
+              tint={tint}
               loading={pendingMemberId === m.id}
               onRemove={() => onRemove(m)}
               onToggleCaptain={() => onToggleCaptain(m)}
@@ -618,13 +608,13 @@ function GroupSection({
 
 function MemberRow({
   membership,
-  teamColor,
+  tint,
   loading,
   onRemove,
   onToggleCaptain,
 }: {
   membership: Membership;
-  teamColor: string;
+  tint: string | null;
   loading: boolean;
   onRemove: () => void;
   onToggleCaptain: () => void;
@@ -647,8 +637,8 @@ function MemberRow({
         p: 1,
         borderRadius: RADIUS.md,
         border: "1px solid",
-        borderColor: m.isCaptain ? `${teamColor}66` : "divider",
-        bgcolor: m.isCaptain ? `${teamColor}0a` : "transparent",
+        borderColor: m.isCaptain && tint ? alpha(tint, 0.4) : "divider",
+        bgcolor: m.isCaptain && tint ? alpha(tint, 0.04) : "transparent",
       }}
     >
       <Avatar
@@ -657,8 +647,9 @@ function MemberRow({
           width: 32,
           height: 32,
           fontSize: TYPE_SCALE.sm,
-          bgcolor: teamColor,
-          color: contrastText(teamColor),
+          ...(tint
+            ? { bgcolor: tint, color: "common.white" }
+            : { bgcolor: "action.selected", color: "text.secondary" }),
         }}
       >
         {name[0]?.toUpperCase()}

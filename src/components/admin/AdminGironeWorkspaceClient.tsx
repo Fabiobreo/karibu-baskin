@@ -31,7 +31,7 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
-import { contrastText } from "@/lib/colorUtils";
+import TeamChip from "@/components/teams/TeamChip";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -412,14 +412,7 @@ export default function AdminGironeWorkspaceClient({
             {group.name}
           </Typography>
           {ourTeamsInGroup.map((t) => (
-            <Chip
-              key={t.id}
-              label={t.name}
-              sx={{
-                bgcolor: t.color ?? "primary.main",
-                color: contrastText(t.color),
-              }}
-            />
+            <TeamChip key={t.id} name={t.name} color={t.color} size="medium" />
           ))}
         </Box>
         <Typography variant="body2" color="text.secondary">
@@ -465,14 +458,10 @@ export default function AdminGironeWorkspaceClient({
             {ourTeamsInGroup.map((t) => {
               const inUse = matchTeamIdsInUse.has(t.id);
               return (
-                <Chip
+                <TeamChip
                   key={t.id}
-                  label={t.name}
-                  size="small"
-                  sx={{
-                    bgcolor: t.color ?? "primary.main",
-                    color: contrastText(t.color),
-                  }}
+                  name={t.name}
+                  color={t.color}
                   onDelete={
                     inUse
                       ? undefined

@@ -20,9 +20,9 @@ import WarningIcon from "@mui/icons-material/Warning";
 import Link from "next/link";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
+import type { AppRole } from "@prisma/client";
+import { AppRoleChip, SuggestedRoleChip } from "@/components/admin/userList/userListShared";
 import AdminAnonymousRegistrations from "@/components/admin/AdminAnonymousRegistrations";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -181,13 +181,9 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                     </TableCell>
                     <TableCell>
                       {row.kind === "user" ? (
-                        <Chip
-                          label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
-                          size="small"
-                          color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
-                        />
+                        <AppRoleChip role={row.appRole as AppRole} />
                       ) : (
-                        <Chip label="Atleta" size="small" />
+                        <AppRoleChip role="ATHLETE" />
                       )}
                     </TableCell>
                     <TableCell align="center">
@@ -197,16 +193,9 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           variant={row.sportRoleVariant ?? undefined}
                         />
                       ) : row.kind === "user" && row.sportRoleSuggested ? (
-                        <Chip
-                          label={`${sportRoleLabel(row.sportRoleSuggested, row.sportRoleSuggestedVariant ?? undefined)} ?`}
-                          size="small"
-                          variant="outlined"
-                          sx={{
-                            borderColor: roleColor(row.sportRoleSuggested),
-                            // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
-                            color: "text.primary",
-                            fontSize: TYPE_SCALE.xs,
-                          }}
+                        <SuggestedRoleChip
+                          role={row.sportRoleSuggested}
+                          variant={row.sportRoleSuggestedVariant}
                         />
                       ) : (
                         <Typography variant="body2" color="text.secondary">
@@ -277,14 +266,12 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                     </Typography>
                     <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
                       {row.kind === "user" ? (
-                        <Chip
-                          label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
-                          size="small"
-                          color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
+                        <AppRoleChip
+                          role={row.appRole as AppRole}
                           sx={{ fontSize: TYPE_SCALE.xs }}
                         />
                       ) : (
-                        <Chip label="Atleta" size="small" sx={{ fontSize: TYPE_SCALE.xs }} />
+                        <AppRoleChip role="ATHLETE" sx={{ fontSize: TYPE_SCALE.xs }} />
                       )}
                       {row.sportRole && (
                         <RoleBadge

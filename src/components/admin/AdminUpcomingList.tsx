@@ -16,6 +16,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import StatusPill from "@/components/common/StatusPill";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import AdminSessionTeams from "@/components/admin/AdminSessionTeams";
@@ -296,13 +298,21 @@ export default function AdminUpcomingList({
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    color={
-                      state === "open" ? "success" : state === "notYet" ? "warning" : "default"
-                    }
+                  {/* Stato temporale (UX-29): forma e icona, niente verde/ambra. */}
+                  <StatusPill
                     label={REG_LABEL[state]}
+                    variant={
+                      state === "open" ? "inverted" : state === "notYet" ? "outlined" : "muted"
+                    }
+                    icon={
+                      state === "open" ? (
+                        <LockOpenIcon />
+                      ) : state === "notYet" ? (
+                        <ScheduleIcon />
+                      ) : (
+                        <LockIcon />
+                      )
+                    }
                   />
                   <Chip
                     size="small"
