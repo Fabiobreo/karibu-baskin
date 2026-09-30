@@ -4,6 +4,7 @@ import ShieldIcon from "@mui/icons-material/Shield";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Sezioni principali del pannello; gli strumenti (export, audit, …) restano
 // raggiungibili dalla dashboard per non affollare la barra.
@@ -65,7 +66,7 @@ export default function AdminNavBar() {
             <Typography
               variant="caption"
               sx={{
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
                 fontSize: TYPE_SCALE.xs,
@@ -92,7 +93,7 @@ export default function AdminNavBar() {
               "& .MuiTab-root": {
                 minHeight: 44,
                 textTransform: "none",
-                fontWeight: 600,
+                fontWeight: FONT_WEIGHT.semibold,
                 fontSize: TYPE_SCALE.sm,
                 px: 1.75,
                 // Etichette a contrasto pieno (MUI le metterebbe su
@@ -102,7 +103,7 @@ export default function AdminNavBar() {
                 "&:hover": { bgcolor: "adminBand.hover" },
                 "&.Mui-selected": {
                   color: "adminBand.accent",
-                  fontWeight: 800,
+                  fontWeight: FONT_WEIGHT.bold,
                 },
               },
             }}

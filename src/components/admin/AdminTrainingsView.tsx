@@ -8,6 +8,7 @@ import AdminUpcomingList, { type AdminUpcomingRow } from "@/components/admin/Adm
 import AdminAllenamentiClient, {
   type AdminSessionRow,
 } from "@/components/admin/AdminAllenamentiClient";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type TrainingsSection = "prossimi" | "da-completare" | "conclusi";
 
@@ -83,7 +84,7 @@ export default function AdminTrainingsView({
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setCreating(true)}
-          sx={{ minHeight: 44, mb: 1, fontWeight: 700 }}
+          sx={{ minHeight: 44, mb: 1 }}
         >
           Nuovo allenamento
         </Button>
@@ -114,7 +115,7 @@ export default function AdminTrainingsView({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle fontWeight={700}>Nuovo allenamento</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Nuovo allenamento</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <AdminSessionForm

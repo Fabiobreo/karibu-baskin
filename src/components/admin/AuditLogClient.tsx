@@ -38,6 +38,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
@@ -209,7 +210,7 @@ function JsonDiff({
         <Typography
           variant="caption"
           color="text.secondary"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ mb: 0.5, display: "block" }}
         >
           Prima
@@ -249,7 +250,7 @@ function JsonDiff({
         <Typography
           variant="caption"
           color="text.secondary"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ mb: 0.5, display: "block" }}
         >
           Dopo
@@ -352,9 +353,7 @@ export default function AuditLogClient() {
       <Paper elevation={1} sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" gap={1} mb={1.5}>
           <FilterListIcon fontSize="small" color="action" />
-          <Typography variant="subtitle2" fontWeight={700}>
-            Filtri
-          </Typography>
+          <Typography variant="subtitle2">Filtri</Typography>
           {hasFilters && (
             <Button
               size="small"
@@ -457,7 +456,9 @@ export default function AuditLogClient() {
             <TableContainer sx={{ overflowX: "auto" }}>
               <Table size="small" sx={{ minWidth: 720 }}>
                 <TableHead>
-                  <TableRow sx={{ "& th": { fontWeight: 700, bgcolor: "action.hover" } }}>
+                  <TableRow
+                    sx={{ "& th": { fontWeight: FONT_WEIGHT.semibold, bgcolor: "action.hover" } }}
+                  >
                     <TableCell>Data</TableCell>
                     <TableCell>Attore</TableCell>
                     <TableCell>Azione</TableCell>
@@ -481,7 +482,11 @@ export default function AuditLogClient() {
                       <TableCell>
                         {item.actor ? (
                           <Box>
-                            <Typography variant="body2" fontWeight={600} lineHeight={1.2}>
+                            <Typography
+                              variant="body2"
+                              fontWeight={FONT_WEIGHT.semibold}
+                              lineHeight={1.2}
+                            >
                               {item.actor.name ?? "—"}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
@@ -505,11 +510,13 @@ export default function AuditLogClient() {
                       <TableCell>
                         <Typography
                           variant="body2"
-                          fontWeight={item.targetLabel ? 600 : 400}
+                          fontWeight={item.targetLabel ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
                           sx={{ wordBreak: "break-word" }}
                         >
                           {item.targetLabel ?? (
-                            <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>
+                            <em style={{ fontWeight: FONT_WEIGHT.regular, color: "inherit" }}>
+                              eliminato
+                            </em>
                           )}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -586,9 +593,15 @@ export default function AuditLogClient() {
                       {formatDate(item.createdAt)}
                     </Typography>
                   </Stack>
-                  <Typography variant="body2" fontWeight={600} sx={{ wordBreak: "break-word" }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={FONT_WEIGHT.semibold}
+                    sx={{ wordBreak: "break-word" }}
+                  >
                     {item.targetLabel ?? (
-                      <em style={{ fontWeight: 400, color: "inherit" }}>eliminato</em>
+                      <em style={{ fontWeight: FONT_WEIGHT.regular, color: "inherit" }}>
+                        eliminato
+                      </em>
                     )}{" "}
                     <Typography component="span" variant="caption" color="text.secondary">
                       ({TARGET_TYPE_LABELS[item.targetType] ?? item.targetType})
@@ -648,7 +661,7 @@ export default function AuditLogClient() {
                     <Typography variant="caption" color="text.secondary">
                       Attore
                     </Typography>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                       {detail.actor?.name ?? "—"}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -659,7 +672,7 @@ export default function AuditLogClient() {
                     <Typography variant="caption" color="text.secondary">
                       Target
                     </Typography>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                       {detail.targetLabel ?? <em>eliminato</em>}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -675,7 +688,7 @@ export default function AuditLogClient() {
                   </Box>
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" fontWeight={700} mb={1}>
+                  <Typography variant="subtitle2" mb={1}>
                     Modifiche
                   </Typography>
                   <JsonDiff before={detail.before} after={detail.after} />

@@ -46,6 +46,7 @@ import type { Gender } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
@@ -317,7 +318,7 @@ export default function AdminRosaClient({
           justifyContent: "space-between",
         }}
       >
-        <Typography variant="subtitle1" fontWeight={800}>
+        <Typography variant="subtitle1" fontWeight={FONT_WEIGHT.bold}>
           Rosa attuale
         </Typography>
         <Chip
@@ -326,7 +327,6 @@ export default function AdminRosaClient({
           sx={{
             bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
             color: "common.white",
-            fontWeight: 700,
           }}
         />
       </Box>
@@ -391,7 +391,7 @@ export default function AdminRosaClient({
           borderColor: "divider",
         }}
       >
-        <Typography variant="subtitle1" fontWeight={800}>
+        <Typography variant="subtitle1" fontWeight={FONT_WEIGHT.bold}>
           Atleti disponibili
         </Typography>
         <Typography variant="caption" color="text.secondary">
@@ -435,7 +435,6 @@ export default function AdminRosaClient({
                 variant={filterRole === r ? "filled" : "outlined"}
                 onClick={() => setFilterRole(r)}
                 sx={{
-                  fontWeight: 700,
                   ...(filterRole === r && {
                     bgcolor: roleColor(r),
                     color: ROLE_TEXT_COLOR,
@@ -503,12 +502,8 @@ export default function AdminRosaClient({
       {/* Mobile: tabs */}
       <Box sx={{ display: { xs: "block", md: "none" }, mb: 2 }}>
         <Tabs value={mobileTab} onChange={(_, v) => setMobileTab(v)} variant="fullWidth">
-          <Tab
-            value="roster"
-            label={`Rosa (${team.memberships.length})`}
-            sx={{ fontWeight: 700 }}
-          />
-          <Tab value="pool" label={`Disponibili (${pool.length})`} sx={{ fontWeight: 700 }} />
+          <Tab value="roster" label={`Rosa (${team.memberships.length})`} />
+          <Tab value="pool" label={`Disponibili (${pool.length})`} />
         </Tabs>
         <Box sx={{ mt: 2 }}>{mobileTab === "roster" ? rosterColumn : poolColumn}</Box>
       </Box>
@@ -580,7 +575,7 @@ function GroupSection({
             flexShrink: 0,
           }}
         />
-        <Typography variant="subtitle2" fontWeight={800}>
+        <Typography variant="subtitle2" fontWeight={FONT_WEIGHT.bold}>
           {label}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
@@ -670,15 +665,11 @@ function MemberRow({
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
-          <Typography variant="body2" fontWeight={600} noWrap>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
             {name}
           </Typography>
           {isChild && (
-            <Chip
-              label="Figlio"
-              size="small"
-              sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
-            />
+            <Chip label="Figlio" size="small" sx={{ height: 20, fontSize: TYPE_SCALE.xs }} />
           )}
           {m.isCaptain && (
             <Chip
@@ -689,7 +680,6 @@ function MemberRow({
                 fontSize: TYPE_SCALE.xs,
                 bgcolor: "medal.gold",
                 color: "common.white",
-                fontWeight: 700,
               }}
             />
           )}
@@ -775,15 +765,11 @@ function PoolRow({
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
-          <Typography variant="body2" fontWeight={600} noWrap>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
             {name}
           </Typography>
           {kind === "child" && (
-            <Chip
-              label="Figlio"
-              size="small"
-              sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
-            />
+            <Chip label="Figlio" size="small" sx={{ height: 20, fontSize: TYPE_SCALE.xs }} />
           )}
           {otherTeamName && (
             <Tooltip title={`Già in rosa con ${otherTeamName}`}>
@@ -791,7 +777,7 @@ function PoolRow({
                 label={otherTeamName}
                 size="small"
                 color="warning"
-                sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
+                sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
               />
             </Tooltip>
           )}

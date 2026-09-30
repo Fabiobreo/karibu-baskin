@@ -41,6 +41,7 @@ import PollEditor, { type PollDraft } from "@/components/news/PollEditor";
 import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
 import { isoToLocalInput, localInputToIso } from "@/lib/datetimeLocal";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const PostEditor = dynamic(() => import("@/components/news/PostEditor"), { ssr: false });
 
@@ -266,12 +267,16 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Titolo</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Stato</TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Titolo</TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Stato</TableCell>
+              <TableCell
+                sx={{ fontWeight: FONT_WEIGHT.semibold, display: { xs: "none", md: "table-cell" } }}
+              >
                 Data
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+              <TableCell
+                sx={{ fontWeight: FONT_WEIGHT.semibold, display: { xs: "none", md: "table-cell" } }}
+              >
                 Autore
               </TableCell>
               <TableCell />
@@ -295,7 +300,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                     >
                       <Typography
                         variant="body2"
-                        fontWeight={600}
+                        fontWeight={FONT_WEIGHT.semibold}
                         sx={{
                           color: "text.primary",
                           "&:hover": { color: "primary.main", textDecoration: "underline" },
@@ -386,7 +391,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                     >
                       <Typography
                         variant="body2"
-                        fontWeight={700}
+                        fontWeight={FONT_WEIGHT.semibold}
                         sx={{
                           wordBreak: "break-word",
                           color: "text.primary",

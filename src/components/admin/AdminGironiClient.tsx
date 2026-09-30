@@ -32,6 +32,7 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { contrastText } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type CompetitiveTeamLite = { id: string; name: string; color: string | null; season: string };
 type GroupCompetitiveTeam = { competitiveTeam: CompetitiveTeamLite };
@@ -114,7 +115,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
   return (
     <Box>
       <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+        <Typography variant="subtitle2" gutterBottom>
           Crea girone
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
@@ -182,11 +183,11 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
             <Table size="small" aria-label="Lista gironi">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Girone</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Stagione</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Campionato</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Nostre squadre</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="center">
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Girone</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Stagione</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Campionato</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Nostre squadre</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
                     Partite
                   </TableCell>
                   <TableCell />
@@ -202,7 +203,7 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                       >
                         <Typography
                           variant="body2"
-                          fontWeight={700}
+                          fontWeight={FONT_WEIGHT.semibold}
                           sx={{
                             color: "primary.onLight",
                             "&:hover": { textDecoration: "underline" },
@@ -235,7 +236,6 @@ export default function AdminGironiClient({ initialGroups, seasons, defaultSeaso
                               sx={{
                                 bgcolor: t.color ?? "primary.main",
                                 color: contrastText(t.color),
-                                fontWeight: 700,
                                 fontSize: TYPE_SCALE.xs,
                               }}
                             />

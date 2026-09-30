@@ -10,6 +10,7 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface GuestUser {
   id: string;
@@ -70,10 +71,10 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
         <HowToRegIcon color="warning" />
-        <Typography component="h2" variant="subtitle1" fontWeight={700}>
+        <Typography component="h2" variant="subtitle1">
           Nuovi account da approvare
         </Typography>
-        <Chip label={guests.length} size="small" color="warning" sx={{ fontWeight: 700 }} />
+        <Chip label={guests.length} size="small" color="warning" />
       </Box>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {guests.map((g) => {
@@ -100,7 +101,7 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                 {(g.name ?? g.email)[0]?.toUpperCase()}
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 140 }}>
-                <Typography variant="body2" fontWeight={700} noWrap>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                   {g.name ?? "—"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" noWrap display="block">
@@ -114,7 +115,6 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                   variant="contained"
                   disabled={busy}
                   onClick={() => approve(g, "ATHLETE")}
-                  sx={{ fontWeight: 700 }}
                 >
                   Atleta
                 </Button>
@@ -123,7 +123,6 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                   variant="outlined"
                   disabled={busy}
                   onClick={() => approve(g, "PARENT")}
-                  sx={{ fontWeight: 700 }}
                 >
                   Genitore
                 </Button>

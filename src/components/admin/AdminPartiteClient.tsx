@@ -57,6 +57,7 @@ import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
 import type { OpponentProfile } from "@/lib/schemas/match";
 import { readableFill } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Chip squadra con etichetta bianca, fondo scurito se serve (UX-22).
 const WHITE_LABEL = { preferWhite: true };
@@ -138,7 +139,7 @@ function MatchTimingChip({ upcoming }: { upcoming: boolean }) {
       size="small"
       color="info"
       variant="outlined"
-      sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, height: 20 }}
+      sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
     />
   );
 }
@@ -167,7 +168,7 @@ function SectionHeader({
       }}
     >
       {icon}
-      <Typography component="h2" variant="subtitle2" fontWeight={700}>
+      <Typography component="h2" variant="subtitle2">
         {label}
       </Typography>
     </Box>
@@ -219,13 +220,13 @@ function MatchMobileCard({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{ fontSize: TYPE_SCALE.xs }}
               >
                 G.{matchday}
               </Typography>
             )}
-            <Typography variant="body2" fontWeight={700}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
             </Typography>
             <CoverageWarningIcon coverage={coverage} />
@@ -233,7 +234,11 @@ function MatchMobileCard({
               <Typography
                 component="span"
                 variant="caption"
-                sx={{ color: "primary.onLight", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
+                sx={{
+                  color: "primary.onLight",
+                  fontWeight: FONT_WEIGHT.semibold,
+                  fontSize: TYPE_SCALE.xs,
+                }}
               >
                 (interna)
               </Typography>
@@ -261,7 +266,6 @@ function MatchMobileCard({
                 sx={{
                   backgroundColor: RESULT_COLORS[m.result],
                   color: "match.onFill",
-                  fontWeight: 700,
                   fontSize: TYPE_SCALE.xs,
                   height: 20,
                 }}
@@ -277,7 +281,6 @@ function MatchMobileCard({
                   py: 0,
                   textTransform: "none",
                   color: m.ourScore !== null ? "text.primary" : "primary.main",
-                  fontWeight: 700,
                   fontSize: TYPE_SCALE.sm,
                 }}
               >
@@ -347,7 +350,7 @@ function MissingStatsChip({ matchId, router }: { matchId: string; router: Router
         color="warning"
         variant="outlined"
         onClick={() => router.push(`/admin/partite/${matchId}/statistiche`)}
-        sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, height: 20, cursor: "pointer" }}
+        sx={{ fontSize: TYPE_SCALE.xs, height: 20, cursor: "pointer" }}
       />
     </Tooltip>
   );
@@ -368,7 +371,10 @@ function CoverageWarningIcon({ coverage }: { coverage: MatchCoverage | undefined
     <Tooltip
       title={
         <Box>
-          <Typography variant="caption" sx={{ fontWeight: 700, display: "block", mb: 0.5 }}>
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: FONT_WEIGHT.semibold, display: "block", mb: 0.5 }}
+          >
             Copertura ruoli insufficiente
           </Typography>
           {shortfalls.map((r) => (
@@ -516,7 +522,7 @@ export default function AdminPartiteClient({
     <Box>
       {matchesWithShortfall.length > 0 && (
         <Alert severity="warning" icon={<WarningAmberIcon />} sx={{ mb: 2 }}>
-          <AlertTitle sx={{ fontWeight: 700 }}>
+          <AlertTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
             Copertura ruoli insufficiente in {matchesWithShortfall.length} partit
             {matchesWithShortfall.length === 1 ? "a" : "e"}
           </AlertTitle>
@@ -768,7 +774,7 @@ function LeagueView({
               gap: 1,
             }}
           >
-            <Typography component="h2" variant="subtitle2" fontWeight={700}>
+            <Typography component="h2" variant="subtitle2">
               {sec.groupName}
             </Typography>
             {sec.groupId && (
@@ -787,20 +793,28 @@ function LeagueView({
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, width: 50 }}>G.</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                  <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold, width: 50 }}>G.</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data</TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: FONT_WEIGHT.semibold,
+                      display: { xs: "none", sm: "table-cell" },
+                    }}
+                  >
                     Squadra
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="center">
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Avversario</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
                     Esito
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }} align="center">
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
                     Punteggio
                   </TableCell>
                   <TableCell
-                    sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
+                    sx={{
+                      fontWeight: FONT_WEIGHT.semibold,
+                      display: { xs: "none", sm: "table-cell" },
+                    }}
                     align="center"
                   >
                     Stats
@@ -892,12 +906,12 @@ function MatchRowAndContext({
         sx={upcoming ? { bgcolor: (theme) => alpha(theme.palette.info.main, 0.05) } : undefined}
       >
         <TableCell>
-          <Typography variant="body2" fontWeight={700} color="text.secondary">
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} color="text.secondary">
             {m.matchday ?? "—"}
           </Typography>
         </TableCell>
         <TableCell>
-          <Typography variant="body2" fontWeight={600}>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             {format(new Date(m.date), "d MMM yyyy", { locale: it })}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -918,14 +932,13 @@ function MatchRowAndContext({
             sx={{
               backgroundColor: readableFill(m.team.color, WHITE_LABEL).bg,
               color: readableFill(m.team.color, WHITE_LABEL).fg,
-              fontWeight: 700,
               fontSize: TYPE_SCALE.xs,
             }}
           />
         </TableCell>
         <TableCell>
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
             </Typography>
             <CoverageWarningIcon coverage={coverage} />
@@ -944,7 +957,6 @@ function MatchRowAndContext({
               sx={{
                 backgroundColor: RESULT_COLORS[m.result],
                 color: "match.onFill",
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
               }}
             />
@@ -963,7 +975,6 @@ function MatchRowAndContext({
                 py: 0.25,
                 textTransform: "none",
                 color: m.ourScore !== null ? "text.primary" : "primary.main",
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.sm,
               }}
             >
@@ -1009,7 +1020,7 @@ function MatchRowAndContext({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}
+                sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}
               >
                 Giornata {m.matchday}:
               </Typography>
@@ -1052,19 +1063,21 @@ function FlatTableHead() {
   return (
     <TableHead>
       <TableRow>
-        <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-        <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+        <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data</TableCell>
+        <TableCell
+          sx={{ fontWeight: FONT_WEIGHT.semibold, display: { xs: "none", sm: "table-cell" } }}
+        >
           Squadra
         </TableCell>
-        <TableCell sx={{ fontWeight: 700 }}>Avversario</TableCell>
-        <TableCell sx={{ fontWeight: 700 }} align="center">
+        <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Avversario</TableCell>
+        <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
           Esito
         </TableCell>
-        <TableCell sx={{ fontWeight: 700 }} align="center">
+        <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
           Punteggio
         </TableCell>
         <TableCell
-          sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}
+          sx={{ fontWeight: FONT_WEIGHT.semibold, display: { xs: "none", sm: "table-cell" } }}
           align="center"
         >
           Stats
@@ -1101,7 +1114,7 @@ function FlatMatchRow({
       sx={upcoming ? { bgcolor: (theme) => alpha(theme.palette.info.main, 0.05) } : undefined}
     >
       <TableCell>
-        <Typography variant="body2" fontWeight={600}>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
           {format(new Date(m.date), "d MMM yyyy", { locale: it })}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -1122,20 +1135,19 @@ function FlatMatchRow({
           sx={{
             backgroundColor: readableFill(m.team.color, WHITE_LABEL).bg,
             color: readableFill(m.team.color, WHITE_LABEL).fg,
-            fontWeight: 700,
             fontSize: TYPE_SCALE.xs,
           }}
         />
       </TableCell>
       <TableCell>
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography variant="body2" fontWeight={600}>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             {m.opponent?.name ?? m.opponentTeam?.name ?? "—"}
             {m.opponentTeam && (
               <Typography
                 component="span"
                 variant="caption"
-                sx={{ ml: 0.5, color: "primary.onLight", fontWeight: 700 }}
+                sx={{ ml: 0.5, color: "primary.onLight", fontWeight: FONT_WEIGHT.semibold }}
               >
                 (interna)
               </Typography>
@@ -1157,7 +1169,6 @@ function FlatMatchRow({
             sx={{
               backgroundColor: RESULT_COLORS[m.result],
               color: "match.onFill",
-              fontWeight: 700,
               fontSize: TYPE_SCALE.xs,
             }}
           />
@@ -1176,7 +1187,6 @@ function FlatMatchRow({
               py: 0.25,
               textTransform: "none",
               color: m.ourScore !== null ? "text.primary" : "primary.main",
-              fontWeight: 700,
               fontSize: TYPE_SCALE.sm,
             }}
           >

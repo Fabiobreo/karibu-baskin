@@ -26,6 +26,7 @@ import PersonRow from "@/components/admin/people/PersonRow";
 import RolePicker from "@/components/admin/people/RolePicker";
 import ExistingChildMatches from "@/components/admin/people/ExistingChildMatches";
 import UserSearchPicker from "@/components/admin/people/UserSearchPicker";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ChildDraft {
   name: string;
@@ -192,7 +193,7 @@ export default function AdminNuovoFiglioClient({
         <Stack spacing={2} alignItems="flex-start">
           <CheckCircleIcon sx={{ fontSize: 44, color: "success.main" }} />
           <Box>
-            <Typography variant="h6" fontWeight={800}>
+            <Typography variant="h6" fontWeight={FONT_WEIGHT.bold}>
               {created.outcome === "shared"
                 ? `${created.name} è collegato anche a ${firstName}`
                 : created.outcome === "account"
@@ -311,7 +312,9 @@ export default function AdminNuovoFiglioClient({
                   value={child.gender}
                   onChange={(_, v: Gender | null) => set("gender", v)}
                   disabled={!parent}
-                  sx={{ "& .MuiToggleButton-root": { minHeight: 44, fontWeight: 700 } }}
+                  sx={{
+                    "& .MuiToggleButton-root": { minHeight: 44, fontWeight: FONT_WEIGHT.semibold },
+                  }}
                 >
                   <ToggleButton value="MALE">Maschio</ToggleButton>
                   <ToggleButton value="FEMALE">Femmina</ToggleButton>
@@ -387,7 +390,7 @@ function StepTitle({ n, children }: { n: number; children: React.ReactNode }) {
     <Typography
       variant="overline"
       component="h2"
-      fontWeight={800}
+      fontWeight={FONT_WEIGHT.bold}
       color="text.secondary"
       sx={{ display: "block", mb: 1 }}
     >

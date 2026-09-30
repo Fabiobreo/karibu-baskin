@@ -25,6 +25,7 @@ import RoleBadge from "@/components/common/RoleBadge";
 import { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/authRoles";
 import AdminAnonymousRegistrations from "@/components/admin/AdminAnonymousRegistrations";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type RecentUser = {
   kind: "user";
@@ -97,7 +98,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
               <span>Ultimi iscritti</span>
             </Box>
           }
-          sx={{ minHeight: 44, fontSize: TYPE_SCALE.sm, fontWeight: 600, textTransform: "none" }}
+          sx={{ minHeight: 44, fontSize: TYPE_SCALE.sm, textTransform: "none" }}
         />
         <Tab
           label={
@@ -109,12 +110,12 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                   label={anonNoEmail > 0 ? `${anonNoEmail} senza email` : anonCount}
                   size="small"
                   color={anonNoEmail > 0 ? "warning" : "default"}
-                  sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
                 />
               )}
             </Box>
           }
-          sx={{ minHeight: 44, fontSize: TYPE_SCALE.sm, fontWeight: 600, textTransform: "none" }}
+          sx={{ minHeight: 44, fontSize: TYPE_SCALE.sm, textTransform: "none" }}
         />
       </Tabs>
 
@@ -124,7 +125,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
           <Box
             sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}
           >
-            <Typography component="h2" variant="subtitle1" fontWeight={700}>
+            <Typography component="h2" variant="subtitle1">
               Ultimi iscritti
             </Typography>
             <Link href="/admin/utenti" style={{ textDecoration: "none" }}>
@@ -143,12 +144,12 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ pl: 0, width: 40 }} />
-                  <TableCell sx={{ fontWeight: 700 }}>Utente</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Ruolo utente</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Utente</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Ruolo utente</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                     Ruolo Baskin
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>
+                  <TableCell align="right" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                     Iscritto il
                   </TableCell>
                 </TableRow>
@@ -171,7 +172,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                       </Avatar>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                         {row.name ?? "—"}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -184,10 +185,9 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
                           size="small"
                           color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
-                          sx={{ fontWeight: 600 }}
                         />
                       ) : (
-                        <Chip label="Atleta" size="small" sx={{ fontWeight: 600 }} />
+                        <Chip label="Atleta" size="small" />
                       )}
                     </TableCell>
                     <TableCell align="center">
@@ -205,7 +205,6 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                             borderColor: roleColor(row.sportRoleSuggested),
                             // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
                             color: "text.primary",
-                            fontWeight: 700,
                             fontSize: TYPE_SCALE.xs,
                           }}
                         />
@@ -270,7 +269,7 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                       "?"}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" fontWeight={600} noWrap>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                       {row.name ?? "—"}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap display="block">
@@ -282,14 +281,10 @@ export default function AdminDashboardTabs({ recentAll, registrations }: Props) 
                           label={ROLE_LABELS_IT[row.appRole as keyof typeof ROLE_LABELS_IT]}
                           size="small"
                           color={ROLE_CHIP_COLORS[row.appRole as keyof typeof ROLE_CHIP_COLORS]}
-                          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                          sx={{ fontSize: TYPE_SCALE.xs }}
                         />
                       ) : (
-                        <Chip
-                          label="Atleta"
-                          size="small"
-                          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
-                        />
+                        <Chip label="Atleta" size="small" sx={{ fontSize: TYPE_SCALE.xs }} />
                       )}
                       {row.sportRole && (
                         <RoleBadge

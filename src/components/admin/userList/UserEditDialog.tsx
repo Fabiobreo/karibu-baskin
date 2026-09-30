@@ -32,6 +32,7 @@ import type {
   UserEntry,
 } from "@/components/admin/userList/userListShared";
 import ChildGuardiansSection from "@/components/admin/userList/ChildGuardiansSection";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface EditState {
   name: string;
@@ -199,7 +200,7 @@ export default function UserEditDialog({
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>
+      <DialogTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
         Modifica {row.name ?? (row.kind === "user" ? row.email : "")}
       </DialogTitle>
       <DialogContent>
@@ -209,7 +210,7 @@ export default function UserEditDialog({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -242,7 +243,7 @@ export default function UserEditDialog({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -265,7 +266,7 @@ export default function UserEditDialog({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -291,7 +292,7 @@ export default function UserEditDialog({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -312,7 +313,7 @@ export default function UserEditDialog({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -341,7 +342,7 @@ export default function UserEditDialog({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -357,18 +358,12 @@ export default function UserEditDialog({
                     label={ROLE_LABELS_IT[val as AppRole]}
                     size="small"
                     color={ROLE_CHIP_COLORS[val as AppRole]}
-                    sx={{ fontWeight: 600 }}
                   />
                 )}
               >
                 {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                   <MenuItem key={r} value={r}>
-                    <Chip
-                      label={ROLE_LABELS_IT[r]}
-                      size="small"
-                      color={ROLE_CHIP_COLORS[r]}
-                      sx={{ fontWeight: 600 }}
-                    />
+                    <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} />
                   </MenuItem>
                 ))}
               </Select>
@@ -380,7 +375,7 @@ export default function UserEditDialog({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -421,7 +416,7 @@ export default function UserEditDialog({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -462,7 +457,7 @@ export default function UserEditDialog({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               display="block"
               gutterBottom
             >
@@ -512,7 +507,11 @@ export default function UserEditDialog({
               <Divider sx={{ mb: 1.5 }} />
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
                 <HistoryIcon fontSize="small" color="action" />
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontWeight={FONT_WEIGHT.semibold}
+                >
                   Storico ruolo Baskin
                 </Typography>
               </Box>

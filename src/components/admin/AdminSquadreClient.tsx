@@ -41,6 +41,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { brandColor } from "@/lib/heroStyles";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // ── Palette colori squadra ────────────────────────────────────────────────────
 
@@ -294,7 +295,7 @@ export default function AdminSquadreClient({
               onClick={() => setActiveSeason(season)}
               color={season === activeSeason ? "primary" : "default"}
               variant={season === activeSeason ? "filled" : "outlined"}
-              sx={{ fontWeight: 700, cursor: "pointer" }}
+              sx={{ cursor: "pointer" }}
             />
           );
         })}
@@ -313,17 +314,9 @@ export default function AdminSquadreClient({
       >
         <Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="h5" fontWeight={800}>
-              Stagione {activeSeason}
-            </Typography>
+            <Typography variant="h5">Stagione {activeSeason}</Typography>
             {activeIsCurrentSeason && (
-              <Chip
-                label="In corso"
-                size="small"
-                icon={<StarIcon />}
-                color="warning"
-                sx={{ fontWeight: 700 }}
-              />
+              <Chip label="In corso" size="small" icon={<StarIcon />} color="warning" />
             )}
           </Box>
           <Typography variant="body2" color="text.secondary">
@@ -418,7 +411,7 @@ export default function AdminSquadreClient({
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle fontWeight={700}>Nuova stagione</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Nuova stagione</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <FormControl fullWidth>
@@ -459,7 +452,7 @@ export default function AdminSquadreClient({
 
       {/* ── Dialog: crea / modifica squadra ───────────────────────────────────── */}
       <Dialog open={teamDialog} onClose={() => setTeamDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={700}>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>
           {editTeam ? `Modifica "${editTeam.name}"` : `Nuova squadra (${activeSeason})`}
         </DialogTitle>
         <DialogContent>
@@ -483,7 +476,7 @@ export default function AdminSquadreClient({
               helperText="Facoltativo: viene mostrato sotto il nome nelle pagine pubbliche"
             />
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
                 Colore identificativo
               </Typography>
               <Typography
@@ -546,7 +539,7 @@ export default function AdminSquadreClient({
               placeholder="Descrizione facoltativa…"
             />
             <Box>
-              <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
                 Immagine copertina
               </Typography>
               <Typography
@@ -660,7 +653,7 @@ function TeamCard({
         <Box sx={{ minWidth: 0 }}>
           <Typography
             variant="h6"
-            fontWeight={800}
+            fontWeight={FONT_WEIGHT.bold}
             sx={{ color: "common.white", lineHeight: 1.2 }}
             noWrap
           >
@@ -671,7 +664,6 @@ function TeamCard({
               variant="caption"
               sx={{
                 color: (theme) => alpha(theme.palette.common.white, 0.75),
-                fontWeight: 500,
               }}
             >
               {team.championship}
@@ -736,7 +728,7 @@ function TeamCard({
         <Box sx={{ display: "flex", gap: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <GroupsIcon sx={{ fontSize: 17, color }} />
-            <Typography variant="body2" fontWeight={700}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {team._count.memberships}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -745,7 +737,7 @@ function TeamCard({
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <SportsSoccerIcon sx={{ fontSize: 17, color: "text.secondary" }} />
-            <Typography variant="body2" fontWeight={700}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {team._count.matches}
             </Typography>
             <Typography variant="body2" color="text.secondary">

@@ -18,6 +18,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import EventIcon from "@mui/icons-material/Event";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import { useState } from "react";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const CURRENT_YEAR = new Date().getFullYear();
 const CURRENT_MONTH = new Date().getMonth();
@@ -56,7 +57,7 @@ export default function AdminEsportaClient() {
           flexWrap: "wrap",
         }}
       >
-        <Typography variant="body2" fontWeight={600} sx={{ flexShrink: 0 }}>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ flexShrink: 0 }}>
           Stagione di riferimento
         </Typography>
         <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -76,7 +77,7 @@ export default function AdminEsportaClient() {
             ))}
           </Select>
         </FormControl>
-        <Chip label={season || "Tutte"} size="small" sx={{ fontWeight: 700 }} />
+        <Chip label={season || "Tutte"} size="small" />
       </Paper>
 
       <Stack spacing={2}>
@@ -94,9 +95,7 @@ export default function AdminEsportaClient() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <GroupsIcon color="primary" sx={{ fontSize: 32 }} />
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>
-                  Rosa giocatori
-                </Typography>
+                <Typography variant="subtitle1">Rosa giocatori</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Nome, email, ruolo app, ruolo Baskin, genere, data nascita, squadra, totale
                   allenamenti.
@@ -129,9 +128,7 @@ export default function AdminEsportaClient() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <EventIcon color="primary" sx={{ fontSize: 32 }} />
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>
-                  Presenze allenamenti
-                </Typography>
+                <Typography variant="subtitle1">Presenze allenamenti</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Una riga per ogni presenza: data, allenamento, atleta, email, ruolo Baskin.
                 </Typography>
@@ -163,9 +160,7 @@ export default function AdminEsportaClient() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <BarChartIcon color="primary" sx={{ fontSize: 32 }} />
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>
-                  Statistiche partite
-                </Typography>
+                <Typography variant="subtitle1">Statistiche partite</Typography>
                 <Typography variant="body2" color="text.secondary">
                   Punti, canestri, assist, rimbalzi, falli per ogni giocatore per ogni partita.
                 </Typography>

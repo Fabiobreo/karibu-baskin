@@ -4,6 +4,7 @@ import { Avatar, Box, Typography } from "@mui/material";
 import { roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface PersonRowProps {
   name: string;
@@ -50,7 +51,7 @@ export default function PersonRow({
             width: 36,
             height: 36,
             fontSize: TYPE_SCALE.sm,
-            fontWeight: 800,
+            fontWeight: FONT_WEIGHT.bold,
             bgcolor: roleTint ?? "action.selected",
             color: roleTint ? contrastText(roleTint) : "text.secondary",
           }}
@@ -58,7 +59,11 @@ export default function PersonRow({
           {sportRole ?? name[0]?.toUpperCase()}
         </Avatar>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" fontWeight={700} sx={{ overflowWrap: "anywhere" }}>
+          <Typography
+            variant="body2"
+            fontWeight={FONT_WEIGHT.semibold}
+            sx={{ overflowWrap: "anywhere" }}
+          >
             {name}
           </Typography>
           {meta && (

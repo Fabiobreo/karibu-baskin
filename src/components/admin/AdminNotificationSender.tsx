@@ -19,6 +19,7 @@ import SendIcon from "@mui/icons-material/Send";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Team {
   id: string;
@@ -119,7 +120,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
     <Paper elevation={2} sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2.5 }}>
         <NotificationsActiveIcon fontSize="small" color="action" />
-        <Typography component="h2" variant="subtitle1" fontWeight={700}>
+        <Typography component="h2" variant="subtitle1">
           Invia notifica push
         </Typography>
       </Box>
@@ -171,7 +172,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
 
         <Typography
           variant="caption"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           color="text.secondary"
           sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}
         >
@@ -190,7 +191,6 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
             }}
             color={targetAll ? "primary" : "default"}
             variant={targetAll ? "filled" : "outlined"}
-            sx={{ fontWeight: 600 }}
           />
 
           {/* Per squadra */}
@@ -278,7 +278,7 @@ export default function AdminNotificationSender({ currentSeason }: { currentSeas
         <Typography
           variant="caption"
           color={hasTarget ? "primary.onLight" : "text.secondary"}
-          fontWeight={600}
+          fontWeight={FONT_WEIGHT.semibold}
         >
           → {audienceDescription()}
         </Typography>

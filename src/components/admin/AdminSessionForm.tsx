@@ -21,6 +21,7 @@ import SessionRestrictionEditor, {
   seasonForDate,
   type RestrictionValue,
 } from "@/components/training/SessionRestrictionEditor";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Schema del form client-side — include la validazione cross-field inizio/fine
 const SessionFormSchema = z
@@ -215,7 +216,7 @@ export default function AdminSessionForm({
         }
         label={
           <Box>
-            <Typography variant="body2" fontWeight={600}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               Apri subito le iscrizioni
             </Typography>
             <Typography variant="caption" color="text.secondary">

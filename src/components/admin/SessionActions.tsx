@@ -9,6 +9,7 @@ import SessionEditDialog, { type EditableSession } from "@/components/admin/Sess
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface SessionActionsProps {
   session: EditableSession & { dateSlug: string | null };
@@ -70,7 +71,7 @@ export default function SessionActions({ session, initialEdit = false }: Session
           alignItems: "center",
           gap: 0.5,
           minHeight: 44,
-          fontWeight: 600,
+          fontWeight: FONT_WEIGHT.semibold,
         }}
       >
         Pagina dell&apos;allenamento

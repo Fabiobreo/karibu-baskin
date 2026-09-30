@@ -29,6 +29,7 @@ import RoleBadge from "@/components/common/RoleBadge";
 import { ROLES } from "@/lib/constants";
 import { readError } from "@/lib/fetchJson";
 import type { EventResponses, ResponseRow } from "@/lib/eventResponses";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface EventResponsesDialogProps {
   eventId: string | null;
@@ -101,7 +102,12 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
       aria-labelledby="event-responses-title"
     >
       <DialogTitle id="event-responses-title" sx={{ pr: 7 }}>
-        <Typography component="span" variant="h6" fontWeight={800} sx={{ display: "block" }}>
+        <Typography
+          component="span"
+          variant="h6"
+          fontWeight={FONT_WEIGHT.bold}
+          sx={{ display: "block" }}
+        >
           Risposte
         </Typography>
         {data && (
@@ -134,7 +140,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
           <Stack spacing={2.5}>
             {/* Totali: evento principale ed esterni */}
             <Box>
-              <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" fontWeight={FONT_WEIGHT.bold} sx={{ mb: 1 }}>
                 Evento principale
               </Typography>
               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
@@ -148,7 +154,6 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                       label={`${STATUS_META[s].label} · ${data.totals[s]}`}
                       color={STATUS_META[s].color}
                       variant={s === "GOING" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 700 }}
                     />
                   ))}
                 {data.totals.guests > 0 && (
@@ -160,7 +165,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
             {/* Extra: toccando un extra si vede solo chi ci viene */}
             {data.options.length > 0 && (
               <Box>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
+                <Typography variant="subtitle2" fontWeight={FONT_WEIGHT.bold} sx={{ mb: 1 }}>
                   Extra
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
@@ -177,7 +182,6 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                       onClick={() => setOptionFilter(o.id)}
                       color={optionFilter === o.id ? "primary" : "default"}
                       variant={optionFilter === o.id ? "filled" : "outlined"}
-                      sx={{ fontWeight: 700 }}
                     />
                   ))}
                 </Box>
@@ -186,7 +190,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
 
             <Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, flexWrap: "wrap" }}>
-                <Typography variant="subtitle2" fontWeight={800}>
+                <Typography variant="subtitle2" fontWeight={FONT_WEIGHT.bold}>
                   Chi gioca
                 </Typography>
               </Box>
@@ -198,7 +202,6 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                   color={playersOnly ? "primary" : "default"}
                   variant={playersOnly ? "filled" : "outlined"}
                   aria-pressed={playersOnly}
-                  sx={{ fontWeight: 700 }}
                 />
                 {/* Ci sarò per ruolo: servono per comporre le squadre */}
                 {ROLES.map((r) => (
@@ -208,7 +211,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                     aria-label={`Ruolo ${r}: ${data.players.goingByRole[r] ?? 0} ci saranno`}
                   >
                     <RoleBadge role={r} />
-                    <Typography variant="body2" fontWeight={700}>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                       {data.players.goingByRole[r] ?? 0}
                     </Typography>
                   </Box>
@@ -251,7 +254,7 @@ export default function EventResponsesDialog({ eventId, onClose }: EventResponse
                           {r.sportRole != null && (
                             <RoleBadge role={r.sportRole} variant={r.sportRoleVariant} />
                           )}
-                          <Typography variant="body2" fontWeight={700}>
+                          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                             {r.name || "Esterno senza nome"}
                           </Typography>
                           {r.possibleDuplicate && (

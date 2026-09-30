@@ -21,6 +21,7 @@ import { toLocalDateString, toLocalTimeString } from "@/lib/dateUtils";
 import { readError } from "@/lib/fetchJson";
 import { CLUB_VENUE_LABEL } from "@/lib/clubVenue";
 import { useToast } from "@/context/ToastContext";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface EditableSession {
   id: string;
@@ -119,7 +120,7 @@ function EditForm({
 
   return (
     <>
-      <DialogTitle fontWeight={700}>Modifica allenamento</DialogTitle>
+      <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Modifica allenamento</DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 1, display: "flex", flexDirection: "column", gap: 2 }}>
           {error && <Alert severity="error">{error}</Alert>}

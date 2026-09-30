@@ -43,6 +43,7 @@ import { sportRoleLabel, SPORT_ROLE_VARIANT_LABELS } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type AnonReg = {
   id: string;
@@ -202,9 +203,7 @@ export default function AdminAnonymousRegistrations({
     <>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         <WarningIcon fontSize="small" color="action" />
-        <Typography variant="subtitle1" fontWeight={700}>
-          Iscrizioni anonime
-        </Typography>
+        <Typography variant="subtitle1">Iscrizioni anonime</Typography>
         <Typography variant="caption" color="text.secondary" sx={{ ml: 1.5 }}>
           {filtered.length !== groups.length
             ? `${filtered.length} di ${groups.length}`
@@ -236,9 +235,9 @@ export default function AdminAnonymousRegistrations({
           <TableHead>
             <TableRow>
               <TableCell sx={{ pl: 0, width: 40 }} />
-              <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Allenamenti</TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Nome</TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Allenamenti</TableCell>
               <TableCell sx={{ width: 40 }} />
             </TableRow>
           </TableHead>
@@ -270,11 +269,15 @@ export default function AdminAnonymousRegistrations({
                   </Avatar>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                     {group.name}
                   </Typography>
                   {!group.hasEmail && (
-                    <Typography variant="caption" color="warning.dark" fontWeight={600}>
+                    <Typography
+                      variant="caption"
+                      color="warning.dark"
+                      fontWeight={FONT_WEIGHT.semibold}
+                    >
                       Nessuna email
                     </Typography>
                   )}
@@ -300,7 +303,6 @@ export default function AdminAnonymousRegistrations({
                           size="small"
                           sx={{
                             fontSize: TYPE_SCALE.xs,
-                            fontWeight: 600,
                             cursor: "pointer",
                             "a:hover > &": { bgcolor: "action.focus" },
                           }}
@@ -376,13 +378,13 @@ export default function AdminAnonymousRegistrations({
                   )}
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                     {group.name}
                   </Typography>
                   <Typography
                     variant="caption"
                     color={!group.hasEmail ? "warning.dark" : "text.secondary"}
-                    fontWeight={!group.hasEmail ? 600 : 400}
+                    fontWeight={!group.hasEmail ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
                   >
                     {group.emails.length > 0 ? group.emails.join(", ") : "Nessuna email"}
                   </Typography>
@@ -425,7 +427,6 @@ export default function AdminAnonymousRegistrations({
                       size="small"
                       sx={{
                         fontSize: TYPE_SCALE.xs,
-                        fontWeight: 600,
                         cursor: "pointer",
                         "a:hover > &": { bgcolor: "action.focus" },
                       }}
@@ -471,14 +472,16 @@ export default function AdminAnonymousRegistrations({
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>Modifica {editGroup?.name}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: FONT_WEIGHT.semibold }}>
+          Modifica {editGroup?.name}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <Box>
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -496,7 +499,7 @@ export default function AdminAnonymousRegistrations({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -516,7 +519,7 @@ export default function AdminAnonymousRegistrations({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 display="block"
                 gutterBottom
               >
@@ -546,7 +549,7 @@ export default function AdminAnonymousRegistrations({
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  fontWeight={600}
+                  fontWeight={FONT_WEIGHT.semibold}
                   display="block"
                   gutterBottom
                 >

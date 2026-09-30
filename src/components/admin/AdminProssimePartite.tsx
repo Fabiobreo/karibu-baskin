@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { MIN_CALLUPS } from "@/lib/constants";
 import { formatRome, romeCalendarDaysBetween } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const DAYS_AHEAD = 7;
 
@@ -49,7 +50,7 @@ export default async function AdminProssimePartite() {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
         <GroupAddIcon sx={{ color: "primary.main" }} />
         <Box sx={{ flex: 1 }}>
-          <Typography component="h2" variant="subtitle1" fontWeight={700}>
+          <Typography component="h2" variant="subtitle1">
             Partite imminenti
           </Typography>
         </Box>
@@ -110,7 +111,7 @@ export default async function AdminProssimePartite() {
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     variant="body2"
-                    fontWeight={700}
+                    fontWeight={FONT_WEIGHT.semibold}
                     sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                   >
                     {m.team.name} vs {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
@@ -130,7 +131,7 @@ export default async function AdminProssimePartite() {
                     )
                   }
                   label={chipLabel}
-                  sx={{ fontWeight: 700, flexShrink: 0 }}
+                  sx={{ flexShrink: 0 }}
                 />
               </Link>
               <Link
@@ -140,7 +141,10 @@ export default async function AdminProssimePartite() {
                 <Typography
                   variant="caption"
                   color="primary.onLight"
-                  sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
+                  sx={{
+                    fontWeight: FONT_WEIGHT.semibold,
+                    "&:hover": { textDecoration: "underline" },
+                  }}
                 >
                   Convoca →
                 </Typography>

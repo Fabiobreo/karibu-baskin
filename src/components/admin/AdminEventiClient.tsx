@@ -42,6 +42,7 @@ import { z } from "zod";
 import ImageUploader from "@/components/common/ImageUploader";
 import EventResponsesDialog from "@/components/admin/EventResponsesDialog";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type EventOptionRow = {
   id?: string;
@@ -256,22 +257,32 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Titolo</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Data inizio</TableCell>
-                <TableCell sx={{ fontWeight: 700, display: { xs: "none", sm: "table-cell" } }}>
+                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Titolo</TableCell>
+                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data inizio</TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: FONT_WEIGHT.semibold,
+                    display: { xs: "none", sm: "table-cell" },
+                  }}
+                >
                   Data fine
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, display: { xs: "none", md: "table-cell" } }}>
+                <TableCell
+                  sx={{
+                    fontWeight: FONT_WEIGHT.semibold,
+                    display: { xs: "none", md: "table-cell" },
+                  }}
+                >
                   Luogo
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Risposte</TableCell>
+                <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Risposte</TableCell>
                 <TableCell />
               </TableRow>
             </TableHead>
             <TableBody>
               {paginatedEvents.map((ev) => (
                 <TableRow key={ev.id} hover>
-                  <TableCell sx={{ fontWeight: 600 }}>{ev.title}</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>{ev.title}</TableCell>
                   <TableCell>{formatRome(ev.date, "d MMM yyyy, HH:mm", { locale: it })}</TableCell>
                   <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                     {ev.endDate ? formatRome(ev.endDate, "d MMM yyyy, HH:mm", { locale: it }) : "—"}
@@ -355,7 +366,11 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 }}
               >
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={700} sx={{ wordBreak: "break-word" }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={FONT_WEIGHT.semibold}
+                    sx={{ wordBreak: "break-word" }}
+                  >
                     {ev.title}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" display="block">
@@ -425,7 +440,9 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
       {/* Dialog crea/modifica */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={700}>{editingId ? "Modifica evento" : "Nuovo evento"}</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>
+          {editingId ? "Modifica evento" : "Nuovo evento"}
+        </DialogTitle>
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <DialogContent>
             <Stack spacing={2} sx={{ mt: 1 }}>
@@ -476,7 +493,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                 placeholder="es. Torneo regionale under 18, tornata di padel a Vicenza..."
               />
               <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
                   Immagine copertina
                 </Typography>
                 <Typography
@@ -500,7 +517,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
               {/* Sotto-opzioni: per eventi articolati (giorni, sessioni, pasti…) */}
               <Box>
-                <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
                   Opzioni di partecipazione
                 </Typography>
                 <Typography
@@ -576,7 +593,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
                     />
                   }
                   label={
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                       Esterni ammessi
                     </Typography>
                   }
@@ -617,7 +634,7 @@ export default function AdminEventiClient({ events: initialEvents }: { events: E
 
       {/* Dialog conferma eliminazione */}
       <Dialog open={deleteId !== null} onClose={() => setDeleteId(null)}>
-        <DialogTitle fontWeight={700}>Eliminare questo evento?</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Eliminare questo evento?</DialogTitle>
         <DialogContent>
           <Typography>L&apos;azione non è reversibile.</Typography>
         </DialogContent>

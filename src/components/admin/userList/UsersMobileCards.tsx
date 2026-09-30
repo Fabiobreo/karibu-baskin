@@ -11,6 +11,7 @@ import { AthleteStatusChip, type AdminRow } from "@/components/admin/userList/us
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { joinNames } from "@/lib/guardianNames";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface UsersMobileCardsProps {
   rows: AdminRow[];
@@ -70,7 +71,7 @@ export default function UsersMobileCards({
                 {(row.name ?? "?")[0].toUpperCase()}
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={700} noWrap>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                   {row.name ?? "—"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" noWrap display="block">
@@ -91,7 +92,7 @@ export default function UsersMobileCards({
                     label={ROLE_LABELS_IT[row.appRole]}
                     size="small"
                     color={ROLE_CHIP_COLORS[row.appRole]}
-                    sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                    sx={{ fontSize: TYPE_SCALE.xs }}
                   />
                   <AthleteStatusChip status={row.athleteStatus} />
                   {row.sportRole ? (
@@ -105,7 +106,6 @@ export default function UsersMobileCards({
                         borderColor: roleColor(row.sportRoleSuggested),
                         // Colore del ruolo sul bordo, testo neutro: in scuro non reggeva (UX-22).
                         color: "text.primary",
-                        fontWeight: 700,
                         fontSize: TYPE_SCALE.xs,
                       }}
                     />
@@ -117,7 +117,6 @@ export default function UsersMobileCards({
                       sx={{
                         bgcolor: team.color ?? "primary.main",
                         color: contrastText(team.color),
-                        fontWeight: 600,
                         fontSize: TYPE_SCALE.xs,
                       }}
                     />

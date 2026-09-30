@@ -107,18 +107,12 @@ export default function AdminNuovoUtenteClient() {
                       label={ROLE_LABELS_IT[val as AppRole]}
                       size="small"
                       color={ROLE_CHIP_COLORS[val as AppRole]}
-                      sx={{ fontWeight: 600 }}
                     />
                   )}
                 >
                   {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
                     <MenuItem key={r} value={r}>
-                      <Chip
-                        label={ROLE_LABELS_IT[r]}
-                        size="small"
-                        color={ROLE_CHIP_COLORS[r]}
-                        sx={{ fontWeight: 600 }}
-                      />
+                      <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} />
                     </MenuItem>
                   ))}
                 </Select>
@@ -140,7 +134,6 @@ export default function AdminNuovoUtenteClient() {
                         sx={{
                           bgcolor: roleColor(parseInt(val)),
                           color: ROLE_TEXT_COLOR,
-                          fontWeight: 700,
                         }}
                       />
                     ) : (
@@ -156,7 +149,7 @@ export default function AdminNuovoUtenteClient() {
                       <Chip
                         label={ROLE_LABELS[r as keyof typeof ROLE_LABELS]}
                         size="small"
-                        sx={{ bgcolor: roleColor(r), color: ROLE_TEXT_COLOR, fontWeight: 700 }}
+                        sx={{ bgcolor: roleColor(r), color: ROLE_TEXT_COLOR }}
                       />
                     </MenuItem>
                   ))}

@@ -22,6 +22,7 @@ import { sportRoleLabel, roleColor } from "@/lib/constants";
 import { contrastText } from "@/lib/colorUtils";
 import { ALL_APP_ROLES, type TeamInfo } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface UserFiltersProps {
   search: string;
@@ -130,7 +131,7 @@ export default function UserFilters({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ minWidth: 90 }}
             >
               Ruolo utente
@@ -147,7 +148,9 @@ export default function UserFilters({
                   aria-pressed={filterAppRoles.includes(role)}
                   sx={{
                     cursor: "pointer",
-                    fontWeight: filterAppRoles.includes(role) ? 700 : 400,
+                    fontWeight: filterAppRoles.includes(role)
+                      ? FONT_WEIGHT.semibold
+                      : FONT_WEIGHT.regular,
                   }}
                 />
               ))}
@@ -159,7 +162,7 @@ export default function UserFilters({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ minWidth: 90 }}
             >
               Ruolo Baskin
@@ -173,7 +176,9 @@ export default function UserFilters({
                 aria-pressed={filterSportRoles.includes("none")}
                 sx={{
                   cursor: "pointer",
-                  fontWeight: filterSportRoles.includes("none") ? 700 : 400,
+                  fontWeight: filterSportRoles.includes("none")
+                    ? FONT_WEIGHT.semibold
+                    : FONT_WEIGHT.regular,
                 }}
               />
               {[1, 2, 3, 4, 5].map((r) => {
@@ -188,7 +193,7 @@ export default function UserFilters({
                     aria-pressed={active}
                     sx={{
                       cursor: "pointer",
-                      fontWeight: active ? 700 : 400,
+                      fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                       bgcolor: active ? roleColor(r) : undefined,
                       color: active ? "common.white" : undefined,
                       borderColor: active ? roleColor(r) : undefined,
@@ -204,7 +209,7 @@ export default function UserFilters({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ minWidth: 90 }}
             >
               Genere
@@ -235,7 +240,7 @@ export default function UserFilters({
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ minWidth: 90 }}
             >
               Stato
@@ -267,7 +272,7 @@ export default function UserFilters({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{ minWidth: 90 }}
               >
                 Squadra
@@ -285,7 +290,7 @@ export default function UserFilters({
                       aria-pressed={active}
                       sx={{
                         cursor: "pointer",
-                        fontWeight: active ? 700 : 400,
+                        fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                         ...(active && t.color
                           ? {
                               bgcolor: t.color,

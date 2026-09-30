@@ -61,6 +61,7 @@ import MatchResultDialog, {
 } from "@/components/matches/MatchResultDialog";
 import GroupCsvImportDialog from "@/components/admin/GroupCsvImportDialog";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type OpposingTeam = MatchFormOpposingTeam & { slug: string | null };
 type Team = MatchFormTeam;
@@ -407,7 +408,7 @@ export default function AdminGironeWorkspaceClient({
           </Typography>
         </Breadcrumbs>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-          <Typography variant="h4" component="h1" fontWeight={800}>
+          <Typography variant="h4" component="h1">
             {group.name}
           </Typography>
           {ourTeamsInGroup.map((t) => (
@@ -417,7 +418,6 @@ export default function AdminGironeWorkspaceClient({
               sx={{
                 bgcolor: t.color ?? "primary.main",
                 color: contrastText(t.color),
-                fontWeight: 700,
               }}
             />
           ))}
@@ -440,7 +440,7 @@ export default function AdminGironeWorkspaceClient({
             gap: 1,
           }}
         >
-          <Typography variant="h6" fontWeight={700}>
+          <Typography variant="h6">
             Le nostre squadre nel girone ({ourTeamsInGroup.length})
           </Typography>
           <Button
@@ -472,7 +472,6 @@ export default function AdminGironeWorkspaceClient({
                   sx={{
                     bgcolor: t.color ?? "primary.main",
                     color: contrastText(t.color),
-                    fontWeight: 700,
                   }}
                   onDelete={
                     inUse
@@ -518,9 +517,7 @@ export default function AdminGironeWorkspaceClient({
             gap: 1,
           }}
         >
-          <Typography variant="h6" fontWeight={700}>
-            Squadre del girone ({teamsInGroup.length})
-          </Typography>
+          <Typography variant="h6">Squadre del girone ({teamsInGroup.length})</Typography>
           <Button
             size="small"
             variant="outlined"
@@ -550,7 +547,6 @@ export default function AdminGironeWorkspaceClient({
                   target={o.slug ? "_blank" : undefined}
                   icon={o.slug ? <OpenInNewIcon sx={{ fontSize: 12 }} /> : undefined}
                   onDelete={removable ? () => handleRemoveTeamFromGroup(o.id, o.name) : undefined}
-                  sx={{ fontWeight: 600 }}
                 />
               );
             })}
@@ -573,9 +569,7 @@ export default function AdminGironeWorkspaceClient({
         }}
       >
         <Box>
-          <Typography variant="subtitle2" fontWeight={700}>
-            Calendario nostro ({ourMatches.length})
-          </Typography>
+          <Typography variant="subtitle2">Calendario nostro ({ourMatches.length})</Typography>
           <Typography variant="caption" color="text.secondary">
             La gestione delle nostre partite (risultati, convocazioni, statistiche) è in Gestione
             Partite.
@@ -598,9 +592,7 @@ export default function AdminGironeWorkspaceClient({
             gap: 1,
           }}
         >
-          <Typography variant="h6" fontWeight={700}>
-            Risultati altre squadre ({gmMatches.length})
-          </Typography>
+          <Typography variant="h6">Risultati altre squadre ({gmMatches.length})</Typography>
           <Button
             size="small"
             variant="outlined"
@@ -624,7 +616,7 @@ export default function AdminGironeWorkspaceClient({
         >
           <Typography
             variant="caption"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             color={editGm ? "primary" : "text.secondary"}
             sx={{ display: "block", mb: 1.5 }}
           >
@@ -727,13 +719,13 @@ export default function AdminGironeWorkspaceClient({
             <Table size="small" aria-label="Risultati altre squadre">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>G.</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Data</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Casa</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700 }}>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>G.</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Data</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Casa</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                     Ris.
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Ospiti</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Ospiti</TableCell>
                   <TableCell />
                 </TableRow>
               </TableHead>
@@ -751,19 +743,19 @@ export default function AdminGironeWorkspaceClient({
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                         {m.homeTeam.name}
                       </Typography>
                     </TableCell>
                     <TableCell align="center">
-                      <Typography variant="body2" fontWeight={700}>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                         {m.homeScore !== null && m.awayScore !== null
                           ? `${m.homeScore} – ${m.awayScore}`
                           : "—"}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                         {m.awayTeam.name}
                       </Typography>
                     </TableCell>
@@ -813,7 +805,7 @@ export default function AdminGironeWorkspaceClient({
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle fontWeight={700}>Aggiungi squadra al girone</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Aggiungi squadra al girone</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <ToggleButtonGroup
@@ -910,7 +902,9 @@ export default function AdminGironeWorkspaceClient({
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle fontWeight={700}>Aggiungi nostra squadra al girone</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>
+          Aggiungi nostra squadra al girone
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             {ourTeamError && <Alert severity="error">{ourTeamError}</Alert>}

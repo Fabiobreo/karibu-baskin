@@ -31,6 +31,7 @@ import { readError } from "@/lib/fetchJson";
 import { usePeopleSearch, type AdminPerson } from "@/components/admin/people/usePeopleSearch";
 import PersonRow from "@/components/admin/people/PersonRow";
 import RolePicker from "@/components/admin/people/RolePicker";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface ParticipantRegistration {
   id: string;
@@ -193,7 +194,12 @@ export default function ManageParticipantsDialog({
       <Box sx={{ px: 2, pt: 1.5, pb: 1.5, borderBottom: "1px solid", borderColor: "divider" }}>
         <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
           <Box sx={{ flex: 1, minWidth: 0, pt: 0.5 }}>
-            <Typography id="manage-participants-title" variant="h6" fontWeight={800} noWrap>
+            <Typography
+              id="manage-participants-title"
+              variant="h6"
+              fontWeight={FONT_WEIGHT.bold}
+              noWrap
+            >
               Iscritti
             </Typography>
             <Typography variant="body2" color="text.secondary" noWrap>

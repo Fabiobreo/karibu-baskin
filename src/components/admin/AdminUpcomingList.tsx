@@ -28,6 +28,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import type { TeamsData } from "@/lib/schemas";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface AdminUpcomingRow {
   id: string;
@@ -71,7 +72,7 @@ function Step({ n, title, children }: { n: number; title?: string; children: Rea
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontWeight: 800,
+          fontWeight: FONT_WEIGHT.bold,
           flexShrink: 0,
         }}
       >
@@ -79,7 +80,7 @@ function Step({ n, title, children }: { n: number; title?: string; children: Rea
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {title && (
-          <Typography variant="subtitle1" component="h3" fontWeight={700} sx={{ mb: 1 }}>
+          <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
             {title}
           </Typography>
         )}
@@ -238,7 +239,7 @@ export default function AdminUpcomingList({
   if (sessions.length === 0) {
     return (
       <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-        <Typography fontWeight={700}>Nessun allenamento in programma</Typography>
+        <Typography fontWeight={FONT_WEIGHT.semibold}>Nessun allenamento in programma</Typography>
         <Typography variant="body2" color="text.secondary">
           Crealo con &quot;Nuovo allenamento&quot;.
         </Typography>
@@ -282,7 +283,7 @@ export default function AdminUpcomingList({
                 }}
               >
                 <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
-                  <Typography variant="subtitle1" component="h3" fontWeight={700}>
+                  <Typography variant="subtitle1" component="h3">
                     {s.title}
                   </Typography>
                   <Typography

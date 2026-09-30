@@ -10,6 +10,7 @@ import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/
 import { guardianNames } from "@/lib/guardianNames";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type ChildRow = ChildEntry & { kind: "child" };
 
@@ -66,7 +67,7 @@ export default function ChildrenMobileCards({
               {row.name[0].toUpperCase()}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="body2" fontWeight={700} noWrap>
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                 {row.name}
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap display="block">
@@ -82,7 +83,6 @@ export default function ChildrenMobileCards({
                     sx={{
                       bgcolor: team.color ?? "primary.main",
                       color: contrastText(team.color),
-                      fontWeight: 600,
                       fontSize: TYPE_SCALE.xs,
                     }}
                   />

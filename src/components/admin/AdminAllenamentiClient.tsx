@@ -19,6 +19,7 @@ import SessionActions from "@/components/admin/SessionActions";
 import type { ParticipantRegistration } from "@/components/admin/ManageParticipantsDialog";
 import { closeStatus, type SavedResult } from "@/lib/trainingClose";
 import type { TeamsData } from "@/lib/schemas";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface AdminSessionRow {
   id: string;
@@ -50,7 +51,7 @@ function SessionSummary({ s, concluded }: { s: AdminSessionRow; concluded: boole
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap", minWidth: 0 }}>
       <Box sx={{ minWidth: 0, flex: "1 1 220px" }}>
-        <Typography variant="subtitle1" component="h3" fontWeight={700}>
+        <Typography variant="subtitle1" component="h3">
           {s.title}
         </Typography>
         <Typography
@@ -137,7 +138,7 @@ export default function AdminAllenamentiClient({
     return (
       <Paper variant="outlined" sx={{ p: 5, textAlign: "center" }}>
         <CheckCircleIcon sx={{ fontSize: 40, color: "success.main", mb: 1 }} />
-        <Typography fontWeight={700}>
+        <Typography fontWeight={FONT_WEIGHT.semibold}>
           {concluded ? "Nessun allenamento concluso" : "Tutto in ordine!"}
         </Typography>
         <Typography variant="body2" color="text.secondary">

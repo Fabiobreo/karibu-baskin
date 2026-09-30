@@ -18,6 +18,7 @@ import { readError } from "@/lib/fetchJson";
 import PersonRow from "@/components/admin/people/PersonRow";
 import UserSearchPicker from "@/components/admin/people/UserSearchPicker";
 import type { AdminPerson } from "@/components/admin/people/usePeopleSearch";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Guardian {
   id: string;
@@ -118,7 +119,7 @@ export default function ChildGuardiansSection({
       <Typography
         variant="caption"
         color="text.secondary"
-        fontWeight={600}
+        fontWeight={FONT_WEIGHT.semibold}
         display="block"
         gutterBottom
       >

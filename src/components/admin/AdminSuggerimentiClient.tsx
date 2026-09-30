@@ -25,6 +25,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type Category = "APP" | "ALLENAMENTI" | "PARTITE_EVENTI" | "ALTRO";
 type Status = "NUOVO" | "LETTO" | "ARCHIVIATO";
@@ -210,7 +211,6 @@ export default function AdminSuggerimentiClient({
               onClick={() => setFilter(f.value)}
               color={filter === f.value ? "primary" : "default"}
               variant={filter === f.value ? "filled" : "outlined"}
-              sx={{ fontWeight: 600 }}
             />
           );
         })}
@@ -243,14 +243,8 @@ export default function AdminSuggerimentiClient({
                   label={STATUS_META[s.status].label}
                   color={STATUS_META[s.status].color}
                   size="small"
-                  sx={{ fontWeight: 700 }}
                 />
-                <Chip
-                  label={CATEGORY_LABELS[s.category]}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontWeight: 600 }}
-                />
+                <Chip label={CATEGORY_LABELS[s.category]} size="small" variant="outlined" />
                 <Typography variant="caption" color="text.secondary" sx={{ ml: "auto" }}>
                   {fmt(s.createdAt)}
                 </Typography>
@@ -285,7 +279,7 @@ export default function AdminSuggerimentiClient({
                           <Box
                             sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
                           >
-                            <Typography variant="caption" fontWeight={700}>
+                            <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
                               {n.author.name ?? "Staff"}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
@@ -331,7 +325,7 @@ export default function AdminSuggerimentiClient({
                   disabled={busy || !(drafts[s.id] ?? "").trim()}
                   onClick={() => addNote(s.id)}
                   startIcon={<SendIcon />}
-                  sx={{ flexShrink: 0, fontWeight: 700 }}
+                  sx={{ flexShrink: 0 }}
                 >
                   Invia
                 </Button>

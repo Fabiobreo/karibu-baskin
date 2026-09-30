@@ -35,6 +35,7 @@ import {
 import ChildrenMobileCards from "@/components/admin/userList/ChildrenMobileCards";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type ChildRow = ChildEntry & { kind: "child" };
 type ChildSortColumn = "name" | "createdAt" | "sportRole";
@@ -196,7 +197,7 @@ export default function ChildrenTab({
                       {row.name[0].toUpperCase()}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                         {row.name}
                       </Typography>
                       <AthleteStatusChip status={row.athleteStatus} />

@@ -27,6 +27,7 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import OpposingTeamEditDialog, {
   type OpposingTeamEditable,
 } from "@/components/teams/OpposingTeamEditDialog";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type OpposingTeam = OpposingTeamEditable;
 
@@ -80,7 +81,7 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
   return (
     <Box>
       <Paper elevation={0} variant="outlined" sx={{ p: 2.5, mb: 2 }}>
-        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+        <Typography variant="subtitle2" gutterBottom>
           Aggiungi squadra avversaria
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
@@ -121,8 +122,8 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
             <Table size="small" aria-label="Lista squadre avversarie">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Nome</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Città</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Nome</TableCell>
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }}>Città</TableCell>
                   <TableCell />
                 </TableRow>
               </TableHead>
@@ -138,14 +139,14 @@ export default function AdminAvversarieClient({ initialOpponents }: Props) {
                         >
                           <Typography
                             variant="body2"
-                            fontWeight={600}
+                            fontWeight={FONT_WEIGHT.semibold}
                             sx={{ "&:hover": { color: "primary.main" } }}
                           >
                             {o.name}
                           </Typography>
                         </Link>
                       ) : (
-                        <Typography variant="body2" fontWeight={600}>
+                        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                           {o.name}
                         </Typography>
                       )}

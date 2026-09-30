@@ -37,6 +37,7 @@ import {
   type ScoreDraft,
 } from "@/lib/trainingClose";
 import type { TeamsData } from "@/lib/schemas";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface CloseAthlete {
   id: string;
@@ -198,7 +199,7 @@ export default function TrainingCloseForm({
       {/* ── Presenze ── */}
       <Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap", mb: 1 }}>
-          <Typography variant="subtitle1" component="h3" fontWeight={700} sx={{ flex: 1 }}>
+          <Typography variant="subtitle1" component="h3" sx={{ flex: 1 }}>
             Presenze
             <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
               {present} presenti · {absent} assenti
@@ -279,7 +280,7 @@ export default function TrainingCloseForm({
                         px: 1.5,
                         gap: 0.5,
                         textTransform: "none",
-                        fontWeight: 700,
+                        fontWeight: FONT_WEIGHT.semibold,
                         "&.Mui-selected, &.Mui-selected:hover": {
                           bgcolor: "success.main",
                           color: "common.white",
@@ -296,7 +297,7 @@ export default function TrainingCloseForm({
                         px: 1.5,
                         gap: 0.5,
                         textTransform: "none",
-                        fontWeight: 700,
+                        fontWeight: FONT_WEIGHT.semibold,
                         "&.Mui-selected, &.Mui-selected:hover": {
                           bgcolor: "error.main",
                           color: "common.white",
@@ -352,7 +353,7 @@ export default function TrainingCloseForm({
 
           {/* ── Partitelle ── */}
           <Box>
-            <Typography variant="subtitle1" component="h3" fontWeight={700} sx={{ mb: 1 }}>
+            <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
               Partitelle
             </Typography>
             {matchups.length === 0 ? (
@@ -382,7 +383,11 @@ export default function TrainingCloseForm({
                       ].map(({ team, side }, idx) => (
                         <Box key={side} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                           {idx === 1 && (
-                            <Typography color="text.secondary" fontWeight={700} aria-hidden="true">
+                            <Typography
+                              color="text.secondary"
+                              fontWeight={FONT_WEIGHT.semibold}
+                              aria-hidden="true"
+                            >
                               –
                             </Typography>
                           )}
@@ -412,7 +417,10 @@ export default function TrainingCloseForm({
                                 "aria-label": `Punti ${team.name} (${t1.name} contro ${t2.name})`,
                               },
                             }}
-                            sx={{ width: 72, "& input": { textAlign: "center", fontWeight: 700 } }}
+                            sx={{
+                              width: 72,
+                              "& input": { textAlign: "center", fontWeight: FONT_WEIGHT.semibold },
+                            }}
                           />
                         </Box>
                       ))}
@@ -473,7 +481,7 @@ export default function TrainingCloseForm({
                 <DoneAllIcon />
               )
             }
-            sx={{ ...TOUCH, fontWeight: 700 }}
+            sx={{ ...TOUCH }}
           >
             Salva e concludi
           </Button>

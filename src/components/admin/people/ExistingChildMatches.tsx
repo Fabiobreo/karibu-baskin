@@ -4,6 +4,7 @@ import LinkIcon from "@mui/icons-material/Link";
 import CheckIcon from "@mui/icons-material/Check";
 import { usePeopleSearch, type AdminPerson } from "@/components/admin/people/usePeopleSearch";
 import PersonRow from "@/components/admin/people/PersonRow";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ExistingChildMatchesProps {
   /** Il nome che lo staff sta scrivendo nel form del nuovo figlio. */
@@ -52,7 +53,7 @@ export default function ExistingChildMatches({
       variant="outlined"
       sx={{ px: 1.5, pt: 1.25, borderColor: "warning.main", bgcolor: "action.hover" }}
     >
-      <Typography variant="body2" fontWeight={700}>
+      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
         È già registrato?
       </Typography>
       <Typography variant="caption" color="text.secondary" component="p">

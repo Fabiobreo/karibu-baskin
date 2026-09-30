@@ -37,6 +37,7 @@ import {
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { joinNames } from "@/lib/guardianNames";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface UsersTableProps {
   rows: AdminRow[];
@@ -154,7 +155,7 @@ export default function UsersTable({
                       {(row.name ?? "?")[0].toUpperCase()}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                         {row.name ?? "—"}
                       </Typography>
                       <Typography
@@ -195,18 +196,12 @@ export default function UsersTable({
                         label={ROLE_LABELS_IT[val as AppRole]}
                         size="small"
                         color={ROLE_CHIP_COLORS[val as AppRole]}
-                        sx={{ fontWeight: 600 }}
                       />
                     )}
                   >
                     {ALL_APP_ROLES.map((r) => (
                       <MenuItem key={r} value={r}>
-                        <Chip
-                          label={ROLE_LABELS_IT[r]}
-                          size="small"
-                          color={ROLE_CHIP_COLORS[r]}
-                          sx={{ fontWeight: 600 }}
-                        />
+                        <Chip label={ROLE_LABELS_IT[r]} size="small" color={ROLE_CHIP_COLORS[r]} />
                       </MenuItem>
                     ))}
                   </Select>
@@ -232,7 +227,6 @@ export default function UsersTable({
                         sx={{
                           borderColor: roleColor(row.sportRoleSuggested),
                           color: roleColor(row.sportRoleSuggested),
-                          fontWeight: 700,
                           fontSize: TYPE_SCALE.xs,
                         }}
                         title="Autovalutazione da confermare"

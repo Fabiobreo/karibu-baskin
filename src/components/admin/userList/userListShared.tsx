@@ -94,7 +94,7 @@ export function AthleteStatusChip({ status }: { status: AthleteStatus | null }) 
       size="small"
       color={ATHLETE_STATUS_CHIP_COLORS[status]}
       variant="outlined"
-      sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
+      sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
     />
   );
 }
