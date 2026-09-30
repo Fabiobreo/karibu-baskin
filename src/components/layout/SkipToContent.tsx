@@ -2,6 +2,7 @@
 import Box from "@mui/material/Box";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 /**
  * Primo elemento focusabile del body: invisibile finche non riceve il focus,
@@ -32,7 +33,7 @@ export default function SkipToContent() {
         zIndex: (theme) => theme.zIndex.tooltip + 1,
         px: 0,
         py: 0,
-        borderRadius: 1,
+        borderRadius: RADIUS.md,
         // Testo bianco sul riempimento arancio unico (UX-28): 4,71:1. Su
         // `primary.main` si fermava a 3,79:1, proprio sul link pensato per chi
         // naviga da tastiera.

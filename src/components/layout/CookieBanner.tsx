@@ -5,6 +5,7 @@ import CookieIcon from "@mui/icons-material/Cookie";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { useTranslations } from "next-intl";
+import { RADIUS } from "@/lib/radius";
 
 /**
  * Banner di consenso per i cookie di terze parti (oggi: solo la mappa Google
@@ -37,7 +38,7 @@ export default function CookieBanner() {
         width: { md: 420 },
         zIndex: 1400,
         p: { xs: 1.5, sm: 2.5 },
-        borderRadius: 2,
+        borderRadius: RADIUS.lg,
         border: "1px solid",
         borderColor: "divider",
       }}
@@ -78,7 +79,6 @@ export default function CookieBanner() {
         {/* Su mobile i due bottoni si dividono la riga: stesso peso visivo per
             le due scelte, e nessuna riga in più per andare a capo. */}
         <Button
-          size="small"
           variant="outlined"
           onClick={reject}
           sx={{ fontWeight: 600, flex: { xs: 1, sm: "0 0 auto" } }}
@@ -86,7 +86,6 @@ export default function CookieBanner() {
           {t("necessaryOnly")}
         </Button>
         <Button
-          size="small"
           variant="contained"
           onClick={accept}
           sx={{ fontWeight: 700, flex: { xs: 1, sm: "0 0 auto" } }}

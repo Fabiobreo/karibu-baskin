@@ -411,23 +411,21 @@ export default function SessionCard({
               }}
             >
               {!isRegistered && !muted && isRegOpen && (
-                <Button
-                  component={Link}
-                  href={href}
-                  variant="contained"
-                  size="small"
-                  sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, py: 0.4 }}
-                >
+                // 40 px e senza freccia (UX-30): e' l'azione principale della card.
+                <Button href={href} variant="contained" sx={{ fontWeight: 700 }}>
                   {t("signUp")}
                 </Button>
               )}
               {hasTeams && (
                 <Button
-                  variant={myTeam ? "outlined" : "contained"}
-                  size="small"
-                  startIcon={<SportsBasketballIcon sx={{ fontSize: "0.85rem !important" }} />}
+                  // Un solo bottone pieno per card: se c'e' "Iscriviti", le
+                  // squadre passano in secondo piano (UX-30).
+                  variant={
+                    myTeam || (!isRegistered && !muted && isRegOpen) ? "outlined" : "contained"
+                  }
+                  startIcon={<SportsBasketballIcon />}
                   onClick={() => setTeamsOpen(true)}
-                  sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, py: 0.4 }}
+                  sx={{ fontWeight: 600 }}
                 >
                   {t("viewTeamsBtn")}
                 </Button>

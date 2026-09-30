@@ -55,6 +55,7 @@ import { fetchJson } from "@/lib/fetchJson";
 import { slugify } from "@/lib/slugUtils";
 import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 // href-only — le label vengono da t() dentro il componente
 const NAV_HREFS = [
@@ -419,7 +420,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                         fontSize: TYPE_SCALE.xs,
                         px: 0.6,
                         py: 0.1,
-                        borderRadius: 0.5,
+                        borderRadius: RADIUS.sm,
                         bgcolor: "action.selected",
                         color: "text.secondary",
                         fontWeight: 600,
@@ -918,7 +919,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                             fontSize: TYPE_SCALE.xs,
                             px: 0.6,
                             py: 0.1,
-                            borderRadius: 0.5,
+                            borderRadius: RADIUS.sm,
                             bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
                             color: (theme) => alpha(theme.palette.common.white, 0.4),
                             fontWeight: 600,

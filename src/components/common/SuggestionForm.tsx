@@ -142,11 +142,12 @@ export default function SuggestionForm() {
       />
 
       <Button
+        size="large"
         type="submit"
         variant="contained"
         disabled={loading || !category || message.trim().length < 5}
         startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
-        sx={{ alignSelf: "flex-start", fontWeight: 700, borderRadius: 2 }}
+        sx={{ alignSelf: "flex-start", fontWeight: 700 }}
       >
         {loading ? tCommon("sending") : t("submit")}
       </Button>

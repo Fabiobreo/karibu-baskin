@@ -2,6 +2,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import { RADIUS } from "@/lib/radius";
 
 interface State {
   hasError: boolean;
@@ -30,7 +31,7 @@ export default class SectionErrorBoundary extends React.Component<
             textAlign: "center",
             border: "1px dashed",
             borderColor: "error.light",
-            borderRadius: 2,
+            borderRadius: RADIUS.lg,
           }}
         >
           <ErrorOutlineIcon color="error" sx={{ fontSize: 32, mb: 1 }} />

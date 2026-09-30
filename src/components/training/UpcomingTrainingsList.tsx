@@ -11,6 +11,7 @@ import TeamColorDot from "@/components/teams/TeamColorDot";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { groupUpcoming, type UpcomingGroup } from "@/lib/trainingList";
 import { TEAM_META } from "@/lib/constants";
+import { RADIUS } from "@/lib/radius";
 
 interface UpcomingTrainingsListProps {
   sessions: SessionWithCount[];
@@ -144,7 +145,7 @@ export default function UpcomingTrainingsList({
           <Typography component="h3" variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
             {groupLabel(group)}
           </Typography>
-          <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+          <Paper variant="outlined" sx={{ borderRadius: RADIUS.lg, overflow: "hidden" }}>
             {items.map((s, i) => (
               <Box key={s.id} sx={{ borderTop: i > 0 ? 1 : 0, borderColor: "divider" }}>
                 <TrainingListRow

@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { useThemeMode } from "@/context/ThemeContext";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
+import { RADIUS } from "@/lib/radius";
 
 const MODES = ["light", "system", "dark"] as const;
 type ColorMode = (typeof MODES)[number];
@@ -63,7 +64,7 @@ export default function ThemeSwitcher() {
             color: (theme) => alpha(theme.palette.common.white, 0.75),
             border: "1px solid",
             borderColor: (theme) => alpha(theme.palette.common.white, 0.18),
-            borderRadius: 2,
+            borderRadius: RADIUS.md,
             "&:hover": {
               color: "common.white",
               bgcolor: (theme) => alpha(theme.palette.common.white, 0.08),

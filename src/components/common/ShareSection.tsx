@@ -18,6 +18,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { socialBrandColor } from "@/lib/heroStyles";
+import { RADIUS } from "@/lib/radius";
 
 interface Props {
   title: string;
@@ -122,7 +123,7 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
             sx={{
               display: "inline-flex",
               p: 2,
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
               backgroundColor: "common.white",
               boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
               mb: 2,

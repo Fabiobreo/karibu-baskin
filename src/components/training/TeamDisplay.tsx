@@ -31,6 +31,7 @@ import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import QueryErrorState from "@/components/common/QueryErrorState";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 /**
  * Colore della squadra come riempimento sotto un'etichetta bianca: l'arancio
@@ -106,7 +107,7 @@ function RoleBadge({
       sx={{
         display: "inline-flex",
         alignItems: "center",
-        borderRadius: "16px",
+        borderRadius: RADIUS.pill,
         overflow: "hidden",
         bgcolor: roleColor(role),
         color: ROLE_TEXT_COLOR,
@@ -755,10 +756,10 @@ export default function TeamDisplay({
     return (
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} />
+          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: RADIUS.lg }} />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 2 }} />
+          <Skeleton variant="rectangular" height={160} sx={{ borderRadius: RADIUS.lg }} />
         </Grid>
       </Grid>
     );
@@ -772,7 +773,7 @@ export default function TeamDisplay({
           py: 3,
           px: 3,
           textAlign: "center",
-          borderRadius: 2,
+          borderRadius: RADIUS.md,
           border: "1px dashed",
           borderColor: "primary.main",
           backgroundColor: "background.paper",
@@ -846,7 +847,7 @@ export default function TeamDisplay({
           py: 4,
           px: 3,
           textAlign: "center",
-          borderRadius: 2,
+          borderRadius: RADIUS.md,
           border: "1px dashed",
           borderColor: "divider",
           backgroundColor: "background.paper",

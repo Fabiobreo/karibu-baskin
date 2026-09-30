@@ -8,6 +8,7 @@ import PlaceIcon from "@mui/icons-material/Place";
 import { useLocale, useTranslations } from "next-intl";
 import type { ActionSession, NextAction } from "@/lib/nextAction";
 import { trainingLocation } from "@/lib/clubVenue";
+import { RADIUS } from "@/lib/radius";
 
 interface NextActionCardProps {
   action: NextAction;
@@ -98,7 +99,7 @@ export default function NextActionCard({ action, overlapHero = false }: NextActi
       sx={{
         position: "relative",
         zIndex: 2,
-        borderRadius: 3,
+        borderRadius: RADIUS.lg,
         p: { xs: 2.5, md: 3 },
         ...(overlapHero && { mt: { xs: -7, md: -10 } }),
       }}
@@ -150,9 +151,10 @@ export default function NextActionCard({ action, overlapHero = false }: NextActi
         </Box>
         {cta && (
           <Button
+            size="large"
             href={cta.href}
             variant={cta.primary ? "contained" : "outlined"}
-            sx={{ minHeight: 44, fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" }}
+            sx={{ fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" }}
           >
             {cta.label}
           </Button>

@@ -5,6 +5,7 @@ import { alpha } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { useTranslations } from "next-intl";
+import { RADIUS } from "@/lib/radius";
 
 interface EventPosterProps {
   imageUrl: string;
@@ -27,7 +28,7 @@ export default function EventPoster({ imageUrl, title }: EventPosterProps) {
         <ButtonBase
           onClick={() => setOpen(true)}
           aria-label={t("posterOpen")}
-          sx={{ display: "block", width: "100%", borderRadius: 2, cursor: "zoom-in" }}
+          sx={{ display: "block", width: "100%", borderRadius: RADIUS.lg, cursor: "zoom-in" }}
         >
           <Box
             component="img"
@@ -37,7 +38,7 @@ export default function EventPoster({ imageUrl, title }: EventPosterProps) {
               display: "block",
               width: "100%",
               height: "auto",
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
               border: 1,
               borderColor: "divider",
             }}
@@ -56,7 +57,7 @@ export default function EventPoster({ imageUrl, title }: EventPosterProps) {
       {/* Mobile: riga compatta */}
       <Paper
         variant="outlined"
-        sx={{ display: { xs: "block", md: "none" }, borderRadius: 3, overflow: "hidden" }}
+        sx={{ display: { xs: "block", md: "none" }, borderRadius: RADIUS.lg, overflow: "hidden" }}
       >
         <ButtonBase
           onClick={() => setOpen(true)}
@@ -80,7 +81,7 @@ export default function EventPoster({ imageUrl, title }: EventPosterProps) {
               height: 80,
               objectFit: "cover",
               objectPosition: "top",
-              borderRadius: 1,
+              borderRadius: RADIUS.md,
               flexShrink: 0,
             }}
           />

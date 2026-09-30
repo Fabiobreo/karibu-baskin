@@ -10,6 +10,7 @@ import ContactForm from "@/components/common/ContactForm";
 import MapEmbed from "@/components/common/MapEmbed";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { CLUB_VENUE, CLUB_VENUE_LABEL, mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
+import { RADIUS } from "@/lib/radius";
 
 interface UpcomingSession {
   id: string;
@@ -154,7 +155,7 @@ export default function TryItSection() {
 
       <Paper
         elevation={0}
-        sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2, mb: 1.5 }}
+        sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: RADIUS.lg, mb: 1.5 }}
       >
         <ContactForm />
       </Paper>

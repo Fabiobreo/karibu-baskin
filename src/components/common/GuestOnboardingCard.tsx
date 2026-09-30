@@ -8,6 +8,7 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import { useLocale, useTranslations } from "next-intl";
 import type { GuestOnboarding, OnboardingStep } from "@/lib/guestOnboarding";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface GuestOnboardingCardProps {
   data: GuestOnboarding;
@@ -110,7 +111,7 @@ export default function GuestOnboardingCard({
       sx={{
         position: "relative",
         zIndex: 2,
-        borderRadius: 3,
+        borderRadius: RADIUS.lg,
         p: { xs: 2.5, md: 3.5 },
         ...(overlapHero && { mt: { xs: -7, md: -10 } }),
       }}
@@ -147,7 +148,7 @@ export default function GuestOnboardingCard({
         variant="determinate"
         value={(data.doneCount / total) * 100}
         aria-label={t("progress", { done: data.doneCount, total })}
-        sx={{ height: 6, borderRadius: 3, mb: 2.5, bgcolor: "action.hover" }}
+        sx={{ height: 6, borderRadius: RADIUS.pill, mb: 2.5, bgcolor: "action.hover" }}
       />
 
       <Stack component="ol" spacing={0} sx={{ listStyle: "none", m: 0, p: 0 }}>
@@ -222,7 +223,6 @@ export default function GuestOnboardingCard({
                   <Button
                     href={c.action.href}
                     variant={c.action.primary ? (isNext ? "contained" : "outlined") : "text"}
-                    size="small"
                     sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
                   >
                     {c.action.label}

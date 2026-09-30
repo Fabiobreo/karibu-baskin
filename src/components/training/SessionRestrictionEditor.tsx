@@ -15,6 +15,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface CompetitiveTeam {
   id: string;
@@ -125,7 +126,7 @@ export default function SessionRestrictionEditor({
               sx={{
                 px: 1.5,
                 py: 0.5,
-                borderRadius: "6px",
+                borderRadius: RADIUS.sm,
                 border: "1px solid",
                 borderColor: selected ? roleColor(r) : "divider",
                 bgcolor: selected ? roleColor(r) : "transparent",
@@ -228,7 +229,7 @@ export default function SessionRestrictionEditor({
                   sx={{
                     px: 1.5,
                     py: 0.5,
-                    borderRadius: "6px",
+                    borderRadius: RADIUS.sm,
                     border: "1px solid",
                     borderColor: selected ? roleColor(r) : "divider",
                     bgcolor: selected ? roleColor(r) : "transparent",

@@ -34,6 +34,7 @@ import { formatRome } from "@/lib/dateUtils";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 // Solo tipi: `eventRsvp` usa Prisma e resta sul server.
 import type { GuestRsvp, MemberRsvp } from "@/lib/eventRsvp";
+import { RADIUS } from "@/lib/radius";
 
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
 /** Risposta a una domanda: si', no, o non ancora data. */
@@ -275,7 +276,7 @@ function PersonCard({
         border: "1px solid",
         borderStyle: dashed ? "dashed" : "solid",
         borderColor: "divider",
-        borderRadius: 3,
+        borderRadius: RADIUS.md,
         p: 1.5,
         display: "flex",
         flexDirection: "column",
@@ -378,11 +379,7 @@ function RsvpSummary({
   }));
   return (
     <Stack spacing={1.5}>
-      <Alert
-        icon={<CheckCircleOutlineIcon fontSize="inherit" />}
-        severity="success"
-        sx={{ borderRadius: 2 }}
-      >
+      <Alert icon={<CheckCircleOutlineIcon fontSize="inherit" />} severity="success">
         <Typography variant="body2" fontWeight={700}>
           {t("sentTitle")}
         </Typography>
@@ -786,7 +783,7 @@ function RsvpForm({
           bgcolor: "background.paper",
           borderTop: "1px solid",
           borderColor: "divider",
-          borderRadius: "0 0 24px 24px",
+          borderRadius: `0 0 ${RADIUS.lg} ${RADIUS.lg}`,
         }}
       >
         <Box
@@ -817,6 +814,7 @@ function RsvpForm({
               </Button>
             )}
             <Button
+              size="large"
               variant="contained"
               onClick={() => mutation.mutate(undefined)}
               disabled={busy || !!problem || !dirty}
@@ -842,7 +840,7 @@ export default function EventRsvp({ isLoggedIn, isPast, initialGoing, ...form }:
   const [goingCount, setGoingCount] = useState(initialGoing);
 
   return (
-    <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+    <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: RADIUS.lg }}>
       <Box
         sx={{
           display: "flex",
@@ -865,7 +863,7 @@ export default function EventRsvp({ isLoggedIn, isPast, initialGoing, ...form }:
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
             {t("rsvpLoginPrompt")}
           </Typography>
-          <Button href="/login" variant="contained" sx={{ fontWeight: 700, borderRadius: 2 }}>
+          <Button size="large" href="/login" variant="contained" sx={{ fontWeight: 700 }}>
             {t("rsvpLoginCta")}
           </Button>
         </Box>

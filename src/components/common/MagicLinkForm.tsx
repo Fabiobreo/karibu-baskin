@@ -47,16 +47,17 @@ export default function MagicLinkForm({ callbackUrl = "/" }: { callbackUrl?: str
         onChange={(e) => setEmail(e.target.value)}
         disabled={loading}
       />
-      {/* `text` e non `outlined`: Google e' la via principale e resta nella
-          sua forma canonica, quindi la gerarchia la fa il magic link
-          arretrando. */}
+      {/* Stessa forma di "Accedi con Google" (UX-30): outlined, a tutta
+          larghezza, 48 px. Un bottone `text` non e' mai l'unica azione di un
+          modulo: sembrava un link secondario, ed e' l'invio. */}
       <Button
         type="submit"
-        variant="text"
+        variant="outlined"
+        size="large"
         fullWidth
         disabled={loading}
         startIcon={loading ? <CircularProgress size={18} /> : <MailOutlineIcon />}
-        sx={{ textTransform: "none", fontWeight: 600 }}
+        sx={{ fontWeight: 600 }}
       >
         {loading ? t("emailSending") : t("emailCta")}
       </Button>

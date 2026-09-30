@@ -22,6 +22,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useTranslations } from "next-intl";
 import type { TeamsData } from "@/components/training/TeamDisplay";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 type MatchupKey = "AB" | "AC" | "BC";
 
@@ -167,7 +168,7 @@ function MatchupSlot({
           p: 2,
           border: "1px solid",
           borderColor: editing ? "primary.light" : "divider",
-          borderRadius: 2,
+          borderRadius: RADIUS.md,
           bgcolor: editing ? "primary.50" : "background.paper",
         }}
       >
@@ -298,7 +299,7 @@ function MatchupSlot({
         p: 2,
         border: "1px solid",
         borderColor: result ? "divider" : "divider",
-        borderRadius: 2,
+        borderRadius: RADIUS.md,
         display: "flex",
         alignItems: "center",
         gap: 1,

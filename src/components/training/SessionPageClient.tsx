@@ -27,6 +27,7 @@ import type { AppRole } from "@prisma/client";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { RADIUS } from "@/lib/radius";
 
 export interface Session {
   id: string;
@@ -388,9 +389,9 @@ export default function SessionPageClient({
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 4 } }}>
         {loading ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
-            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 2 }} />
-            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
+            <Skeleton variant="rectangular" height={80} sx={{ borderRadius: RADIUS.lg }} />
+            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: RADIUS.lg }} />
+            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: RADIUS.lg }} />
           </Box>
         ) : session ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -410,7 +411,7 @@ export default function SessionPageClient({
                 elevation={0}
                 sx={{
                   p: { xs: 2, sm: 2.5 },
-                  borderRadius: 2,
+                  borderRadius: RADIUS.lg,
                   background: `linear-gradient(120deg, ${myTeam.color} 0%, ${myTeam.color}cc 100%)`,
                   color: "common.white",
                   display: "flex",

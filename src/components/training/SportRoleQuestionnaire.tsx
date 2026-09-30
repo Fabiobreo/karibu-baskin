@@ -8,6 +8,7 @@ import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
 import DirectionsRunIcon from "@mui/icons-material/DirectionsRun";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
+import { RADIUS } from "@/lib/radius";
 
 export interface SportRoleResult {
   role: number;
@@ -146,7 +147,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
             bgcolor: "action.hover",
             border: "1px solid",
             borderColor: "divider",
-            borderRadius: 1,
+            borderRadius: RADIUS.md,
           }}
         >
           <Typography variant="caption" color="text.secondary" fontWeight={600}>
@@ -161,7 +162,7 @@ export default function SportRoleQuestionnaire({ onResult, initialSuggested, sub
         variant="determinate"
         value={progress}
         aria-label={t("progressLabel")}
-        sx={{ height: 3, borderRadius: 2, mb: 2.5, bgcolor: "action.hover" }}
+        sx={{ height: 3, borderRadius: RADIUS.pill, mb: 2.5, bgcolor: "action.hover" }}
       />
 
       <Typography variant="body1" fontWeight={600} sx={{ mb: 2 }}>

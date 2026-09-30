@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { useCookieConsent } from "@/hooks/useCookieConsent";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { CLUB_VENUE, CLUB_VENUE_LABEL, mapsSearchUrl } from "@/lib/clubVenue";
+import { RADIUS } from "@/lib/radius";
 
 interface MapEmbedProps {
   /** Luogo da mostrare, scritto come in un campo "Luogo". Predefinito: la sede. */
@@ -40,7 +41,7 @@ export default function MapEmbed({
   const frameSx = {
     position: "relative",
     height,
-    borderRadius: 2,
+    borderRadius: RADIUS.lg,
     overflow: "hidden",
     border: "1px solid",
     borderColor: "divider",
@@ -101,7 +102,8 @@ export default function MapEmbed({
           placeItems: "center",
           bgcolor: "primary.main",
           color: "primary.contrastText",
-          boxShadow: (theme) => `0 0 0 8px ${alpha(theme.palette.primary.main, 0.18)}`,
+          // Alone neutro (UX-30): niente ombre col colore del marchio.
+          boxShadow: (theme) => `0 0 0 8px ${alpha(theme.palette.text.primary, 0.08)}`,
         }}
       >
         <PlaceIcon />
@@ -109,9 +111,10 @@ export default function MapEmbed({
       <Typography variant="subtitle2" component="p" fontWeight={700} sx={{ mt: 0.5 }}>
         {placeName}
       </Typography>
+      {/* Contornato (UX-30): l'azione primaria della pagina e' altrove. */}
       <Button
-        variant="contained"
-        size="small"
+        variant="outlined"
+        size="large"
         startIcon={<MapIcon />}
         onClick={accept}
         sx={{ fontWeight: 700 }}

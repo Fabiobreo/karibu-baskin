@@ -3,6 +3,7 @@ import type { SxProps, Theme } from "@mui/material/styles";
 import { visuallyHidden } from "@mui/utils";
 import { useTranslations } from "next-intl";
 import { roleColorSx } from "@/lib/constants";
+import { RADIUS } from "@/lib/radius";
 
 interface RoleBadgeProps {
   role: number;
@@ -69,7 +70,7 @@ export default function RoleBadge({
           minWidth: box,
           height: box,
           px: 0.75,
-          borderRadius: 1.5,
+          borderRadius: RADIUS.sm,
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",

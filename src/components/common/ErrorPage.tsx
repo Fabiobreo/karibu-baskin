@@ -129,7 +129,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
             variant="contained"
             size="large"
             onClick={onReset}
-            sx={{ borderRadius: 3, px: 4, fontWeight: 700 }}
+            sx={{ px: 4, fontWeight: 700 }}
           >
             {t("retry")}
           </Button>
@@ -139,7 +139,6 @@ export default function ErrorPage({ code, title, description, showReset, onReset
           variant={showReset ? "outlined" : "contained"}
           size="large"
           sx={{
-            borderRadius: 3,
             px: 4,
             fontWeight: 700,
             ...(showReset && {

@@ -7,6 +7,7 @@ import InstallMobileIcon from "@mui/icons-material/InstallMobile";
 import AddBoxOutlinedIcon from "@mui/icons-material/AddBoxOutlined";
 import { useTranslations } from "next-intl";
 import { useHasMounted } from "@/lib/useHasMounted";
+import { RADIUS } from "@/lib/radius";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -144,7 +145,7 @@ export default function InstallPrompt() {
         width: { md: 420 },
         zIndex: 1400,
         p: 2.5,
-        borderRadius: 2,
+        borderRadius: RADIUS.lg,
         border: "1px solid",
         borderColor: "divider",
       }}
@@ -186,10 +187,10 @@ export default function InstallPrompt() {
         </Box>
       ) : (
         <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1.5 }}>
-          <Button size="small" variant="outlined" onClick={dismiss} sx={{ fontWeight: 600 }}>
+          <Button variant="outlined" onClick={dismiss} sx={{ fontWeight: 600 }}>
             {t("later")}
           </Button>
-          <Button size="small" variant="contained" onClick={install} sx={{ fontWeight: 700 }}>
+          <Button variant="contained" onClick={install} sx={{ fontWeight: 700 }}>
             {t("install")}
           </Button>
         </Box>

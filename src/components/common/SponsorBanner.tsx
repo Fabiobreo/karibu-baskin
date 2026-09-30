@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { onHover } from "@/lib/hoverStyles";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 // ── Dati sponsor ──────────────────────────────────────────────────────────────
 // src: percorso immagine in /public (es. "/sponsors/denis.png")
@@ -247,7 +248,7 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
         sx={(theme) => ({
           width: 110,
           height: 44,
-          borderRadius: "6px",
+          borderRadius: RADIUS.sm,
           overflow: "hidden",
           // Placca chiara sotto i loghi nati per la carta bianca: senza, sul
           // fondo scuro restano rettangoli neri su nero.

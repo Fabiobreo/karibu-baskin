@@ -28,6 +28,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { readError } from "@/lib/fetchJson";
 import QueryErrorState from "@/components/common/QueryErrorState";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface Registration {
   id: string;
@@ -130,7 +131,7 @@ function AthletePill({
         alignItems: "center",
         border: "1.5px solid",
         borderColor: highlighted ? roleColor : "divider",
-        borderRadius: "20px",
+        borderRadius: RADIUS.pill,
         overflow: "hidden",
         bgcolor: highlighted ? `${roleColor}1A` : "background.paper",
         opacity: isDeleting || isPendingDelete ? 0.45 : 1,
@@ -679,7 +680,7 @@ export default function RosterByRole({
                         alignItems: "center",
                         border: "1.5px solid",
                         borderColor: isOwn ? "text.secondary" : "divider",
-                        borderRadius: "20px",
+                        borderRadius: RADIUS.pill,
                         overflow: "hidden",
                         bgcolor: isOwn ? "grey.800" : "background.paper",
                         opacity: isDeleting || isPending ? 0.45 : 1,

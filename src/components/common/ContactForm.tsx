@@ -108,6 +108,7 @@ export default function ContactForm() {
         inputProps={{ maxLength: 2000 }}
       />
       <Button
+        size="large"
         type="submit"
         variant="contained"
         disabled={pending}

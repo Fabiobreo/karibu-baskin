@@ -11,6 +11,7 @@ import { capitalize, useTrainingMeta } from "@/components/training/UpcomingTrain
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { groupByMonth, matchupTeams } from "@/lib/trainingList";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export interface PastTraining extends SessionWithCount {
   /** Presenze segnate dallo staff; 0 = non segnate (si mostrano gli iscritti). */
@@ -131,7 +132,7 @@ export default function PastTrainingsSection({
                 >
                   {capitalize(format(month, "LLLL yyyy", { locale: dateLocale }))}
                 </Typography>
-                <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+                <Paper variant="outlined" sx={{ borderRadius: RADIUS.lg, overflow: "hidden" }}>
                   {items.map((s, i) => (
                     <Box key={s.id} sx={{ borderTop: i > 0 ? 1 : 0, borderColor: "divider" }}>
                       <TrainingListRow

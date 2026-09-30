@@ -172,22 +172,20 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
         </Typography>
 
         {/* CTA */}
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+            color: "common.white",
+          }}
+        >
           <Button
             {...(visitor ? { href: TRY_IT_HREF } : { onClick: scrollToAllenamenti })}
             variant="contained"
             size="large"
-            sx={{
-              fontWeight: 700,
-              px: 3.5,
-              py: 1.4,
-              fontSize: TYPE_SCALE.sm,
-              borderRadius: 2,
-              boxShadow: (theme) => `0 4px 22px ${alpha(theme.palette.primary.main, 0.55)}`,
-              "&:hover": {
-                boxShadow: (theme) => `0 6px 28px ${alpha(theme.palette.primary.main, 0.7)}`,
-              },
-            }}
+            sx={{ fontWeight: 700, px: 3.5 }}
           >
             {guest
               ? tGuest("heroCtaTrainings")
@@ -197,23 +195,11 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
           </Button>
           <Button
             href={guest ? "/profilo/ruolo" : "/il-baskin"}
+            // Bottone fantasma del tema (UX-30): outlined + color inherit.
             variant="outlined"
+            color="inherit"
             size="large"
-            sx={{
-              fontWeight: 600,
-              px: 3,
-              py: 1.4,
-              fontSize: TYPE_SCALE.sm,
-              borderRadius: 2,
-              color: "common.white",
-              borderColor: "rgba(255,255,255,0.35)",
-              backdropFilter: "blur(4px)",
-              bgcolor: "rgba(255,255,255,0.06)",
-              "&:hover": {
-                borderColor: "rgba(255,255,255,0.65)",
-                bgcolor: "rgba(255,255,255,0.12)",
-              },
-            }}
+            sx={{ fontWeight: 700, px: 3 }}
           >
             {guest ? tGuest("heroCtaRole") : t("whatIsBaskin")}
           </Button>

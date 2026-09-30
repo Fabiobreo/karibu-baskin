@@ -40,6 +40,7 @@ export type {
   OptimisticReg,
 } from "@/hooks/useRegistrationForm";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface Props {
   sessionId: string;
@@ -312,6 +313,7 @@ export default function RegistrationForm({
             />
           )}
           <Button
+            size="large"
             variant="contained"
             fullWidth
             onClick={handleSubmit}
@@ -501,7 +503,7 @@ export default function RegistrationForm({
                             fontSize: TYPE_SCALE.xs,
                             py: 0.5,
                             px: 1.5,
-                            borderRadius: "6px !important",
+                            borderRadius: `${RADIUS.sm} !important`,
                             border: "1px solid !important",
                             borderColor: "divider !important",
                             "&.Mui-selected": {
@@ -617,6 +619,7 @@ export default function RegistrationForm({
                       />
                     )}
                     <Button
+                      size="large"
                       variant="contained"
                       fullWidth
                       onClick={handleSubmit}

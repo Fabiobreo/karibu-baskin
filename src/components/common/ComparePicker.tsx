@@ -138,7 +138,7 @@ export default function ComparePicker({ initialA, initialB }: ComparePickerProps
             `/giocatori/confronta?a=${encodeURIComponent(a!.slug)}&b=${encodeURIComponent(b!.slug)}`
           )
         }
-        sx={{ fontWeight: 700, borderRadius: 2 }}
+        sx={{ fontWeight: 700 }}
       >
         {t("compare")}
       </Button>

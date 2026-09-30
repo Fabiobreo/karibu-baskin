@@ -1,4 +1,5 @@
 import { Box, Container, Paper, Skeleton } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 /**
  * Segnaposto della card "I tuoi primi passi" in home: stessa sovrapposizione
@@ -12,7 +13,7 @@ export default function GuestOnboardingSkeleton() {
         sx={{
           position: "relative",
           zIndex: 2,
-          borderRadius: 3,
+          borderRadius: RADIUS.lg,
           p: { xs: 2.5, md: 3.5 },
           mt: { xs: -7, md: -10 },
         }}

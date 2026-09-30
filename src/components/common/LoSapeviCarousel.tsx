@@ -9,6 +9,7 @@ import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
 import { heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 const INTERVAL_MS = 7000;
 
@@ -70,7 +71,7 @@ export default function LoSapeviCarousel() {
       sx={{
         background: heroGradient.footer,
         color: "common.white",
-        borderRadius: 3,
+        borderRadius: RADIUS.lg,
         position: "relative",
         overflow: "hidden",
       }}

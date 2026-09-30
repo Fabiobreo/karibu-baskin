@@ -1,6 +1,7 @@
 import { Box, Container, Grid2 as Grid, Skeleton, Stack } from "@mui/material";
 import type { ContainerProps } from "@mui/material";
 import PageHero from "@/components/common/PageHero";
+import { RADIUS } from "@/lib/radius";
 
 interface PageLoadingSkeletonProps {
   /** Forma del contenuto sotto la hero. */
@@ -45,7 +46,7 @@ export default function PageLoadingSkeleton({
             variant="rounded"
             width={90}
             height={24}
-            sx={{ ...onDark, mb: 2, borderRadius: 4 }}
+            sx={{ ...onDark, mb: 2, borderRadius: RADIUS.sm }}
           />
           <Skeleton variant="text" width="min(420px, 80%)" height={56} sx={onDark} />
           <Skeleton variant="text" width="min(360px, 70%)" height={28} sx={onDark} />
@@ -74,14 +75,14 @@ export default function PageLoadingSkeleton({
                   p: 2,
                   border: "1px solid",
                   borderColor: "divider",
-                  borderRadius: 2,
+                  borderRadius: RADIUS.lg,
                 }}
               >
                 <Skeleton
                   variant="rounded"
                   width={56}
                   height={56}
-                  sx={{ flexShrink: 0, borderRadius: 1 }}
+                  sx={{ flexShrink: 0, borderRadius: RADIUS.md }}
                 />
                 <Box sx={{ flex: 1 }}>
                   <Skeleton variant="text" width="60%" height={24} />
@@ -93,7 +94,7 @@ export default function PageLoadingSkeleton({
         )}
 
         {variant === "table" && (
-          <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, p: 2 }}>
+          <Box sx={{ border: "1px solid", borderColor: "divider", borderRadius: RADIUS.lg, p: 2 }}>
             <Skeleton variant="text" width="100%" height={32} sx={{ mb: 1 }} />
             {Array.from({ length: items }).map((_, i) => (
               <Skeleton key={i} variant="text" width="100%" height={40} />

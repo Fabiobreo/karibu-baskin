@@ -96,7 +96,6 @@ export default function PlayerShareButtons({
           textTransform: "none",
           px: 1.75,
           py: 0.5,
-          borderRadius: 999,
           "&:hover": { bgcolor: fill.bg, opacity: 0.9 },
         }}
       >
@@ -107,24 +106,13 @@ export default function PlayerShareButtons({
           icone scure sul fondo scuro dell'hero quasi non si vedevano. */}
       <Button
         size="small"
+        // Bottone fantasma del tema (UX-30), in bianco sull'hero scuro.
         variant="outlined"
+        color="inherit"
         onClick={handleCopy}
         startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
         aria-label={t("copyProfileLink")}
-        sx={{
-          color: "common.white",
-          borderColor: alpha(brandColor.white, 0.5),
-          fontWeight: 700,
-          fontSize: TYPE_SCALE.xs,
-          textTransform: "none",
-          px: 1.5,
-          py: 0.5,
-          borderRadius: 999,
-          "&:hover": {
-            borderColor: brandColor.white,
-            bgcolor: alpha(brandColor.white, 0.08),
-          },
-        }}
+        sx={{ color: "common.white", fontWeight: 700, fontSize: TYPE_SCALE.xs, px: 1.5 }}
       >
         {t("copyLink")}
       </Button>

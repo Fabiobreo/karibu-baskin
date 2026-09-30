@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface ResultItem {
   name: string;
@@ -95,7 +96,7 @@ export default function GlobalSearch() {
         onClose={() => setOpen(false)}
         fullWidth
         maxWidth="sm"
-        slotProps={{ paper: { sx: { position: "fixed", top: 24, m: 0, borderRadius: 3 } } }}
+        slotProps={{ paper: { sx: { position: "fixed", top: 24, m: 0, borderRadius: RADIUS.lg } } }}
       >
         <Box sx={{ p: 2 }}>
           <TextField
@@ -141,7 +142,7 @@ export default function GlobalSearch() {
                         <ListItemButton
                           key={`${g.key}-${i}`}
                           onClick={() => go(item.href)}
-                          sx={{ borderRadius: 2, gap: 1.25 }}
+                          sx={{ borderRadius: RADIUS.md, gap: 1.25 }}
                         >
                           {g.key === "players" || g.key === "opponents" ? (
                             <Avatar

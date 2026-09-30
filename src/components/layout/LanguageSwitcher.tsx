@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useLocaleSwitch } from "@/context/LocaleContext";
 import { LOCALES } from "@/i18n/locales";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
+import { RADIUS } from "@/lib/radius";
 
 interface LanguageSwitcherProps {
   /** Stili pensati per superfici scure (header/drawer): testo bianco trasparente */
@@ -36,7 +37,7 @@ export default function LanguageSwitcher({ onDark = false }: LanguageSwitcherPro
         ...TOUCH_TARGET_MIN,
         px: 1.25,
         gap: 0.75,
-        borderRadius: 2,
+        borderRadius: RADIUS.md,
         border: "1px solid",
         borderColor: (theme) =>
           onDark ? alpha(theme.palette.common.white, 0.18) : theme.palette.divider,

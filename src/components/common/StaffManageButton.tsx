@@ -23,24 +23,17 @@ export default function StaffManageButton({ href, label }: StaffManageButtonProp
     <Button
       href={href}
       size="small"
+      // Bottone fantasma del tema (UX-30): outlined + color inherit, in bianco
+      // perche' sta sempre sopra un hero scuro.
       variant="outlined"
+      color="inherit"
       startIcon={<SettingsIcon sx={{ fontSize: "16px !important" }} />}
       sx={{
         color: "common.white",
         typography: "caption",
         fontWeight: 700,
-        lineHeight: 1,
         px: 1.5,
-        py: 0.75,
-        borderRadius: 999,
-        borderColor: alpha(brandColor.white, 0.45),
-        bgcolor: alpha(brandColor.black, 0.2),
-        backdropFilter: "blur(4px)",
         "& .MuiButton-startIcon": { mr: 0.5 },
-        "&:hover": {
-          borderColor: brandColor.white,
-          bgcolor: alpha(brandColor.white, 0.1),
-        },
       }}
     >
       {label}
