@@ -51,6 +51,7 @@ export default async function NewsPage() {
         {isStaff && (
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <Button
+              size="large"
               href="/admin/news"
               variant="contained"
               color="primary"

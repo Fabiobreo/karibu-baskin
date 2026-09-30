@@ -21,6 +21,7 @@ import { getRolesInfo, getBaskinRules } from "@/lib/content/baskinInfo";
 import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata = buildMetadata({
   title: "Il Baskin",
@@ -219,7 +220,7 @@ export default async function IlBaskinPage() {
                             px: 1.5,
                             py: 1,
                             backgroundColor: "action.hover",
-                            borderRadius: 1,
+                            borderRadius: RADIUS.md,
                             border: "1px solid",
                             borderColor: "divider",
                           }}

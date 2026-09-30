@@ -285,13 +285,9 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             href="/classifiche"
             size="small"
             variant="outlined"
+            color="inherit"
             startIcon={<EmojiEventsIcon />}
-            sx={{
-              color: "rgba(255,255,255,0.7)",
-              borderColor: "rgba(255,255,255,0.3)",
-              fontSize: TYPE_SCALE.xs,
-              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-            }}
+            sx={{ color: "common.white" }}
           >
             {t("linkStandings")}
           </Button>
@@ -299,12 +295,8 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             href="/risultati"
             size="small"
             variant="outlined"
-            sx={{
-              color: "rgba(255,255,255,0.7)",
-              borderColor: "rgba(255,255,255,0.3)",
-              fontSize: TYPE_SCALE.xs,
-              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-            }}
+            color="inherit"
+            sx={{ color: "common.white" }}
           >
             {t("linkResults")}
           </Button>

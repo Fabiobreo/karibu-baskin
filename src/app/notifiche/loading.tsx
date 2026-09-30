@@ -1,4 +1,5 @@
 import { Container, Skeleton, Stack, Box } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 export default function NotificheLoading() {
   return (
@@ -14,7 +15,7 @@ export default function NotificheLoading() {
               p: 2,
               border: "1px solid",
               borderColor: "divider",
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
             }}
           >
             <Skeleton variant="circular" width={40} height={40} sx={{ flexShrink: 0 }} />

@@ -1391,7 +1391,7 @@
     "matchNotRecorded": "Non ancora registrato",
     "noAthletesEmpty": "Nessun atleta",
     "coachesLabel": "Allenatori",
-    "signUp": "Iscriviti →",
+    "signUp": "Iscriviti",
     "registeredCount": "{count, plural, one {# iscritto} other {# iscritti}}",
     "viewTeamsBtn": "Vedi squadre",
     "teamChip": "Squadra",

@@ -22,6 +22,7 @@ import AchievementsGrid, { type AchievementItem } from "@/components/rating/Achi
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { guardianOf } from "@/lib/guardians";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata: Metadata = buildMetadata({
   title: "I miei traguardi",
@@ -107,7 +108,7 @@ function AchievementSectionSkeleton() {
     <>
       <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1.5, mb: 2 }}>
         <Skeleton variant="text" width={200} height={36} />
-        <Skeleton variant="rounded" width={110} height={32} sx={{ borderRadius: 4 }} />
+        <Skeleton variant="rounded" width={110} height={32} sx={{ borderRadius: RADIUS.md }} />
       </Box>
       <Grid container spacing={2}>
         {Array.from({ length: 6 }).map((_, i) => (

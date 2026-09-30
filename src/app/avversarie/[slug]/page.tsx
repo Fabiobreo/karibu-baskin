@@ -32,6 +32,7 @@ import { auth } from "@/lib/authjs";
 import OpposingTeamEditButton from "@/components/matches/OpposingTeamEditButton";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { RADIUS } from "@/lib/radius";
 
 export const revalidate = 60;
 
@@ -202,7 +203,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               width: "100%",
               maxHeight: 280,
               objectFit: "cover",
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
               border: "1px solid",
               borderColor: "divider",
               display: "block",
@@ -478,7 +479,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             gap: 1.5,
                             py: 0.75,
                             px: 1,
-                            borderRadius: 1,
+                            borderRadius: RADIUS.md,
                             "&:hover": { bgcolor: "action.hover" },
                           }}
                         >

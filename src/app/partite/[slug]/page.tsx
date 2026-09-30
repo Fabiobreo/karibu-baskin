@@ -46,6 +46,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { RADIUS } from "@/lib/radius";
 
 export const revalidate = 3600;
 
@@ -652,19 +653,11 @@ export default async function MatchDetailPage({ params }: Props) {
                     sx={{
                       fontWeight: 800,
                       // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
+                      // Niente alone pulsante (UX-30): l'urgenza la dicono etichetta e colore.
                       bgcolor: "primary.fill",
                       color: "common.white",
                       letterSpacing: "0.05em",
                       height: 26,
-                      animation: "karibuMatchPulse 1.6s ease-in-out infinite",
-                      "@keyframes karibuMatchPulse": {
-                        "0%, 100%": {
-                          boxShadow: `0 0 0 0 ${alpha(brandColor.orange, 0.7)}`,
-                        },
-                        "50%": {
-                          boxShadow: `0 0 0 8px ${alpha(brandColor.orange, 0)}`,
-                        },
-                      },
                     }}
                   />
                 )}
@@ -727,7 +720,7 @@ export default async function MatchDetailPage({ params }: Props) {
           <Box
             sx={{
               p: 2.5,
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
               // Era una card color crema con bordo oro, fuori palette e
               // sbagliata in dark: ora e' una superficie del tema col bordo
               // della medaglia.
@@ -773,7 +766,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       gap: 1,
                       px: 1.5,
                       py: 0.75,
-                      borderRadius: 1.5,
+                      borderRadius: RADIUS.md,
                       bgcolor: "background.paper",
                       border: "1px solid",
                       borderColor: "divider",
@@ -794,7 +787,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             mt: 0.25,
                             px: 0.75,
                             py: 0.125,
-                            borderRadius: 0.5,
+                            borderRadius: RADIUS.sm,
                             bgcolor: roleColor(role),
                             color: ROLE_TEXT_COLOR,
                             fontSize: TYPE_SCALE.xs,

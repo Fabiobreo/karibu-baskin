@@ -3,6 +3,7 @@ import { alpha, createTheme, type Theme } from "@mui/material/styles";
 import { heroGradient } from "@/lib/heroStyles";
 import LinkBehavior from "@/components/common/LinkBehavior";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS, SHAPE_RADIUS } from "@/lib/radius";
 
 // Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
 export { heroGradient };
@@ -434,7 +435,9 @@ const sharedTypography = {
   button: { fontWeight: 600, letterSpacing: 0 },
 } as const;
 
-const sharedShape = { borderRadius: 10 } as const;
+// Raggio base (UX-30): e' `RADIUS.md`. Lo usano i componenti MUI senza un
+// raggio proprio (Alert, menu, tooltip, ToggleButtonGroup...).
+const sharedShape = { borderRadius: SHAPE_RADIUS } as const;
 
 // I `components` non sono piu' condivisi fra i due temi: in dark le ombre
 // nere sono invisibili sul fondo #121212, quindi l'elevazione delle card passa
@@ -544,26 +547,31 @@ function buildComponents(mode: "light" | "dark") {
       defaultProps: { alt: "" },
     },
     MuiButton: {
+      // Bottoni piatti (UX-30): niente ombre, tanto meno colorate. L'alone
+      // arancione era l'elemento che piu' faceva sembrare il sito un template.
+      defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: RADIUS.md,
           textTransform: "none",
           fontWeight: 600,
-          paddingTop: 8,
-          paddingBottom: 8,
+          // Due taglie: 40 px (default) e 48 px (`large`: CTA di pagina e invio
+          // dei moduli pubblici). `small` resta per le azioni dense (tabelle,
+          // admin), mai per l'azione principale.
+          minHeight: 40,
+          paddingTop: 6,
+          paddingBottom: 6,
         },
+        sizeSmall: { minHeight: 32, paddingTop: 4, paddingBottom: 4 },
+        sizeLarge: { minHeight: 48, paddingTop: 8, paddingBottom: 8 },
         containedPrimary: {
           // Riempimento arancio della maglia, scurito (UX-07): bianco su
           // #C84B00 fa 4,71:1, mentre su #E65100 si fermava a 3,79:1.
           backgroundColor: ORANGE_FILL,
-          boxShadow: `0 2px 8px ${alpha(ORANGE_FILL, 0.3)}`,
           // `&&` per battere le `variants` di MuiButton, che assegnano
           // primary.dark in hover.
           "@media (hover: hover)": {
-            "&&:hover": {
-              backgroundColor: ORANGE_FILL_HOVER,
-              boxShadow: `0 4px 14px ${alpha(ORANGE_FILL, 0.45)}`,
-            },
+            "&&:hover": { backgroundColor: ORANGE_FILL_HOVER },
           },
         },
         // I bottoni `text` e `outlined` primari sono a tutti gli effetti testo su
@@ -572,16 +580,27 @@ function buildComponents(mode: "light" | "dark") {
         // soglia e' 3:1.
         textPrimary: { color: orangeText },
         outlinedPrimary: { color: orangeText },
-        containedSecondary: {
-          boxShadow: "0 2px 8px rgba(0,0,0,0.20)",
-          "&:hover": { boxShadow: "0 4px 14px rgba(0,0,0,0.30)" },
+        // Bottone "fantasma" per gli hero scuri (UX-30): `variant="outlined"
+        // color="inherit"`. Bordo e fondo seguono il colore del testo, cosi'
+        // non si riscrive negli `sx` di ogni hero.
+        outlined: {
+          "&.MuiButton-colorInherit": {
+            borderColor: "color-mix(in srgb, currentColor 45%, transparent)",
+            backgroundColor: "color-mix(in srgb, currentColor 6%, transparent)",
+            "@media (hover: hover)": {
+              "&:hover": {
+                borderColor: "color-mix(in srgb, currentColor 75%, transparent)",
+                backgroundColor: "color-mix(in srgb, currentColor 12%, transparent)",
+              },
+            },
+          },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 14,
+          borderRadius: RADIUS.lg,
           boxShadow: cardShadow,
           // In dark l'ombra non stacca la card dallo sfondo: serve un bordo.
           ...(isDark ? { border: "1px solid rgba(255,255,255,0.09)" } : {}),
@@ -608,13 +627,26 @@ function buildComponents(mode: "light" | "dark") {
     },
     MuiPaper: {
       styleOverrides: {
-        root: { borderRadius: 14 },
+        root: { borderRadius: RADIUS.lg },
         elevation2: { boxShadow: cardShadow },
+      },
+    },
+    MuiAccordion: {
+      styleOverrides: {
+        // Un gruppo di Accordion e' una card (UX-30): primo e ultimo prendono il
+        // raggio delle card, non quello base del tema.
+        root: {
+          "&:first-of-type": { borderTopLeftRadius: RADIUS.lg, borderTopRightRadius: RADIUS.lg },
+          "&:last-of-type": {
+            borderBottomLeftRadius: RADIUS.lg,
+            borderBottomRightRadius: RADIUS.lg,
+          },
+        },
       },
     },
     MuiChip: {
       styleOverrides: {
-        root: { fontWeight: 600, borderRadius: 6 },
+        root: { fontWeight: 600, borderRadius: RADIUS.sm },
         // Chip `color="primary"` pieno: etichetta bianca su #E65100 fa 3,79:1,
         // sotto AA. Stesso riempimento del bottone primario, 4,71:1. Da usare
         // solo su chip che si toccano (filtri, selezioni): l'arancio pieno
@@ -661,7 +693,7 @@ function buildComponents(mode: "light" | "dark") {
     MuiTextField: {
       styleOverrides: {
         root: {
-          "& .MuiOutlinedInput-root": { borderRadius: 8 },
+          "& .MuiOutlinedInput-root": { borderRadius: RADIUS.md },
         },
       },
     },

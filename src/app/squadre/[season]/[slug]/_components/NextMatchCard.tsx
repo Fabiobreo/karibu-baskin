@@ -14,6 +14,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { brandColor } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { RADIUS } from "@/lib/radius";
 
 export default async function NextMatchCard({
   match,
@@ -64,7 +65,7 @@ export default async function NextMatchCard({
       <Paper
         elevation={0}
         sx={{
-          borderRadius: 3,
+          borderRadius: RADIUS.lg,
           overflow: "hidden",
           border: "1px solid",
           borderColor: "divider",
@@ -73,7 +74,7 @@ export default async function NextMatchCard({
           transition: "all 0.2s",
           ...onHover({
             transform: "translateY(-3px)",
-            boxShadow: `0 10px 32px ${alpha(teamColor, 0.2)}`,
+            boxShadow: 6,
           }),
         }}
       >
@@ -95,7 +96,7 @@ export default async function NextMatchCard({
             sx={{
               flexShrink: 0,
               bgcolor: "common.white",
-              borderRadius: 1.5,
+              borderRadius: RADIUS.md,
               overflow: "hidden",
               minWidth: { xs: 64, md: 74 },
               textAlign: "center",
@@ -252,7 +253,7 @@ export default async function NextMatchCard({
               bgcolor: isHomeMatch ? "match.win" : "status.away",
               px: 1.5,
               py: 1,
-              borderRadius: 1.5,
+              borderRadius: RADIUS.md,
               minWidth: 64,
             }}
           >
@@ -310,7 +311,7 @@ export default async function NextMatchCard({
                 justifyContent: "center",
                 fontWeight: 900,
                 fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                boxShadow: `0 3px 10px ${alpha(teamColor, 0.33)}`,
+                boxShadow: 2,
               }}
             >
               {usName[0]?.toUpperCase()}
@@ -485,7 +486,7 @@ export default async function NextMatchCard({
                     color: "match.onFill",
                     px: 1,
                     py: 0.25,
-                    borderRadius: 1,
+                    borderRadius: RADIUS.sm,
                     fontWeight: 800,
                     fontSize: TYPE_SCALE.xs,
                   }}

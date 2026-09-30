@@ -46,6 +46,7 @@ import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
 import { brandColor, heroBottomBorder, heroImage, heroText, heroTint } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 type Props = {
   params: Promise<{ season: string; slug: string }>;
@@ -524,7 +525,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         bgcolor: "match.win",
                         px: 1.25,
                         py: 0.4,
-                        borderRadius: 999,
+                        borderRadius: RADIUS.pill,
                       }}
                     >
                       <Typography
@@ -553,7 +554,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                           bgcolor: "match.draw",
                           px: 1.25,
                           py: 0.4,
-                          borderRadius: 999,
+                          borderRadius: RADIUS.pill,
                         }}
                       >
                         <Typography
@@ -582,7 +583,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         bgcolor: "match.loss",
                         px: 1.25,
                         py: 0.4,
-                        borderRadius: 999,
+                        borderRadius: RADIUS.pill,
                       }}
                     >
                       <Typography

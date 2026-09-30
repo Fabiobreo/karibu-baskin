@@ -16,6 +16,7 @@ import { computeBadges } from "@/lib/rating/badges";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata: Metadata = buildMetadata({
   title: "Confronto giocatori",
@@ -181,7 +182,11 @@ export default async function ConfrontaPage({ searchParams }: Props) {
         />
 
         {pa && pb ? (
-          <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
+          <Paper
+            elevation={0}
+            variant="outlined"
+            sx={{ p: { xs: 2, md: 3 }, borderRadius: RADIUS.lg }}
+          >
             <Box
               sx={{
                 display: "grid",

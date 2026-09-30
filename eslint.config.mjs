@@ -58,6 +58,15 @@ export default [
           message:
             "fontSize letterale: usa variant, sx={{ typography: '…' }} o TYPE_SCALE da @/lib/typeScale",
         },
+        // UX-30: i raggi vengono dalla scala RADIUS. Negli `sx` un numero viene
+        // moltiplicato per shape.borderRadius (2 faceva 20 px, 3 ne faceva 30):
+        // le card del sito avevano cinque raggi diversi. Liberi solo 0 e "50%".
+        {
+          selector:
+            "JSXAttribute[name.name=/^(sx|slotProps|PaperProps|MenuProps|InputProps)$/] Property[key.name=/^border(Top|Bottom)?(Left|Right)?Radius$/] Literal:not([value=0]):not([value='50%'])",
+          message:
+            'borderRadius letterale: usa RADIUS da @/lib/radius (sm chip, md bottoni ed elementi interni, lg card, pill), oppure 0 / "50%".',
+        },
       ],
     },
   },

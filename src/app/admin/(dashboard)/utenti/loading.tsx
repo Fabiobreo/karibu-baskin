@@ -1,11 +1,17 @@
 import { Container, Skeleton, Stack, Box } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 export default function Loading() {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Skeleton variant="text" width={200} height={44} sx={{ mb: 3 }} />
       <Box
-        sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, overflow: "hidden" }}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: RADIUS.lg,
+          overflow: "hidden",
+        }}
       >
         <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
           <Skeleton variant="rectangular" height={40} width="100%" />

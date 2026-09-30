@@ -1,4 +1,5 @@
 import { Container, Skeleton, Stack, Box, Grid2 as Grid } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 export default function SquadreLoading() {
   return (
@@ -11,7 +12,7 @@ export default function SquadreLoading() {
               sx={{
                 border: "1px solid",
                 borderColor: "divider",
-                borderRadius: 2,
+                borderRadius: RADIUS.lg,
                 overflow: "hidden",
               }}
             >
@@ -20,8 +21,18 @@ export default function SquadreLoading() {
                 <Skeleton variant="text" width="70%" height={28} />
                 <Skeleton variant="text" width="50%" height={20} sx={{ mb: 1.5 }} />
                 <Stack direction="row" spacing={1}>
-                  <Skeleton variant="rectangular" width={60} height={22} sx={{ borderRadius: 3 }} />
-                  <Skeleton variant="rectangular" width={80} height={22} sx={{ borderRadius: 3 }} />
+                  <Skeleton
+                    variant="rectangular"
+                    width={60}
+                    height={22}
+                    sx={{ borderRadius: RADIUS.sm }}
+                  />
+                  <Skeleton
+                    variant="rectangular"
+                    width={80}
+                    height={22}
+                    sx={{ borderRadius: RADIUS.sm }}
+                  />
                 </Stack>
               </Box>
             </Box>

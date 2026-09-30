@@ -6,6 +6,7 @@ import PageHero from "@/components/common/PageHero";
 import FaqAccordion from "@/components/common/FaqAccordion";
 import { getFaqs } from "@/lib/content/faqs";
 import { buildMetadata } from "@/lib/seo";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata = buildMetadata({
   title: "FAQ",
@@ -47,7 +48,7 @@ export default async function FaqPage() {
             p: { xs: 2.5, md: 3 },
             border: "1px solid",
             borderColor: "divider",
-            borderRadius: 2,
+            borderRadius: RADIUS.lg,
             bgcolor: "action.hover",
             display: "flex",
             gap: 2,
@@ -65,9 +66,10 @@ export default async function FaqPage() {
             </Typography>
           </Box>
           <Button
+            size="large"
             href="/contatti#suggerimenti"
             variant="contained"
-            sx={{ fontWeight: 700, borderRadius: 2, flexShrink: 0 }}
+            sx={{ fontWeight: 700, flexShrink: 0 }}
           >
             {t("faq.suggestionCtaBtn")}
           </Button>

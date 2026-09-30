@@ -49,6 +49,7 @@ import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { RADIUS } from "@/lib/radius";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -601,7 +602,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   fontWeight: 800,
                   bgcolor: playerColor,
                   border: `4px solid ${playerColor}`,
-                  boxShadow: `0 8px 28px ${playerColor}66, 0 0 0 6px rgba(0,0,0,0.25)`,
+                  boxShadow: "0 8px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(0,0,0,0.25)",
                 }}
               >
                 {(player.name ?? "?")[0].toUpperCase()}
@@ -761,7 +762,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           gap: 0.75,
                           bgcolor: alpha(brandColor.black, 0.35),
                           border: `1.5px solid ${medalColor}`,
-                          borderRadius: 999,
+                          borderRadius: RADIUS.pill,
                           pl: 0.5,
                           pr: 1.25,
                           py: 0.3,
@@ -1175,7 +1176,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               <Paper
                 elevation={0}
                 variant="outlined"
-                sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: 3 }}
+                sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: RADIUS.lg }}
               >
                 <Typography
                   variant="overline"

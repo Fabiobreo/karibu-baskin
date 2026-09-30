@@ -49,6 +49,7 @@ export default async function GalleryPage() {
             message={t("gallery.emptyDesc")}
             action={
               <Button
+                size="large"
                 component="a"
                 href={INSTAGRAM_URL}
                 target="_blank"
@@ -67,6 +68,7 @@ export default async function GalleryPage() {
                 <GalleryGrid posts={posts} />
                 <Box sx={{ textAlign: "center", mt: 4 }}>
                   <Button
+                    size="large"
                     component="a"
                     href={INSTAGRAM_URL}
                     target="_blank"

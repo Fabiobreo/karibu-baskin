@@ -23,6 +23,7 @@ import Link from "next/link";
 import { onHover } from "@/lib/hoverStyles";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export const revalidate = 30;
 
@@ -328,7 +329,7 @@ function NavLink({
           px: 1.5,
           py: 1.25,
           minHeight: 44,
-          borderRadius: 2,
+          borderRadius: RADIUS.md,
           border: "1px solid",
           borderColor: "divider",
           bgcolor: "background.paper",

@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { Snackbar, Alert, AlertColor, Box, LinearProgress } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 interface ToastOptions {
   message: string;
@@ -78,7 +79,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           variant="filled"
           sx={{
             width: "100%",
-            borderRadius: 2,
+            borderRadius: RADIUS.md,
             position: "relative",
             overflow: "hidden",
             pb: toast.progressMs ? 1.25 : undefined,

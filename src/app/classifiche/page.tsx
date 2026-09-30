@@ -144,13 +144,9 @@ export default async function ClassifichePage() {
             href="/marcatori"
             size="small"
             variant="outlined"
+            color="inherit"
             startIcon={<LeaderboardIcon />}
-            sx={{
-              color: "rgba(255,255,255,0.7)",
-              borderColor: "rgba(255,255,255,0.3)",
-              fontSize: TYPE_SCALE.xs,
-              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-            }}
+            sx={{ color: "common.white" }}
           >
             {t("linkScorers")}
           </Button>
@@ -158,12 +154,8 @@ export default async function ClassifichePage() {
             href="/risultati"
             size="small"
             variant="outlined"
-            sx={{
-              color: "rgba(255,255,255,0.7)",
-              borderColor: "rgba(255,255,255,0.3)",
-              fontSize: TYPE_SCALE.xs,
-              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-            }}
+            color="inherit"
+            sx={{ color: "common.white" }}
           >
             {t("linkResults")}
           </Button>
@@ -171,12 +163,8 @@ export default async function ClassifichePage() {
             href="/calendario"
             size="small"
             variant="outlined"
-            sx={{
-              color: "rgba(255,255,255,0.7)",
-              borderColor: "rgba(255,255,255,0.3)",
-              fontSize: TYPE_SCALE.xs,
-              "&:hover": { borderColor: "rgba(255,255,255,0.6)" },
-            }}
+            color="inherit"
+            sx={{ color: "common.white" }}
           >
             {t("linkCalendar")}
           </Button>

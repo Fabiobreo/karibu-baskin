@@ -29,6 +29,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata: Metadata = buildMetadata({
   title: "Squadre",
@@ -153,7 +154,7 @@ export default async function SquadrePage() {
             p: { xs: 2.5, md: 3 },
             border: "1px solid",
             borderColor: "divider",
-            borderRadius: 2,
+            borderRadius: RADIUS.lg,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -172,7 +173,7 @@ export default async function SquadrePage() {
               </Typography>
             </Box>
           </Box>
-          <Button href="/squadre/sfida" variant="contained" size="small" sx={{ fontWeight: 700 }}>
+          <Button href="/squadre/sfida" variant="contained" sx={{ fontWeight: 700 }}>
             {t("simChallengeCta")}
           </Button>
         </Box>
@@ -185,7 +186,7 @@ export default async function SquadrePage() {
               p: { xs: 2.5, md: 3 },
               border: "1px solid",
               borderColor: "divider",
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -216,7 +217,7 @@ export default async function SquadrePage() {
             sx={{
               mt: 8,
               background: heroGradient.footer,
-              borderRadius: 3,
+              borderRadius: RADIUS.lg,
               p: { xs: 3, md: 5 },
               textAlign: "center",
               color: "common.white",

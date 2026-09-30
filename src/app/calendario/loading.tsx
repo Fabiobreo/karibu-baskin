@@ -1,4 +1,5 @@
 import { Container, Skeleton, Box } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 export default function CalendarioLoading() {
   return (
@@ -6,7 +7,12 @@ export default function CalendarioLoading() {
       <Skeleton variant="text" width={160} height={40} sx={{ mb: 3 }} />
       {/* Calendar grid placeholder */}
       <Box
-        sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2, overflow: "hidden" }}
+        sx={{
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: RADIUS.lg,
+          overflow: "hidden",
+        }}
       >
         {/* Month header */}
         <Box

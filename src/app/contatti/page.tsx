@@ -31,6 +31,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { onHover } from "@/lib/hoverStyles";
 import { heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
@@ -132,41 +133,33 @@ export default function ContattiPage() {
         py={{ xs: 7, md: 10 }}
         maxWidth="sm"
       >
-        <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap", mt: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            justifyContent: "center",
+            flexWrap: "wrap",
+            mt: 4,
+            color: "common.white",
+          }}
+        >
           <Button
             variant="contained"
             size="large"
             startIcon={<MessageIcon />}
             onClick={() => scrollToSection("contatti")}
-            sx={{
-              fontWeight: 700,
-              px: 3.5,
-              py: 1.4,
-              borderRadius: 2,
-              boxShadow: (theme) => `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-            }}
+            sx={{ fontWeight: 700, px: 3.5 }}
           >
             {t("contatti.heroHaveQuestion")}
           </Button>
+          {/* Bottone fantasma del tema (UX-30): outlined + color inherit. */}
           <Button
             variant="outlined"
+            color="inherit"
             size="large"
             startIcon={<HandshakeIcon />}
             onClick={() => scrollToSection("partner")}
-            sx={{
-              fontWeight: 700,
-              px: 3.5,
-              py: 1.4,
-              borderRadius: 2,
-              color: "common.white",
-              borderColor: "rgba(255,255,255,0.35)",
-              backdropFilter: "blur(4px)",
-              bgcolor: "rgba(255,255,255,0.06)",
-              "&:hover": {
-                borderColor: "rgba(255,255,255,0.65)",
-                bgcolor: "rgba(255,255,255,0.12)",
-              },
-            }}
+            sx={{ fontWeight: 700, px: 3.5 }}
           >
             {t("contatti.heroSponsor")}
           </Button>
@@ -265,7 +258,7 @@ export default function ContattiPage() {
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.15s",
                     ...onHover({
                       borderColor: "primary.main",
-                      boxShadow: (theme) => `0 2px 12px ${alpha(theme.palette.primary.main, 0.12)}`,
+                      boxShadow: 3,
                       transform: "translateY(-2px)",
                     }),
                   }}
@@ -301,7 +294,7 @@ export default function ContattiPage() {
                 p: { xs: 2.5, md: 3 },
                 border: "1px solid",
                 borderColor: "divider",
-                borderRadius: 2,
+                borderRadius: RADIUS.lg,
                 bgcolor: "action.hover",
               }}
             >
@@ -320,7 +313,7 @@ export default function ContattiPage() {
                 variant={suggestionOpen ? "outlined" : "contained"}
                 startIcon={suggestionOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 onClick={() => setSuggestionOpen((o) => !o)}
-                sx={{ mt: 2, fontWeight: 700, borderRadius: 2 }}
+                sx={{ mt: 2, fontWeight: 700 }}
               >
                 {suggestionOpen ? t("contatti.closeSuggestion") : t("contatti.openSuggestion")}
               </Button>
@@ -477,11 +470,11 @@ export default function ContattiPage() {
                   bgcolor: "common.white",
                   border: "1px solid",
                   borderColor: "divider",
-                  borderRadius: 2,
+                  borderRadius: RADIUS.md,
                   overflow: "hidden",
                   transition: "box-shadow 0.2s, transform 0.15s, border-color 0.2s",
                   ...onHover({
-                    boxShadow: (theme) => `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`,
+                    boxShadow: 3,
                     transform: "translateY(-2px)",
                     borderColor: (theme) => alpha(theme.palette.primary.main, 0.4),
                   }),
@@ -555,7 +548,7 @@ export default function ContattiPage() {
           <Box
             sx={{
               background: heroGradient.footer,
-              borderRadius: 3,
+              borderRadius: RADIUS.lg,
               p: { xs: 3, md: 4 },
               display: "flex",
               alignItems: "center",
@@ -573,8 +566,9 @@ export default function ContattiPage() {
                 {t("contatti.writeUsDesc")}
               </Typography>
             </Box>
+            {/* Contornato (UX-30): il bottone pieno della pagina e' l'invio del modulo. */}
             <Button
-              variant="contained"
+              variant="outlined"
               startIcon={<EmailIcon />}
               href="mailto:asdkaribubaskin@gmail.com"
               component="a"

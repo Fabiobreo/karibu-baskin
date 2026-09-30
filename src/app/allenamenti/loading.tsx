@@ -1,4 +1,5 @@
 import { Container, Skeleton, Stack, Box } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 export default function AllenamentiLoading() {
   return (
@@ -14,20 +15,25 @@ export default function AllenamentiLoading() {
               p: 2,
               border: "1px solid",
               borderColor: "divider",
-              borderRadius: 2,
+              borderRadius: RADIUS.lg,
             }}
           >
             <Skeleton
               variant="rectangular"
               width={56}
               height={56}
-              sx={{ borderRadius: 1, flexShrink: 0 }}
+              sx={{ borderRadius: RADIUS.md, flexShrink: 0 }}
             />
             <Box sx={{ flex: 1 }}>
               <Skeleton variant="text" width="60%" height={24} />
               <Skeleton variant="text" width="40%" height={20} />
             </Box>
-            <Skeleton variant="rectangular" width={60} height={28} sx={{ borderRadius: 3 }} />
+            <Skeleton
+              variant="rectangular"
+              width={60}
+              height={28}
+              sx={{ borderRadius: RADIUS.sm }}
+            />
           </Box>
         ))}
       </Stack>

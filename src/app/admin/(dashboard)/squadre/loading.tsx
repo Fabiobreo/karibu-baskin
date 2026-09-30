@@ -1,4 +1,5 @@
 import { Container, Skeleton, Stack, Box } from "@mui/material";
+import { RADIUS } from "@/lib/radius";
 
 export default function Loading() {
   return (
@@ -8,7 +9,7 @@ export default function Loading() {
         {Array.from({ length: 3 }).map((_, i) => (
           <Box
             key={i}
-            sx={{ p: 2.5, border: "1px solid", borderColor: "divider", borderRadius: 2 }}
+            sx={{ p: 2.5, border: "1px solid", borderColor: "divider", borderRadius: RADIUS.lg }}
           >
             <Skeleton variant="text" width="35%" height={26} sx={{ mb: 1 }} />
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>

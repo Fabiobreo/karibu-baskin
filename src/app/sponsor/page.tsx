@@ -19,6 +19,7 @@ import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata = buildMetadata({
   title: "Sponsor",
@@ -116,7 +117,7 @@ export default async function SponsorPage() {
                     transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
                     ...onHover({
                       borderColor: "primary.main",
-                      boxShadow: `0 2px 12px ${alpha(brandColor.orange, 0.1)}`,
+                      boxShadow: 3,
                       transform: "translateY(-2px)",
                     }),
                   }}
@@ -127,7 +128,7 @@ export default async function SponsorPage() {
                       flexShrink: 0,
                       width: 90,
                       height: 90,
-                      borderRadius: 1,
+                      borderRadius: RADIUS.md,
                       overflow: "hidden",
                       bgcolor: "grey.50",
                       border: "1px solid",
@@ -227,7 +228,7 @@ export default async function SponsorPage() {
           <Box
             sx={{
               background: heroGradient.footer,
-              borderRadius: 3,
+              borderRadius: RADIUS.lg,
               p: { xs: 3, md: 4 },
               display: "flex",
               alignItems: "center",

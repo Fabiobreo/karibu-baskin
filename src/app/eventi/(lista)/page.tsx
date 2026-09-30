@@ -29,6 +29,7 @@ import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
+import { RADIUS } from "@/lib/radius";
 
 export const metadata: Metadata = buildMetadata({
   title: "Eventi",
@@ -77,7 +78,7 @@ function EventCard({
           variant="outlined"
           sx={{
             overflow: "hidden",
-            borderRadius: 3,
+            borderRadius: RADIUS.lg,
             height: "100%",
             transition: "transform 0.15s ease, box-shadow 0.15s ease",
             ...onHover({ transform: "translateY(-3px)", boxShadow: 4 }),
