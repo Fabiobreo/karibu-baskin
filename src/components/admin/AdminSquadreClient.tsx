@@ -46,11 +46,13 @@ import {
   teamColor,
   teamTint,
   type TeamTint,
+  teamFill,
 } from "@/lib/teamColors";
 import StatusPill from "@/components/common/StatusPill";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TEAM_LABEL } from "@/lib/palette";
 
 // ── Tinte squadra ──────────────────────────────────────────────────────────────
 
@@ -566,7 +568,7 @@ export default function AdminSquadreClient({
                         p: 0,
                         borderRadius: "50%",
                         bgcolor: `team.${tint}`,
-                        color: "common.white",
+                        color: TEAM_LABEL[tint],
                         cursor: "pointer",
                         display: "inline-flex",
                         alignItems: "center",
@@ -687,10 +689,11 @@ export default function AdminSquadreClient({
 
 // ── Card squadra ──────────────────────────────────────────────────────────────
 
-// Icone sopra il riempimento della tinta squadra (etichetta bianca, >= 4,5:1).
+// Icone sopra il riempimento della tinta squadra: prendono l'etichetta della
+// tinta (bianca o scura, >= 4,5:1) dall'intestazione.
 const ON_FILL_ICON_SX = {
-  color: "common.white",
-  "&:hover": { bgcolor: (theme: Theme) => alpha(theme.palette.common.white, 0.15) },
+  color: "inherit",
+  "&:hover": { bgcolor: "color-mix(in srgb, currentColor 15%, transparent)" },
 } as const;
 
 function TeamCard({
@@ -708,6 +711,7 @@ function TeamCard({
   const stop = (e: React.MouseEvent) => e.stopPropagation();
   // Tinta della squadra, o null: intestazione neutra, mai l'arancio (UX-29).
   const color = teamColor(team.color);
+  const onColor = teamFill(team.color)?.fg ?? null;
 
   return (
     <Paper
@@ -729,8 +733,8 @@ function TeamCard({
         sx={{
           px: 2.5,
           py: 2,
-          ...(color
-            ? { bgcolor: color, color: "common.white" }
+          ...(color && onColor
+            ? { bgcolor: color, color: onColor }
             : {
                 bgcolor: "action.hover",
                 color: "text.primary",
@@ -755,9 +759,7 @@ function TeamCard({
             <Typography
               variant="caption"
               sx={{
-                color: color
-                  ? (theme) => alpha(theme.palette.common.white, 0.85)
-                  : "text.secondary",
+                color: onColor ? alpha(onColor, 0.85) : "text.secondary",
               }}
             >
               {team.championship}

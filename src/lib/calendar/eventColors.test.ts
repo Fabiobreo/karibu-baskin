@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { lightTheme, darkTheme } from "@/theme";
 import { contrastRatio } from "@/lib/colorUtils";
-import { TEAM } from "@/lib/palette";
+import { TEAM, TEAM_RING } from "@/lib/palette";
 import {
   decorationSx,
   echoColor,
@@ -112,13 +112,21 @@ describe("decorazioni del chip", () => {
   });
 
   it("tiene ogni tinta squadra sopra il 3:1 sul foglio, in entrambi i temi", () => {
-    // La fascia e l'eco si confrontano col foglio grazie al separatore.
+    // La fascia e l'eco si confrontano col foglio grazie al separatore. L'Oro
+    // in chiaro non ci arriva: ha il filo esterno (test sotto).
     for (const theme of [lightTheme, darkTheme]) {
-      for (const hex of Object.values(TEAM)) {
+      for (const [tint, hex] of Object.entries(TEAM)) {
+        if (tint === "gold" && theme.palette.mode === "light") continue;
         const ratio = contrastRatio(hex, theme.palette.background.paper);
         expect(ratio!, `${hex} in ${theme.palette.mode}`).toBeGreaterThanOrEqual(3);
       }
     }
+  });
+
+  it("mette il filo esterno alla fascia oro solo in chiaro", () => {
+    expect(decorationSx(lightTheme, { accent: TEAM.gold }).boxShadow).toContain(TEAM_RING);
+    expect(decorationSx(darkTheme, { accent: TEAM.gold }).boxShadow).not.toContain(TEAM_RING);
+    expect(decorationSx(lightTheme, { accent: TEAM.blue }).boxShadow).not.toContain(TEAM_RING);
   });
 
   it("combina fascia ed eco in un solo box-shadow", () => {

@@ -19,7 +19,7 @@ import ChildCareIcon from "@mui/icons-material/ChildCare";
 import LockIcon from "@mui/icons-material/Lock";
 import { ROLES } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 import { useState } from "react";
@@ -63,9 +63,9 @@ interface Props {
  * senza tinta nessun segno di colore (chip contornato neutro), mai l'arancio.
  */
 function teamChipSx(raw: string | null) {
-  const c = teamColor(raw);
+  const f = teamFill(raw);
   return {
-    ...(c ? { bgcolor: c, color: "common.white" } : { color: "text.primary" }),
+    ...(f ? { bgcolor: f.bg, color: f.fg } : { color: "text.primary" }),
     "& .MuiChip-label": { px: 0.75 },
   };
 }

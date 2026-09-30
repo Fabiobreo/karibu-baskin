@@ -1,4 +1,4 @@
-import { TEAM } from "@/lib/palette";
+import { TEAM, TEAM_LABEL, TEAM_RING } from "@/lib/palette";
 
 /**
  * Colore delle squadre (UX-29): l'unico punto da cui si legge.
@@ -11,16 +11,25 @@ import { TEAM } from "@/lib/palette";
  */
 
 /** Tinte in ordine di proposta per una squadra nuova. Ardesia e' della Karibu. */
-export const TEAM_TINTS = ["blue", "raspberry", "taupe", "violet", "petrol", "slate"] as const;
+export const TEAM_TINTS = [
+  "violet",
+  "green",
+  "blue",
+  "orange",
+  "gold",
+  "raspberry",
+  "slate",
+] as const;
 export type TeamTint = (typeof TEAM_TINTS)[number];
 
 /** Nomi per il selettore dello staff (l'admin e' solo in italiano). */
 export const TEAM_TINT_LABELS: Record<TeamTint, string> = {
-  blue: "Blu",
-  raspberry: "Lampone",
-  taupe: "Tortora",
   violet: "Viola",
-  petrol: "Petrolio",
+  green: "Verde",
+  blue: "Blu",
+  orange: "Arancio",
+  gold: "Oro",
+  raspberry: "Lampone",
   slate: "Ardesia",
 };
 
@@ -62,9 +71,9 @@ function oklchOf([r, g, b]: [number, number, number]): { C: number; h: number } 
  * Tinta della palette per un valore salvato: chiave, hex della palette o hex
  * storico. `null` se non c'e' colore o non si legge (niente segno di colore).
  *
- * Per gli hex storici si usano settori di tinta con confini dichiarati invece
- * della "tinta piu' vicina", che manderebbe il rosso #F44336 sul Tortora. Ogni
- * tinta della palette ricade nel proprio settore: la funzione e' idempotente.
+ * Per gli hex storici si usano settori di tinta OKLCH con confini dichiarati,
+ * uno per famiglia di maglia. Ogni tinta della palette ricade nel proprio
+ * settore: la funzione e' idempotente.
  */
 export function teamTint(raw: string | null | undefined): TeamTint | null {
   if (!raw) return null;
@@ -82,9 +91,10 @@ export function teamTint(raw: string | null | undefined): TeamTint | null {
   const { C, h } = oklchOf(rgb);
   if (C < 0.035) return "slate"; // neri, grigi, bianchi
   if (h >= 345 || h < 35) return "raspberry"; // rossi, rosa, magenta
-  if (h < 115) return "taupe"; // arancio, oro, giallo, marrone, oliva
-  if (h < 235) return "petrol"; // verdi, verde acqua, ciano
-  if (h < 285) return "blue";
+  if (h < 72) return "orange"; // arancio, marrone
+  if (h < 120) return "gold"; // oro, giallo, oliva
+  if (h < 200) return "green"; // verdi, verde acqua
+  if (h < 285) return "blue"; // azzurri, blu
   return "violet";
 }
 
@@ -95,6 +105,20 @@ export function teamTint(raw: string | null | undefined): TeamTint | null {
 export function teamColor(raw: string | null | undefined): string | null {
   const tint = teamTint(raw);
   return tint ? TEAM[tint] : null;
+}
+
+/**
+ * Riempimento di una squadra (chip, intestazione di card, avatar): fondo,
+ * etichetta leggibile sopra (bianca o scura secondo la tinta) e, per l'Oro,
+ * l'anello da mettere sulle superfici chiare. `null` senza colore: in quel caso
+ * il chip e' contornato neutro, mai arancio.
+ */
+export function teamFill(
+  raw: string | null | undefined
+): { bg: string; fg: string; ring: string | null } | null {
+  const tint = teamTint(raw);
+  if (!tint) return null;
+  return { bg: TEAM[tint], fg: TEAM_LABEL[tint], ring: tint === "gold" ? TEAM_RING : null };
 }
 
 /**

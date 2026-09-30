@@ -6,6 +6,7 @@ import MedalDisc from "@/components/rating/MedalDisc";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { teamFill } from "@/lib/teamColors";
 
 export default function LeaderCard({
   rank,
@@ -61,7 +62,7 @@ export default function LeaderCard({
           height: 52,
           // Iniziale nella tinta squadra (etichetta bianca); senza tinta neutra (UX-29).
           bgcolor: teamColor ?? "action.selected",
-          color: teamColor ? "common.white" : "text.primary",
+          color: teamFill(teamColor)?.fg ?? "text.primary",
           fontSize: TYPE_SCALE.xl,
           fontWeight: FONT_WEIGHT.bold,
         }}

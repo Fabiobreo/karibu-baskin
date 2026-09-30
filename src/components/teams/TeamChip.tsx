@@ -1,6 +1,6 @@
 import { Chip, type ChipProps } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
-import { teamColor } from "@/lib/teamColors";
+import { teamFill } from "@/lib/teamColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface TeamChipProps extends Omit<ChipProps, "color" | "label" | "sx" | "variant"> {
@@ -14,8 +14,8 @@ interface TeamChipProps extends Omit<ChipProps, "color" | "label" | "sx" | "vari
 
 /**
  * Chip con il nome di una squadra (UX-29): riempito nella tinta della squadra
- * con l'etichetta bianca (tutte le tinte reggono il bianco a 4,5:1); senza
- * tinta, contornato neutro. Mai l'arancio come ripiego. Accetta le props di
+ * con l'etichetta della tinta (bianca o scura, >= 4,5:1); senza tinta,
+ * contornato neutro. Mai l'arancio come ripiego. Accetta le props di
  * `Chip` (es. `onDelete`, `size`).
  *
  * Niente "use client" e niente `sx` a funzione: si usa anche nei Server Component.
@@ -27,20 +27,22 @@ export default function TeamChip({
   sx,
   ...chipProps
 }: TeamChipProps) {
-  const tint = teamColor(raw);
+  const fill = teamFill(raw);
   return (
     <Chip
       size="small"
       {...chipProps}
       label={name}
-      variant={tint ? "filled" : "outlined"}
+      variant={fill ? "filled" : "outlined"}
       sx={[
-        tint
+        fill
           ? {
-              bgcolor: tint,
-              color: "common.white",
-              "& .MuiChip-deleteIcon": { color: "common.white", opacity: 0.8 },
-              "& .MuiChip-deleteIcon:hover": { color: "common.white", opacity: 1 },
+              bgcolor: fill.bg,
+              color: fill.fg,
+              // L'Oro sulle superfici chiare vuole un filo per staccarsi dal fondo.
+              ...(fill.ring ? { boxShadow: `inset 0 0 0 1px ${fill.ring}` } : {}),
+              "& .MuiChip-deleteIcon": { color: fill.fg, opacity: 0.8 },
+              "& .MuiChip-deleteIcon:hover": { color: fill.fg, opacity: 1 },
             }
           : {},
         compact ? { fontSize: TYPE_SCALE.xs, height: 20 } : {},

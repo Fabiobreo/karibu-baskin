@@ -37,7 +37,7 @@ import {
   roleGroupOf,
   type RoleGroupKey,
 } from "@/lib/constants";
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
 import type { Gender } from "@prisma/client";
@@ -126,6 +126,7 @@ export default function AdminRosaClient({
 
   // Tinta della squadra, o null: senza tinta nessun segno di colore (UX-29).
   const tint = teamColor(team.color);
+  const onTint = teamFill(team.color)?.fg ?? null;
 
   // ── Calcoli per la rosa ──────────────────────────────────────────────────────
 
@@ -310,8 +311,8 @@ export default function AdminRosaClient({
         sx={{
           px: 2.5,
           py: 1.5,
-          ...(tint
-            ? { bgcolor: tint, color: "common.white" }
+          ...(tint && onTint
+            ? { bgcolor: tint, color: onTint }
             : {
                 bgcolor: "action.hover",
                 color: "text.primary",
@@ -330,14 +331,7 @@ export default function AdminRosaClient({
           label={`${team.memberships.length} ${team.memberships.length === 1 ? "atleta" : "atleti"}`}
           size="small"
           variant={tint ? "filled" : "outlined"}
-          sx={
-            tint
-              ? {
-                  bgcolor: (theme) => alpha(theme.palette.common.white, 0.2),
-                  color: "common.white",
-                }
-              : undefined
-          }
+          sx={onTint ? { bgcolor: alpha(onTint, 0.14), color: onTint } : undefined}
         />
       </Box>
 
@@ -648,7 +642,7 @@ function MemberRow({
           height: 32,
           fontSize: TYPE_SCALE.sm,
           ...(tint
-            ? { bgcolor: tint, color: "common.white" }
+            ? { bgcolor: tint, color: teamFill(tint)?.fg }
             : { bgcolor: "action.selected", color: "text.secondary" }),
         }}
       >

@@ -5,8 +5,8 @@ import { isMinor } from "@/lib/minors";
 import { userHasPublicProfile } from "@/lib/publicProfile";
 import { sportRoleLabel } from "@/lib/constants";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-import { BRAND, HERO_TEXT, ROLE_FILL } from "@/lib/palette";
-import { teamColor } from "@/lib/teamColors";
+import { BRAND, HERO_TEXT, ROLE_COLORS } from "@/lib/palette";
+import { teamFill } from "@/lib/teamColors";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -46,7 +46,8 @@ export default async function OgImage({ params }: Props) {
 
   // Tinta della squadra (UX-29): senza tinta nessun segno di colore, mai
   // l'arancio come ripiego. La tinta non colora mai il testo.
-  const tint = teamColor(user?.teamMemberships[0]?.team.color);
+  const fill = teamFill(user?.teamMemberships[0]?.team.color);
+  const tint = fill?.bg ?? null;
   const totalPoints = user?.matchStats.reduce((s, m) => s + m.points, 0) ?? 0;
   const matchesPlayed = user?.matchStats.length ?? 0;
   const roleLabel = user?.sportRole
@@ -96,6 +97,7 @@ export default async function OgImage({ params }: Props) {
           height: 200,
           borderRadius: "50%",
           background: tint ?? BRAND.darkSoft,
+          color: fill?.fg ?? HERO_TEXT.primary,
           border: `6px solid ${tint ?? HERO_TEXT.lineStrong}`,
           boxShadow: tint ? `0 8px 40px ${tint}88` : "none",
           display: "flex",
@@ -141,9 +143,9 @@ export default async function OgImage({ params }: Props) {
           {roleLabel && (
             <div
               style={{
-                // Badge del ruolo Baskin: grafite per tutti i ruoli, il numero
-                // è l'informazione (UX-29).
-                background: ROLE_FILL,
+                // Badge del ruolo Baskin nel suo colore, col filo chiaro che lo
+                // stacca dal fondo scuro (UX-29).
+                background: ROLE_COLORS[user!.sportRole as keyof typeof ROLE_COLORS],
                 color: HERO_TEXT.primary,
                 border: `2px solid ${HERO_TEXT.lineStrong}`,
                 fontSize: 22,
@@ -161,7 +163,7 @@ export default async function OgImage({ params }: Props) {
               style={{
                 // Squadra: riempimento nella tinta, oppure contorno neutro.
                 background: tint ?? "transparent",
-                color: HERO_TEXT.primary,
+                color: fill?.fg ?? HERO_TEXT.primary,
                 border: `2px solid ${tint ?? HERO_TEXT.lineStrong}`,
                 fontSize: 22,
                 fontWeight: FONT_WEIGHT.bold,

@@ -20,7 +20,7 @@ import LinkOffIcon from "@mui/icons-material/LinkOff";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { useToast } from "@/context/ToastContext";
 
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -141,8 +141,11 @@ export default function ParentChildLinker({
                           // contornato neutro, mai l'arancio (UX-29).
                           variant={teamColor(m.team.color) ? "filled" : "outlined"}
                           sx={{
-                            ...(teamColor(m.team.color)
-                              ? { bgcolor: teamColor(m.team.color), color: "common.white" }
+                            ...(teamFill(m.team.color)
+                              ? {
+                                  bgcolor: teamFill(m.team.color)?.bg,
+                                  color: teamFill(m.team.color)?.fg,
+                                }
                               : { color: "text.primary" }),
                             fontSize: TYPE_SCALE.xs,
                           }}

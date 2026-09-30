@@ -27,7 +27,7 @@ import {
   heroTint,
   heroText,
 } from "@/lib/heroStyles";
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -35,7 +35,7 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
-import { sportRoleLabel as sportRoleLabelRaw, roleColorSx } from "@/lib/constants";
+import { sportRoleLabel as sportRoleLabelRaw, roleColorSx, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadgeState } from "@/lib/rating/badges";
@@ -718,8 +718,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         size="small"
                         // Squadra nella sua tinta; senza tinta contornata neutra (UX-29).
                         sx={{
-                          ...(teamColor(m.team.color)
-                            ? { bgcolor: teamColor(m.team.color), color: "common.white" }
+                          ...(teamFill(m.team.color)
+                            ? {
+                                bgcolor: teamFill(m.team.color)?.bg,
+                                color: teamFill(m.team.color)?.fg,
+                              }
                             : {
                                 bgcolor: "transparent",
                                 color: heroText.primary,
@@ -964,8 +967,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       c.sportRole ? (
                         <Avatar
                           sx={{
-                            bgcolor: "role.main",
-                            color: "role.contrastText !important",
+                            bgcolor: roleColor(c.sportRole),
+                            color: "common.white !important",
                             fontWeight: FONT_WEIGHT.semibold,
                           }}
                         >

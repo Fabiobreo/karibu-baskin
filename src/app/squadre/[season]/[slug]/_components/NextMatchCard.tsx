@@ -16,6 +16,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { teamFill } from "@/lib/teamColors";
 
 export default async function NextMatchCard({
   match,
@@ -276,7 +277,7 @@ export default async function NextMatchCard({
                 height: { xs: 44, md: 54 },
                 borderRadius: "50%",
                 bgcolor: teamColor ?? "action.selected",
-                color: teamColor ? "common.white" : "text.primary",
+                color: teamFill(teamColor)?.fg ?? "text.primary",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

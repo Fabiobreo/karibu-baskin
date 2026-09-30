@@ -63,7 +63,7 @@ export const sessionRestricted: SessionWithCount = {
   allowedRoles: [1, 2],
   restrictTeamId: "team-aranci",
   openRoles: [1],
-  restrictTeam: { id: "team-aranci", name: "Aranci", color: "taupe" },
+  restrictTeam: { id: "team-aranci", name: "Aranci", color: "orange" },
 };
 
 export const sessionFull: SessionWithCount = {

@@ -22,7 +22,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
-import { ROLES } from "@/lib/constants";
+import { ROLES, roleColor } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -130,11 +130,13 @@ function AthletePill({
         display: "inline-flex",
         alignItems: "center",
         border: "1.5px solid",
-        borderColor: highlighted ? "role.main" : "divider",
+        borderColor: highlighted ? roleColor(reg.role) : "divider",
         borderRadius: RADIUS.pill,
         overflow: "hidden",
         bgcolor: (theme) =>
-          highlighted ? alpha(theme.palette.role.main, 0.1) : theme.palette.background.paper,
+          highlighted
+            ? alpha(roleColor(reg.role) ?? theme.palette.text.primary, 0.1)
+            : theme.palette.background.paper,
         opacity: isDeleting || isPendingDelete ? 0.45 : 1,
         transition: "border-color 0.15s, opacity 0.15s",
       }}
@@ -144,7 +146,7 @@ function AthletePill({
         sx={{
           width: 28,
           height: 28,
-          bgcolor: "role.main",
+          bgcolor: roleColor(reg.role),
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -237,7 +239,7 @@ function AthletePill({
       )}
       {isDeleting && (
         <Box sx={{ px: 0.75, display: "flex", alignItems: "center" }}>
-          <CircularProgress size={12} sx={{ color: "role.main" }} />
+          <CircularProgress size={12} sx={{ color: roleColor(reg.role) }} />
         </Box>
       )}
     </Box>
@@ -599,9 +601,7 @@ export default function RosterByRole({
                       width: 10,
                       height: 10,
                       borderRadius: "50%",
-                      // Grafite uguale per tutti i ruoli (UX-29): il numero e'
-                      // l'informazione, il pallino e' solo l'attacco della riga.
-                      bgcolor: "role.main",
+                      bgcolor: roleColor(role),
                       flexShrink: 0,
                     }}
                   />

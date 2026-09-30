@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@/lib/colorUtils";
-import { BRAND, NEUTRAL, OUTCOME, ROLE_FILL, TEAM } from "@/lib/palette";
+import { BRAND, NEUTRAL, OUTCOME, ROLE_COLORS, TEAM, TEAM_LABEL } from "@/lib/palette";
 
 // Le soglie di UX-29. Le distanze percettive (CIEDE2000, daltonismo) sono nel
 // ticket: qui si tiene fermo il contrasto, che e' la parte che si rompe
@@ -12,15 +12,37 @@ const SURFACES_LIGHT = [NEUTRAL.light.paper, NEUTRAL.light.background];
 const SURFACES_DARK = [NEUTRAL.dark.paper, NEUTRAL.dark.background, "#141414"];
 
 describe("tinte squadra", () => {
-  it.each(Object.entries(TEAM))(
-    "%s regge l'etichetta bianca e il 3:1 su ogni superficie",
-    (_, hex) => {
-      expect(ratio(hex, BRAND.white)).toBeGreaterThanOrEqual(4.5);
-      for (const s of [...SURFACES_LIGHT, ...SURFACES_DARK]) {
-        expect(ratio(hex, s)).toBeGreaterThanOrEqual(3);
+  // L'etichetta scura e' nero all'87%: sul fondo si vede come il fondo al 13%.
+  const label = (tint: keyof typeof TEAM) => {
+    if (TEAM_LABEL[tint] === BRAND.white) return BRAND.white;
+    const hex = TEAM[tint].slice(1);
+    return (
+      "#" +
+      [0, 2, 4]
+        .map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * 0.13))
+        .map((c) => c.toString(16).padStart(2, "0"))
+        .join("")
+    );
+  };
+
+  it.each(Object.keys(TEAM) as (keyof typeof TEAM)[])(
+    "%s regge la sua etichetta e il 3:1 sulle superfici",
+    (tint) => {
+      const hex = TEAM[tint];
+      expect(ratio(hex, label(tint))).toBeGreaterThanOrEqual(4.5);
+      for (const s of SURFACES_DARK) expect(ratio(hex, s)).toBeGreaterThanOrEqual(3);
+      // L'Oro sulle superfici chiare usa l'anello TEAM_RING.
+      if (tint !== "gold") {
+        for (const s of SURFACES_LIGHT) expect(ratio(hex, s)).toBeGreaterThanOrEqual(3);
       }
     }
   );
+});
+
+describe("ruoli", () => {
+  it.each(Object.entries(ROLE_COLORS))("il ruolo %s regge il numero bianco", (_, hex) => {
+    expect(ratio(hex, BRAND.white)).toBeGreaterThanOrEqual(4.5);
+  });
 });
 
 describe("esiti", () => {
@@ -62,10 +84,6 @@ describe("neutri", () => {
     for (const s of [NEUTRAL.dark.paper, NEUTRAL.dark.background]) {
       expect(ratio(NEUTRAL.dark.borderControl, s)).toBeGreaterThanOrEqual(3);
     }
-  });
-
-  it("il badge del ruolo regge il numero bianco", () => {
-    expect(ratio(ROLE_FILL, BRAND.white)).toBeGreaterThanOrEqual(4.5);
   });
 
   it("il grigio neutro regge l'etichetta bianca", () => {

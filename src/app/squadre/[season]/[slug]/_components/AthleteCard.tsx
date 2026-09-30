@@ -5,6 +5,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { teamFill } from "@/lib/teamColors";
 
 export default async function AthleteCard({
   name,
@@ -44,7 +45,7 @@ export default async function AthleteCard({
           height: 48,
           // Iniziale nella tinta squadra (etichetta bianca); senza tinta neutra (UX-29).
           bgcolor: teamColor ?? "action.selected",
-          color: teamColor ? "common.white" : "text.primary",
+          color: teamFill(teamColor)?.fg ?? "text.primary",
           fontSize: TYPE_SCALE.lg,
           fontWeight: FONT_WEIGHT.bold,
           flexShrink: 0,

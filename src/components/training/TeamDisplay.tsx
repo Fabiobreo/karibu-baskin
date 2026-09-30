@@ -24,7 +24,7 @@ import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLES, TEAM_META, bibFill } from "@/lib/constants";
+import { ROLES, TEAM_META, bibFill, roleColorSx } from "@/lib/constants";
 import { alpha } from "@mui/material/styles";
 import { readableOn } from "@/lib/colorUtils";
 import { useToast } from "@/context/ToastContext";
@@ -110,9 +110,7 @@ function RoleBadge({
         alignItems: "center",
         borderRadius: RADIUS.pill,
         overflow: "hidden",
-        // Grafite uguale per tutti i ruoli (UX-29): il numero e' l'informazione.
-        bgcolor: "role.main",
-        color: "role.contrastText",
+        ...roleColorSx(role),
         fontSize: TYPE_SCALE.xs,
         lineHeight: 1,
         opacity: count === 0 ? 0.28 : 1,

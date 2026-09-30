@@ -3,7 +3,7 @@ import type { TeamMembershipInfo } from "@/hooks/useRegistrationForm";
 export const membershipAranci2025: TeamMembershipInfo = {
   teamId: "team-aranci",
   teamName: "Aranci",
-  teamColor: "taupe",
+  teamColor: "orange",
   teamSeason: "2025-26",
 };
 

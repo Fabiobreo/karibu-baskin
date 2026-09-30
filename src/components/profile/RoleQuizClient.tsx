@@ -15,6 +15,7 @@ import { useToast } from "@/context/ToastContext";
 import type { RoleInfo } from "@/lib/content/baskinInfo";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { roleColor, roleColorSx } from "@/lib/constants";
 
 interface RoleQuizClientProps {
   /** Ruolo confermato dallo staff: se c'è, niente questionario. */
@@ -139,7 +140,7 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
   return (
     <Paper
       variant="outlined"
-      sx={{ p: { xs: 2.5, md: 4 }, borderTop: "4px solid", borderTopColor: "role.main" }}
+      sx={{ p: { xs: 2.5, md: 4 }, borderTop: "4px solid", borderTopColor: roleColor(result.role) }}
     >
       <Typography variant="overline" color="text.secondary">
         {kind === "confirmed" ? t("confirmedOverline") : t("suggestedOverline")}
@@ -148,9 +149,7 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
         <Chip
           label={tRoles("sportRole", { n: result.role, v: result.variant ?? "" })}
           sx={{
-            // Grafite uguale per tutti i ruoli (UX-29): il numero e' l'informazione.
-            bgcolor: "role.main",
-            color: "role.contrastText",
+            ...roleColorSx(result.role),
             fontWeight: FONT_WEIGHT.bold,
             fontSize: TYPE_SCALE.sm,
           }}

@@ -13,7 +13,7 @@ import {
   MEDAL,
   NEUTRAL,
   OUTCOME,
-  ROLE_FILL,
+  ROLE_BORDER_DARK,
   SHADOW,
   TEAM,
 } from "@/lib/palette";
@@ -48,12 +48,6 @@ type TeamPalette = Record<keyof typeof TEAM, string>;
 
 /** Casacche d'allenamento: colori veri delle maglie, sempre col nome. */
 type BibPalette = Record<keyof typeof BIB, string>;
-
-/** Badge del ruolo Baskin: grafite per tutti i ruoli, il numero e' l'informazione. */
-type RolePalette = {
-  main: string;
-  contrastText: string;
-};
 
 type MedalPalette = {
   gold: string;
@@ -110,9 +104,11 @@ type AdminBandPalette = {
   hover: string;
 };
 
-/** Bordo dei campi dei moduli (WCAG 1.4.11): il default MUI si fermava a 1,6-2,1:1. */
 type BorderPalette = {
+  /** Bordo dei campi dei moduli (WCAG 1.4.11): il default MUI si fermava a 1,6-2,1:1. */
   control: string;
+  /** Bordo del badge del ruolo: in scuro i colori dei ruoli stanno a 1,2-2,1:1 dal fondo. */
+  role: string;
 };
 
 declare module "@mui/material/styles" {
@@ -120,7 +116,6 @@ declare module "@mui/material/styles" {
     match: MatchPalette;
     team: TeamPalette;
     bib: BibPalette;
-    role: RolePalette;
     medal: MedalPalette;
     heroGradient: HeroGradientPalette;
     focusRing: FocusRingPalette;
@@ -132,7 +127,6 @@ declare module "@mui/material/styles" {
     match?: MatchPalette;
     team?: TeamPalette;
     bib?: BibPalette;
-    role?: RolePalette;
     medal?: MedalPalette;
     heroGradient?: HeroGradientPalette;
     focusRing?: FocusRingPalette;
@@ -218,8 +212,6 @@ const darkMatch: MatchPalette = {
   drawBg: OUTCOME.dark.drawBg,
   onFill: OUTCOME.dark.onFill,
 };
-
-const role: RolePalette = { main: ROLE_FILL, contrastText: BRAND.white };
 
 const sharedTypography = {
   fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -587,11 +579,10 @@ export const lightTheme = createTheme({
       primary: NEUTRAL.light.text,
       secondary: NEUTRAL.light.textSecondary,
     },
-    border: { control: NEUTRAL.light.borderControl },
+    border: { control: NEUTRAL.light.borderControl, role: "transparent" },
     match: lightMatch,
     team: TEAM,
     bib: BIB,
-    role,
     medal: MEDAL.light,
     heroGradient: { ...heroGradient, border: "transparent" },
     focusRing: lightFocusRing,
@@ -636,11 +627,10 @@ export const darkTheme = createTheme({
       primary: NEUTRAL.dark.text,
       secondary: NEUTRAL.dark.textSecondary,
     },
-    border: { control: NEUTRAL.dark.borderControl },
+    border: { control: NEUTRAL.dark.borderControl, role: ROLE_BORDER_DARK },
     match: darkMatch,
     team: TEAM,
     bib: BIB,
-    role,
     medal: MEDAL.dark,
     heroGradient: { ...heroGradient, border: HERO.border },
     focusRing: darkFocusRing,

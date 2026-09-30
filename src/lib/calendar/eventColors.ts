@@ -1,6 +1,6 @@
 import type { Theme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import type { CalendarEventType } from "@/app/api/calendar/route";
 
 /**
@@ -128,7 +128,12 @@ export function decorationSx(theme: Theme, opts: DecorationOptions) {
   const paper = theme.palette.background.paper;
   const shadows: string[] = [];
 
-  if (accent) shadows.push(`inset 1px 0 0 ${paper}`);
+  if (accent) {
+    shadows.push(`inset 1px 0 0 ${paper}`);
+    // L'Oro sulle superfici chiare sta sotto il 3:1: un filo fuori dalla fascia.
+    const ring = teamFill(accent)?.ring;
+    if (ring && theme.palette.mode === "light") shadows.push(`-1px 0 0 0 ${ring}`);
+  }
   if (echo) {
     shadows.push(`0 0 0 ${echoGap}px ${paper}`, `0 0 0 ${echoGap + echoWidth}px ${echo}`);
   }

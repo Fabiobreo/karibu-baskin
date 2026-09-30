@@ -21,7 +21,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
-import { teamColor } from "@/lib/teamColors";
+import { teamFill } from "@/lib/teamColors";
 import { brandColor, heroGradient, heroText } from "@/lib/heroStyles";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
@@ -274,7 +274,8 @@ function TeamGrid({
       {teams.map((team) => {
         // Intestazione nella tinta della squadra (UX-29): tutte le tinte reggono
         // l'etichetta bianca. Senza tinta nessun segno: intestazione neutra.
-        const tint = teamColor(team.color);
+        const fill = teamFill(team.color);
+        const tint = fill?.bg ?? null;
         return (
           <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
             <Link
@@ -297,6 +298,7 @@ function TeamGrid({
                     px: 2.5,
                     py: 2,
                     bgcolor: tint ?? "action.hover",
+                    boxShadow: fill?.ring ? `inset 0 0 0 1px ${fill.ring}` : undefined,
                     borderBottom: tint ? 0 : "1px solid",
                     borderColor: "divider",
                     display: "flex",
@@ -308,7 +310,7 @@ function TeamGrid({
                     variant="h6"
                     component="h3"
                     fontWeight={FONT_WEIGHT.bold}
-                    sx={{ color: tint ? "common.white" : "text.primary" }}
+                    sx={{ color: fill?.fg ?? "text.primary" }}
                   >
                     {team.name}
                   </Typography>
@@ -317,11 +319,7 @@ function TeamGrid({
                       label={team.championship}
                       size="small"
                       variant={tint ? "filled" : "outlined"}
-                      sx={
-                        tint
-                          ? { bgcolor: alpha(brandColor.white, 0.18), color: "common.white" }
-                          : undefined
-                      }
+                      sx={fill ? { bgcolor: alpha(fill.fg, 0.14), color: fill.fg } : undefined}
                     />
                   )}
                 </Box>

@@ -153,7 +153,7 @@ export default async function IlBaskinPage() {
                 elevation={0}
                 sx={{ overflow: "hidden", border: "1px solid", borderColor: "divider" }}
               >
-                {/* Intestazione grafite (UX-29): uguale per tutti i ruoli, l'informazione e' il nome. */}
+                {/* Intestazione nel colore del ruolo (UX-29), testo bianco. */}
                 <Box
                   sx={{
                     px: 2.5,

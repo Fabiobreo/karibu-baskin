@@ -104,3 +104,27 @@ Il bordeaux e il senape proposti sopra sono stati sostituiti: il primo finiva a 
 - **Banner compleanni** (`BirthdayBanner`): fascia arancione piena su un elemento che non si tocca, con testo bianco a circa 3,8:1. Da decidere col committente (fascia scura con accento, o riempimento `orangeFill`).
 - `AdminNewsClient` "Pubblicato" e `AdminGalleryClient` "Visibile" restano `success`: sono stati, non valenze in senso stretto. Da valutare.
 - Testi italiani scritti a mano trovati durante il lavoro, non legati al colore: `aria-label` di `GalleryGrid`, "Statistiche"/"Stagione"/"Ruolo N" nella pagina squadra, "Karibu" in `NextMatchCard`, etichette delle medaglie del giocatore.
+
+## Revisione del 30/09/2026: famiglie di maglia e ruoli colorati
+
+Il committente ha aggiunto due vincoli: **il colore di una squadra deve poter essere quello della sua maglia** (quest'anno KariGin viola e KariTonic verde; in futuro anche arancione e giallo/oro), riconoscibile per famiglia, e **i ruoli Baskin tornano colorati**. L'esperto di colore ha rifatto l'ottimizzazione congiunta di squadre, ruoli ed esiti (stesso metodo).
+
+**Tinte squadra** (ordine di proposta; un solo hex per i due temi; etichetta per tinta):
+
+| Chiave | Nome | Hex | Etichetta | Note |
+| --- | --- | --- | --- | --- |
+| `violet` | Viola | `#835BA5` | bianca 5,24 | |
+| `green` | Verde | `#059767` | scura 5,08 | smeraldo, a ΔE 12,5 dalla vittoria |
+| `blue` | Blu | `#3788F4` | scura 5,37 | |
+| `orange` | Arancio | `#C27010` | scura 5,06 | verso l'ambra, a ΔE 12,8-13,3 dall'arancio dei bottoni |
+| `gold` | Oro | `#C3A322` | scura 7,46 | 2,45:1 sul bianco: anello `TEAM_RING` sulle superfici chiare |
+| `raspberry` | Lampone | `#AF4973` | bianca 5,22 | |
+| `slate` | Ardesia (Karibu) | `#6B828A` | scura 4,68 | |
+
+**Ruoli** (numero bianco ≥ 9:1, bordo `border.role` in scuro): 1 blu notte `#253496`, 2 verde abete `#1E5142`, 3 oliva `#394F01`, 4 prugna `#392442`, 5 terra `#472117`. Squadre nella fascia di luminanza media, ruoli in quella scura: la luminanza è l'unico asse che regge anche il daltonismo.
+
+**Pareggio in tema scuro:** da ambra `#DEBA50` a sabbia `#D6C298` (fondo `#2E2A20`), per staccarsi dall'Oro squadra (da ΔE 7,1 a 16,1). In chiaro invariato.
+
+**Minimi (ΔE00 normale / daltonismo):** squadra-squadra 17,7 / 9,4; ruolo-ruolo 18,1 / 11,7; ruolo-squadra 19,4 / 12,8. Coppie deboli dichiarate: Arancio squadra e arancio dei bottoni con daltonismo (1,8: li separano il nome della squadra e la forma di bottone), Verde squadra e vittoria (12,5 / 10,5: la lettera sul chip dell'esito), Oro e medaglie/pareggio (≥ 13,4: posizione sulla medaglia, lettera sul pareggio). La fascia oro nei pannelli chiari non ha l'anello tranne nel calendario: il nome della squadra le sta sempre accanto.
+
+**Mappatura dei colori storici** per famiglia: rossi e rosa → Lampone, arancio e marroni → Arancio, oro/giallo/oliva → Oro, verdi e verde acqua → Verde, azzurri e blu → Blu, viola → Viola, grigi → Ardesia. Escono Tortora e Petrolio. `teamFill()` porta fondo, etichetta e anello a chip, intestazioni di card e avatar; `TeamChip` e le immagini OG lo usano.

@@ -1,5 +1,5 @@
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
-import { BIB, BRAND } from "@/lib/palette";
+import { BIB, BRAND, ROLE_COLORS } from "@/lib/palette";
 
 export const ROLE_LABELS_IT: Record<AppRole, string> = {
   GUEST: "Ospite",
@@ -26,16 +26,19 @@ export const ROLE_LABELS: Record<number, string> = {
   5: "Ruolo 5",
 };
 
-// Colore dei ruoli Baskin (UX-29): grafite per tutti i ruoli, scelta del
-// committente. In palestra i ruoli non si distinguono per colore e
-// l'informazione e' il numero; le cinque tinte di prima (UX-11) erano le stesse
-// famiglie delle tinte squadra, e accanto al nome di un giocatore un "3" indaco
-// e una squadra indaco dicevano due cose diverse con lo stesso colore.
-// Si passa da `roleColorSx` o dal componente `RoleBadge`.
+// Colori dei ruoli Baskin (UX-29): cinque tinte scure con il numero bianco,
+// separate dalle tinte squadra (medie) per luminanza, cosi' si distinguono
+// anche per chi non vede bene i colori. Valori in `@/lib/palette`.
+// Si passa da `roleColor` / `roleColorSx` o dal componente `RoleBadge`.
 
-/** Riempimento grafite del badge del ruolo con il suo testo bianco, da spargere in `sx`. */
+/** Colore del ruolo (riempimenti, pallini, bordi), o `undefined` senza ruolo. */
+export function roleColor(role: number | null | undefined): string | undefined {
+  return role == null ? undefined : ROLE_COLORS[role as keyof typeof ROLE_COLORS];
+}
+
+/** Riempimento del ruolo con il suo numero bianco (>= 9:1), da spargere in `sx`. */
 export function roleColorSx(role: number | null | undefined) {
-  return { bgcolor: role == null ? undefined : "role.main", color: "role.contrastText" } as const;
+  return { bgcolor: roleColor(role), color: "common.white" } as const;
 }
 
 export const ROLES = [1, 2, 3, 4, 5] as const;

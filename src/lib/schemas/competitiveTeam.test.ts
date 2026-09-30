@@ -74,9 +74,7 @@ describe("CompetitiveTeamCreateSchema", () => {
   });
 
   it("rifiuta una tinta sconosciuta", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "orange" }).success).toBe(
-      false
-    );
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "teal" }).success).toBe(false);
   });
 
   it("rifiuta description oltre 2000 caratteri", () => {

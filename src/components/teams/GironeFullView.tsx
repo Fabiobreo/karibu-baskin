@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { slugify } from "@/lib/slugUtils";
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import StatAbbr from "@/components/teams/StatAbbr";
 import type { StandingEntry } from "@/lib/season/standings";
@@ -146,14 +146,15 @@ export default function GironeFullView({
       >
         {ourTeams.map((t) => {
           // Tinta squadra come riempimento; senza tinta chip contornato neutro.
-          const tint = teamColor(t.color);
+          const fill = teamFill(t.color);
+          const tint = fill?.bg ?? null;
           return (
             <Chip
               key={t.id}
               label={t.name}
               size="small"
               variant={tint ? "filled" : "outlined"}
-              sx={tint ? { bgcolor: tint, color: "common.white" } : undefined}
+              sx={fill ? { bgcolor: fill.bg, color: fill.fg } : undefined}
             />
           );
         })}

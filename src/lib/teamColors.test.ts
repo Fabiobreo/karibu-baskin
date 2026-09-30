@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TEAM } from "@/lib/palette";
-import { suggestTeamTint, teamColor, teamTint, TEAM_TINTS } from "@/lib/teamColors";
+import { suggestTeamTint, teamColor, teamFill, teamTint, TEAM_TINTS } from "@/lib/teamColors";
 
 describe("teamTint", () => {
   it("nessun colore o valore illeggibile: nessuna tinta", () => {
@@ -20,19 +20,27 @@ describe("teamTint", () => {
     }
   });
 
-  // I colori salvati prima di UX-29 (vecchi preset del form e colori del tema).
+  // I colori salvati prima di UX-29 (vecchi preset del form e colori del tema):
+  // ognuno torna nella sua famiglia di maglia.
   it.each([
-    ["#FF6D00", "taupe"],
-    ["#E65100", "taupe"],
-    ["#FFB300", "taupe"],
+    ["#FF6D00", "orange"],
+    ["#E65100", "orange"],
+    ["#FF9800", "orange"],
+    ["#FFB300", "gold"],
+    ["#FFC107", "gold"],
+    ["#FFEB3B", "gold"],
+    ["#43A047", "green"],
+    ["#2E7D32", "green"],
+    ["#00897B", "green"],
+    ["#4CAF50", "green"],
     ["#1E88E5", "blue"],
     ["#1565C0", "blue"],
-    ["#43A047", "petrol"],
-    ["#2E7D32", "petrol"],
-    ["#00897B", "petrol"],
+    ["#03A9F4", "blue"],
+    ["#8E24AA", "violet"],
+    ["#9C27B0", "violet"],
     ["#F44336", "raspberry"],
     ["#C62828", "raspberry"],
-    ["#8E24AA", "violet"],
+    ["#E91E63", "raspberry"],
     ["#1A1A1A", "slate"],
     ["#757575", "slate"],
     ["#FFFFFF", "slate"],
@@ -51,8 +59,16 @@ describe("teamTint", () => {
 describe("teamColor", () => {
   it("restituisce l'hex della tinta o null", () => {
     expect(teamColor("blue")).toBe(TEAM.blue);
-    expect(teamColor("#43A047")).toBe(TEAM.petrol);
+    expect(teamColor("#43A047")).toBe(TEAM.green);
     expect(teamColor(null)).toBeNull();
+  });
+});
+
+describe("teamFill", () => {
+  it("da' fondo, etichetta e anello (solo per l'Oro)", () => {
+    expect(teamFill("violet")).toMatchObject({ bg: TEAM.violet, ring: null });
+    expect(teamFill("gold")?.ring).not.toBeNull();
+    expect(teamFill(null)).toBeNull();
   });
 });
 
@@ -64,26 +80,26 @@ describe("suggestTeamTint", () => {
 
   it("eredita la tinta della squadra omonima della stagione precedente", () => {
     expect(suggestTeamTint("KariGin", prev, [])).toBe("violet");
-    expect(suggestTeamTint(" montekki ", prev, [])).toBe("petrol");
+    expect(suggestTeamTint(" montekki ", prev, [])).toBe("green");
   });
 
   it("se la tinta ereditata e' gia' presa, propone la prima libera", () => {
-    expect(suggestTeamTint("KariGin", prev, ["violet"])).toBe("blue");
+    expect(suggestTeamTint("KariGin", prev, ["violet"])).toBe("green");
   });
 
   it("senza omonima propone la prima tinta non usata, mai Ardesia", () => {
-    expect(suggestTeamTint("Nuova", prev, [])).toBe("blue");
-    expect(suggestTeamTint("Nuova", prev, ["blue", "#B05583"])).toBe("taupe");
-    expect(suggestTeamTint("Nuova", [], ["slate"])).toBe("blue");
+    expect(suggestTeamTint("Nuova", prev, [])).toBe("violet");
+    expect(suggestTeamTint("Nuova", prev, ["violet", "#43A047"])).toBe("blue");
+    expect(suggestTeamTint("Nuova", [], ["slate"])).toBe("violet");
   });
 
   it("la tinta della Karibu non si eredita", () => {
-    expect(suggestTeamTint("Karibu", [{ name: "Karibu", color: "slate" }], [])).toBe("blue");
+    expect(suggestTeamTint("Karibu", [{ name: "Karibu", color: "slate" }], [])).toBe("violet");
   });
 
   it("con tutte le tinte prese ricomincia dalla prima", () => {
-    expect(suggestTeamTint("X", [], ["blue", "raspberry", "taupe", "violet", "petrol"])).toBe(
-      "blue"
-    );
+    expect(
+      suggestTeamTint("X", [], ["violet", "green", "blue", "orange", "gold", "raspberry"])
+    ).toBe("violet");
   });
 });

@@ -254,7 +254,7 @@ describe("CompetitiveTeamCreateSchema", () => {
   });
 
   it("rifiuta un colore fuori dalla palette (UX-29)", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "orange" }).success).toBe(false);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "teal" }).success).toBe(false);
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#GG0000" }).success).toBe(
       false
     );

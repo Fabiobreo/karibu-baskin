@@ -132,32 +132,65 @@ export const OUTCOME = {
     winBg: "#1B3320",
     loss: "#EF5350",
     lossBg: "#331616",
-    draw: "#DEBA50",
-    drawBg: "#322B16",
+    /** Sabbia: l'ambra di prima stava a ΔE 7,1 dall'Oro squadra, questa a 16,1. */
+    draw: "#D6C298",
+    drawBg: "#2E2A20",
     onFill: "rgba(0, 0, 0, 0.87)",
   },
 } as const;
 
 /**
- * Tinte squadra: identita' della squadra di una stagione. Un solo hex per i due
- * temi (finestra di luminanza 0,139-0,183): etichetta bianca >= 4,5:1 e >= 3:1
- * contro tutte le superfici chiare e scure. Solo grafico o riempimento, mai
- * testo. Si leggono sempre da `@/lib/teamColors`.
+ * Tinte squadra: identita' della squadra di una stagione, per famiglia di
+ * colore della maglia (la tonalita' esatta la sceglie la palette). Un solo hex
+ * per i due temi: >= 3:1 contro tutte le superfici, tranne l'Oro sulle
+ * superfici chiare, che vuole l'anello `TEAM_RING`. Solo grafico o
+ * riempimento, mai testo; sul riempimento l'etichetta e' `TEAM_LABEL`. Si
+ * leggono sempre da `@/lib/teamColors`.
  *
  * L'ordine e' quello di proposta per una squadra nuova; Ardesia e' della
- * Karibu di stagione.
+ * Karibu di stagione. Verde, Arancio e Oro condividono la famiglia con
+ * vittoria, bottoni e pareggio/medaglie: ne stanno a ΔE00 >= 12,5 e il nome
+ * della squadra accompagna sempre il colore (revisione UX-29, proposta 2).
  */
 export const TEAM = {
-  blue: "#4B6FCD",
-  raspberry: "#B05583",
-  taupe: "#8A6E60",
-  violet: "#7F5AA6",
-  petrol: "#167F8E",
-  slate: "#5C6E76",
+  violet: "#835BA5",
+  green: "#059767",
+  blue: "#3788F4",
+  orange: "#C27010",
+  gold: "#C3A322",
+  raspberry: "#AF4973",
+  slate: "#6B828A",
 } as const;
 
-/** Badge del ruolo Baskin: grafite per tutti i ruoli, l'informazione e' il numero (8,86:1). */
-export const ROLE_FILL = "#4A4A4A";
+/** Etichetta sopra il riempimento di ogni tinta squadra (>= 4,68:1). */
+export const TEAM_LABEL: Record<keyof typeof TEAM, string> = {
+  violet: BRAND.white,
+  green: "rgba(0, 0, 0, 0.87)",
+  blue: "rgba(0, 0, 0, 0.87)",
+  orange: "rgba(0, 0, 0, 0.87)",
+  gold: "rgba(0, 0, 0, 0.87)",
+  raspberry: BRAND.white,
+  slate: "rgba(0, 0, 0, 0.87)",
+};
+
+/** Anello per le tinte che sulle superfici chiare non arrivano a 3:1 (l'Oro, 2,45:1). */
+export const TEAM_RING = "rgba(0, 0, 0, 0.45)";
+
+/**
+ * Colori dei ruoli Baskin: fascia scura (luminanza 0,025-0,066), numero bianco
+ * >= 9:1. Le squadre stanno nella fascia media: la luminanza li separa anche
+ * per chi non distingue le tinte. Nel tema scuro il badge ha il bordo
+ * `ROLE_BORDER_DARK`, perche' contro #1E1E1E si ferma a 1,2-2,1:1.
+ */
+export const ROLE_COLORS: Record<1 | 2 | 3 | 4 | 5, string> = {
+  1: "#253496", // blu notte
+  2: "#1E5142", // verde abete
+  3: "#394F01", // oliva
+  4: "#392442", // prugna
+  5: "#472117", // terra
+};
+
+export const ROLE_BORDER_DARK = "rgba(255, 255, 255, 0.23)";
 
 /** Casacche d'allenamento: colori veri delle maglie, sempre accompagnati dal nome. */
 export const BIB = {

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { BRAND, HERO_TEXT } from "@/lib/palette";
-import { teamColor } from "@/lib/teamColors";
+import { teamFill } from "@/lib/teamColors";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -28,7 +28,8 @@ export default async function OgImage({ params }: Props) {
   const team = teams.find((t) => slugify(t.name) === slug);
 
   // Senza tinta squadra nessun segno di colore (mai l'arancio come ripiego).
-  const tint = teamColor(team?.color);
+  const fill = teamFill(team?.color);
+  const tint = fill?.bg ?? null;
   const memberCount = team?.memberships.length ?? 0;
 
   return new ImageResponse(
@@ -84,7 +85,7 @@ export default async function OgImage({ params }: Props) {
         style={{
           // Riempimento nella tinta, oppure contorno neutro senza tinta.
           background: tint ?? "transparent",
-          color: HERO_TEXT.primary,
+          color: fill?.fg ?? HERO_TEXT.primary,
           border: `2px solid ${tint ?? HERO_TEXT.lineStrong}`,
           fontSize: 26,
           fontWeight: FONT_WEIGHT.bold,

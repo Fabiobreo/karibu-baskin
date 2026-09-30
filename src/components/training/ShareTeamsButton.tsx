@@ -10,7 +10,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { SITE_HOST } from "@/lib/siteUrl";
 import type { TeamsData } from "./TeamDisplay";
 import { ROLES, TEAM_META } from "@/lib/constants";
-import { BRAND, HERO_TEXT, NEUTRAL, ROLE_FILL } from "@/lib/palette";
+import { BRAND, HERO_TEXT, NEUTRAL, ROLE_COLORS } from "@/lib/palette";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -235,9 +235,9 @@ export default function ShareTeamsButton({
                             fontWeight: FONT_WEIGHT.bold,
                             letterSpacing: 1,
                             textTransform: "uppercase",
-                            // Ruolo Baskin: grafite per tutti, il numero è l'informazione.
+                            // Ruolo Baskin nel suo colore, testo bianco (UX-29).
                             color: BRAND.white,
-                            background: ROLE_FILL,
+                            background: ROLE_COLORS[role as keyof typeof ROLE_COLORS],
                             borderRadius: 3,
                             padding: "2px 5px",
                             marginBottom: 5,

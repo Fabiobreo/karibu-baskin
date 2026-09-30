@@ -50,7 +50,7 @@ export default function PersonRow({
             height: 36,
             fontSize: TYPE_SCALE.sm,
             fontWeight: FONT_WEIGHT.bold,
-            // Ruolo Baskin: grafite per tutti (UX-29); senza ruolo, neutro tenue.
+            // Ruolo Baskin nel suo colore (UX-29); senza ruolo, neutro tenue.
             ...(sportRole
               ? roleColorSx(sportRole)
               : { bgcolor: "action.selected", color: "text.secondary" }),

@@ -7,7 +7,7 @@ import type { AdminRow, TeamInfo } from "./userListShared";
 const SEASON = "2026-27";
 const teams: TeamInfo[] = [
   { id: "karigin", name: "KariGin", season: SEASON, color: "violet" },
-  { id: "karitonic", name: "KariTonic", season: SEASON, color: "petrol" },
+  { id: "karitonic", name: "KariTonic", season: SEASON, color: "green" },
 ];
 
 function user(
