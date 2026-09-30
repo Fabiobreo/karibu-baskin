@@ -6,9 +6,11 @@
  * client references → diventano `undefined` a runtime lato server.
  */
 
-// Fondo degli hero (UX-08): grafite pieno, non piu' il marrone
-// #2D1A0A / #3D2010, che diluiva l'identita' arancio e nero.
-const HERO_BASE = "linear-gradient(160deg, #141414 0%, #1E1E1E 100%)";
+import { BRAND, HERO, HERO_TEXT, MEDAL, OUTCOME, SOCIAL_BRAND } from "@/lib/palette";
+
+// Fondo degli hero (UX-08): grafite pieno, non piu' il marrone, che diluiva
+// l'identita' arancio e nero. I valori stanno in `@/lib/palette` (UX-29).
+const HERO_BASE = `linear-gradient(160deg, ${HERO.from} 0%, ${HERO.to} 100%)`;
 
 /**
  * L'unico punto in cui si scrivono i colori degli hero. Tutti gli hero del sito
@@ -17,11 +19,11 @@ const HERO_BASE = "linear-gradient(160deg, #141414 0%, #1E1E1E 100%)";
  */
 export const heroGradient = {
   /** Hero standard: grafite con un solo bagliore arancio leggero in alto a destra. */
-  dark: `radial-gradient(90% 120% at 100% 0%, rgba(230, 81, 0, 0.16) 0%, rgba(230, 81, 0, 0) 60%), ${HERO_BASE}`,
+  dark: `radial-gradient(90% 120% at 100% 0%, ${BRAND.orangeGlow} 0%, ${BRAND.orangeGlowNone} 60%), ${HERO_BASE}`,
   /** Variante senza bagliore, usata dal footer e dalle fasce scure di fine pagina. */
   footer: HERO_BASE,
   /** Fascia arancione piena (banner compleanni). */
-  orange: "linear-gradient(90deg, #E65100 0%, #FF8F00 100%)",
+  orange: `linear-gradient(90deg, ${BRAND.orange} 0%, ${BRAND.orangeBright} 100%)`,
 } as const;
 
 /**
@@ -36,13 +38,17 @@ export function heroTint(color: string): string {
 
 /** Foto di copertina sotto l'hero, velata per reggere il testo bianco. */
 export function heroImage(url: string): string {
-  return `linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url(${url})`;
+  return `linear-gradient(${HERO.photoScrim}, ${HERO.photoScrim}), url(${url})`;
 }
 
-/** Colori degli esiti per gli hero delle partite, che restano scuri in entrambi i temi. */
+/**
+ * Colori degli esiti per gli hero delle partite, che restano scuri in entrambi
+ * i temi: i valori del tema chiaro, che reggono il bianco.
+ */
 export const heroResultColor = {
-  WIN: "#2E7D32",
-  LOSS: "#C62828",
+  WIN: OUTCOME.light.win,
+  LOSS: OUTCOME.light.loss,
+  DRAW: OUTCOME.light.draw,
 } as const;
 
 /**
@@ -62,13 +68,13 @@ export const heroBottomBorder = {
  * il confine RSC. Nei Client Component si usa il tema.
  */
 export const brandColor = {
-  orange: "#E65100",
-  white: "#FFFFFF",
-  black: "#000000",
+  orange: BRAND.orange,
+  white: BRAND.white,
+  black: BRAND.black,
   /** Il nero del marchio: fondo degli hero e dell'AppBar, non `#000`. */
-  dark: "#1A1A1A",
+  dark: BRAND.dark,
   /** Un gradino sopra `dark`, per bordi e superfici staccate sul fondo scuro. */
-  darkSoft: "#2A2A2A",
+  darkSoft: BRAND.darkSoft,
 } as const;
 
 /**
@@ -76,13 +82,7 @@ export const brandColor = {
  * `text.*` non servono, perche' seguirebbero il tema corrente e in chiaro
  * darebbero testo nero su fondo nero.
  */
-export const heroText = {
-  primary: "#FFFFFF",
-  /** Sottotitoli e didascalie. */
-  secondary: "#E0E0E0",
-  /** Testo di servizio, il piu' smorzato che regga la soglia AA sul fondo hero. */
-  muted: "#BDBDBD",
-} as const;
+export const heroText = HERO_TEXT;
 
 /**
  * Medaglie sugli hero, che sono scuri in entrambi i temi: qui servono sempre i
@@ -91,12 +91,12 @@ export const heroText = {
  * `src/theme.ts`.
  */
 export const heroMedal = {
-  gold: "#FFD54F",
-  goldDeep: "#FFA000",
-  silver: "#E0E0E0",
-  silverDeep: "#9E9E9E",
-  bronze: "#D7A56B",
-  bronzeDeep: "#8D6E63",
+  gold: MEDAL.dark.gold,
+  goldDeep: MEDAL.dark.goldDeep,
+  silver: MEDAL.dark.silver,
+  silverDeep: MEDAL.dark.silverDeep,
+  bronze: MEDAL.dark.bronze,
+  bronzeDeep: MEDAL.dark.bronzeDeep,
 } as const;
 
 /**
@@ -104,11 +104,4 @@ export const heroMedal = {
  * Sono gli unici letterali legittimi in `sx`: non sono colori del tema ma il
  * marchio altrui, quindi non hanno un token e non cambiano col tema.
  */
-export const socialBrandColor = {
-  instagram: "#E1306C",
-  facebook: "#1877F2",
-  youtube: "#FF0000",
-  whatsapp: "#25D366",
-  /** Verde scuro di WhatsApp, per bordi e stati hover sulle superfici chiare. */
-  whatsappDark: "#128C7E",
-} as const;
+export const socialBrandColor = SOCIAL_BRAND;

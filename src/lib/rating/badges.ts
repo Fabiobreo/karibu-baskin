@@ -1,5 +1,17 @@
 export type BadgeTier = "bronze" | "silver" | "gold";
 
+/**
+ * Token del tema per il metallo di un livello (UX-29): bordo, fondo e testo.
+ * I metalli dicono il livello e vanno sempre con una forma o un'etichetta.
+ */
+export function medalTier(tier: BadgeTier) {
+  return {
+    border: `medal.${tier}`,
+    bg: `medal.${tier}Bg`,
+    text: `medal.${tier}`,
+  } as const;
+}
+
 export type BadgeCategory =
   | "punti"
   | "precisione"

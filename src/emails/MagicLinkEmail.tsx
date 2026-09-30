@@ -12,6 +12,7 @@ import {
   Link,
 } from "@react-email/components";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { BRAND, EMAIL, HERO_TEXT } from "@/lib/palette";
 
 interface Props {
   url: string;
@@ -19,12 +20,6 @@ interface Props {
   expiresInHours?: number;
   locale?: string;
 }
-
-const ORANGE = "#E65100";
-const BG = "#f4f4f5";
-const CARD_BG = "#ffffff";
-const TEXT_MAIN = "#1a1a1a";
-const TEXT_MUTED = "#6b7280";
 
 const COPY = {
   it: {
@@ -62,7 +57,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
       <Preview>{c.preview}</Preview>
       <Body
         style={{
-          backgroundColor: BG,
+          backgroundColor: EMAIL.background,
           fontFamily: "Inter, Arial, sans-serif",
           margin: 0,
           padding: 0,
@@ -72,7 +67,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
           {/* Header */}
           <Section
             style={{
-              backgroundColor: TEXT_MAIN,
+              backgroundColor: EMAIL.header,
               borderRadius: "10px 10px 0 0",
               padding: "24px 32px",
               textAlign: "center" as const,
@@ -80,7 +75,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
           >
             <Text
               style={{
-                color: ORANGE,
+                color: BRAND.orangeOnDark,
                 fontWeight: FONT_WEIGHT.bold,
                 fontSize: 20,
                 margin: 0,
@@ -91,7 +86,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
             </Text>
             <Text
               style={{
-                color: "rgba(255,255,255,0.6)",
+                color: HERO_TEXT.muted,
                 fontSize: 12,
                 margin: "4px 0 0",
                 letterSpacing: "0.1em",
@@ -105,16 +100,16 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
           {/* Card */}
           <Section
             style={{
-              backgroundColor: CARD_BG,
+              backgroundColor: EMAIL.card,
               padding: "32px",
-              borderLeft: "1px solid #e5e7eb",
-              borderRight: "1px solid #e5e7eb",
+              borderLeft: `1px solid ${EMAIL.border}`,
+              borderRight: `1px solid ${EMAIL.border}`,
             }}
           >
             <Heading
               as="h2"
               style={{
-                color: TEXT_MAIN,
+                color: EMAIL.text,
                 fontSize: 20,
                 fontWeight: FONT_WEIGHT.semibold,
                 margin: "0 0 16px",
@@ -122,7 +117,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
             >
               {c.heading}
             </Heading>
-            <Text style={{ color: TEXT_MAIN, fontSize: 15, lineHeight: 1.7, margin: "0 0 24px" }}>
+            <Text style={{ color: EMAIL.text, fontSize: 15, lineHeight: 1.7, margin: "0 0 24px" }}>
               {c.body}
             </Text>
 
@@ -130,8 +125,8 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
               <Button
                 href={url}
                 style={{
-                  backgroundColor: ORANGE,
-                  color: "#ffffff",
+                  backgroundColor: EMAIL.button,
+                  color: EMAIL.buttonText,
                   fontSize: 16,
                   fontWeight: FONT_WEIGHT.semibold,
                   textDecoration: "none",
@@ -144,19 +139,33 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
               </Button>
             </Section>
 
-            <Text style={{ color: TEXT_MUTED, fontSize: 13, lineHeight: 1.6, margin: "0 0 24px" }}>
+            <Text
+              style={{
+                color: EMAIL.textSecondary,
+                fontSize: 13,
+                lineHeight: 1.6,
+                margin: "0 0 24px",
+              }}
+            >
               {c.expiry(expiresInHours)}
             </Text>
 
-            <Hr style={{ borderColor: "#e5e7eb", margin: "0 0 20px" }} />
+            <Hr style={{ borderColor: EMAIL.border, margin: "0 0 20px" }} />
 
-            <Text style={{ color: TEXT_MUTED, fontSize: 12, lineHeight: 1.6, margin: "0 0 6px" }}>
+            <Text
+              style={{
+                color: EMAIL.textSecondary,
+                fontSize: 12,
+                lineHeight: 1.6,
+                margin: "0 0 6px",
+              }}
+            >
               {c.fallback}
             </Text>
             <Link
               href={url}
               style={{
-                color: ORANGE,
+                color: BRAND.orangeOnLight,
                 fontSize: 12,
                 wordBreak: "break-all" as const,
                 lineHeight: 1.5,
@@ -169,21 +178,28 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
           {/* Footer */}
           <Section
             style={{
-              backgroundColor: "#f9fafb",
+              backgroundColor: EMAIL.background,
               borderRadius: "0 0 10px 10px",
-              border: "1px solid #e5e7eb",
+              border: `1px solid ${EMAIL.border}`,
               borderTop: "none",
               padding: "16px 32px",
               textAlign: "center" as const,
             }}
           >
-            <Text style={{ color: TEXT_MUTED, fontSize: 12, margin: "0 0 8px", lineHeight: 1.6 }}>
+            <Text
+              style={{
+                color: EMAIL.textSecondary,
+                fontSize: 12,
+                margin: "0 0 8px",
+                lineHeight: 1.6,
+              }}
+            >
               {c.ignore}
             </Text>
-            <Text style={{ color: TEXT_MUTED, fontSize: 12, margin: "0 0 4px" }}>
+            <Text style={{ color: EMAIL.textSecondary, fontSize: 12, margin: "0 0 4px" }}>
               ASD Karibu Baskin Montecchio Maggiore · C.F. 04301440246
             </Text>
-            <Text style={{ color: "#9ca3af", fontSize: 11, margin: 0 }}>{c.footer}</Text>
+            <Text style={{ color: EMAIL.textSecondary, fontSize: 11, margin: 0 }}>{c.footer}</Text>
           </Section>
         </Container>
       </Body>

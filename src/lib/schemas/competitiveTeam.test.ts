@@ -1,3 +1,4 @@
+import { TEAM_TINTS } from "@/lib/teamColors";
 import { describe, it, expect } from "vitest";
 import { CompetitiveTeamCreateSchema, CompetitiveTeamUpdateSchema } from "./competitiveTeam";
 
@@ -17,7 +18,7 @@ describe("CompetitiveTeamCreateSchema", () => {
     const full = {
       ...valid,
       championship: "Serie B Regionale",
-      color: "#FF6600",
+      color: "blue",
       description: "Prima squadra della stagione",
     };
     expect(CompetitiveTeamCreateSchema.safeParse(full).success).toBe(true);
@@ -57,30 +58,23 @@ describe("CompetitiveTeamCreateSchema", () => {
     );
   });
 
-  it("accetta colore hex valido (#RRGGBB)", () => {
+  it("accetta ogni tinta della palette (UX-29)", () => {
+    for (const color of TEAM_TINTS) {
+      expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color }).success).toBe(true);
+    }
+  });
+
+  it("rifiuta un hex libero: il colore si sceglie solo dalla palette", () => {
     expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#1A2B3C" }).success).toBe(
-      true
+      false
     );
-  });
-
-  it("accetta colore hex con lettere maiuscole e minuscole miste", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#aAbBcC" }).success).toBe(
-      true
-    );
-  });
-
-  it("rifiuta colore hex senza cancelletto", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "FF6600" }).success).toBe(
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#E65100" }).success).toBe(
       false
     );
   });
 
-  it("rifiuta colore hex con 3 cifre (shorthand non supportato)", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#F60" }).success).toBe(false);
-  });
-
-  it("rifiuta colore hex con caratteri non validi", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "#GGGGGG" }).success).toBe(
+  it("rifiuta una tinta sconosciuta", () => {
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...valid, color: "orange" }).success).toBe(
       false
     );
   });
@@ -115,7 +109,7 @@ describe("CompetitiveTeamUpdateSchema", () => {
     expect(CompetitiveTeamUpdateSchema.safeParse({ color: null }).success).toBe(true);
   });
 
-  it("rifiuta colore hex non valido anche in update", () => {
+  it("rifiuta un colore fuori palette anche in update", () => {
     expect(CompetitiveTeamUpdateSchema.safeParse({ color: "arancione" }).success).toBe(false);
   });
 

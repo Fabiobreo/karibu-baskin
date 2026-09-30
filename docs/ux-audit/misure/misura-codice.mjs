@@ -35,7 +35,8 @@ const inc = (key, n, file) => {
 for (const f of files) {
   const t = readFileSync(f, "utf8");
   const rel = f.slice(ROOT.length + 1);
-  const isTheme = /theme\.ts$|heroStyles\.ts$|typeScale\.ts$/.test(f);
+  // UX-29: i colori stanno in palette.ts, che per questa misura vale come il tema.
+  const isTheme = /theme\.ts$|palette\.ts$|heroStyles\.ts$|typeScale\.ts$/.test(f);
 
   // Tipografia (UX-10, UX-27): all'audit 967 letterali, 0,6-0,68 rem in circa 180.
   // Le righe con un'icona MUI si contano a parte: la dimensione di un'icona

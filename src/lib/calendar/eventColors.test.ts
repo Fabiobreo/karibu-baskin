@@ -1,7 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { lightTheme, darkTheme } from "@/theme";
 import { contrastRatio } from "@/lib/colorUtils";
-import { decorationSx, eventVisual, teamFilterKey, typeColor, typeFilterKey } from "./eventColors";
+import { TEAM } from "@/lib/palette";
+import {
+  decorationSx,
+  echoColor,
+  eventVisual,
+  surfaceSx,
+  teamFilterKey,
+  typeFilterKey,
+} from "./eventColors";
 import { isVisible } from "@/components/calendar/calendarShared";
 import type { CalendarEvent, CalendarEventType } from "@/app/api/calendar/route";
 
@@ -17,46 +25,78 @@ function ev(partial: Partial<CalendarEvent>): CalendarEvent {
   };
 }
 
-describe("colori del calendario", () => {
-  it("dà a ogni tipo un colore diverso, in chiaro e in scuro", () => {
+describe("resa del calendario (UX-29)", () => {
+  it("distingue i tipi per forma: partita piena, allenamento contornato, evento tenue", () => {
     for (const theme of [lightTheme, darkTheme]) {
-      const colors = TYPES.map((type) => typeColor(theme, type));
-      expect(new Set(colors).size).toBe(TYPES.length);
+      expect(eventVisual(theme, "match").shape).toBe("filled");
+      expect(eventVisual(theme, "training").shape).toBe("outlined");
+      expect(eventVisual(theme, "event").shape).toBe("tonal");
+      const shapes = TYPES.map((type) => eventVisual(theme, type).shape);
+      expect(new Set(shapes).size).toBe(TYPES.length);
     }
   });
 
-  it("sceglie un testo che sta sopra il 4,5:1 su ogni colore di tipo", () => {
-    // I chip della griglia hanno testo piccolo (0,65rem): la soglia è AA per
-    // testo normale, non la 3:1 del testo grande. Il testo scuro esce come
-    // rgba(0,0,0,0.87): qui si misura sul nero pieno, e il margine reale sui
-    // colori scelti (8,6:1 e oltre) resta ampiamente sopra soglia anche velato.
+  it("non usa l'arancio del marchio su nessun chip", () => {
     for (const theme of [lightTheme, darkTheme]) {
       for (const type of TYPES) {
-        const { bg, fg } = eventVisual(theme, type);
-        const ratio = contrastRatio(bg, fg.startsWith("#") ? fg : "#000000");
-        expect(ratio, `${type} in ${theme.palette.mode}`).not.toBeNull();
-        expect(ratio!, `${type} in ${theme.palette.mode}`).toBeGreaterThanOrEqual(4.5);
+        const v = eventVisual(theme, type);
+        for (const c of [v.bg, v.fg, v.border]) {
+          expect(c).not.toBe(theme.palette.primary.main);
+          expect(c).not.toBe(theme.palette.primary.fill);
+        }
       }
     }
   });
 
-  it("usa il colore squadra solo come accento, mai come sfondo", () => {
-    const visual = eventVisual(lightTheme, "training", "#8E24AA");
-    expect(visual.accent).toBe("#8E24AA");
-    expect(visual.bg).toBe(typeColor(lightTheme, "training"));
+  it("la partita e' nel nero del marchio, con testo sopra il 4,5:1", () => {
+    for (const theme of [lightTheme, darkTheme]) {
+      const { bg, fg } = eventVisual(theme, "match");
+      expect(bg).toBe(theme.palette.secondary.main);
+      expect(contrastRatio(bg, fg)!).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
-  it("non inventa un accento se la squadra manca", () => {
+  it("il bordo dell'allenamento regge il 3:1 sul foglio", () => {
+    for (const theme of [lightTheme, darkTheme]) {
+      const { border, fg } = eventVisual(theme, "training");
+      expect(border).toBe(theme.palette.text.secondary);
+      expect(fg).toBe(theme.palette.text.primary);
+      expect(contrastRatio(border!, theme.palette.background.paper)!).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("stende il bordo solo sul contornato", () => {
+    expect(surfaceSx(eventVisual(lightTheme, "training")).border).toBe(
+      `1px solid ${lightTheme.palette.text.secondary}`
+    );
+    expect(surfaceSx(eventVisual(lightTheme, "match")).border).toBe("1px solid transparent");
+  });
+
+  it("porta il colore squadra sulla tinta della palette", () => {
+    expect(eventVisual(lightTheme, "training", "blue").accent).toBe(TEAM.blue);
+    // Un hex storico si legge sulla tinta del suo settore.
+    expect(eventVisual(lightTheme, "match", "#8E24AA").accent).toBe(TEAM.violet);
+    // Il colore squadra non tocca mai lo sfondo del tipo.
+    expect(eventVisual(lightTheme, "match", "blue").bg).toBe(lightTheme.palette.secondary.main);
+  });
+
+  it("non inventa una fascia se la squadra manca", () => {
     expect(eventVisual(lightTheme, "event").accent).toBeNull();
+    expect(eventVisual(lightTheme, "match", null).accent).toBeNull();
+  });
+
+  it("fa l'eco nella tinta della squadra, o nell'inchiostro senza tinta", () => {
+    expect(echoColor(lightTheme, eventVisual(lightTheme, "match", "blue"))).toBe(TEAM.blue);
+    expect(echoColor(darkTheme, eventVisual(darkTheme, "match"))).toBe(
+      darkTheme.palette.text.primary
+    );
   });
 });
 
 describe("decorazioni del chip", () => {
   it("separa la fascia squadra dal corpo del chip", () => {
-    // Senza il filo del colore del foglio la fascia poggia sulla tinta satura
-    // e quasi nessun colore squadra ha la luminosita' per staccarsene.
-    const sx = decorationSx(lightTheme, { accent: "#8E24AA" });
-    expect(sx.borderLeft).toBe("5px solid #8E24AA");
+    const sx = decorationSx(lightTheme, { accent: TEAM.violet });
+    expect(sx.borderLeft).toBe(`5px solid ${TEAM.violet}`);
     expect(sx.boxShadow).toContain(`inset 1px 0 0 ${lightTheme.palette.background.paper}`);
   });
 
@@ -64,23 +104,19 @@ describe("decorazioni del chip", () => {
     expect(decorationSx(lightTheme, {})).toEqual({});
   });
 
-  it("marca gli impegni propri con un'eco nel colore dell'elemento", () => {
-    const bg = typeColor(lightTheme, "training");
-    const sx = decorationSx(lightTheme, { echo: bg });
+  it("marca gli impegni propri con un'eco staccata dal foglio", () => {
+    const sx = decorationSx(lightTheme, { echo: TEAM.blue });
     expect(sx.boxShadow).toBe(
-      `0 0 0 1.5px ${lightTheme.palette.background.paper}, 0 0 0 3px ${bg}`
+      `0 0 0 1.5px ${lightTheme.palette.background.paper}, 0 0 0 3px ${TEAM.blue}`
     );
   });
 
-  it("tiene l'eco ben sopra il 3:1 sul foglio, in entrambi i temi", () => {
-    // È il motivo per cui l'eco non è più `text.primary`: quella faceva 17:1,
-    // cioè più del testo, e scavalcava il contenuto che doveva evidenziare.
+  it("tiene ogni tinta squadra sopra il 3:1 sul foglio, in entrambi i temi", () => {
+    // La fascia e l'eco si confrontano col foglio grazie al separatore.
     for (const theme of [lightTheme, darkTheme]) {
-      for (const type of TYPES) {
-        const ratio = contrastRatio(typeColor(theme, type), theme.palette.background.paper);
-        expect(ratio, `${type} in ${theme.palette.mode}`).not.toBeNull();
-        expect(ratio!, `${type} in ${theme.palette.mode}`).toBeGreaterThanOrEqual(3);
-        expect(ratio!, `${type} in ${theme.palette.mode}`).toBeLessThan(12);
+      for (const hex of Object.values(TEAM)) {
+        const ratio = contrastRatio(hex, theme.palette.background.paper);
+        expect(ratio!, `${hex} in ${theme.palette.mode}`).toBeGreaterThanOrEqual(3);
       }
     }
   });
@@ -88,7 +124,7 @@ describe("decorazioni del chip", () => {
   it("combina fascia ed eco in un solo box-shadow", () => {
     // Sono due ombre sulla stessa proprietà: scritte separate, la seconda
     // cancellerebbe la prima.
-    const sx = decorationSx(lightTheme, { accent: "#8E24AA", echo: "#00695C" });
+    const sx = decorationSx(lightTheme, { accent: TEAM.violet, echo: TEAM.violet });
     expect(sx.boxShadow?.split(", ")).toHaveLength(3);
   });
 });
@@ -97,8 +133,8 @@ describe("filtri della legenda", () => {
   it("tiene distinte due squadre dello stesso colore", () => {
     // Era il bug della chiave `match:<colore>`: due squadre con lo stesso hex
     // condividevano il filtro e sparivano insieme.
-    const viola = ev({ id: "a", type: "match", teamId: "t1", teamColor: "#8E24AA" });
-    const anche = ev({ id: "b", type: "match", teamId: "t2", teamColor: "#8E24AA" });
+    const viola = ev({ id: "a", type: "match", teamId: "t1", teamColor: "violet" });
+    const anche = ev({ id: "b", type: "match", teamId: "t2", teamColor: "violet" });
     const hidden = new Set([teamFilterKey("t1")]);
     expect(isVisible(viola, hidden)).toBe(false);
     expect(isVisible(anche, hidden)).toBe(true);

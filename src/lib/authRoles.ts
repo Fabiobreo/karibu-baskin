@@ -9,7 +9,7 @@ export const ROLE_HIERARCHY: Record<AppRole, number> = {
 };
 
 // Re-export for backwards compatibility — source of truth is now @/lib/constants
-export { ROLE_LABELS_IT, ROLE_CHIP_COLORS } from "@/lib/constants";
+export { ROLE_LABELS_IT } from "@/lib/constants";
 
 export function hasRole(userRole: AppRole, required: AppRole): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[required];

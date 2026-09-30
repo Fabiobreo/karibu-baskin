@@ -1,4 +1,5 @@
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
+import { BIB, BRAND } from "@/lib/palette";
 
 export const ROLE_LABELS_IT: Record<AppRole, string> = {
   GUEST: "Ospite",
@@ -6,17 +7,6 @@ export const ROLE_LABELS_IT: Record<AppRole, string> = {
   PARENT: "Genitore",
   COACH: "Allenatore",
   ADMIN: "Admin",
-};
-
-export const ROLE_CHIP_COLORS: Record<
-  AppRole,
-  "default" | "warning" | "info" | "success" | "error"
-> = {
-  GUEST: "default",
-  ATHLETE: "info",
-  PARENT: "success",
-  COACH: "warning",
-  ADMIN: "error",
 };
 
 export const GENDER_LABELS: Record<Gender, string> = { MALE: "Maschio", FEMALE: "Femmina" };
@@ -28,11 +18,6 @@ export const ATHLETE_STATUS_LABELS: Record<AthleteStatus, string> = {
   FORMER: "Ex atleta",
 };
 
-export const ATHLETE_STATUS_CHIP_COLORS: Record<AthleteStatus, "warning" | "default"> = {
-  INACTIVE_SEASON: "warning", // pausa temporanea
-  FORMER: "default", // ex atleta (grigio)
-};
-
 export const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",
   2: "Ruolo 2",
@@ -41,32 +26,16 @@ export const ROLE_LABELS: Record<number, string> = {
   5: "Ruolo 5",
 };
 
-// Colori dei ruoli Baskin (UX-11): puramente estetici, in palestra i ruoli non
-// si distinguono per colore. Tinte tenui armonizzate col nero, scelte perche'
-// non si confondano con il verde della vittoria, il rosso della sconfitta e
-// degli errori, l'arancio delle azioni. Tutte reggono il testo bianco del
-// badge (da 6,05:1 a 8,86:1).
-// Non si importano direttamente: si passa da `roleColor` / `roleColorSx` o
-// dal componente `RoleBadge`, che danno anche il colore del testo.
-const ROLE_COLORS: Record<number, string> = {
-  1: "#3D5A80", // blu ardesia
-  2: "#2F6B73", // petrolio
-  3: "#555A96", // indaco
-  4: "#7A4E7A", // prugna
-  5: "#4A4A4A", // grafite
-};
+// Colore dei ruoli Baskin (UX-29): grafite per tutti i ruoli, scelta del
+// committente. In palestra i ruoli non si distinguono per colore e
+// l'informazione e' il numero; le cinque tinte di prima (UX-11) erano le stesse
+// famiglie delle tinte squadra, e accanto al nome di un giocatore un "3" indaco
+// e una squadra indaco dicevano due cose diverse con lo stesso colore.
+// Si passa da `roleColorSx` o dal componente `RoleBadge`.
 
-/** Colore di testo sopra un riempimento `roleColor` (sempre bianco). */
-export const ROLE_TEXT_COLOR = "common.white";
-
-/** Colore del ruolo (pallini, bordi, fasce), o `undefined` se il ruolo non c'e'. */
-export function roleColor(role: number | null | undefined): string | undefined {
-  return role == null ? undefined : ROLE_COLORS[role];
-}
-
-/** Riempimento del ruolo con il suo colore di testo, da spargere in `sx`. */
+/** Riempimento grafite del badge del ruolo con il suo testo bianco, da spargere in `sx`. */
 export function roleColorSx(role: number | null | undefined) {
-  return { bgcolor: roleColor(role), color: ROLE_TEXT_COLOR } as const;
+  return { bgcolor: role == null ? undefined : "role.main", color: "role.contrastText" } as const;
 }
 
 export const ROLES = [1, 2, 3, 4, 5] as const;
@@ -97,11 +66,20 @@ export function roleGroupOf(role: number | null | undefined): RoleGroupKey | nul
   return g ? g.key : null;
 }
 
+// Casacche d'allenamento: colori veri delle maglie (eccezione dichiarata di
+// UX-29, sempre accompagnati dal nome). `fill` e' la stessa casacca come
+// riempimento sotto un'etichetta bianca: l'arancio della maglia col bianco si
+// ferma a 3,78:1, il riempimento arancio del marchio arriva a 4,71:1.
 export const TEAM_META = [
-  { key: "teamA" as const, name: "Arancioni", color: "#E65100" },
-  { key: "teamB" as const, name: "Neri", color: "#1A1A1A" },
-  { key: "teamC" as const, name: "Bianchi", color: "#757575" },
+  { key: "teamA" as const, name: "Arancioni", color: BIB.orange, fill: BRAND.orangeFill },
+  { key: "teamB" as const, name: "Neri", color: BIB.black, fill: BIB.black },
+  { key: "teamC" as const, name: "Bianchi", color: BIB.white, fill: BIB.white },
 ] as const;
+
+/** Riempimento di una casacca sotto un'etichetta bianca (>= 4,5:1), dal suo colore. */
+export function bibFill(color: string): string {
+  return TEAM_META.find((t) => t.color === color)?.fill ?? color;
+}
 
 // Varianti del ruolo sportivo (es. 1S, 2T, 2P, 2R)
 export const SPORT_ROLE_VARIANT_LABELS: Record<string, string> = {

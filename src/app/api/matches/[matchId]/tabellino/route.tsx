@@ -4,6 +4,8 @@ import { it } from "date-fns/locale";
 import { publicSubjects } from "@/lib/minors";
 import { formatRome } from "@/lib/dateUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { BRAND, HERO, HERO_TEXT, MEDAL, OUTCOME } from "@/lib/palette";
+import { teamColor } from "@/lib/teamColors";
 
 // Node runtime (default) — necessario perché usiamo Prisma.
 export const dynamic = "force-dynamic";
@@ -22,24 +24,27 @@ const MATCH_TYPE_LABEL: Record<string, string> = {
   FRIENDLY: "Amichevole",
 };
 
+// Esiti (UX-29): il chip porta l'etichetta bianca, quindi usa i valori pieni
+// del tema chiaro (>= 4,5:1 col bianco, come `heroResultColor`); il fondo
+// sfuma nella velatura scura dell'esito. Il pareggio è ambra, mai arancio.
 const RESULT_META: Record<
   "WIN" | "LOSS" | "DRAW",
   { label: string; color: string; gradient: string }
 > = {
   WIN: {
     label: "VITTORIA",
-    color: "#2E7D32",
-    gradient: "linear-gradient(150deg, #0E1F0E 0%, #163B16 60%, #1F5A1F 100%)",
+    color: OUTCOME.light.win,
+    gradient: `linear-gradient(150deg, ${BRAND.dark} 0%, ${OUTCOME.dark.winBg} 100%)`,
   },
   LOSS: {
     label: "SCONFITTA",
-    color: "#C62828",
-    gradient: "linear-gradient(150deg, #1F0E0E 0%, #3B1616 60%, #5A1F1F 100%)",
+    color: OUTCOME.light.loss,
+    gradient: `linear-gradient(150deg, ${BRAND.dark} 0%, ${OUTCOME.dark.lossBg} 100%)`,
   },
   DRAW: {
     label: "PAREGGIO",
-    color: "#E65100",
-    gradient: "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)",
+    color: OUTCOME.light.draw,
+    gradient: `linear-gradient(150deg, ${BRAND.dark} 0%, ${OUTCOME.dark.drawBg} 100%)`,
   },
 };
 
@@ -51,7 +56,7 @@ function Star() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24">
       <path
-        fill="#FFD54F"
+        fill={MEDAL.dark.gold}
         d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21.2l1.6-7L2 9.5l7.1-.6z"
       />
     </svg>
@@ -93,8 +98,12 @@ export async function GET(_req: Request, { params }: Params) {
   const opponentName = match.opponent?.name ?? match.opponentTeam?.name ?? "Avversario";
   const hasScore = match.ourScore !== null && match.theirScore !== null;
   const meta = match.result ? RESULT_META[match.result] : null;
-  const background =
-    meta?.gradient ?? "linear-gradient(150deg, #1A1A1A 0%, #2D1A0A 60%, #3D2010 100%)";
+  const background = meta?.gradient ?? `linear-gradient(150deg, ${HERO.from} 0%, ${HERO.to} 100%)`;
+  // Cerchi decorativi nella tinta della squadra; senza tinta restano neutri
+  // (mai l'arancio come ripiego).
+  const tint = teamColor(match.team.color);
+  const circleStrong = tint ? `${tint}33` : HERO_TEXT.surface;
+  const circleSoft = tint ? `${tint}1F` : HERO_TEXT.surface;
 
   const topScorers = publicSubjects(match.playerStats, false)
     .slice(0, TOP_SCORERS)
@@ -116,13 +125,13 @@ export async function GET(_req: Request, { params }: Params) {
         display: "flex",
         flexDirection: "column",
         background,
-        color: "#fff",
+        color: HERO_TEXT.primary,
         fontFamily: "sans-serif",
         padding: "60px 60px 40px 60px",
         position: "relative",
       }}
     >
-      {/* Decorative circle */}
+      {/* Cerchi decorativi */}
       <div
         style={{
           position: "absolute",
@@ -131,7 +140,7 @@ export async function GET(_req: Request, { params }: Params) {
           width: 380,
           height: 380,
           borderRadius: "50%",
-          background: "rgba(230,81,0,0.12)",
+          background: circleStrong,
           display: "flex",
         }}
       />
@@ -143,7 +152,7 @@ export async function GET(_req: Request, { params }: Params) {
           width: 480,
           height: 480,
           borderRadius: "50%",
-          background: "rgba(230,81,0,0.08)",
+          background: circleSoft,
           display: "flex",
         }}
       />
@@ -159,8 +168,9 @@ export async function GET(_req: Request, { params }: Params) {
       >
         <div
           style={{
-            background: "#E65100",
-            color: "#fff",
+            // Il marchio: arancio pieno che regge l'etichetta bianca (4,71:1).
+            background: BRAND.orangeFill,
+            color: HERO_TEXT.primary,
             fontSize: 22,
             fontWeight: FONT_WEIGHT.bold,
             padding: "8px 22px",
@@ -174,7 +184,7 @@ export async function GET(_req: Request, { params }: Params) {
         <div
           style={{
             fontSize: 22,
-            color: "rgba(255,255,255,0.55)",
+            color: HERO_TEXT.muted,
             fontWeight: FONT_WEIGHT.bold,
             display: "flex",
           }}
@@ -187,7 +197,7 @@ export async function GET(_req: Request, { params }: Params) {
       <div
         style={{
           fontSize: 26,
-          color: "rgba(255,255,255,0.6)",
+          color: HERO_TEXT.muted,
           fontWeight: FONT_WEIGHT.regular,
           marginBottom: 18,
           display: "flex",
@@ -221,7 +231,7 @@ export async function GET(_req: Request, { params }: Params) {
             style={{
               fontSize: 34,
               fontWeight: FONT_WEIGHT.bold,
-              color: "#fff",
+              color: HERO_TEXT.primary,
               marginBottom: 8,
               textAlign: "center",
               display: "flex",
@@ -234,7 +244,7 @@ export async function GET(_req: Request, { params }: Params) {
               fontSize: 140,
               fontWeight: FONT_WEIGHT.bold,
               lineHeight: 1,
-              color: "#fff",
+              color: HERO_TEXT.primary,
               display: "flex",
             }}
           >
@@ -250,7 +260,7 @@ export async function GET(_req: Request, { params }: Params) {
             alignItems: "center",
             fontWeight: FONT_WEIGHT.bold,
             fontSize: 36,
-            color: "rgba(255,255,255,0.35)",
+            color: HERO_TEXT.muted,
           }}
         >
           <div style={{ display: "flex" }}>—</div>
@@ -270,7 +280,7 @@ export async function GET(_req: Request, { params }: Params) {
             style={{
               fontSize: 34,
               fontWeight: FONT_WEIGHT.bold,
-              color: "rgba(255,255,255,0.85)",
+              color: HERO_TEXT.secondary,
               marginBottom: 8,
               textAlign: "center",
               display: "flex",
@@ -283,7 +293,7 @@ export async function GET(_req: Request, { params }: Params) {
               fontSize: 140,
               fontWeight: FONT_WEIGHT.bold,
               lineHeight: 1,
-              color: "rgba(255,255,255,0.65)",
+              color: HERO_TEXT.muted,
               display: "flex",
             }}
           >
@@ -298,7 +308,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               background: meta.color,
-              color: "#fff",
+              color: OUTCOME.light.onFill,
               fontSize: 30,
               fontWeight: FONT_WEIGHT.bold,
               padding: "10px 32px",
@@ -322,15 +332,15 @@ export async function GET(_req: Request, { params }: Params) {
             marginBottom: 32,
             padding: "20px 32px",
             borderRadius: 16,
-            background: "rgba(249,168,37,0.18)",
-            border: "2px solid rgba(249,168,37,0.6)",
+            background: MEDAL.dark.goldBg,
+            border: `2px solid ${MEDAL.dark.goldDeep}`,
           }}
         >
           <div
             style={{
               fontSize: 22,
               fontWeight: FONT_WEIGHT.bold,
-              color: "#FFD54F",
+              color: MEDAL.dark.gold,
               letterSpacing: 4,
               marginBottom: 10,
               display: "flex",
@@ -346,7 +356,7 @@ export async function GET(_req: Request, { params }: Params) {
             style={{
               fontSize: 32,
               fontWeight: FONT_WEIGHT.bold,
-              color: "#fff",
+              color: HERO_TEXT.primary,
               textAlign: "center",
               display: "flex",
               flexWrap: "wrap",
@@ -372,7 +382,7 @@ export async function GET(_req: Request, { params }: Params) {
             style={{
               fontSize: 22,
               fontWeight: FONT_WEIGHT.bold,
-              color: "rgba(255,255,255,0.55)",
+              color: HERO_TEXT.muted,
               letterSpacing: 4,
               marginBottom: 16,
               display: "flex",
@@ -395,16 +405,16 @@ export async function GET(_req: Request, { params }: Params) {
                   alignItems: "center",
                   justifyContent: "space-between",
                   padding: "12px 20px",
-                  background: "rgba(255,255,255,0.06)",
+                  background: HERO_TEXT.surface,
                   borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  border: `1px solid ${HERO_TEXT.line}`,
                 }}
               >
                 <div
                   style={{
                     fontSize: 26,
                     fontWeight: FONT_WEIGHT.bold,
-                    color: "#fff",
+                    color: HERO_TEXT.primary,
                     display: "flex",
                   }}
                 >
@@ -412,7 +422,7 @@ export async function GET(_req: Request, { params }: Params) {
                   {s.lastName && (
                     <span
                       style={{
-                        color: "rgba(255,255,255,0.7)",
+                        color: HERO_TEXT.secondary,
                         marginLeft: 8,
                       }}
                     >
@@ -424,7 +434,7 @@ export async function GET(_req: Request, { params }: Params) {
                   style={{
                     fontSize: 30,
                     fontWeight: FONT_WEIGHT.bold,
-                    color: "#E65100",
+                    color: HERO_TEXT.primary,
                     display: "flex",
                   }}
                 >
@@ -432,7 +442,7 @@ export async function GET(_req: Request, { params }: Params) {
                   <span
                     style={{
                       fontSize: 18,
-                      color: "rgba(230,81,0,0.7)",
+                      color: HERO_TEXT.muted,
                       marginLeft: 4,
                       marginTop: 8,
                     }}
@@ -454,7 +464,7 @@ export async function GET(_req: Request, { params }: Params) {
           marginTop: "auto",
           paddingTop: 24,
           fontSize: 20,
-          color: "rgba(255,255,255,0.4)",
+          color: HERO_TEXT.muted,
           fontWeight: FONT_WEIGHT.bold,
           letterSpacing: 2,
         }}

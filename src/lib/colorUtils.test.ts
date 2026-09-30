@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { contrastText, contrastRatio, readableFill, readableOn } from "./colorUtils";
+import { BRAND, NEUTRAL } from "@/lib/palette";
 
-const WHITE = "#fff";
-const DARK = "rgba(0,0,0,0.87)";
+const WHITE = BRAND.white;
+const DARK = NEUTRAL.onLightFill;
 
 describe("contrastRatio", () => {
   it("calcola i rapporti WCAG noti", () => {

@@ -18,10 +18,11 @@
 
 import type { MatchType } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { CLUB_TEAM_TINT } from "@/lib/teamColors";
 
 export const CLUB_TEAM_NAME = "Karibu";
-/** Arancione del club: la Karibu non ha un colore scelto dallo staff. */
-const CLUB_TEAM_COLOR = "#E65100";
+/** La Karibu ha la sua tinta (Ardesia), non scelta dallo staff (UX-29). */
+const CLUB_TEAM_COLOR = CLUB_TEAM_TINT;
 
 /** Id fisso per stagione: con l'upsert impedisce di creare due Karibu nella stessa stagione. */
 export function clubTeamId(season: string): string {

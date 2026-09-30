@@ -72,11 +72,11 @@ export function classifyTrend(mus: number[]): TrendResult {
 /** Etichetta leggibile + colore MUI per la UI. */
 export const TREND_META: Record<
   TrendLabel,
-  { label: string; color: "success" | "error" | "warning" | "default" | "info" }
+  { label: string; color: "success" | "error" | "warning" | "default" }
 > = {
   crescita: { label: "In crescita", color: "success" },
   calo: { label: "In calo", color: "error" },
   plateau: { label: "Stabile", color: "default" },
   altalenante: { label: "Altalenante", color: "warning" },
-  nuovo: { label: "Pochi dati", color: "info" },
+  nuovo: { label: "Pochi dati", color: "default" },
 };

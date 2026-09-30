@@ -1,51 +1,33 @@
 "use client";
-import { alpha, createTheme, type Theme } from "@mui/material/styles";
+import { createTheme, type Theme } from "@mui/material/styles";
 import { heroGradient } from "@/lib/heroStyles";
 import LinkBehavior from "@/components/common/LinkBehavior";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS, SHAPE_RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import {
+  BIB,
+  BRAND,
+  FOCUS_RING,
+  HERO,
+  MEDAL,
+  NEUTRAL,
+  OUTCOME,
+  ROLE_FILL,
+  SHADOW,
+  TEAM,
+} from "@/lib/palette";
 
 // Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
 export { heroGradient };
 
-const ORANGE = "#E65100";
-const DARK = "#1A1A1A";
-
-// Arancione accessibile come TESTO su fondo chiaro: 5,60:1 su #FFFFFF e
-// 5,11:1 su #F7F4F1 (background.default), quindi oltre la soglia AA 4,5:1.
-// `primary.main` (#E65100) si ferma a 3,79:1 su bianco: va bene per
-// riempimenti, bordi e icone (soglia 3:1) ma non per il testo.
-const ORANGE_ON_LIGHT = "#BF360C";
-// Equivalente per fondo scuro: 8,03:1 su #121212 e 7,15:1 su #1E1E1E.
-const ORANGE_ON_DARK = "#FF8A50";
-
-// Riempimento arancio con etichetta bianca (bottone primario, chip pieni,
-// pallini): stessa tinta della maglia (circa 22°), piu' scura. Variante B
-// scelta dal committente (UX-07): 4,71:1 col bianco, hover 6,22:1.
-// Non va usato per il TESTO arancio su fondo chiaro: su crema fa 4,28:1,
-// sotto la soglia. Per quello resta ORANGE_ON_LIGHT (`primary.onLight`).
-const ORANGE_FILL = "#C84B00";
-
-// Avvisi e informazioni nel tema chiaro (UX-22). I default MUI (#ED6C02,
-// #0288D1) si fermano a 3,11:1 e 3,86:1 col bianco: non reggono né
-// l'etichetta bianca dei chip pieni né il testo dei chip outlined. Questi
-// fanno 5,44:1 e 5,32:1 sul bianco, 4,97:1 e 4,86:1 sul crema del fondo.
-// In scuro restano i default MUI, con etichetta nera, già sopra soglia.
-const WARNING_ON_LIGHT = "#A65300";
-const INFO_ON_LIGHT = "#0270B0";
-const ORANGE_FILL_HOVER = "#A83F00";
-
-// Anello di focus da tastiera. `main` e' l'arancione chiaro, leggibile
-// sull'header scuro (7,46:1 su #1A1A1A); `contrast` e' l'anello interno che
-// lo stacca dalle superfici chiare, dove il solo arancione farebbe 2,33:1.
-const lightFocusRing: FocusRingPalette = { main: ORANGE_ON_DARK, contrast: DARK };
-const darkFocusRing: FocusRingPalette = { main: ORANGE_ON_DARK, contrast: "#0A0A0A" };
-
-// L'AppBar resta scuro in entrambi i temi: e' una scelta deliberata (identita'
-// del club, continuita' con l'hero). Qui cambia solo il modo di esprimerlo:
-// i due colori sono token di palette, non piu' letterali dentro gli override.
-const sharedAppBar: AppBarPalette = { from: DARK, to: "#2A2A2A" };
+// Colori (UX-29): i valori stanno tutti in `@/lib/palette`, insieme al
+// significato di ogni famiglia. Qui si montano sul tema MUI.
+const ORANGE = BRAND.orange;
+const ORANGE_ON_LIGHT = BRAND.orangeOnLight;
+const ORANGE_ON_DARK = BRAND.orangeOnDark;
+const ORANGE_FILL = BRAND.orangeFill;
+const ORANGE_FILL_HOVER = BRAND.orangeFillHover;
 
 type MatchPalette = {
   win: string;
@@ -55,82 +37,22 @@ type MatchPalette = {
   draw: string;
   drawBg: string;
   /**
-   * Etichetta sopra un riempimento `win`/`draw`/`loss` (chip risultato, badge
-   * "in corso"). In chiaro i fondi sono scuri e regge il bianco; in scuro sono
-   * chiari (il verde #66BB6A col bianco fa 2,36:1) e serve un'etichetta scura
-   * (UX-22).
+   * Etichetta sopra un riempimento `win`/`draw`/`loss`: bianca in chiaro,
+   * scura in scuro, dove i riempimenti sono chiari.
    */
   onFill: string;
 };
 
-/**
- * Stati che si presentano come pastiglia piena con etichetta bianca sopra.
- * Il riempimento non segue il tema: deve restare abbastanza scuro da reggere
- * il bianco in chiaro come in scuro, quindi i valori sono gli stessi nei due
- * temi. Cambia solo `liveText`, che e' l'unico usato come testo sulle
- * superfici del tema e in scuro va schiarito.
- */
-type StatusPalette = {
-  /** Allenamento in corso: pallino pulsante e bordo della card. */
-  live: string;
-  /** Stesso stato, ma come TESTO ("IN CORSO") sulle superfici del tema. */
-  liveText: string;
-  /** Iscrizioni non ancora aperte. */
-  pending: string;
-  /** Iscrizioni chiuse. */
-  closed: string;
-  /** Banner "sei offline". */
-  offline: string;
-  /** Banner "di nuovo online". */
-  online: string;
-  /** Partita in trasferta: fa da contraltare a `match.win`, usato per la casa. */
-  away: string;
-};
+/** Tinte squadra: stesso hex nei due temi. Si leggono da `@/lib/teamColors`. */
+type TeamPalette = Record<keyof typeof TEAM, string>;
 
-const sharedStatus = {
-  live: "#2E7D32",
-  pending: "#6D4C41",
-  closed: "#546E7A",
-  offline: "#B71C1C",
-  online: "#1B5E20",
-  away: "#1565C0",
-} as const;
+/** Casacche d'allenamento: colori veri delle maglie, sempre col nome. */
+type BibPalette = Record<keyof typeof BIB, string>;
 
-const lightStatus: StatusPalette = { ...sharedStatus, liveText: "#2E7D32" };
-// 8,04:1 su #121212, mentre il verde scuro si fermava a 3,35:1.
-const darkStatus: StatusPalette = { ...sharedStatus, liveText: "#66BB6A" };
-
-type AdminPalette = {
-  /** Sezione "Attivita" della dashboard admin. */
-  activity: string;
-  /** Sezione "Anagrafiche". */
-  registry: string;
-  /** Sezione "Strumenti". */
-  tools: string;
-  // Alias per voce, mantenuti per non riscrivere i punti d'uso: puntano ai
-  // tre colori di sezione qui sopra.
-  allenamenti: string;
-  partite: string;
-  eventi: string;
-  news: string;
-  utenti: string;
-  squadre: string;
-  gironi: string;
-  avversarie: string;
-  esporta: string;
-  audit: string;
-};
-
-type StatsPalette = {
-  points: string;
-  games: string;
-  avg: string;
-  twopt: string;
-  threept: string;
-  ft: string;
-  fouls: string;
-  illegalFouls: string;
-  shotsAttempted: string;
+/** Badge del ruolo Baskin: grafite per tutti i ruoli, il numero e' l'informazione. */
+type RolePalette = {
+  main: string;
+  contrastText: string;
 };
 
 type MedalPalette = {
@@ -173,94 +95,50 @@ type AppBarPalette = {
 };
 
 /**
- * Barra di navigazione del pannello admin. Una tinta arancione, non una banda
- * piena: si distingue sia dall'header scuro sia dal corpo della pagina, ma
- * segue il tema invece di restare un blocco saturo anche in dark.
+ * Barra di navigazione del pannello admin (UX-29): neutra. L'arancio resta
+ * solo sulla voce selezionata e sul suo indicatore (stato attivo).
  */
 type AdminBandPalette = {
   bg: string;
   border: string;
   /** Voci non selezionate. */
   text: string;
-  /** Voce selezionata, etichetta "Amministrazione" e icona. */
+  /** Voce selezionata. */
   accent: string;
   /** Sottolineatura della voce selezionata (elemento grafico, soglia 3:1). */
   indicator: string;
   hover: string;
 };
 
-// 4,76:1 per l'accento sulla tinta, 3,22:1 per l'indicatore.
-const lightAdminBand: AdminBandPalette = {
-  bg: "#FBE9E0",
-  border: "#F3CDB8",
-  text: DARK,
-  accent: ORANGE_ON_LIGHT,
-  indicator: ORANGE,
-  hover: "rgba(191,54,12,0.08)",
-};
-
-// 6,98:1 per l'accento sulla tinta scura.
-const darkAdminBand: AdminBandPalette = {
-  bg: "#2B1D16",
-  border: "#4A2E20",
-  text: "#F0F0F0",
-  accent: ORANGE_ON_DARK,
-  indicator: ORANGE_ON_DARK,
-  hover: "rgba(255,138,80,0.10)",
-};
-
-/**
- * Calendario: il colore dello sfondo dice il TIPO di evento, non la squadra.
- * La squadra la dice il bordo sinistro del chip, col colore scelto dallo staff
- * (vedi `eventVisual` in `@/lib/calendar/eventColors`). Prima il chip prendeva
- * il colore della squadra e la legenda un colore del tema: due fonti diverse
- * per la stessa cosa, che non combaciavano mai.
- *
- * Il testo sopra lo sceglie `contrastText()`: in chiaro vince il bianco
- * (6,61 / 5,60 / 4,80:1), in scuro il nero (8,60 / 9,00 / 10,48:1).
- */
-type CalendarPalette = {
-  training: string;
-  match: string;
-  event: string;
-};
-
-const lightCalendar: CalendarPalette = {
-  training: "#00695C",
-  match: ORANGE_ON_LIGHT,
-  event: "#0277BD",
-};
-
-const darkCalendar: CalendarPalette = {
-  training: "#4DB6AC",
-  match: ORANGE_ON_DARK,
-  event: "#4FC3F7",
+/** Bordo dei campi dei moduli (WCAG 1.4.11): il default MUI si fermava a 1,6-2,1:1. */
+type BorderPalette = {
+  control: string;
 };
 
 declare module "@mui/material/styles" {
   interface Palette {
     match: MatchPalette;
-    status: StatusPalette;
-    admin: AdminPalette;
-    stats: StatsPalette;
+    team: TeamPalette;
+    bib: BibPalette;
+    role: RolePalette;
     medal: MedalPalette;
     heroGradient: HeroGradientPalette;
     focusRing: FocusRingPalette;
     appBar: AppBarPalette;
     adminBand: AdminBandPalette;
-    calendar: CalendarPalette;
+    border: BorderPalette;
   }
   interface PaletteOptions {
     match?: MatchPalette;
-    status?: StatusPalette;
-    admin?: AdminPalette;
-    stats?: StatsPalette;
+    team?: TeamPalette;
+    bib?: BibPalette;
+    role?: RolePalette;
     medal?: MedalPalette;
     heroGradient?: HeroGradientPalette;
     focusRing?: FocusRingPalette;
     appBar?: AppBarPalette;
     adminBand?: AdminBandPalette;
-    calendar?: CalendarPalette;
+    border?: BorderPalette;
   }
 
   interface TypographyVariants {
@@ -288,123 +166,60 @@ declare module "@mui/material/Typography" {
   }
 }
 
+const lightFocusRing: FocusRingPalette = {
+  main: FOCUS_RING.main,
+  contrast: FOCUS_RING.contrastLight,
+};
+const darkFocusRing: FocusRingPalette = {
+  main: FOCUS_RING.main,
+  contrast: FOCUS_RING.contrastDark,
+};
+
+// L'AppBar resta scuro in entrambi i temi: identita' del club, continuita' con l'hero.
+const sharedAppBar: AppBarPalette = { from: BRAND.dark, to: BRAND.darkSoft };
+
+const lightAdminBand: AdminBandPalette = {
+  bg: NEUTRAL.light.paper,
+  border: NEUTRAL.light.divider,
+  text: NEUTRAL.light.text,
+  accent: ORANGE_ON_LIGHT,
+  indicator: ORANGE,
+  hover: NEUTRAL.light.hover,
+};
+
+const darkAdminBand: AdminBandPalette = {
+  bg: NEUTRAL.dark.paper,
+  border: NEUTRAL.dark.divider,
+  text: NEUTRAL.dark.text,
+  accent: ORANGE_ON_DARK,
+  indicator: ORANGE_ON_DARK,
+  hover: NEUTRAL.dark.hover,
+};
+
+// Esiti = valenza (UX-29): `success`, `warning` ed `error` del tema hanno gli
+// stessi valori di vittoria, pareggio e sconfitta. `match.*` resta il nome da
+// usare per le partite.
 const lightMatch: MatchPalette = {
-  win: "#2E7D32",
-  winBg: "#E8F5E9",
-  loss: "#C62828",
-  lossBg: "#FFEBEE",
-  // Il pareggio usa l'arancione accessibile: `match.draw` colora sia testo su
-  // fondo chiaro sia l'etichetta bianca del chip risultato, e #E65100 si ferma
-  // a 3,79:1 in entrambi i versi.
-  draw: ORANGE_ON_LIGHT,
-  drawBg: "#FFF3E0",
-  onFill: "#fff",
+  win: OUTCOME.light.win,
+  winBg: OUTCOME.light.winBg,
+  loss: OUTCOME.light.loss,
+  lossBg: OUTCOME.light.lossBg,
+  draw: OUTCOME.light.draw,
+  drawBg: OUTCOME.light.drawBg,
+  onFill: OUTCOME.light.onFill,
 };
 
 const darkMatch: MatchPalette = {
-  win: "#66BB6A",
-  winBg: "#1B3320",
-  loss: "#EF5350",
-  // Un filo piu' scuro di #3A1A1A: con quello il chip "Sconfitta" si fermava a
-  // 4,49:1, appena sotto la soglia. Ora 4,75:1.
-  lossBg: "#331616",
-  draw: "#FFA726",
-  drawBg: "#3A2616",
-  onFill: "rgba(0, 0, 0, 0.87)",
+  win: OUTCOME.dark.win,
+  winBg: OUTCOME.dark.winBg,
+  loss: OUTCOME.dark.loss,
+  lossBg: OUTCOME.dark.lossBg,
+  draw: OUTCOME.dark.draw,
+  drawBg: OUTCOME.dark.drawBg,
+  onFill: OUTCOME.dark.onFill,
 };
 
-// Tredici card della dashboard con tredici colori icona non codificavano nulla.
-// Le sezioni sono tre (Attivita, Anagrafiche, Strumenti): un colore per
-// sezione, cosi' il colore dice a quale gruppo appartiene la card. Tutti e tre
-// superano 4,5:1 sulle superfici del tema, perche' colorano anche l'etichetta.
-function buildAdminPalette(activity: string, registry: string, tools: string): AdminPalette {
-  return {
-    activity,
-    registry,
-    tools,
-    allenamenti: activity,
-    partite: activity,
-    eventi: activity,
-    news: activity,
-    utenti: registry,
-    squadre: registry,
-    gironi: registry,
-    avversarie: registry,
-    esporta: tools,
-    audit: tools,
-  };
-}
-
-const lightAdmin = buildAdminPalette("#00695C", "#1565C0", "#37474F");
-const darkAdmin = buildAdminPalette("#4DB6AC", "#64B5F6", "#B0BEC5");
-
-// Le tessere statistiche restano nove, ma i colori distinti sono tre e ognuno
-// codifica qualcosa: arancione per il dato principale (punti totali), rosso per
-// la disciplina (falli), neutro per tutto il resto. Prima erano nove colori
-// diversi, quindi i punti totali non risaltavano piu' della colonna falli.
-// I token non spariscono: cambiano solo i valori a cui puntano.
-const LIGHT_NEUTRAL_STAT = "#1A1A1A";
-const LIGHT_FOUL_STAT = "#C62828"; // 5,62:1 su bianco
-
-const lightStats: StatsPalette = {
-  points: ORANGE_ON_LIGHT,
-  games: LIGHT_NEUTRAL_STAT,
-  avg: LIGHT_NEUTRAL_STAT,
-  twopt: LIGHT_NEUTRAL_STAT,
-  threept: LIGHT_NEUTRAL_STAT,
-  ft: LIGHT_NEUTRAL_STAT,
-  fouls: LIGHT_FOUL_STAT,
-  illegalFouls: LIGHT_FOUL_STAT,
-  shotsAttempted: LIGHT_NEUTRAL_STAT,
-};
-
-const DARK_NEUTRAL_STAT = "#F0F0F0";
-const DARK_FOUL_STAT = "#EF5350"; // 5,37:1 su #121212
-
-const darkStats: StatsPalette = {
-  points: ORANGE_ON_DARK,
-  games: DARK_NEUTRAL_STAT,
-  avg: DARK_NEUTRAL_STAT,
-  twopt: DARK_NEUTRAL_STAT,
-  threept: DARK_NEUTRAL_STAT,
-  ft: DARK_NEUTRAL_STAT,
-  fouls: DARK_FOUL_STAT,
-  illegalFouls: DARK_FOUL_STAT,
-  shotsAttempted: DARK_NEUTRAL_STAT,
-};
-
-// I valori chiari del podio (oro #FFC107, argento #BDBDBD, bronzo #CD7F32)
-// erano invisibili su fondo bianco: l'argento faceva 1,88:1. Qui sono
-// saturati/scuriti fino a superare 4,5:1 su bianco, perche' i token colorano
-// anche testo (badge, etichette) e non solo riempimenti. Le tre tinte restano
-// distinguibili fra loro: oro olivastro, argento grigio, bronzo ramato.
-// `deep` e' la seconda fermata del gradiente delle pastiglie.
-const lightMedal: MedalPalette = {
-  // Oro e bronzo sono anche TESTO sui loro fondi tinti (nomi dei traguardi):
-  // lì servono >= 4,5:1, non solo sul bianco (UX-22).
-  gold: "#7A5F00", // 6,06:1 su bianco, 5,18:1 su goldBg
-  goldDeep: "#6E5500",
-  goldBg: "#F1EDE0", // gold al 12% su fondo carta
-  silver: "#616161", // 6,19:1
-  silverDeep: "#424242",
-  silverBg: "#ECECEC",
-  bronze: "#94501F", // 6,13:1 su bianco, 5,22:1 su bronzeBg
-  bronzeDeep: "#7D4020",
-  bronzeBg: "#F5EBE5",
-};
-
-// In dark i valori metallici funzionano gia': 11,81 / 12,63 / 7,53 su #1E1E1E.
-const darkMedal: MedalPalette = {
-  gold: "#FFD54F",
-  goldDeep: "#FFA000",
-  goldBg: "#423B26", // gold al 16% su #1E1E1E
-  silver: "#E0E0E0",
-  silverDeep: "#9E9E9E",
-  silverBg: "#3D3D3D",
-  bronze: "#D7A56B",
-  bronzeDeep: "#8D6E63",
-  bronzeBg: "#3C342A",
-};
+const role: RolePalette = { main: ROLE_FILL, contrastText: BRAND.white };
 
 const sharedTypography = {
   fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -476,8 +291,8 @@ function buildComponents(mode: "light" | "dark") {
   // Arancione da usare per il TESTO sulle superfici del tema corrente.
   const orangeText = isDark ? ORANGE_ON_DARK : ORANGE_ON_LIGHT;
 
-  const cardShadow = isDark ? "0 2px 16px rgba(0,0,0,0.55)" : "0 2px 12px rgba(0,0,0,0.07)";
-  const cardHoverShadow = isDark ? "0 10px 30px rgba(0,0,0,0.70)" : "0 6px 24px rgba(0,0,0,0.13)";
+  const cardShadow = isDark ? SHADOW.cardDark : SHADOW.card;
+  const cardHoverShadow = isDark ? SHADOW.cardHoverDark : SHADOW.cardHover;
 
   return {
     MuiCssBaseline: {
@@ -534,9 +349,22 @@ function buildComponents(mode: "light" | "dark") {
         // solo per il bordo sottile. Dentro una card non cambia nulla (e' gia'
         // di quel colore); in scuro `paper` stacca il campo da #121212 come
         // fanno le card.
+        //
+        // Bordo a riposo da `border.control` (UX-29): il default MUI (nero al
+        // 23%) si fermava a 1,6-2,1:1, sotto il 3:1 dei componenti (WCAG
+        // 1.4.11). In hover prende il colore del testo.
         root: ({ theme }: { theme: Theme }) => ({
           backgroundColor: theme.palette.background.paper,
+          "& .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.border.control },
+          "@media (hover: hover)": {
+            "&:hover:not(.Mui-disabled):not(.Mui-error):not(.Mui-focused) .MuiOutlinedInput-notchedOutline":
+              { borderColor: theme.palette.text.primary },
+          },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: orangeText },
+          "&.Mui-error .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.error.main },
+          "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+            borderColor: theme.palette.action.disabled,
+          },
         }),
       },
     },
@@ -620,7 +448,7 @@ function buildComponents(mode: "light" | "dark") {
           borderRadius: RADIUS.lg,
           boxShadow: cardShadow,
           // In dark l'ombra non stacca la card dallo sfondo: serve un bordo.
-          ...(isDark ? { border: "1px solid rgba(255,255,255,0.09)" } : {}),
+          ...(isDark ? { border: `1px solid ${SHADOW.cardBorderDark}` } : {}),
           transition: "box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease",
           // Si solleva solo una card che si tocca (UX-07): link, bottone o
           // con dentro una CardActionArea. Prima si muovevano tutte, anche
@@ -632,7 +460,7 @@ function buildComponents(mode: "light" | "dark") {
               {
                 boxShadow: cardHoverShadow,
                 transform: "translateY(-2px)",
-                ...(isDark ? { borderColor: "rgba(255,255,255,0.22)" } : {}),
+                ...(isDark ? { borderColor: SHADOW.cardBorderHoverDark } : {}),
               },
             // Con "riduci movimento" la card cambia ombra ma non si solleva.
             "@media (prefers-reduced-motion: reduce)": {
@@ -677,7 +505,7 @@ function buildComponents(mode: "light" | "dark") {
       styleOverrides: {
         root: {
           background: `linear-gradient(135deg, ${sharedAppBar.from} 0%, ${sharedAppBar.to} 100%)`,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+          boxShadow: SHADOW.popover,
           borderRadius: "0 !important",
         },
       },
@@ -729,34 +557,46 @@ export const lightTheme = createTheme({
       onLight: ORANGE_ON_LIGHT,
       // Riempimento sotto un'etichetta bianca (bottoni, chip, pallini).
       fill: ORANGE_FILL,
-      contrastText: "#fff",
+      contrastText: BRAND.white,
     },
-    warning: { main: WARNING_ON_LIGHT, contrastText: "#fff" },
-    info: { main: INFO_ON_LIGHT, contrastText: "#fff" },
+    // Valenza (UX-29): gli stessi valori degli esiti.
+    success: {
+      main: OUTCOME.light.win,
+      dark: OUTCOME.light.winDark,
+      contrastText: OUTCOME.light.onFill,
+    },
+    warning: { main: OUTCOME.light.draw, contrastText: OUTCOME.light.onFill },
+    error: {
+      main: OUTCOME.light.loss,
+      dark: OUTCOME.light.lossDark,
+      contrastText: OUTCOME.light.onFill,
+    },
+    // `info` non e' un colore (UX-29): il blu e' delle squadre.
+    info: { main: NEUTRAL.grey, contrastText: BRAND.white },
     secondary: {
-      main: DARK,
-      light: "#3D3D3D",
-      dark: "#000000",
-      contrastText: "#fff",
+      main: BRAND.dark,
+      light: NEUTRAL.light.inkSoft,
+      dark: BRAND.black,
+      contrastText: BRAND.white,
     },
     background: {
-      default: "#F7F4F1",
-      paper: "#FFFFFF",
+      default: NEUTRAL.light.background,
+      paper: NEUTRAL.light.paper,
     },
     text: {
-      primary: "#1A1A1A",
-      secondary: "#666666",
+      primary: NEUTRAL.light.text,
+      secondary: NEUTRAL.light.textSecondary,
     },
+    border: { control: NEUTRAL.light.borderControl },
     match: lightMatch,
-    status: lightStatus,
-    admin: lightAdmin,
-    stats: lightStats,
-    medal: lightMedal,
+    team: TEAM,
+    bib: BIB,
+    role,
+    medal: MEDAL.light,
     heroGradient: { ...heroGradient, border: "transparent" },
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
     adminBand: lightAdminBand,
-    calendar: lightCalendar,
   },
   typography: sharedTypography,
   shape: sharedShape,
@@ -774,36 +614,38 @@ export const darkTheme = createTheme({
       // superfici #121212 / #1E1E1E).
       onLight: ORANGE_ON_DARK,
       fill: ORANGE_FILL,
-      contrastText: "#fff",
+      contrastText: BRAND.white,
     },
-    // Il rosso del tema scuro resta chiaro (è anche testo su #1E1E1E, 4,53:1);
-    // sotto il bianco dei chip pieni si fermava a 3,68:1. Etichetta scura come
-    // MUI fa già per warning, info e success in scuro: 5,17:1 (UX-22).
-    error: { main: "#F44336", contrastText: "rgba(0, 0, 0, 0.87)" },
+    // Valenza (UX-29): gli stessi valori degli esiti, con etichetta scura sui
+    // riempimenti chiari.
+    success: { main: OUTCOME.dark.win, contrastText: OUTCOME.dark.onFill },
+    warning: { main: OUTCOME.dark.draw, contrastText: OUTCOME.dark.onFill },
+    error: { main: OUTCOME.dark.loss, contrastText: OUTCOME.dark.onFill },
+    info: { main: NEUTRAL.dark.textSecondary, contrastText: NEUTRAL.onLightFill },
     secondary: {
-      main: "#E0E0E0",
-      light: "#FFFFFF",
-      dark: "#BDBDBD",
-      contrastText: "#000",
+      main: NEUTRAL.dark.inverse,
+      light: BRAND.white,
+      dark: NEUTRAL.dark.inverseDark,
+      contrastText: BRAND.black,
     },
     background: {
-      default: "#121212",
-      paper: "#1E1E1E",
+      default: NEUTRAL.dark.background,
+      paper: NEUTRAL.dark.paper,
     },
     text: {
-      primary: "#F0F0F0",
-      secondary: "#AAAAAA",
+      primary: NEUTRAL.dark.text,
+      secondary: NEUTRAL.dark.textSecondary,
     },
+    border: { control: NEUTRAL.dark.borderControl },
     match: darkMatch,
-    status: darkStatus,
-    admin: darkAdmin,
-    stats: darkStats,
-    medal: darkMedal,
-    heroGradient: { ...heroGradient, border: "rgba(255,255,255,0.14)" },
+    team: TEAM,
+    bib: BIB,
+    role,
+    medal: MEDAL.dark,
+    heroGradient: { ...heroGradient, border: HERO.border },
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
     adminBand: darkAdminBand,
-    calendar: darkCalendar,
   },
   typography: sharedTypography,
   shape: sharedShape,

@@ -15,8 +15,10 @@
  * né per sfondi a token tema (lì si usano i token `*.contrastText` di MUI).
  */
 
-const DARK_TEXT = "rgba(0,0,0,0.87)";
-const LIGHT_TEXT = "#fff";
+import { BRAND, NEUTRAL } from "@/lib/palette";
+
+const DARK_TEXT = NEUTRAL.onLightFill;
+const LIGHT_TEXT = BRAND.white;
 
 /** Converte un colore hex (#rgb o #rrggbb) in [r, g, b]; null se non parsabile. */
 function parseHex(color: string): [number, number, number] | null {
@@ -96,7 +98,7 @@ export function readableOn(color: string, background: string, target = 4.5): str
 }
 
 /**
- * Restituisce il colore testo leggibile ("#fff" o nero quasi pieno) per uno sfondo dato.
+ * Restituisce il colore testo leggibile (bianco o nero quasi pieno) per uno sfondo dato.
  * Accetta hex (#rgb/#rrggbb); per valori null/undefined o non parsabili (es. token tema)
  * assume sfondo scuro/brand e restituisce bianco, coerente col comportamento storico.
  */
@@ -144,5 +146,5 @@ export function readableFill(
   const fg = preferWhite ? LIGHT_TEXT : contrastText(color);
   const shown: [number, number, number] = fg === LIGHT_TEXT ? [255, 255, 255] : darkTextOn(rgb);
   if (ratio(rgb, shown) >= 4.5) return { bg: color, fg };
-  return { bg: readableOn(color, "#ffffff"), fg: LIGHT_TEXT };
+  return { bg: readableOn(color, BRAND.white), fg: LIGHT_TEXT };
 }

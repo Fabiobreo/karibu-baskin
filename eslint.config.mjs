@@ -14,16 +14,56 @@ const FONT_SIZE_RULE = {
     "fontSize letterale: usa variant, sx={{ typography: '…' }} o TYPE_SCALE da @/lib/typeScale",
 };
 
+const PALETTE_MESSAGE =
+  "Colore scritto a mano: usa un token del tema, teamColor() da @/lib/teamColors o una costante di @/lib/palette (l'unico file con i colori, UX-29).";
+
 const RESTRICTED_SYNTAX = [
+  // UX-29: la palette e' chiusa. I colori stanno solo in `@/lib/palette`; il
+  // resto usa i token del tema, `@/lib/teamColors` o le costanti di
+  // `@/lib/palette` (OG, email, global-error). Le ombre non sono colori con un
+  // significato e restano libere.
   {
-    selector: "JSXAttribute[name.name='sx'] Literal[value=/#[0-9a-fA-F]{3,8}/]",
-    message:
-      "Colore esadecimale dentro sx: usa un token del tema (primary.main, text.secondary, medal.gold…) invece del letterale.",
+    selector: "Literal[value=/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/]",
+    message: PALETTE_MESSAGE,
   },
   {
-    selector: "JSXAttribute[name.name='sx'] TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}/]",
+    selector:
+      "TemplateElement[value.raw=/#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})([^0-9a-fA-F]|$)/]:not(Property[key.name=/^(boxShadow|textShadow)$/] TemplateElement)",
+    message: PALETTE_MESSAGE,
+  },
+  {
+    selector:
+      "Literal[value=/rgba?[(]/]:not(Property[key.name=/^(boxShadow|textShadow|filter)$/] Literal)",
+    message: PALETTE_MESSAGE,
+  },
+  {
+    selector:
+      "TemplateElement[value.raw=/rgba?[(]/]:not(Property[key.name=/^(boxShadow|textShadow|filter)$/] TemplateElement)",
+    message: PALETTE_MESSAGE,
+  },
+  // Senza colore una squadra non ha nessun segno: mai un ripiego (tanto meno
+  // l'arancio, che vuol dire "si tocca").
+  {
+    selector:
+      "LogicalExpression:matches([operator='??'], [operator='||'])[left.property.name=/^(color|teamColor)$/]",
     message:
-      "Colore esadecimale dentro sx: usa un token del tema (primary.main, text.secondary, medal.gold…) invece del letterale.",
+      "Ripiego sul colore di una squadra: usa teamColor() da @/lib/teamColors, che restituisce null senza colore (nessun segno, mai primary).",
+  },
+  // Token tolti in UX-29: tipi, stati, KPI e statistiche sono neutri.
+  {
+    selector: "Literal[value=/^(admin|calendar|stats|status)[.]/]",
+    message:
+      "Token rimosso in UX-29: tipi, stati temporali, KPI e statistiche sono neutri (icona, forma o parola). Vedi CLAUDE.md, Colore = significato.",
+  },
+  {
+    selector:
+      "MemberExpression[object.property.name='palette'][property.name=/^(admin|calendar|stats|status)$/]",
+    message: "Token rimosso in UX-29: vedi CLAUDE.md, Colore = significato.",
+  },
+  // `info` e' neutro: il blu e' delle squadre.
+  {
+    selector: "JSXAttribute[name.name='color'] > Literal[value='info']",
+    message: "info non e' un colore (UX-29): usa il colore di default del componente.",
   },
   // UX-09: `text.disabled` (#9E9E9E, 2,67:1 su bianco) non e' un colore di
   // testo. Esenti solo le icone grandi degli stati vuoti (fontSize >= 40
@@ -93,13 +133,12 @@ export default [
     },
   },
   {
-    // I colori vanno presi dai token del tema (vedi CLAUDE.md): un letterale
-    // esadecimale dentro `sx` rompe il tema chiaro/scuro e sfugge alle
-    // verifiche di contrasto.
+    // Stile dal tema (vedi CLAUDE.md): colori, testo, raggi. Un colore scritto
+    // a mano rompe il tema chiaro/scuro e sfugge alle verifiche di contrasto.
     files: ["src/**/*.tsx", "src/**/*.ts"],
     rules: {
-      // In `error` da UX-27 (UX-31 per i pesi): colori, text.disabled,
-      // fontSize e fontWeight letterali sono a zero, e non devono tornare.
+      // In `error` da UX-27 (UX-31 per i pesi, UX-29 per la palette chiusa):
+      // colori, text.disabled, fontSize e fontWeight letterali non devono tornare.
       "no-restricted-syntax": ["error", ...RESTRICTED_SYNTAX],
     },
   },
@@ -118,6 +157,23 @@ export default [
       "no-restricted-syntax": [
         "error",
         ...RESTRICTED_SYNTAX.filter((rule) => rule !== FONT_SIZE_RULE),
+      ],
+    },
+  },
+  {
+    // L'unico file con i colori, e i test e le storie che li verificano o li
+    // usano come dati di prova (UX-29).
+    files: [
+      "src/lib/palette.ts",
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "src/**/*.stories.tsx",
+      "src/stories/**",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        ...RESTRICTED_SYNTAX.filter((rule) => rule.message !== PALETTE_MESSAGE),
       ],
     },
   },

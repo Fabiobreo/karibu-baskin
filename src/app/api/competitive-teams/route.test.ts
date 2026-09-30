@@ -39,7 +39,7 @@ const baseTeam = {
   name: "Karibu A",
   season: "2025-26",
   championship: "Campionato Veneto",
-  color: "#FF6600",
+  color: "blue",
   description: null,
   _count: { memberships: 10, matches: 5 },
 };
@@ -131,14 +131,14 @@ describe("POST /api/competitive-teams", () => {
     const req = new Request("http://localhost/api/competitive-teams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "  Karibu A  ", season: "2025-26", color: "#FF6600" }),
+      body: JSON.stringify({ name: "  Karibu A  ", season: "2025-26", color: "blue" }),
     });
     const res = await POST(req);
     expect(res.status).toBe(201);
     const data = p.competitiveTeam.create.mock.calls[0][0].data;
     expect(data.name).toBe("Karibu A");
     expect(data.season).toBe("2025-26");
-    expect(data.color).toBe("#FF6600");
+    expect(data.color).toBe("blue");
   });
 
   it("permette una seconda squadra nella stessa stagione (count=1)", async () => {

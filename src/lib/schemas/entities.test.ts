@@ -216,7 +216,7 @@ describe("CompetitiveTeamCreateSchema", () => {
     const full = {
       ...base,
       championship: "Serie C",
-      color: "#FF6600",
+      color: "blue",
       description: "Squadra agonistica under 18",
     };
     expect(CompetitiveTeamCreateSchema.safeParse(full).success).toBe(true);
@@ -253,7 +253,7 @@ describe("CompetitiveTeamCreateSchema", () => {
     );
   });
 
-  it("rifiuta colore in formato non hex", () => {
+  it("rifiuta un colore fuori dalla palette (UX-29)", () => {
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "orange" }).success).toBe(false);
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#GG0000" }).success).toBe(
       false
@@ -261,9 +261,11 @@ describe("CompetitiveTeamCreateSchema", () => {
     expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#FFF" }).success).toBe(false);
   });
 
-  it("accetta colore hex valido (maiuscolo e minuscolo)", () => {
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#FF6600" }).success).toBe(true);
-    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#ff6600" }).success).toBe(true);
+  it("accetta le chiavi della palette e non gli hex liberi (UX-29)", () => {
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "violet" }).success).toBe(true);
+    expect(CompetitiveTeamCreateSchema.safeParse({ ...base, color: "#FF6600" }).success).toBe(
+      false
+    );
   });
 });
 
