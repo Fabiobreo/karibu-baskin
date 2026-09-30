@@ -86,7 +86,6 @@ export default function CoverFallback({ day, month, weekday }: CoverFallbackProp
             sx={{
               display: "block",
               lineHeight: 1,
-              fontWeight: 800,
               fontVariantNumeric: "tabular-nums",
             }}
           >
@@ -96,7 +95,7 @@ export default function CoverFallback({ day, month, weekday }: CoverFallbackProp
             <Typography
               variant="subtitle1"
               component="span"
-              sx={{ display: "block", fontWeight: 700, color: heroText.secondary }}
+              sx={{ display: "block", color: heroText.secondary }}
             >
               {month}
             </Typography>

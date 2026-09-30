@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 import FeaturedCard from "@/components/news/FeaturedCard";
 import SideCard from "@/components/news/SideCard";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type PostItem = {
   id: string;
@@ -57,7 +58,6 @@ export default async function LatestNewsHero() {
             <Typography
               variant="h5"
               component="h2"
-              fontWeight={800}
               sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
             >
               {t("latestNews")}
@@ -86,7 +86,7 @@ export default async function LatestNewsHero() {
             <Typography
               variant="body2"
               color="primary.onLight"
-              sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
+              sx={{ fontWeight: FONT_WEIGHT.semibold, "&:hover": { textDecoration: "underline" } }}
             >
               {tm("homeSeeAll")}
             </Typography>

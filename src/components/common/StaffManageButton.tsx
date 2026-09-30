@@ -31,7 +31,6 @@ export default function StaffManageButton({ href, label }: StaffManageButtonProp
       sx={{
         color: "common.white",
         typography: "caption",
-        fontWeight: 700,
         px: 1.5,
         "& .MuiButton-startIcon": { mr: 0.5 },
       }}

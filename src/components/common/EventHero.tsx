@@ -133,7 +133,6 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
             variant="body2"
             sx={{
               color: alpha(brandColor.white, 0.6),
-              fontWeight: 500,
               whiteSpace: "nowrap",
               "&:hover": { color: "common.white" },
             }}
@@ -142,7 +141,7 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
           </MuiLink>
           <Typography
             variant="body2"
-            sx={{ color: alpha(brandColor.white, 0.9), fontWeight: 500, minWidth: 0 }}
+            sx={{ color: alpha(brandColor.white, 0.9), minWidth: 0 }}
             noWrap
           >
             {ev.title}
@@ -155,7 +154,6 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
           variant="h4"
           component="h1"
           sx={{
-            fontWeight: 800,
             lineHeight: 1.15,
             fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
             mb: 1.5,
@@ -170,7 +168,6 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
             size="small"
             sx={{
               ...statusStyle,
-              fontWeight: 700,
               fontSize: TYPE_SCALE.xs,
               letterSpacing: 0.5,
             }}
@@ -189,16 +186,12 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
             <CalendarTodayIcon sx={{ fontSize: 16 }} />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {dateLabel}
-            </Typography>
+            <Typography variant="body2">{dateLabel}</Typography>
           </Box>
           {timeLabel && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
               <AccessTimeIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {timeLabel}
-              </Typography>
+              <Typography variant="body2">{timeLabel}</Typography>
             </Box>
           )}
           {/* Link a Google Maps, non una mappa incorporata: niente cookie. */}
@@ -213,7 +206,6 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
                 underline="always"
                 variant="body2"
                 aria-label={t("locationMap", { place: ev.location })}
-                sx={{ fontWeight: 500 }}
               >
                 {ev.location}
               </MuiLink>

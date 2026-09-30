@@ -13,6 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import { readError } from "@/lib/fetchJson";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type OpposingTeamEditable = {
   id: string;
@@ -90,7 +91,7 @@ export default function OpposingTeamEditDialog({ open, onClose, team, onSaved }:
 
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle fontWeight={700}>Modifica squadra avversaria</DialogTitle>
+      <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Modifica squadra avversaria</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}

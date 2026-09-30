@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import type { SimResult } from "@/lib/rating/matchSimulator";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface SimulatorResultProps {
   result: SimResult;
@@ -53,7 +54,6 @@ export default function SimulatorResult({
           label={labelText}
           size="small"
           color={label === "Equilibrata" ? "default" : "primary"}
-          sx={{ fontWeight: 700 }}
         />
       </Box>
 
@@ -68,7 +68,7 @@ export default function SimulatorResult({
         }}
       >
         <TeamScore name={nameA} score={scoreA} win={winner === "A"} colorToken="primary.main" />
-        <Typography variant="h5" color="text.secondary" fontWeight={800}>
+        <Typography variant="h5" color="text.secondary">
           –
         </Typography>
         <TeamScore name={nameB} score={scoreB} win={winner === "B"} colorToken="secondary.main" />
@@ -89,33 +89,23 @@ export default function SimulatorResult({
           <Box sx={{ width: `${pctB}%`, bgcolor: "secondary.main" }} />
         </Box>
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>
+          <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
             {pctA}%
           </Typography>
           <Typography variant="caption" color="text.secondary">
             {t("winChance")}
           </Typography>
-          <Typography variant="caption" color="text.secondary" fontWeight={700}>
+          <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
             {pctB}%
           </Typography>
         </Box>
       </Box>
 
       <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mt: 3 }}>
-        <Button
-          variant="contained"
-          startIcon={<ReplayIcon />}
-          onClick={onRematch}
-          sx={{ fontWeight: 700 }}
-        >
+        <Button variant="contained" startIcon={<ReplayIcon />} onClick={onRematch}>
           {t("rematch")}
         </Button>
-        <Button
-          variant="outlined"
-          startIcon={<IosShareIcon />}
-          onClick={onShare}
-          sx={{ fontWeight: 700 }}
-        >
+        <Button variant="outlined" startIcon={<IosShareIcon />} onClick={onShare}>
           {t("share")}
         </Button>
       </Stack>
@@ -138,7 +128,6 @@ function TeamScore({
     <Box sx={{ textAlign: "center", minWidth: 0 }}>
       <Typography
         variant="h2"
-        fontWeight={900}
         sx={{
           color: win ? colorToken : "text.primary",
           opacity: win ? 1 : 0.55,
@@ -149,7 +138,7 @@ function TeamScore({
       >
         {score}
       </Typography>
-      <Typography variant="subtitle2" fontWeight={700} noWrap sx={{ mt: 0.5, color: colorToken }}>
+      <Typography variant="subtitle2" noWrap sx={{ mt: 0.5, color: colorToken }}>
         {name}
       </Typography>
     </Box>

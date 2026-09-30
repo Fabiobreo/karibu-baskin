@@ -3,6 +3,7 @@ import { Alert, Box, Button, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface InlineErrorProps {
   /** Cosa non e' andato, in una riga ("Iscrizione non salvata."). In grassetto. */
@@ -51,7 +52,7 @@ export default function InlineError({
               size="small"
               disabled={retrying}
               onClick={onRetry}
-              sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+              sx={{ whiteSpace: "nowrap" }}
             >
               {t("retry")}
             </Button>
@@ -65,7 +66,7 @@ export default function InlineError({
       }
     >
       {title && (
-        <Box component="span" sx={{ fontWeight: 700 }}>
+        <Box component="span" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
           {title}
         </Box>
       )}

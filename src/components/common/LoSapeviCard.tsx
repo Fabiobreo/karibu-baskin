@@ -7,6 +7,7 @@ import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
 import { heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /**
  * Mostra un fatto casuale al mount — cambia ad ogni refresh di pagina.
@@ -76,7 +77,7 @@ export default function LoSapeviCard() {
             <Typography
               variant="subtitle1"
               component="h3"
-              fontWeight={800}
+              fontWeight={FONT_WEIGHT.bold}
               sx={{ mb: 0.5, lineHeight: 1.3 }}
             >
               {item.titolo}

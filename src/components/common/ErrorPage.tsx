@@ -5,6 +5,7 @@ import { alpha } from "@mui/material/styles";
 import Image from "next/image";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Testi di riserva, in italiano come ogni URL senza cookie. Servono quando la
 // pagina di errore viene resa fuori dal NextIntlClientProvider: succede con le
@@ -71,7 +72,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       {code && (
         <Typography
           sx={{
-            fontWeight: 900,
+            fontWeight: FONT_WEIGHT.bold,
             fontSize: { xs: TYPE_SCALE.xl9, md: TYPE_SCALE.xl10 },
             color: "primary.main",
             lineHeight: 1,
@@ -88,7 +89,6 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       {/* Titolo */}
       <Typography
         variant="h5"
-        fontWeight={800}
         sx={{ mt: code ? 1 : 3, mb: 1.5, fontSize: { xs: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 } }}
       >
         {title}
@@ -125,12 +125,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       {/* Azioni */}
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
         {showReset && onReset && (
-          <Button
-            variant="contained"
-            size="large"
-            onClick={onReset}
-            sx={{ px: 4, fontWeight: 700 }}
-          >
+          <Button variant="contained" size="large" onClick={onReset} sx={{ px: 4 }}>
             {t("retry")}
           </Button>
         )}
@@ -140,7 +135,6 @@ export default function ErrorPage({ code, title, description, showReset, onReset
           size="large"
           sx={{
             px: 4,
-            fontWeight: 700,
             ...(showReset && {
               color: "rgba(255,255,255,0.7)",
               borderColor: "rgba(255,255,255,0.2)",

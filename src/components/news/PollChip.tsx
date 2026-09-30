@@ -30,7 +30,6 @@ export default function PollChip({ closesAt }: PollChipProps) {
       icon={<HowToVoteIcon sx={{ fontSize: 16 }} />}
       label={closed ? t("closedBadge") : t("badge")}
       size="small"
-      sx={{ fontWeight: 700 }}
     />
   );
 }

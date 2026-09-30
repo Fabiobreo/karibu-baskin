@@ -80,7 +80,6 @@ export default function SideCard({ post }: SideCardProps) {
           <Typography
             variant="subtitle2"
             component="h3"
-            fontWeight={700}
             sx={{
               color: "text.primary",
               lineHeight: 1.3,

@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { heroGradient } from "@/lib/heroStyles";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export default async function BirthdayBanner() {
   const now = new Date();
@@ -61,7 +62,7 @@ export default async function BirthdayBanner() {
           }}
         >
           <Typography sx={{ fontSize: TYPE_SCALE.xl2, lineHeight: 1 }}>🎂</Typography>
-          <Typography variant="body2" fontWeight={700}>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             {celebrants.length === 1 ? (
               <>
                 {celebrants[0].slug ? (

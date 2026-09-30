@@ -13,6 +13,7 @@ import { brandColor } from "@/lib/heroStyles";
 import CoverFallback from "@/components/common/CoverFallback";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const FEATURED_TEASER_LEN = 160;
 
@@ -102,7 +103,6 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
                 // (UX-07: l'arancio pieno e' per cio' che si tocca).
                 bgcolor: alpha(brandColor.white, 0.16),
                 color: "common.white",
-                fontWeight: 700,
                 "& .MuiChip-icon": { color: "common.white" },
               }}
             />
@@ -112,7 +112,6 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           <Typography
             variant="h5"
             component="h3"
-            fontWeight={800}
             sx={{
               color: "common.white",
               fontSize: { xs: TYPE_SCALE.xl, sm: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
@@ -145,7 +144,10 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           )}
 
           {post.publishedAt && (
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.85)", fontWeight: FONT_WEIGHT.semibold }}
+            >
               {format(new Date(post.publishedAt), "d MMMM yyyy", { locale: dateLocale })}
             </Typography>
           )}

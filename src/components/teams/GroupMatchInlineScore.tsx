@@ -5,6 +5,7 @@ import { Box, Popover, TextField, Button, Typography, CircularProgress } from "@
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   groupId: string;
@@ -88,7 +89,6 @@ export default function GroupMatchInlineScore({
           px: 0.75,
           py: 0,
           fontSize: TYPE_SCALE.xs,
-          fontWeight: 600,
           textTransform: "none",
           color: hasScore ? "text.primary" : "primary.main",
         }}
@@ -102,7 +102,11 @@ export default function GroupMatchInlineScore({
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1.5, minWidth: 240 }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontWeight: FONT_WEIGHT.semibold }}
+          >
             {homeName} vs {awayName}
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "center" }}>

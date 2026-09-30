@@ -91,7 +91,6 @@ export default function PlayerShareButtons({
         sx={{
           bgcolor: fill.bg,
           color: fill.fg,
-          fontWeight: 700,
           fontSize: TYPE_SCALE.xs,
           textTransform: "none",
           px: 1.75,
@@ -112,7 +111,7 @@ export default function PlayerShareButtons({
         onClick={handleCopy}
         startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
         aria-label={t("copyProfileLink")}
-        sx={{ color: "common.white", fontWeight: 700, fontSize: TYPE_SCALE.xs, px: 1.5 }}
+        sx={{ color: "common.white", fontSize: TYPE_SCALE.xs, px: 1.5 }}
       >
         {t("copyLink")}
       </Button>

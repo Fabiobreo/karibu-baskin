@@ -9,6 +9,7 @@ import { roleColor } from "@/lib/constants";
 import type { SimPlayer } from "@/components/teams/MatchSimulator";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const pkey = (p: SimPlayer) => `${p.kind}-${p.id}`;
 
@@ -76,11 +77,11 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                 <Chip
                   label={groups.get(k)?.length ?? 0}
                   size="small"
-                  sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
+                  sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
                 />
               </Box>
             }
-            sx={{ textTransform: "none", fontWeight: 700 }}
+            sx={{ textTransform: "none" }}
           />
         ))}
       </Tabs>
@@ -100,7 +101,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <Typography variant="body2" fontWeight={700} noWrap>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                   {p.name}
                 </Typography>
                 <GenderMark gender={p.gender} />
@@ -109,7 +110,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
                 label={p.teamName}
                 size="small"
                 variant="outlined"
-                sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 600, mt: 0.25 }}
+                sx={{ height: 20, fontSize: TYPE_SCALE.xs, mt: 0.25 }}
               />
             </Box>
             <Button
@@ -119,7 +120,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
               onClick={() => onAssign(p, "A")}
               sx={{
                 minWidth: 40,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 color: "primary.onLight",
                 borderColor: "primary.main",
               }}
@@ -133,7 +134,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
               onClick={() => onAssign(p, "B")}
               sx={{
                 minWidth: 40,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 color: "secondary.main",
                 borderColor: "secondary.main",
               }}

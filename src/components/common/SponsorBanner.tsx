@@ -10,6 +10,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // ── Dati sponsor ──────────────────────────────────────────────────────────────
 // src: percorso immagine in /public (es. "/sponsors/denis.png")
@@ -137,7 +138,7 @@ export default function SponsorBanner() {
           variant="caption"
           sx={{
             color: "text.secondary",
-            fontWeight: 700,
+            fontWeight: FONT_WEIGHT.semibold,
             letterSpacing: "0.08em",
             textTransform: "uppercase",
             fontSize: TYPE_SCALE.xs,
@@ -277,7 +278,7 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
           <Typography
             sx={{
               color: "common.white",
-              fontWeight: 800,
+              fontWeight: FONT_WEIGHT.bold,
               fontSize: TYPE_SCALE.md,
               letterSpacing: "0.06em",
               userSelect: "none",
@@ -293,7 +294,6 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
         sx={{
           color: "text.secondary",
           fontSize: TYPE_SCALE.xs,
-          fontWeight: 500,
           maxWidth: 110,
           overflow: "hidden",
           textOverflow: "ellipsis",

@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { GuestOnboarding, OnboardingStep } from "@/lib/guestOnboarding";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface GuestOnboardingCardProps {
   data: GuestOnboarding;
@@ -133,13 +134,17 @@ export default function GuestOnboardingCard({
             id="guest-onboarding-title"
             variant="h5"
             component="h2"
-            fontWeight={800}
             sx={{ fontSize: { xs: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 } }}
           >
             {t("title")}
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ flexShrink: 0 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          fontWeight={FONT_WEIGHT.semibold}
+          sx={{ flexShrink: 0 }}
+        >
           {t("progress", { done: data.doneCount, total })}
         </Typography>
       </Box>
@@ -203,7 +208,7 @@ export default function GuestOnboardingCard({
                 <Box sx={{ minWidth: 0 }}>
                   <Typography
                     variant="body1"
-                    fontWeight={700}
+                    fontWeight={FONT_WEIGHT.semibold}
                     // `relative`: il testo nascosto dello stato resta dentro il titolo (UX-20).
                     sx={{ position: "relative", color: isDone ? "text.secondary" : "text.primary" }}
                   >
@@ -223,7 +228,7 @@ export default function GuestOnboardingCard({
                   <Button
                     href={c.action.href}
                     variant={c.action.primary ? (isNext ? "contained" : "outlined") : "text"}
-                    sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+                    sx={{ whiteSpace: "nowrap" }}
                   >
                     {c.action.label}
                   </Button>

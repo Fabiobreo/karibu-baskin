@@ -102,7 +102,7 @@ export default function TestLoginForm({ callbackUrl = "/" }: { callbackUrl?: str
           fullWidth
           disabled={loading || !email || !password}
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <BugReportIcon />}
-          sx={{ textTransform: "none", fontWeight: 600 }}
+          sx={{ textTransform: "none" }}
         >
           {loading ? "Accesso in corso..." : "Accedi (test)"}
         </Button>

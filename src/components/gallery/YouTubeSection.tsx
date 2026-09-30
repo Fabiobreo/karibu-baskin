@@ -4,6 +4,7 @@ import { Box, Typography, Grid2 as Grid } from "@mui/material";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import Image from "next/image";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface GalleryVideo {
   id: string;
@@ -24,7 +25,7 @@ export default function YouTubeSection({ videos }: YouTubeSectionProps) {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
+      <Typography variant="h5" sx={{ mb: 0.5 }}>
         Video
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -94,7 +95,7 @@ export default function YouTubeSection({ videos }: YouTubeSectionProps) {
               </Box>
               <Typography
                 variant="body2"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{
                   mt: 1,
                   display: "-webkit-box",

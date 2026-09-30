@@ -5,6 +5,7 @@ import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 function scrollToAllenamenti() {
   document.getElementById("allenamenti")?.scrollIntoView({ behavior: "smooth" });
@@ -95,7 +96,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
           <Typography
             sx={{
               color: "common.white",
-              fontWeight: 700,
+              fontWeight: FONT_WEIGHT.semibold,
               fontSize: { xs: TYPE_SCALE.lg, md: TYPE_SCALE.xl },
               mb: 1.5,
               textShadow: "0 1px 8px rgba(0,0,0,0.5)",
@@ -111,7 +112,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
         <Typography
           component="h1"
           sx={{
-            fontWeight: 900,
+            fontWeight: FONT_WEIGHT.bold,
             fontSize: guest
               ? { xs: TYPE_SCALE.xl6, sm: TYPE_SCALE.xl7, md: TYPE_SCALE.xl8 }
               : { xs: TYPE_SCALE.xl7, sm: TYPE_SCALE.xl8, md: TYPE_SCALE.xl9 },
@@ -160,7 +161,6 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
         <Typography
           sx={{
             color: "rgba(255,255,255,0.78)",
-            fontWeight: 400,
             fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
             lineHeight: 1.65,
             mb: compact ? 4 : 5,
@@ -185,7 +185,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
             {...(visitor ? { href: TRY_IT_HREF } : { onClick: scrollToAllenamenti })}
             variant="contained"
             size="large"
-            sx={{ fontWeight: 700, px: 3.5 }}
+            sx={{ px: 3.5 }}
           >
             {guest
               ? tGuest("heroCtaTrainings")
@@ -199,7 +199,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
             variant="outlined"
             color="inherit"
             size="large"
-            sx={{ fontWeight: 700, px: 3 }}
+            sx={{ px: 3 }}
           >
             {guest ? tGuest("heroCtaRole") : t("whatIsBaskin")}
           </Button>

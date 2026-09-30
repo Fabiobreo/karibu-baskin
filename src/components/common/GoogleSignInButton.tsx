@@ -49,7 +49,6 @@ export default function GoogleSignInButton({ callbackUrl = "/" }: { callbackUrl?
       }
       sx={{
         textTransform: "none",
-        fontWeight: 700,
         fontSize: TYPE_SCALE.md,
         py: 1.25,
         // Fondo chiaro e bordo tenue: e' la variante "light" prevista dalle

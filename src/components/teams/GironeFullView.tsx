@@ -30,6 +30,7 @@ import StatAbbr from "@/components/teams/StatAbbr";
 import type { StandingEntry } from "@/lib/season/standings";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type OurMatchData = {
   id: string;
@@ -151,13 +152,10 @@ export default function GironeFullView({
             sx={{
               bgcolor: t.color ?? "primary.main",
               color: contrastText(t.color),
-              fontWeight: 700,
             }}
           />
         ))}
-        <Typography variant="subtitle2" fontWeight={700}>
-          {groupName}
-        </Typography>
+        <Typography variant="subtitle2">{groupName}</Typography>
         {championship && (
           <Chip
             label={championship}
@@ -186,7 +184,7 @@ export default function GironeFullView({
               <TableRow
                 sx={{
                   "& th": {
-                    fontWeight: 700,
+                    fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     textTransform: "uppercase",
                     letterSpacing: "0.05em",
@@ -233,14 +231,16 @@ export default function GironeFullView({
                       bgcolor: s.isOurs
                         ? (theme) => alpha(theme.palette.primary.main, 0.14)
                         : undefined,
-                      "& td": s.isOurs ? { color: "text.primary", fontWeight: 700 } : {},
+                      "& td": s.isOurs
+                        ? { color: "text.primary", fontWeight: FONT_WEIGHT.semibold }
+                        : {},
                     }}
                   >
                     <TableCell sx={{ pl: 2 }}>
                       <Typography
                         variant="body2"
                         color={s.isOurs ? "inherit" : "text.secondary"}
-                        fontWeight={600}
+                        fontWeight={FONT_WEIGHT.semibold}
                       >
                         {i + 1}
                       </Typography>
@@ -253,14 +253,14 @@ export default function GironeFullView({
                         >
                           <Typography
                             variant="body2"
-                            fontWeight={800}
+                            fontWeight={FONT_WEIGHT.bold}
                             sx={{ "&:hover": { textDecoration: "underline" } }}
                           >
                             {s.name}
                           </Typography>
                         </Link>
                       ) : (
-                        <Typography variant="body2" fontWeight={600}>
+                        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                           {s.name}
                         </Typography>
                       )}
@@ -280,7 +280,7 @@ export default function GironeFullView({
                       </TableCell>
                     ))}
                     <TableCell align="center" sx={NUMERIC_CELL}>
-                      <Typography variant="body2" fontWeight={800}>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.bold}>
                         {s.points}
                       </Typography>
                     </TableCell>
@@ -319,7 +319,7 @@ export default function GironeFullView({
               "& .MuiTab-root": {
                 minHeight: 36,
                 fontSize: TYPE_SCALE.xs,
-                fontWeight: 700,
+                fontWeight: FONT_WEIGHT.semibold,
                 textTransform: "none",
                 py: 0.5,
               },
@@ -360,14 +360,16 @@ export default function GironeFullView({
                         >
                           {format(new Date(m.date), "d MMM", { locale: dateLocale })}
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
+                        <TableCell
+                          sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}
+                        >
                           {home}
                         </TableCell>
                         <TableCell
                           align="center"
                           sx={{
                             width: 90,
-                            fontWeight: 800,
+                            fontWeight: FONT_WEIGHT.bold,
                             fontSize: TYPE_SCALE.sm,
                             fontVariantNumeric: "tabular-nums",
                             whiteSpace: "nowrap",
@@ -377,7 +379,9 @@ export default function GironeFullView({
                             ? `${homeScore} – ${awayScore}`
                             : "– – –"}
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
+                        <TableCell
+                          sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}
+                        >
                           {away}
                         </TableCell>
                         <TableCell sx={{ width: 36 }}>
@@ -390,7 +394,6 @@ export default function GironeFullView({
                               sx={{
                                 bgcolor: RESULT_COLORS[m.result],
                                 color: "match.onFill",
-                                fontWeight: 700,
                                 height: 20,
                                 fontSize: TYPE_SCALE.xs,
                               }}
@@ -417,7 +420,7 @@ export default function GironeFullView({
                         align="center"
                         sx={{
                           width: 90,
-                          fontWeight: 700,
+                          fontWeight: FONT_WEIGHT.semibold,
                           fontSize: TYPE_SCALE.xs,
                           fontVariantNumeric: "tabular-nums",
                           whiteSpace: "nowrap",

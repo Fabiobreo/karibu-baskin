@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const INTERVAL_MS = 7000;
 
@@ -145,7 +146,7 @@ export default function LoSapeviCarousel() {
             <Typography
               variant="subtitle1"
               component="h3"
-              fontWeight={800}
+              fontWeight={FONT_WEIGHT.bold}
               sx={{ mb: 0.75, lineHeight: 1.3 }}
             >
               {item.titolo}
@@ -171,7 +172,7 @@ export default function LoSapeviCarousel() {
             puntini non comunicavano piu' nessuna posizione. */}
         <Typography
           variant="body2"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ color: "rgba(255,255,255,0.75)", fontVariantNumeric: "tabular-nums" }}
           aria-live="polite"
         >

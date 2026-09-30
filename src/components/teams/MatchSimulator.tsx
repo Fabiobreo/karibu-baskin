@@ -37,6 +37,7 @@ import SimulatorPool from "@/components/teams/SimulatorPool";
 import RoleBadge from "@/components/common/RoleBadge";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /**
  * Giocatore selezionabile nel simulatore.
@@ -273,7 +274,7 @@ export default function MatchSimulator({ teams, initial = EMPTY_INITIAL }: Match
           }
           disabled={!canSimulate || simulate.isPending}
           onClick={handleSimulate}
-          sx={{ fontWeight: 800, flex: 1 }}
+          sx={{ fontWeight: FONT_WEIGHT.bold, flex: 1 }}
         >
           {t("simulate")}
         </Button>
@@ -347,12 +348,12 @@ function SideColumn({
     >
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Typography variant="subtitle2" fontWeight={800} sx={{ color: colorToken }}>
+          <Typography variant="subtitle2" fontWeight={FONT_WEIGHT.bold} sx={{ color: colorToken }}>
             {title}
           </Typography>
           {checks.valid && <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />}
         </Box>
-        <Chip label={countLabel} size="small" sx={{ fontWeight: 700 }} />
+        <Chip label={countLabel} size="small" />
       </Box>
       {players.length === 0 ? (
         <Typography variant="caption" color="text.secondary">

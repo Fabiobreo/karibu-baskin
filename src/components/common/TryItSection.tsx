@@ -11,6 +11,7 @@ import MapEmbed from "@/components/common/MapEmbed";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { CLUB_VENUE, CLUB_VENUE_LABEL, mapsSearchUrl, trainingLocation } from "@/lib/clubVenue";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface UpcomingSession {
   id: string;
@@ -42,7 +43,7 @@ function InfoBlock({
         <Box aria-hidden="true" sx={{ color: "text.secondary", display: "flex" }}>
           {icon}
         </Box>
-        <Typography variant="subtitle1" component="h3" fontWeight={700}>
+        <Typography variant="subtitle1" component="h3">
           {title}
         </Typography>
       </Box>
@@ -77,7 +78,7 @@ export default function TryItSection() {
       component="section"
       sx={{ scrollMarginTop: { xs: 128, sm: 136 }, mb: 6 }}
     >
-      <Typography variant="h4" component="h2" fontWeight={800} sx={{ mb: 1 }}>
+      <Typography variant="h4" component="h2" sx={{ mb: 1 }}>
         {t("tryTitle")}
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 640 }}>
@@ -124,12 +125,12 @@ export default function TryItSection() {
               {t("tryWhenEmpty")}
             </Typography>
           )}
-          <MuiLink href="/calendario" variant="body2" fontWeight={600}>
+          <MuiLink href="/calendario" variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             {t("tryCalendar")}
           </MuiLink>
         </InfoBlock>
         <InfoBlock icon={<PlaceIcon />} title={t("tryWhere")} area="where">
-          <Typography variant="body2" fontWeight={700}>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
             {CLUB_VENUE.name}
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
@@ -159,7 +160,7 @@ export default function TryItSection() {
       >
         <ContactForm />
       </Paper>
-      <MuiLink href="/faq" variant="body2" fontWeight={600}>
+      <MuiLink href="/faq" variant="body2" fontWeight={FONT_WEIGHT.semibold}>
         {t("tryFaq")}
       </MuiLink>
     </Box>

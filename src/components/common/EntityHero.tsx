@@ -75,7 +75,6 @@ export default function EntityHero({
             size="small"
             sx={{
               mb: 1.5,
-              fontWeight: 700,
               backgroundColor: "rgba(255,255,255,0.15)",
               color: "rgba(255,255,255,0.85)",
             }}
@@ -85,12 +84,7 @@ export default function EntityHero({
           children
         ) : (
           <>
-            <Typography
-              variant="h3"
-              component="h1"
-              fontWeight={800}
-              sx={{ lineHeight: 1.1, mb: 1 }}
-            >
+            <Typography variant="h3" component="h1" sx={{ lineHeight: 1.1, mb: 1 }}>
               {title}
             </Typography>
             {subtitle && (

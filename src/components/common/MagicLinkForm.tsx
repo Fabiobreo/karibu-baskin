@@ -57,7 +57,6 @@ export default function MagicLinkForm({ callbackUrl = "/" }: { callbackUrl?: str
         fullWidth
         disabled={loading}
         startIcon={loading ? <CircularProgress size={18} /> : <MailOutlineIcon />}
-        sx={{ fontWeight: 600 }}
       >
         {loading ? t("emailSending") : t("emailCta")}
       </Button>

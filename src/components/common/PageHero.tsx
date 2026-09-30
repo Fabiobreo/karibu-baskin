@@ -3,6 +3,7 @@ import { alpha } from "@mui/material/styles";
 import { brandColor, heroBottomBorder, heroGradient } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface PageHeroProps {
   title?: string;
@@ -65,7 +66,6 @@ export default function PageHero({
                 size="small"
                 sx={{
                   mb: 2,
-                  fontWeight: 700,
                   backgroundColor: alpha(brandColor.white, 0.12),
                   color: alpha(brandColor.white, 0.85),
                 }}
@@ -74,7 +74,6 @@ export default function PageHero({
             <Typography
               variant="h3"
               component="h1"
-              fontWeight={800}
               sx={{
                 mb: subtitle || children ? 2 : 0,
                 fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
@@ -88,7 +87,7 @@ export default function PageHero({
                 component="p"
                 sx={{
                   color: "rgba(255,255,255,0.75)",
-                  fontWeight: 400,
+                  fontWeight: FONT_WEIGHT.regular,
                   maxWidth: align === "center" ? subtitleMaxWidth : undefined,
                   mx: align === "center" ? "auto" : undefined,
                   fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },

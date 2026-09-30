@@ -36,9 +36,7 @@ export default function ContactForm() {
         }}
       >
         <CheckCircleIcon sx={{ fontSize: 48, color: "success.main" }} />
-        <Typography variant="h6" fontWeight={700}>
-          {t("formSent")}
-        </Typography>
+        <Typography variant="h6">{t("formSent")}</Typography>
         <Typography variant="body2" color="text.secondary">
           {t("formSentDesc")}
         </Typography>
@@ -53,7 +51,7 @@ export default function ContactForm() {
       noValidate
       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
-      <Typography component="h3" variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h3" variant="subtitle1" gutterBottom>
         {t("formTitle")}
       </Typography>
       {state.error && (

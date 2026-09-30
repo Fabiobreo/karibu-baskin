@@ -74,9 +74,7 @@ export default function SuggestionForm() {
         }}
       >
         <CheckCircleIcon sx={{ fontSize: 48, color: "success.main" }} />
-        <Typography variant="h6" fontWeight={700}>
-          {t("thankYou")}
-        </Typography>
+        <Typography variant="h6">{t("thankYou")}</Typography>
         <Typography variant="body2" color="text.secondary">
           {t("thankYouDesc")}
         </Typography>
@@ -147,7 +145,7 @@ export default function SuggestionForm() {
         variant="contained"
         disabled={loading || !category || message.trim().length < 5}
         startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
-        sx={{ alignSelf: "flex-start", fontWeight: 700 }}
+        sx={{ alignSelf: "flex-start" }}
       >
         {loading ? tCommon("sending") : t("submit")}
       </Button>

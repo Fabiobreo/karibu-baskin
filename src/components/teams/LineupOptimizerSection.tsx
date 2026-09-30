@@ -27,6 +27,7 @@ import type { CandidateInput } from "@/lib/matches/callupStats";
 import type { LineupResult, RoleDepthEntry } from "@/lib/rating/lineupOptimizer";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Gap μ oltre il quale scatta il warning rischio falli
 const GAP_WARNING_THRESHOLD = 6;
@@ -66,7 +67,11 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
         onClick={() => setExpanded((v) => !v)}
       >
         <AutoAwesomeIcon sx={{ fontSize: 18, color: "primary.main" }} />
-        <Typography variant="subtitle2" fontWeight={800} sx={{ flex: 1, letterSpacing: "0.02em" }}>
+        <Typography
+          variant="subtitle2"
+          fontWeight={FONT_WEIGHT.bold}
+          sx={{ flex: 1, letterSpacing: "0.02em" }}
+        >
           Analisi Formazione
         </Typography>
         {result && (
@@ -107,7 +112,11 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
                     sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
                     onClick={() => setShowAlternatives((v) => !v)}
                   >
-                    <Typography variant="caption" fontWeight={700} color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      fontWeight={FONT_WEIGHT.semibold}
+                      color="text.secondary"
+                    >
                       {result.topLineups.length - 1} alternativ
                       {result.topLineups.length - 1 === 1 ? "a" : "e"}
                     </Typography>
@@ -155,20 +164,19 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-        <Typography variant="overline" fontWeight={800} color="text.secondary">
+        <Typography variant="overline" fontWeight={FONT_WEIGHT.bold} color="text.secondary">
           Formazione Ottimale
         </Typography>
         <Chip
           label={`Σμ ${lineup.muSum.toFixed(1)}`}
           size="small"
-          sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, height: 20 }}
+          sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
         />
         {winLabel && (
           <Chip
             label={`${Math.round((winPct ?? 0) * 100)}% · ${winLabel}`}
             size="small"
             sx={{
-              fontWeight: 700,
               fontSize: TYPE_SCALE.xs,
               height: 20,
               bgcolor:
@@ -208,13 +216,13 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
       sx={{ p: 1.5, bgcolor: (theme) => alpha(theme.palette.action.hover, 0.4) }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-        <Typography variant="caption" fontWeight={700} color="text.secondary">
+        <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold} color="text.secondary">
           #{rank}
         </Typography>
         <Chip
           label={`Σμ ${lineup.muSum.toFixed(1)}`}
           size="small"
-          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, height: 20 }}
+          sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
         />
         {lineup.winProbability != null && (
           <Typography variant="caption" color="text.secondary">
@@ -241,7 +249,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
                 }
                 label={p.name.split(" ")[0]}
                 size="small"
-                sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600, height: 26 }}
+                sx={{ fontSize: TYPE_SCALE.xs, height: 26 }}
               />
             </Tooltip>
           ))}
@@ -265,7 +273,11 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
       >
         {p.name[0]}
       </Avatar>
-      <Typography variant="body2" fontWeight={600} sx={{ flex: 1, fontSize: TYPE_SCALE.sm }}>
+      <Typography
+        variant="body2"
+        fontWeight={FONT_WEIGHT.semibold}
+        sx={{ flex: 1, fontSize: TYPE_SCALE.sm }}
+      >
         {p.name}
       </Typography>
       {p.sportRole && (
@@ -275,7 +287,6 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
           sx={{
             bgcolor: roleTint,
             color: "common.white",
-            fontWeight: 700,
             fontSize: TYPE_SCALE.xs,
             height: 20,
           }}
@@ -284,7 +295,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
       <Tooltip title={hasRating ? `Rating TrueSkill μ=${mu}` : "Non ancora valutato (μ default)"}>
         <Typography
           variant="caption"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{
             minWidth: 38,
             textAlign: "right",
@@ -316,7 +327,7 @@ function RoleDepthPanel({ entries }: { entries: RoleDepthEntry[] }) {
     <Box>
       <Typography
         variant="overline"
-        fontWeight={800}
+        fontWeight={FONT_WEIGHT.bold}
         color="text.secondary"
         sx={{ display: "block", mb: 1 }}
       >
@@ -353,7 +364,6 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
         sx={{
           bgcolor: roleColor(entry.role),
           color: ROLE_TEXT_COLOR,
-          fontWeight: 700,
           fontSize: TYPE_SCALE.xs,
           height: 20,
           minWidth: 32,
@@ -369,7 +379,6 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               label={`${p.name.split(" ")[0]} ${(p.ratingMu ?? TRUESKILL.MU).toFixed(0)}`}
               size="small"
               sx={{
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
                 height: 22,
                 bgcolor: (theme) =>
@@ -402,7 +411,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
             <Typography
               variant="caption"
               color={noBackup ? "match.loss" : "text.secondary"}
-              fontWeight={noBackup ? 700 : 400}
+              fontWeight={noBackup ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
             >
               {entry.inLineup.length === 0 ? "—" : "nessuna riserva"}
             </Typography>
@@ -417,7 +426,6 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
                 label={`${p.name.split(" ")[0]} ${(p.ratingMu ?? TRUESKILL.MU).toFixed(0)}`}
                 size="small"
                 sx={{
-                  fontWeight: 600,
                   fontSize: TYPE_SCALE.xs,
                   height: 22,
                   bgcolor: "action.hover",
@@ -437,7 +445,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
             <Typography
               variant="caption"
               color="match.loss"
-              fontWeight={700}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ fontSize: TYPE_SCALE.xs }}
             >
               −{entry.gap.toFixed(1)}

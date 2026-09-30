@@ -84,7 +84,7 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
                     }}
                   >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography fontWeight={500}>{item.q}</Typography>
+                      <Typography>{item.q}</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                       <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>

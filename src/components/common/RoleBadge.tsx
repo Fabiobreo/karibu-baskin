@@ -4,6 +4,7 @@ import { visuallyHidden } from "@mui/utils";
 import { useTranslations } from "next-intl";
 import { roleColorSx } from "@/lib/constants";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface RoleBadgeProps {
   role: number;
@@ -75,7 +76,7 @@ export default function RoleBadge({
           alignItems: "center",
           justifyContent: "center",
           typography: size === "large" ? "body1" : "body2",
-          fontWeight: 800,
+          fontWeight: FONT_WEIGHT.bold,
           lineHeight: 1,
           fontVariantNumeric: "tabular-nums",
           // In tema scuro le tinte stanno a meno di 3:1 dal fondo: il bordo le stacca.

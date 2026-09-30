@@ -6,6 +6,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { useTranslations } from "next-intl";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface EventPosterProps {
   imageUrl: string;
@@ -86,10 +87,14 @@ export default function EventPoster({ imageUrl, title }: EventPosterProps) {
             }}
           />
           <Box>
-            <Typography variant="body2" fontWeight={700}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {t("poster")}
             </Typography>
-            <Typography variant="body2" fontWeight={600} sx={{ color: "primary.onLight" }}>
+            <Typography
+              variant="body2"
+              fontWeight={FONT_WEIGHT.semibold}
+              sx={{ color: "primary.onLight" }}
+            >
               {t("posterShow")}
             </Typography>
           </Box>

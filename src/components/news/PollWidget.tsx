@@ -24,6 +24,7 @@ import { useToast } from "@/context/ToastContext";
 import { useRouter } from "next/navigation";
 import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface PollOption {
   id: string;
@@ -125,9 +126,7 @@ export default function PollWidget({
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, flexWrap: "wrap" }}>
         <HowToVoteIcon sx={{ color: "primary.main" }} fontSize="small" />
-        <Typography variant="subtitle1" fontWeight={700}>
-          {t("badge")}
-        </Typography>
+        <Typography variant="subtitle1">{t("badge")}</Typography>
         {isClosed && (
           <Chip
             icon={<LockIcon />}
@@ -145,7 +144,7 @@ export default function PollWidget({
         )}
       </Box>
 
-      <Typography variant="body1" fontWeight={500} sx={{ mb: 2 }}>
+      <Typography variant="body1" sx={{ mb: 2 }}>
         {question}
       </Typography>
 
@@ -161,7 +160,7 @@ export default function PollWidget({
             {isStaffPreview && (
               <Typography
                 variant="caption"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{
                   color: "text.secondary",
                   textTransform: "uppercase",
@@ -180,7 +179,7 @@ export default function PollWidget({
                   <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 0.5 }}>
                     <Typography
                       variant="body2"
-                      fontWeight={voted ? 700 : 400}
+                      fontWeight={voted ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
                       sx={{
                         color: voted ? "primary.main" : "text.primary",
                         wordBreak: "break-word",
@@ -229,7 +228,7 @@ export default function PollWidget({
             {isStaffPreview && (
               <Typography
                 variant="caption"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{
                   color: "text.secondary",
                   textTransform: "uppercase",

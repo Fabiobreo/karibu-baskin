@@ -35,6 +35,7 @@ import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 // Solo tipi: `eventRsvp` usa Prisma e resta sul server.
 import type { GuestRsvp, MemberRsvp } from "@/lib/eventRsvp";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type Status = "GOING" | "MAYBE" | "NOT_GOING";
 /** Risposta a una domanda: si', no, o non ancora data. */
@@ -175,7 +176,7 @@ function YesNo({
       sx={{
         "& .MuiToggleButton-root": {
           textTransform: "none",
-          fontWeight: 700,
+          fontWeight: FONT_WEIGHT.semibold,
           minHeight: 44,
         },
         "& .MuiToggleButton-root.Mui-selected": {
@@ -211,7 +212,7 @@ function Question({
   return (
     <Box>
       <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 0.5, flexWrap: "wrap" }}>
-        <Typography variant="body2" fontWeight={700}>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
           {label}
         </Typography>
         {hint && (
@@ -220,7 +221,7 @@ function Question({
           </Typography>
         )}
         {missing && (
-          <Typography variant="caption" color="warning.main" fontWeight={700}>
+          <Typography variant="caption" color="warning.main" fontWeight={FONT_WEIGHT.semibold}>
             {t("toAnswer")}
           </Typography>
         )}
@@ -380,7 +381,7 @@ function RsvpSummary({
   return (
     <Stack spacing={1.5}>
       <Alert icon={<CheckCircleOutlineIcon fontSize="inherit" />} severity="success">
-        <Typography variant="body2" fontWeight={700}>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
           {t("sentTitle")}
         </Typography>
         <Typography variant="caption">{footerSummary(t, going, extraCounts)}</Typography>
@@ -412,7 +413,12 @@ function RsvpSummary({
               "&:last-of-type": { borderBottom: 0 },
             }}
           >
-            <Typography variant="body2" fontWeight={700} sx={{ minWidth: 0 }} noWrap>
+            <Typography
+              variant="body2"
+              fontWeight={FONT_WEIGHT.semibold}
+              sx={{ minWidth: 0 }}
+              noWrap
+            >
               {r.name}
               {r.guest && (
                 <Typography component="span" variant="caption" color="text.secondary">
@@ -600,7 +606,7 @@ function RsvpForm({
               Object.fromEntries(Object.entries(p).map(([k, d]) => [k, { ...d, event: true }]))
             )
           }
-          sx={{ alignSelf: { xs: "stretch", sm: "flex-start" }, fontWeight: 700 }}
+          sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
         >
           {t("allComing")}
         </Button>
@@ -622,7 +628,7 @@ function RsvpForm({
               header={
                 <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="subtitle1" fontWeight={800} noWrap>
+                    <Typography variant="subtitle1" fontWeight={FONT_WEIGHT.bold} noWrap>
                       {m.isSelf ? t("me") : m.name}
                     </Typography>
                     {m.respondedByName && (
@@ -677,7 +683,7 @@ function RsvpForm({
                     inputProps={{ maxLength: 80, "aria-label": t("guestName") }}
                     sx={{
                       typography: "subtitle1",
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                       width: "100%",
                       "& input": { p: 0 },
                     }}
@@ -760,7 +766,7 @@ function RsvpForm({
               ]);
               setNextGuest((n) => n + 1);
             }}
-            sx={{ fontWeight: 700, textTransform: "none" }}
+            sx={{ textTransform: "none" }}
           >
             {t("bringSomeone")}
           </Button>
@@ -790,7 +796,7 @@ function RsvpForm({
           sx={{ display: "flex", alignItems: "center", gap: 2, justifyContent: "space-between" }}
         >
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={700}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {footerSummary(t, draftGoing, extraCounts)}
             </Typography>
             {dirty && (
@@ -818,7 +824,6 @@ function RsvpForm({
               variant="contained"
               onClick={() => mutation.mutate(undefined)}
               disabled={busy || !!problem || !dirty}
-              sx={{ fontWeight: 700 }}
             >
               {t("save")}
             </Button>
@@ -850,7 +855,7 @@ export default function EventRsvp({ isLoggedIn, isPast, initialGoing, ...form }:
           mb: 2,
         }}
       >
-        <Typography variant="h6" component="h2" fontWeight={800}>
+        <Typography variant="h6" component="h2" fontWeight={FONT_WEIGHT.bold}>
           {t("rsvpTitle")}
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -863,7 +868,7 @@ export default function EventRsvp({ isLoggedIn, isPast, initialGoing, ...form }:
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
             {t("rsvpLoginPrompt")}
           </Typography>
-          <Button size="large" href="/login" variant="contained" sx={{ fontWeight: 700 }}>
+          <Button size="large" href="/login" variant="contained">
             {t("rsvpLoginCta")}
           </Button>
         </Box>

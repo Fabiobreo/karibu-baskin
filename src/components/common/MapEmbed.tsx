@@ -9,6 +9,7 @@ import { useCookieConsent } from "@/hooks/useCookieConsent";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { CLUB_VENUE, CLUB_VENUE_LABEL, mapsSearchUrl } from "@/lib/clubVenue";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface MapEmbedProps {
   /** Luogo da mostrare, scritto come in un campo "Luogo". Predefinito: la sede. */
@@ -108,17 +109,11 @@ export default function MapEmbed({
       >
         <PlaceIcon />
       </Box>
-      <Typography variant="subtitle2" component="p" fontWeight={700} sx={{ mt: 0.5 }}>
+      <Typography variant="subtitle2" component="p" sx={{ mt: 0.5 }}>
         {placeName}
       </Typography>
       {/* Contornato (UX-30): l'azione primaria della pagina e' altrove. */}
-      <Button
-        variant="outlined"
-        size="large"
-        startIcon={<MapIcon />}
-        onClick={accept}
-        sx={{ fontWeight: 700 }}
-      >
+      <Button variant="outlined" size="large" startIcon={<MapIcon />} onClick={accept}>
         {t("show")}
       </Button>
       <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 300 }}>
@@ -130,7 +125,7 @@ export default function MapEmbed({
               href={externalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              fontWeight={600}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ display: "inline-flex", alignItems: "center", gap: 0.25 }}
             >
               {t("openExternal")}

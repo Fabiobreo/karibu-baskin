@@ -30,6 +30,7 @@ import { formatDecimal } from "@/lib/numberFormat";
 import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface PlayerStatRow {
   /** Id del giocatore (User o Child). */
@@ -259,7 +260,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
           <Typography
             variant="caption"
             color="text.secondary"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             sx={{ mr: 0.5, textTransform: "uppercase", letterSpacing: "0.06em" }}
           >
             {t("roleFilterLabel")}
@@ -270,7 +271,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             variant={roleFilter === null ? "filled" : "outlined"}
             color={roleFilter === null ? "primary" : "default"}
             onClick={() => handleRoleFilter(null)}
-            sx={{ fontWeight: 600, cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+            sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
           />
           {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
             <Chip
@@ -280,7 +281,6 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               size="small"
               onClick={() => handleRoleFilter(r)}
               sx={{
-                fontWeight: 700,
                 cursor: "pointer",
                 fontSize: TYPE_SCALE.xs,
                 bgcolor: roleFilter === r ? roleColor(r) : "transparent",
@@ -311,7 +311,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             />
           }
           label={
-            <Typography variant="caption" fontWeight={600} title={t("advancedStatsHint")}>
+            <Typography
+              variant="caption"
+              fontWeight={FONT_WEIGHT.semibold}
+              title={t("advancedStatsHint")}
+            >
               {t("advancedStats")}
             </Typography>
           }
@@ -336,14 +340,16 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               <TableCell
                 sx={{
                   width: 28,
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   color: "text.secondary",
                 }}
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, minWidth: 200 }}>
+              <TableCell
+                sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs, minWidth: 200 }}
+              >
                 {t("colPlayer")}
               </TableCell>
               {COLS.map((col) => (
@@ -351,7 +357,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   key={col.key}
                   align="center"
                   sx={{
-                    fontWeight: 700,
+                    fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     whiteSpace: "nowrap",
                     px: 1,
@@ -385,7 +391,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               paginated.map((row, i) => (
                 <TableRow key={row.id} hover>
                   <TableCell
-                    sx={{ color: "text.secondary", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
+                    sx={{
+                      color: "text.secondary",
+                      fontWeight: FONT_WEIGHT.semibold,
+                      fontSize: TYPE_SCALE.xs,
+                    }}
                   >
                     {page * rowsPerPage + i + 1}
                   </TableCell>
@@ -405,7 +415,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           >
                             <Typography
                               variant="body2"
-                              fontWeight={700}
+                              fontWeight={FONT_WEIGHT.semibold}
                               sx={{
                                 "&:hover": { textDecoration: "underline" },
                                 fontSize: TYPE_SCALE.sm,
@@ -417,7 +427,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         ) : (
                           <Typography
                             variant="body2"
-                            fontWeight={600}
+                            fontWeight={FONT_WEIGHT.semibold}
                             sx={{ fontSize: TYPE_SCALE.sm }}
                           >
                             {row.name}
@@ -446,7 +456,6 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                               sx={{
                                 bgcolor: t.color ?? "primary.main",
                                 color: contrastText(t.color),
-                                fontWeight: 600,
                                 fontSize: TYPE_SCALE.xs,
                                 height: 20,
                               }}
@@ -473,7 +482,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         key={col.key}
                         align="center"
                         sx={{
-                          fontWeight: isActive ? 700 : 400,
+                          fontWeight: isActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                           color: isActive ? "primary.onLight" : "text.primary",
                           fontSize: TYPE_SCALE.sm,
                           whiteSpace: "nowrap",
@@ -491,7 +500,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                             sx={{
                               fontSize: TYPE_SCALE.xs,
                               color: "text.secondary",
-                              fontWeight: 600,
+                              fontWeight: FONT_WEIGHT.semibold,
                             }}
                           >
                             {t("loanDetail", { count: loan })}
@@ -536,7 +545,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                   <Typography
                     variant="body2"
-                    fontWeight={700}
+                    fontWeight={FONT_WEIGHT.semibold}
                     color="text.secondary"
                     sx={{ minWidth: 24, textAlign: "right", flexShrink: 0 }}
                   >
@@ -556,7 +565,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                       >
                         <Typography
                           variant="body2"
-                          fontWeight={700}
+                          fontWeight={FONT_WEIGHT.semibold}
                           noWrap
                           sx={{ "&:hover": { textDecoration: "underline" } }}
                         >
@@ -564,7 +573,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         </Typography>
                       </Link>
                     ) : (
-                      <Typography variant="body2" fontWeight={700} noWrap>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                         {row.name}
                       </Typography>
                     )}
@@ -580,7 +589,6 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           sx={{
                             bgcolor: t.color ?? "primary.main",
                             color: contrastText(t.color),
-                            fontWeight: 600,
                             fontSize: TYPE_SCALE.xs,
                             height: 20,
                           }}
@@ -647,7 +655,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         </Typography>
                         <Typography
                           variant="body2"
-                          fontWeight={primary ? 800 : 600}
+                          fontWeight={primary ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
                           color="text.primary"
                           sx={{ fontSize: TYPE_SCALE.sm, fontVariantNumeric: "tabular-nums" }}
                         >
@@ -657,7 +665,11 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                           <Typography
                             variant="caption"
                             display="block"
-                            sx={{ color: "text.secondary", fontWeight: 600, lineHeight: 1.2 }}
+                            sx={{
+                              color: "text.secondary",
+                              fontWeight: FONT_WEIGHT.semibold,
+                              lineHeight: 1.2,
+                            }}
                           >
                             {detail}
                           </Typography>

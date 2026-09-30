@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { ActionSession, NextAction } from "@/lib/nextAction";
 import { trainingLocation } from "@/lib/clubVenue";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface NextActionCardProps {
   action: NextAction;
@@ -127,7 +128,12 @@ export default function NextActionCard({ action, overlapHero = false }: NextActi
             {icon}
           </Box>
           <Box sx={{ minWidth: 0 }}>
-            <Typography id="next-action-title" variant="h6" component="h2" fontWeight={800}>
+            <Typography
+              id="next-action-title"
+              variant="h6"
+              component="h2"
+              fontWeight={FONT_WEIGHT.bold}
+            >
               {title}
             </Typography>
             {body && (
@@ -154,7 +160,7 @@ export default function NextActionCard({ action, overlapHero = false }: NextActi
             size="large"
             href={cta.href}
             variant={cta.primary ? "contained" : "outlined"}
-            sx={{ fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" }}
+            sx={{ flexShrink: 0, whiteSpace: "nowrap" }}
           >
             {cta.label}
           </Button>
