@@ -1,6 +1,6 @@
 # UX-21 · Revisione dei testi facili con il club e varianti di ruolo
 
-**Ondata:** 3 · **Stima:** S di sviluppo, più il tempo del club · **Dipende da:** UX-17 · **Stato:** in attesa del club: documento per la revisione pronto ([`revisione-club/testi-da-rivedere.md`](../revisione-club/testi-da-rivedere.md)), punti 1-2 fatti; restano revisione, decisione sulle varianti e lettura con gli atleti (punti 3-4)
+**Ondata:** 3 · **Stima:** S di sviluppo, più il tempo del club · **Dipende da:** UX-17 · **Stato:** fatto (30/09/2026)
 
 ## Problema
 
@@ -34,3 +34,4 @@ Restano inoltre in linguaggio clinico le varianti di ruolo (`roles.variant*` in 
 - **Punto 2 (proposta, da decidere):** nel documento, sezione 1. S "si muove con più fatica e tiene il suo ritmo", T "gioca con un tutor accanto", P "tira con un aiuto per braccia e mani", R "cammina e fa brevi corse". I testi nel sito **non** sono stati cambiati: la variante ha effetto sul regolamento e la decisione è del club.
 - **Punti 3-4:** da fare quando torna il documento compilato.
 - Non incluse nel documento: le "forme neutre al posto delle barre oblique" sono già coperte dal test `src/i18n/easyLanguage.test.ts` e non hanno un elenco a sé.
+- **Chiusura (30/09/2026):** revisione fatta con il club e modifiche necessarie apportate, come riferito da Fabio. Il documento compilato non è stato conservato, quindi qui non ci sono l'elenco delle correzioni, il nome di chi ha rivisto né l'esito della lettura con gli atleti. Nota: a questa data le varianti di ruolo in `it.json`/`en.json` (`roles.variant*`) sono ancora quelle originali.

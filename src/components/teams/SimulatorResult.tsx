@@ -7,6 +7,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { useTranslations } from "next-intl";
 import type { SimResult } from "@/lib/rating/matchSimulator";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface SimulatorResultProps {
   result: SimResult;
@@ -41,7 +42,11 @@ export default function SimulatorResult({
         : t("balanced");
 
   return (
-    <Paper elevation={0} variant="outlined" sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 3, mt: 3 }}>
+    <Paper
+      elevation={0}
+      variant="outlined"
+      sx={{ p: { xs: 2.5, md: 3 }, borderRadius: RADIUS.lg, mt: 3 }}
+    >
       <Box sx={{ textAlign: "center", mb: 1 }}>
         <Chip
           icon={<EmojiEventsIcon />}
@@ -75,7 +80,7 @@ export default function SimulatorResult({
           sx={{
             display: "flex",
             height: 10,
-            borderRadius: 5,
+            borderRadius: RADIUS.pill,
             overflow: "hidden",
             bgcolor: "action.hover",
           }}

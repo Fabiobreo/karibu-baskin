@@ -5,6 +5,7 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import RemoveIcon from "@mui/icons-material/Remove";
 import type { MatchQuality, QualityLabel } from "@/lib/matches/matchQuality";
+import { RADIUS } from "@/lib/radius";
 
 const LABEL_COLOR: Record<QualityLabel, string> = {
   Favoriti: "success.main",
@@ -70,7 +71,7 @@ export default function MatchQualityBadge({
             variant="determinate"
             value={pct}
             color={BAR_COLOR[quality.label]}
-            sx={{ height: 4, borderRadius: 2, width: "100%" }}
+            sx={{ height: 4, borderRadius: RADIUS.pill, width: "100%" }}
           />
         )}
       </Box>

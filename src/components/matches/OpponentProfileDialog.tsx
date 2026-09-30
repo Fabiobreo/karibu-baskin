@@ -28,6 +28,7 @@ import type {
 } from "@/lib/schemas/match";
 import { OPPONENT_MU_PRESETS } from "@/lib/matches/matchQuality";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",
@@ -232,7 +233,7 @@ export default function OpponentProfileDialog({
           sx={{
             mb: 2.5,
             p: 1.5,
-            borderRadius: 1,
+            borderRadius: RADIUS.md,
             bgcolor: "action.hover",
             border: "1px solid",
             borderColor: "divider",

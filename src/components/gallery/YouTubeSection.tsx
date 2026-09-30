@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Box, Typography, Grid2 as Grid } from "@mui/material";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import Image from "next/image";
+import { RADIUS } from "@/lib/radius";
 
 export interface GalleryVideo {
   id: string;
@@ -40,7 +41,7 @@ export default function YouTubeSection({ videos }: YouTubeSectionProps) {
                   position: "relative",
                   width: "100%",
                   aspectRatio: "16 / 9",
-                  borderRadius: 1.5,
+                  borderRadius: RADIUS.md,
                   overflow: "hidden",
                   bgcolor: "common.black",
                   cursor: isActive ? "default" : "pointer",

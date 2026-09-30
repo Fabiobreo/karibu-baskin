@@ -99,22 +99,14 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     icon={<BoltIcon sx={{ fontSize: 16 }} />}
                     label={tMatches("imminent")}
                     size="small"
-                    sx={(theme) => ({
+                    sx={{
                       mb: 1,
                       fontWeight: 700,
                       // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
+                      // Niente alone pulsante (UX-30): l'urgenza la dicono etichetta e colore.
                       bgcolor: "primary.fill",
                       color: "common.white",
-                      animation: "karibuPulse 1.6s ease-in-out infinite",
-                      "@keyframes karibuPulse": {
-                        "0%, 100%": {
-                          boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0.5)}`,
-                        },
-                        "50%": {
-                          boxShadow: `0 0 0 6px ${alpha(theme.palette.primary.main, 0)}`,
-                        },
-                      },
-                    })}
+                    }}
                   />
                 )}
                 <Typography

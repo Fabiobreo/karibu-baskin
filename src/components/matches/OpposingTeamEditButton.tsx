@@ -21,6 +21,7 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useRouter } from "next/navigation";
 import { readError } from "@/lib/fetchJson";
+import { RADIUS } from "@/lib/radius";
 
 export interface OpposingTeamEditButtonProps {
   teamId: string;
@@ -170,7 +171,7 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
                   sx={{
                     width: 88,
                     height: 88,
-                    borderRadius: 2,
+                    borderRadius: RADIUS.md,
                     flexShrink: 0,
                     bgcolor: "action.hover",
                     border: "1px solid",

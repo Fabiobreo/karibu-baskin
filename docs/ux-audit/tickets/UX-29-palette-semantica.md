@@ -17,7 +17,7 @@ Effetto: circa 10 tinte con significati sovrapposti. L'occhio smette di fidarsi 
 
 1. **Regola scritta in CLAUDE.md** (sezione Convenzioni): arancio (`primary`) solo per azioni e stato attivo; `match.win/loss/draw` solo per l'esito; nessun altro significato per verde, rosso e ambra.
 2. **Palette squadre** in `theme.ts` (`palette.team`, 6 tinte in chiaro e in scuro) che **esclude** arancio, verde, rosso e ambra: per esempio blu, viola, verde acqua scuro, ardesia, bordeaux, senape scuro, da verificare a 3:1 sul bianco come elemento grafico. Il selettore colore di `AdminSquadreClient` propone solo queste tinte (oggi 8 costanti libere).
-3. **Colore per identità, non per stagione.** Decisione da prendere (vedi sotto). Nel frattempo, alla creazione della squadra della nuova stagione, precompilare il colore con quello della squadra omonima della stagione precedente.
+3. **Colore alla creazione della squadra:** precompilato come da decisione A (vedi sotto).
 4. **Ripiego:** dove oggi c'è `t.color ?? "primary.main"`, usare un neutro (`text.secondary`) o la prima tinta di `palette.team`, mai l'arancio.
 5. **Pareggio:** `match.draw` passa dall'arancio all'ambra/senape (resta leggibile come testo, vedi le note di UX-28 sul contrasto), così non coincide più col marchio.
 6. **Ruolo utente in admin:** chip neutri con icona (Atleta, Genitore, Ospite), senza verde e blu.
@@ -32,6 +32,12 @@ Effetto: circa 10 tinte con significati sovrapposti. L'occhio smette di fidarsi 
 | **B. Colore sull'identità** | Nuovo campo (o modello `TeamIdentity`) condiviso fra le stagioni della stessa squadra; `CompetitiveTeam.color` diventa un ripiego. Richiede migration e aggiornamento delle query. |
 
 A è sufficiente se lo staff non vuole colori diversi per stagione.
+
+**Decisione (30/09/2026): A.** I nomi delle squadre cambiano quasi ogni stagione (All Stars e Dream Team, poi Montekki e Kapuleti, quest'anno KariGin e KariTonic), quindi non esiste un'identità da conservare fra un anno e l'altro e B non serve. Il colore è della squadra di quella stagione.
+
+- Alla creazione, se nella stagione precedente c'è una squadra con lo stesso nome se ne propone il colore; altrimenti la prima tinta di `palette.team` non ancora usata nella stessa stagione. Resta modificabile.
+- Nessuno script di allineamento dei dati vecchi.
+- Il criterio "stessa squadra, stesso colore ovunque" vale per la squadra di una stagione: le pagine che mostrano stagioni diverse mostrano squadre diverse.
 
 ## Criteri di accettazione
 

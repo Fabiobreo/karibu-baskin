@@ -23,6 +23,7 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import EmptyState from "@/components/common/EmptyState";
 import { readError } from "@/lib/fetchJson";
+import { RADIUS } from "@/lib/radius";
 
 interface GalleryAdminPost {
   id: string;
@@ -165,7 +166,7 @@ export default function AdminGalleryClient({
                 sx={{
                   border: "1px solid",
                   borderColor: "divider",
-                  borderRadius: 2,
+                  borderRadius: RADIUS.lg,
                   overflow: "hidden",
                   opacity: post.hidden ? 0.55 : 1,
                 }}

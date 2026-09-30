@@ -9,6 +9,7 @@ import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
 import { guardianNames } from "@/lib/guardianNames";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 type ChildRow = ChildEntry & { kind: "child" };
 
@@ -34,7 +35,7 @@ export default function ChildrenMobileCards({
         display: { xs: "block", sm: "none" },
         border: "1px solid",
         borderColor: "divider",
-        borderRadius: 1,
+        borderRadius: RADIUS.lg,
       }}
     >
       {rows.map((row) => {

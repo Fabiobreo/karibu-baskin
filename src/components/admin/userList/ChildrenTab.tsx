@@ -34,6 +34,7 @@ import {
 } from "@/components/admin/userList/userListShared";
 import ChildrenMobileCards from "@/components/admin/userList/ChildrenMobileCards";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 type ChildRow = ChildEntry & { kind: "child" };
 type ChildSortColumn = "name" | "createdAt" | "sportRole";
@@ -147,7 +148,7 @@ export default function ChildrenTab({
           display: { xs: "none", sm: "block" },
           border: "1px solid",
           borderColor: "divider",
-          borderRadius: 1,
+          borderRadius: RADIUS.lg,
           overflowX: "auto",
         }}
       >

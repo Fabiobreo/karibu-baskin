@@ -19,6 +19,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useToast } from "@/context/ToastContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface SubscribeCalendarDialogProps {
   open: boolean;
@@ -148,7 +149,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
           <Box
             sx={{
               bgcolor: "action.hover",
-              borderRadius: 1,
+              borderRadius: RADIUS.md,
               p: 1.5,
             }}
           >

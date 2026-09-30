@@ -27,11 +27,15 @@
    - senza didascalie visibili: nome nell'`alt` e nel link;
    - valutare con il club una versione monocromatica al passaggio del mouse / a colori al focus. Da chiedere agli sponsor se toccati: la visibilità promessa è "logo in ogni pagina".
 2. **Posizione:** il nastro diventa la fascia superiore del footer (stessa visibilità, un solo blocco di chiusura).
-3. **Movimento:** restano il bottone di pausa e il nastro fermo con `prefers-reduced-motion` (già così, `SponsorBanner.tsx:205`). Valutare il nastro fermo anche sulle pagine d'uso (login, profilo, notifiche), con lo scorrimento solo nelle pagine pubbliche di contenuto. Decisione da confermare col club.
+3. **Movimento:** restano il bottone di pausa e il nastro fermo con `prefers-reduced-motion` (già così, `SponsorBanner.tsx:205`). Sulle pagine d'uso (login, profilo, notifiche, disponibilità, form d'iscrizione) il nastro è **fermo**: stessi loghi in griglia, tutti visibili; lo scorrimento resta solo sulle pagine pubbliche di contenuto (decisione del 30/09, vedi sotto).
 4. **Footer a tre colonne** (una su mobile):
    - **Dove e quando:** sede (`CLUB_VENUE`), orari tipici, link "Vieni a provare";
-   - **Link:** allenamenti, calendario, partite, il Baskin, FAQ, sponsor;
+   - **Link:** allenamenti, calendario, partite, il Baskin, il club (`/il-club`, UX-36), FAQ, sponsor;
    - **Contatti:** email, telefoni, social, dati associazione (C.F., affiliazione, oggi solo in `/contatti`).
+
+## Decisione (30/09/2026)
+
+**Nastro fermo sulle pagine d'uso** (opzione A), deciso da Fabio senza passare dal club: stessi loghi, stesso posto, su ogni pagina; cambia solo il movimento dove c'è un compito (WCAG 2.2.2). Agli sponsor conviene dirlo in una riga, come scelta di accessibilità.
 
 ## Criteri di accettazione
 

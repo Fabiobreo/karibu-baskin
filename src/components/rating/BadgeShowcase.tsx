@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import type { Badge, LockedBadge } from "@/lib/rating/badges";
 import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export type EarnedBadgeView = Badge & {
   /** Frase del traguardo raggiunto ("Hai segnato 10 punti in una partita"). */
@@ -77,7 +78,7 @@ export default function BadgeShowcase({
                   gap: 0.75,
                   px: 1.5,
                   py: 0.75,
-                  borderRadius: 2,
+                  borderRadius: RADIUS.md,
                   border: "1.5px solid",
                   borderColor: c.border,
                   bgcolor: c.bg,
@@ -168,7 +169,7 @@ export default function BadgeShowcase({
                     // sola annuncerebbe solo una percentuale senza contesto.
                     aria-label={badge.label}
                     aria-valuetext={t("value", { current: badge.current, target: badge.target })}
-                    sx={{ height: 5, borderRadius: 3 }}
+                    sx={{ height: 5, borderRadius: RADIUS.pill }}
                   />
                 </Box>
               </Box>

@@ -6,6 +6,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { ROLE_LABELS_IT } from "@/lib/constants";
 import { usePeopleSearch, type AdminPerson } from "@/components/admin/people/usePeopleSearch";
 import PersonRow from "@/components/admin/people/PersonRow";
+import { RADIUS } from "@/lib/radius";
 
 interface UserSearchPickerProps {
   onPick: (user: AdminPerson) => void;
@@ -83,7 +84,7 @@ export default function UserSearchPicker({
                   font: "inherit",
                   p: 0,
                   px: 1,
-                  borderRadius: 1,
+                  borderRadius: RADIUS.md,
                   cursor: "pointer",
                   "&:hover, &:focus-visible": { bgcolor: "action.hover" },
                 }}

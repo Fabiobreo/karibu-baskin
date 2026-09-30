@@ -37,6 +37,7 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface CalledPlayer {
   id: string;
@@ -424,7 +425,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                       cursor: "pointer",
                       // 44px: si sceglie dal telefono (UX-13).
                       height: 44,
-                      borderRadius: 22,
+                      borderRadius: RADIUS.pill,
                       bgcolor: (theme) => (selected ? theme.palette.medal.gold : "transparent"),
                       color: (theme) =>
                         selected

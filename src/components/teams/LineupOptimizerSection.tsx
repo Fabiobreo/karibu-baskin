@@ -26,6 +26,7 @@ import { optimizeLineup } from "@/lib/rating/lineupOptimizer";
 import type { CandidateInput } from "@/lib/matches/callupStats";
 import type { LineupResult, RoleDepthEntry } from "@/lib/rating/lineupOptimizer";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 // Gap μ oltre il quale scatta il warning rischio falli
 const GAP_WARNING_THRESHOLD = 6;
@@ -341,7 +342,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
         alignItems: "flex-start",
         gap: 1,
         p: 1,
-        borderRadius: 1,
+        borderRadius: RADIUS.md,
         bgcolor: gapWarning || noBackup ? "match.lossBg" : "transparent",
       }}
     >

@@ -9,6 +9,7 @@ import { it } from "date-fns/locale";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export interface GuestUser {
   id: string;
@@ -86,7 +87,7 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                 gap: 1.5,
                 flexWrap: "wrap",
                 p: 1,
-                borderRadius: 1,
+                borderRadius: RADIUS.md,
                 bgcolor: "background.paper",
                 border: "1px solid",
                 borderColor: "divider",

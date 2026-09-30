@@ -45,6 +45,7 @@ import { contrastText } from "@/lib/colorUtils";
 import type { Gender } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 // ── Tipi ──────────────────────────────────────────────────────────────────────
 
@@ -649,7 +650,7 @@ function MemberRow({
         alignItems: "center",
         gap: 1,
         p: 1,
-        borderRadius: 1,
+        borderRadius: RADIUS.md,
         border: "1px solid",
         borderColor: m.isCaptain ? `${teamColor}66` : "divider",
         bgcolor: m.isCaptain ? `${teamColor}0a` : "transparent",
@@ -760,7 +761,7 @@ function PoolRow({
         alignItems: "center",
         gap: 1,
         p: 1,
-        borderRadius: 1,
+        borderRadius: RADIUS.md,
         border: "1px solid",
         borderColor: "divider",
         "&:hover": { bgcolor: "action.hover" },

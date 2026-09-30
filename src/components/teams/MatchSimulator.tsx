@@ -36,6 +36,7 @@ import SimulatorChecklist from "@/components/teams/SimulatorChecklist";
 import SimulatorPool from "@/components/teams/SimulatorPool";
 import RoleBadge from "@/components/common/RoleBadge";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 /**
  * Giocatore selezionabile nel simulatore.
@@ -338,7 +339,7 @@ function SideColumn({
       variant="outlined"
       sx={{
         p: 1.5,
-        borderRadius: 2,
+        borderRadius: RADIUS.md,
         borderColor: checks.valid ? "success.main" : "divider",
         borderWidth: checks.valid ? 2 : 1,
         minHeight: 120,

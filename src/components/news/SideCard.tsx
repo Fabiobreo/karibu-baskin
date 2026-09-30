@@ -9,6 +9,7 @@ import PollChip from "@/components/news/PollChip";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
 import { onHover } from "@/lib/hoverStyles";
+import { RADIUS } from "@/lib/radius";
 
 const SIDE_TEASER_LEN = 70;
 
@@ -35,7 +36,7 @@ export default function SideCard({ post }: SideCardProps) {
           display: "flex",
           gap: 1.5,
           p: 1.5,
-          borderRadius: 2,
+          borderRadius: RADIUS.lg,
           border: "1px solid",
           borderColor: "divider",
           bgcolor: "background.paper",
@@ -51,7 +52,7 @@ export default function SideCard({ post }: SideCardProps) {
             width: 90,
             height: 90,
             flexShrink: 0,
-            borderRadius: 1.5,
+            borderRadius: RADIUS.md,
             overflow: "hidden",
             backgroundImage: post.imageUrl ? `url(${post.imageUrl})` : undefined,
             backgroundSize: "cover",

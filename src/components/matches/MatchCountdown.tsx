@@ -5,6 +5,7 @@ import { Box, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface Props {
   /** ISO date (timestamp), inviata dal server per evitare mismatch */
@@ -53,7 +54,7 @@ export default function MatchCountdown({ targetIso }: Props) {
         gap: 0.75,
         px: 1.5,
         py: 0.5,
-        borderRadius: 999,
+        borderRadius: RADIUS.pill,
         bgcolor: "rgba(255,255,255,0.08)",
         border: "1px solid rgba(255,255,255,0.15)",
       }}

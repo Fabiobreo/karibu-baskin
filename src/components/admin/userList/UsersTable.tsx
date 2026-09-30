@@ -36,6 +36,7 @@ import {
 } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { joinNames } from "@/lib/guardianNames";
+import { RADIUS } from "@/lib/radius";
 
 interface UsersTableProps {
   rows: AdminRow[];
@@ -84,7 +85,7 @@ export default function UsersTable({
         display: { xs: "none", sm: "block" },
         border: "1px solid",
         borderColor: "divider",
-        borderRadius: 1,
+        borderRadius: RADIUS.lg,
         overflowX: "auto",
       }}
     >

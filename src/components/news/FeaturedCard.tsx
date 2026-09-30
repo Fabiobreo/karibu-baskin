@@ -12,6 +12,7 @@ import { alpha } from "@mui/material/styles";
 import { brandColor } from "@/lib/heroStyles";
 import CoverFallback from "@/components/common/CoverFallback";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 const FEATURED_TEASER_LEN = 160;
 
@@ -39,7 +40,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           position: "relative",
           height: { xs: 280, sm: 360, md: "100%" },
           minHeight: { md: 380 },
-          borderRadius: 2,
+          borderRadius: RADIUS.lg,
           overflow: "hidden",
           border: "1px solid",
           borderColor: "divider",

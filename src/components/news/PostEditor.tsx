@@ -26,6 +26,7 @@ import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface PostEditorProps {
   value: string;
@@ -92,7 +93,7 @@ export default function PostEditor({
       variant="outlined"
       sx={{
         borderColor: "divider",
-        borderRadius: 1,
+        borderRadius: RADIUS.md,
         overflow: "hidden",
         "&:focus-within": { borderColor: "primary.main" },
       }}

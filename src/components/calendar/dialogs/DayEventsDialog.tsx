@@ -13,6 +13,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { getDaySegment } from "@/components/calendar/calendarShared";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { eventVisual } from "@/lib/calendar/eventColors";
+import { RADIUS } from "@/lib/radius";
 
 interface DayEventsDialogProps {
   day: Date | null;
@@ -93,7 +94,7 @@ export default function DayEventsDialog({
                 alignItems: "center",
                 gap: 1.5,
                 p: 1.25,
-                borderRadius: 1,
+                borderRadius: RADIUS.md,
                 cursor: "pointer",
                 bgcolor: tint,
                 border: "1px solid",

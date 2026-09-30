@@ -79,7 +79,9 @@ export default function ConvocazioniToolbar({
       </Stack>
 
       <Box sx={{ display: "flex", gap: 0.5, ml: "auto" }}>
-        <Button size="small" onClick={onSelectAll}>
+        {/* "Tutti" e "Nessuno" sono azioni terziarie, dello stesso peso (UX-30):
+            l'arancione e' di "Salva". */}
+        <Button size="small" color="inherit" onClick={onSelectAll}>
           Tutti
         </Button>
         <Button size="small" color="inherit" onClick={onClearAll}>

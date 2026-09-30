@@ -26,7 +26,14 @@ Nota: il riordino del **menu principale** resta parcheggiato; questo ticket rigu
 2. Selettore di stagione condiviso sotto le tab, con un solo avviso quando la stagione scelta non è ancora iniziata.
 3. Tolti i bottoni fantasma dagli hero e il link in fondo a `/partite`.
 4. `/classifiche`: un solo titolo; il sottotitolo dice cosa c'è sotto.
-5. `/squadre`: titolo "Squadre". I numeri del club e la storia stanno in home ("Chi siamo") o in una futura pagina "Il club" (da decidere col club); qui restano squadre, archivio e simulatore.
+5. `/squadre`: titolo "Squadre"; restano squadre, archivio e simulatore, più al massimo una riga "Chi siamo →" verso la pagina del club.
+6. **Pagina "Il club"** (`/il-club`, decisione del 30/09, vedi sotto): presentazione, numeri, valori e storia. Numeri calcolati dal database dove si può (squadre della stagione, atleti tesserati); scritti a mano solo anno di fondazione e titoli.
+
+## Decisione (30/09/2026)
+
+- **Pagina propria "Il club"** (opzione B): presentazione, numeri e storia escono da `/squadre`.
+- **Navigazione:** la voce "Chi siamo", già prima nel menu **Squadre ▾**, punta a `/il-club` invece che a `/squadre`. Nessun altro cambio al menu principale, il cui riordino resta parcheggiato (quando lo si farà, la candidata è un gruppo "su di noi" con Contatti, FAQ e Sponsor). Link anche nel footer.
+- **Home invariata:** il blocco "Chi siamo" della home resta com'è.
 
 ## Criteri di accettazione
 

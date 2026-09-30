@@ -11,6 +11,7 @@ import {
   type BadgeTier,
 } from "@/lib/rating/badges";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export type AchievementItem = BadgeProgress & {
   /** Frase del traguardo raggiunto, al posto del criterio quando e' sbloccato. */
@@ -50,7 +51,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
         alignItems: "center",
         textAlign: "center",
         p: { xs: 1.5, sm: 2 },
-        borderRadius: 3,
+        borderRadius: RADIUS.lg,
         // Sbloccato e da conquistare devono distinguersi senza leggere il
         // testo: colore del livello e bordo pieno contro grigio e tratteggio.
         // Prima cambiava solo il colore dell'icona.
@@ -135,7 +136,7 @@ function AchievementCard({ item }: { item: AchievementItem }) {
             value={pct}
             aria-label={item.label}
             aria-valuetext={t("value", { current: item.current ?? 0, target: item.target! })}
-            sx={{ height: 5, borderRadius: 3 }}
+            sx={{ height: 5, borderRadius: RADIUS.pill }}
           />
           <Typography
             sx={{ color: "text.secondary", fontSize: TYPE_SCALE.xs, mt: 0.25, display: "block" }}

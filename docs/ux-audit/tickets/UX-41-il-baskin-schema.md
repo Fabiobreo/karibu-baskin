@@ -1,6 +1,6 @@
 # UX-41 · `/il-baskin` con uno schema del campo
 
-**Ondata:** 4 · **Stima:** M · **Dipende da:** UX-21 (testi rivisti dal club), UX-29 · **Stato:** da fare
+**Ondata:** 4 · **Stima:** M · **Dipende da:** UX-21 (fatto), UX-29 · **Stato:** da fare
 
 ## Problema
 

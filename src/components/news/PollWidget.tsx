@@ -23,6 +23,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useToast } from "@/context/ToastContext";
 import { useRouter } from "next/navigation";
 import { readError } from "@/lib/fetchJson";
+import { RADIUS } from "@/lib/radius";
 
 interface PollOption {
   id: string;
@@ -116,7 +117,7 @@ export default function PollWidget({
         p: { xs: 2, sm: 2.5 },
         border: "1px solid",
         borderColor: "divider",
-        borderRadius: 2,
+        borderRadius: RADIUS.lg,
         // Fondo pieno come le altre card: con il velo grigio di action.hover il
         // sondaggio, l'unica cosa della pagina da usare, sembrava disattivato.
         bgcolor: "background.paper",
@@ -202,7 +203,7 @@ export default function PollWidget({
                     value={pct}
                     sx={{
                       height: 8,
-                      borderRadius: 4,
+                      borderRadius: RADIUS.pill,
                       bgcolor: "action.selected",
                       "& .MuiLinearProgress-bar": {
                         // Le opzioni non votate restano neutre (colorarle

@@ -102,6 +102,7 @@ export default function RoleQuizClient({
     <RoleResultCard result={suggested} rolesInfo={rolesInfo} kind="suggested">
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 3 }}>
         <Button
+          size="large"
           href={nextSession?.href ?? "/allenamenti"}
           variant="contained"
           startIcon={<EventAvailableIcon />}

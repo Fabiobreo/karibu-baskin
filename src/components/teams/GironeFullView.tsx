@@ -29,6 +29,7 @@ import { contrastText } from "@/lib/colorUtils";
 import StatAbbr from "@/components/teams/StatAbbr";
 import type { StandingEntry } from "@/lib/season/standings";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export type OurMatchData = {
   id: string;
@@ -127,7 +128,7 @@ export default function GironeFullView({
   const current = matchdays[tab];
 
   return (
-    <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", borderRadius: 2 }}>
+    <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", borderRadius: RADIUS.lg }}>
       {/* Header */}
       <Box
         sx={{

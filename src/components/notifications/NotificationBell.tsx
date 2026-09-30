@@ -9,6 +9,7 @@ import { useNotifications } from "@/context/NotificationContext";
 import { useTranslations } from "next-intl";
 import NotificationDropdown from "./NotificationDropdown";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
+import { RADIUS } from "@/lib/radius";
 
 export default function NotificationBell() {
   const t = useTranslations("nav");
@@ -52,7 +53,7 @@ export default function NotificationBell() {
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
-        PaperProps={{ elevation: 4, sx: { mt: 1, borderRadius: 2 } }}
+        PaperProps={{ elevation: 4, sx: { mt: 1, borderRadius: RADIUS.lg } }}
       >
         <NotificationDropdown onClose={() => setAnchorEl(null)} />
       </Popover>

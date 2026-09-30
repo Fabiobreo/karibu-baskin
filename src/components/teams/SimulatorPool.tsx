@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { roleColor } from "@/lib/constants";
 import type { SimPlayer } from "@/components/teams/MatchSimulator";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 const pkey = (p: SimPlayer) => `${p.kind}-${p.id}`;
 
@@ -89,7 +90,7 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
           <Paper
             key={pkey(p)}
             variant="outlined"
-            sx={{ p: 1, display: "flex", alignItems: "center", gap: 1.5, borderRadius: 2 }}
+            sx={{ p: 1, display: "flex", alignItems: "center", gap: 1.5, borderRadius: RADIUS.md }}
           >
             <Avatar
               src={p.image ?? undefined}

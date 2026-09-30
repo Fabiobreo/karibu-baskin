@@ -39,6 +39,7 @@ import {
   type ChildData,
 } from "@/components/profile/childLinkerShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface ChildAddDialogProps {
   onClose: () => void;
@@ -230,7 +231,7 @@ export default function ChildAddDialog({ onClose, onChildAdded }: ChildAddDialog
             {nameSearched && nameResults.length > 0 && (
               <List
                 disablePadding
-                sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1 }}
+                sx={{ border: "1px solid", borderColor: "divider", borderRadius: RADIUS.md }}
               >
                 {nameResults.map((u, idx) => (
                   <ListItem key={u.id} disablePadding divider={idx < nameResults.length - 1}>

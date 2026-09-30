@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useNotifications } from "@/context/NotificationContext";
 import NotificationItem from "./NotificationItem";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface NotifItem {
   id: string;
@@ -88,7 +89,12 @@ export default function NotificationDropdown({ onClose }: { onClose: () => void 
       {loading ? (
         <Box sx={{ px: 2, py: 1.5 }}>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} variant="rectangular" height={64} sx={{ mb: 1, borderRadius: 1 }} />
+            <Skeleton
+              key={i}
+              variant="rectangular"
+              height={64}
+              sx={{ mb: 1, borderRadius: RADIUS.md }}
+            />
           ))}
         </Box>
       ) : notifications.length === 0 ? (

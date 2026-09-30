@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PrevMatchPreview } from "@/components/matches/matchDetailTypes";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 /** Scontri diretti con lo stesso avversario (partite precedenti con esito). */
 export default function HeadToHeadSection({
@@ -57,7 +58,7 @@ export default function HeadToHeadSection({
                 gap: 1.5,
                 px: 1.5,
                 py: 0.9,
-                borderRadius: 1,
+                borderRadius: RADIUS.md,
                 ...(m.slug ? { cursor: "pointer", "&:hover": { bgcolor: "action.hover" } } : {}),
               }}
             >

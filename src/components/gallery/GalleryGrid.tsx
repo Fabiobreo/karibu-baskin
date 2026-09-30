@@ -20,6 +20,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import Image from "next/image";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 export interface GalleryPost {
   id: string;
@@ -72,7 +73,7 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
               position: "relative",
               aspectRatio: "1 / 1",
               cursor: "pointer",
-              borderRadius: 1,
+              borderRadius: RADIUS.md,
               overflow: "hidden",
               ...onHover({ "& img": { transform: "scale(1.04)" } }),
             }}
@@ -189,7 +190,7 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                       transform: "translateX(-50%)",
                       px: 1,
                       py: 0.25,
-                      borderRadius: 5,
+                      borderRadius: RADIUS.pill,
                       bgcolor: "rgba(0,0,0,0.55)",
                       color: "common.white",
                       fontSize: TYPE_SCALE.xs,

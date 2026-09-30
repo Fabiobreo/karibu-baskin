@@ -10,6 +10,7 @@ import type { TeamInfo } from "@/components/calendar/calendarShared";
 import { contrastText } from "@/lib/colorUtils";
 import { decorationSx, teamFilterKey, typeColor, typeFilterKey } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 interface CalendarLegendProps {
   teams: TeamInfo[];
@@ -71,7 +72,7 @@ export default function CalendarLegend({
                     width: 20,
                     height: 20,
                     bgcolor: color,
-                    borderRadius: "4px",
+                    borderRadius: RADIUS.sm,
                     "& svg": { fontSize: TYPE_SCALE.xs, color: contrastText(color) },
                   }}
                 >
@@ -110,7 +111,7 @@ export default function CalendarLegend({
                     sx={{
                       width: 5,
                       height: 18,
-                      borderRadius: "3px",
+                      borderRadius: RADIUS.sm,
                       bgcolor: team.color ?? "text.secondary",
                       ...decorationSx(theme, {
                         echo: mine.has(team.id) ? (team.color ?? null) : null,
@@ -196,7 +197,7 @@ function LegendItem({
           outline: "2px solid",
           outlineColor: "primary.main",
           outlineOffset: 2,
-          borderRadius: "4px",
+          borderRadius: RADIUS.sm,
         },
       }}
     >

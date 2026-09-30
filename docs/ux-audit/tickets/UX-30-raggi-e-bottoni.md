@@ -1,6 +1,6 @@
 # UX-30 · Raggi (moltiplicatore del tema) e bottoni 3 × 2 senza alone
 
-**Ondata:** 4 · **Stima:** M · **Dipende da:** nessuno · **Stato:** da fare
+**Ondata:** 4 · **Stima:** M · **Dipende da:** nessuno · **Stato:** fatto (su `develop`)
 
 ## Problema
 
@@ -46,3 +46,14 @@ L'alone colorato è l'elemento che più di tutti fa sembrare il sito una landing
 - Al massimo 3 stili di bottone per pagina (enfasi × taglia contate come in `RIAUDIT-2026-09-29.md`, sezione 8).
 - Nessun `boxShadow` con colore del marchio in `src/`.
 - `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run a11y` verdi; schermate prima/dopo di home, `/allenamenti`, `/eventi`, `/contatti`, `/login`.
+
+## Decisioni e note (29/09/2026)
+
+- **Raggi con token** `RADIUS` in `@/lib/radius` (come `TYPE_SCALE`): `sm` 6, `md` 8, `lg` 14, `pill`. `shape.borderRadius` passa da 10 a 8 (= `md`), così anche Alert, menu e tooltip di MUI stanno nella scala. Regola ESLint in `error` sui letterali in `borderRadius` dentro `sx`/`slotProps`/`PaperProps`/`MenuProps`/`InputProps` (liberi `0` e `"50%"`). Migrati 157 usi in 97 file più gli oggetti di stile fuori dal JSX; gli `style` di email e immagini OG restano in px (fuori dal tema).
+- **Accordion:** un gruppo è una card, primo e ultimo a `lg` (tema).
+- **Bottoni:** `disableElevation` di default, niente ombre colorate (tolte anche dagli hover di card in `/contatti`, `/sponsor`, `NextMatchCard`, dall'alone della mappa e dagli aloni pulsanti del chip "Imminente"); `minHeight` 40 / `large` 48 / `small` 32. Variante fantasma nel tema (`outlined` + `color="inherit"`, bordo e fondo in `color-mix` sul colore del testo), usata negli hero di home, `/contatti`, `/classifiche`, `/marcatori`, in `StaffManageButton` e `PlayerShareButtons`.
+- **48 px solo nel sito pubblico** (decisione del 29/09): CTA di pagina e invio dei moduli pubblici (contatti, suggerimenti, iscrizione, RSVP, login, FAQ, news, gallery, ruolo, prossima azione). L'admin resta a 40.
+- **Casi noti:** "Mandami un link di accesso" è `outlined` large a tutta larghezza; "Iscriviti" nelle card allenamento è un bottone da 40 px senza freccia, e il bottone squadre accanto diventa contornato (uno solo pieno per card); "Tutti" nelle convocazioni è terziario come "Nessuno". "Scrivici" e "Mostra la mappa" in `/contatti` passano a `outlined`, così la pagina ha 3 stili (pieno 48, contornato 48, tab di testo).
+- **Rimandato a UX-40:** la forma dei quick link della dashboard admin (qui solo raggi e ombre).
+- **Rimandato a UX-43:** card in evidenza degli allenamenti (testata nera, corpo schiarito dall'elevazione) e "Gestisci allenamenti" su una riga propria, emersi guardando `/allenamenti` durante questo ticket.
+- Misure a 1440 px, sulle pagine controllate (home, `/eventi`, `/contatti`, `/faq`, dettaglio partita): card di primo livello tutte a 14 px (nelle altre pagine misurate lo script non ha contato nessuna card: non vale come verifica); nessun bottone con ombra; stili di bottone per pagina ≤ 3 (home: pieno 48, pieno 40, contornato 48; `/contatti`: pieno 48, contornato 48, testo).

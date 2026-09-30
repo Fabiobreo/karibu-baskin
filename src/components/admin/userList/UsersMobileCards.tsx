@@ -10,6 +10,7 @@ import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type AdminRow } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { joinNames } from "@/lib/guardianNames";
+import { RADIUS } from "@/lib/radius";
 
 interface UsersMobileCardsProps {
   rows: AdminRow[];
@@ -33,7 +34,7 @@ export default function UsersMobileCards({
         display: { xs: "block", sm: "none" },
         border: "1px solid",
         borderColor: "divider",
-        borderRadius: 1,
+        borderRadius: RADIUS.lg,
       }}
     >
       {rows.length === 0 ? (

@@ -21,6 +21,7 @@ import {
   type ControllableNotifType,
 } from "@/lib/notifications/notifPrefs";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -137,7 +138,7 @@ export default function NotificationPrefsPanel({ initialPrefs }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (pushStatus === "loading") {
-    return <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 1 }} />;
+    return <Skeleton variant="rectangular" height={120} sx={{ borderRadius: RADIUS.lg }} />;
   }
 
   return (

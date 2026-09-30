@@ -15,6 +15,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
+import { RADIUS } from "@/lib/radius";
 
 export interface MatchAvailabilityEntity {
   kind: "user" | "child";
@@ -99,7 +100,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
       <Paper
         elevation={0}
         variant="outlined"
-        sx={{ p: { xs: 2, md: 2.5 }, borderColor: "primary.main", borderRadius: 2 }}
+        sx={{ p: { xs: 2, md: 2.5 }, borderColor: "primary.main", borderRadius: RADIUS.lg }}
       >
         <Typography
           variant="overline"

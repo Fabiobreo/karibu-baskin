@@ -7,6 +7,7 @@ import { it } from "date-fns/locale";
 import { prisma } from "@/lib/db";
 import { MIN_CALLUPS } from "@/lib/constants";
 import { formatRome, romeCalendarDaysBetween } from "@/lib/dateUtils";
+import { RADIUS } from "@/lib/radius";
 
 const DAYS_AHEAD = 7;
 
@@ -78,7 +79,7 @@ export default async function AdminProssimePartite() {
                 alignItems: "center",
                 gap: 1.5,
                 p: 1.25,
-                borderRadius: 1,
+                borderRadius: RADIUS.md,
                 border: "1px solid",
                 borderColor: "divider",
                 // Server Component: niente sx a funzione (non serializzabile) →
@@ -102,7 +103,7 @@ export default async function AdminProssimePartite() {
                   sx={{
                     width: 4,
                     alignSelf: "stretch",
-                    borderRadius: 1,
+                    borderRadius: RADIUS.sm,
                     backgroundColor: m.team.color,
                   }}
                 />

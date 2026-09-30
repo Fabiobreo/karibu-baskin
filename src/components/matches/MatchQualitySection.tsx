@@ -3,6 +3,7 @@
 import { Box, Typography } from "@mui/material";
 import MatchQualityBadge from "@/components/matches/MatchQualityBadge";
 import type { MatchQuality } from "@/lib/matches/matchQuality";
+import { RADIUS } from "@/lib/radius";
 
 interface MatchQualitySectionProps {
   quality: MatchQuality;
@@ -24,7 +25,7 @@ export default function MatchQualitySection({
         mb: 2,
         px: 2,
         py: 1.5,
-        borderRadius: 1,
+        borderRadius: RADIUS.md,
         border: "1px solid",
         borderColor: "divider",
         bgcolor: "background.paper",

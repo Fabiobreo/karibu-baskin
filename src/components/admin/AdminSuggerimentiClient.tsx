@@ -24,6 +24,7 @@ import { useToast } from "@/context/ToastContext";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 type Category = "APP" | "ALLENAMENTI" | "PARTITE_EVENTI" | "ALTRO";
 type Status = "NUOVO" | "LETTO" | "ARCHIVIATO";
@@ -277,7 +278,7 @@ export default function AdminSuggerimentiClient({
                           sx={{
                             flex: 1,
                             bgcolor: "action.hover",
-                            borderRadius: 1.5,
+                            borderRadius: RADIUS.md,
                             p: 1.25,
                           }}
                         >

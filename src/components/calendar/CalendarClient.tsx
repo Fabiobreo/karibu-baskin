@@ -41,6 +41,7 @@ import SubscribeCalendarButton from "@/components/calendar/SubscribeCalendarButt
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { RADIUS } from "@/lib/radius";
 
 // v2: le chiavi dei filtri sono cambiate (type:<tipo> e team:<id> al posto di
 // "training" e "match:<colore>"). Chiave nuova così i filtri vecchi salvati sui
@@ -277,7 +278,7 @@ export default function CalendarClient({
             bgcolor: "divider",
             border: "1px solid",
             borderColor: "divider",
-            borderRadius: 1,
+            borderRadius: RADIUS.lg,
             overflow: "hidden",
           }}
         >
@@ -309,7 +310,7 @@ export default function CalendarClient({
             bgcolor: "divider",
             border: "1px solid",
             borderColor: "divider",
-            borderRadius: 1,
+            borderRadius: RADIUS.lg,
             overflow: "hidden",
           }}
         >
@@ -429,11 +430,12 @@ export default function CalendarClient({
                     const { bg, fg, accent } = eventVisual(theme, ev.type, ev.teamColor);
                     // Barra continua per eventi multi-giorno: bordi smussati solo
                     // alle estremità ed estensione fino al bordo cella.
+                    const r = RADIUS.sm;
                     const radius = seg.multiDay
-                      ? `${seg.isStart ? "3px" : "0"} ${seg.isEnd ? "3px" : "0"} ${
-                          seg.isEnd ? "3px" : "0"
-                        } ${seg.isStart ? "3px" : "0"}`
-                      : "3px";
+                      ? `${seg.isStart ? r : "0"} ${seg.isEnd ? r : "0"} ${seg.isEnd ? r : "0"} ${
+                          seg.isStart ? r : "0"
+                        }`
+                      : r;
                     return (
                       <Box
                         key={ev.id}
