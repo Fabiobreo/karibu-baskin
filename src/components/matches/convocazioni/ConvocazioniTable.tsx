@@ -17,7 +17,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import StarIcon from "@mui/icons-material/Star";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -138,7 +137,9 @@ export default function ConvocazioniTable({
                           width: 30,
                           height: 30,
                           fontSize: TYPE_SCALE.xs,
-                          bgcolor: role ? roleColor(role) : "grey.400",
+                          // Neutro (UX-29): il ruolo lo dice il RoleBadge accanto al nome.
+                          bgcolor: "action.selected",
+                          color: "text.primary",
                         }}
                       >
                         {row.candidate.name[0]}
@@ -160,8 +161,8 @@ export default function ConvocazioniTable({
                               label="Disponibile"
                               size="small"
                               sx={{
-                                bgcolor: "match.winBg",
-                                color: "match.win",
+                                bgcolor: (theme) => alpha(theme.palette.success.main, 0.12),
+                                color: "success.main",
                                 fontSize: TYPE_SCALE.xs,
                                 height: 20,
                               }}
@@ -228,9 +229,9 @@ export default function ConvocazioniTable({
                             fontSize: TYPE_SCALE.sm,
                             color:
                               row.presences === row.eligibleSessions
-                                ? "match.win"
+                                ? "success.main"
                                 : row.presences === 0
-                                  ? "match.loss"
+                                  ? "error.main"
                                   : "text.primary",
                           }}
                         >
@@ -257,11 +258,11 @@ export default function ConvocazioniTable({
                         sx={{
                           bgcolor:
                             row.absences >= Math.max(2, row.eligibleSessions / 2)
-                              ? "match.lossBg"
+                              ? (theme) => alpha(theme.palette.error.main, 0.12)
                               : "action.hover",
                           color:
                             row.absences >= Math.max(2, row.eligibleSessions / 2)
-                              ? "match.loss"
+                              ? "error.main"
                               : "text.secondary",
                           height: 20,
                           fontSize: TYPE_SCALE.xs,
@@ -299,7 +300,8 @@ export default function ConvocazioniTable({
                             row.daysSinceLastCallup >= 30
                               ? FONT_WEIGHT.semibold
                               : FONT_WEIGHT.regular,
-                          color: row.daysSinceLastCallup >= 30 ? "primary.main" : "text.secondary",
+                          // Da tanto non convocato: e' un avviso, non un'azione (UX-29).
+                          color: row.daysSinceLastCallup >= 30 ? "warning.main" : "text.secondary",
                         }}
                       >
                         {row.daysSinceLastCallup}g

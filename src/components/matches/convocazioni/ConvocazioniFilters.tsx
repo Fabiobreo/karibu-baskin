@@ -1,6 +1,6 @@
 "use client";
 import { Box, Chip, Paper, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
-import { ROLES, roleColor } from "@/lib/constants";
+import { ROLES } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -47,13 +47,9 @@ export default function ConvocazioniFilters({
             label={`R${r}`}
             size="small"
             onClick={() => onRoleFilterChange(r)}
-            sx={{
-              cursor: "pointer",
-              fontSize: TYPE_SCALE.xs,
-              bgcolor: roleFilter === r ? roleColor(r) : "transparent",
-              color: roleFilter === r ? "common.white" : "text.primary",
-              border: `1px solid ${roleFilter === r ? roleColor(r) : "transparent"}`,
-            }}
+            // Filtro selezionato = stato attivo standard (UX-29), non il colore del ruolo.
+            color={roleFilter === r ? "primary" : "default"}
+            sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
           />
         ))}
       </Box>

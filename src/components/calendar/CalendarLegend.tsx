@@ -7,8 +7,14 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import { useTranslations } from "next-intl";
 import { seasonForDate } from "@/components/training/SessionRestrictionEditor";
 import type { TeamInfo } from "@/components/calendar/calendarShared";
-import { contrastText } from "@/lib/colorUtils";
-import { decorationSx, teamFilterKey, typeColor, typeFilterKey } from "@/lib/calendar/eventColors";
+import { teamColor } from "@/lib/teamColors";
+import {
+  decorationSx,
+  eventVisual,
+  surfaceSx,
+  teamFilterKey,
+  typeFilterKey,
+} from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -25,10 +31,11 @@ interface CalendarLegendProps {
 }
 
 /**
- * Legenda del calendario, su due assi che rispecchiano i colori della griglia:
- * il TIPO (quadratino pieno, stesso colore dello sfondo del chip) e la SQUADRA
- * (barretta verticale, stesso colore del bordo sinistro del chip). I toggle
- * nascondono/mostrano, e i filtri sono persistiti.
+ * Legenda del calendario, su due assi che rispecchiano la griglia: il TIPO
+ * (mini-chip con la stessa forma e icona dei chip: pieno, contornato, tenue) e
+ * la SQUADRA (barretta verticale nella tinta della fascia sinistra; tratteggiata
+ * e grigia per le squadre senza tinta, che in griglia non hanno fascia). I
+ * toggle nascondono/mostrano, e i filtri sono persistiti.
  */
 export default function CalendarLegend({
   teams,
@@ -56,7 +63,7 @@ export default function CalendarLegend({
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
         <LegendCaption>{t("legendTypes")}</LegendCaption>
         {types.map(({ type, icon, label }) => {
-          const color = typeColor(theme, type);
+          const visual = eventVisual(theme, type);
           return (
             <LegendItem
               key={type}
@@ -72,9 +79,10 @@ export default function CalendarLegend({
                     justifyContent: "center",
                     width: 20,
                     height: 20,
-                    bgcolor: color,
+                    boxSizing: "border-box",
+                    ...surfaceSx(visual),
                     borderRadius: RADIUS.sm,
-                    "& svg": { fontSize: TYPE_SCALE.xs, color: contrastText(color) },
+                    "& svg": { fontSize: TYPE_SCALE.xs, color: visual.fg },
                   }}
                 >
                   {icon}
@@ -88,43 +96,51 @@ export default function CalendarLegend({
       {seasonTeams.length > 0 && (
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "center" }}>
           <LegendCaption>{t("legendTeams")}</LegendCaption>
-          {seasonTeams.map((team) => (
-            <LegendItem
-              key={team.id}
-              label={team.name}
-              active={!hiddenKeys.has(teamFilterKey(team.id))}
-              onClick={() => onToggleKey(teamFilterKey(team.id))}
-              swatch={
-                // Barretta verticale: è la stessa forma del bordo sinistro del
-                // chip, così la legenda si lega a quello che si vede in griglia.
-                // Le squadre di chi guarda portano anche il contorno, lo stesso
-                // che marca i loro impegni nella griglia.
-                <Box
-                  sx={{
-                    width: 20,
-                    height: 20,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+          {seasonTeams.map((team) => {
+            const tint = teamColor(team.color);
+            return (
+              <LegendItem
+                key={team.id}
+                label={team.name}
+                active={!hiddenKeys.has(teamFilterKey(team.id))}
+                onClick={() => onToggleKey(teamFilterKey(team.id))}
+                swatch={
+                  // Barretta verticale: è la stessa forma del bordo sinistro del
+                  // chip, così la legenda si lega a quello che si vede in griglia.
+                  // Le squadre di chi guarda portano anche il contorno, lo stesso
+                  // che marca i loro impegni nella griglia.
                   <Box
                     sx={{
-                      width: 5,
-                      height: 18,
-                      borderRadius: RADIUS.sm,
-                      bgcolor: team.color ?? "text.secondary",
-                      ...decorationSx(theme, {
-                        echo: mine.has(team.id) ? (team.color ?? null) : null,
-                        echoGap: 2,
-                        echoWidth: 2,
-                      }),
+                      width: 20,
+                      height: 20,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
-                  />
-                </Box>
-              }
-            />
-          ))}
+                  >
+                    <Box
+                      sx={{
+                        width: 5,
+                        height: 18,
+                        boxSizing: "border-box",
+                        borderRadius: RADIUS.sm,
+                        // Senza tinta la squadra non ha fascia in griglia: qui una
+                        // barretta tratteggiata grigia, che non si scambia per una tinta.
+                        ...(tint
+                          ? { bgcolor: tint }
+                          : { border: "1.5px dashed", borderColor: "text.secondary" }),
+                        ...decorationSx(theme, {
+                          echo: mine.has(team.id) ? (tint ?? theme.palette.text.primary) : null,
+                          echoGap: 2,
+                          echoWidth: 2,
+                        }),
+                      }}
+                    />
+                  </Box>
+                }
+              />
+            );
+          })}
         </Box>
       )}
 

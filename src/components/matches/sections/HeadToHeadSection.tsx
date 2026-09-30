@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PrevMatchPreview } from "@/components/matches/matchDetailTypes";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -25,9 +26,9 @@ export default function HeadToHeadSection({
   if (prevMatches.length === 0) return null;
 
   const RESULT_META: Record<string, { label: string; color: string }> = {
-    WIN: { label: t("resultWin"), color: "#2E7D32" },
-    LOSS: { label: t("resultLoss"), color: "#C62828" },
-    DRAW: { label: t("resultDraw"), color: "#E65100" },
+    WIN: { label: t("resultWin"), color: MATCH_RESULT_META.WIN.color },
+    LOSS: { label: t("resultLoss"), color: MATCH_RESULT_META.LOSS.color },
+    DRAW: { label: t("resultDraw"), color: MATCH_RESULT_META.DRAW.color },
   };
 
   return (
@@ -83,7 +84,7 @@ export default function HeadToHeadSection({
                   size="small"
                   sx={{
                     bgcolor: resMeta.color,
-                    color: "common.white",
+                    color: "match.onFill",
                     fontSize: TYPE_SCALE.xs,
                     height: 20,
                   }}

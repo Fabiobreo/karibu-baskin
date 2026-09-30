@@ -3,8 +3,16 @@ import { Box } from "@mui/material";
 interface PointsTrendChartProps {
   /** Punti per partita in ordine cronologico. */
   values: number[];
-  /** Token colore tema applicato via `color` (la linea usa currentColor). */
+  /**
+   * Token colore tema applicato via `color` (la linea usa currentColor).
+   * Default `text.primary`: i dati sono in inchiostro (UX-29). Per una seconda
+   * serie accanto: `text.secondary` con `dashed` e `marker="square"`.
+   */
   colorToken?: string;
+  /** Linea tratteggiata (seconda serie di un confronto). */
+  dashed?: boolean;
+  /** Forma dei punti: il secondo segnale oltre al colore quando le serie sono due. */
+  marker?: "circle" | "square";
   height?: number;
 }
 
@@ -15,7 +23,9 @@ interface PointsTrendChartProps {
  */
 export default function PointsTrendChart({
   values,
-  colorToken = "primary.main",
+  colorToken = "text.primary",
+  dashed = false,
+  marker = "circle",
   height = 90,
 }: PointsTrendChartProps) {
   if (values.length < 2) return null;
@@ -52,10 +62,16 @@ export default function PointsTrendChart({
         strokeWidth={2}
         strokeLinejoin="round"
         strokeLinecap="round"
+        strokeDasharray={dashed ? "4 3" : undefined}
       />
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 3.5 : 2} fill="currentColor" />
-      ))}
+      {pts.map((p, i) => {
+        const r = i === pts.length - 1 ? 3.5 : 2;
+        return marker === "square" ? (
+          <rect key={i} x={p.x - r} y={p.y - r} width={r * 2} height={r * 2} fill="currentColor" />
+        ) : (
+          <circle key={i} cx={p.x} cy={p.y} r={r} fill="currentColor" />
+        );
+      })}
     </Box>
   );
 }

@@ -5,6 +5,7 @@ import { IconButton, CircularProgress, Tooltip } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
+import { heroText } from "@/lib/heroStyles";
 
 interface Props {
   matchId: string;
@@ -83,10 +84,11 @@ export default function MatchTabellinoButton({ matchId, filename }: Props) {
         disabled={loading}
         aria-label={label}
         sx={{
-          color: "common.white",
-          bgcolor: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.2)",
-          "&:hover": { bgcolor: "rgba(255,255,255,0.15)", borderColor: "rgba(255,255,255,0.4)" },
+          // Sta sull'hero scuro della partita: bianchi velati da `heroText`.
+          color: heroText.primary,
+          bgcolor: heroText.surface,
+          border: `1px solid ${heroText.lineStrong}`,
+          "&:hover": { bgcolor: heroText.surfaceHover, borderColor: heroText.muted },
         }}
       >
         {loading ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import {
   Autocomplete,
   Box,
@@ -490,14 +491,7 @@ export default function MatchFormDialog({
                   {displayTeams.map((t) => (
                     <MenuItem key={t.id} value={t.id}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Box
-                          sx={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: "50%",
-                            backgroundColor: t.color ?? "primary.main",
-                          }}
-                        />
+                        <TeamColorDot color={t.color} size={10} />
                         {t.name}
                         {(teamsForForm.length === 0 || !teamsForForm.includes(t)) &&
                           ` · ${t.season}`}

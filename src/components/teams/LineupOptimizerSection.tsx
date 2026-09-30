@@ -20,7 +20,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import HeightIcon from "@mui/icons-material/Height";
-import { sportRoleLabel, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { roleColorSx } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
 import { TRUESKILL } from "@/lib/rating/trueskill";
 import { optimizeLineup } from "@/lib/rating/lineupOptimizer";
 import type { CandidateInput } from "@/lib/matches/callupStats";
@@ -179,18 +180,22 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
             sx={{
               fontSize: TYPE_SCALE.xs,
               height: 20,
-              bgcolor:
-                winLabel === "Favoriti"
-                  ? "match.winBg"
-                  : winLabel === "Sfavoriti"
-                    ? "match.lossBg"
-                    : (theme) => alpha(theme.palette.warning.main, 0.12),
+              // Valenza generica (UX-29): success / warning / error, non gli esiti.
+              bgcolor: (theme) =>
+                alpha(
+                  winLabel === "Favoriti"
+                    ? theme.palette.success.main
+                    : winLabel === "Sfavoriti"
+                      ? theme.palette.error.main
+                      : theme.palette.warning.main,
+                  0.12
+                ),
               color:
                 winLabel === "Favoriti"
-                  ? "match.win"
+                  ? "success.main"
                   : winLabel === "Sfavoriti"
-                    ? "match.loss"
-                    : "warning.dark",
+                    ? "error.main"
+                    : "warning.main",
             }}
           />
         )}
@@ -242,7 +247,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
                 avatar={
                   <Avatar
                     src={p.image ?? undefined}
-                    sx={{ bgcolor: p.sportRole ? roleColor(p.sportRole) : "grey.400" }}
+                    sx={{ bgcolor: "action.selected", color: "text.primary" }}
                   >
                     {p.name[0]}
                   </Avatar>
@@ -262,14 +267,20 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
 
 function PlayerRow({ player: p }: { player: CandidateInput }) {
   const mu = (p.ratingMu ?? TRUESKILL.MU).toFixed(1);
-  const roleTint = p.sportRole ? roleColor(p.sportRole) : "grey.400";
   const hasRating = p.ratingMu != null;
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
       <Avatar
         src={p.image ?? undefined}
-        sx={{ width: 28, height: 28, fontSize: TYPE_SCALE.xs, bgcolor: roleTint }}
+        sx={{
+          width: 28,
+          height: 28,
+          fontSize: TYPE_SCALE.xs,
+          // Neutro (UX-29): il ruolo lo dice il RoleBadge.
+          bgcolor: "action.selected",
+          color: "text.primary",
+        }}
       >
         {p.name[0]}
       </Avatar>
@@ -280,18 +291,7 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
       >
         {p.name}
       </Typography>
-      {p.sportRole && (
-        <Chip
-          label={sportRoleLabel(p.sportRole, p.sportRoleVariant)}
-          size="small"
-          sx={{
-            bgcolor: roleTint,
-            color: "common.white",
-            fontSize: TYPE_SCALE.xs,
-            height: 20,
-          }}
-        />
-      )}
+      {p.sportRole && <RoleBadge role={p.sportRole} variant={p.sportRoleVariant} />}
       <Tooltip title={hasRating ? `Rating TrueSkill μ=${mu}` : "Non ancora valutato (μ default)"}>
         <Typography
           variant="caption"
@@ -354,7 +354,8 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
         gap: 1,
         p: 1,
         borderRadius: RADIUS.md,
-        bgcolor: gapWarning || noBackup ? "match.lossBg" : "transparent",
+        bgcolor: (theme) =>
+          gapWarning || noBackup ? alpha(theme.palette.error.main, 0.08) : "transparent",
       }}
     >
       {/* Role chip */}
@@ -362,8 +363,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
         label={`R${entry.role}`}
         size="small"
         sx={{
-          bgcolor: roleColor(entry.role),
-          color: ROLE_TEXT_COLOR,
+          ...roleColorSx(entry.role),
           fontSize: TYPE_SCALE.xs,
           height: 20,
           minWidth: 32,
@@ -381,8 +381,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               sx={{
                 fontSize: TYPE_SCALE.xs,
                 height: 22,
-                bgcolor: (theme) =>
-                  alpha(roleColor(entry.role) ?? theme.palette.primary.main, 0.15),
+                bgcolor: "action.selected",
                 color: "text.primary",
               }}
             />
@@ -406,11 +405,11 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
         {entry.onBench.length === 0 ? (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             {noBackup && entry.inLineup.length > 0 && (
-              <WarningAmberIcon sx={{ fontSize: 14, color: "match.loss" }} />
+              <WarningAmberIcon sx={{ fontSize: 14, color: "error.main" }} />
             )}
             <Typography
               variant="caption"
-              color={noBackup ? "match.loss" : "text.secondary"}
+              color={noBackup ? "error.main" : "text.secondary"}
               fontWeight={noBackup ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
             >
               {entry.inLineup.length === 0 ? "—" : "nessuna riserva"}
@@ -441,10 +440,10 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
       {gapWarning && entry.gap != null && (
         <Tooltip title="Gap elevato: rischio falli (titolare molto più forte della riserva)">
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, flexShrink: 0 }}>
-            <WarningAmberIcon sx={{ fontSize: 14, color: "match.loss" }} />
+            <WarningAmberIcon sx={{ fontSize: 14, color: "error.main" }} />
             <Typography
               variant="caption"
-              color="match.loss"
+              color="error.main"
               fontWeight={FONT_WEIGHT.semibold}
               sx={{ fontSize: TYPE_SCALE.xs }}
             >

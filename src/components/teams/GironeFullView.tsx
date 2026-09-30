@@ -16,7 +16,6 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -25,7 +24,8 @@ import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { slugify } from "@/lib/slugUtils";
-import { contrastText } from "@/lib/colorUtils";
+import { teamColor } from "@/lib/teamColors";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import StatAbbr from "@/components/teams/StatAbbr";
 import type { StandingEntry } from "@/lib/season/standings";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -144,17 +144,19 @@ export default function GironeFullView({
           flexWrap: "wrap",
         }}
       >
-        {ourTeams.map((t) => (
-          <Chip
-            key={t.id}
-            label={t.name}
-            size="small"
-            sx={{
-              bgcolor: t.color ?? "primary.main",
-              color: contrastText(t.color),
-            }}
-          />
-        ))}
+        {ourTeams.map((t) => {
+          // Tinta squadra come riempimento; senza tinta chip contornato neutro.
+          const tint = teamColor(t.color);
+          return (
+            <Chip
+              key={t.id}
+              label={t.name}
+              size="small"
+              variant={tint ? "filled" : "outlined"}
+              sx={tint ? { bgcolor: tint, color: "common.white" } : undefined}
+            />
+          );
+        })}
         <Typography variant="subtitle2">{groupName}</Typography>
         {championship && (
           <Chip
@@ -212,7 +214,7 @@ export default function GironeFullView({
                   align="center"
                   // Il token va risolto qui: `sx` non lo risolve piu' quando la
                   // stringa porta anche `!important`, e la regola veniva scartata.
-                  sx={(theme) => ({ color: `${theme.palette.primary.onLight} !important` })}
+                  sx={(theme) => ({ color: `${theme.palette.text.primary} !important` })}
                 >
                   <StatAbbr short={t("colPoints")} full={t("colPointsFull")} />
                 </TableCell>
@@ -225,12 +227,9 @@ export default function GironeFullView({
                   <TableRow
                     key={s.id}
                     sx={{
-                      // La nostra riga era arancione pieno con testo bianco:
-                      // 3,79:1 su testo di tabella. Ora e' una velatura, e il
-                      // grassetto fa il resto.
-                      bgcolor: s.isOurs
-                        ? (theme) => alpha(theme.palette.primary.main, 0.14)
-                        : undefined,
+                      // Nostra riga (UX-29): fondo neutro selezionato, grassetto e
+                      // pallino squadra; niente arancio (vuol dire "si tocca").
+                      bgcolor: s.isOurs ? "action.selected" : undefined,
                       "& td": s.isOurs
                         ? { color: "text.primary", fontWeight: FONT_WEIGHT.semibold }
                         : {},
@@ -253,9 +252,10 @@ export default function GironeFullView({
                         >
                           <Typography
                             variant="body2"
-                            fontWeight={FONT_WEIGHT.bold}
+                            fontWeight={FONT_WEIGHT.semibold}
                             sx={{ "&:hover": { textDecoration: "underline" } }}
                           >
+                            <TeamColorDot color={teamById.get(s.id)?.color} size={8} />
                             {s.name}
                           </Typography>
                         </Link>
@@ -352,7 +352,7 @@ export default function GironeFullView({
                         onClick={() => router.push(href)}
                         sx={{
                           cursor: "pointer",
-                          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                          bgcolor: "action.hover",
                         }}
                       >
                         <TableCell

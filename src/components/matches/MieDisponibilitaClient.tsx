@@ -1,5 +1,6 @@
 "use client";
 
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -338,17 +339,7 @@ function CompactMatchRow({
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0, flex: 1 }}>
-                {m.entities.length > 1 && (
-                  <Box
-                    sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      bgcolor: entity.teamColor ?? "primary.main",
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
+                {m.entities.length > 1 && <TeamColorDot color={entity.teamColor} size={6} />}
                 <Typography
                   variant="body2"
                   noWrap
@@ -368,9 +359,9 @@ function CompactMatchRow({
                     flexShrink: 0,
                     color:
                       value === true
-                        ? "match.win"
+                        ? "success.main"
                         : value === false
-                          ? "match.loss"
+                          ? "error.main"
                           : "text.secondary",
                   }}
                 >
@@ -406,8 +397,8 @@ function CompactMatchRow({
                     value={true}
                     sx={{
                       "&.Mui-selected": {
-                        bgcolor: "match.win",
-                        color: "match.onFill",
+                        bgcolor: "success.main",
+                        color: "success.contrastText",
                       },
                     }}
                   >
@@ -418,8 +409,8 @@ function CompactMatchRow({
                     value={false}
                     sx={{
                       "&.Mui-selected": {
-                        bgcolor: "match.loss",
-                        color: "match.onFill",
+                        bgcolor: "error.main",
+                        color: "error.contrastText",
                       },
                     }}
                   >

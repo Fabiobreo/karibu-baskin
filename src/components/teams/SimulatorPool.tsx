@@ -5,7 +5,6 @@ import { Box, Paper, Typography, Avatar, Button, Stack, Tabs, Tab, Chip } from "
 import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import { useTranslations } from "next-intl";
-import { roleColor } from "@/lib/constants";
 import type { SimPlayer } from "@/components/teams/MatchSimulator";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -65,14 +64,6 @@ export default function SimulatorPool({ players, canAssign, onAssign }: Simulato
             value={k}
             label={
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <Box
-                  sx={{
-                    width: 9,
-                    height: 9,
-                    borderRadius: "50%",
-                    bgcolor: typeof k === "number" ? roleColor(k) : "text.secondary",
-                  }}
-                />
                 <span>{roleLabel(k)}</span>
                 <Chip
                   label={groups.get(k)?.length ?? 0}

@@ -4,7 +4,6 @@ import { Box, Button, Divider, Paper, Stack, Typography } from "@mui/material";
 import GroupsIcon from "@mui/icons-material/Groups";
 import LockIcon from "@mui/icons-material/Lock";
 import { useTranslations } from "next-intl";
-import { roleColor } from "@/lib/constants";
 import CallupRow from "@/components/matches/CallupRow";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -115,15 +114,6 @@ export default function CallupsListSection({
         return (
           <Box key={role}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-              <Box
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: "50%",
-                  bgcolor: roleColor(role),
-                  flexShrink: 0,
-                }}
-              />
               <Typography
                 variant="caption"
                 fontWeight={FONT_WEIGHT.semibold}

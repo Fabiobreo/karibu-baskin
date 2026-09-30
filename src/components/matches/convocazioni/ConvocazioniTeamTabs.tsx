@@ -1,4 +1,5 @@
 "use client";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import { Box, Chip, Paper, Tab, Tabs } from "@mui/material";
 import type { TeamCallupContext } from "@/lib/matches/callupContext";
 import type { TeamSelectionState } from "@/hooks/useConvocazioniSelection";
@@ -39,14 +40,7 @@ export default function ConvocazioniTeamTabs({
               key={t.id}
               label={
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box
-                    sx={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      bgcolor: t.color ?? "primary.main",
-                    }}
-                  />
+                  <TeamColorDot color={t.color} size={10} />
                   <span>{t.name}</span>
                   <Chip
                     label={count}
@@ -54,7 +48,7 @@ export default function ConvocazioniTeamTabs({
                     sx={{
                       height: 20,
                       fontSize: TYPE_SCALE.xs,
-                      bgcolor: idx === activeIndex ? "primary.main" : "action.hover",
+                      bgcolor: idx === activeIndex ? "primary.fill" : "action.hover",
                       color: idx === activeIndex ? "common.white" : "text.secondary",
                       fontWeight: FONT_WEIGHT.bold,
                     }}

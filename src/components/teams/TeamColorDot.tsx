@@ -1,7 +1,8 @@
 import { Box } from "@mui/material";
+import { teamColor } from "@/lib/teamColors";
 
 interface TeamColorDotProps {
-  /** Hex scelto dallo staff per la squadra; null = niente pallino. */
+  /** Colore salvato della squadra (chiave o hex storico); senza colore niente pallino. */
   color: string | null | undefined;
   size?: number;
 }
@@ -16,7 +17,8 @@ interface TeamColorDotProps {
  * contrasta con lo sfondo: cosi' anche i preset vicini allo sfondo (il nero in
  * tema scuro, l'arancio su un chip arancio) restano visibili.
  */
-export default function TeamColorDot({ color, size = 8 }: TeamColorDotProps) {
+export default function TeamColorDot({ color: raw, size = 8 }: TeamColorDotProps) {
+  const color = teamColor(raw);
   if (!color) return null;
   return (
     <Box

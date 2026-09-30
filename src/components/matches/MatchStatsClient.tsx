@@ -497,7 +497,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                         fontWeight: FONT_WEIGHT.semibold,
                         fontSize: TYPE_SCALE.xs,
                         minWidth: 52,
-                        color: "primary.onLight",
+                        color: "text.primary",
                       }}
                     >
                       Pt
@@ -597,7 +597,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                             py: 0.5,
                             px: 0.5,
                             fontWeight: FONT_WEIGHT.bold,
-                            color: "primary.onLight",
+                            color: "text.primary",
                             fontSize: TYPE_SCALE.sm,
                           }}
                         >
@@ -657,7 +657,7 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
                       sx={{
                         fontWeight: FONT_WEIGHT.bold,
                         fontSize: TYPE_SCALE.sm,
-                        color: "primary.onLight",
+                        color: "text.primary",
                       }}
                     >
                       {totals.points}

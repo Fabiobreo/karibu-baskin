@@ -52,13 +52,21 @@ export interface TrackedAthlete {
   officialGames: number;
 }
 
+// Valenza del trend (UX-29): solo sul pallino finale della curva e sul chip,
+// che ha gia' l'etichetta. La serie resta neutra. "Pochi dati" non e' una
+// valenza: grigio.
 const TREND_COLOR_TOKEN: Record<TrendLabel, string> = {
   crescita: "success.main",
   calo: "error.main",
   plateau: "text.secondary",
   altalenante: "warning.main",
-  nuovo: "info.main",
+  nuovo: "text.secondary",
 };
+
+/** Colore del chip di trend: valenza, o neutro per "Pochi dati". */
+function trendChipColor(label: TrendLabel) {
+  return TREND_META[label].color;
+}
 
 const TREND_ORDER: TrendLabel[] = ["crescita", "calo", "altalenante", "plateau", "nuovo"];
 
@@ -206,7 +214,8 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
             key={t}
             label={`${TREND_META[t].label} (${counts[t]})`}
             size="small"
-            color={trendFilter === t ? TREND_META[t].color : "default"}
+            // Filtro selezionato = stato attivo standard (UX-29).
+            color={trendFilter === t ? "primary" : "default"}
             variant={trendFilter === t ? "filled" : "outlined"}
             onClick={() => setTrendFilter(trendFilter === t ? null : t)}
           />
@@ -248,15 +257,19 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
                 <TableCell align="center">
                   <RatingSparkline
                     values={r.series}
-                    colorToken={TREND_COLOR_TOKEN[r.trend.label]}
+                    endColorToken={TREND_COLOR_TOKEN[r.trend.label]}
                   />
                 </TableCell>
                 <TableCell align="center">
                   <Chip
                     label={TREND_META[r.trend.label].label}
                     size="small"
-                    color={TREND_META[r.trend.label].color}
-                    variant={r.trend.label === "plateau" ? "outlined" : "filled"}
+                    color={trendChipColor(r.trend.label)}
+                    variant={
+                      r.trend.label === "plateau" || r.trend.label === "nuovo"
+                        ? "outlined"
+                        : "filled"
+                    }
                   />
                 </TableCell>
                 <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
@@ -266,7 +279,7 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
                       <Typography
                         component="span"
                         variant="caption"
-                        color="primary.onLight"
+                        color="text.secondary"
                         sx={{ ml: 0.5 }}
                         title={`+ ${r.officialGames} partite ufficiali`}
                       >

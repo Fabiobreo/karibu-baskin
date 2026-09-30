@@ -6,6 +6,7 @@ import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 import {
   BADGE_CATEGORY_ORDER,
   BADGE_CATEGORY_LABELS,
+  medalTier,
   type BadgeCategory,
   type BadgeProgress,
   type BadgeTier,
@@ -31,15 +32,10 @@ interface AchievementsGridProps {
  * componente e' un Server Component, e una callback dentro `sx` non
  * attraversa il confine RSC.
  */
-function tierColors(tier: BadgeTier) {
-  const key = tier === "gold" ? "gold" : tier === "silver" ? "silver" : "bronze";
-  return { border: `medal.${key}`, bg: `medal.${key}Bg`, text: `medal.${key}` };
-}
-
 function AchievementCard({ item }: { item: AchievementItem }) {
   const t = useTranslations("badgeProgress");
   const earned = item.earned;
-  const c = tierColors(item.tier);
+  const c = medalTier(item.tier);
   const hasProgress = !earned && item.target != null && item.target > 0;
   const pct = hasProgress ? Math.min(100, ((item.current ?? 0) / item.target!) * 100) : 0;
 

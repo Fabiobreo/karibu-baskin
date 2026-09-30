@@ -12,6 +12,7 @@ import type { MatchResult } from "@prisma/client";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { teamColor as resolveTeamColor } from "@/lib/teamColors";
 
 export type AnyMatchProp = {
   id: string;
@@ -48,7 +49,8 @@ function relativeLabel(
 interface UpcomingMatchRowProps {
   match: AnyMatchProp;
   teamName: string;
-  teamColor: string;
+  /** Colore salvato della squadra (chiave o hex); senza tinta niente fascia. */
+  teamColor: string | null | undefined;
 }
 
 export default function UpcomingMatchRow({ match, teamName, teamColor }: UpcomingMatchRowProps) {
@@ -57,6 +59,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
   const tMatches = useTranslations("matches");
   const dateLocale = useActiveDateLocale();
   const now = new Date();
+  const band = resolveTeamColor(teamColor);
   // La nostra squadra sempre a sinistra: casa/trasferta lo dice il chip (UX-18).
   const leftName = teamName;
   const rightName = match.opponent.name;
@@ -70,7 +73,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           p: 2,
           border: "1px solid",
           borderColor: "divider",
-          borderLeft: `4px solid ${teamColor}`,
+          ...(band ? { borderLeft: `4px solid ${band}` } : {}),
           display: "flex",
           alignItems: "center",
           gap: 2,

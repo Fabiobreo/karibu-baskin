@@ -302,7 +302,7 @@ export default function OpponentProfileDialog({
                 </Stack>
 
                 {isActive && assessment && (
-                  <Box sx={{ pl: 1.5, borderLeft: 2, borderColor: "primary.main" }}>
+                  <Box sx={{ pl: 1.5, borderLeft: 2, borderColor: "divider" }}>
                     {/* Forza */}
                     <Stack direction="row" alignItems="center" gap={1.5} mb={1}>
                       <SportsMartialArtsIcon fontSize="small" color="action" sx={{ width: 20 }} />

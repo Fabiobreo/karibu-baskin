@@ -12,7 +12,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { sportRoleLabel, roleColor } from "@/lib/constants";
+import { sportRoleLabel } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import type { LoanCandidate } from "@/lib/matches/callupContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -77,7 +77,9 @@ export default function ConvocazioniLoanDialog({
                     height: 28,
                     fontSize: TYPE_SCALE.xs,
                     mr: 1,
-                    bgcolor: role ? roleColor(role) : "grey.400",
+                    // Neutro (UX-29): il ruolo lo dice il RoleBadge a destra.
+                    bgcolor: "action.selected",
+                    color: "text.primary",
                   }}
                 >
                   {o.candidate.name[0]}

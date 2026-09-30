@@ -6,7 +6,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import type { DaySegment } from "@/components/calendar/calendarShared";
-import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
+import { decorationSx, echoColor, eventVisual, surfaceSx } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -26,8 +26,9 @@ export default function EventChip({
   onClick: (e: React.MouseEvent) => void;
 }) {
   const theme = useTheme();
-  // Sfondo = tipo di evento, bordo sinistro = squadra: vedi eventColors.ts.
-  const { bg, fg, accent } = eventVisual(theme, event.type, event.teamColor);
+  // Forma + icona = tipo, fascia sinistra = squadra: vedi eventColors.ts.
+  const visual = eventVisual(theme, event.type, event.teamColor);
+  const { fg, accent } = visual;
 
   const Icon =
     event.type === "training"
@@ -57,23 +58,27 @@ export default function EventChip({
         display: "flex",
         alignItems: "center",
         gap: "3px",
-        bgcolor: bg,
+        ...surfaceSx(visual),
+        // Multi-giorno: il contorno si chiude solo alle estremita', cosi' la
+        // barra resta continua fra le celle.
+        ...(multiDay && !segment?.isStart ? { borderLeftWidth: 0 } : {}),
+        ...(multiDay && !segment?.isEnd ? { borderRightWidth: 0 } : {}),
         borderRadius,
         ...decorationSx(theme, {
           accent: showAccent ? accent : null,
-          // L'eco riprende il colore del chip: lo ribadisce invece di recintarlo.
-          echo: isOwnTeam ? bg : null,
+          // Eco nella tinta della squadra (inchiostro se non ne ha una).
+          echo: isOwnTeam ? echoColor(theme, visual) : null,
         }),
         // Estende la barra fino al bordo della cella nei giorni di proseguimento
         // per dare continuità visiva tra celle adiacenti.
         mx: multiDay ? "-6px" : 0,
         px: multiDay ? "8px" : "5px",
-        py: "2px",
+        py: "1px",
         minHeight: 18,
         overflow: "hidden",
         cursor: "pointer",
-        "&:hover": { filter: "brightness(0.88)" },
-        transition: "filter 0.12s",
+        "&:hover": { bgcolor: visual.hover },
+        transition: "background-color 0.12s",
       }}
     >
       {/* L'icona compare all'inizio dell'evento (o quando mostriamo il titolo) */}

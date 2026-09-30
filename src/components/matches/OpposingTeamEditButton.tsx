@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { heroText } from "@/lib/heroStyles";
 
 export interface OpposingTeamEditButtonProps {
   teamId: string;
@@ -146,10 +147,11 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
           size="small"
           aria-label="Modifica squadra avversaria"
           sx={{
-            color: "common.white",
-            bgcolor: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+            color: heroText.primary,
+            bgcolor: heroText.surface,
+            border: "1px solid",
+            borderColor: heroText.lineStrong,
+            "&:hover": { bgcolor: heroText.surfaceHover },
           }}
         >
           <EditIcon sx={{ fontSize: 18 }} />

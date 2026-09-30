@@ -1,7 +1,7 @@
 "use client";
 import { Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { ROLES, roleColor } from "@/lib/constants";
+import { ROLES, roleColorSx } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -65,12 +65,13 @@ export default function ConvocazioniToolbar({
               label={`R${r}: ${count}`}
               size="small"
               sx={{
-                bgcolor: count > 0 ? roleColor(r) : "transparent",
-                color: count > 0 ? "common.white" : "text.secondary",
+                ...(count > 0
+                  ? roleColorSx(r)
+                  : { bgcolor: "transparent", color: "text.secondary" }),
                 fontSize: TYPE_SCALE.xs,
                 border: "1px solid",
                 // Ruolo scoperto: chip vuoto con il bordo, non solo il colore.
-                borderColor: count > 0 ? roleColor(r) : "divider",
+                borderColor: count > 0 ? "transparent" : "divider",
               }}
             />
           );

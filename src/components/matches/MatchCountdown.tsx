@@ -5,6 +5,7 @@ import { Box, Typography } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { heroText } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -58,11 +59,12 @@ export default function MatchCountdown({ targetIso }: Props) {
         px: 1.5,
         py: 0.5,
         borderRadius: RADIUS.pill,
-        bgcolor: "rgba(255,255,255,0.08)",
-        border: "1px solid rgba(255,255,255,0.15)",
+        bgcolor: heroText.surface,
+        border: "1px solid",
+        borderColor: heroText.line,
       }}
     >
-      <AccessTimeIcon sx={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }} />
+      <AccessTimeIcon sx={{ fontSize: 14, color: heroText.secondary }} />
       <Typography
         sx={{
           color: "common.white",
@@ -72,7 +74,7 @@ export default function MatchCountdown({ targetIso }: Props) {
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        Tra {segments.join(" · ")}
+        {t("countdownIn", { time: segments.join(" · ") })}
       </Typography>
     </Box>
   );

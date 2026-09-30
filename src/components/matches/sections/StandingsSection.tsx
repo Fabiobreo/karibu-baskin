@@ -10,9 +10,9 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import Link from "next/link";
 import StatAbbr from "@/components/teams/StatAbbr";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import { useTranslations } from "next-intl";
 import type { StandingEntry } from "@/lib/season/standings";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -22,9 +22,12 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 export default function StandingsSection({
   standings,
   groupName,
+  ourTeamColor = null,
 }: {
   standings: StandingEntry[];
   groupName: string | null;
+  /** Colore salvato della nostra squadra: pallino accanto al nome (niente se manca). */
+  ourTeamColor?: string | null;
 }) {
   const t = useTranslations("matches");
   const tStandings = useTranslations("standings");
@@ -98,7 +101,7 @@ export default function StandingsSection({
                 sx={{
                   fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
-                  color: "primary.onLight",
+                  color: "text.primary",
                   py: 0.75,
                   width: 36,
                 }}
@@ -112,9 +115,9 @@ export default function StandingsSection({
               <TableRow
                 key={row.id}
                 sx={{
-                  bgcolor: row.isOurs
-                    ? (theme) => alpha(theme.palette.primary.main, 0.05)
-                    : undefined,
+                  // Nostra riga (UX-29): fondo neutro selezionato + grassetto + pallino
+                  // squadra, niente velatura arancio.
+                  bgcolor: row.isOurs ? "action.selected" : undefined,
                 }}
               >
                 <TableCell
@@ -130,19 +133,12 @@ export default function StandingsSection({
                 <TableCell
                   sx={{
                     fontSize: TYPE_SCALE.xs,
-                    fontWeight: row.isOurs ? FONT_WEIGHT.bold : FONT_WEIGHT.regular,
+                    fontWeight: row.isOurs ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                     py: 1,
                   }}
                 >
+                  {row.isOurs && <TeamColorDot color={ourTeamColor} size={8} />}
                   {row.name}
-                  {row.isOurs && (
-                    <Box
-                      component="span"
-                      sx={{ ml: 0.5, fontSize: TYPE_SCALE.xs, color: "primary.main" }}
-                    >
-                      ●
-                    </Box>
-                  )}
                 </TableCell>
                 {[row.played, row.won, row.drawn, row.lost].map((v, j) => (
                   <TableCell
@@ -163,7 +159,7 @@ export default function StandingsSection({
                   sx={{
                     fontSize: TYPE_SCALE.sm,
                     fontWeight: FONT_WEIGHT.bold,
-                    color: "primary.onLight",
+                    color: "text.primary",
                     py: 1,
                     fontVariantNumeric: "tabular-nums",
                   }}

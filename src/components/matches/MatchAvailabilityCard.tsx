@@ -17,6 +17,7 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 
 export interface MatchAvailabilityEntity {
   kind: "user" | "child";
@@ -127,17 +128,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
-                {entities.length > 1 && (
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      bgcolor: e.teamColor ?? "primary.main",
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
+                {entities.length > 1 && <TeamColorDot color={e.teamColor} size={8} />}
                 <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold} noWrap title={e.name}>
                   {entities.length > 1 ? e.name : e.teamName}
                 </Typography>
@@ -163,14 +154,16 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
               >
                 <ToggleButton
                   value={true}
-                  sx={{ "&.Mui-selected": { bgcolor: "match.win", color: "match.onFill" } }}
+                  sx={{
+                    "&.Mui-selected": { bgcolor: "success.main", color: "success.contrastText" },
+                  }}
                 >
                   <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
                   {tCommon("yes")}
                 </ToggleButton>
                 <ToggleButton
                   value={false}
-                  sx={{ "&.Mui-selected": { bgcolor: "match.loss", color: "match.onFill" } }}
+                  sx={{ "&.Mui-selected": { bgcolor: "error.main", color: "error.contrastText" } }}
                 >
                   <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
                   {tCommon("no")}

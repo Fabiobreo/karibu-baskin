@@ -3,8 +3,13 @@ import { Box, useTheme } from "@mui/material";
 interface RatingSparklineProps {
   /** Serie di μ in ordine cronologico. */
   values: number[];
-  /** Colore della linea (token tema, es. "success.main"). Default primary. */
+  /** Colore della linea (token tema). Default `text.primary`: la serie e' neutra. */
   colorToken?: string;
+  /**
+   * Colore del pallino finale, se diverso dalla linea: e' l'unico punto dove
+   * mettere una valenza (es. `success.main` per un trend in crescita).
+   */
+  endColorToken?: string;
   width?: number;
   height?: number;
 }
@@ -12,10 +17,12 @@ interface RatingSparklineProps {
 /**
  * Mini-grafico della curva di μ nel tempo, in SVG puro (nessuna dipendenza di
  * charting). Presentazionale: nessun hook di stato, può essere reso ovunque.
+ * UX-29: i dati sono in inchiostro, mai in arancio (che vuol dire "si tocca").
  */
 export default function RatingSparkline({
   values,
-  colorToken = "primary.main",
+  colorToken = "text.primary",
+  endColorToken,
   width = 120,
   height = 32,
 }: RatingSparklineProps) {
@@ -28,7 +35,7 @@ export default function RatingSparkline({
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
-  const pad = 2;
+  const pad = 3;
   const w = width - pad * 2;
   const h = height - pad * 2;
 
@@ -38,10 +45,14 @@ export default function RatingSparkline({
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   });
 
-  // Risolve il token tema "a.b" → colore concreto per l'attributo SVG stroke.
-  const [group, shade] = colorToken.split(".");
+  // Risolve il token tema "a.b" → colore concreto per gli attributi SVG.
   const palette = theme.palette as unknown as Record<string, Record<string, string>>;
-  const stroke = palette[group]?.[shade ?? "main"] ?? theme.palette.primary.main;
+  const resolve = (token: string) => {
+    const [group, shade] = token.split(".");
+    return palette[group]?.[shade ?? "main"] ?? theme.palette.text.primary;
+  };
+  const stroke = resolve(colorToken);
+  const end = endColorToken ? resolve(endColorToken) : stroke;
 
   return (
     <Box
@@ -61,8 +72,8 @@ export default function RatingSparkline({
       <circle
         cx={points[points.length - 1].split(",")[0]}
         cy={points[points.length - 1].split(",")[1]}
-        r={2}
-        fill={stroke}
+        r={endColorToken ? 2.75 : 2}
+        fill={end}
       />
     </Box>
   );

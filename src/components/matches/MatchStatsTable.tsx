@@ -14,12 +14,13 @@ import {
   Paper,
   Avatar,
   Typography,
+  Tooltip,
 } from "@mui/material";
+import BlockIcon from "@mui/icons-material/Block";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
-import { contrastText } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -96,7 +97,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                   sx={{
                     fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
-                    color: col.primary ? "primary.onLight" : undefined,
+                    color: col.primary ? "text.primary" : undefined,
                   }}
                   title={col.title}
                 >
@@ -199,16 +200,41 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                           fontSize: TYPE_SCALE.sm,
                           fontWeight: col.primary ? FONT_WEIGHT.bold : FONT_WEIGHT.regular,
                           // Statistica che non vale per il ruolo: la cella dice "—".
+                          // Falli (UX-29): colore solo quando sono un avviso, con
+                          // tooltip e, al limite, un'icona.
                           color: col.primary
                             ? "text.primary"
                             : !allowedForRole
                               ? "text.secondary"
-                              : col.key === "fouls" && val >= 4
-                                ? "stats.fouls"
-                                : undefined,
+                              : col.key === "fouls" && val >= 5
+                                ? "error.main"
+                                : col.key === "fouls" && val >= 4
+                                  ? "warning.main"
+                                  : undefined,
                         }}
                       >
-                        {allowedForRole ? val : "—"}
+                        {allowedForRole && col.key === "fouls" && val >= 4 ? (
+                          <Tooltip title={val >= 5 ? t("foulsAtLimit") : t("foulsNearLimit")}>
+                            <Box
+                              component="span"
+                              tabIndex={0}
+                              aria-label={`${val} · ${val >= 5 ? t("foulsAtLimit") : t("foulsNearLimit")}`}
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 0.25,
+                                fontWeight: FONT_WEIGHT.semibold,
+                              }}
+                            >
+                              {val >= 5 && <BlockIcon sx={{ fontSize: 14 }} aria-hidden />}
+                              {val}
+                            </Box>
+                          </Tooltip>
+                        ) : allowedForRole ? (
+                          val
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
                     );
                   })}

@@ -1,6 +1,6 @@
 import { Box, Typography, Paper, LinearProgress } from "@mui/material";
 import { useTranslations } from "next-intl";
-import type { Badge, LockedBadge } from "@/lib/rating/badges";
+import { medalTier, type Badge, type LockedBadge } from "@/lib/rating/badges";
 import BadgeTierLegend from "@/components/rating/BadgeTierLegend";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -29,11 +29,6 @@ interface BadgeShowcaseProps {
  * Colori del livello come token del tema: questo e' un Server Component, e una
  * callback dentro `sx` non attraversa il confine RSC.
  */
-function tierColors(tier: Badge["tier"]) {
-  const key = tier === "gold" ? "gold" : tier === "silver" ? "silver" : "bronze";
-  return { border: `medal.${key}`, bg: `medal.${key}Bg`, text: `medal.${key}` };
-}
-
 export default function BadgeShowcase({
   earned,
   locked = [],
@@ -69,7 +64,7 @@ export default function BadgeShowcase({
           }}
         >
           {earned.map((badge) => {
-            const c = tierColors(badge.tier);
+            const c = medalTier(badge.tier);
             return (
               <Box
                 key={badge.id}

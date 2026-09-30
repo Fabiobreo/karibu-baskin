@@ -39,7 +39,7 @@ import DayEventsDialog from "@/components/calendar/dialogs/DayEventsDialog";
 import CreateEventDialog from "@/components/calendar/dialogs/CreateEventDialog";
 import SubscribeCalendarButton from "@/components/calendar/SubscribeCalendarButton";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
-import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
+import { decorationSx, echoColor, eventVisual, surfaceSx } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -409,7 +409,7 @@ export default function CalendarClient({
                   )}
                 </Box>
 
-                {/* Mobile: barre colorate con icona — click apre day view */}
+                {/* Mobile: barre con la forma del tipo e l'icona — click apre day view */}
                 <Box
                   sx={{
                     display: { xs: "flex", sm: "none" },
@@ -426,8 +426,9 @@ export default function CalendarClient({
                           ? EmojiEventsIcon
                           : EventNoteIcon;
                     const seg = getDaySegment(ev, day);
-                    // Stessa codifica del desktop: sfondo = tipo, bordo = squadra.
-                    const { bg, fg, accent } = eventVisual(theme, ev.type, ev.teamColor);
+                    // Stessa codifica del desktop: forma + icona = tipo, fascia = squadra.
+                    const visual = eventVisual(theme, ev.type, ev.teamColor);
+                    const { fg, accent } = visual;
                     // Barra continua per eventi multi-giorno: bordi smussati solo
                     // alle estremità ed estensione fino al bordo cella.
                     const r = RADIUS.sm;
@@ -441,12 +442,15 @@ export default function CalendarClient({
                         key={ev.id}
                         sx={{
                           height: 14,
+                          boxSizing: "border-box",
+                          ...surfaceSx(visual),
+                          ...(seg.multiDay && !seg.isStart ? { borderLeftWidth: 0 } : {}),
+                          ...(seg.multiDay && !seg.isEnd ? { borderRightWidth: 0 } : {}),
                           borderRadius: radius,
-                          bgcolor: bg,
                           ...decorationSx(theme, {
                             accent: !seg.multiDay || seg.isStart ? accent : null,
                             bandWidth: 4,
-                            echo: isOwnTeam(ev) ? bg : null,
+                            echo: isOwnTeam(ev) ? echoColor(theme, visual) : null,
                             // Qui le barre distano 2px: eco piu' stretta.
                             echoGap: 1,
                             echoWidth: 1,

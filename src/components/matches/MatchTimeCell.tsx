@@ -1,7 +1,6 @@
 "use client";
 
 import { Box, Chip, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import BoltIcon from "@mui/icons-material/Bolt";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -10,6 +9,7 @@ import { format } from "date-fns";
 import type { Locale } from "date-fns";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import StatusPill from "@/components/common/StatusPill";
 
 const IMMINENT_HOURS = 48;
 
@@ -47,13 +47,19 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
 
   const now = new Date();
   const isImminent = date.getTime() <= now.getTime() + IMMINENT_HOURS * 60 * 60 * 1000;
+  const isToday = date.toDateString() === now.toDateString();
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-      <Typography variant="body2" fontWeight={FONT_WEIGHT.bold} sx={{ fontSize: TYPE_SCALE.sm }}>
-        {relativeLabel(date, now, tCommon, dateLocale)}
-      </Typography>
-      {isImminent && (
+      {isToday ? (
+        // "Oggi" e' uno stato temporale (UX-29): nero del marchio invertito, non una tinta.
+        <StatusPill label={tCommon("today")} />
+      ) : (
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.bold} sx={{ fontSize: TYPE_SCALE.sm }}>
+          {relativeLabel(date, now, tCommon, dateLocale)}
+        </Typography>
+      )}
+      {isImminent && !isToday && (
         <Chip
           icon={<BoltIcon sx={{ fontSize: 12 }} />}
           label={tMatches("imminent")}
@@ -62,11 +68,10 @@ export default function MatchTimeCell({ dateIso }: { dateIso: string }) {
             fontWeight: FONT_WEIGHT.bold,
             fontSize: TYPE_SCALE.xs,
             height: 20,
-            // Riempimento tenue + testo arancione accessibile: l'etichetta
-            // bianca su primary.main si fermava a 3,79:1.
-            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.14),
-            color: "primary.onLight",
-            "& .MuiChip-icon": { ml: "4px", mr: "-4px" },
+            // Neutro (UX-29): l'arancio vuol dire "si tocca", e questo chip non si tocca.
+            bgcolor: "action.selected",
+            color: "text.primary",
+            "& .MuiChip-icon": { ml: "4px", mr: "-4px", color: "text.secondary" },
           }}
         />
       )}

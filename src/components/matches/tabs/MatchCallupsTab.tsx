@@ -18,6 +18,7 @@ interface MatchCallupsTabProps {
   stats: MatchStatRow[];
   prevMatches: PrevMatchPreview[];
   groupStandings: StandingEntry[] | null;
+  ourTeamColor?: string | null;
   groupName: string | null;
   opponentName: string;
   matchId: string;
@@ -32,6 +33,7 @@ export default function MatchCallupsTab({
   stats,
   prevMatches,
   groupStandings,
+  ourTeamColor = null,
   groupName,
   opponentName,
   matchId,
@@ -66,7 +68,13 @@ export default function MatchCallupsTab({
         <Box sx={{ mt: 5 }}>
           <Divider sx={{ mb: 4 }} />
           <HeadToHeadSection prevMatches={prevMatches} opponentName={opponentName} />
-          {groupStandings && <StandingsSection standings={groupStandings} groupName={groupName} />}
+          {groupStandings && (
+            <StandingsSection
+              standings={groupStandings}
+              groupName={groupName}
+              ourTeamColor={ourTeamColor}
+            />
+          )}
         </Box>
       )}
     </Box>

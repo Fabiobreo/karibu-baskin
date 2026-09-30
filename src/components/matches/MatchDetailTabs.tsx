@@ -25,6 +25,8 @@ interface Props {
   prevMatches: PrevMatchPreview[];
   groupStandings: StandingEntry[] | null;
   ourTeamId: string;
+  /** Colore salvato della nostra squadra: pallino accanto al nome in classifica. */
+  ourTeamColor?: string | null;
   groupName: string | null;
   opponentName: string;
   matchId: string;
@@ -39,6 +41,7 @@ export default function MatchDetailTabs({
   hasScore,
   prevMatches,
   groupStandings,
+  ourTeamColor = null,
   groupName,
   opponentName,
   matchId,
@@ -102,6 +105,7 @@ export default function MatchDetailTabs({
           stats={stats}
           prevMatches={prevMatches}
           groupStandings={groupStandings}
+          ourTeamColor={ourTeamColor}
           groupName={groupName}
           opponentName={opponentName}
           matchId={matchId}

@@ -67,11 +67,11 @@ export default function SimulatorResult({
           py: 1,
         }}
       >
-        <TeamScore name={nameA} score={scoreA} win={winner === "A"} colorToken="primary.main" />
+        <TeamScore name={nameA} score={scoreA} win={winner === "A"} colorToken="text.primary" />
         <Typography variant="h5" color="text.secondary">
           –
         </Typography>
-        <TeamScore name={nameB} score={scoreB} win={winner === "B"} colorToken="secondary.main" />
+        <TeamScore name={nameB} score={scoreB} win={winner === "B"} colorToken="text.primary" />
       </Box>
 
       {/* Barra probabilità */}
@@ -85,8 +85,10 @@ export default function SimulatorResult({
             bgcolor: "action.hover",
           }}
         >
-          <Box sx={{ width: `${pctA}%`, bgcolor: "primary.main" }} />
-          <Box sx={{ width: `${pctB}%`, bgcolor: "secondary.main" }} />
+          {/* Serie di dati (UX-29): inchiostro per A, grigio per B; le percentuali
+              ai due lati dicono quale e' quale. Niente arancio: non si tocca. */}
+          <Box sx={{ width: `${pctA}%`, bgcolor: "text.primary" }} />
+          <Box sx={{ width: `${pctB}%`, bgcolor: "text.secondary" }} />
         </Box>
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.5 }}>
           <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>

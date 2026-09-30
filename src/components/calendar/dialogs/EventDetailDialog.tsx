@@ -32,7 +32,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
   LOSS: "match.loss",
-  DRAW: "primary.main",
+  DRAW: "match.draw",
 };
 
 /** Modale di dettaglio evento del calendario (read-only, con matita per lo staff). */
@@ -52,10 +52,12 @@ export default function EventDetailDialog({
   const theme = useTheme();
   if (!event) return null;
 
-  // Banner: sfondo = tipo di evento, accento = squadra. Il testo lo sceglie
-  // `fg` per contrasto: in dark i colori di tipo sono chiari e il bianco fisso
-  // di prima sarebbe stato illeggibile.
-  const { bg, fg, accent } = eventVisual(theme, event.type, event.teamColor);
+  // Banner (UX-29): partita nel nero del marchio, allenamento ed evento sul
+  // fondo della pagina con un filo sotto; la squadra e' la fascia a sinistra.
+  const { accent } = eventVisual(theme, event.type, event.teamColor);
+  const isMatch = event.type === "match";
+  const bg = isMatch ? theme.palette.secondary.main : theme.palette.background.default;
+  const fg = isMatch ? theme.palette.secondary.contrastText : theme.palette.text.primary;
 
   const Icon =
     event.type === "training"
@@ -84,11 +86,12 @@ export default function EventDetailDialog({
 
   return (
     <Dialog open onClose={onClose} maxWidth="xs" fullWidth>
-      {/* Banner colorato */}
+      {/* Banner */}
       <Box
         sx={{
           bgcolor: bg,
-          // Stessa fascia separata dei chip: qui poggia sulla stessa tinta.
+          ...(isMatch ? {} : { borderBottom: 1, borderColor: "divider" }),
+          // Stessa fascia separata dei chip.
           ...decorationSx(theme, { accent, bandWidth: 6 }),
           px: 3,
           pt: 3,

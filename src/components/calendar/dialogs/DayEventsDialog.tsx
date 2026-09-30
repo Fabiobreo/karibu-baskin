@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { getDaySegment } from "@/components/calendar/calendarShared";
 import type { CalendarEvent } from "@/app/api/calendar/route";
-import { eventVisual } from "@/lib/calendar/eventColors";
+import { decorationSx, eventVisual, surfaceSx } from "@/lib/calendar/eventColors";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -81,14 +81,9 @@ export default function DayEventsDialog({
                     ? EmojiEventsIcon
                     : EventNoteIcon;
 
-              // Velatura del colore di tipo (prima era concatenazione di hex,
-              // che si rompe su qualunque colore non #rrggbb) + accento squadra
-              // sul bordo sinistro, come nei chip della griglia.
-              const { bg, fg, accent, tint, tintBorder, tintHover } = eventVisual(
-                theme,
-                ev.type,
-                ev.teamColor
-              );
+              // Righe contornate neutre; il tipo lo dice il disco (stessa forma e
+              // icona dei chip della griglia), la squadra la fascia a sinistra.
+              const visual = eventVisual(theme, ev.type, ev.teamColor);
 
               const rowSx = {
                 display: "flex",
@@ -97,11 +92,11 @@ export default function DayEventsDialog({
                 p: 1.25,
                 borderRadius: RADIUS.md,
                 cursor: "pointer",
-                bgcolor: tint,
+                bgcolor: "background.paper",
                 border: "1px solid",
-                borderColor: tintBorder,
-                borderLeft: accent ? `4px solid ${accent}` : undefined,
-                "&:hover": { bgcolor: tintHover },
+                borderColor: "divider",
+                ...decorationSx(theme, { accent: visual.accent, bandWidth: 4 }),
+                "&:hover": { bgcolor: "action.hover" },
                 textDecoration: "none",
                 color: "inherit",
               };
@@ -113,14 +108,15 @@ export default function DayEventsDialog({
                       width: 32,
                       height: 32,
                       borderRadius: "50%",
-                      bgcolor: bg,
+                      boxSizing: "border-box",
+                      ...surfaceSx(visual),
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       flexShrink: 0,
                     }}
                   >
-                    <Icon sx={{ color: fg, fontSize: "1rem" }} />
+                    <Icon sx={{ color: visual.fg, fontSize: "1rem" }} />
                   </Box>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>

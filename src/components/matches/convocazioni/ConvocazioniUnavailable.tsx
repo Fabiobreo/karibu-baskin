@@ -1,7 +1,7 @@
 "use client";
 import { Box, Chip, Stack, Typography } from "@mui/material";
 import { alpha, type Theme } from "@mui/material/styles";
-import { ROLES, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { ROLES, roleColorSx } from "@/lib/constants";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -14,9 +14,9 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
     fontSize: "0.75rem",
     height: 22,
     fontWeight: FONT_WEIGHT.semibold,
-    bgcolor: (theme: Theme) => alpha(theme.palette.match.loss, 0.06),
+    bgcolor: (theme: Theme) => alpha(theme.palette.error.main, 0.06),
     color: "text.secondary",
-    border: (theme: Theme) => `1px solid ${alpha(theme.palette.match.loss, 0.25)}`,
+    border: (theme: Theme) => `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
     "& .MuiChip-label": { px: 1 },
   };
 
@@ -45,8 +45,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                 label={`R${r}`}
                 size="small"
                 sx={{
-                  bgcolor: roleColor(r),
-                  color: ROLE_TEXT_COLOR,
+                  ...roleColorSx(r),
                   fontSize: TYPE_SCALE.xs,
                   height: 20,
                   minWidth: 32,
@@ -72,8 +71,11 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
               label="—"
               size="small"
               sx={{
-                bgcolor: "grey.400",
-                color: "common.white",
+                // Senza ruolo: chip contornato neutro, non un grigio pieno.
+                bgcolor: "transparent",
+                color: "text.secondary",
+                border: "1px solid",
+                borderColor: "divider",
                 fontSize: TYPE_SCALE.xs,
                 height: 20,
                 minWidth: 32,

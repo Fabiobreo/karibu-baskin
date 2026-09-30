@@ -12,6 +12,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { teamColor } from "@/lib/teamColors";
 
 export interface MatchCardData {
   id: string;
@@ -75,7 +76,8 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 position: "relative",
                 overflow: "hidden",
                 border: highlight ? "2px solid" : "1px solid",
-                borderColor: highlight ? "primary.main" : "divider",
+                // Partita imminente: contorno piu' spesso in inchiostro, non in arancio.
+                borderColor: highlight ? "text.primary" : "divider",
                 transition: "all 0.18s",
                 cursor: "pointer",
                 ...onHover({
@@ -84,16 +86,18 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 }),
               }}
             >
-              <Box
-                sx={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 6,
-                  backgroundColor: m.team.color,
-                }}
-              />
+              {teamColor(m.team.color) && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 6,
+                    backgroundColor: teamColor(m.team.color),
+                  }}
+                />
+              )}
               <Box sx={{ pl: 1.5 }}>
                 {m.isImminent && (
                   <Chip
@@ -102,10 +106,11 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     size="small"
                     sx={{
                       mb: 1,
-                      // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
-                      // Niente alone pulsante (UX-30): l'urgenza la dicono etichetta e colore.
-                      bgcolor: "primary.fill",
-                      color: "common.white",
+                      // Neutro (UX-29): l'arancio e' di cio' che si tocca; l'urgenza
+                      // la dicono etichetta e icona. Niente alone pulsante (UX-30).
+                      bgcolor: "action.selected",
+                      color: "text.primary",
+                      "& .MuiChip-icon": { color: "text.secondary" },
                     }}
                   />
                 )}

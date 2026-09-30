@@ -22,9 +22,8 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
-import { roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { contrastText } from "@/lib/colorUtils";
+import TeamChip from "@/components/teams/TeamChip";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
@@ -280,17 +279,10 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               label={tRoles("role", { n: r })}
               size="small"
               onClick={() => handleRoleFilter(r)}
-              sx={{
-                cursor: "pointer",
-                fontSize: TYPE_SCALE.xs,
-                bgcolor: roleFilter === r ? roleColor(r) : "transparent",
-                color: roleFilter === r ? contrastText(roleColor(r)) : "text.primary",
-                border: "1px solid",
-                borderColor: roleFilter === r ? roleColor(r) : "divider",
-                "&:hover": {
-                  bgcolor: roleFilter === r ? roleColor(r) : "action.hover",
-                },
-              }}
+              // Selezionato = stato attivo standard, come "Tutti" (UX-29).
+              variant={roleFilter === r ? "filled" : "outlined"}
+              color={roleFilter === r ? "primary" : "default"}
+              sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
             />
           ))}
           {filtered.length !== rows.length && (
@@ -449,17 +441,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                             />
                           )}
                           {row.teams.map((t) => (
-                            <Chip
-                              key={t.id}
-                              label={t.name}
-                              size="small"
-                              sx={{
-                                bgcolor: t.color ?? "primary.main",
-                                color: contrastText(t.color),
-                                fontSize: TYPE_SCALE.xs,
-                                height: 20,
-                              }}
-                            />
+                            <TeamChip key={t.id} name={t.name} color={t.color} compact />
                           ))}
                         </Box>
                       </Box>
@@ -582,17 +564,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                         <RoleBadge role={row.sportRole} variant={row.sportRoleVariant ?? null} />
                       )}
                       {row.teams.map((t) => (
-                        <Chip
-                          key={t.id}
-                          label={t.name}
-                          size="small"
-                          sx={{
-                            bgcolor: t.color ?? "primary.main",
-                            color: contrastText(t.color),
-                            fontSize: TYPE_SCALE.xs,
-                            height: 20,
-                          }}
-                        />
+                        <TeamChip key={t.id} name={t.name} color={t.color} compact />
                       ))}
                     </Box>
                   </Box>

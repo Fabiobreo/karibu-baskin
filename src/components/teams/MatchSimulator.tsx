@@ -243,7 +243,7 @@ export default function MatchSimulator({ teams, initial = EMPTY_INITIAL }: Match
       >
         <SideColumn
           title={t("teamA")}
-          colorToken="primary.main"
+          colorToken="text.primary"
           players={playersA}
           checks={checksA}
           onRemove={unassign}
@@ -252,7 +252,7 @@ export default function MatchSimulator({ teams, initial = EMPTY_INITIAL }: Match
         />
         <SideColumn
           title={t("teamB")}
-          colorToken="secondary.main"
+          colorToken="text.primary"
           players={playersB}
           checks={checksB}
           onRemove={unassign}
