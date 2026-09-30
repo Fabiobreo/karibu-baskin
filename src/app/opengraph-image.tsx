@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import { loadInterFonts } from "@/lib/og/fonts";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const alt = "Karibu Baskin, sport inclusivo a Montecchio Maggiore (VI)";
 export const size = { width: 1200, height: 630 };
@@ -20,7 +21,10 @@ async function logoDataUri() {
 }
 
 export default async function OgImage() {
-  const [fonts, logo] = await Promise.all([loadInterFonts([400, 700, 800]), logoDataUri()]);
+  const [fonts, logo] = await Promise.all([
+    loadInterFonts([FONT_WEIGHT.regular, FONT_WEIGHT.bold]),
+    logoDataUri(),
+  ]);
 
   return new ImageResponse(
     <div
@@ -49,7 +53,7 @@ export default async function OgImage() {
           style={{
             display: "flex",
             fontSize: 24,
-            fontWeight: 700,
+            fontWeight: FONT_WEIGHT.bold,
             letterSpacing: 4,
             color: ORANGE_LIGHT,
           }}
@@ -60,7 +64,7 @@ export default async function OgImage() {
           style={{
             display: "flex",
             fontSize: 98,
-            fontWeight: 800,
+            fontWeight: FONT_WEIGHT.bold,
             letterSpacing: -3,
             lineHeight: 1.05,
             marginTop: 14,
@@ -73,7 +77,7 @@ export default async function OgImage() {
             display: "flex",
             flexDirection: "column",
             fontSize: 34,
-            fontWeight: 400,
+            fontWeight: FONT_WEIGHT.regular,
             color: "rgba(255,255,255,0.74)",
             lineHeight: 1.35,
             marginTop: 20,

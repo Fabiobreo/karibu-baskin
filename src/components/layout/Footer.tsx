@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { heroGradient, socialBrandColor } from "@/lib/heroStyles";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 export default async function Footer() {
   const t = await getTranslations("nav");
@@ -44,12 +46,7 @@ export default async function Footer() {
             style={{ objectFit: "contain" }}
           />
           <Box>
-            <Typography
-              component="div"
-              variant="subtitle1"
-              fontWeight={700}
-              sx={{ lineHeight: 1.2 }}
-            >
+            <Typography component="div" variant="subtitle1" sx={{ lineHeight: 1.2 }}>
               Karibu Baskin
             </Typography>
             <Typography
@@ -117,7 +114,7 @@ export default async function Footer() {
             <Link
               href="/sponsor"
               style={{
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 color: "rgba(255,255,255,0.7)",
                 textDecorationColor: "rgba(255,255,255,0.35)",
               }}
@@ -127,7 +124,7 @@ export default async function Footer() {
             <Link
               href="/privacy"
               style={{
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 color: "rgba(255,255,255,0.7)",
                 textDecorationColor: "rgba(255,255,255,0.35)",
               }}
@@ -155,7 +152,11 @@ export default async function Footer() {
               height={24}
               style={{ objectFit: "contain" }}
             />
-            <Typography variant="caption" fontWeight={700} sx={{ color: "rgba(255,255,255,0.7)" }}>
+            <Typography
+              variant="caption"
+              fontWeight={FONT_WEIGHT.semibold}
+              sx={{ color: "rgba(255,255,255,0.7)" }}
+            >
               Karibu Baskin
             </Typography>
           </Box>
@@ -221,7 +222,7 @@ export default async function Footer() {
             <Link
               href="/sponsor"
               style={{
-                fontSize: "0.8rem",
+                fontSize: TYPE_SCALE.sm,
                 color: "rgba(255,255,255,0.75)",
                 textDecoration: "underline",
                 textDecorationColor: "rgba(255,255,255,0.35)",
@@ -233,7 +234,7 @@ export default async function Footer() {
             <Link
               href="/privacy"
               style={{
-                fontSize: "0.8rem",
+                fontSize: TYPE_SCALE.sm,
                 color: "rgba(255,255,255,0.75)",
                 textDecoration: "underline",
                 textDecorationColor: "rgba(255,255,255,0.35)",

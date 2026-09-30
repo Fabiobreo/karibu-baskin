@@ -11,6 +11,7 @@ import {
   Button,
   Link,
 } from "@react-email/components";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   url: string;
@@ -80,7 +81,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
             <Text
               style={{
                 color: ORANGE,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 fontSize: 20,
                 margin: 0,
                 letterSpacing: "-0.3px",
@@ -112,7 +113,12 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
           >
             <Heading
               as="h2"
-              style={{ color: TEXT_MAIN, fontSize: 20, fontWeight: 700, margin: "0 0 16px" }}
+              style={{
+                color: TEXT_MAIN,
+                fontSize: 20,
+                fontWeight: FONT_WEIGHT.semibold,
+                margin: "0 0 16px",
+              }}
             >
               {c.heading}
             </Heading>
@@ -127,7 +133,7 @@ export default function MagicLinkEmail({ url, expiresInHours = 24, locale = "it"
                   backgroundColor: ORANGE,
                   color: "#ffffff",
                   fontSize: 16,
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                   textDecoration: "none",
                   borderRadius: 8,
                   padding: "14px 32px",

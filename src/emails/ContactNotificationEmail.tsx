@@ -12,6 +12,7 @@ import {
   Row,
   Column,
 } from "@react-email/components";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   senderName: string;
@@ -51,7 +52,7 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
             <Text
               style={{
                 color: ORANGE,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 fontSize: 20,
                 margin: 0,
                 letterSpacing: "-0.3px",
@@ -83,7 +84,12 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
           >
             <Heading
               as="h2"
-              style={{ color: TEXT_MAIN, fontSize: 20, fontWeight: 700, margin: "0 0 8px" }}
+              style={{
+                color: TEXT_MAIN,
+                fontSize: 20,
+                fontWeight: FONT_WEIGHT.semibold,
+                margin: "0 0 8px",
+              }}
             >
               Nuovo messaggio dal sito
             </Heading>
@@ -106,7 +112,7 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
                     style={{
                       color: TEXT_MUTED,
                       fontSize: 11,
-                      fontWeight: 700,
+                      fontWeight: FONT_WEIGHT.semibold,
                       textTransform: "uppercase" as const,
                       letterSpacing: "0.08em",
                       margin: "0 0 2px",
@@ -114,7 +120,14 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
                   >
                     Nome
                   </Text>
-                  <Text style={{ color: TEXT_MAIN, fontSize: 15, fontWeight: 600, margin: 0 }}>
+                  <Text
+                    style={{
+                      color: TEXT_MAIN,
+                      fontSize: 15,
+                      fontWeight: FONT_WEIGHT.semibold,
+                      margin: 0,
+                    }}
+                  >
                     {senderName}
                   </Text>
                 </Column>
@@ -126,7 +139,7 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
                     style={{
                       color: TEXT_MUTED,
                       fontSize: 11,
-                      fontWeight: 700,
+                      fontWeight: FONT_WEIGHT.semibold,
                       textTransform: "uppercase" as const,
                       letterSpacing: "0.08em",
                       margin: "0 0 2px",
@@ -136,7 +149,12 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
                   </Text>
                   <Link
                     href={`mailto:${senderEmail}`}
-                    style={{ color: ORANGE, fontSize: 14, fontWeight: 600, textDecoration: "none" }}
+                    style={{
+                      color: ORANGE,
+                      fontSize: 14,
+                      fontWeight: FONT_WEIGHT.semibold,
+                      textDecoration: "none",
+                    }}
                   >
                     {senderEmail}
                   </Link>
@@ -149,7 +167,7 @@ export default function ContactNotificationEmail({ senderName, senderEmail, mess
               style={{
                 color: TEXT_MUTED,
                 fontSize: 11,
-                fontWeight: 700,
+                fontWeight: FONT_WEIGHT.semibold,
                 textTransform: "uppercase" as const,
                 letterSpacing: "0.08em",
                 margin: "0 0 8px",

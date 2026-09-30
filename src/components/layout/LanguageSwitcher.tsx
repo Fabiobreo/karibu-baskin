@@ -7,6 +7,7 @@ import { useLocaleSwitch } from "@/context/LocaleContext";
 import { LOCALES } from "@/i18n/locales";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface LanguageSwitcherProps {
   /** Stili pensati per superfici scure (header/drawer): testo bianco trasparente */
@@ -42,7 +43,7 @@ export default function LanguageSwitcher({ onDark = false }: LanguageSwitcherPro
         borderColor: (theme) =>
           onDark ? alpha(theme.palette.common.white, 0.18) : theme.palette.divider,
         typography: "caption",
-        fontWeight: 700,
+        fontWeight: FONT_WEIGHT.semibold,
         letterSpacing: "0.04em",
         "&:hover": {
           bgcolor: (theme) =>

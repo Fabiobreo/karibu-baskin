@@ -56,6 +56,7 @@ import { slugify } from "@/lib/slugUtils";
 import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // href-only — le label vengono da t() dentro il componente
 const NAV_HREFS = [
@@ -211,7 +212,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               <Typography
                 component="span"
                 variant="subtitle2"
-                fontWeight={800}
+                fontWeight={FONT_WEIGHT.bold}
                 sx={{
                   display: "block",
                   color: "common.white",
@@ -266,7 +267,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                     color: active
                       ? "common.white"
                       : (theme) => alpha(theme.palette.common.white, 0.6),
-                    fontWeight: active ? 700 : 500,
+                    fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                     fontSize: TYPE_SCALE.sm,
                     borderBottom: active ? "2px solid" : "2px solid transparent",
                     borderBottomColor: active ? "primary.main" : "transparent",
@@ -291,7 +292,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 color: partiteActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
-                fontWeight: partiteActive ? 700 : 500,
+                fontWeight: partiteActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 fontSize: TYPE_SCALE.sm,
                 borderBottom: partiteActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: partiteActive ? "primary.main" : "transparent",
@@ -318,7 +319,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   selected={pathname === pl.href}
                   aria-current={pathname === pl.href ? "page" : undefined}
                   onClick={() => setPartiteAnchor(null)}
-                  sx={{ fontSize: TYPE_SCALE.sm, fontWeight: pathname === pl.href ? 700 : 400 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === pl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  }}
                 >
                   {t(pl.key)}
                 </MenuItem>
@@ -334,7 +338,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 color: squadreActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
-                fontWeight: squadreActive ? 700 : 500,
+                fontWeight: squadreActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 fontSize: TYPE_SCALE.sm,
                 borderBottom: squadreActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: squadreActive ? "primary.main" : "transparent",
@@ -361,7 +365,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   selected={pathname === sl.href}
                   aria-current={pathname === sl.href ? "page" : undefined}
                   onClick={() => setSquadreAnchor(null)}
-                  sx={{ fontSize: TYPE_SCALE.sm, fontWeight: pathname === sl.href ? 700 : 400 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === sl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  }}
                 >
                   {sl.label}
                 </MenuItem>
@@ -377,7 +384,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 color: ilBaskinActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
-                fontWeight: ilBaskinActive ? 700 : 500,
+                fontWeight: ilBaskinActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 fontSize: TYPE_SCALE.sm,
                 borderBottom: ilBaskinActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: ilBaskinActive ? "primary.main" : "transparent",
@@ -407,7 +414,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
                   sx={{
                     fontSize: TYPE_SCALE.sm,
-                    fontWeight: pathname === bl.href ? 700 : 400,
+                    fontWeight: pathname === bl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                     gap: 1,
                   }}
                 >
@@ -423,7 +430,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                         borderRadius: RADIUS.sm,
                         bgcolor: "action.selected",
                         color: "text.secondary",
-                        fontWeight: 600,
+                        fontWeight: FONT_WEIGHT.semibold,
                         textTransform: "uppercase",
                         letterSpacing: "0.04em",
                       }}
@@ -444,7 +451,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 color: contattiActive
                   ? "common.white"
                   : (theme) => alpha(theme.palette.common.white, 0.6),
-                fontWeight: contattiActive ? 700 : 500,
+                fontWeight: contattiActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 fontSize: TYPE_SCALE.sm,
                 borderBottom: contattiActive ? "2px solid" : "2px solid transparent",
                 borderBottomColor: contattiActive ? "primary.main" : "transparent",
@@ -471,7 +478,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   selected={pathname === cl.href}
                   aria-current={pathname === cl.href ? "page" : undefined}
                   onClick={() => setContattiAnchor(null)}
-                  sx={{ fontSize: TYPE_SCALE.sm, fontWeight: pathname === cl.href ? 700 : 400 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === cl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  }}
                 >
                   {t(cl.key)}
                 </MenuItem>
@@ -534,7 +544,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   PaperProps={{ sx: { mt: 1, minWidth: 180 } }}
                 >
                   <Box sx={{ px: 2, py: 1 }}>
-                    <Typography variant="body2" fontWeight={700} noWrap>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                       {user.name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" noWrap>
@@ -570,7 +580,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                         setMenuAnchor(null);
                         router.push("/admin");
                       }}
-                      sx={{ color: "primary.onLight", fontWeight: 700 }}
+                      sx={{ color: "primary.onLight", fontWeight: FONT_WEIGHT.semibold }}
                     >
                       <ListItemIcon>
                         <AdminPanelSettingsIcon fontSize="small" sx={{ color: "primary.main" }} />
@@ -653,7 +663,6 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
           <Typography
             component="span"
             variant="subtitle2"
-            fontWeight={700}
             sx={{
               color: (theme) => alpha(theme.palette.common.white, 0.5),
               textTransform: "uppercase",
@@ -705,7 +714,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 >
                   <ListItemText
                     primary={t(link.key)}
-                    primaryTypographyProps={{ fontWeight: active ? 700 : 400, fontSize: "0.95rem" }}
+                    primaryTypographyProps={{
+                      fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                      fontSize: TYPE_SCALE.md,
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -728,8 +740,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               <ListItemText
                 primary={t("matches")}
                 primaryTypographyProps={{
-                  fontWeight: partiteActive ? 700 : 400,
-                  fontSize: "0.95rem",
+                  fontWeight: partiteActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  fontSize: TYPE_SCALE.md,
                 }}
               />
               {partiteOpen ? (
@@ -770,8 +782,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       <ListItemText
                         primary={t(link.key)}
                         primaryTypographyProps={{
-                          fontWeight: active ? 700 : 400,
-                          fontSize: "0.88rem",
+                          fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                          fontSize: TYPE_SCALE.sm,
                         }}
                       />
                     </ListItemButton>
@@ -797,8 +809,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               <ListItemText
                 primary={t("teams")}
                 primaryTypographyProps={{
-                  fontWeight: squadreActive ? 700 : 400,
-                  fontSize: "0.95rem",
+                  fontWeight: squadreActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  fontSize: TYPE_SCALE.md,
                 }}
               />
               {squadreOpen ? (
@@ -838,8 +850,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       <ListItemText
                         primary={link.label}
                         primaryTypographyProps={{
-                          fontWeight: active ? 700 : 400,
-                          fontSize: "0.88rem",
+                          fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                          fontSize: TYPE_SCALE.sm,
                         }}
                       />
                     </ListItemButton>
@@ -865,8 +877,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               <ListItemText
                 primary={t("baskin")}
                 primaryTypographyProps={{
-                  fontWeight: ilBaskinActive ? 700 : 400,
-                  fontSize: "0.95rem",
+                  fontWeight: ilBaskinActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  fontSize: TYPE_SCALE.md,
                 }}
               />
               {ilBaskinOpen ? (
@@ -908,8 +920,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       <ListItemText
                         primary={t(link.key)}
                         primaryTypographyProps={{
-                          fontWeight: active ? 700 : 400,
-                          fontSize: "0.88rem",
+                          fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                          fontSize: TYPE_SCALE.sm,
                         }}
                       />
                       {link.badge && (
@@ -922,7 +934,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                             borderRadius: RADIUS.sm,
                             bgcolor: (theme) => alpha(theme.palette.common.white, 0.1),
                             color: (theme) => alpha(theme.palette.common.white, 0.4),
-                            fontWeight: 600,
+                            fontWeight: FONT_WEIGHT.semibold,
                             textTransform: "uppercase",
                             letterSpacing: "0.04em",
                           }}
@@ -953,8 +965,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               <ListItemText
                 primary={t("contacts")}
                 primaryTypographyProps={{
-                  fontWeight: contattiActive ? 700 : 400,
-                  fontSize: "0.95rem",
+                  fontWeight: contattiActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  fontSize: TYPE_SCALE.md,
                 }}
               />
               {contattiOpen ? (
@@ -994,8 +1006,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                       <ListItemText
                         primary={t(link.key)}
                         primaryTypographyProps={{
-                          fontWeight: active ? 700 : 400,
-                          fontSize: "0.88rem",
+                          fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                          fontSize: TYPE_SCALE.sm,
                         }}
                       />
                     </ListItemButton>
@@ -1026,7 +1038,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 >
                   <ListItemText
                     primary={t("admin")}
-                    primaryTypographyProps={{ fontWeight: 700, fontSize: "0.95rem" }}
+                    primaryTypographyProps={{
+                      fontWeight: FONT_WEIGHT.semibold,
+                      fontSize: TYPE_SCALE.md,
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -1052,7 +1067,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                   | "themeDark"
                   | "themeSystem"
               )}
-              primaryTypographyProps={{ fontSize: "0.9rem" }}
+              primaryTypographyProps={{ fontSize: TYPE_SCALE.sm }}
             />
           </ListItemButton>
 
@@ -1096,7 +1111,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
                 </ListItemIcon>
                 <ListItemText
                   primary={t("logout")}
-                  primaryTypographyProps={{ fontSize: "0.95rem" }}
+                  primaryTypographyProps={{ fontSize: TYPE_SCALE.md }}
                 />
               </ListItemButton>
             </>
@@ -1115,7 +1130,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               href="/privacy"
               onClick={() => setDrawerOpen(false)}
               style={{
-                fontSize: "0.75rem",
+                fontSize: TYPE_SCALE.xs,
                 color: "rgba(255,255,255,0.35)",
                 textDecoration: "underline",
                 textDecorationColor: "rgba(255,255,255,0.15)",

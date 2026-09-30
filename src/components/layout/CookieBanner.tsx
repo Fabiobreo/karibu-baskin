@@ -56,7 +56,6 @@ export default function CookieBanner() {
           <Typography
             component="h2"
             variant="subtitle2"
-            fontWeight={700}
             gutterBottom
             sx={{ display: { xs: "none", sm: "block" } }}
           >
@@ -78,18 +77,10 @@ export default function CookieBanner() {
       <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
         {/* Su mobile i due bottoni si dividono la riga: stesso peso visivo per
             le due scelte, e nessuna riga in più per andare a capo. */}
-        <Button
-          variant="outlined"
-          onClick={reject}
-          sx={{ fontWeight: 600, flex: { xs: 1, sm: "0 0 auto" } }}
-        >
+        <Button variant="outlined" onClick={reject} sx={{ flex: { xs: 1, sm: "0 0 auto" } }}>
           {t("necessaryOnly")}
         </Button>
-        <Button
-          variant="contained"
-          onClick={accept}
-          sx={{ fontWeight: 700, flex: { xs: 1, sm: "0 0 auto" } }}
-        >
+        <Button variant="contained" onClick={accept} sx={{ flex: { xs: 1, sm: "0 0 auto" } }}>
           {t("acceptAll")}
         </Button>
       </Box>

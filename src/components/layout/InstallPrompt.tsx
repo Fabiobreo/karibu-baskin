@@ -153,7 +153,7 @@ export default function InstallPrompt() {
       <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
         <InstallMobileIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+          <Typography variant="subtitle2" gutterBottom>
             {t("title")}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.6 }}>
@@ -187,10 +187,10 @@ export default function InstallPrompt() {
         </Box>
       ) : (
         <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end", mt: 1.5 }}>
-          <Button variant="outlined" onClick={dismiss} sx={{ fontWeight: 600 }}>
+          <Button variant="outlined" onClick={dismiss}>
             {t("later")}
           </Button>
-          <Button variant="contained" onClick={install} sx={{ fontWeight: 700 }}>
+          <Button variant="contained" onClick={install}>
             {t("install")}
           </Button>
         </Box>

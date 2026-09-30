@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -15,7 +16,7 @@ function parseSeasonParam(s: string): string {
 
 export default async function OgImage({ params }: Props) {
   const { season: seasonParam, slug } = await params;
-  const fonts = await loadInterFonts([400, 700, 800]);
+  const fonts = await loadInterFonts([FONT_WEIGHT.regular, FONT_WEIGHT.bold]);
   const season = parseSeasonParam(seasonParam);
 
   const teams = await prisma.competitiveTeam.findMany({
@@ -75,7 +76,7 @@ export default async function OgImage({ params }: Props) {
           background: teamColor,
           color: "#fff",
           fontSize: 26,
-          fontWeight: 700,
+          fontWeight: FONT_WEIGHT.bold,
           padding: "10px 32px",
           borderRadius: 32,
           marginBottom: 32,
@@ -89,7 +90,7 @@ export default async function OgImage({ params }: Props) {
       <div
         style={{
           fontSize: 96,
-          fontWeight: 900,
+          fontWeight: FONT_WEIGHT.bold,
           textAlign: "center",
           lineHeight: 1.0,
           marginBottom: 24,
@@ -107,7 +108,7 @@ export default async function OgImage({ params }: Props) {
             style={{
               fontSize: 28,
               color: "rgba(255,255,255,0.65)",
-              fontWeight: 600,
+              fontWeight: FONT_WEIGHT.bold,
               display: "flex",
             }}
           >
@@ -119,7 +120,7 @@ export default async function OgImage({ params }: Props) {
             style={{
               fontSize: 28,
               color: "rgba(255,255,255,0.5)",
-              fontWeight: 600,
+              fontWeight: FONT_WEIGHT.bold,
               display: "flex",
             }}
           >
@@ -135,7 +136,7 @@ export default async function OgImage({ params }: Props) {
           bottom: 32,
           fontSize: 22,
           color: "rgba(255,255,255,0.3)",
-          fontWeight: 600,
+          fontWeight: FONT_WEIGHT.bold,
           display: "flex",
         }}
       >

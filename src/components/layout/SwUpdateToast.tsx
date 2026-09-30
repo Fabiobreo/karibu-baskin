@@ -89,7 +89,6 @@ export default function SwUpdateToast() {
           color="primary"
           startIcon={<SystemUpdateAltIcon fontSize="small" />}
           onClick={handleUpdate}
-          sx={{ fontWeight: 700 }}
         >
           {t("update")}
         </Button>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { isMinor } from "@/lib/minors";
 import { userHasPublicProfile } from "@/lib/publicProfile";
 import { sportRoleLabel } from "@/lib/constants";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -21,7 +22,7 @@ const ROLE_COLORS: Record<number, string> = {
 
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
-  const fonts = await loadInterFonts([400, 700, 800]);
+  const fonts = await loadInterFonts([FONT_WEIGHT.regular, FONT_WEIGHT.bold]);
 
   const rawUser = await prisma.user.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
@@ -82,7 +83,7 @@ export default async function OgImage({ params }: Props) {
           right: -60,
           transform: "translateY(-50%)",
           fontSize: 480,
-          fontWeight: 900,
+          fontWeight: FONT_WEIGHT.bold,
           color: "#fff",
           opacity: 0.04,
           lineHeight: 1,
@@ -105,7 +106,7 @@ export default async function OgImage({ params }: Props) {
           alignItems: "center",
           justifyContent: "center",
           fontSize: 84,
-          fontWeight: 900,
+          fontWeight: FONT_WEIGHT.bold,
           flexShrink: 0,
           marginRight: 60,
         }}
@@ -118,7 +119,7 @@ export default async function OgImage({ params }: Props) {
         <div
           style={{
             fontSize: 24,
-            fontWeight: 800,
+            fontWeight: FONT_WEIGHT.bold,
             color: playerColor,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
@@ -131,7 +132,7 @@ export default async function OgImage({ params }: Props) {
         <div
           style={{
             fontSize: 80,
-            fontWeight: 900,
+            fontWeight: FONT_WEIGHT.bold,
             lineHeight: 1.0,
             marginBottom: 20,
             display: "flex",
@@ -147,7 +148,7 @@ export default async function OgImage({ params }: Props) {
                 background: roleColor,
                 color: "#fff",
                 fontSize: 22,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 padding: "8px 20px",
                 borderRadius: 24,
                 display: "flex",
@@ -162,7 +163,7 @@ export default async function OgImage({ params }: Props) {
                 background: playerColor,
                 color: "#fff",
                 fontSize: 22,
-                fontWeight: 700,
+                fontWeight: FONT_WEIGHT.bold,
                 padding: "8px 20px",
                 borderRadius: 24,
                 display: "flex",
@@ -176,7 +177,14 @@ export default async function OgImage({ params }: Props) {
         {matchesPlayed > 0 && (
           <div style={{ display: "flex", gap: 40 }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <span style={{ fontSize: 64, fontWeight: 900, lineHeight: 1, display: "flex" }}>
+              <span
+                style={{
+                  fontSize: 64,
+                  fontWeight: FONT_WEIGHT.bold,
+                  lineHeight: 1,
+                  display: "flex",
+                }}
+              >
                 {totalPoints}
               </span>
               <span
@@ -195,7 +203,7 @@ export default async function OgImage({ params }: Props) {
               <span
                 style={{
                   fontSize: 64,
-                  fontWeight: 900,
+                  fontWeight: FONT_WEIGHT.bold,
                   lineHeight: 1,
                   color: playerColor,
                   display: "flex",

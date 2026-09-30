@@ -19,6 +19,7 @@ import { useTranslations } from "next-intl";
 import ResponsiveDialog from "@/components/common/ResponsiveDialog";
 import { readError } from "@/lib/fetchJson";
 import { purgeServiceWorkerCaches } from "@/lib/swCachePurge";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface MissingNameDialogProps {
   /** Email con cui è entrato: lo aiuta a capire con quale account sta entrando. */
@@ -86,7 +87,7 @@ export default function MissingNameDialog({ email }: MissingNameDialogProps) {
       aria-labelledby="missing-name-title"
     >
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <DialogTitle id="missing-name-title" sx={{ fontWeight: 800, pb: 1 }}>
+        <DialogTitle id="missing-name-title" sx={{ fontWeight: FONT_WEIGHT.bold, pb: 1 }}>
           {t("title")}
         </DialogTitle>
         <DialogContent>
@@ -135,7 +136,7 @@ export default function MissingNameDialog({ email }: MissingNameDialogProps) {
                 bgcolor: "transparent",
                 color: "primary.onLight",
                 font: "inherit",
-                fontWeight: 600,
+                fontWeight: FONT_WEIGHT.semibold,
                 textDecoration: "underline",
                 cursor: "pointer",
               }}

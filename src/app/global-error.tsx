@@ -2,6 +2,8 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { heroGradient } from "@/lib/heroStyles";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 // global-error sostituisce interamente il layout root, quindi
 // non ha accesso a MUI ThemeProvider — usiamo CSS inline puro.
@@ -45,17 +47,26 @@ export default function GlobalError({
           alt="Karibu Baskin"
           style={{ width: 72, height: 72, objectFit: "contain", opacity: 0.85 }}
         />
-        <div style={{ fontSize: "5rem", fontWeight: 900, color: "#E65100", lineHeight: 1 }}>
+        <div
+          style={{
+            fontSize: TYPE_SCALE.xl8,
+            fontWeight: FONT_WEIGHT.bold,
+            color: "#E65100",
+            lineHeight: 1,
+          }}
+        >
           500
         </div>
-        <h1 style={{ fontSize: "1.3rem", fontWeight: 800, margin: 0 }}>Errore critico</h1>
+        <h1 style={{ fontSize: TYPE_SCALE.xl, fontWeight: FONT_WEIGHT.bold, margin: 0 }}>
+          Errore critico
+        </h1>
         <p
           style={{
             color: "rgba(255,255,255,0.45)",
             maxWidth: 360,
             lineHeight: 1.7,
             margin: 0,
-            fontSize: "0.95rem",
+            fontSize: TYPE_SCALE.md,
           }}
         >
           Si è verificato un errore grave nell&apos;applicazione. Riprova oppure torna alla home.
@@ -65,7 +76,7 @@ export default function GlobalError({
             style={{
               color: "rgba(255,255,255,0.2)",
               margin: 0,
-              fontSize: "0.75rem",
+              fontSize: TYPE_SCALE.xs,
               fontFamily: "monospace",
             }}
           >
@@ -83,8 +94,8 @@ export default function GlobalError({
               border: "none",
               borderRadius: 8, // RADIUS.md: qui niente tema
               padding: "12px 28px",
-              fontSize: "0.95rem",
-              fontWeight: 700,
+              fontSize: TYPE_SCALE.md,
+              fontWeight: FONT_WEIGHT.semibold,
               cursor: "pointer",
               fontFamily: "inherit",
             }}
@@ -100,8 +111,8 @@ export default function GlobalError({
               border: "1px solid rgba(255,255,255,0.2)",
               borderRadius: 8, // RADIUS.md: qui niente tema
               padding: "12px 28px",
-              fontSize: "0.95rem",
-              fontWeight: 700,
+              fontSize: TYPE_SCALE.md,
+              fontWeight: FONT_WEIGHT.semibold,
               textDecoration: "none",
               display: "inline-block",
             }}

@@ -3,6 +3,7 @@ import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { it } from "date-fns/locale";
 import { formatRome } from "@/lib/dateUtils";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -37,7 +38,7 @@ const DEFAULT_BG = "linear-gradient(150deg,#1A1A1A 0%,#2D1A0A 60%,#3D2010 100%)"
 
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
-  const fonts = await loadInterFonts([400, 700, 800]);
+  const fonts = await loadInterFonts([FONT_WEIGHT.regular, FONT_WEIGHT.bold]);
 
   const match = await prisma.match.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
@@ -93,14 +94,19 @@ export default async function OgImage({ params }: Props) {
   const nameLong = Math.max(match.team.name.length, opponentName.length) > 22;
   const nameStyle = {
     fontSize: nameLong ? 36 : 48,
-    fontWeight: 800,
+    fontWeight: FONT_WEIGHT.bold,
     lineHeight: 1.1,
     textAlign: "center" as const,
     display: "flex",
     justifyContent: "center",
     marginBottom: 12,
   };
-  const scoreStyle = { fontSize: 140, fontWeight: 900, lineHeight: 1, display: "flex" };
+  const scoreStyle = {
+    fontSize: 140,
+    fontWeight: FONT_WEIGHT.bold,
+    lineHeight: 1,
+    display: "flex",
+  };
   const side = (name: string, score: number | null) => (
     <div
       style={{
@@ -141,7 +147,7 @@ export default async function OgImage({ params }: Props) {
       <div
         style={{
           fontSize: 22,
-          fontWeight: 700,
+          fontWeight: FONT_WEIGHT.bold,
           letterSpacing: 4,
           color: "rgba(255,255,255,0.75)",
           marginBottom: 40,
@@ -164,7 +170,7 @@ export default async function OgImage({ params }: Props) {
         <div
           style={{
             fontSize: hasScore ? 80 : 56,
-            fontWeight: 800,
+            fontWeight: FONT_WEIGHT.bold,
             lineHeight: 1,
             color: "rgba(255,255,255,0.6)",
             display: "flex",
@@ -177,12 +183,19 @@ export default async function OgImage({ params }: Props) {
       </div>
 
       {detail && (
-        <div style={{ fontSize: 30, fontWeight: 700, marginBottom: 14, display: "flex" }}>
+        <div
+          style={{ fontSize: 30, fontWeight: FONT_WEIGHT.bold, marginBottom: 14, display: "flex" }}
+        >
           {detail}
         </div>
       )}
       <div
-        style={{ fontSize: 26, color: "rgba(255,255,255,0.7)", fontWeight: 600, display: "flex" }}
+        style={{
+          fontSize: 26,
+          color: "rgba(255,255,255,0.7)",
+          fontWeight: FONT_WEIGHT.bold,
+          display: "flex",
+        }}
       >
         {formatRome(new Date(match.date), "EEEE d MMMM yyyy", { locale: it })}
       </div>

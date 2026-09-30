@@ -4,6 +4,7 @@ import { heroGradient } from "@/lib/heroStyles";
 import LinkBehavior from "@/components/common/LinkBehavior";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS, SHAPE_RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
 export { heroGradient };
@@ -407,32 +408,45 @@ const darkMedal: MedalPalette = {
 
 const sharedTypography = {
   fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  // La rampa dei pesi non deve andare all'indietro: i default MUI danno a
-  // h1/h2/h3 pesi 300/300/400, cioe' piu' leggeri di h4 (800). Qui i titoli
-  // grandi restano almeno pesanti quanto quelli piccoli.
-  h1: { fontWeight: 900, letterSpacing: "-1px" },
-  h2: { fontWeight: 900, letterSpacing: "-0.8px" },
-  h3: { fontWeight: 800, letterSpacing: "-0.6px" },
-  h4: { fontWeight: 800, letterSpacing: "-0.5px" },
-  h5: { fontWeight: 700, letterSpacing: "-0.3px" },
-  h6: { fontWeight: 600 },
-  subtitle1: { fontWeight: 500 },
+  // Tre pesi (UX-31): 400 testo, 600 etichette, 800 titoli. I pesi
+  // "di sistema" di MUI seguono la stessa scala: `fontWeightMedium` lo usano
+  // intestazioni di tabella, tab, badge e titoli degli Alert (prima 500),
+  // `fontWeightLight` i vecchi h1-h3 di default (300).
+  fontWeightLight: FONT_WEIGHT.regular,
+  fontWeightRegular: FONT_WEIGHT.regular,
+  fontWeightMedium: FONT_WEIGHT.semibold,
+  fontWeightBold: FONT_WEIGHT.bold,
+  // Titoli a 800, con un tracking negativo piu' leggero di prima (a 900
+  // Inter sembrava compressa): stretto solo dove il corpo e' grande.
+  h1: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.02em" },
+  h2: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.02em" },
+  h3: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.015em" },
+  h4: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.01em" },
+  h5: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.005em" },
+  h6: { fontWeight: FONT_WEIGHT.semibold },
+  subtitle1: { fontWeight: FONT_WEIGHT.semibold },
+  subtitle2: { fontWeight: FONT_WEIGHT.semibold },
   // Scala del testo corrente (UX-10): 14px per il corpo secondario, 12px e'
   // il minimo per qualunque testo (didascalie, meta, chip).
   body2: { fontSize: TYPE_SCALE.sm },
   caption: { fontSize: TYPE_SCALE.xs, lineHeight: 1.5 },
   // Occhiello maiuscoletto sopra i titoli: un solo letterSpacing per tutto il
   // sito (prima sette valori diversi riscritti a mano).
-  overline: { fontSize: TYPE_SCALE.xs, fontWeight: 700, letterSpacing: "0.08em", lineHeight: 1.6 },
+  overline: {
+    fontSize: TYPE_SCALE.xs,
+    fontWeight: FONT_WEIGHT.semibold,
+    letterSpacing: "0.08em",
+    lineHeight: 1.6,
+  },
   // Numeri grandi (tabelloni, punti, statistiche): la dimensione la sceglie
   // chi la usa, qui peso, interlinea e cifre a larghezza fissa.
   stat: {
-    fontWeight: 800,
+    fontWeight: FONT_WEIGHT.bold,
     lineHeight: 1,
     fontVariantNumeric: "tabular-nums",
     letterSpacing: "-0.5px",
   },
-  button: { fontWeight: 600, letterSpacing: 0 },
+  button: { fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0 },
 } as const;
 
 // Raggio base (UX-30): e' `RADIUS.md`. Lo usano i componenti MUI senza un
@@ -469,6 +483,9 @@ function buildComponents(mode: "light" | "dark") {
     MuiCssBaseline: {
       styleOverrides: {
         ":focus-visible": focusVisibleStyles,
+        // L'enfasi dentro un paragrafo e' un'etichetta, non un titolo: 600.
+        // CssBaseline le darebbe `fontWeightBold` (800).
+        "b, strong": { fontWeight: FONT_WEIGHT.semibold },
         // Rispetta "riduci movimento" del sistema operativo: marquee sponsor,
         // carosello, hover delle card e transizioni si fermano.
         "@media (prefers-reduced-motion: reduce)": {
@@ -554,7 +571,7 @@ function buildComponents(mode: "light" | "dark") {
         root: {
           borderRadius: RADIUS.md,
           textTransform: "none",
-          fontWeight: 600,
+          fontWeight: FONT_WEIGHT.semibold,
           // Due taglie: 40 px (default) e 48 px (`large`: CTA di pagina e invio
           // dei moduli pubblici). `small` resta per le azioni dense (tabelle,
           // admin), mai per l'azione principale.
@@ -646,7 +663,7 @@ function buildComponents(mode: "light" | "dark") {
     },
     MuiChip: {
       styleOverrides: {
-        root: { fontWeight: 600, borderRadius: RADIUS.sm },
+        root: { fontWeight: FONT_WEIGHT.semibold, borderRadius: RADIUS.sm },
         // Chip `color="primary"` pieno: etichetta bianca su #E65100 fa 3,79:1,
         // sotto AA. Stesso riempimento del bottone primario, 4,71:1. Da usare
         // solo su chip che si toccano (filtri, selezioni): l'arancio pieno

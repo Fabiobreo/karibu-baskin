@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /**
  * Primo elemento focusabile del body: invisibile finche non riceve il focus,
@@ -39,7 +40,7 @@ export default function SkipToContent() {
         // naviga da tastiera.
         bgcolor: "primary.fill",
         color: "primary.contrastText",
-        fontWeight: 700,
+        fontWeight: FONT_WEIGHT.semibold,
         fontSize: TYPE_SCALE.sm,
         textDecoration: "none",
         "&:focus": {

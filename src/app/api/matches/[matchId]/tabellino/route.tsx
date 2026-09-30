@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { it } from "date-fns/locale";
 import { publicSubjects } from "@/lib/minors";
 import { formatRome } from "@/lib/dateUtils";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Node runtime (default) — necessario perché usiamo Prisma.
 export const dynamic = "force-dynamic";
@@ -161,7 +162,7 @@ export async function GET(_req: Request, { params }: Params) {
             background: "#E65100",
             color: "#fff",
             fontSize: 22,
-            fontWeight: 800,
+            fontWeight: FONT_WEIGHT.bold,
             padding: "8px 22px",
             borderRadius: 24,
             letterSpacing: 2,
@@ -174,7 +175,7 @@ export async function GET(_req: Request, { params }: Params) {
           style={{
             fontSize: 22,
             color: "rgba(255,255,255,0.55)",
-            fontWeight: 600,
+            fontWeight: FONT_WEIGHT.bold,
             display: "flex",
           }}
         >
@@ -187,7 +188,7 @@ export async function GET(_req: Request, { params }: Params) {
         style={{
           fontSize: 26,
           color: "rgba(255,255,255,0.6)",
-          fontWeight: 500,
+          fontWeight: FONT_WEIGHT.regular,
           marginBottom: 18,
           display: "flex",
           justifyContent: "center",
@@ -219,7 +220,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 34,
-              fontWeight: 800,
+              fontWeight: FONT_WEIGHT.bold,
               color: "#fff",
               marginBottom: 8,
               textAlign: "center",
@@ -231,7 +232,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 140,
-              fontWeight: 900,
+              fontWeight: FONT_WEIGHT.bold,
               lineHeight: 1,
               color: "#fff",
               display: "flex",
@@ -247,7 +248,7 @@ export async function GET(_req: Request, { params }: Params) {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            fontWeight: 800,
+            fontWeight: FONT_WEIGHT.bold,
             fontSize: 36,
             color: "rgba(255,255,255,0.35)",
           }}
@@ -268,7 +269,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 34,
-              fontWeight: 800,
+              fontWeight: FONT_WEIGHT.bold,
               color: "rgba(255,255,255,0.85)",
               marginBottom: 8,
               textAlign: "center",
@@ -280,7 +281,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 140,
-              fontWeight: 900,
+              fontWeight: FONT_WEIGHT.bold,
               lineHeight: 1,
               color: "rgba(255,255,255,0.65)",
               display: "flex",
@@ -299,7 +300,7 @@ export async function GET(_req: Request, { params }: Params) {
               background: meta.color,
               color: "#fff",
               fontSize: 30,
-              fontWeight: 900,
+              fontWeight: FONT_WEIGHT.bold,
               padding: "10px 32px",
               borderRadius: 30,
               letterSpacing: 4,
@@ -328,7 +329,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 22,
-              fontWeight: 800,
+              fontWeight: FONT_WEIGHT.bold,
               color: "#FFD54F",
               letterSpacing: 4,
               marginBottom: 10,
@@ -344,7 +345,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 32,
-              fontWeight: 800,
+              fontWeight: FONT_WEIGHT.bold,
               color: "#fff",
               textAlign: "center",
               display: "flex",
@@ -370,7 +371,7 @@ export async function GET(_req: Request, { params }: Params) {
           <div
             style={{
               fontSize: 22,
-              fontWeight: 800,
+              fontWeight: FONT_WEIGHT.bold,
               color: "rgba(255,255,255,0.55)",
               letterSpacing: 4,
               marginBottom: 16,
@@ -402,7 +403,7 @@ export async function GET(_req: Request, { params }: Params) {
                 <div
                   style={{
                     fontSize: 26,
-                    fontWeight: 700,
+                    fontWeight: FONT_WEIGHT.bold,
                     color: "#fff",
                     display: "flex",
                   }}
@@ -422,7 +423,7 @@ export async function GET(_req: Request, { params }: Params) {
                 <div
                   style={{
                     fontSize: 30,
-                    fontWeight: 900,
+                    fontWeight: FONT_WEIGHT.bold,
                     color: "#E65100",
                     display: "flex",
                   }}
@@ -454,7 +455,7 @@ export async function GET(_req: Request, { params }: Params) {
           paddingTop: 24,
           fontSize: 20,
           color: "rgba(255,255,255,0.4)",
-          fontWeight: 600,
+          fontWeight: FONT_WEIGHT.bold,
           letterSpacing: 2,
         }}
       >

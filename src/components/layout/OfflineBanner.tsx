@@ -4,6 +4,7 @@ import { Collapse, Box, Typography } from "@mui/material";
 import WifiOffIcon from "@mui/icons-material/WifiOff";
 import WifiIcon from "@mui/icons-material/Wifi";
 import { useTranslations } from "next-intl";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export default function OfflineBanner() {
   const t = useTranslations("offline");
@@ -51,7 +52,7 @@ export default function OfflineBanner() {
         }}
       >
         {offline ? <WifiOffIcon sx={{ fontSize: 16 }} /> : <WifiIcon sx={{ fontSize: 16 }} />}
-        <Typography variant="caption" fontWeight={600}>
+        <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
           {offline ? t("banner") : t("reconnected")}
         </Typography>
       </Box>

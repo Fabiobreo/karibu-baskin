@@ -9,6 +9,7 @@ import {
   Preview,
   Heading,
 } from "@react-email/components";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   senderName: string;
@@ -71,7 +72,7 @@ export default function ContactConfirmationEmail({ senderName, message, locale =
             <Text
               style={{
                 color: ORANGE,
-                fontWeight: 800,
+                fontWeight: FONT_WEIGHT.bold,
                 fontSize: 20,
                 margin: 0,
                 letterSpacing: "-0.3px",
@@ -103,7 +104,12 @@ export default function ContactConfirmationEmail({ senderName, message, locale =
           >
             <Heading
               as="h2"
-              style={{ color: TEXT_MAIN, fontSize: 20, fontWeight: 700, margin: "0 0 16px" }}
+              style={{
+                color: TEXT_MAIN,
+                fontSize: 20,
+                fontWeight: FONT_WEIGHT.semibold,
+                margin: "0 0 16px",
+              }}
             >
               {c.greeting(senderName)}
             </Heading>
@@ -120,7 +126,7 @@ export default function ContactConfirmationEmail({ senderName, message, locale =
               style={{
                 color: TEXT_MUTED,
                 fontSize: 11,
-                fontWeight: 700,
+                fontWeight: FONT_WEIGHT.semibold,
                 textTransform: "uppercase" as const,
                 letterSpacing: "0.08em",
                 margin: "0 0 8px",

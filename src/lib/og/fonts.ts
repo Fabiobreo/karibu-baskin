@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /**
  * Font per le immagini Open Graph (next/og).
@@ -12,9 +13,12 @@ import { join } from "node:path";
  * (giocatore, partita, squadra) non hanno `generateStaticParams`, quindi si
  * generano a ogni richiesta e scaricarli online costava ~950 KB per anteprima.
  * Sono subset latin + latin-ext di Inter (~81 KB l'uno), lo stesso font del sito.
+ *
+ * Due pesi soli (UX-31): testo e titoli. Nelle anteprime le etichette stanno
+ * sul peso dei titoli, cosi' non serve un terzo file.
  */
 
-export type OgFontWeight = 400 | 700 | 800;
+export type OgFontWeight = typeof FONT_WEIGHT.regular | typeof FONT_WEIGHT.bold;
 
 export interface OgFont {
   name: string;

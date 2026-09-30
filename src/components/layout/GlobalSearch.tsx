@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface ResultItem {
   name: string;
@@ -152,7 +153,7 @@ export default function GlobalSearch() {
                               {item.name[0]}
                             </Avatar>
                           ) : null}
-                          <Typography variant="body2" fontWeight={600} noWrap>
+                          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                             {item.name}
                           </Typography>
                           {item.sportRole ? (
