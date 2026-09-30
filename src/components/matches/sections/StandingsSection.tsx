@@ -16,6 +16,7 @@ import StatAbbr from "@/components/teams/StatAbbr";
 import { useTranslations } from "next-intl";
 import type { StandingEntry } from "@/lib/season/standings";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Classifica compatta del girone con la nostra squadra evidenziata. */
 export default function StandingsSection({
@@ -37,7 +38,7 @@ export default function StandingsSection({
         <Typography
           variant="caption"
           color="text.secondary"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ textTransform: "uppercase", letterSpacing: "0.08em", fontSize: TYPE_SCALE.xs }}
         >
           {t("groupStandings")}
@@ -48,7 +49,7 @@ export default function StandingsSection({
             variant="caption"
             sx={{
               color: "primary.onLight",
-              fontWeight: 700,
+              fontWeight: FONT_WEIGHT.semibold,
               fontSize: TYPE_SCALE.xs,
               "&:hover": { textDecoration: "underline" },
             }}
@@ -63,7 +64,7 @@ export default function StandingsSection({
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell
                 sx={{
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   color: "text.secondary",
                   py: 0.75,
@@ -72,7 +73,9 @@ export default function StandingsSection({
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, py: 0.75 }}>
+              <TableCell
+                sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs, py: 0.75 }}
+              >
                 {tStandings("colTeam")}
               </TableCell>
               {(["colPlayed", "colWins", "colDraws", "colLosses"] as const).map((key) => (
@@ -80,7 +83,7 @@ export default function StandingsSection({
                   key={key}
                   align="center"
                   sx={{
-                    fontWeight: 700,
+                    fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     color: "text.secondary",
                     py: 0.75,
@@ -93,7 +96,7 @@ export default function StandingsSection({
               <TableCell
                 align="center"
                 sx={{
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   color: "primary.onLight",
                   py: 0.75,
@@ -115,12 +118,21 @@ export default function StandingsSection({
                 }}
               >
                 <TableCell
-                  sx={{ fontSize: TYPE_SCALE.xs, color: "text.secondary", fontWeight: 700, py: 1 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.xs,
+                    color: "text.secondary",
+                    fontWeight: FONT_WEIGHT.semibold,
+                    py: 1,
+                  }}
                 >
                   {i + 1}
                 </TableCell>
                 <TableCell
-                  sx={{ fontSize: TYPE_SCALE.xs, fontWeight: row.isOurs ? 800 : 500, py: 1 }}
+                  sx={{
+                    fontSize: TYPE_SCALE.xs,
+                    fontWeight: row.isOurs ? FONT_WEIGHT.bold : FONT_WEIGHT.regular,
+                    py: 1,
+                  }}
                 >
                   {row.name}
                   {row.isOurs && (
@@ -150,7 +162,7 @@ export default function StandingsSection({
                   align="center"
                   sx={{
                     fontSize: TYPE_SCALE.sm,
-                    fontWeight: 800,
+                    fontWeight: FONT_WEIGHT.bold,
                     color: "primary.onLight",
                     py: 1,
                     fontVariantNumeric: "tabular-nums",

@@ -27,6 +27,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const RESULT_COLORS: Record<string, string> = {
   WIN: "match.win",
@@ -124,12 +125,15 @@ export default function EventDetailDialog({
             sx={{
               bgcolor: alpha(fg, 0.22),
               color: fg,
-              fontWeight: 700,
               fontSize: TYPE_SCALE.xs,
               mb: 0.5,
             }}
           />
-          <Typography variant="h6" fontWeight={800} sx={{ color: fg, lineHeight: 1.2 }}>
+          <Typography
+            variant="h6"
+            fontWeight={FONT_WEIGHT.bold}
+            sx={{ color: fg, lineHeight: 1.2 }}
+          >
             {event.title}
           </Typography>
         </Box>
@@ -185,7 +189,6 @@ export default function EventDetailDialog({
                 sx={{
                   bgcolor: RESULT_COLORS[event.result] ?? "grey.500",
                   color: "match.onFill",
-                  fontWeight: 700,
                 }}
               />
             </Box>

@@ -4,6 +4,7 @@ import { alpha, type Theme } from "@mui/material/styles";
 import { ROLES, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Giocatori che hanno dichiarato "non disponibile": chip compatti per ruolo, non selezionabili. */
 export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneStatRow[] }) {
@@ -12,7 +13,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
   const chipSx = {
     fontSize: "0.75rem",
     height: 22,
-    fontWeight: 600,
+    fontWeight: FONT_WEIGHT.semibold,
     bgcolor: (theme: Theme) => alpha(theme.palette.match.loss, 0.06),
     color: "text.secondary",
     border: (theme: Theme) => `1px solid ${alpha(theme.palette.match.loss, 0.25)}`,
@@ -26,7 +27,7 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
       <Typography
         variant="overline"
         color="error"
-        fontWeight={800}
+        fontWeight={FONT_WEIGHT.bold}
         sx={{ display: "block", mb: 1 }}
       >
         Non disponibili ({rows.length})
@@ -46,7 +47,6 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
                 sx={{
                   bgcolor: roleColor(r),
                   color: ROLE_TEXT_COLOR,
-                  fontWeight: 700,
                   fontSize: TYPE_SCALE.xs,
                   height: 20,
                   minWidth: 32,
@@ -74,7 +74,6 @@ export default function ConvocazioniUnavailable({ rows }: { rows: ConvocazioneSt
               sx={{
                 bgcolor: "grey.400",
                 color: "common.white",
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
                 height: 20,
                 minWidth: 32,

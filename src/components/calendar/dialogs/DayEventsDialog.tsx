@@ -14,6 +14,7 @@ import { getDaySegment } from "@/components/calendar/calendarShared";
 import type { CalendarEvent } from "@/app/api/calendar/route";
 import { eventVisual } from "@/lib/calendar/eventColors";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface DayEventsDialogProps {
   day: Date | null;
@@ -56,7 +57,7 @@ export default function DayEventsDialog({
           justifyContent: "space-between",
         }}
       >
-        <Typography variant="h6" fontWeight={700} sx={{ textTransform: "capitalize" }}>
+        <Typography variant="h6" sx={{ textTransform: "capitalize" }}>
           {dayLabel}
         </Typography>
         {isStaff && (
@@ -122,7 +123,7 @@ export default function DayEventsDialog({
                     <Icon sx={{ color: fg, fontSize: "1rem" }} />
                   </Box>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Typography variant="body2" fontWeight={600} noWrap>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                       {ev.title}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">

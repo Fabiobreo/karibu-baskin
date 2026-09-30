@@ -52,7 +52,6 @@ export default function MatchCallupsTab({
             variant="outlined"
             size="small"
             startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-            sx={{ fontWeight: 700 }}
           >
             {t("manageCallups")}
           </Button>

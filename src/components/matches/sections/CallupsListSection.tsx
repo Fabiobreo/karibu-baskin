@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { roleColor } from "@/lib/constants";
 import CallupRow from "@/components/matches/CallupRow";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface CallupsListSectionProps {
   callups: CallupWithStat[];
@@ -30,7 +31,7 @@ export default function CallupsListSection({
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
         <LockIcon sx={{ fontSize: 44, color: "text.disabled", mb: 1.5 }} />
-        <Typography variant="h6" color="text.secondary" fontWeight={700}>
+        <Typography variant="h6" color="text.secondary">
           {t("membersOnly")}
         </Typography>
         <Typography
@@ -40,7 +41,7 @@ export default function CallupsListSection({
         >
           {t("callupsRestricted")}
         </Typography>
-        <Button href="/login" variant="contained" color="primary" sx={{ fontWeight: 700 }}>
+        <Button href="/login" variant="contained" color="primary">
           {tNav("login")}
         </Button>
       </Box>
@@ -51,7 +52,7 @@ export default function CallupsListSection({
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
         <GroupsIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />
-        <Typography variant="h6" color="text.secondary" fontWeight={700}>
+        <Typography variant="h6" color="text.secondary">
           {t("noCallups")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -125,7 +126,7 @@ export default function CallupsListSection({
               />
               <Typography
                 variant="caption"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{ ...groupLabelSx, mb: 0, color: "text.secondary" }}
               >
                 {t("roleWithCount", { role, count: list.length })}
@@ -146,7 +147,7 @@ export default function CallupsListSection({
         <Box>
           <Typography
             variant="caption"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             sx={{ ...groupLabelSx, color: "text.secondary" }}
           >
             {t("unassignedRole", { count: noRole.length })}
@@ -165,7 +166,7 @@ export default function CallupsListSection({
         <Box>
           <Typography
             variant="caption"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             sx={{ ...groupLabelSx, color: "text.secondary" }}
           >
             {t("notPlayed", { count: notPlayed.length })}

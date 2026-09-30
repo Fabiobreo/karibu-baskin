@@ -16,6 +16,7 @@ import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import type { LoanCandidate } from "@/lib/matches/callupContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 function candidateKey(c: LoanCandidate): string {
   return `${c.candidate.kind}-${c.candidate.id}`;
@@ -51,7 +52,9 @@ export default function ConvocazioniLoanDialog({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ fontWeight: 800 }}>Aggiungi giocatore in prestito</DialogTitle>
+      <DialogTitle sx={{ fontWeight: FONT_WEIGHT.bold }}>
+        Aggiungi giocatore in prestito
+      </DialogTitle>
       <DialogContent>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Giocatori di altre squadre della stagione. Verranno marcati come prestito.
@@ -80,7 +83,7 @@ export default function ConvocazioniLoanDialog({
                   {o.candidate.name[0]}
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={600} noWrap>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                     {o.candidate.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">

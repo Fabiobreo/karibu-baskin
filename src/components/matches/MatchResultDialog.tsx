@@ -18,6 +18,7 @@ import { useState, useEffect } from "react";
 import type { MatchResult } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const RESULT_LABELS: Record<MatchResult, string> = {
   WIN: "Vittoria",
@@ -124,7 +125,9 @@ export default function MatchResultDialog({
 
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: 700 }}>
+      <DialogTitle
+        sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: FONT_WEIGHT.semibold }}
+      >
         <EmojiEventsIcon color="primary" />
         Inserisci risultato
       </DialogTitle>
@@ -179,7 +182,6 @@ export default function MatchResultDialog({
               sx={{
                 bgcolor: RESULT_COLORS[derived],
                 color: "match.onFill",
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.sm,
                 px: 1.5,
               }}

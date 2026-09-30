@@ -4,6 +4,7 @@ import { Box, Typography } from "@mui/material";
 import MatchQualityBadge from "@/components/matches/MatchQualityBadge";
 import type { MatchQuality } from "@/lib/matches/matchQuality";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface MatchQualitySectionProps {
   quality: MatchQuality;
@@ -32,7 +33,7 @@ export default function MatchQualitySection({
         flexWrap: "wrap",
       }}
     >
-      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+      <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
         Difficoltà stimata vs {opponentName}:
       </Typography>
       <MatchQualityBadge

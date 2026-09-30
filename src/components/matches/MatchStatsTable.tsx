@@ -21,6 +21,7 @@ import { useEntityLabels } from "@/hooks/useEntityLabels";
 
 import { contrastText } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface MatchStatRow {
   id: string;
@@ -78,14 +79,14 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
               <TableCell
                 sx={{
                   width: 28,
-                  fontWeight: 700,
+                  fontWeight: FONT_WEIGHT.semibold,
                   fontSize: TYPE_SCALE.xs,
                   color: "text.secondary",
                 }}
               >
                 #
               </TableCell>
-              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}>
                 {t("statPlayer")}
               </TableCell>
               {COLS.map((col) => (
@@ -93,7 +94,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                   key={col.key as string}
                   align="center"
                   sx={{
-                    fontWeight: 700,
+                    fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     color: col.primary ? "primary.onLight" : undefined,
                   }}
@@ -117,7 +118,11 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
               return (
                 <TableRow key={stat.id} hover>
                   <TableCell
-                    sx={{ color: "text.secondary", fontWeight: 700, fontSize: TYPE_SCALE.xs }}
+                    sx={{
+                      color: "text.secondary",
+                      fontWeight: FONT_WEIGHT.semibold,
+                      fontSize: TYPE_SCALE.xs,
+                    }}
                   >
                     {globalOffset + i + 1}
                   </TableCell>
@@ -137,7 +142,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                           >
                             <Typography
                               variant="body2"
-                              fontWeight={700}
+                              fontWeight={FONT_WEIGHT.semibold}
                               sx={{
                                 fontSize: TYPE_SCALE.xs,
                                 "&:hover": { textDecoration: "underline" },
@@ -149,7 +154,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                         ) : (
                           <Typography
                             variant="body2"
-                            fontWeight={600}
+                            fontWeight={FONT_WEIGHT.semibold}
                             sx={{ fontSize: TYPE_SCALE.xs }}
                           >
                             {name}
@@ -192,7 +197,7 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                         align="center"
                         sx={{
                           fontSize: TYPE_SCALE.sm,
-                          fontWeight: col.primary ? 800 : 400,
+                          fontWeight: col.primary ? FONT_WEIGHT.bold : FONT_WEIGHT.regular,
                           // Statistica che non vale per il ruolo: la cella dice "—".
                           color: col.primary
                             ? "text.primary"

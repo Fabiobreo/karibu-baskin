@@ -8,6 +8,7 @@ import type { CalendarEvent } from "@/app/api/calendar/route";
 import type { DaySegment } from "@/components/calendar/calendarShared";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Chip evento nella cella della griglia (desktop). */
 export default function EventChip({
@@ -88,7 +89,7 @@ export default function EventChip({
             fontSize: TYPE_SCALE.xs,
             // Un filo di peso in piu' sugli impegni propri: rinforza l'eco
             // senza aggiungere altra grafica in un chip alto 18px.
-            fontWeight: isOwnTeam ? 700 : 600,
+            fontWeight: isOwnTeam ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
             lineHeight: 1.3,
           }}
         >

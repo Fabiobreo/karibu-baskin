@@ -55,7 +55,7 @@ export default function MatchStatsMobileCards({
         <Paper component="li" key={row.key} variant="outlined" sx={{ p: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
             {row.sportRole && <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />}
-            <Typography variant="subtitle1" component="h3" fontWeight={700} sx={{ flex: 1 }}>
+            <Typography variant="subtitle1" component="h3" sx={{ flex: 1 }}>
               {row.name}
             </Typography>
             <Typography variant="h6" component="p" sx={{ typography: "stat" }}>

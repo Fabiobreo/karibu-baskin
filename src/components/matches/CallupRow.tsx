@@ -4,6 +4,7 @@ import { Avatar, Box, Typography } from "@mui/material";
 import Link from "next/link";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Riga di un convocato: avatar, nome, eventuale variante ruolo e punti se la partita è giocata. */
 export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore: boolean }) {
@@ -22,7 +23,7 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
         {name[0]}
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" fontWeight={700} noWrap>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
           {name}
         </Typography>
         {variant && (
@@ -34,7 +35,12 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
       {hasScore && c.stat !== null && (
         <Box sx={{ textAlign: "right", flexShrink: 0 }}>
           <Typography
-            sx={{ fontSize: TYPE_SCALE.lg, fontWeight: 900, color: "text.primary", lineHeight: 1 }}
+            sx={{
+              fontSize: TYPE_SCALE.lg,
+              fontWeight: FONT_WEIGHT.bold,
+              color: "text.primary",
+              lineHeight: 1,
+            }}
           >
             {c.stat.points}
           </Typography>

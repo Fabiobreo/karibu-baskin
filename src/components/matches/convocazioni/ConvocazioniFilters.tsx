@@ -2,6 +2,7 @@
 import { Box, Chip, Paper, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { ROLES, roleColor } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type ConvocazioniSortKey = "role" | "presences" | "lastCallup" | "seasonCallups" | "name";
 
@@ -27,7 +28,7 @@ export default function ConvocazioniFilters({
         <Typography
           variant="caption"
           color="text.secondary"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
         >
           Ruolo:
@@ -38,7 +39,7 @@ export default function ConvocazioniFilters({
           variant={roleFilter === null ? "filled" : "outlined"}
           color={roleFilter === null ? "primary" : "default"}
           onClick={() => onRoleFilterChange(null)}
-          sx={{ fontWeight: 600, cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+          sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
         />
         {ROLES.map((r) => (
           <Chip
@@ -47,7 +48,6 @@ export default function ConvocazioniFilters({
             size="small"
             onClick={() => onRoleFilterChange(r)}
             sx={{
-              fontWeight: 700,
               cursor: "pointer",
               fontSize: TYPE_SCALE.xs,
               bgcolor: roleFilter === r ? roleColor(r) : "transparent",
@@ -62,7 +62,7 @@ export default function ConvocazioniFilters({
         <Typography
           variant="caption"
           color="text.secondary"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
         >
           Ordina:

@@ -29,6 +29,7 @@ import { useToast } from "@/context/ToastContext";
 import type { MatchType } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface AvailabilityEntity {
   kind: "user" | "child";
@@ -192,7 +193,7 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
             <Box sx={{ mb: 3 }}>
               <Typography
                 variant="overline"
-                fontWeight={800}
+                fontWeight={FONT_WEIGHT.bold}
                 color="text.secondary"
                 sx={{ display: "block", mb: 1 }}
               >
@@ -229,7 +230,6 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
                     }}
                   />
                 }
-                sx={{ fontWeight: 700 }}
               >
                 {showPast
                   ? t("hidePastMatches")
@@ -299,19 +299,23 @@ function CompactMatchRow({
         ) : (
           <FlightIcon sx={{ fontSize: 14, color: "text.secondary" }} />
         )}
-        <Typography variant="body2" fontWeight={700} sx={{ fontSize: TYPE_SCALE.sm }}>
+        <Typography
+          variant="body2"
+          fontWeight={FONT_WEIGHT.semibold}
+          sx={{ fontSize: TYPE_SCALE.sm }}
+        >
           vs {m.opponentLabel}
         </Typography>
         {/* Etichetta per esteso: "Amich." e "Camp." non si capiscono. */}
         <Chip
           label={matchTypeLabel(m.matchType)}
           size="small"
-          sx={{ height: 20, fontSize: TYPE_SCALE.xs, fontWeight: 700 }}
+          sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
         />
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ ml: "auto", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+          sx={{ ml: "auto", fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}
         >
           {formatShortDate(m.date, tCommon, dateLocale)}
         </Typography>
@@ -347,7 +351,6 @@ function CompactMatchRow({
                 )}
                 <Typography
                   variant="body2"
-                  fontWeight={500}
                   noWrap
                   sx={{ fontSize: TYPE_SCALE.sm }}
                   title={`${entity.name} · ${entity.teamName}`}
@@ -360,7 +363,7 @@ function CompactMatchRow({
                 // Niente pulsanti spenti: la risposta data si legge come testo.
                 <Typography
                   variant="caption"
-                  fontWeight={700}
+                  fontWeight={FONT_WEIGHT.semibold}
                   sx={{
                     flexShrink: 0,
                     color:
@@ -392,7 +395,7 @@ function CompactMatchRow({
                       py: 0.25,
                       px: 1,
                       fontSize: TYPE_SCALE.xs,
-                      fontWeight: 700,
+                      fontWeight: FONT_WEIGHT.semibold,
                       textTransform: "none",
                       border: "1px solid",
                       borderColor: "divider",
@@ -436,13 +439,12 @@ function CompactMatchRow({
                     size="small"
                     disabled={saving}
                     onClick={() => onChange(m.matchId, entity, failed.value)}
-                    sx={{ fontWeight: 700 }}
                   >
                     {tCommon("retry")}
                   </Button>
                 }
               >
-                <Box component="span" sx={{ fontWeight: 700 }}>
+                <Box component="span" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                   {t("availabilityNotSaved")}
                 </Box>{" "}
                 {failed.message}

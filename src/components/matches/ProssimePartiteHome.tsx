@@ -8,6 +8,7 @@ import { withDbRetry } from "@/lib/dbRetry";
 import ProssimePartiteCards from "./ProssimePartiteCards";
 import { getTranslations } from "next-intl/server";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const DAYS_AHEAD = 14;
 const IMMINENT_HOURS = 48;
@@ -67,7 +68,6 @@ export default async function ProssimePartiteHome() {
             <Typography
               variant="h5"
               component="h2"
-              fontWeight={800}
               sx={{ mt: 0.25, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl2 } }}
             >
               {t("homeUpcoming")}
@@ -82,7 +82,7 @@ export default async function ProssimePartiteHome() {
             <Typography
               variant="body2"
               color="primary.onLight"
-              sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
+              sx={{ fontWeight: FONT_WEIGHT.semibold, "&:hover": { textDecoration: "underline" } }}
             >
               {t("homeSeeAll")}
             </Typography>

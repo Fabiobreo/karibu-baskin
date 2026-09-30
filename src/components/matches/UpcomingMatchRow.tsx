@@ -11,6 +11,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { MatchResult } from "@prisma/client";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type AnyMatchProp = {
   id: string;
@@ -83,7 +84,11 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
         }}
       >
         <Box sx={{ minWidth: 90, flexShrink: 0 }}>
-          <Typography variant="body2" fontWeight={800} sx={{ fontSize: TYPE_SCALE.sm }}>
+          <Typography
+            variant="body2"
+            fontWeight={FONT_WEIGHT.bold}
+            sx={{ fontSize: TYPE_SCALE.sm }}
+          >
             {relativeLabel(match.date, now, tCommon, dateLocale)}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: TYPE_SCALE.xs }}>
@@ -103,7 +108,7 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           <Typography
             variant="body2"
             sx={{
-              fontWeight: leftIsUs ? 800 : 600,
+              fontWeight: leftIsUs ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold,
               color: leftIsUs ? "text.primary" : "text.secondary",
               textAlign: "right",
               flex: "1 1 0",
@@ -112,11 +117,13 @@ export default function UpcomingMatchRow({ match, teamName, teamColor }: Upcomin
           >
             {leftName}
           </Typography>
-          <Typography sx={{ color: "text.secondary", fontWeight: 700, px: 0.5 }}>vs</Typography>
+          <Typography sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold, px: 0.5 }}>
+            vs
+          </Typography>
           <Typography
             variant="body2"
             sx={{
-              fontWeight: leftIsUs ? 600 : 800,
+              fontWeight: leftIsUs ? FONT_WEIGHT.semibold : FONT_WEIGHT.bold,
               color: leftIsUs ? "text.secondary" : "text.primary",
               textAlign: "left",
               flex: "1 1 0",

@@ -15,7 +15,7 @@ export default function SubscribeCalendarButton() {
         onClick={() => setOpen(true)}
         variant="outlined"
         startIcon={<CalendarMonthIcon />}
-        sx={{ ...TOUCH_TARGET_MIN, fontWeight: 600 }}
+        sx={{ ...TOUCH_TARGET_MIN }}
       >
         {t("button")}
       </Button>

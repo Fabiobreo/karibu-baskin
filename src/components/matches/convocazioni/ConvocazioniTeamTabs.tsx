@@ -3,6 +3,7 @@ import { Box, Chip, Paper, Tab, Tabs } from "@mui/material";
 import type { TeamCallupContext } from "@/lib/matches/callupContext";
 import type { TeamSelectionState } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Tab per le due squadre delle amichevoli interne, con conteggio convocati. */
 export default function ConvocazioniTeamTabs({
@@ -23,7 +24,11 @@ export default function ConvocazioniTeamTabs({
         onChange={(_, v) => onChange(v as number)}
         variant="fullWidth"
         sx={{
-          "& .MuiTab-root": { textTransform: "none", fontWeight: 700, fontSize: TYPE_SCALE.sm },
+          "& .MuiTab-root": {
+            textTransform: "none",
+            fontWeight: FONT_WEIGHT.semibold,
+            fontSize: TYPE_SCALE.sm,
+          },
         }}
       >
         {teams.map((t, idx) => {
@@ -51,7 +56,7 @@ export default function ConvocazioniTeamTabs({
                       fontSize: TYPE_SCALE.xs,
                       bgcolor: idx === activeIndex ? "primary.main" : "action.hover",
                       color: idx === activeIndex ? "common.white" : "text.secondary",
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                     }}
                   />
                 </Box>

@@ -4,6 +4,7 @@ import FlightIcon from "@mui/icons-material/Flight";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Link from "next/link";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface PlayedMatchRowProps {
   href: string;
@@ -48,7 +49,7 @@ export default function PlayedMatchRow({
       <Typography
         variant="body2"
         sx={{
-          fontWeight: us ? 800 : 600,
+          fontWeight: us ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold,
           color: us ? "text.primary" : "text.secondary",
           minWidth: 0,
           overflowWrap: "anywhere",
@@ -60,7 +61,7 @@ export default function PlayedMatchRow({
         <Typography
           variant="body1"
           sx={{
-            fontWeight: us ? 900 : 700,
+            fontWeight: us ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold,
             color: us ? "text.primary" : "text.secondary",
             fontVariantNumeric: "tabular-nums",
             flexShrink: 0,
@@ -104,7 +105,7 @@ export default function PlayedMatchRow({
           >
             {/* Data, casa/trasferta, tipo */}
             <Box sx={{ minWidth: 90, flexShrink: 0, order: 1 }}>
-              <Typography variant="body2" fontWeight={700}>
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                 {dateLabel}
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -142,7 +143,7 @@ export default function PlayedMatchRow({
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 800,
+                    fontWeight: FONT_WEIGHT.bold,
                     textAlign: "right",
                     flex: "1 1 0",
                     minWidth: 0,
@@ -154,7 +155,7 @@ export default function PlayedMatchRow({
                   variant="h6"
                   component="span"
                   sx={{
-                    fontWeight: 900,
+                    fontWeight: FONT_WEIGHT.bold,
                     fontVariantNumeric: "tabular-nums",
                     lineHeight: 1,
                     flexShrink: 0,
@@ -167,7 +168,7 @@ export default function PlayedMatchRow({
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: FONT_WEIGHT.semibold,
                     color: "text.secondary",
                     textAlign: "left",
                     flex: "1 1 0",
@@ -194,7 +195,7 @@ export default function PlayedMatchRow({
                 <Chip
                   label={resultLabel}
                   size="small"
-                  sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: 800 }}
+                  sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: FONT_WEIGHT.bold }}
                 />
               )}
               <ChevronRightIcon aria-hidden sx={{ fontSize: 18, color: "text.secondary" }} />

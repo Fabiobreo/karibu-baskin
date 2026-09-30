@@ -6,6 +6,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import RemoveIcon from "@mui/icons-material/Remove";
 import type { MatchQuality, QualityLabel } from "@/lib/matches/matchQuality";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const LABEL_COLOR: Record<QualityLabel, string> = {
   Favoriti: "success.main",
@@ -45,7 +46,7 @@ export default function MatchQualityBadge({
     <Tooltip
       title={
         <Box>
-          <Typography variant="caption" fontWeight={700} display="block">
+          <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold} display="block">
             Probabilità di vittoria stimata: {pct}%
           </Typography>
           {hint && (
@@ -62,7 +63,11 @@ export default function MatchQualityBadge({
       <Box sx={{ display: "inline-flex", flexDirection: "column", gap: 0.5, minWidth: 120 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <Icon sx={{ fontSize: 16, color: LABEL_COLOR[quality.label] }} />
-          <Typography variant="caption" fontWeight={700} sx={{ color: LABEL_COLOR[quality.label] }}>
+          <Typography
+            variant="caption"
+            fontWeight={FONT_WEIGHT.semibold}
+            sx={{ color: LABEL_COLOR[quality.label] }}
+          >
             {quality.label} ({pct}%)
           </Typography>
         </Box>

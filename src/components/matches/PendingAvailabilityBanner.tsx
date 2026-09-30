@@ -2,6 +2,7 @@ import { Alert, Button, Container } from "@mui/material";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import { getTranslations } from "next-intl/server";
 import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /**
  * Banner "Hai N disponibilità da confermare" — Server Component.
@@ -20,13 +21,13 @@ export default async function PendingAvailabilityBanner({ userId }: { userId: st
       <Alert
         severity="warning"
         icon={<EventAvailableIcon fontSize="small" />}
-        sx={{ alignItems: "center", "& .MuiAlert-message": { fontWeight: 600 } }}
+        sx={{ alignItems: "center", "& .MuiAlert-message": { fontWeight: FONT_WEIGHT.semibold } }}
         action={
           <Button
             href="/profilo/disponibilita"
             color="inherit"
             size="small"
-            sx={{ fontWeight: 700, whiteSpace: "nowrap" }}
+            sx={{ whiteSpace: "nowrap" }}
           >
             {t("respondNow")}
           </Button>

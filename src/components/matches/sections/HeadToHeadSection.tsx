@@ -10,6 +10,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PrevMatchPreview } from "@/components/matches/matchDetailTypes";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Scontri diretti con lo stesso avversario (partite precedenti con esito). */
 export default function HeadToHeadSection({
@@ -34,7 +35,7 @@ export default function HeadToHeadSection({
       <Typography
         variant="caption"
         color="text.secondary"
-        fontWeight={700}
+        fontWeight={FONT_WEIGHT.semibold}
         sx={{
           textTransform: "uppercase",
           letterSpacing: "0.08em",
@@ -65,13 +66,13 @@ export default function HeadToHeadSection({
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ minWidth: 88, fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                sx={{ minWidth: 88, fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}
               >
                 {format(new Date(m.date), "d MMM yyyy", { locale: dateLocale })}
               </Typography>
               <Typography
                 variant="body2"
-                fontWeight={800}
+                fontWeight={FONT_WEIGHT.bold}
                 sx={{ minWidth: 52, fontSize: TYPE_SCALE.sm }}
               >
                 {score}
@@ -83,7 +84,6 @@ export default function HeadToHeadSection({
                   sx={{
                     bgcolor: resMeta.color,
                     color: "common.white",
-                    fontWeight: 700,
                     fontSize: TYPE_SCALE.xs,
                     height: 20,
                   }}

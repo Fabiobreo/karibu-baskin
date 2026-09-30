@@ -254,7 +254,7 @@ export default function ConvocazioniClient({
             Convocazioni
           </Typography>
         </Box>
-        <Typography variant="h5" component="h1" fontWeight={800}>
+        <Typography variant="h5" component="h1">
           {matchLabel}
         </Typography>
         <Typography variant="body2" color="text.secondary">

@@ -11,6 +11,7 @@ import { contrastText } from "@/lib/colorUtils";
 import { decorationSx, teamFilterKey, typeColor, typeFilterKey } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface CalendarLegendProps {
   teams: TeamInfo[];
@@ -136,7 +137,6 @@ export default function CalendarLegend({
             label={t("showAll")}
             onClick={onClearFilters}
             onDelete={onClearFilters}
-            sx={{ fontWeight: 700 }}
           />
         </Box>
       )}
@@ -150,7 +150,7 @@ function LegendCaption({ children }: { children: React.ReactNode }) {
       variant="caption"
       sx={{
         color: "text.secondary",
-        fontWeight: 700,
+        fontWeight: FONT_WEIGHT.semibold,
         textTransform: "uppercase",
         letterSpacing: "0.04em",
         minWidth: 62,

@@ -42,6 +42,7 @@ import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { decorationSx, eventVisual } from "@/lib/calendar/eventColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // v2: le chiavi dei filtri sono cambiate (type:<tipo> e team:<id> al posto di
 // "training" e "match:<colore>"). Chiave nuova così i filtri vecchi salvati sui
@@ -217,7 +218,6 @@ export default function CalendarClient({
         <Typography
           component="h2"
           variant="h5"
-          fontWeight={700}
           sx={{
             textTransform: "capitalize",
             minWidth: { xs: 130, sm: 220 },
@@ -237,7 +237,7 @@ export default function CalendarClient({
             ml: 0.5,
             cursor: "pointer",
             color: "primary.onLight",
-            fontWeight: 600,
+            fontWeight: FONT_WEIGHT.semibold,
             "&:hover": { textDecoration: "underline" },
             fontSize: { xs: TYPE_SCALE.xs, sm: TYPE_SCALE.sm },
           }}
@@ -258,7 +258,7 @@ export default function CalendarClient({
             align="center"
             sx={{
               color: "text.secondary",
-              fontWeight: 700,
+              fontWeight: FONT_WEIGHT.semibold,
               py: 1,
               fontSize: { xs: TYPE_SCALE.xs, sm: TYPE_SCALE.xs },
             }}
@@ -359,7 +359,7 @@ export default function CalendarClient({
                     width: { xs: 22, sm: 26 },
                     height: { xs: 22, sm: 26 },
                     borderRadius: "50%",
-                    fontWeight: isCurrentDay ? 800 : 500,
+                    fontWeight: isCurrentDay ? FONT_WEIGHT.bold : FONT_WEIGHT.regular,
                     // Oggi: numero bianco sul riempimento arancio (primary.fill,
                     // 4,71:1). Fuori mese: grigio leggibile, la posizione nella
                     // griglia dice gia' che non e' il mese corrente (UX-09).

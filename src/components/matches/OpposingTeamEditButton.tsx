@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useRouter } from "next/navigation";
 import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface OpposingTeamEditButtonProps {
   teamId: string;
@@ -156,14 +157,14 @@ export default function OpposingTeamEditButton({ teamId, initial }: OpposingTeam
       </Tooltip>
 
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={700}>Modifica squadra avversaria</DialogTitle>
+        <DialogTitle fontWeight={FONT_WEIGHT.semibold}>Modifica squadra avversaria</DialogTitle>
         <DialogContent>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
 
             {/* Immagine */}
             <Box>
-              <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Foto / logo
               </Typography>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

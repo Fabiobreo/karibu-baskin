@@ -83,13 +83,13 @@ export default function MatchDetailTabs({
             icon={<GroupsIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
             label={`${t("tabCallups")}${canSeeCallups && callups.length > 0 ? ` (${callups.length})` : ""}`}
-            sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm, fontWeight: 600 }}
+            sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm }}
           />
           <Tab
             icon={<LeaderboardIcon sx={{ fontSize: 16 }} />}
             iconPosition="start"
             label={`${t("tabStats")}${hasStats ? ` (${stats.length})` : ""}`}
-            sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm, fontWeight: 600 }}
+            sx={{ minHeight: 48, fontSize: TYPE_SCALE.sm }}
           />
         </Tabs>
       </Box>

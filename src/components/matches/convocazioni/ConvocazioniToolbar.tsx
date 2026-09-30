@@ -3,6 +3,7 @@ import { Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from "@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { ROLES, roleColor } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Toolbar sticky: conteggio convocati, copertura ruoli e azioni Tutti/Nessuno/Salva. */
 export default function ConvocazioniToolbar({
@@ -44,7 +45,6 @@ export default function ConvocazioniToolbar({
       <Chip
         icon={<CheckCircleIcon sx={{ fontSize: "16px !important" }} />}
         label={`${totalSelectedActive} convocati${isMulti ? ` per ${activeTeamName}` : ""}`}
-        sx={{ fontWeight: 700 }}
       />
 
       {/* Copertura ruoli */}
@@ -52,7 +52,7 @@ export default function ConvocazioniToolbar({
         <Typography
           variant="caption"
           color="text.secondary"
-          fontWeight={700}
+          fontWeight={FONT_WEIGHT.semibold}
           sx={{ textTransform: "uppercase", letterSpacing: "0.06em", mr: 0.5 }}
         >
           Copertura:
@@ -67,7 +67,6 @@ export default function ConvocazioniToolbar({
               sx={{
                 bgcolor: count > 0 ? roleColor(r) : "transparent",
                 color: count > 0 ? "common.white" : "text.secondary",
-                fontWeight: 700,
                 fontSize: TYPE_SCALE.xs,
                 border: "1px solid",
                 // Ruolo scoperto: chip vuoto con il bordo, non solo il colore.

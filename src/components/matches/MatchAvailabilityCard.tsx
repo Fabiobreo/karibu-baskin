@@ -16,6 +16,7 @@ import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface MatchAvailabilityEntity {
   kind: "user" | "child";
@@ -104,7 +105,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
       >
         <Typography
           variant="overline"
-          fontWeight={800}
+          fontWeight={FONT_WEIGHT.bold}
           color="text.secondary"
           sx={{ display: "block", mb: 1.5 }}
         >
@@ -137,7 +138,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
                     }}
                   />
                 )}
-                <Typography variant="body1" fontWeight={600} noWrap title={e.name}>
+                <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold} noWrap title={e.name}>
                   {entities.length > 1 ? e.name : e.teamName}
                 </Typography>
                 {saving && <CircularProgress size={14} sx={{ flexShrink: 0 }} />}
@@ -155,7 +156,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
                   "& .MuiToggleButton-root": {
                     py: 0.4,
                     px: 1.5,
-                    fontWeight: 700,
+                    fontWeight: FONT_WEIGHT.semibold,
                     textTransform: "none",
                   },
                 }}

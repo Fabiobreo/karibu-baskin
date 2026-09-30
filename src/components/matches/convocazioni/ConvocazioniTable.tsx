@@ -21,6 +21,7 @@ import { sportRoleLabel, roleColor } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import type { ConvocazioneStatRow } from "@/hooks/useConvocazioniSelection";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Tabella dei candidati disponibili: selezione con click riga + statistiche presenze/convocazioni. */
 export default function ConvocazioniTable({
@@ -55,31 +56,49 @@ export default function ConvocazioniTable({
           <TableHead>
             <TableRow sx={{ bgcolor: "action.hover" }}>
               <TableCell sx={{ width: 40 }} />
-              <TableCell sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs }}>Giocatore</TableCell>
+              <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold, fontSize: TYPE_SCALE.xs }}>
+                Giocatore
+              </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, whiteSpace: "nowrap" }}
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  fontSize: TYPE_SCALE.xs,
+                  whiteSpace: "nowrap",
+                }}
                 title="Presenze / allenamenti eligibili nelle ultime 2 settimane"
               >
                 Presenze
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, whiteSpace: "nowrap" }}
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  fontSize: TYPE_SCALE.xs,
+                  whiteSpace: "nowrap",
+                }}
                 title="Mancate iscrizioni + iscritto-ma-assente, su sessioni eligibili"
               >
                 Assenze
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, whiteSpace: "nowrap" }}
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  fontSize: TYPE_SCALE.xs,
+                  whiteSpace: "nowrap",
+                }}
                 title="Convocazioni nella stagione corrente (escluso questo match)"
               >
                 Partite st.
               </TableCell>
               <TableCell
                 align="center"
-                sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, whiteSpace: "nowrap" }}
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  fontSize: TYPE_SCALE.xs,
+                  whiteSpace: "nowrap",
+                }}
                 title="Giorni dall'ultima convocazione"
               >
                 Ultima conv.
@@ -128,7 +147,7 @@ export default function ConvocazioniTable({
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                           <Typography
                             variant="body2"
-                            fontWeight={selected ? 700 : 500}
+                            fontWeight={selected ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
                             sx={{ fontSize: TYPE_SCALE.sm }}
                           >
                             {row.candidate.name}
@@ -143,7 +162,6 @@ export default function ConvocazioniTable({
                               sx={{
                                 bgcolor: "match.winBg",
                                 color: "match.win",
-                                fontWeight: 700,
                                 fontSize: TYPE_SCALE.xs,
                                 height: 20,
                               }}
@@ -158,7 +176,6 @@ export default function ConvocazioniTable({
                                 sx={{
                                   bgcolor: "secondary.main",
                                   color: "secondary.contrastText",
-                                  fontWeight: 700,
                                   fontSize: TYPE_SCALE.xs,
                                   height: 20,
                                   "& .MuiChip-icon": { color: "secondary.contrastText" },
@@ -171,7 +188,7 @@ export default function ConvocazioniTable({
                               label={row.fromTeam}
                               size="small"
                               variant="outlined"
-                              sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, height: 20 }}
+                              sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
                             />
                           )}
                           {elsewhere && (
@@ -182,7 +199,6 @@ export default function ConvocazioniTable({
                                 sx={{
                                   bgcolor: "action.selected",
                                   color: "text.secondary",
-                                  fontWeight: 700,
                                   fontSize: TYPE_SCALE.xs,
                                   height: 20,
                                 }}
@@ -207,7 +223,7 @@ export default function ConvocazioniTable({
                       >
                         <Typography
                           variant="body2"
-                          fontWeight={700}
+                          fontWeight={FONT_WEIGHT.semibold}
                           sx={{
                             fontSize: TYPE_SCALE.sm,
                             color:
@@ -247,7 +263,6 @@ export default function ConvocazioniTable({
                             row.absences >= Math.max(2, row.eligibleSessions / 2)
                               ? "match.loss"
                               : "text.secondary",
-                          fontWeight: 700,
                           height: 20,
                           fontSize: TYPE_SCALE.xs,
                         }}
@@ -257,7 +272,10 @@ export default function ConvocazioniTable({
 
                   {/* Partite stagione */}
                   <TableCell align="center">
-                    <Typography variant="body2" sx={{ fontSize: TYPE_SCALE.sm, fontWeight: 600 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: TYPE_SCALE.sm, fontWeight: FONT_WEIGHT.semibold }}
+                    >
                       {row.seasonCallups}
                     </Typography>
                   </TableCell>
@@ -277,7 +295,10 @@ export default function ConvocazioniTable({
                         variant="body2"
                         sx={{
                           fontSize: TYPE_SCALE.sm,
-                          fontWeight: row.daysSinceLastCallup >= 30 ? 700 : 500,
+                          fontWeight:
+                            row.daysSinceLastCallup >= 30
+                              ? FONT_WEIGHT.semibold
+                              : FONT_WEIGHT.regular,
                           color: row.daysSinceLastCallup >= 30 ? "primary.main" : "text.secondary",
                         }}
                       >

@@ -6,6 +6,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface Props {
   /** ISO date (timestamp), inviata dal server per evitare mismatch */
@@ -35,7 +36,9 @@ export default function MatchCountdown({ targetIso }: Props) {
 
   if (!parts) {
     return (
-      <Typography sx={{ color: "common.white", fontWeight: 800, fontSize: TYPE_SCALE.md }}>
+      <Typography
+        sx={{ color: "common.white", fontWeight: FONT_WEIGHT.bold, fontSize: TYPE_SCALE.md }}
+      >
         {t("countdownInProgress")}
       </Typography>
     );
@@ -63,7 +66,7 @@ export default function MatchCountdown({ targetIso }: Props) {
       <Typography
         sx={{
           color: "common.white",
-          fontWeight: 700,
+          fontWeight: FONT_WEIGHT.semibold,
           fontSize: { xs: TYPE_SCALE.xs, md: TYPE_SCALE.sm },
           letterSpacing: "0.02em",
           fontVariantNumeric: "tabular-nums",

@@ -29,7 +29,6 @@ export default function MatchStatsTab({
             variant="outlined"
             size="small"
             startIcon={<EditIcon sx={{ fontSize: 16 }} />}
-            sx={{ fontWeight: 700 }}
           >
             {hasStats ? t("editStats") : t("addStats")}
           </Button>
@@ -38,7 +37,7 @@ export default function MatchStatsTab({
       {!hasStats ? (
         <Box sx={{ textAlign: "center", py: 8 }}>
           <LeaderboardIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1.5 }} />
-          <Typography variant="h6" color="text.secondary" fontWeight={700}>
+          <Typography variant="h6" color="text.secondary">
             {t("noStats")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>

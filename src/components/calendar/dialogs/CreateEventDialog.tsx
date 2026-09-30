@@ -36,6 +36,7 @@ import SessionRestrictionEditor, {
 } from "@/components/training/SessionRestrictionEditor";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Dialog riservato allo staff → testi in italiano per scelta (come l'admin)
 
@@ -262,13 +263,17 @@ export default function CreateEventDialog({
             variant="caption"
             sx={{
               color: (theme) => alpha(theme.palette.common.white, 0.8),
-              fontWeight: 600,
+              fontWeight: FONT_WEIGHT.semibold,
               textTransform: "capitalize",
             }}
           >
             {dateLabelFull}
           </Typography>
-          <Typography variant="h6" fontWeight={800} sx={{ color: "common.white", lineHeight: 1.2 }}>
+          <Typography
+            variant="h6"
+            fontWeight={FONT_WEIGHT.bold}
+            sx={{ color: "common.white", lineHeight: 1.2 }}
+          >
             Nuovo evento
           </Typography>
         </Box>

@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import type { MatchStatRow } from "@/components/matches/MatchStatsTable";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Card dei top 3 marcatori della partita (visibili a tutti se la partita è giocata). */
 export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
@@ -21,7 +22,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
       <Typography
         variant="caption"
         color="text.secondary"
-        fontWeight={700}
+        fontWeight={FONT_WEIGHT.semibold}
         sx={{
           textTransform: "uppercase",
           letterSpacing: "0.08em",
@@ -64,7 +65,12 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               >
                 {name[0]}
               </Avatar>
-              <Typography variant="body2" fontWeight={700} noWrap sx={{ fontSize: TYPE_SCALE.xs }}>
+              <Typography
+                variant="body2"
+                fontWeight={FONT_WEIGHT.semibold}
+                noWrap
+                sx={{ fontSize: TYPE_SCALE.xs }}
+              >
                 {name}
               </Typography>
               {role && (
@@ -77,7 +83,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               <Typography
                 sx={{
                   fontSize: TYPE_SCALE.xl3,
-                  fontWeight: 900,
+                  fontWeight: FONT_WEIGHT.bold,
                   color: "text.primary",
                   lineHeight: 1.1,
                   mt: 1,
@@ -88,7 +94,7 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={600}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{ fontSize: TYPE_SCALE.xs }}
               >
                 {t("pointsUnit")}

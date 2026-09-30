@@ -20,6 +20,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useToast } from "@/context/ToastContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface SubscribeCalendarDialogProps {
   open: boolean;
@@ -64,7 +65,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
 
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle sx={{ pr: 6, fontWeight: 800 }}>
+      <DialogTitle sx={{ pr: 6, fontWeight: FONT_WEIGHT.bold }}>
         {t("title")}
         <IconButton
           onClick={onClose}
@@ -81,7 +82,10 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
 
         <Stack spacing={2}>
           <Box>
-            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold }}
+            >
               {t("urlLabel")}
             </Typography>
             <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
@@ -99,7 +103,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 onClick={handleCopy}
                 variant="outlined"
                 startIcon={<ContentCopyIcon />}
-                sx={{ fontWeight: 600, flexShrink: 0 }}
+                sx={{ flexShrink: 0 }}
               >
                 {tCommon("copy")}
               </Button>
@@ -107,7 +111,10 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
           </Box>
 
           <Box>
-            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold }}
+            >
               {t("shortcuts")}
             </Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ mt: 0.5 }}>
@@ -119,7 +126,6 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 variant="contained"
                 startIcon={<OpenInNewIcon />}
                 disabled={!googleUrl}
-                sx={{ fontWeight: 600 }}
               >
                 Google Calendar
               </Button>
@@ -129,7 +135,6 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 variant="outlined"
                 startIcon={<OpenInNewIcon />}
                 disabled={!webcalUrl}
-                sx={{ fontWeight: 600 }}
               >
                 Apple / iCloud
               </Button>
@@ -139,7 +144,6 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
                 download="karibu-baskin.ics"
                 variant="text"
                 startIcon={<DownloadIcon />}
-                sx={{ fontWeight: 600 }}
               >
                 {t("downloadIcs")}
               </Button>
@@ -155,7 +159,12 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
           >
             <Typography
               variant="caption"
-              sx={{ color: "text.secondary", fontWeight: 700, display: "block", mb: 0.5 }}
+              sx={{
+                color: "text.secondary",
+                fontWeight: FONT_WEIGHT.semibold,
+                display: "block",
+                mb: 0.5,
+              }}
             >
               {t("instructionsTitle")}
             </Typography>
@@ -169,9 +178,7 @@ export default function SubscribeCalendarDialog({ open, onClose }: SubscribeCale
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} sx={{ fontWeight: 600 }}>
-          {tCommon("close")}
-        </Button>
+        <Button onClick={onClose}>{tCommon("close")}</Button>
       </DialogActions>
     </ResponsiveDialog>
   );

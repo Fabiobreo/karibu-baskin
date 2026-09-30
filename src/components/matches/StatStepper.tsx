@@ -2,6 +2,7 @@
 import { Box, IconButton, TextField, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface StatStepperProps {
   label: string;
@@ -22,7 +23,7 @@ export default function StatStepper({ label, playerName, value, onChange }: Stat
   const n = parseInt(value || "0", 10) || 0;
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography variant="body2" fontWeight={600} sx={{ flex: 1, minWidth: 0 }}>
+      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ flex: 1, minWidth: 0 }}>
         {label}
       </Typography>
       <IconButton
@@ -47,7 +48,7 @@ export default function StatStepper({ label, playerName, value, onChange }: Stat
         sx={{
           width: 64,
           "& .MuiOutlinedInput-root": { height: SIZE },
-          "& input": { textAlign: "center", fontWeight: 800 },
+          "& input": { textAlign: "center", fontWeight: FONT_WEIGHT.bold },
         }}
       />
       <IconButton

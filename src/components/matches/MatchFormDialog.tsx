@@ -34,6 +34,7 @@ import { seasonForDate } from "@/components/training/SessionRestrictionEditor";
 import ImageUploader from "@/components/common/ImageUploader";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export type MatchFormTeam = {
   id: string;
@@ -373,7 +374,9 @@ export default function MatchFormDialog({
 
   return (
     <ResponsiveDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle fontWeight={700}>{editMatch ? "Modifica partita" : "Nuova partita"}</DialogTitle>
+      <DialogTitle fontWeight={FONT_WEIGHT.semibold}>
+        {editMatch ? "Modifica partita" : "Nuova partita"}
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ mt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
@@ -586,7 +589,7 @@ export default function MatchFormDialog({
                         <Chip
                           label={opt.isMixed ? "tutti i giocatori" : "interna"}
                           size="small"
-                          sx={{ fontSize: TYPE_SCALE.xs, height: 20, fontWeight: 700 }}
+                          sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
                         />
                       </Box>
                     </li>
@@ -687,7 +690,7 @@ export default function MatchFormDialog({
           <TextField label="Note" {...register("notes")} fullWidth multiline rows={2} />
 
           <Box>
-            <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} sx={{ mb: 0.5 }}>
               Immagine copertina
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>

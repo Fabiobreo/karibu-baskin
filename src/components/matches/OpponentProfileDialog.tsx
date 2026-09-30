@@ -29,6 +29,7 @@ import type {
 import { OPPONENT_MU_PRESETS } from "@/lib/matches/matchQuality";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 const ROLE_LABELS: Record<number, string> = {
   1: "Ruolo 1",
@@ -241,7 +242,7 @@ export default function OpponentProfileDialog({
         >
           <Typography
             variant="caption"
-            fontWeight={700}
+            fontWeight={FONT_WEIGHT.semibold}
             color="text.secondary"
             display="block"
             mb={1}
@@ -291,7 +292,7 @@ export default function OpponentProfileDialog({
                     onClick={() => toggleCategory(role, !isActive)}
                     color={isActive ? "primary" : "default"}
                     variant={isActive ? "filled" : "outlined"}
-                    sx={{ fontWeight: 600, minWidth: 80 }}
+                    sx={{ minWidth: 80 }}
                   />
                   {!isActive && (
                     <Typography variant="caption" color="text.secondary">

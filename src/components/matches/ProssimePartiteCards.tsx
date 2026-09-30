@@ -11,6 +11,7 @@ import { useTranslations } from "next-intl";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface MatchCardData {
   id: string;
@@ -101,7 +102,6 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                     size="small"
                     sx={{
                       mb: 1,
-                      fontWeight: 700,
                       // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
                       // Niente alone pulsante (UX-30): l'urgenza la dicono etichetta e colore.
                       bgcolor: "primary.fill",
@@ -112,7 +112,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 <Typography
                   component="p"
                   variant="h6"
-                  fontWeight={800}
+                  fontWeight={FONT_WEIGHT.bold}
                   sx={{
                     color: "text.primary",
                     lineHeight: 1.1,
@@ -135,25 +135,31 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 >
                   {m.isHome ? (
                     <>
-                      <Box component="span" sx={{ fontWeight: 800 }}>
+                      <Box component="span" sx={{ fontWeight: FONT_WEIGHT.bold }}>
                         {m.team.name}
                       </Box>{" "}
-                      <Box component="span" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                      <Box
+                        component="span"
+                        sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold }}
+                      >
                         vs
                       </Box>{" "}
-                      <Box component="span" sx={{ fontWeight: 600 }}>
+                      <Box component="span" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                         {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
                       </Box>
                     </>
                   ) : (
                     <>
-                      <Box component="span" sx={{ fontWeight: 600 }}>
+                      <Box component="span" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                         {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
                       </Box>{" "}
-                      <Box component="span" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                      <Box
+                        component="span"
+                        sx={{ color: "text.secondary", fontWeight: FONT_WEIGHT.semibold }}
+                      >
                         vs
                       </Box>{" "}
-                      <Box component="span" sx={{ fontWeight: 800 }}>
+                      <Box component="span" sx={{ fontWeight: FONT_WEIGHT.bold }}>
                         {m.team.name}
                       </Box>
                     </>
@@ -174,7 +180,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                   ) : (
                     <FlightTakeoffIcon sx={{ fontSize: 16 }} />
                   )}
-                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                  <Typography variant="caption" sx={{ fontWeight: FONT_WEIGHT.semibold }}>
                     {m.isHome ? tMatches("home") : tMatches("away")}
                     {m.venue ? ` · ${m.venue}` : ""}
                   </Typography>
