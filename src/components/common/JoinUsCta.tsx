@@ -26,7 +26,7 @@ export default async function JoinUsCta() {
           id="join-us-title"
           variant="h4"
           component="h2"
-          sx={{ mb: 1.5, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+          sx={{ mb: 1.5, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
         >
           {t("joinTitle")}
         </Typography>

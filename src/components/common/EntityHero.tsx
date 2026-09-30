@@ -76,7 +76,7 @@ export default function EntityHero({
   breadcrumb,
   title,
   hideTitle = false,
-  background = heroGradient.dark,
+  background = heroGradient.band,
   manage,
   leading,
   subtitle,

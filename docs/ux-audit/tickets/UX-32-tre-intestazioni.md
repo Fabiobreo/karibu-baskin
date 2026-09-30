@@ -72,7 +72,19 @@ Tre commit su `develop`: area utente e admin, liste pubbliche, entity hero.
 - Contenuti che il nuovo modello non prevede: il riepilogo V/P/S per squadra dell'hero di `/risultati` è tolto (lo ripete l'intestazione di ogni squadra); i due bottoni dell'hero di `/contatti` sono tolti (li ripete la mini-nav); "Crea news" e "Gestisci tutti" degli eventi vanno nello slot azione; i link di `/classifiche` e `/marcatori` nello slot `nav` (li ripensa UX-36).
 - Misure (Playwright, 1280 e 375 px): tutte le liste a 160 px su desktop; su mobile 120 px, tranne dove il contenuto va a capo: `/il-baskin` (sottotitolo su tre righe, 142), `/squadre/archivio` (breadcrumb, 150), `/classifiche` (tre link, 187).
 
+**Rifinitura dopo la revisione estetica (30/09)**
+
+- Fascia più bassa: 120 px su desktop, 96 su mobile (prima 160/120), sottotitolo a 14 px su telefono.
+- Fondo `heroGradient.band` (`HERO.bandFrom/bandTo`, #262626 → #2E2E2E): un gradino sopra il nero dell'header, così header e fascia non fanno un blocco unico da 220 px, e in tema scuro la fascia si stacca dal fondo pagina. Niente bagliore arancio (sul grafite si leggeva marrone). Anche `heroTint` parte da questo fondo. Contrasti in `palette.test.ts`.
+- Azioni dello staff con un solo aspetto (`StaffManageButton`) e sempre nell'intestazione: "Gestisci allenamenti" esce dal contenuto di `/allenamenti`; "Crea news" diventa "Gestisci news".
+- Condivisione con un solo aspetto: bottoni fantasma con etichetta (WhatsApp, Copia link, QR code); sul giocatore "Condividi" non è più arancio pieno.
+- `h4` del tema (h2 di sezione) da 34 a 24/28 px; gli h2 con misura esplicita da 32 a 28 px.
+- `/contatti`: schede Contatti/Partner allineate al titolo; descrizione dell'evento in testo pieno, non grigio.
+
 **Rimasto fuori**
 
 - Lo scorrimento orizzontale di `/admin/partite/[id]/convocazioni` a 375 px c'era già: lo causa la riga "Copertura" della toolbar, non l'intestazione (UX-40).
 - Sulle pagine dell'avversaria la modifica resta la matita con il suo dialog, non un "Gestisci" verso l'admin.
+- Blocchi scuri sotto la fascia (card in evidenza di `/allenamenti` e della home, prossima partita della squadra, copertine degli eventi): UX-43 e UX-38.
+- Il titolo cambia posizione orizzontale fra pagine con contenitori diversi (`md`/`lg`): UX-37.
+- "Aggiungi al tuo calendario" resta nella barra del calendario, dentro `CalendarClient`.

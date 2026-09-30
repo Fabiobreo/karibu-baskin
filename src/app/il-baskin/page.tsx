@@ -59,7 +59,7 @@ export default async function IlBaskinPage() {
           <Typography
             variant="h4"
             component="h2"
-            sx={{ mt: 0.5, mb: 2, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 2, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("ilbaskin.born2001")}
           </Typography>
@@ -81,7 +81,7 @@ export default async function IlBaskinPage() {
           <Typography
             variant="h4"
             component="h2"
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("ilbaskin.mainRules")}
           </Typography>
@@ -135,7 +135,7 @@ export default async function IlBaskinPage() {
           <Typography
             variant="h4"
             component="h2"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("ilbaskin.the5Roles")}
           </Typography>

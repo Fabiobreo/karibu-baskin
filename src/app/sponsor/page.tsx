@@ -83,7 +83,7 @@ export default async function SponsorPage() {
           <Typography
             component="h2"
             variant="h4"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("sponsor.ourSponsors")}
           </Typography>
@@ -178,7 +178,7 @@ export default async function SponsorPage() {
           <Typography
             component="h2"
             variant="h4"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("sponsor.becomeSponsor")}
           </Typography>

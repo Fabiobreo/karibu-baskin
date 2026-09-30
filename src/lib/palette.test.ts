@@ -2,7 +2,16 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@/lib/colorUtils";
-import { BRAND, NEUTRAL, OUTCOME, ROLE_COLORS, TEAM, TEAM_LABEL } from "@/lib/palette";
+import {
+  BRAND,
+  HERO,
+  HERO_TEXT,
+  NEUTRAL,
+  OUTCOME,
+  ROLE_COLORS,
+  TEAM,
+  TEAM_LABEL,
+} from "@/lib/palette";
 
 // Le soglie di UX-29. Le distanze percettive (CIEDE2000, daltonismo) sono nel
 // ticket: qui si tiene fermo il contrasto, che e' la parte che si rompe
@@ -74,6 +83,19 @@ describe("esiti", () => {
   it("il pareggio non e' piu' l'arancio del marchio", () => {
     expect(OUTCOME.light.draw).not.toBe(BRAND.orangeOnLight);
     expect(OUTCOME.dark.draw).not.toBe(BRAND.orangeOnDark);
+  });
+});
+
+describe("fascia delle intestazioni", () => {
+  it("regge il testo degli hero, anche il piu' smorzato", () => {
+    for (const bg of [HERO.bandFrom, HERO.bandTo]) {
+      expect(ratio(HERO_TEXT.primary, bg)).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(HERO_TEXT.muted, bg)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("si stacca dal nero dell'header", () => {
+    expect(ratio(HERO.bandFrom, BRAND.dark)).toBeGreaterThan(1.1);
   });
 });
 

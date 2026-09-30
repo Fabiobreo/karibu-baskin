@@ -12,6 +12,10 @@ import { BRAND, HERO, HERO_TEXT, MEDAL, OUTCOME, SOCIAL_BRAND } from "@/lib/pale
 // l'identita' arancio e nero. I valori stanno in `@/lib/palette` (UX-29).
 const HERO_BASE = `linear-gradient(160deg, ${HERO.from} 0%, ${HERO.to} 100%)`;
 
+// Fascia delle intestazioni (UX-32): grafite piu' chiaro dell'header, senza
+// bagliore (sul grafite l'arancio sfumato si leggeva come una macchia marrone).
+const HERO_BAND = `linear-gradient(160deg, ${HERO.bandFrom} 0%, ${HERO.bandTo} 100%)`;
+
 /**
  * L'unico punto in cui si scrivono i colori degli hero. Tutti gli hero del sito
  * (PageHero, EntityHero, allenamento, partita, giocatore, squadra, errori)
@@ -20,6 +24,8 @@ const HERO_BASE = `linear-gradient(160deg, ${HERO.from} 0%, ${HERO.to} 100%)`;
 export const heroGradient = {
   /** Hero standard: grafite con un solo bagliore arancio leggero in alto a destra. */
   dark: `radial-gradient(90% 120% at 100% 0%, ${BRAND.orangeGlow} 0%, ${BRAND.orangeGlowNone} 60%), ${HERO_BASE}`,
+  /** Fascia di `PageHero` ed `EntityHero`: grafite un gradino sopra l'header, senza bagliore. */
+  band: HERO_BAND,
   /** Variante senza bagliore, usata dal footer e dalle fasce scure di fine pagina. */
   footer: HERO_BASE,
 } as const;
@@ -31,7 +37,7 @@ export const heroGradient = {
  * miscela con `color-mix` e non con un suffisso esadecimale.
  */
 export function heroTint(color: string): string {
-  return `radial-gradient(100% 140% at 100% 100%, color-mix(in srgb, ${color} 45%, transparent) 0%, transparent 65%), ${HERO_BASE}`;
+  return `radial-gradient(100% 140% at 100% 100%, color-mix(in srgb, ${color} 45%, transparent) 0%, transparent 65%), ${HERO_BAND}`;
 }
 
 /** Foto di copertina sotto l'hero, velata per reggere il testo bianco. */

@@ -525,7 +525,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
           { label: player.name ?? "Giocatore" },
         ]}
         title={player.name ?? "—"}
-        background={playerHue ? heroTint(playerHue) : heroGradient.dark}
+        background={playerHue ? heroTint(playerHue) : heroGradient.band}
         leading={
           // Avatar grande con ring
           <Box

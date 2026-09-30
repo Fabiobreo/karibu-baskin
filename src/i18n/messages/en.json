@@ -115,7 +115,8 @@
     "teamsSubject": "Teams: {title}",
     "playerIntro": "🏀 {name} at Karibu Baskin",
     "playerPoints": "📊 {points} total points · {avg} per game over {count, plural, one {# game} other {# games}}",
-    "playerMedals": "🏆 {count, plural, one {# top scorer medal} other {# top scorer medals}}"
+    "playerMedals": "🏆 {count, plural, one {# top scorer medal} other {# top scorer medals}}",
+    "qrShort": "QR code"
   },
   "calendarSub": {
     "title": "Add to your calendar",

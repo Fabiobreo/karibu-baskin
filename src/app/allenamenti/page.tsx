@@ -4,6 +4,7 @@ import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import { Container } from "@mui/material";
 import PageHero from "@/components/common/PageHero";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import AllenamentiClient from "@/components/training/AllenamentiClient";
 import { parseTeamsData } from "@/lib/schemas";
 import type { Metadata } from "next";
@@ -128,7 +129,13 @@ export default async function AllenamentiPage({
 
   return (
     <>
-      <PageHero title={t("trainings")} />
+      <PageHero
+        title={t("trainings")}
+        action={
+          // "Gestisci" dello staff nella fascia, come in tutte le intestazioni (UX-32).
+          isStaff && <StaffManageButton href="/admin/allenamenti" label="Gestisci allenamenti" />
+        }
+      />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <AllenamentiClient
           inCorso={inCorso}

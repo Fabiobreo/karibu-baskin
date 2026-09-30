@@ -387,7 +387,7 @@ export default async function MatchDetailPage({ params }: Props) {
   // diverso da GUEST. Gli ospiti e gli anonimi vedono un invito al login.
   const canSeeCallups = !!session?.user && session.user.appRole !== "GUEST";
 
-  const heroBg = match.result ? RESULT_GRADIENT[match.result] : heroGradient.dark;
+  const heroBg = match.result ? RESULT_GRADIENT[match.result] : heroGradient.band;
 
   // Senza punteggi c'è una riga sola: nomi centrati rispetto all'orario.
   const upcomingNameSx = isUpcoming ? { alignSelf: "center" } : {};

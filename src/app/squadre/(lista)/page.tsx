@@ -136,7 +136,7 @@ export default async function SquadrePage() {
             <Typography
               variant="h4"
               component="h2"
-              sx={{ mb: 3, fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
+              sx={{ mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
             >
               {t("ourTeams")}
             </Typography>

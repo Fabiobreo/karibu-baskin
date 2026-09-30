@@ -7,7 +7,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
-import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
   playerName: string;
@@ -80,10 +79,12 @@ export default function PlayerShareButtons({
         size="small"
         onClick={handleNativeShare}
         disabled={busy}
-        startIcon={<ShareIcon sx={{ fontSize: 16 }} />}
-        // Si tocca: bottone primario del tema (UX-29), non il colore della squadra.
-        variant="contained"
-        sx={{ fontSize: TYPE_SCALE.xs, px: 1.75, py: 0.5 }}
+        startIcon={<ShareIcon />}
+        // Bottone fantasma come il resto della riga di condivisione degli hero
+        // (UX-32): un arancio pieno nell'intestazione competeva con il titolo.
+        variant="outlined"
+        color="inherit"
+        sx={{ color: "common.white", typography: "caption", px: 1.5 }}
       >
         {t("share")}
       </Button>
@@ -96,9 +97,9 @@ export default function PlayerShareButtons({
         variant="outlined"
         color="inherit"
         onClick={handleCopy}
-        startIcon={<ContentCopyIcon sx={{ fontSize: 14 }} />}
+        startIcon={<ContentCopyIcon />}
         aria-label={t("copyProfileLink")}
-        sx={{ color: "common.white", fontSize: TYPE_SCALE.xs, px: 1.5 }}
+        sx={{ color: "common.white", typography: "caption", px: 1.5 }}
       >
         {t("copyLink")}
       </Button>

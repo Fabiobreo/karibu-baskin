@@ -132,11 +132,9 @@ export default async function EventoPage({ params }: Props) {
         >
           <Stack spacing={3}>
             {ev.description && (
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ whiteSpace: "pre-wrap", lineHeight: 1.8 }}
-              >
+              // La descrizione e' il contenuto dell'evento, non una nota: testo
+              // pieno, non il grigio secondario che la faceva sembrare staccata.
+              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
                 {ev.description}
               </Typography>
             )}

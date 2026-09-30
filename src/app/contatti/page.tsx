@@ -138,8 +138,10 @@ export default function ContattiPage() {
           borderColor: "divider",
         }}
       >
-        <Container maxWidth="md" disableGutters>
-          <Box sx={{ display: "flex" }}>
+        {/* Il testo della prima scheda allineato al titolo della fascia: le
+            schede hanno il padding del contenitore, e lo recuperano. */}
+        <Container maxWidth="md">
+          <Box sx={{ display: "flex", mx: { xs: -2, sm: -3 } }}>
             {(["contatti", "partner"] as const).map((id) => {
               const labels = {
                 contatti: t("contatti.tabContatti"),
@@ -154,7 +156,7 @@ export default function ContattiPage() {
                   disableRipple
                   sx={{
                     borderRadius: 0,
-                    px: 3,
+                    px: { xs: 2, sm: 3 },
                     py: 1.5,
                     fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                     color: active ? "primary.onLight" : "text.secondary",
@@ -190,7 +192,7 @@ export default function ContattiPage() {
           <Typography
             component="h2"
             variant="h4"
-            sx={{ mt: 0.5, mb: 4, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 4, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("contatti.contactUs")}
           </Typography>
@@ -398,7 +400,7 @@ export default function ContattiPage() {
           <Typography
             component="h2"
             variant="h4"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("contatti.ourPartners")}
           </Typography>
@@ -461,7 +463,7 @@ export default function ContattiPage() {
           <Typography
             component="h2"
             variant="h4"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("contatti.becomeSponsor")}
           </Typography>

@@ -1,8 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Box, Button, Typography } from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
+import { Box, Typography } from "@mui/material";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { isSameDay } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -71,20 +70,6 @@ export default function AllenamentiClient({
 
   return (
     <Box>
-      {/* ── Toolbar staff ── */}
-      {isStaff && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Button
-            href="/admin/allenamenti"
-            variant="outlined"
-            startIcon={<SettingsIcon />}
-            sx={{ minHeight: 44 }}
-          >
-            Gestisci allenamenti
-          </Button>
-        </Box>
-      )}
-
       {/* ── In corso ── */}
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>

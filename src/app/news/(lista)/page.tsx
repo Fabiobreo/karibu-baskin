@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
-import { Box, Typography, Container, Chip, Paper, Button } from "@mui/material";
+import { Box, Typography, Container, Chip, Paper } from "@mui/material";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import ArticleIcon from "@mui/icons-material/Article";
-import AddIcon from "@mui/icons-material/Add";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import { buildMetadata } from "@/lib/seo";
@@ -48,13 +48,7 @@ export default async function NewsPage() {
       <PageHero
         title="News"
         subtitle={t("news.heroSubtitle")}
-        action={
-          isStaff && (
-            <Button href="/admin/news" variant="outlined" color="inherit" startIcon={<AddIcon />}>
-              Crea news
-            </Button>
-          )
-        }
+        action={isStaff && <StaffManageButton href="/admin/news" label="Gestisci news" />}
       />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>

@@ -381,7 +381,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
         breadcrumb={[{ label: t("teamBreadcrumb"), href: "/squadre" }, { label: team.name }]}
         title={team.name}
         background={
-          team.imageUrl ? heroImage(team.imageUrl) : teamHue ? heroTint(teamHue) : heroGradient.dark
+          team.imageUrl ? heroImage(team.imageUrl) : teamHue ? heroTint(teamHue) : heroGradient.band
         }
         manage={
           viewerIsStaff && (

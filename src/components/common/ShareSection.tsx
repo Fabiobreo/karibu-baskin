@@ -18,7 +18,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
 import { alpha } from "@mui/material/styles";
-import { heroText, socialBrandColor } from "@/lib/heroStyles";
+import { socialBrandColor } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 
 interface Props {
@@ -28,6 +28,9 @@ interface Props {
   kind?: "training" | "event";
   dark?: boolean; // stile per sfondi scuri
 }
+
+/** Bottone fantasma degli hero: stessa misura del "Gestisci" dello staff. */
+const HERO_BUTTON_SX = { color: "common.white", typography: "caption", px: 1.5 } as const;
 
 export default function ShareSection({ title, url, kind = "training", dark = false }: Props) {
   const [qrOpen, setQrOpen] = useState(false);
@@ -62,7 +65,7 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
           color={dark ? "inherit" : undefined}
           sx={
             dark
-              ? { color: "common.white" }
+              ? HERO_BUTTON_SX
               : {
                   borderColor: socialBrandColor.whatsapp,
                   color: socialBrandColor.whatsapp,
@@ -77,27 +80,47 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
           {t("whatsapp")}
         </Button>
 
-        <Tooltip title={t("copyLink")}>
-          <IconButton
-            size="small"
-            onClick={handleCopy}
-            aria-label={t("copyLink")}
-            sx={dark ? { color: heroText.secondary, "&:hover": { color: "common.white" } } : {}}
-          >
-            <ContentCopyIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title={t("showQr")}>
-          <IconButton
-            size="small"
-            onClick={() => setQrOpen(true)}
-            aria-label={t("showQr")}
-            sx={dark ? { color: heroText.secondary, "&:hover": { color: "common.white" } } : {}}
-          >
-            <QrCode2Icon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {dark ? (
+          // Sugli hero scuri tre bottoni fantasma con etichetta, uguali fra
+          // loro e al "Gestisci" dello staff (UX-32): le icone nude accanto a
+          // un bottone con testo sembravano una riga lasciata a meta'.
+          <>
+            <Button
+              variant="outlined"
+              size="small"
+              color="inherit"
+              onClick={handleCopy}
+              startIcon={<ContentCopyIcon />}
+              sx={HERO_BUTTON_SX}
+            >
+              {t("copyLink")}
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              color="inherit"
+              onClick={() => setQrOpen(true)}
+              startIcon={<QrCode2Icon />}
+              aria-label={t("showQr")}
+              sx={HERO_BUTTON_SX}
+            >
+              {t("qrShort")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Tooltip title={t("copyLink")}>
+              <IconButton size="small" onClick={handleCopy} aria-label={t("copyLink")}>
+                <ContentCopyIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t("showQr")}>
+              <IconButton size="small" onClick={() => setQrOpen(true)} aria-label={t("showQr")}>
+                <QrCode2Icon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
       </Box>
 
       <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>

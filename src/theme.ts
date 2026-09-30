@@ -228,7 +228,15 @@ const sharedTypography = {
   h1: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.02em" },
   h2: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.02em" },
   h3: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.015em" },
-  h4: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.01em" },
+  // Titoli di sezione (h2 nelle pagine pubbliche): un gradino netto sotto l'h1
+  // delle intestazioni (28/40 px), non 34 come il default MUI (UX-32): 24 px su
+  // telefono, 28 da `md` (900 px) in su.
+  h4: {
+    fontWeight: FONT_WEIGHT.bold,
+    letterSpacing: "-0.01em",
+    fontSize: TYPE_SCALE.xl2,
+    "@media (min-width:900px)": { fontSize: TYPE_SCALE.xl3 },
+  },
   h5: { fontWeight: FONT_WEIGHT.bold, letterSpacing: "-0.005em" },
   h6: { fontWeight: FONT_WEIGHT.semibold },
   subtitle1: { fontWeight: FONT_WEIGHT.semibold },

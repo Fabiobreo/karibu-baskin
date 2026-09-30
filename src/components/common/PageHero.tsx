@@ -5,7 +5,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Page header delle liste pubbliche (UX-32), uno dei tre modelli di
- * intestazione del sito: fascia grafite bassa, testo allineato a sinistra al
+ * intestazione del sito: fascia grafite bassa (120 px su desktop, 96 su mobile), testo allineato a sinistra al
  * bordo del contenuto (stesso `maxWidth` del Container sotto), niente chip
  * sopra il titolo, niente icona. L'altezza e' la stessa su tutte le liste.
  */
@@ -32,12 +32,12 @@ interface PageHeroFrameProps {
 export function PageHeroFrame({ maxWidth = "md", children }: PageHeroFrameProps) {
   return (
     <Box
-      style={{ backgroundImage: heroGradient.dark }}
+      style={{ backgroundImage: heroGradient.band }}
       sx={{
         ...heroBottomBorder,
         color: "common.white",
-        minHeight: { xs: 120, md: 160 },
-        py: { xs: 2, md: 3 },
+        minHeight: { xs: 96, md: 120 },
+        py: { xs: 2, md: 2.5 },
         display: "flex",
         alignItems: "center",
       }}
@@ -76,7 +76,14 @@ export default function PageHero({
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body1" sx={{ mt: 0.5, color: heroText.secondary }}>
+            <Typography
+              variant="body1"
+              sx={{
+                mt: 0.5,
+                color: heroText.secondary,
+                fontSize: { xs: TYPE_SCALE.sm, md: TYPE_SCALE.md },
+              }}
+            >
               {subtitle}
             </Typography>
           )}

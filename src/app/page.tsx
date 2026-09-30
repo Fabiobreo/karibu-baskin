@@ -98,7 +98,7 @@ export default async function HomePage() {
           <Typography
             variant="h4"
             component="h2"
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("whatWeBelieve")}
           </Typography>
@@ -134,7 +134,7 @@ export default async function HomePage() {
           <Typography
             variant="h4"
             component="h2"
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
+            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
           >
             {t("tenYears")}
           </Typography>

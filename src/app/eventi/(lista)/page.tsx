@@ -1,13 +1,4 @@
-import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  Chip,
-  Button,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Container, Box, Typography, Paper, Chip, IconButton, Tooltip } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -21,6 +12,7 @@ import { hasRole } from "@/lib/authRoles";
 import { brandColor } from "@/lib/heroStyles";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 import PageHero from "@/components/common/PageHero";
+import StaffManageButton from "@/components/common/StaffManageButton";
 import EmptyState from "@/components/common/EmptyState";
 import CoverFallback from "@/components/common/CoverFallback";
 import { splitEventsByTime } from "@/lib/events";
@@ -222,18 +214,7 @@ export default async function EventiPage() {
         title={t("heroTitle")}
         subtitle={t("heroSubtitle")}
         maxWidth="lg"
-        action={
-          isStaff && (
-            <Button
-              href="/admin/eventi"
-              variant="outlined"
-              color="inherit"
-              startIcon={<SettingsIcon />}
-            >
-              {t("manageAll")}
-            </Button>
-          )
-        }
+        action={isStaff && <StaffManageButton href="/admin/eventi" label={t("manageAll")} />}
       />
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {events.length === 0 ? (
