@@ -125,7 +125,7 @@ export default async function SfidaPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero chip={t("heroChip")} title={t("heroTitle")} subtitle={t("heroSubtitle")} />
+      <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {teams.length === 0 ? (

@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import { Container, Typography } from "@mui/material";
+import { Container } from "@mui/material";
+import PageHero from "@/components/common/PageHero";
 import AllenamentiClient from "@/components/training/AllenamentiClient";
 import { parseTeamsData } from "@/lib/schemas";
 import type { Metadata } from "next";
@@ -127,10 +128,8 @@ export default async function AllenamentiPage({
 
   return (
     <>
+      <PageHero title={t("trainings")} />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-          {t("trainings")}
-        </Typography>
         <AllenamentiClient
           inCorso={inCorso}
           upcoming={upcoming}

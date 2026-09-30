@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
-import { Box, Container, Typography } from "@mui/material";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import { Container } from "@mui/material";
+import PageHero from "@/components/common/PageHero";
 import CalendarClient from "@/components/calendar/CalendarClient";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
@@ -50,13 +50,8 @@ export default async function CalendarioPage() {
 
   return (
     <>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <CalendarMonthIcon color="primary" />
-          <Typography variant="h4" component="h1">
-            {t("calendar")}
-          </Typography>
-        </Box>
+      <PageHero title={t("calendar")} maxWidth="lg" />
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <CalendarClient isStaff={isStaff} isAdmin={isAdmin} teams={teams} myTeamIds={myTeamIds} />
       </Container>
     </>

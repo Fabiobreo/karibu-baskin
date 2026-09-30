@@ -1,106 +1,89 @@
-import { Box, Chip, Container, Typography } from "@mui/material";
-import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
+import { Box, Container, Typography } from "@mui/material";
 import type { ContainerProps } from "@mui/material";
+import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
 
+/**
+ * Page header delle liste pubbliche (UX-32), uno dei tre modelli di
+ * intestazione del sito: fascia grafite bassa, testo allineato a sinistra al
+ * bordo del contenuto (stesso `maxWidth` del Container sotto), niente chip
+ * sopra il titolo, niente icona. L'altezza e' la stessa su tutte le liste.
+ */
 interface PageHeroProps {
-  title?: string;
-  chip?: string;
-  subtitle?: string;
-  subtitleMaxWidth?: number;
+  title: string;
+  /** Una riga facoltativa sotto il titolo. */
+  subtitle?: React.ReactNode;
+  /** Breadcrumb facoltativo sopra il titolo (liste di secondo livello). */
   breadcrumb?: React.ReactNode;
-  py?: { xs: number; md: number };
+  /** Navigazione di sezione facoltativa sotto il titolo (UX-36). */
+  nav?: React.ReactNode;
+  /** Azione facoltativa a destra del titolo (su mobile va sotto). */
+  action?: React.ReactNode;
+  /** Deve essere lo stesso del Container del contenuto. */
   maxWidth?: ContainerProps["maxWidth"];
-  align?: "center" | "left";
-  children?: React.ReactNode;
 }
 
-export default function PageHero({
-  title,
-  chip,
-  subtitle,
-  subtitleMaxWidth = 560,
-  breadcrumb,
-  py = { xs: 6, md: 9 },
-  maxWidth = "md",
-  align = "center",
-  children,
-}: PageHeroProps) {
+interface PageHeroFrameProps {
+  maxWidth?: ContainerProps["maxWidth"];
+  children: React.ReactNode;
+}
+
+/** La fascia senza contenuto: la usa anche lo skeleton dei `loading.tsx`. */
+export function PageHeroFrame({ maxWidth = "md", children }: PageHeroFrameProps) {
   return (
     <Box
       style={{ backgroundImage: heroGradient.dark }}
       sx={{
         ...heroBottomBorder,
         color: "common.white",
-        py,
-        px: 2,
-        textAlign: align === "center" ? "center" : undefined,
-        position: "relative",
-        overflow: "hidden",
+        minHeight: { xs: 120, md: 160 },
+        py: { xs: 2, md: 3 },
+        display: "flex",
+        alignItems: "center",
       }}
     >
-      {breadcrumb && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: { xs: 12, md: 16 },
-            left: { xs: 12, md: 20 },
-            right: { xs: 60, md: 80 },
-            zIndex: 2,
-            textAlign: "left",
-          }}
-        >
-          {breadcrumb}
-        </Box>
-      )}
-      <Container maxWidth={maxWidth} sx={{ position: "relative", zIndex: 1 }}>
-        {title ? (
-          <>
-            {/* Chip neutro: sopra il titolo informa, non si tocca, quindi
-                niente arancio pieno (UX-07: arancio = "qui si agisce"). */}
-            {chip && (
-              <Chip
-                label={chip}
-                size="small"
-                sx={{
-                  mb: 2,
-                  backgroundColor: heroText.surfaceHover,
-                  color: heroText.secondary,
-                }}
-              />
-            )}
-            <Typography
-              variant="h3"
-              component="h1"
-              sx={{
-                mb: subtitle || children ? 2 : 0,
-                fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
-              }}
-            >
-              {title}
-            </Typography>
-            {subtitle && (
-              <Typography
-                variant="h6"
-                component="p"
-                sx={{
-                  color: heroText.secondary,
-                  fontWeight: FONT_WEIGHT.regular,
-                  maxWidth: align === "center" ? subtitleMaxWidth : undefined,
-                  mx: align === "center" ? "auto" : undefined,
-                  fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
-                }}
-              >
-                {subtitle}
-              </Typography>
-            )}
-            {children}
-          </>
-        ) : (
-          children
-        )}
-      </Container>
+      <Container maxWidth={maxWidth}>{children}</Container>
     </Box>
+  );
+}
+
+export default function PageHero({
+  title,
+  subtitle,
+  breadcrumb,
+  nav,
+  action,
+  maxWidth = "md",
+}: PageHeroProps) {
+  return (
+    <PageHeroFrame maxWidth={maxWidth}>
+      {breadcrumb && <Box sx={{ mb: 1 }}>{breadcrumb}</Box>}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: { xs: 1.5, sm: 3 },
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{ fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 } }}
+          >
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography variant="body1" sx={{ mt: 0.5, color: heroText.secondary }}>
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+        {action && <Box sx={{ flexShrink: 0 }}>{action}</Box>}
+      </Box>
+      {nav && <Box sx={{ mt: 2 }}>{nav}</Box>}
+    </PageHeroFrame>
   );
 }

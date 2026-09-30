@@ -1,11 +1,9 @@
 import { prisma } from "@/lib/db";
-import { heroText } from "@/lib/heroStyles";
 import { getTranslations } from "next-intl/server";
 import { Container, Typography, Box, Stack, Button } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import type { Metadata } from "next";
 import GironeFullView from "@/components/teams/GironeFullView";
 import type {
@@ -16,8 +14,6 @@ import type {
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { computeStandings } from "@/lib/season/standings";
 import { buildMetadata } from "@/lib/seo";
-import { TYPE_SCALE } from "@/lib/typeScale";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Classifiche",
@@ -121,58 +117,23 @@ export default async function ClassifichePage() {
 
   return (
     <>
-      {/* Hero */}
-      <PageHero py={{ xs: 5, md: 7 }} align="left">
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <EmojiEventsIcon sx={{ fontSize: 32, color: heroText.secondary }} />
-          <Typography variant="overline" sx={{ color: heroText.secondary }}>
-            {t("leagueChip")}
-          </Typography>
-        </Box>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
-        >
-          {t("pageTitle")}
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ mt: 1, color: heroText.muted, fontWeight: FONT_WEIGHT.semibold }}
-        >
-          {t("seasonValue", { season: displaySeason })}
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
-          <Button
-            href="/marcatori"
-            size="small"
-            variant="outlined"
-            color="inherit"
-            startIcon={<LeaderboardIcon />}
-            sx={{ color: "common.white" }}
-          >
-            {t("linkScorers")}
-          </Button>
-          <Button
-            href="/risultati"
-            size="small"
-            variant="outlined"
-            color="inherit"
-            sx={{ color: "common.white" }}
-          >
-            {t("linkResults")}
-          </Button>
-          <Button
-            href="/calendario"
-            size="small"
-            variant="outlined"
-            color="inherit"
-            sx={{ color: "common.white" }}
-          >
-            {t("linkCalendar")}
-          </Button>
-        </Box>
-      </PageHero>
+      <PageHero
+        title={t("pageTitle")}
+        subtitle={t("seasonValue", { season: displaySeason })}
+        nav={
+          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            <Button href="/marcatori" size="small" variant="outlined" color="inherit">
+              {t("linkScorers")}
+            </Button>
+            <Button href="/risultati" size="small" variant="outlined" color="inherit">
+              {t("linkResults")}
+            </Button>
+            <Button href="/calendario" size="small" variant="outlined" color="inherit">
+              {t("linkCalendar")}
+            </Button>
+          </Box>
+        }
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {isFallback && (

@@ -39,7 +39,7 @@ export default async function GalleryPage() {
 
   return (
     <>
-      <PageHero chip={t("gallery.heroChip")} title="Gallery" subtitle={t("gallery.heroSubtitle")} />
+      <PageHero title="Gallery" subtitle={t("gallery.heroSubtitle")} maxWidth="lg" />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {!hasContent ? (

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db";
-import { heroText } from "@/lib/heroStyles";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { isMinor, isMinorChild } from "@/lib/minors";
@@ -8,7 +7,6 @@ import { Container, Typography, Box, Paper, Chip, Button } from "@mui/material";
 import EmptyState from "@/components/common/EmptyState";
 import PageHero from "@/components/common/PageHero";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import Link from "next/link";
 import type { Metadata } from "next";
 import ClassificaInternaTable from "@/components/teams/ClassificaInternaTable";
@@ -265,43 +263,20 @@ export default async function MarcatoriPage({ searchParams }: Props) {
 
   return (
     <>
-      {/* Hero */}
-      <PageHero py={{ xs: 5, md: 7 }} align="left">
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <LeaderboardIcon sx={{ fontSize: 32, color: heroText.secondary }} />
-          <Typography variant="overline" sx={{ color: heroText.secondary }}>
-            {t("heroChip")}
-          </Typography>
-        </Box>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
-        >
-          {t("pageTitle")}
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
-          <Button
-            href="/classifiche"
-            size="small"
-            variant="outlined"
-            color="inherit"
-            startIcon={<EmojiEventsIcon />}
-            sx={{ color: "common.white" }}
-          >
-            {t("linkStandings")}
-          </Button>
-          <Button
-            href="/risultati"
-            size="small"
-            variant="outlined"
-            color="inherit"
-            sx={{ color: "common.white" }}
-          >
-            {t("linkResults")}
-          </Button>
-        </Box>
-      </PageHero>
+      <PageHero
+        title={t("pageTitle")}
+        maxWidth="lg"
+        nav={
+          <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+            <Button href="/classifiche" size="small" variant="outlined" color="inherit">
+              {t("linkStandings")}
+            </Button>
+            <Button href="/risultati" size="small" variant="outlined" color="inherit">
+              {t("linkResults")}
+            </Button>
+          </Box>
+        }
+      />
 
       {/* `lg` e non `md`: questa e' l'unica tabella larga del sito, e dentro un
           contenitore da testo l'ultima colonna restava tagliata. */}

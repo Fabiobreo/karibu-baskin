@@ -64,12 +64,7 @@ export default async function SquadrePage() {
 
   return (
     <>
-      <PageHero
-        chip={t("heroChip")}
-        title={t("heroTitle")}
-        subtitle={t("heroSubtitle")}
-        subtitleMaxWidth={540}
-      />
+      <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Stats */}

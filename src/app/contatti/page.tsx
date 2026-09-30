@@ -24,7 +24,6 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import HandshakeIcon from "@mui/icons-material/Handshake";
-import MessageIcon from "@mui/icons-material/Message";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -126,46 +125,7 @@ export default function ContattiPage() {
 
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <PageHero
-        chip={t("contatti.heroChip")}
-        title={t("contatti.heroTitle")}
-        subtitle={t("contatti.heroSubtitle")}
-        py={{ xs: 7, md: 10 }}
-        maxWidth="sm"
-      >
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            justifyContent: "center",
-            flexWrap: "wrap",
-            mt: 4,
-            color: "common.white",
-          }}
-        >
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={<MessageIcon />}
-            onClick={() => scrollToSection("contatti")}
-            sx={{ px: 3.5 }}
-          >
-            {t("contatti.heroHaveQuestion")}
-          </Button>
-          {/* Bottone fantasma del tema (UX-30): outlined + color inherit. */}
-          <Button
-            variant="outlined"
-            color="inherit"
-            size="large"
-            startIcon={<HandshakeIcon />}
-            onClick={() => scrollToSection("partner")}
-            sx={{ px: 3.5 }}
-          >
-            {t("contatti.heroSponsor")}
-          </Button>
-        </Box>
-      </PageHero>
+      <PageHero title={t("contatti.heroTitle")} subtitle={t("contatti.heroSubtitle")} />
 
       {/* ── Sticky mini-nav ──────────────────────────────────────────────────── */}
       <Box

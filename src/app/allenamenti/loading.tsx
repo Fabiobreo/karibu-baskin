@@ -1,42 +1,5 @@
-import { Container, Skeleton, Stack, Box } from "@mui/material";
-import { RADIUS } from "@/lib/radius";
+import PageLoadingSkeleton from "@/components/common/PageLoadingSkeleton";
 
 export default function AllenamentiLoading() {
-  return (
-    <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-      <Skeleton variant="text" width={200} height={40} sx={{ mb: 3 }} />
-      <Stack spacing={2}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Box
-            key={i}
-            sx={{
-              display: "flex",
-              gap: 2,
-              p: 2,
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: RADIUS.lg,
-            }}
-          >
-            <Skeleton
-              variant="rectangular"
-              width={56}
-              height={56}
-              sx={{ borderRadius: RADIUS.md, flexShrink: 0 }}
-            />
-            <Box sx={{ flex: 1 }}>
-              <Skeleton variant="text" width="60%" height={24} />
-              <Skeleton variant="text" width="40%" height={20} />
-            </Box>
-            <Skeleton
-              variant="rectangular"
-              width={60}
-              height={28}
-              sx={{ borderRadius: RADIUS.sm }}
-            />
-          </Box>
-        ))}
-      </Stack>
-    </Container>
-  );
+  return <PageLoadingSkeleton variant="list" items={6} />;
 }

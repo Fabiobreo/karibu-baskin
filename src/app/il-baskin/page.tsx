@@ -48,11 +48,7 @@ export default async function IlBaskinPage() {
 
   return (
     <>
-      <PageHero
-        title={t("ilbaskin.heroTitle")}
-        subtitle={t("ilbaskin.heroSubtitle")}
-        subtitleMaxWidth={580}
-      />
+      <PageHero title={t("ilbaskin.heroTitle")} subtitle={t("ilbaskin.heroSubtitle")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Storia */}

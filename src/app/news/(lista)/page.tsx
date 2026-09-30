@@ -45,22 +45,19 @@ export default async function NewsPage() {
 
   return (
     <>
-      <PageHero title="News" subtitle={t("news.heroSubtitle")} subtitleMaxWidth={520} />
-
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        {isStaff && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-            <Button
-              size="large"
-              href="/admin/news"
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-            >
+      <PageHero
+        title="News"
+        subtitle={t("news.heroSubtitle")}
+        action={
+          isStaff && (
+            <Button href="/admin/news" variant="outlined" color="inherit" startIcon={<AddIcon />}>
               Crea news
             </Button>
-          </Box>
-        )}
+          )
+        }
+      />
+
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {posts.length === 0 && (
           <EmptyState
             icon={<ArticleIcon sx={{ fontSize: 56, color: "text.disabled" }} />}

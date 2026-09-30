@@ -15,7 +15,6 @@ import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
-import { heroText } from "@/lib/heroStyles";
 import { teamColor } from "@/lib/teamColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
@@ -90,26 +89,14 @@ export default async function PartitePage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero py={{ xs: 5, md: 7 }} align="left">
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <CalendarTodayIcon sx={{ fontSize: 30, color: heroText.secondary }} />
-          <Typography variant="overline" sx={{ color: heroText.secondary }}>
-            {t("upcomingHeroChip")}
-          </Typography>
-        </Box>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{ mb: 1, fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
-        >
-          {t("upcomingTitle")}
-        </Typography>
-        <Typography variant="body2" sx={{ color: heroText.muted }}>
-          {upcoming.length === 0
+      <PageHero
+        title={t("upcomingTitle")}
+        subtitle={
+          upcoming.length === 0
             ? t("upcomingEmpty")
-            : t("upcomingCount", { count: upcoming.length })}
-        </Typography>
-      </PageHero>
+            : t("upcomingCount", { count: upcoming.length })
+        }
+      />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {chipSeasons.length > 1 && (

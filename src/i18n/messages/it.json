@@ -321,7 +321,6 @@
     "resultWinShort": "V",
     "resultLossShort": "S",
     "resultDrawShort": "P",
-    "upcomingHeroChip": "In programma",
     "upcomingTitle": "Prossime partite",
     "upcomingEmpty": "Nessuna partita in programma",
     "upcomingEmptyDesc": "Presto pubblichiamo le prossime partite.",
@@ -392,7 +391,6 @@
     "countdownIn": "Tra {time}"
   },
   "teams": {
-    "heroChip": "Chi siamo",
     "heroTitle": "ASD Karibu Baskin",
     "heroSubtitle": "Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre nei campionati veneti.",
     "currentSeasonChip": "In corso",
@@ -472,7 +470,6 @@
     "minorsHidden": "{count, plural, one {# atleta minorenne non è mostrato, per tutela dei minori.} other {# atleti minorenni non sono mostrati, per tutela dei minori.}}"
   },
   "simulator": {
-    "heroChip": "Solo per gioco",
     "heroTitle": "Simulatore Sfida",
     "heroSubtitle": "Componi due squadre da 6 giocatori e scopri chi vince. È solo un gioco!",
     "teamA": "Squadra A",
@@ -555,7 +552,6 @@
   },
   "scorers": {
     "pageTitle": "Classifica interna",
-    "heroChip": "Marcatori",
     "linkStandings": "Classifica campionato",
     "linkResults": "Tutti i risultati",
     "seasonLabel": "Stagione:",
@@ -872,7 +868,6 @@
     "noMatchesForTeamsDesc": "Appena la tua squadra avrà partite in calendario le troverai qui.",
     "noUpcomingMatchesDesc": "Non ci sono partite in programma per cui dichiarare la disponibilità.",
     "heroSubtitle": "I tuoi dati, i tuoi allenamenti e i traguardi che hai sbloccato.",
-    "availabilitiesHeroChip": "Partite",
     "availabilitiesHeroSubtitle": "Dichiara se ci sarai: lo staff usa queste risposte per le convocazioni.",
     "breadcrumbHome": "Home",
     "showPastMatches": "{count, plural, one {Mostra # partita conclusa} other {Mostra le # partite concluse}}",
@@ -1001,7 +996,6 @@
   },
   "pages": {
     "faq": {
-      "heroChip": "Hai una domanda?",
       "heroTitle": "Domande frequenti",
       "heroSubtitle": "Le risposte alle domande più comuni su Karibu Baskin, allenamenti e iscrizioni.",
       "noAnswer": "Non trovi la risposta che cerchi?",
@@ -1013,7 +1007,6 @@
       "suggestionCtaBtn": "Invia un suggerimento"
     },
     "gallery": {
-      "heroChip": "Karibu Baskin",
       "heroTitle": "Gallery",
       "heroSubtitle": "Foto e video della nostra squadra: allenamenti, partite e momenti insieme.",
       "empty": "Ancora nessun contenuto",
@@ -1066,15 +1059,12 @@
       "tryBring": "Cosa portare",
       "tryBringText": "Scarpe da ginnastica pulite (da palestra), abbigliamento comodo e una borraccia.",
       "tryFaq": "Hai altre domande? Leggi le domande frequenti",
-      "heroChip": "Siamo qui",
       "heroTitle": "Come possiamo aiutarti?",
       "heroSubtitle": "Hai una domanda? Vuoi allenarti con noi o sostenerci?",
       "tabContatti": "Contatti",
       "tabPartner": "Partner",
       "openSuggestion": "Invia un suggerimento",
       "closeSuggestion": "Chiudi",
-      "heroHaveQuestion": "Ho una domanda",
-      "heroSponsor": "Voglio sponsorizzare",
       "letsTalk": "Parliamoci",
       "contactUs": "Contattaci",
       "haveIdea": "Hai un'idea per migliorare?",
@@ -1193,7 +1183,6 @@
       "rolesIntro": "I ruoli vengono assegnati in base alle capacità motorie del giocatore: uso delle mani, cammino, corsa ed equilibrio. La somma dei ruoli dei giocatori in campo non può superare 23."
     },
     "privacy": {
-      "heroChip": "Informativa",
       "breadcrumb": "Privacy"
     },
     "verifyRequest": {
@@ -1204,14 +1193,12 @@
     }
   },
   "standings": {
-    "heroChip": "Classifiche",
     "classification": "Classifica",
     "calendarSection": "Calendario",
     "noResults": "Nessuna partita con risultato disponibile.",
     "noMatches": "Nessuna partita inserita.",
     "ourTeam": "La nostra",
     "opponent": "Avversario",
-    "leagueChip": "Campionato",
     "seasonValue": "Stagione {season}",
     "linkScorers": "Classifica marcatori",
     "linkResults": "Tutti i risultati",

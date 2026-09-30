@@ -22,12 +22,7 @@ export default async function FaqPage() {
 
   return (
     <>
-      <PageHero
-        chip={t("faq.heroChip")}
-        title={t("faq.heroTitle")}
-        subtitle={t("faq.heroSubtitle")}
-        subtitleMaxWidth={520}
-      />
+      <PageHero title={t("faq.heroTitle")} subtitle={t("faq.heroSubtitle")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>

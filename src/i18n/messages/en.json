@@ -321,7 +321,6 @@
     "resultWinShort": "W",
     "resultLossShort": "L",
     "resultDrawShort": "D",
-    "upcomingHeroChip": "Scheduled",
     "upcomingTitle": "Upcoming matches",
     "upcomingEmpty": "No matches scheduled",
     "upcomingEmptyDesc": "We will publish the next matches soon.",
@@ -392,7 +391,6 @@
     "countdownIn": "In {time}"
   },
   "teams": {
-    "heroChip": "About us",
     "heroTitle": "ASD Karibu Baskin",
     "heroSubtitle": "Founded in 2015 in Montecchio Maggiore. Over 80 athletes, 2 teams in Veneto championships.",
     "currentSeasonChip": "Ongoing",
@@ -472,7 +470,6 @@
     "minorsHidden": "{count, plural, one {# underage athlete is not shown, to protect minors.} other {# underage athletes are not shown, to protect minors.}}"
   },
   "simulator": {
-    "heroChip": "Just for fun",
     "heroTitle": "Match Simulator",
     "heroSubtitle": "Build two teams of 6 players and see who wins. It's just a game!",
     "teamA": "Team A",
@@ -555,7 +552,6 @@
   },
   "scorers": {
     "pageTitle": "Internal standings",
-    "heroChip": "Scorers",
     "linkStandings": "League standings",
     "linkResults": "All results",
     "seasonLabel": "Season:",
@@ -872,7 +868,6 @@
     "noMatchesForTeamsDesc": "As soon as your team has scheduled matches you will find them here.",
     "noUpcomingMatchesDesc": "There are no scheduled matches to declare your availability for.",
     "heroSubtitle": "Your details, your training sessions and the achievements you have unlocked.",
-    "availabilitiesHeroChip": "Matches",
     "availabilitiesHeroSubtitle": "Tell the staff whether you will be there: call-ups are based on these answers.",
     "breadcrumbHome": "Home",
     "showPastMatches": "{count, plural, one {Show # finished match} other {Show the # finished matches}}",
@@ -1001,7 +996,6 @@
   },
   "pages": {
     "faq": {
-      "heroChip": "Got a question?",
       "heroTitle": "Frequently asked questions",
       "heroSubtitle": "Answers to the most common questions about Karibu Baskin, training sessions and registration.",
       "noAnswer": "Can't find the answer you're looking for?",
@@ -1013,7 +1007,6 @@
       "suggestionCtaBtn": "Send a suggestion"
     },
     "gallery": {
-      "heroChip": "Karibu Baskin",
       "heroTitle": "Gallery",
       "heroSubtitle": "Photos and videos of our team: training sessions, matches and moments together.",
       "empty": "No content yet",
@@ -1066,15 +1059,12 @@
       "tryBring": "What to bring",
       "tryBringText": "Clean sports shoes (for indoor courts), comfortable clothes and a water bottle.",
       "tryFaq": "More questions? Read the FAQ",
-      "heroChip": "We're here",
       "heroTitle": "How can we help you?",
       "heroSubtitle": "Have a question? Want to train with us or support us?",
       "tabContatti": "Contacts",
       "tabPartner": "Partners",
       "openSuggestion": "Send a suggestion",
       "closeSuggestion": "Close",
-      "heroHaveQuestion": "I have a question",
-      "heroSponsor": "I want to sponsor",
       "letsTalk": "Let's talk",
       "contactUs": "Contact us",
       "haveIdea": "Got an idea to improve things?",
@@ -1193,7 +1183,6 @@
       "rolesIntro": "Roles are assigned based on the player's motor abilities: use of hands, walking, running and balance. The sum of the roles of the players on court cannot exceed 23."
     },
     "privacy": {
-      "heroChip": "Policy",
       "breadcrumb": "Privacy"
     },
     "verifyRequest": {
@@ -1204,14 +1193,12 @@
     }
   },
   "standings": {
-    "heroChip": "Standings",
     "classification": "Standings",
     "calendarSection": "Calendar",
     "noResults": "No matches with results available.",
     "noMatches": "No matches entered.",
     "ourTeam": "Our team",
     "opponent": "Opponent",
-    "leagueChip": "Championship",
     "seasonValue": "Season {season}",
     "linkScorers": "Top scorers",
     "linkResults": "All results",

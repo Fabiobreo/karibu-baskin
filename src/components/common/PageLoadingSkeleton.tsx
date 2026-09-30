@@ -1,6 +1,6 @@
 import { Box, Container, Grid2 as Grid, Skeleton, Stack } from "@mui/material";
 import type { ContainerProps } from "@mui/material";
-import PageHero from "@/components/common/PageHero";
+import { PageHeroFrame } from "@/components/common/PageHero";
 import { RADIUS } from "@/lib/radius";
 import { heroText } from "@/lib/heroStyles";
 
@@ -9,12 +9,8 @@ interface PageLoadingSkeletonProps {
   variant?: "list" | "grid" | "table";
   /** Quanti elementi segnaposto. */
   items?: number;
-  /** Larghezza del Container del contenuto, come nella pagina vera. */
+  /** Larghezza del Container del contenuto (e della fascia), come nella pagina vera. */
   maxWidth?: ContainerProps["maxWidth"];
-  /** Allineamento della hero, come nella pagina vera. */
-  heroAlign?: "center" | "left";
-  /** Padding verticale della hero, come nella pagina vera. */
-  heroPy?: { xs: number; md: number };
 }
 
 // Sulla hero scura lo skeleton di default (testo su sfondo chiaro) sparisce:
@@ -22,37 +18,20 @@ interface PageLoadingSkeletonProps {
 const onDark = { bgcolor: heroText.line };
 
 /**
- * Skeleton per i `loading.tsx` delle pagine pubbliche con `PageHero`: la hero
- * resta scura e alta uguale, così lo scatto verso il contenuto vero è minimo.
+ * Skeleton per i `loading.tsx` delle pagine pubbliche con `PageHero`: la fascia
+ * e' la stessa (`PageHeroFrame`), cosi' lo scatto verso il contenuto vero e' minimo.
  */
 export default function PageLoadingSkeleton({
   variant = "list",
   items = 5,
   maxWidth = "md",
-  heroAlign = "center",
-  heroPy,
 }: PageLoadingSkeletonProps) {
-  const centered = heroAlign === "center";
   return (
     <Box aria-busy="true">
-      <PageHero align={heroAlign} py={heroPy}>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: centered ? "center" : "flex-start",
-          }}
-        >
-          <Skeleton
-            variant="rounded"
-            width={90}
-            height={24}
-            sx={{ ...onDark, mb: 2, borderRadius: RADIUS.sm }}
-          />
-          <Skeleton variant="text" width="min(420px, 80%)" height={56} sx={onDark} />
-          <Skeleton variant="text" width="min(360px, 70%)" height={28} sx={onDark} />
-        </Box>
-      </PageHero>
+      <PageHeroFrame maxWidth={maxWidth}>
+        <Skeleton variant="text" width="min(360px, 70%)" height={48} sx={onDark} />
+        <Skeleton variant="text" width="min(300px, 60%)" height={24} sx={onDark} />
+      </PageHeroFrame>
 
       <Container maxWidth={maxWidth} sx={{ py: { xs: 4, md: 6 } }}>
         {variant === "grid" && (

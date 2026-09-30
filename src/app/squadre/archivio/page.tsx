@@ -59,8 +59,6 @@ export default async function SquadreArchivioPage() {
       <PageHero
         title={t("archiveTitle")}
         subtitle={t("archiveSubtitle")}
-        subtitleMaxWidth={480}
-        py={{ xs: 5, md: 7 }}
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"

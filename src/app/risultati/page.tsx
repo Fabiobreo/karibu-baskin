@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/db";
-import { heroText } from "@/lib/heroStyles";
 import { teamColor } from "@/lib/teamColors";
 import { Container, Typography, Box, Chip, Stack } from "@mui/material";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
@@ -102,100 +101,9 @@ export default async function RisultatiPage({ searchParams }: Props) {
   }
   const teamGroups = Array.from(teamMap.values());
 
-  // Statistiche per squadra per il badge hero
-  const teamStats = teamGroups.map((team) => ({
-    id: team.id,
-    name: team.name,
-    color: team.color,
-    wins: team.matches.filter((m) => m.result === "WIN").length,
-    draws: team.matches.filter((m) => m.result === "DRAW").length,
-    losses: team.matches.filter((m) => m.result === "LOSS").length,
-  }));
-
   return (
     <>
-      {/* ── Hero ────────────────────────────────────────────────────────────── */}
-      <PageHero py={{ xs: 5, md: 7 }} align="left">
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <EmojiEventsIcon sx={{ fontSize: 32, color: heroText.secondary }} />
-          <Typography variant="overline" sx={{ color: heroText.secondary }}>
-            {t("resultsHeroChip")}
-          </Typography>
-        </Box>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{ mb: 2, fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
-        >
-          {t("resultsTitle")}
-        </Typography>
-        {teamStats.length > 0 && (
-          <Stack spacing={1} sx={{ mt: 0.5 }}>
-            {teamStats.map((t) => (
-              <Box
-                key={t.id}
-                sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
-              >
-                {/* Pallino della tinta squadra; senza tinta nessun segno (UX-29). */}
-                {teamColor(t.color) && (
-                  <Box
-                    sx={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      bgcolor: teamColor(t.color),
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: FONT_WEIGHT.semibold, color: "common.white", minWidth: 0 }}
-                >
-                  {t.name}
-                </Typography>
-                <Box sx={{ display: "flex", gap: 0.5 }}>
-                  <Chip
-                    label={wins(t.wins)}
-                    size="small"
-                    sx={{
-                      bgcolor: "match.win",
-                      color: "match.onFill",
-                      fontWeight: FONT_WEIGHT.bold,
-                      fontSize: TYPE_SCALE.xs,
-                      height: 20,
-                    }}
-                  />
-                  {t.draws > 0 && (
-                    <Chip
-                      label={draws(t.draws)}
-                      size="small"
-                      sx={{
-                        bgcolor: "match.draw",
-                        color: "match.onFill",
-                        fontWeight: FONT_WEIGHT.bold,
-                        fontSize: TYPE_SCALE.xs,
-                        height: 20,
-                      }}
-                    />
-                  )}
-                  <Chip
-                    label={losses(t.losses)}
-                    size="small"
-                    sx={{
-                      bgcolor: "match.loss",
-                      color: "match.onFill",
-                      fontWeight: FONT_WEIGHT.bold,
-                      fontSize: TYPE_SCALE.xs,
-                      height: 20,
-                    }}
-                  />
-                </Box>
-              </Box>
-            ))}
-          </Stack>
-        )}
-      </PageHero>
+      <PageHero title={t("resultsTitle")} />
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {/* ── Filtri stagione ──────────────────────────────────────────────── */}
