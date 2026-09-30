@@ -207,8 +207,7 @@ export default function AdminGalleryClient({
                     <Chip
                       size="small"
                       label={post.hidden ? "Nascosto" : "Visibile"}
-                      color={post.hidden ? "default" : "success"}
-                      variant="outlined"
+                      variant={post.hidden ? "outlined" : "filled"}
                       sx={{ height: 22 }}
                     />
                     <Box sx={{ display: "flex", alignItems: "center" }}>

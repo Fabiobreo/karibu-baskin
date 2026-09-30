@@ -3,7 +3,8 @@ import { withDbRetry } from "@/lib/dbRetry";
 import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { heroGradient } from "@/lib/heroStyles";
+import { heroGradient, heroText } from "@/lib/heroStyles";
+import { BRAND } from "@/lib/palette";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -44,8 +45,13 @@ export default async function BirthdayBanner() {
   return (
     <Box
       sx={{
-        background: heroGradient.orange,
-        color: "common.white",
+        // Fascia scura con un filo arancione del marchio (UX-29): il banner non
+        // si tocca, l'arancio pieno diceva "azione" e il bianco sopra si fermava
+        // a 3,8:1. I nomi sono link, e come tutti i link sono arancioni.
+        background: heroGradient.footer,
+        color: heroText.primary,
+        borderTop: "3px solid",
+        borderColor: "primary.main",
         py: { xs: 1.5, md: 2 },
         px: 2,
       }}
@@ -69,7 +75,7 @@ export default async function BirthdayBanner() {
                   <Link
                     href={`/giocatori/${celebrants[0].slug}`}
                     style={{
-                      color: "inherit",
+                      color: BRAND.orangeOnDark,
                       textDecoration: "underline",
                       textUnderlineOffset: 3,
                     }}
@@ -91,7 +97,7 @@ export default async function BirthdayBanner() {
                       <Link
                         href={`/giocatori/${c.slug}`}
                         style={{
-                          color: "inherit",
+                          color: BRAND.orangeOnDark,
                           textDecoration: "underline",
                           textUnderlineOffset: 3,
                         }}

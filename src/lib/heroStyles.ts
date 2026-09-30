@@ -22,8 +22,6 @@ export const heroGradient = {
   dark: `radial-gradient(90% 120% at 100% 0%, ${BRAND.orangeGlow} 0%, ${BRAND.orangeGlowNone} 60%), ${HERO_BASE}`,
   /** Variante senza bagliore, usata dal footer e dalle fasce scure di fine pagina. */
   footer: HERO_BASE,
-  /** Fascia arancione piena (banner compleanni). */
-  orange: `linear-gradient(90deg, ${BRAND.orange} 0%, ${BRAND.orangeBright} 100%)`,
 } as const;
 
 /**

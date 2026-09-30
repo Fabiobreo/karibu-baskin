@@ -24,8 +24,6 @@
 export const BRAND = {
   /** Arancio della maglia: riempimenti, bordi, icone (3,79:1 su bianco, non testo). */
   orange: "#E65100",
-  /** Seconda fermata della fascia arancione (banner compleanni). */
-  orangeBright: "#FF8F00",
   /** Riempimento sotto un'etichetta bianca: bottone primario, chip pieni (4,71:1). */
   orangeFill: "#C84B00",
   /** Hover del riempimento (6,22:1). */

@@ -320,7 +320,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                   <Chip
                     label={post.publishedAt ? "Pubblicato" : "Bozza"}
                     size="small"
-                    color={post.publishedAt ? "success" : "default"}
+                    variant={post.publishedAt ? "filled" : "outlined"}
                   />
                 </TableCell>
                 <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
@@ -411,7 +411,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
                     <Chip
                       label={post.publishedAt ? "Pubblicato" : "Bozza"}
                       size="small"
-                      color={post.publishedAt ? "success" : "default"}
+                      variant={post.publishedAt ? "filled" : "outlined"}
                     />
                     <Typography variant="caption" color="text.secondary">
                       {post.publishedAt
@@ -514,13 +514,7 @@ export default function AdminNewsClient({ initialPosts }: AdminNewsClientProps) 
           <Divider />
 
           <FormControlLabel
-            control={
-              <Switch
-                checked={publish}
-                onChange={(e) => setPublish(e.target.checked)}
-                color="success"
-              />
-            }
+            control={<Switch checked={publish} onChange={(e) => setPublish(e.target.checked)} />}
             label={publish ? "Pubblicato" : "Bozza (non visibile al pubblico)"}
           />
         </DialogContent>
