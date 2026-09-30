@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Box, Paper, Typography } from "@mui/material";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import {
   ACTIVE_WINDOW_DAYS,
   METRICS_WINDOW_DAYS,
@@ -30,7 +30,7 @@ export default async function AdminMetrichePage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <AdminPageHeader
+      <PageHeader
         title="Metriche"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Metriche" }]}
       />

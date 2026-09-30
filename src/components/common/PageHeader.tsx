@@ -1,26 +1,26 @@
 import { Box, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import type { ReactNode } from "react";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
-interface BreadcrumbItem {
+/**
+ * Intestazione senza fascia (UX-32): breadcrumb, titolo h1 nel contenitore e
+ * un'azione facoltativa. La usano l'area utente (`/profilo`, `/profilo/*`,
+ * `/notifiche`) e l'admin.
+ */
+export interface BreadcrumbItem {
   label: string;
   href?: string;
 }
 
-interface AdminPageHeaderProps {
+interface PageHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   icon?: ReactNode;
   action?: ReactNode;
   breadcrumb?: BreadcrumbItem[];
 }
 
-export default function AdminPageHeader({
-  title,
-  subtitle,
-  icon,
-  action,
-  breadcrumb,
-}: AdminPageHeaderProps) {
+export default function PageHeader({ title, subtitle, icon, action, breadcrumb }: PageHeaderProps) {
   return (
     <Box sx={{ mb: 3 }}>
       {breadcrumb && breadcrumb.length > 0 && (
@@ -65,7 +65,16 @@ export default function AdminPageHeader({
         >
           {icon}
           <Box>
-            <Typography variant="h4" component="h1">
+            {/* Su mobile un gradino sotto: i titoli lunghi (una partita con
+                l'avversaria per esteso) andavano su quattro righe. */}
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4 },
+                overflowWrap: "anywhere",
+              }}
+            >
               {title}
             </Typography>
             {subtitle && (

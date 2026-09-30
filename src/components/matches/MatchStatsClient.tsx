@@ -19,13 +19,10 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Breadcrumbs,
-  Link as MuiLink,
 } from "@mui/material";
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import Link from "next/link";
+import PageHeader from "@/components/common/PageHeader";
 import { useRouter } from "next/navigation";
 import { sportRoleLabel } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
@@ -320,40 +317,15 @@ export default function MatchStatsClient({ matchId, matchLabel, ourScore }: Prop
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-          <MuiLink
-            component={Link}
-            href="/admin"
-            underline="hover"
-            color="text.secondary"
-            variant="body2"
-          >
-            Dashboard
-          </MuiLink>
-          <MuiLink
-            component={Link}
-            href="/admin/partite"
-            underline="hover"
-            color="text.secondary"
-            variant="body2"
-          >
-            Partite
-          </MuiLink>
-          <Typography variant="body2" color="text.primary">
-            Statistiche
-          </Typography>
-        </Breadcrumbs>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <LeaderboardIcon color="primary" />
-          <Typography variant="h4" component="h1">
-            Statistiche giocatori
-          </Typography>
-        </Box>
-        <Typography variant="body2" color="text.secondary">
-          {matchLabel}
-        </Typography>
-      </Box>
+      <PageHeader
+        title="Statistiche giocatori"
+        subtitle={matchLabel}
+        breadcrumb={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Partite", href: "/admin/partite" },
+          { label: "Statistiche" },
+        ]}
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>

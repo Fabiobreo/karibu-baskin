@@ -1,8 +1,7 @@
 import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
-import { Breadcrumbs, Container, Typography, Link as MuiLink } from "@mui/material";
-import PageHero from "@/components/common/PageHero";
-import { heroText } from "@/lib/heroStyles";
+import { Container } from "@mui/material";
+import PageHeader from "@/components/common/PageHeader";
 import { redirect } from "next/navigation";
 import { loadMyAvailabilityMatches } from "@/lib/matches/myAvailabilities";
 import MieDisponibilitaClient from "@/components/matches/MieDisponibilitaClient";
@@ -29,31 +28,15 @@ export default async function MieDisponibilitaPage() {
 
   return (
     <>
-      <PageHero
-        chip={t("availabilitiesHeroChip")}
-        title={t("myAvailabilities")}
-        subtitle={t("availabilitiesHeroSubtitle")}
-        subtitleMaxWidth={540}
-        breadcrumb={
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
-          >
-            <MuiLink
-              href="/profilo"
-              underline="hover"
-              variant="body2"
-              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
-            >
-              {t("title")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }}>
-              {t("availabilitiesTitle")}
-            </Typography>
-          </Breadcrumbs>
-        }
-      />
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        <PageHeader
+          title={t("myAvailabilities")}
+          subtitle={t("availabilitiesHeroSubtitle")}
+          breadcrumb={[
+            { label: t("title"), href: "/profilo" },
+            { label: t("availabilitiesTitle") },
+          ]}
+        />
         <MieDisponibilitaClient initialMatches={items} />
       </Container>
     </>

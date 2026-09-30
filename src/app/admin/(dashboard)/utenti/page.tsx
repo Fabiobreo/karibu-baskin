@@ -4,7 +4,7 @@ import GuestApprovalInbox from "@/components/admin/GuestApprovalInbox";
 import { Paper, Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
@@ -164,7 +164,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Gestione Utenti"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
         action={

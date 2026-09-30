@@ -2,19 +2,9 @@ import { Suspense } from "react";
 import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
-import {
-  Breadcrumbs,
-  Container,
-  Box,
-  Typography,
-  Chip,
-  Grid2 as Grid,
-  Skeleton,
-  Link as MuiLink,
-} from "@mui/material";
+import { Container, Box, Typography, Chip, Grid2 as Grid, Skeleton } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import PageHero from "@/components/common/PageHero";
-import { heroText } from "@/lib/heroStyles";
+import PageHeader from "@/components/common/PageHeader";
 import { prisma } from "@/lib/db";
 import { loadBadgeInput, type PlayerRef } from "@/lib/rating/badgeService";
 import { computeAllBadges } from "@/lib/rating/badges";
@@ -152,31 +142,15 @@ export default async function TraguardiPage() {
 
   return (
     <>
-      <PageHero
-        title={t("achievements")}
-        subtitle={t("achievementsPageSubtitle")}
-        subtitleMaxWidth={520}
-        breadcrumb={
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
-          >
-            <MuiLink
-              href="/profilo"
-              underline="hover"
-              variant="body2"
-              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
-            >
-              {t("title")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }}>
-              {t("achievementsPageChip")}
-            </Typography>
-          </Breadcrumbs>
-        }
-      />
-
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        <PageHeader
+          title={t("achievements")}
+          subtitle={t("achievementsPageSubtitle")}
+          breadcrumb={[
+            { label: t("title"), href: "/profilo" },
+            { label: t("achievementsPageChip") },
+          ]}
+        />
         {sections.map((section, i) => (
           <Box key={section.key} sx={{ mb: i < sections.length - 1 ? 6 : 0 }}>
             <Suspense fallback={<AchievementSectionSkeleton />}>

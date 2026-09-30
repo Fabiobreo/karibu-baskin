@@ -16,7 +16,7 @@ import CollectionsIcon from "@mui/icons-material/Collections";
 import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import InsightsIcon from "@mui/icons-material/Insights";
 import CampaignIcon from "@mui/icons-material/Campaign";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import AdminDashboardTabs from "@/components/admin/AdminDashboardTabs";
 import AdminProssimePartite from "@/components/admin/AdminProssimePartite";
 import Link from "next/link";
@@ -118,7 +118,7 @@ export default async function AdminPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <AdminPageHeader
+      <PageHeader
         title="Dashboard"
         subtitle="Cosa richiede attenzione, e da dove si gestisce il resto."
         breadcrumb={[{ label: "Home", href: "/" }, { label: "Dashboard" }]}

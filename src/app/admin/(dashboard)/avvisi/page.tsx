@@ -4,7 +4,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import AdminNotificationSender from "@/components/admin/AdminNotificationSender";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -22,7 +22,7 @@ export default async function AdminAvvisiPage() {
   }
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Avviso urgente"
         subtitle="Una notifica sul telefono e nel centro notifiche, per chi scegli tu."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Avviso urgente" }]}

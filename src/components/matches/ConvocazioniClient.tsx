@@ -2,10 +2,9 @@
 
 import InlineError from "@/components/common/InlineError";
 import { useMemo, useState } from "react";
-import { Box, Button, Container, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
-import GroupsIcon from "@mui/icons-material/Groups";
+import { Box, Button, Container } from "@mui/material";
+import PageHeader from "@/components/common/PageHeader";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/context/ToastContext";
 import type { CandidateInput } from "@/lib/matches/callupStats";
@@ -222,52 +221,26 @@ export default function ConvocazioniClient({
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-        <MuiLink
-          component={Link}
-          href="/admin"
-          underline="hover"
-          color="text.secondary"
-          variant="body2"
-        >
-          Dashboard
-        </MuiLink>
-        <MuiLink
-          component={Link}
-          href="/admin/partite"
-          underline="hover"
-          color="text.secondary"
-          variant="body2"
-        >
-          Partite
-        </MuiLink>
-        <Typography variant="body2" color="text.primary">
-          Convocazioni
-        </Typography>
-      </Breadcrumbs>
-
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-          <GroupsIcon color="primary" />
-          <Typography variant="overline" color="text.secondary">
-            Convocazioni
-          </Typography>
-        </Box>
-        <Typography variant="h5" component="h1">
-          {matchLabel}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {isMulti
-            ? "Amichevole interna: convoca i giocatori per ciascuna squadra"
-            : `Stagione ${activeTeam.season}`}
-          {teams.some((t) => t.isMixed) && ". Karibu gioca con tutti i giocatori della stagione"}
-          {". Presenze calcolate sulle ultime 2 settimane"}
-          {windowEligibleSessions > 0
-            ? ` (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento gestito" : "allenamenti gestiti"})`
-            : " (nessun allenamento gestito in finestra)"}
-        </Typography>
-      </Box>
+      <PageHeader
+        title={matchLabel}
+        breadcrumb={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Partite", href: "/admin/partite" },
+          { label: "Convocazioni" },
+        ]}
+        subtitle={
+          <>
+            {isMulti
+              ? "Amichevole interna: convoca i giocatori per ciascuna squadra"
+              : `Stagione ${activeTeam.season}`}
+            {teams.some((t) => t.isMixed) && ". Karibu gioca con tutti i giocatori della stagione"}
+            {". Presenze calcolate sulle ultime 2 settimane"}
+            {windowEligibleSessions > 0
+              ? ` (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento gestito" : "allenamenti gestiti"})`
+              : " (nessun allenamento gestito in finestra)"}
+          </>
+        }
+      />
 
       {/* Tab squadra (solo se interno con 2 squadre) */}
       {isMulti && (

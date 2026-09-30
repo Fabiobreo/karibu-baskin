@@ -1,10 +1,9 @@
 import { auth } from "@/lib/authjs";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Breadcrumbs, Container, Typography, Link as MuiLink } from "@mui/material";
+import { Container } from "@mui/material";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import PageHero from "@/components/common/PageHero";
-import { heroText } from "@/lib/heroStyles";
+import PageHeader from "@/components/common/PageHeader";
 import RoleQuizClient from "@/components/profile/RoleQuizClient";
 import { prisma } from "@/lib/db";
 import { getRolesInfo } from "@/lib/content/baskinInfo";
@@ -53,30 +52,12 @@ export default async function RuoloPage() {
 
   return (
     <>
-      <PageHero
-        title={t("heroTitle")}
-        subtitle={t("heroSubtitle")}
-        subtitleMaxWidth={540}
-        breadcrumb={
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
-          >
-            <MuiLink
-              href="/profilo"
-              underline="hover"
-              variant="body2"
-              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
-            >
-              {tProfile("title")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }}>
-              {t("heroTitle")}
-            </Typography>
-          </Breadcrumbs>
-        }
-      />
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
+        <PageHeader
+          title={t("heroTitle")}
+          subtitle={t("heroSubtitle")}
+          breadcrumb={[{ label: tProfile("title"), href: "/profilo" }, { label: t("heroTitle") }]}
+        />
         <RoleQuizClient
           confirmed={confirmed}
           suggested={suggested}

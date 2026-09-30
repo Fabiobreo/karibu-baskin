@@ -3,7 +3,7 @@ import { Paper, Typography } from "@mui/material";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import DevelopmentTracker, { type TrackedAthlete } from "@/components/rating/DevelopmentTracker";
 
 export const revalidate = 60;
@@ -79,7 +79,7 @@ export default async function SviluppoPage() {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Sviluppo giocatori"
         subtitle="Andamento del rating TrueSkill nel tempo (μ). Visibile solo allo staff."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Sviluppo" }]}

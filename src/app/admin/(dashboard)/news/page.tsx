@@ -3,7 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminNewsClient from "@/components/admin/AdminNewsClient";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 
 export const metadata = { title: "News | Admin" };
 
@@ -39,7 +39,7 @@ export default async function AdminNewsPage() {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Gestione News"
         subtitle="Articoli, sondaggi e comunicazioni del club."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "News" }]}

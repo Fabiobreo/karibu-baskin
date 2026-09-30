@@ -1,10 +1,10 @@
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import AdminNuovoUtenteClient from "@/components/admin/AdminNuovoUtenteClient";
 
 export default function NuovoUtentePage() {
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Nuovo utente"
         subtitle="L'utente potrà accedere con Google usando la stessa email: l'account si collegherà automaticamente."
         breadcrumb={[

@@ -3,7 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminGironiClient from "@/components/admin/AdminGironiClient";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import type { Metadata } from "next";
 
@@ -33,7 +33,7 @@ export default async function AdminGironiPage() {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Gironi"
         subtitle="Gironi di campionato e risultati delle altre squadre del girone."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Gironi" }]}

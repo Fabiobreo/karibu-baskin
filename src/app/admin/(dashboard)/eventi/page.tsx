@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminEventiClient from "@/components/admin/AdminEventiClient";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Gestione Eventi | Admin" };
@@ -19,7 +19,7 @@ export default async function AdminEventiPage() {
   });
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Gestione Eventi"
         subtitle="Tornei, trasferte e altri eventi del club."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Eventi" }]}

@@ -5,7 +5,6 @@ import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import {
-  Breadcrumbs,
   Container,
   Typography,
   Box,
@@ -16,7 +15,6 @@ import {
   Button,
   Badge,
   Skeleton,
-  Link as MuiLink,
 } from "@mui/material";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
@@ -44,8 +42,7 @@ import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 import ProfileBadges from "@/components/profile/ProfileBadges";
 import { buildMetadata } from "@/lib/seo";
-import PageHero from "@/components/common/PageHero";
-import { heroText } from "@/lib/heroStyles";
+import PageHeader from "@/components/common/PageHeader";
 import NextTrainingCard, {
   type NextTrainingInfo,
   type TrainingSubject,
@@ -499,35 +496,14 @@ export default async function ProfiloPage() {
 
   return (
     <>
-      {/* Stesso schema delle pagine pubbliche: passando da /squadre a /profilo
-          non deve sembrare un altro sito. */}
-      <PageHero
-        title={t("title")}
-        subtitle={t("heroSubtitle")}
-        subtitleMaxWidth={540}
-        breadcrumb={
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
-          >
-            <MuiLink
-              href="/"
-              underline="hover"
-              variant="body2"
-              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
-            >
-              {t("breadcrumbHome")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }}>
-              {t("title")}
-            </Typography>
-          </Breadcrumbs>
-        }
-      />
-
       {/* `md` come tutte le altre pagine: con `sm` su 1440px restava una
           strisciolina centrale da 600px. */}
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+        <PageHeader
+          title={t("title")}
+          subtitle={t("heroSubtitle")}
+          breadcrumb={[{ label: t("breadcrumbHome"), href: "/" }, { label: t("title") }]}
+        />
         {user.appRole === "GUEST" && (
           <Box sx={{ mb: 3 }}>
             {/* Stessa card della home: finché lo staff non conferma, il

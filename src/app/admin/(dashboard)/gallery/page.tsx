@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminGalleryClient from "@/components/admin/AdminGalleryClient";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import { isInstagramConfigured } from "@/lib/gallery/instagram";
 import { isYouTubeConfigured } from "@/lib/gallery/youtube";
 import type { Metadata } from "next";
@@ -24,7 +24,7 @@ export default async function AdminGalleryPage() {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Gestione Gallery"
         subtitle="Feed Instagram e video del club mostrati nella pagina pubblica /gallery."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Gallery" }]}

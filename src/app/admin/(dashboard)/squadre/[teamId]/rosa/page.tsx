@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import AdminRosaClient from "@/components/admin/AdminRosaClient";
 import type { Metadata } from "next";
 
@@ -94,7 +94,7 @@ export default async function AdminRosaPage({ params }: Params) {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title={`Rosa di ${team.name}`}
         subtitle={`Stagione ${team.season}${team.championship ? ` · ${team.championship}` : ""}`}
         breadcrumb={[

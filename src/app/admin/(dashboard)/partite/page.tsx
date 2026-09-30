@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import AdminPartiteClient from "@/components/admin/AdminPartiteClient";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matches/matchCoverage";
 import { ensureClubTeam } from "@/lib/matches/mixedTeam";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -83,7 +83,7 @@ export default async function AdminPartitePage() {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Gestione Partite"
         subtitle="Calendario delle partite ufficiali, convocazioni e statistiche."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Partite" }]}

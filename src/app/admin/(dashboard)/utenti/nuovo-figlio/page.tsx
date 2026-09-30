@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import AdminNuovoFiglioClient from "@/components/admin/AdminNuovoFiglioClient";
 import type { AdminPerson } from "@/components/admin/people/usePeopleSearch";
 
@@ -44,7 +44,7 @@ export default async function NuovoFiglioPage({ searchParams }: { searchParams: 
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Nuovo figlio"
         subtitle="Per chi non ha un account: il genitore lo ritroverà nel suo profilo e potrà iscriverlo agli allenamenti."
         breadcrumb={[

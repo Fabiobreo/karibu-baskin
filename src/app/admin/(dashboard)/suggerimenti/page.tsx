@@ -3,7 +3,7 @@ import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
 import AdminSuggerimentiClient from "@/components/admin/AdminSuggerimentiClient";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Suggerimenti | Admin" };
@@ -38,7 +38,7 @@ export default async function AdminSuggerimentiPage() {
   });
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Suggerimenti"
         subtitle="Le proposte inviate (in forma anonima) dagli utenti registrati."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Suggerimenti" }]}

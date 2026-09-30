@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { parseTeamsData } from "@/lib/schemas";
 import AdminTrainingsView, { type TrainingsSection } from "@/components/admin/AdminTrainingsView";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import PageHeader from "@/components/common/PageHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Allenamenti | Admin" };
@@ -132,7 +132,7 @@ export default async function AdminAllenamentiPage({ searchParams }: Props) {
 
   return (
     <>
-      <AdminPageHeader
+      <PageHeader
         title="Allenamenti"
         subtitle="Crea gli allenamenti, apri le iscrizioni, fai le squadre e, a fine allenamento, segna presenze e risultati."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Allenamenti" }]}
