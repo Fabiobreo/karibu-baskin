@@ -66,7 +66,7 @@ export default async function SquadrePage() {
     <>
       <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
         {/* Stats */}
         <Grid container spacing={2} sx={{ mb: 7 }}>
           {STATS.map((s) => (

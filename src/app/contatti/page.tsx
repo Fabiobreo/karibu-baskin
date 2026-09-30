@@ -140,7 +140,7 @@ export default function ContattiPage() {
       >
         {/* Il testo della prima scheda allineato al titolo della fascia: le
             schede hanno il padding del contenitore, e lo recuperano. */}
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <Box sx={{ display: "flex", mx: { xs: -2, sm: -3 } }}>
             {(["contatti", "partner"] as const).map((id) => {
               const labels = {
@@ -180,7 +180,7 @@ export default function ContattiPage() {
         id="contatti"
         sx={{ pt: { xs: 4, md: 5 }, pb: { xs: 6, md: 9 }, scrollMarginTop: { xs: 96, sm: 104 } }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           {/* Vieni a provare (UX-15): quando, dove, cosa portare e il modulo,
               in una schermata. Le CTA per chi non e' tesserato puntano qui. */}
           <TryItSection />
@@ -392,7 +392,7 @@ export default function ContattiPage() {
           scrollMarginTop: { xs: 96, sm: 104 },
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           {/* Sponsor attuali — logo strip */}
           <Typography variant="overline" color="text.secondary">
             {t("contatti.thanksTo")}

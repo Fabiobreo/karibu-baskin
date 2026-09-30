@@ -56,7 +56,7 @@ export default async function BirthdayBanner() {
         px: 2,
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box
           sx={{
             display: "flex",

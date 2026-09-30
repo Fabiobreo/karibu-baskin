@@ -7,7 +7,7 @@ import { RADIUS } from "@/lib/radius";
  */
 export default function GuestOnboardingSkeleton() {
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Paper
         elevation={8}
         sx={{

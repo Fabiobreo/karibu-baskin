@@ -843,7 +843,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         )}
       </EntityHero>
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
         {staffOnly && (
           <Alert severity="info" sx={{ mb: 3 }}>
             {t("staffOnlyProfile")}

@@ -96,7 +96,13 @@ export default function PlayedMatchRow({
               minWidth: 0,
               px: 2,
               py: 1.5,
-              display: "flex",
+              // Da tablet in su colonne fisse (UX-37): data | noi | punteggio |
+              // loro | esito. Il punteggio sta alla stessa x in tutte le righe,
+              // qualunque sia la lunghezza dei nomi. Su mobile due livelli (UX-18).
+              display: { xs: "flex", sm: "grid" },
+              gridTemplateColumns: {
+                sm: "136px minmax(0, 1fr) 88px minmax(0, 1fr) 132px",
+              },
               alignItems: "center",
               columnGap: 2,
               rowGap: 1,
@@ -104,7 +110,7 @@ export default function PlayedMatchRow({
             }}
           >
             {/* Data, casa/trasferta, tipo */}
-            <Box sx={{ minWidth: 90, flexShrink: 0, order: 1 }}>
+            <Box sx={{ minWidth: 90, flexShrink: 0, order: { xs: 1, sm: 0 } }}>
               <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                 {dateLabel}
               </Typography>
@@ -123,30 +129,26 @@ export default function PlayedMatchRow({
             {/* Squadre: su mobile una per riga, dal tablet in linea */}
             <Box
               sx={{
-                order: { xs: 3, sm: 2 },
-                flex: { xs: "1 1 100%", sm: "1 1 200px" },
+                order: { xs: 3, sm: 0 },
+                flex: "1 1 100%",
                 minWidth: 0,
+                // Sul tablet i tre pezzi (noi, punteggio, loro) diventano
+                // colonne della griglia della riga.
+                display: { sm: "contents" },
               }}
             >
               <Box sx={{ display: { xs: "flex", sm: "none" }, flexDirection: "column", gap: 0.25 }}>
                 {teamLine(ourName, ourScore, true)}
                 {teamLine(theirName, theirScore, false)}
               </Box>
-              <Box
-                sx={{
-                  display: { xs: "none", sm: "flex" },
-                  alignItems: "center",
-                  gap: 1.25,
-                  justifyContent: "center",
-                }}
-              >
+              <Box sx={{ display: { xs: "none", sm: "contents" } }}>
                 <Typography
                   variant="body2"
                   sx={{
                     fontWeight: FONT_WEIGHT.bold,
                     textAlign: "right",
-                    flex: "1 1 0",
                     minWidth: 0,
+                    overflowWrap: "anywhere",
                   }}
                 >
                   {ourName}
@@ -158,8 +160,8 @@ export default function PlayedMatchRow({
                     fontWeight: FONT_WEIGHT.bold,
                     fontVariantNumeric: "tabular-nums",
                     lineHeight: 1,
-                    flexShrink: 0,
-                    px: 0.5,
+                    textAlign: "center",
+                    whiteSpace: "nowrap",
                     color: hasScore ? "text.primary" : "text.secondary",
                   }}
                 >
@@ -171,8 +173,8 @@ export default function PlayedMatchRow({
                     fontWeight: FONT_WEIGHT.semibold,
                     color: "text.secondary",
                     textAlign: "left",
-                    flex: "1 1 0",
                     minWidth: 0,
+                    overflowWrap: "anywhere",
                   }}
                 >
                   {theirName}
@@ -183,9 +185,10 @@ export default function PlayedMatchRow({
             {/* Esito */}
             <Box
               sx={{
-                order: { xs: 2, sm: 3 },
+                order: { xs: 2, sm: 0 },
                 ml: "auto",
                 flexShrink: 0,
+                justifyContent: "flex-end",
                 display: "flex",
                 alignItems: "center",
                 gap: 1,

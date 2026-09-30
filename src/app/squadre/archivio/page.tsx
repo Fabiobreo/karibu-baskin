@@ -82,7 +82,7 @@ export default async function SquadreArchivioPage() {
         }
       />
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
         {seasons.length === 0 ? (
           <EmptyState
             icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}

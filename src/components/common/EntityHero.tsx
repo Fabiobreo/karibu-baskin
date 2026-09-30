@@ -1,5 +1,4 @@
 import { Box, Breadcrumbs, Container, Link as MuiLink, Typography } from "@mui/material";
-import type { ContainerProps } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import type { ReactNode } from "react";
 import type { BreadcrumbItem } from "@/components/common/PageHeader";
@@ -43,7 +42,6 @@ interface EntityHeroProps {
   meta?: ReactNode;
   /** Condivisione, in fondo. */
   actions?: ReactNode;
-  maxWidth?: ContainerProps["maxWidth"];
   children?: ReactNode;
 }
 
@@ -83,7 +81,6 @@ export default function EntityHero({
   badges,
   meta,
   actions,
-  maxWidth = "md",
   children,
 }: EntityHeroProps) {
   const last = breadcrumb[breadcrumb.length - 1];
@@ -103,7 +100,7 @@ export default function EntityHero({
         pb: { xs: 3, md: 4 },
       }}
     >
-      <Container maxWidth={maxWidth}>
+      <Container maxWidth="lg">
         {/* Breadcrumb e azioni dello staff su una riga propria: posizionati
             sopra il contenuto, a 360 px andavano a capo e si sovrapponevano. */}
         <Box
@@ -161,7 +158,9 @@ export default function EntityHero({
         <Box
           sx={{
             display: "flex",
-            alignItems: { xs: "flex-start", sm: "center" },
+            // In alto, non al centro: accanto a un blocco alto (le statistiche
+            // del giocatore) l'avatar centrato restava sospeso a meta'.
+            alignItems: "flex-start",
             flexDirection: { xs: "column", sm: "row" },
             gap: { xs: 2, md: 3 },
           }}

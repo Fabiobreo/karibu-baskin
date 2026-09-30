@@ -28,7 +28,7 @@ export default async function MieDisponibilitaPage() {
 
   return (
     <>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <PageHeader
           title={t("myAvailabilities")}
           subtitle={t("availabilitiesHeroSubtitle")}

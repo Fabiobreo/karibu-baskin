@@ -8,6 +8,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
+import { READING_WIDTH } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import { getTranslations } from "next-intl/server";
 import PageHero from "@/components/common/PageHero";
@@ -74,183 +75,185 @@ export default async function SponsorPage() {
     <>
       <PageHero title={t("sponsor.heroTitle")} subtitle={t("sponsor.heroSubtitle")} />
 
-      <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
-        {/* Sponsor attuali */}
-        <Box sx={{ mb: 7 }}>
-          <Typography variant="overline" color="text.secondary">
-            {t("sponsor.thanksTo")}
-          </Typography>
-          <Typography
-            component="h2"
-            variant="h4"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
-          >
-            {t("sponsor.ourSponsors")}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            {t("sponsor.partnersDesc")}
-          </Typography>
-          <Grid container spacing={2}>
-            {SPONSORS.map((s, i) => (
-              <Grid key={s.name} size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  component="a"
-                  href={s.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    p: 2.5,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 2,
-                    alignItems: "flex-start",
-                    textDecoration: "none",
-                    color: "inherit",
-                    transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
-                    ...onHover({
-                      borderColor: "primary.main",
-                      boxShadow: 3,
-                      transform: "translateY(-2px)",
-                    }),
-                  }}
-                >
-                  {/* Logo */}
-                  <Box
+      <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
+        <Box sx={{ maxWidth: READING_WIDTH }}>
+          {/* Sponsor attuali */}
+          <Box sx={{ mb: 7 }}>
+            <Typography variant="overline" color="text.secondary">
+              {t("sponsor.thanksTo")}
+            </Typography>
+            <Typography
+              component="h2"
+              variant="h4"
+              sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
+            >
+              {t("sponsor.ourSponsors")}
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              {t("sponsor.partnersDesc")}
+            </Typography>
+            <Grid container spacing={2}>
+              {SPONSORS.map((s, i) => (
+                <Grid key={s.name} size={{ xs: 12, sm: 6 }}>
+                  <Paper
+                    elevation={0}
+                    component="a"
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     sx={{
-                      flexShrink: 0,
-                      width: 90,
-                      height: 90,
-                      borderRadius: RADIUS.md,
-                      overflow: "hidden",
-                      bgcolor: "grey.50",
+                      p: 2.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 2,
+                      alignItems: "flex-start",
+                      textDecoration: "none",
+                      color: "inherit",
+                      transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
+                      ...onHover({
+                        borderColor: "primary.main",
+                        boxShadow: 3,
+                        transform: "translateY(-2px)",
+                      }),
+                    }}
+                  >
+                    {/* Logo */}
+                    <Box
+                      sx={{
+                        flexShrink: 0,
+                        width: 90,
+                        height: 90,
+                        borderRadius: RADIUS.md,
+                        overflow: "hidden",
+                        bgcolor: "grey.50",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Image
+                        src={s.logo}
+                        alt={`Logo ${s.name}`}
+                        width={90}
+                        height={90}
+                        style={{ objectFit: "contain", padding: "8px" }}
+                      />
+                    </Box>
+
+                    {/* Testo */}
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Chip
+                        label={sponsorsContent[i].category}
+                        size="small"
+                        sx={{ mb: 1, fontSize: TYPE_SCALE.xs }}
+                      />
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
+                        <Typography variant="subtitle1" noWrap>
+                          {s.name}
+                        </Typography>
+                        <OpenInNewIcon
+                          sx={{ fontSize: "0.9rem", color: "text.secondary", flexShrink: 0 }}
+                        />
+                      </Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                        {sponsorsContent[i].description}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
+          <Divider sx={{ mb: 7 }} />
+
+          {/* Diventa sponsor */}
+          <Box>
+            <Typography variant="overline" color="text.secondary">
+              {t("sponsor.joinUs")}
+            </Typography>
+            <Typography
+              component="h2"
+              variant="h4"
+              sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
+            >
+              {t("sponsor.becomeSponsor")}
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              {t("sponsor.becomeSponsorDesc")}
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mb: 4 }}>
+              {PERKS.map((p) => (
+                <Grid key={p.title} size={{ xs: 12, sm: 6 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
                       border: "1px solid",
                       borderColor: "divider",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      gap: 2,
+                      alignItems: "flex-start",
                     }}
                   >
-                    <Image
-                      src={s.logo}
-                      alt={`Logo ${s.name}`}
-                      width={90}
-                      height={90}
-                      style={{ objectFit: "contain", padding: "8px" }}
-                    />
-                  </Box>
-
-                  {/* Testo */}
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Chip
-                      label={sponsorsContent[i].category}
-                      size="small"
-                      sx={{ mb: 1, fontSize: TYPE_SCALE.xs }}
-                    />
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-                      <Typography variant="subtitle1" noWrap>
-                        {s.name}
+                    <HandshakeIcon sx={{ color: "primary.main", flexShrink: 0, mt: 0.3 }} />
+                    <Box>
+                      <Typography component="h3" variant="subtitle2" sx={{ mb: 0.25 }}>
+                        {p.title}
                       </Typography>
-                      <OpenInNewIcon
-                        sx={{ fontSize: "0.9rem", color: "text.secondary", flexShrink: 0 }}
-                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {p.desc}
+                      </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      {sponsorsContent[i].description}
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
 
-        <Divider sx={{ mb: 7 }} />
-
-        {/* Diventa sponsor */}
-        <Box>
-          <Typography variant="overline" color="text.secondary">
-            {t("sponsor.joinUs")}
-          </Typography>
-          <Typography
-            component="h2"
-            variant="h4"
-            sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
-          >
-            {t("sponsor.becomeSponsor")}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            {t("sponsor.becomeSponsorDesc")}
-          </Typography>
-
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            {PERKS.map((p) => (
-              <Grid key={p.title} size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    display: "flex",
-                    gap: 2,
-                    alignItems: "flex-start",
-                  }}
-                >
-                  <HandshakeIcon sx={{ color: "primary.main", flexShrink: 0, mt: 0.3 }} />
-                  <Box>
-                    <Typography component="h3" variant="subtitle2" sx={{ mb: 0.25 }}>
-                      {p.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {p.desc}
-                    </Typography>
-                  </Box>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* CTA contatto */}
-          <Box
-            sx={{
-              background: heroGradient.footer,
-              borderRadius: RADIUS.lg,
-              p: { xs: 3, md: 4 },
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 2,
-              color: "common.white",
-            }}
-          >
-            <Box>
-              <Typography
-                component="h3"
-                variant="h6"
-                fontWeight={FONT_WEIGHT.bold}
-                sx={{ mb: 0.5 }}
-              >
-                {t("sponsor.interestedSponsor")}
-              </Typography>
-              <Typography variant="body2" sx={{ color: heroText.muted }}>
-                {t("sponsor.writeUsDesc")}
-              </Typography>
-            </Box>
-            <Button
-              href="mailto:asdkaribubaskin@gmail.com"
-              variant="contained"
-              color="primary"
-              startIcon={<EmailIcon />}
-              size="large"
-              sx={{ whiteSpace: "nowrap" }}
+            {/* CTA contatto */}
+            <Box
+              sx={{
+                background: heroGradient.footer,
+                borderRadius: RADIUS.lg,
+                p: { xs: 3, md: 4 },
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 2,
+                color: "common.white",
+              }}
             >
-              {t("sponsor.contactUs")}
-            </Button>
+              <Box>
+                <Typography
+                  component="h3"
+                  variant="h6"
+                  fontWeight={FONT_WEIGHT.bold}
+                  sx={{ mb: 0.5 }}
+                >
+                  {t("sponsor.interestedSponsor")}
+                </Typography>
+                <Typography variant="body2" sx={{ color: heroText.muted }}>
+                  {t("sponsor.writeUsDesc")}
+                </Typography>
+              </Box>
+              <Button
+                href="mailto:asdkaribubaskin@gmail.com"
+                variant="contained"
+                color="primary"
+                startIcon={<EmailIcon />}
+                size="large"
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                {t("sponsor.contactUs")}
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Container>

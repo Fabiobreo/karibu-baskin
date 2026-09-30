@@ -39,7 +39,7 @@ export default async function GalleryPage() {
 
   return (
     <>
-      <PageHero title="Gallery" subtitle={t("gallery.heroSubtitle")} maxWidth="lg" />
+      <PageHero title="Gallery" subtitle={t("gallery.heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {!hasContent ? (

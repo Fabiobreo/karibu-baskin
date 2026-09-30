@@ -639,7 +639,7 @@ export default async function MatchDetailPage({ params }: Props) {
       )}
 
       {match.mvps.length > 0 && (
-        <Container maxWidth="md" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>
+        <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>
           <Box
             sx={{
               p: 2.5,
@@ -732,7 +732,7 @@ export default async function MatchDetailPage({ params }: Props) {
         </Container>
       )}
 
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <MatchDetailTabs
           ourTeamColor={match.team.color}
           notes={match.notes}

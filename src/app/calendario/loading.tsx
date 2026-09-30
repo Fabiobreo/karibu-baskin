@@ -6,7 +6,7 @@ import { heroText } from "@/lib/heroStyles";
 export default function CalendarioLoading() {
   return (
     <>
-      <PageHeroFrame maxWidth="lg">
+      <PageHeroFrame>
         <Skeleton variant="text" width={200} height={48} sx={{ bgcolor: heroText.line }} />
       </PageHeroFrame>
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>

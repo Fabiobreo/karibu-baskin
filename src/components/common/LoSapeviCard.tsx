@@ -37,7 +37,7 @@ export default function LoSapeviCard() {
         px: 2,
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box
           sx={{
             display: "flex",

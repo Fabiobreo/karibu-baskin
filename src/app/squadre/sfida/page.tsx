@@ -127,7 +127,7 @@ export default async function SfidaPage({ searchParams }: Props) {
     <>
       <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {teams.length === 0 ? (
           <EmptyState
             icon={<SportsKabaddiIcon sx={{ fontSize: 56, color: "text.disabled" }} />}

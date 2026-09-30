@@ -295,6 +295,17 @@ function buildComponents(mode: "light" | "dark") {
   const cardHoverShadow = isDark ? SHADOW.cardHoverDark : SHADOW.cardHover;
 
   return {
+    // Griglia unica (UX-37): margini laterali 16 px su telefono, 24 su tablet
+    // (default MUI) e 32 da desktop, uguali per header, intestazioni e contenuto.
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          "@media (min-width:900px)": {
+            "&:not(.MuiContainer-disableGutters)": { paddingLeft: 32, paddingRight: 32 },
+          },
+        },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         ":focus-visible": focusVisibleStyles,

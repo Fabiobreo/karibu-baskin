@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { READING_WIDTH } from "@/lib/layout";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifications/notifPrefs";
@@ -61,16 +62,18 @@ export default async function NotifichePage() {
 
   return (
     <>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <PageHeader
-          title={t("heroTitle")}
-          subtitle={t("heroSubtitle")}
-          breadcrumb={[{ label: tNav("home"), href: "/" }, { label: t("heroTitle") }]}
-        />
-        <NotificheClient
-          initialNotifications={initialNotifications}
-          initialHasMore={LIMIT < total}
-        />
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        <Box sx={{ maxWidth: READING_WIDTH }}>
+          <PageHeader
+            title={t("heroTitle")}
+            subtitle={t("heroSubtitle")}
+            breadcrumb={[{ label: tNav("home"), href: "/" }, { label: t("heroTitle") }]}
+          />
+          <NotificheClient
+            initialNotifications={initialNotifications}
+            initialHasMore={LIMIT < total}
+          />
+        </Box>
       </Container>
     </>
   );

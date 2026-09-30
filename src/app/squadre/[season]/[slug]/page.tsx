@@ -551,7 +551,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
         )}
       </EntityHero>
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {nextMatch &&
           (() => {
             // Precedente incontro tra le stesse squadre nella stessa stagione

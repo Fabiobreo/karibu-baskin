@@ -48,7 +48,7 @@ export default async function LatestNewsHero() {
 
   return (
     <Box sx={{ bgcolor: "action.hover", py: { xs: 4, md: 6 } }}>
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
           <NewspaperIcon sx={{ color: "text.secondary", fontSize: 32 }} />
           <Box>

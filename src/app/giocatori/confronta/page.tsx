@@ -174,7 +174,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
     <>
       <PageHero title={t("compareTitle")} subtitle={t("comparePick")} />
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <ComparePicker
           initialA={pa ? { slug: pa.slug ?? pa.id, label: pa.name } : null}
           initialB={pb ? { slug: pb.slug ?? pb.id, label: pb.name } : null}

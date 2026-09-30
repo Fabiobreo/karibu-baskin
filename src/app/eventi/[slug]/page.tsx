@@ -115,7 +115,7 @@ export default async function EventoPage({ params }: Props) {
         locale={locale}
       />
 
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         {/* Con la locandina: due colonne su desktop (contenuto + locandina intera
             che resta visibile scorrendo); su mobile la locandina è una riga
             compatta prima della descrizione. */}

@@ -58,7 +58,7 @@ export default async function ProssimePartiteHome() {
         borderBottom: `1px solid ${alpha(brandColor.orange, 0.12)}`,
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
           <EmojiEventsIcon sx={{ color: "text.secondary", fontSize: 32 }} />
           <Box>

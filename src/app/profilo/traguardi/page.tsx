@@ -142,7 +142,7 @@ export default async function TraguardiPage() {
 
   return (
     <>
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <PageHeader
           title={t("achievements")}
           subtitle={t("achievementsPageSubtitle")}

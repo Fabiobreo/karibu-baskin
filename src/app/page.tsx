@@ -59,7 +59,7 @@ export default async function HomePage() {
   // Il Container #allenamenti resta fuori dal Suspense: è l'ancora della CTA
   // della hero e deve esistere prima che arrivino i dati.
   const sessionsBlock = (
-    <Container id="allenamenti" maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+    <Container id="allenamenti" maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
       <Suspense fallback={<HomeSectionSkeleton variant="sessions" />}>
         <HomeSessions userId={userId} isMember={isMember} isStaff={isStaff} />
       </Suspense>
@@ -89,7 +89,7 @@ export default async function HomePage() {
         py: { xs: 6, md: 9 },
       }}
     >
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         {/* Valori */}
         <Box sx={{ mb: 8 }}>
           <Typography variant="overline" color="text.secondary">

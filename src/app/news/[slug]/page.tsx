@@ -18,6 +18,7 @@ import {
   Tooltip,
   Link as MuiLink,
 } from "@mui/material";
+import { READING_WIDTH } from "@/lib/layout";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import Link from "next/link";
@@ -147,98 +148,100 @@ export default async function NewsSlugPage({ params }: Props) {
           }}
         />
       )}
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-          <MuiLink href="/news" underline="hover" color="text.secondary" variant="body2">
-            News
-          </MuiLink>
-          <Typography variant="body2" color="text.primary" noWrap sx={{ maxWidth: 300 }}>
-            {post.title}
-          </Typography>
-        </Breadcrumbs>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+        <Box sx={{ maxWidth: READING_WIDTH }}>
+          <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+            <MuiLink href="/news" underline="hover" color="text.secondary" variant="body2">
+              News
+            </MuiLink>
+            <Typography variant="body2" color="text.primary" noWrap sx={{ maxWidth: 300 }}>
+              {post.title}
+            </Typography>
+          </Breadcrumbs>
 
-        <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
-          {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
-          <Typography variant="h4" component="h1" sx={{ flex: 1, minWidth: 0 }}>
-            {post.title}
-          </Typography>
-          {isStaff && (
-            <Link href={`/admin/news?edit=${post.id}`} style={{ textDecoration: "none" }}>
-              <Tooltip title={t("news.editNews")}>
-                <IconButton component="span" size="small" sx={{ color: "primary.main" }}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Link>
-          )}
-        </Box>
+          <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
+            {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
+            <Typography variant="h4" component="h1" sx={{ flex: 1, minWidth: 0 }}>
+              {post.title}
+            </Typography>
+            {isStaff && (
+              <Link href={`/admin/news?edit=${post.id}`} style={{ textDecoration: "none" }}>
+                <Tooltip title={t("news.editNews")}>
+                  <IconButton component="span" size="small" sx={{ color: "primary.main" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Link>
+            )}
+          </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-          <Typography variant="caption" color="text.secondary">
-            {formatRome(new Date(post.publishedAt!), "d MMMM yyyy", { locale: dateLocale })}
-          </Typography>
-          {post.author.name && (
-            <>
-              <Typography variant="caption" color="text.secondary">
-                ·
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {post.author.name}
-              </Typography>
-            </>
-          )}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+            <Typography variant="caption" color="text.secondary">
+              {formatRome(new Date(post.publishedAt!), "d MMMM yyyy", { locale: dateLocale })}
+            </Typography>
+            {post.author.name && (
+              <>
+                <Typography variant="caption" color="text.secondary">
+                  ·
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {post.author.name}
+                </Typography>
+              </>
+            )}
+            {post.poll && (
+              <Chip
+                label={pollClosed ? t("news.pollClosed") : t("news.pollOpen")}
+                size="small"
+                variant={pollClosed ? "filled" : "outlined"}
+                sx={{ ml: 0.5 }}
+              />
+            )}
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Body HTML sanitizzato — sicuro poiché sanitizzato server-side al salvataggio */}
+          <Box
+            sx={{
+              "& p": { my: 1, lineHeight: 1.7 },
+              "& ul, & ol": { pl: 3, my: 1 },
+              "& li": { mb: 0.5 },
+              "& blockquote": {
+                borderLeft: "3px solid",
+                borderColor: "divider",
+                pl: 2,
+                ml: 0,
+                color: "text.secondary",
+                fontStyle: "italic",
+                my: 2,
+              },
+              "& a": { color: "primary.main" },
+              "& strong": { fontWeight: FONT_WEIGHT.semibold },
+              fontSize: TYPE_SCALE.md,
+              lineHeight: 1.7,
+              color: "text.primary",
+            }}
+            // Il corpo e' gia' sanificato in scrittura (api/posts). Qui di nuovo: un
+            // contenuto entrato prima del sanitizer, importato o modificato a mano
+            // sul database verrebbe altrimenti reso cosi' com'e' (KB-29).
+            dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.body) }}
+          />
+
           {post.poll && (
-            <Chip
-              label={pollClosed ? t("news.pollClosed") : t("news.pollOpen")}
-              size="small"
-              variant={pollClosed ? "filled" : "outlined"}
-              sx={{ ml: 0.5 }}
+            <PollWidget
+              pollId={post.poll.id}
+              question={post.poll.question}
+              multiSelect={post.poll.multiSelect}
+              closesAt={post.poll.closesAt?.toISOString() ?? null}
+              options={post.poll.options}
+              voteCounts={voteCounts}
+              userVoteOptionIds={userVoteOptionIds}
+              isLoggedIn={!!userId}
+              postSlug={post.slug}
             />
           )}
         </Box>
-
-        <Divider sx={{ mb: 3 }} />
-
-        {/* Body HTML sanitizzato — sicuro poiché sanitizzato server-side al salvataggio */}
-        <Box
-          sx={{
-            "& p": { my: 1, lineHeight: 1.7 },
-            "& ul, & ol": { pl: 3, my: 1 },
-            "& li": { mb: 0.5 },
-            "& blockquote": {
-              borderLeft: "3px solid",
-              borderColor: "divider",
-              pl: 2,
-              ml: 0,
-              color: "text.secondary",
-              fontStyle: "italic",
-              my: 2,
-            },
-            "& a": { color: "primary.main" },
-            "& strong": { fontWeight: FONT_WEIGHT.semibold },
-            fontSize: TYPE_SCALE.md,
-            lineHeight: 1.7,
-            color: "text.primary",
-          }}
-          // Il corpo e' gia' sanificato in scrittura (api/posts). Qui di nuovo: un
-          // contenuto entrato prima del sanitizer, importato o modificato a mano
-          // sul database verrebbe altrimenti reso cosi' com'e' (KB-29).
-          dangerouslySetInnerHTML={{ __html: sanitizePostHtml(post.body) }}
-        />
-
-        {post.poll && (
-          <PollWidget
-            pollId={post.poll.id}
-            question={post.poll.question}
-            multiSelect={post.poll.multiSelect}
-            closesAt={post.poll.closesAt?.toISOString() ?? null}
-            options={post.poll.options}
-            voteCounts={voteCounts}
-            userVoteOptionIds={userVoteOptionIds}
-            isLoggedIn={!!userId}
-            postSlug={post.slug}
-          />
-        )}
       </Container>
     </>
   );

@@ -18,7 +18,7 @@ export default async function GuestOnboardingSection({
   const data = await loadGuestOnboarding(userId);
   if (!overlapHero) return <GuestOnboardingCard data={data} />;
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <GuestOnboardingCard data={data} overlapHero />
     </Container>
   );

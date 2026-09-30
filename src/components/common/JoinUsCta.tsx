@@ -21,7 +21,7 @@ export default async function JoinUsCta() {
       aria-labelledby="join-us-title"
       sx={{ bgcolor: "background.paper", borderTop: "1px solid", borderColor: "divider" }}
     >
-      <Container maxWidth="md" sx={{ py: { xs: 6, md: 8 }, textAlign: "center" }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 8 }, textAlign: "center" }}>
         <Typography
           id="join-us-title"
           variant="h4"

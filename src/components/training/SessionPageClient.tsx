@@ -388,7 +388,7 @@ export default function SessionPageClient({
       ) : null}
 
       {/* ── Contenuto principale ── */}
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 4 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
         {loading ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Skeleton variant="rectangular" height={80} sx={{ borderRadius: RADIUS.lg }} />

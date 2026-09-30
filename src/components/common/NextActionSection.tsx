@@ -20,7 +20,7 @@ export default async function NextActionSection({
   const action = await loadNextAction(userId, appRole);
   if (!overlapHero) return <NextActionCard action={action} />;
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <NextActionCard action={action} overlapHero />
     </Container>
   );

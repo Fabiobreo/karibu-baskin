@@ -213,7 +213,6 @@ export default async function EventiPage() {
       <PageHero
         title={t("heroTitle")}
         subtitle={t("heroSubtitle")}
-        maxWidth="lg"
         action={isStaff && <StaffManageButton href="/admin/eventi" label={t("manageAll")} />}
       />
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>

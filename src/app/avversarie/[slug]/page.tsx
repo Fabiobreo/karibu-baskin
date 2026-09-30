@@ -160,7 +160,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
           )
         }
       />
-      <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         {team.imageUrl && (
           <Box
             component="img"

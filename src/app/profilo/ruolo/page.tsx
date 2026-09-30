@@ -1,6 +1,7 @@
 import { auth } from "@/lib/authjs";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { READING_WIDTH } from "@/lib/layout";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import PageHeader from "@/components/common/PageHeader";
@@ -52,24 +53,26 @@ export default async function RuoloPage() {
 
   return (
     <>
-      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
-        <PageHeader
-          title={t("heroTitle")}
-          subtitle={t("heroSubtitle")}
-          breadcrumb={[{ label: tProfile("title"), href: "/profilo" }, { label: t("heroTitle") }]}
-        />
-        <RoleQuizClient
-          confirmed={confirmed}
-          suggested={suggested}
-          rolesInfo={getRolesInfo(locale)}
-          nextSession={
-            onboarding.registeredSession
-              ? { href: onboarding.registeredSession.href, registered: true }
-              : onboarding.nextSession
-                ? { href: onboarding.nextSession.href, registered: false }
-                : null
-          }
-        />
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+        <Box sx={{ maxWidth: READING_WIDTH }}>
+          <PageHeader
+            title={t("heroTitle")}
+            subtitle={t("heroSubtitle")}
+            breadcrumb={[{ label: tProfile("title"), href: "/profilo" }, { label: t("heroTitle") }]}
+          />
+          <RoleQuizClient
+            confirmed={confirmed}
+            suggested={suggested}
+            rolesInfo={getRolesInfo(locale)}
+            nextSession={
+              onboarding.registeredSession
+                ? { href: onboarding.registeredSession.href, registered: true }
+                : onboarding.nextSession
+                  ? { href: onboarding.nextSession.href, registered: false }
+                  : null
+            }
+          />
+        </Box>
       </Container>
     </>
   );

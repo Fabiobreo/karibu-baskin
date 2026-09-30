@@ -1,12 +1,12 @@
 import { Box, Container, Typography } from "@mui/material";
-import type { ContainerProps } from "@mui/material";
 import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Page header delle liste pubbliche (UX-32), uno dei tre modelli di
- * intestazione del sito: fascia grafite bassa (120 px su desktop, 96 su mobile), testo allineato a sinistra al
- * bordo del contenuto (stesso `maxWidth` del Container sotto), niente chip
+ * intestazione del sito: fascia grafite bassa (120 px su desktop, 96 su
+ * mobile), testo allineato a sinistra al bordo della griglia unica (`lg`,
+ * UX-37), niente chip
  * sopra il titolo, niente icona. L'altezza e' la stessa su tutte le liste.
  */
 interface PageHeroProps {
@@ -19,17 +19,14 @@ interface PageHeroProps {
   nav?: React.ReactNode;
   /** Azione facoltativa a destra del titolo (su mobile va sotto). */
   action?: React.ReactNode;
-  /** Deve essere lo stesso del Container del contenuto. */
-  maxWidth?: ContainerProps["maxWidth"];
 }
 
 interface PageHeroFrameProps {
-  maxWidth?: ContainerProps["maxWidth"];
   children: React.ReactNode;
 }
 
 /** La fascia senza contenuto: la usa anche lo skeleton dei `loading.tsx`. */
-export function PageHeroFrame({ maxWidth = "md", children }: PageHeroFrameProps) {
+export function PageHeroFrame({ children }: PageHeroFrameProps) {
   return (
     <Box
       style={{ backgroundImage: heroGradient.band }}
@@ -42,21 +39,14 @@ export function PageHeroFrame({ maxWidth = "md", children }: PageHeroFrameProps)
         alignItems: "center",
       }}
     >
-      <Container maxWidth={maxWidth}>{children}</Container>
+      <Container maxWidth="lg">{children}</Container>
     </Box>
   );
 }
 
-export default function PageHero({
-  title,
-  subtitle,
-  breadcrumb,
-  nav,
-  action,
-  maxWidth = "md",
-}: PageHeroProps) {
+export default function PageHero({ title, subtitle, breadcrumb, nav, action }: PageHeroProps) {
   return (
-    <PageHeroFrame maxWidth={maxWidth}>
+    <PageHeroFrame>
       {breadcrumb && <Box sx={{ mb: 1 }}>{breadcrumb}</Box>}
       <Box
         sx={{

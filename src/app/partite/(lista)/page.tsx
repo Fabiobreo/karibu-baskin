@@ -98,7 +98,7 @@ export default async function PartitePage({ searchParams }: Props) {
         }
       />
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {chipSeasons.length > 1 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
             <Typography
@@ -231,7 +231,13 @@ export default async function PartitePage({ searchParams }: Props) {
                           sx={{
                             px: 2,
                             py: 1.5,
-                            display: "flex",
+                            // Da tablet in su colonne fisse (UX-37): quando | noi |
+                            // vs | loro | casa, tipo e luogo. Il "vs" sta alla stessa
+                            // x in tutte le righe, qualunque sia la lunghezza dei nomi.
+                            display: { xs: "flex", sm: "grid" },
+                            gridTemplateColumns: {
+                              sm: "176px minmax(0, 1fr) 24px minmax(0, 1fr) 208px",
+                            },
                             alignItems: "center",
                             gap: 2,
                             flexWrap: "wrap",
@@ -256,7 +262,8 @@ export default async function PartitePage({ searchParams }: Props) {
                             sx={{
                               flex: 1,
                               minWidth: 200,
-                              display: "flex",
+                              // Sul tablet i tre pezzi diventano colonne della riga.
+                              display: { xs: "flex", sm: "contents" },
                               alignItems: "center",
                               gap: 1,
                               justifyContent: "center",
@@ -282,6 +289,7 @@ export default async function PartitePage({ searchParams }: Props) {
                                 fontWeight: FONT_WEIGHT.semibold,
                                 fontSize: TYPE_SCALE.sm,
                                 px: 0.5,
+                                textAlign: "center",
                               }}
                             >
                               vs
@@ -308,6 +316,7 @@ export default async function PartitePage({ searchParams }: Props) {
                               flexShrink: 0,
                               display: "flex",
                               alignItems: "center",
+                              justifyContent: { sm: "flex-end" },
                               gap: 1,
                               flexWrap: "wrap",
                             }}

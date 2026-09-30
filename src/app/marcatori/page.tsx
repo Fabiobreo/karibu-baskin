@@ -265,7 +265,6 @@ export default async function MarcatoriPage({ searchParams }: Props) {
     <>
       <PageHero
         title={t("pageTitle")}
-        maxWidth="lg"
         nav={
           <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
             <Button href="/classifiche" size="small" variant="outlined" color="inherit">

@@ -498,7 +498,7 @@ export default async function ProfiloPage() {
     <>
       {/* `md` come tutte le altre pagine: con `sm` su 1440px restava una
           strisciolina centrale da 600px. */}
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         <PageHeader
           title={t("title")}
           subtitle={t("heroSubtitle")}

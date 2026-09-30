@@ -135,7 +135,7 @@ export default async function ClassifichePage() {
         }
       />
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {isFallback && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}

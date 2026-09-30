@@ -17,7 +17,7 @@ export default async function PendingAvailabilityBanner({ userId }: { userId: st
   if (count <= 0) return null;
 
   return (
-    <Container maxWidth="md" sx={{ pt: 2 }}>
+    <Container maxWidth="lg" sx={{ pt: 2 }}>
       <Alert
         severity="warning"
         icon={<EventAvailableIcon fontSize="small" />}

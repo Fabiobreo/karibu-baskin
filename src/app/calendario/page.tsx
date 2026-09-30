@@ -50,7 +50,7 @@ export default async function CalendarioPage() {
 
   return (
     <>
-      <PageHero title={t("calendar")} maxWidth="lg" />
+      <PageHero title={t("calendar")} />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         <CalendarClient isStaff={isStaff} isAdmin={isAdmin} teams={teams} myTeamIds={myTeamIds} />
       </Container>

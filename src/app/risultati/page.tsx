@@ -105,7 +105,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
     <>
       <PageHero title={t("resultsTitle")} />
 
-      <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
         {/* ── Filtri stagione ──────────────────────────────────────────────── */}
         {chipSeasons.length > 1 && (
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>

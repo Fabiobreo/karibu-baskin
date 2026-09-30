@@ -37,7 +37,7 @@ export default function HomeSectionSkeleton({ variant }: HomeSectionSkeletonProp
   if (variant === "matches") {
     return (
       <Box aria-hidden sx={{ py: { xs: 4, md: 6 } }}>
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
           <HeaderSkeleton />
           <Grid container spacing={2}>
             {Array.from({ length: 3 }).map((_, i) => (
@@ -53,7 +53,7 @@ export default function HomeSectionSkeleton({ variant }: HomeSectionSkeletonProp
 
   return (
     <Box aria-hidden sx={{ bgcolor: "action.hover", py: { xs: 4, md: 6 } }}>
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         <HeaderSkeleton />
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 7 }}>

@@ -98,7 +98,7 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: { xs: 3, md: 4 }, mb: -1 }}>
+    <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: -1 }}>
       <Paper
         elevation={0}
         variant="outlined"
