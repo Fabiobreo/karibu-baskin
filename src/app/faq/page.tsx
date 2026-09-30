@@ -1,5 +1,5 @@
 import { Container, Box, Typography, Button } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
@@ -23,10 +23,10 @@ export default async function FaqPage() {
 
   return (
     <>
-      <PageHero title={t("faq.heroTitle")} subtitle={t("faq.heroSubtitle")} />
+      <PageHero column="reading" title={t("faq.heroTitle")} subtitle={t("faq.heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             {t("faq.noAnswer")}{" "}
             <Link href="/contatti" style={{ color: "inherit" }}>

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/authjs";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Box, Container } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import PageHeader from "@/components/common/PageHeader";
@@ -54,7 +54,7 @@ export default async function RuoloPage() {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           <PageHeader
             title={t("heroTitle")}
             subtitle={t("heroSubtitle")}

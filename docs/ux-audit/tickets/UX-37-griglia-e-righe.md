@@ -35,7 +35,9 @@
 - **Header:** resta a tutta larghezza, com'era (decisione del committente del 30/09: "mi piaceva di più largo"). Il punto 1 del ticket vale quindi per intestazioni e contenuto, non per l'header: il logo non è allineato al titolo.
 - **Righe partita:** `/partite` e `PlayedMatchRow` (risultati, pagina squadra) da `sm` in su sono una griglia: data | noi (a destra) | "vs" o punteggio (larghezza fissa, cifre tabulari) | loro (a sinistra) | casa, tipo e luogo o esito. Su mobile resta UX-18.
 
-**Misure (Playwright, 28 pagine, admin collegato):** a 1.440 px breadcrumb e titolo a x = 152 ovunque (entity hero con avatar: il titolo dopo l'avatar); a 360 px tutti a x = 16; una sola larghezza di contenitore (1.200) oltre all'hero con foto della home; nessuno scroll orizzontale a 360 px.
+- **Tre larghezze, colonne centrate** (decisioni del committente del 30/09-01/10). Prima prova: tutto a 1.136 px; le pagine a colonna singola risultavano troppo larghe. Seconda: tre larghezze allineate a sinistra; `/allenamenti` risultava sbilanciata (fascia e "Gestisci" fino a 1.288 px, contenuto fermo a 1.032). Scelta finale: ogni pagina ha una colonna centrata (piena 1.136, `main` 880, `reading` 760) e l'intestazione usa la stessa colonna del contenuto (`columnSx` in `@/lib/layout`, prop `column` di `PageHero`, `EntityHero` e `PageLoadingSkeleton`). Titolo e contenuto sono sempre allineati fra loro; il bordo sinistro cambia fra i tre tipi di pagina (a 1.440 px: 152, 280, 340). Il criterio "breadcrumb allo stesso x in tutte le pagine" vale quindi per tipo di pagina, non per tutto il sito.
+
+**Misure (Playwright, 28 pagine, admin collegato), prima della scelta delle colonne centrate:** a 1.440 px breadcrumb e titolo a x = 152 ovunque; a 360 px tutti a x = 16 (vale ancora); una sola larghezza di contenitore (1.200) oltre all'hero con foto della home; nessuno scroll orizzontale a 360 px.
 
 **Rimasto fuori**
 

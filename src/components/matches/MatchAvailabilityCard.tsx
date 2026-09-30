@@ -11,6 +11,7 @@ import {
   ToggleButtonGroup,
   CircularProgress,
 } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { useToast } from "@/context/ToastContext";
@@ -99,80 +100,89 @@ export default function MatchAvailabilityCard({ matchId, entities }: Props) {
 
   return (
     <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: -1 }}>
-      <Paper
-        elevation={0}
-        variant="outlined"
-        sx={{ p: { xs: 2, md: 2.5 }, borderColor: "primary.main", borderRadius: RADIUS.lg }}
-      >
-        <Typography
-          variant="overline"
-          fontWeight={FONT_WEIGHT.bold}
-          color="text.secondary"
-          sx={{ display: "block", mb: 1.5 }}
+      <Box sx={columnSx("main")}>
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{ p: { xs: 2, md: 2.5 }, borderColor: "primary.main", borderRadius: RADIUS.lg }}
         >
-          {t("yourAvailability")}
-        </Typography>
+          <Typography
+            variant="overline"
+            fontWeight={FONT_WEIGHT.bold}
+            color="text.secondary"
+            sx={{ display: "block", mb: 1.5 }}
+          >
+            {t("yourAvailability")}
+          </Typography>
 
-        {entities.map((e) => {
-          const value = effectiveValue(e);
-          const saving = savingKeys.has(entityKey(e));
-          return (
-            <Box
-              key={entityKey(e)}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 1.5,
-                py: 0.75,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
-                {entities.length > 1 && <TeamColorDot color={e.teamColor} size={8} />}
-                <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold} noWrap title={e.name}>
-                  {entities.length > 1 ? e.name : e.teamName}
-                </Typography>
-                {saving && <CircularProgress size={14} sx={{ flexShrink: 0 }} />}
-              </Box>
-              <ToggleButtonGroup
-                value={value}
-                exclusive
-                size="small"
-                disabled={saving}
-                onChange={(_, v) => {
-                  if (v === null) return;
-                  handleChange(e, v as boolean);
-                }}
+          {entities.map((e) => {
+            const value = effectiveValue(e);
+            const saving = savingKeys.has(entityKey(e));
+            return (
+              <Box
+                key={entityKey(e)}
                 sx={{
-                  "& .MuiToggleButton-root": {
-                    py: 0.4,
-                    px: 1.5,
-                    fontWeight: FONT_WEIGHT.semibold,
-                    textTransform: "none",
-                  },
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 1.5,
+                  py: 0.75,
                 }}
               >
-                <ToggleButton
-                  value={true}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+                  {entities.length > 1 && <TeamColorDot color={e.teamColor} size={8} />}
+                  <Typography
+                    variant="body1"
+                    fontWeight={FONT_WEIGHT.semibold}
+                    noWrap
+                    title={e.name}
+                  >
+                    {entities.length > 1 ? e.name : e.teamName}
+                  </Typography>
+                  {saving && <CircularProgress size={14} sx={{ flexShrink: 0 }} />}
+                </Box>
+                <ToggleButtonGroup
+                  value={value}
+                  exclusive
+                  size="small"
+                  disabled={saving}
+                  onChange={(_, v) => {
+                    if (v === null) return;
+                    handleChange(e, v as boolean);
+                  }}
                   sx={{
-                    "&.Mui-selected": { bgcolor: "success.main", color: "success.contrastText" },
+                    "& .MuiToggleButton-root": {
+                      py: 0.4,
+                      px: 1.5,
+                      fontWeight: FONT_WEIGHT.semibold,
+                      textTransform: "none",
+                    },
                   }}
                 >
-                  <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                  {tCommon("yes")}
-                </ToggleButton>
-                <ToggleButton
-                  value={false}
-                  sx={{ "&.Mui-selected": { bgcolor: "error.main", color: "error.contrastText" } }}
-                >
-                  <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
-                  {tCommon("no")}
-                </ToggleButton>
-              </ToggleButtonGroup>
-            </Box>
-          );
-        })}
-      </Paper>
+                  <ToggleButton
+                    value={true}
+                    sx={{
+                      "&.Mui-selected": { bgcolor: "success.main", color: "success.contrastText" },
+                    }}
+                  >
+                    <EventAvailableIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                    {tCommon("yes")}
+                  </ToggleButton>
+                  <ToggleButton
+                    value={false}
+                    sx={{
+                      "&.Mui-selected": { bgcolor: "error.main", color: "error.contrastText" },
+                    }}
+                  >
+                    <EventBusyIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                    {tCommon("no")}
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+            );
+          })}
+        </Paper>
+      </Box>
     </Container>
   );
 }

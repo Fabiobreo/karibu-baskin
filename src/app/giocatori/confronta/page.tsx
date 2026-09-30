@@ -1,4 +1,5 @@
 import { Container, Box, Typography, Paper, Avatar, Chip, Divider } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { formatDecimal } from "@/lib/numberFormat";
@@ -172,117 +173,119 @@ export default async function ConfrontaPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title={t("compareTitle")} subtitle={t("comparePick")} />
+      <PageHero column="main" title={t("compareTitle")} subtitle={t("comparePick")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <ComparePicker
-          initialA={pa ? { slug: pa.slug ?? pa.id, label: pa.name } : null}
-          initialB={pb ? { slug: pb.slug ?? pb.id, label: pb.name } : null}
-        />
+        <Box sx={columnSx("main")}>
+          <ComparePicker
+            initialA={pa ? { slug: pa.slug ?? pa.id, label: pa.name } : null}
+            initialB={pb ? { slug: pb.slug ?? pb.id, label: pb.name } : null}
+          />
 
-        {pa && pb ? (
-          <Paper
-            elevation={0}
-            variant="outlined"
-            sx={{ p: { xs: 2, md: 3 }, borderRadius: RADIUS.lg }}
-          >
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr auto 1fr",
-                alignItems: "center",
-                gap: 2,
-                mb: 2,
-              }}
+          {pa && pb ? (
+            <Paper
+              elevation={0}
+              variant="outlined"
+              sx={{ p: { xs: 2, md: 3 }, borderRadius: RADIUS.lg }}
             >
-              <CompareHeader p={pa} />
-              <Typography variant="overline" color="text.secondary" fontWeight={FONT_WEIGHT.bold}>
-                {t("compareVs")}
-              </Typography>
-              <CompareHeader p={pb} />
-            </Box>
-
-            <Divider sx={{ mb: 1 }} />
-
-            {metrics.map((m) => {
-              const va = m.get(pa);
-              const vb = m.get(pb);
-              const aWins = va != null && vb != null && va > vb;
-              const bWins = va != null && vb != null && vb > va;
-              const show = (v: number | null) => (v == null ? "—" : m.fmt ? m.fmt(v) : String(v));
-              return (
-                <Box
-                  key={m.label}
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr auto 1fr",
-                    alignItems: "center",
-                    gap: 2,
-                    py: 1,
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    "&:last-child": { borderBottom: 0 },
-                  }}
-                >
-                  <Typography
-                    align="right"
-                    fontWeight={aWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
-                    sx={{
-                      // Il migliore resta in grassetto; l'altro si smorza. Niente arancio: non si tocca (UX-29).
-                      color: bWins ? "text.secondary" : "text.primary",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {show(va)}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    align="center"
-                    color="text.secondary"
-                    sx={{
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      fontWeight: FONT_WEIGHT.semibold,
-                      minWidth: 64,
-                    }}
-                  >
-                    {m.label}
-                  </Typography>
-                  <Typography
-                    align="left"
-                    fontWeight={bWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
-                    sx={{
-                      color: aWins ? "text.secondary" : "text.primary",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {show(vb)}
-                  </Typography>
-                </Box>
-              );
-            })}
-
-            {(pa.trend.length >= 3 || pb.trend.length >= 3) && (
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mt: 3 }}>
-                <Box sx={{ minWidth: 0 }}>
-                  <PointsTrendChart values={pa.trend} />
-                </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  <PointsTrendChart
-                    values={pb.trend}
-                    colorToken="text.secondary"
-                    dashed
-                    marker="square"
-                  />
-                </Box>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto 1fr",
+                  alignItems: "center",
+                  gap: 2,
+                  mb: 2,
+                }}
+              >
+                <CompareHeader p={pa} />
+                <Typography variant="overline" color="text.secondary" fontWeight={FONT_WEIGHT.bold}>
+                  {t("compareVs")}
+                </Typography>
+                <CompareHeader p={pb} />
               </Box>
-            )}
-          </Paper>
-        ) : (
-          <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 4 }}>
-            {t("comparePick")}
-          </Typography>
-        )}
+
+              <Divider sx={{ mb: 1 }} />
+
+              {metrics.map((m) => {
+                const va = m.get(pa);
+                const vb = m.get(pb);
+                const aWins = va != null && vb != null && va > vb;
+                const bWins = va != null && vb != null && vb > va;
+                const show = (v: number | null) => (v == null ? "—" : m.fmt ? m.fmt(v) : String(v));
+                return (
+                  <Box
+                    key={m.label}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr auto 1fr",
+                      alignItems: "center",
+                      gap: 2,
+                      py: 1,
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
+                      "&:last-child": { borderBottom: 0 },
+                    }}
+                  >
+                    <Typography
+                      align="right"
+                      fontWeight={aWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
+                      sx={{
+                        // Il migliore resta in grassetto; l'altro si smorza. Niente arancio: non si tocca (UX-29).
+                        color: bWins ? "text.secondary" : "text.primary",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {show(va)}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      align="center"
+                      color="text.secondary"
+                      sx={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        fontWeight: FONT_WEIGHT.semibold,
+                        minWidth: 64,
+                      }}
+                    >
+                      {m.label}
+                    </Typography>
+                    <Typography
+                      align="left"
+                      fontWeight={bWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
+                      sx={{
+                        color: aWins ? "text.secondary" : "text.primary",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {show(vb)}
+                    </Typography>
+                  </Box>
+                );
+              })}
+
+              {(pa.trend.length >= 3 || pb.trend.length >= 3) && (
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mt: 3 }}>
+                  <Box sx={{ minWidth: 0 }}>
+                    <PointsTrendChart values={pa.trend} />
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <PointsTrendChart
+                      values={pb.trend}
+                      colorToken="text.secondary"
+                      dashed
+                      marker="square"
+                    />
+                  </Box>
+                </Box>
+              )}
+            </Paper>
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 4 }}>
+              {t("comparePick")}
+            </Typography>
+          )}
+        </Box>
       </Container>
     </>
   );

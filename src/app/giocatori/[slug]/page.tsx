@@ -16,6 +16,7 @@ import {
   Button,
   Alert,
 } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import { brandColor, heroGradient, heroMedal, heroTint, heroText } from "@/lib/heroStyles";
 import { teamColor, teamFill } from "@/lib/teamColors";
@@ -844,559 +845,566 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
       </EntityHero>
 
       <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
-        {staffOnly && (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            {t("staffOnlyProfile")}
-          </Alert>
-        )}
-
-        {/* Figli (solo staff) */}
-        {guardedChildren.length > 0 && (
-          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t("children")}
-            </Typography>
-            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-              {guardedChildren.map((c) => (
-                <Link key={c.id} href={c.href} style={{ textDecoration: "none" }}>
-                  {/* Niente `clickable`: il link e' gia' l'elemento da
-                      toccare, un bottone dentro farebbe due fermate di Tab. */}
-                  <Chip
-                    label={c.name}
-                    variant="outlined"
-                    sx={{ cursor: "pointer", "a:hover > &": { bgcolor: "action.hover" } }}
-                    avatar={
-                      c.sportRole ? (
-                        <Avatar
-                          sx={{
-                            bgcolor: roleColor(c.sportRole),
-                            color: "common.white !important",
-                            fontWeight: FONT_WEIGHT.semibold,
-                          }}
-                        >
-                          {c.sportRole}
-                        </Avatar>
-                      ) : undefined
-                    }
-                  />
-                </Link>
-              ))}
-            </Stack>
-          </Paper>
-        )}
-
-        {/* Riepilogo: numeri in riquadri. Punti e partite della carriera
-            stanno gia' nell'hero; qui allenamenti e MVP. Chi non ha ancora
-            giocato ha una riga di stato al posto dei numeri a zero. */}
-        <Box
-          component="section"
-          aria-label={t("athleteInfo")}
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-            gap: 2,
-            mb: 5,
-          }}
-        >
-          <SummaryTile
-            value={trainingsValue}
-            label={t("trainingsLabel")}
-            note={
-              attendedCount > 0 && player._count.registrations > attendedCount
-                ? t("trainingsOf", { count: player._count.registrations })
-                : undefined
-            }
-          />
-          {careerMatches > 0 ? (
-            player._count.matchMvps > 0 && (
-              <SummaryTile value={player._count.matchMvps} label={t("mvpLabel")} />
-            )
-          ) : (
-            <Paper
-              elevation={0}
-              variant="outlined"
-              sx={{
-                gridColumn: { sm: "span 2" },
-                p: 2,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
-                {t("notPlayedYet", { name: player.name ?? "" })}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t("notPlayedYetDesc")}
-              </Typography>
-            </Paper>
+        <Box sx={columnSx("main")}>
+          {staffOnly && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              {t("staffOnlyProfile")}
+            </Alert>
           )}
-        </Box>
 
-        {/* Badge / achievement. Senza partite i traguardi sono tutti a zero:
-            se ne mostra solo il prossimo, non una lista di barre vuote. */}
-        {(earnedBadgesView.length > 0 || lockedBadgesView.length > 0) && (
-          <Box sx={{ mb: 5 }}>
-            <BadgeShowcase
-              earned={earnedBadgesView}
-              locked={lockedBadgesView}
-              title={t("achievements")}
-              nextTitle={careerMatches > 0 ? t("nextAchievements") : t("firstAchievement")}
-              maxNext={careerMatches > 0 ? 3 : 1}
-            />
-          </Box>
-        )}
-
-        {/* Storico ruolo sportivo */}
-        {player.sportRoleHistory.length > 1 && (
-          <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              {t("roleHistory")}
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
-              {player.sportRoleHistory.map((entry, i) => (
-                <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box>
-                    <RoleBadge role={entry.sportRole} />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ display: "block", textAlign: "center", mt: 0.25 }}
-                    >
-                      {formatRome(new Date(entry.changedAt), "MMM yyyy", { locale: dateLocale })}
-                    </Typography>
-                  </Box>
-                  {i < player.sportRoleHistory.length - 1 && (
-                    <ChevronRightIcon sx={{ fontSize: 16, color: "text.secondary", mb: 2.5 }} />
-                  )}
-                </Box>
-              ))}
-            </Box>
-          </Paper>
-        )}
-
-        {/* Statistiche agonistiche */}
-        {hasStats && (
-          <>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 1,
-                mt: 0.5,
-                mb: 3,
-              }}
-            >
-              <Box>
-                <Typography variant="overline" color="text.secondary">
-                  {t("statistics")}
-                </Typography>
-                <Typography component="h2" variant="h4">
-                  {t("competitive")}
-                </Typography>
-              </Box>
-              {seasons.length > 1 && (
-                <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
-                  <Link href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
+          {/* Figli (solo staff) */}
+          {guardedChildren.length > 0 && (
+            <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                {t("children")}
+              </Typography>
+              <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+                {guardedChildren.map((c) => (
+                  <Link key={c.id} href={c.href} style={{ textDecoration: "none" }}>
+                    {/* Niente `clickable`: il link e' gia' l'elemento da
+                      toccare, un bottone dentro farebbe due fermate di Tab. */}
                     <Chip
-                      label={t("all")}
-                      size="small"
-                      variant={!seasonFilter ? "filled" : "outlined"}
-                      color={!seasonFilter ? "primary" : "default"}
-                      sx={{ cursor: "pointer" }}
+                      label={c.name}
+                      variant="outlined"
+                      sx={{ cursor: "pointer", "a:hover > &": { bgcolor: "action.hover" } }}
+                      avatar={
+                        c.sportRole ? (
+                          <Avatar
+                            sx={{
+                              bgcolor: roleColor(c.sportRole),
+                              color: "common.white !important",
+                              fontWeight: FONT_WEIGHT.semibold,
+                            }}
+                          >
+                            {c.sportRole}
+                          </Avatar>
+                        ) : undefined
+                      }
                     />
                   </Link>
-                  {seasons.map((s) => (
-                    <Link
-                      key={s}
-                      href={`/giocatori/${slug}?season=${encodeURIComponent(s)}`}
-                      style={{ textDecoration: "none" }}
-                    >
-                      <Chip
-                        label={`Stagione ${s}`}
-                        size="small"
-                        variant={seasonFilter === s ? "filled" : "outlined"}
-                        color={seasonFilter === s ? "primary" : "default"}
-                        sx={{ cursor: "pointer" }}
-                      />
-                    </Link>
-                  ))}
-                </Box>
-              )}
-            </Box>
-            <Grid container spacing={2} sx={{ mb: 5 }}>
-              {[
-                { label: t("matches"), value: matchesPlayed },
-                { label: t("totalPoints"), value: totalPoints },
-                {
-                  label: t("avgPoints"),
-                  value:
-                    matchesPlayed > 0 ? formatDecimal(totalPoints / matchesPlayed, locale) : "—",
-                },
-                { label: t("twoPointers"), value: totalTwo },
-                { label: t("threePointers"), value: totalThree },
-                { label: t("freeThrows"), value: totalFreeThrows },
-                { label: t("fouls"), value: totalFouls },
-                ...(totalIllegalFouls > 0
-                  ? [
-                      {
-                        label: t("illegalFouls"),
-                        value: totalIllegalFouls,
-                      },
-                    ]
-                  : []),
-                ...(totalShots > 0
-                  ? [
-                      {
-                        label: t("shotsAttempted"),
-                        value: totalShots,
-                      },
-                    ]
-                  : []),
-              ].map((s) => (
-                <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
-                  <Paper
-                    elevation={0}
-                    sx={{ p: 2, textAlign: "center", border: "1px solid", borderColor: "divider" }}
-                  >
-                    <Typography
-                      component="p"
-                      variant="h4"
-                      sx={{
-                        // Numeri in text.primary: le statistiche sono neutre (UX-29).
-                        color: "text.primary",
-                        fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                      }}
-                    >
-                      {s.value}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        fontWeight: FONT_WEIGHT.semibold,
-                      }}
-                    >
-                      {s.label}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
+                ))}
+              </Stack>
+            </Paper>
+          )}
 
-            {trendValues.length >= 3 && (
+          {/* Riepilogo: numeri in riquadri. Punti e partite della carriera
+            stanno gia' nell'hero; qui allenamenti e MVP. Chi non ha ancora
+            giocato ha una riga di stato al posto dei numeri a zero. */}
+          <Box
+            component="section"
+            aria-label={t("athleteInfo")}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+              gap: 2,
+              mb: 5,
+            }}
+          >
+            <SummaryTile
+              value={trainingsValue}
+              label={t("trainingsLabel")}
+              note={
+                attendedCount > 0 && player._count.registrations > attendedCount
+                  ? t("trainingsOf", { count: player._count.registrations })
+                  : undefined
+              }
+            />
+            {careerMatches > 0 ? (
+              player._count.matchMvps > 0 && (
+                <SummaryTile value={player._count.matchMvps} label={t("mvpLabel")} />
+              )
+            ) : (
               <Paper
                 elevation={0}
                 variant="outlined"
-                sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: RADIUS.lg }}
+                sx={{
+                  gridColumn: { sm: "span 2" },
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
               >
-                <Typography
-                  variant="overline"
-                  color="text.secondary"
-                  sx={{ display: "block", mb: 1 }}
-                >
-                  {t("pointsTrend")}
+                <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
+                  {t("notPlayedYet", { name: player.name ?? "" })}
                 </Typography>
-                {/* Linea neutra: il grafico parla del giocatore, non della squadra (UX-29). */}
-                <PointsTrendChart values={trendValues} />
+                <Typography variant="body2" color="text.secondary">
+                  {t("notPlayedYetDesc")}
+                </Typography>
               </Paper>
             )}
+          </Box>
 
+          {/* Badge / achievement. Senza partite i traguardi sono tutti a zero:
+            se ne mostra solo il prossimo, non una lista di barre vuote. */}
+          {(earnedBadgesView.length > 0 || lockedBadgesView.length > 0) && (
             <Box sx={{ mb: 5 }}>
-              <Button
-                href={`/giocatori/confronta?a=${encodeURIComponent(slug)}`}
-                size="small"
-                variant="outlined"
-                startIcon={<CompareArrowsIcon />}
-              >
-                {t("compare")}
-              </Button>
+              <BadgeShowcase
+                earned={earnedBadgesView}
+                locked={lockedBadgesView}
+                title={t("achievements")}
+                nextTitle={careerMatches > 0 ? t("nextAchievements") : t("firstAchievement")}
+                maxNext={careerMatches > 0 ? 3 : 1}
+              />
             </Box>
-          </>
-        )}
+          )}
 
-        {/* Albo medaglie */}
-        {medals.length > 0 && (
-          <>
-            <Divider sx={{ mb: 5 }} />
-            <Box sx={{ mb: 5 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-                <Typography variant="overline" sx={{ color: "medal.gold" }}>
-                  {t("honors")}
-                </Typography>
-              </Box>
-              <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
-                {t("medals")}
+          {/* Storico ruolo sportivo */}
+          {player.sportRoleHistory.length > 1 && (
+            <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                {t("roleHistory")}
               </Typography>
-              <Grid container spacing={2}>
-                {medals.map((m, i) => {
-                  const isFirst = m.rank === 1;
-                  const isSecond = m.rank === 2;
-                  // Su fondo chiaro le medaglie prendono i token del tema, che
-                  // qui sono scuriti: l'oro #FFC107 su bianco faceva 1,63:1.
-                  const medalColor = isFirst
-                    ? "medal.gold"
-                    : isSecond
-                      ? "medal.silver"
-                      : "medal.bronze";
-                  const medalLabel = isFirst
-                    ? "Top scorer di ruolo"
-                    : isSecond
-                      ? "2° marcatore di ruolo"
-                      : "3° marcatore di ruolo";
-                  return (
-                    <Grid key={`${m.teamId}-${m.season}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
+                {player.sportRoleHistory.map((entry, i) => (
+                  <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box>
+                      <RoleBadge role={entry.sportRole} />
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: "block", textAlign: "center", mt: 0.25 }}
+                      >
+                        {formatRome(new Date(entry.changedAt), "MMM yyyy", { locale: dateLocale })}
+                      </Typography>
+                    </Box>
+                    {i < player.sportRoleHistory.length - 1 && (
+                      <ChevronRightIcon sx={{ fontSize: 16, color: "text.secondary", mb: 2.5 }} />
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </Paper>
+          )}
+
+          {/* Statistiche agonistiche */}
+          {hasStats && (
+            <>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  gap: 1,
+                  mt: 0.5,
+                  mb: 3,
+                }}
+              >
+                <Box>
+                  <Typography variant="overline" color="text.secondary">
+                    {t("statistics")}
+                  </Typography>
+                  <Typography component="h2" variant="h4">
+                    {t("competitive")}
+                  </Typography>
+                </Box>
+                {seasons.length > 1 && (
+                  <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
+                    <Link href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
+                      <Chip
+                        label={t("all")}
+                        size="small"
+                        variant={!seasonFilter ? "filled" : "outlined"}
+                        color={!seasonFilter ? "primary" : "default"}
+                        sx={{ cursor: "pointer" }}
+                      />
+                    </Link>
+                    {seasons.map((s) => (
+                      <Link
+                        key={s}
+                        href={`/giocatori/${slug}?season=${encodeURIComponent(s)}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <Chip
+                          label={`Stagione ${s}`}
+                          size="small"
+                          variant={seasonFilter === s ? "filled" : "outlined"}
+                          color={seasonFilter === s ? "primary" : "default"}
+                          sx={{ cursor: "pointer" }}
+                        />
+                      </Link>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+              <Grid container spacing={2} sx={{ mb: 5 }}>
+                {[
+                  { label: t("matches"), value: matchesPlayed },
+                  { label: t("totalPoints"), value: totalPoints },
+                  {
+                    label: t("avgPoints"),
+                    value:
+                      matchesPlayed > 0 ? formatDecimal(totalPoints / matchesPlayed, locale) : "—",
+                  },
+                  { label: t("twoPointers"), value: totalTwo },
+                  { label: t("threePointers"), value: totalThree },
+                  { label: t("freeThrows"), value: totalFreeThrows },
+                  { label: t("fouls"), value: totalFouls },
+                  ...(totalIllegalFouls > 0
+                    ? [
+                        {
+                          label: t("illegalFouls"),
+                          value: totalIllegalFouls,
+                        },
+                      ]
+                    : []),
+                  ...(totalShots > 0
+                    ? [
+                        {
+                          label: t("shotsAttempted"),
+                          value: totalShots,
+                        },
+                      ]
+                    : []),
+                ].map((s) => (
+                  <Grid key={s.label} size={{ xs: 6, sm: 4, md: 2 }}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        textAlign: "center",
+                        border: "1px solid",
+                        borderColor: "divider",
+                      }}
+                    >
+                      <Typography
+                        component="p"
+                        variant="h4"
+                        sx={{
+                          // Numeri in text.primary: le statistiche sono neutre (UX-29).
+                          color: "text.primary",
+                          fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
+                        }}
+                      >
+                        {s.value}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          fontWeight: FONT_WEIGHT.semibold,
+                        }}
+                      >
+                        {s.label}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {trendValues.length >= 3 && (
+                <Paper
+                  elevation={0}
+                  variant="outlined"
+                  sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: RADIUS.lg }}
+                >
+                  <Typography
+                    variant="overline"
+                    color="text.secondary"
+                    sx={{ display: "block", mb: 1 }}
+                  >
+                    {t("pointsTrend")}
+                  </Typography>
+                  {/* Linea neutra: il grafico parla del giocatore, non della squadra (UX-29). */}
+                  <PointsTrendChart values={trendValues} />
+                </Paper>
+              )}
+
+              <Box sx={{ mb: 5 }}>
+                <Button
+                  href={`/giocatori/confronta?a=${encodeURIComponent(slug)}`}
+                  size="small"
+                  variant="outlined"
+                  startIcon={<CompareArrowsIcon />}
+                >
+                  {t("compare")}
+                </Button>
+              </Box>
+            </>
+          )}
+
+          {/* Albo medaglie */}
+          {medals.length > 0 && (
+            <>
+              <Divider sx={{ mb: 5 }} />
+              <Box sx={{ mb: 5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <EmojiEventsIcon sx={{ color: "medal.gold" }} />
+                  <Typography variant="overline" sx={{ color: "medal.gold" }}>
+                    {t("honors")}
+                  </Typography>
+                </Box>
+                <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
+                  {t("medals")}
+                </Typography>
+                <Grid container spacing={2}>
+                  {medals.map((m, i) => {
+                    const isFirst = m.rank === 1;
+                    const isSecond = m.rank === 2;
+                    // Su fondo chiaro le medaglie prendono i token del tema, che
+                    // qui sono scuriti: l'oro #FFC107 su bianco faceva 1,63:1.
+                    const medalColor = isFirst
+                      ? "medal.gold"
+                      : isSecond
+                        ? "medal.silver"
+                        : "medal.bronze";
+                    const medalLabel = isFirst
+                      ? "Top scorer di ruolo"
+                      : isSecond
+                        ? "2° marcatore di ruolo"
+                        : "3° marcatore di ruolo";
+                    return (
+                      <Grid key={`${m.teamId}-${m.season}-${i}`} size={{ xs: 12, sm: 6, md: 4 }}>
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: 2,
+                            border: "1px solid",
+                            borderColor: isFirst ? medalColor : "divider",
+                            boxShadow: isFirst
+                              ? `0 4px 16px ${alpha(brandColor.black, 0.12)}`
+                              : "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1.5,
+                            height: "100%",
+                          }}
+                        >
+                          <MedalDisc
+                            rank={isFirst ? 1 : isSecond ? 2 : 3}
+                            size={46}
+                            borderWidth={3}
+                            iconSize={22}
+                          />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: medalColor,
+                                fontWeight: FONT_WEIGHT.bold,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.06em",
+                                fontSize: TYPE_SCALE.xs,
+                                display: "block",
+                              }}
+                            >
+                              {medalLabel}
+                            </Typography>
+                            <Typography variant="body2" fontWeight={FONT_WEIGHT.bold} noWrap>
+                              {m.teamName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Stagione {m.season} · {m.points} punti
+                            </Typography>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Box>
+            </>
+          )}
+
+          {/* Squadre */}
+          {player.teamMemberships.length > 0 && (
+            <>
+              <Divider sx={{ mb: 5 }} />
+              <Box sx={{ mb: 5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <GroupsIcon color="primary" />
+                  <Typography variant="overline" color="text.secondary">
+                    {t("teamsSection")}
+                  </Typography>
+                </Box>
+                <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
+                  {t("competitiveHistory")}
+                </Typography>
+                <Stack spacing={1.5}>
+                  {membershipsBySeason.map((m) => (
+                    <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
                       <Paper
                         elevation={0}
                         sx={{
-                          p: 2,
                           border: "1px solid",
-                          borderColor: isFirst ? medalColor : "divider",
-                          boxShadow: isFirst
-                            ? `0 4px 16px ${alpha(brandColor.black, 0.12)}`
-                            : "none",
+                          borderColor: "divider",
+                          overflow: "hidden",
                           display: "flex",
-                          alignItems: "center",
-                          gap: 1.5,
-                          height: "100%",
+                          alignItems: "stretch",
+                          cursor: "pointer",
+                          transition: "all 0.12s",
+                          ...onHover({ transform: "translateX(4px)", boxShadow: 2 }),
                         }}
                       >
-                        <MedalDisc
-                          rank={isFirst ? 1 : isSecond ? 2 : 3}
-                          size={46}
-                          borderWidth={3}
-                          iconSize={22}
-                        />
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: medalColor,
-                              fontWeight: FONT_WEIGHT.bold,
-                              textTransform: "uppercase",
-                              letterSpacing: "0.06em",
-                              fontSize: TYPE_SCALE.xs,
-                              display: "block",
-                            }}
-                          >
-                            {medalLabel}
-                          </Typography>
-                          <Typography variant="body2" fontWeight={FONT_WEIGHT.bold} noWrap>
-                            {m.teamName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Stagione {m.season} · {m.points} punti
-                          </Typography>
-                        </Box>
-                      </Paper>
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            </Box>
-          </>
-        )}
-
-        {/* Squadre */}
-        {player.teamMemberships.length > 0 && (
-          <>
-            <Divider sx={{ mb: 5 }} />
-            <Box sx={{ mb: 5 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <GroupsIcon color="primary" />
-                <Typography variant="overline" color="text.secondary">
-                  {t("teamsSection")}
-                </Typography>
-              </Box>
-              <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
-                {t("competitiveHistory")}
-              </Typography>
-              <Stack spacing={1.5}>
-                {membershipsBySeason.map((m) => (
-                  <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        border: "1px solid",
-                        borderColor: "divider",
-                        overflow: "hidden",
-                        display: "flex",
-                        alignItems: "stretch",
-                        cursor: "pointer",
-                        transition: "all 0.12s",
-                        ...onHover({ transform: "translateX(4px)", boxShadow: 2 }),
-                      }}
-                    >
-                      {/* Fascia della tinta squadra; senza tinta nessun segno (UX-29). */}
-                      {teamColor(m.team.color) && (
-                        <Box sx={{ width: 6, flexShrink: 0, bgcolor: teamColor(m.team.color) }} />
-                      )}
-                      <Box
-                        sx={{
-                          flex: 1,
-                          p: 2,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 2,
-                        }}
-                      >
-                        <Box>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-                              {m.team.name}
-                            </Typography>
-                            {m.isCaptain && (
-                              <EmojiEventsIcon sx={{ fontSize: 14, color: "medal.gold" }} />
-                            )}
-                          </Box>
-                          {m.team.championship && (
-                            <Typography variant="caption" color="text.secondary">
-                              {m.team.championship}
-                            </Typography>
-                          )}
-                        </Box>
-                        <Chip
-                          label={`Stagione ${m.team.season}`}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontSize: TYPE_SCALE.xs }}
-                        />
-                      </Box>
-                    </Paper>
-                  </Link>
-                ))}
-              </Stack>
-            </Box>
-          </>
-        )}
-
-        {/* Partite giocate con statistiche */}
-        {filteredStats.length > 0 && (
-          <>
-            <Divider sx={{ mb: 5 }} />
-            <Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <SportsBasketballIcon color="primary" />
-                <Typography variant="overline" color="text.secondary">
-                  {t("matches")}
-                </Typography>
-              </Box>
-              <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
-                {t("matchStats")}
-              </Typography>
-              <Stack spacing={1.5}>
-                {filteredStats.map((ms) => (
-                  <Link
-                    key={ms.id}
-                    href={`/partite/${ms.match.slug ?? ms.match.id}`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        border: "1px solid",
-                        borderColor: "divider",
-                        overflow: "hidden",
-                        cursor: "pointer",
-                        transition: "box-shadow 0.12s, transform 0.12s",
-                        ...onHover({ boxShadow: 2, transform: "translateX(3px)" }),
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "stretch" }}>
+                        {/* Fascia della tinta squadra; senza tinta nessun segno (UX-29). */}
+                        {teamColor(m.team.color) && (
+                          <Box sx={{ width: 6, flexShrink: 0, bgcolor: teamColor(m.team.color) }} />
+                        )}
                         <Box
                           sx={{
-                            width: 6,
-                            flexShrink: 0,
-                            backgroundColor: ms.match.result
-                              ? MATCH_RESULT_META[ms.match.result].color
-                              : "action.hover",
+                            flex: 1,
+                            p: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 2,
                           }}
-                        />
-                        <Box sx={{ flex: 1, p: 2 }}>
+                        >
+                          <Box>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                                {m.team.name}
+                              </Typography>
+                              {m.isCaptain && (
+                                <EmojiEventsIcon sx={{ fontSize: 14, color: "medal.gold" }} />
+                              )}
+                            </Box>
+                            {m.team.championship && (
+                              <Typography variant="caption" color="text.secondary">
+                                {m.team.championship}
+                              </Typography>
+                            )}
+                          </Box>
+                          <Chip
+                            label={`Stagione ${m.team.season}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontSize: TYPE_SCALE.xs }}
+                          />
+                        </Box>
+                      </Paper>
+                    </Link>
+                  ))}
+                </Stack>
+              </Box>
+            </>
+          )}
+
+          {/* Partite giocate con statistiche */}
+          {filteredStats.length > 0 && (
+            <>
+              <Divider sx={{ mb: 5 }} />
+              <Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <SportsBasketballIcon color="primary" />
+                  <Typography variant="overline" color="text.secondary">
+                    {t("matches")}
+                  </Typography>
+                </Box>
+                <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
+                  {t("matchStats")}
+                </Typography>
+                <Stack spacing={1.5}>
+                  {filteredStats.map((ms) => (
+                    <Link
+                      key={ms.id}
+                      href={`/partite/${ms.match.slug ?? ms.match.id}`}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          border: "1px solid",
+                          borderColor: "divider",
+                          overflow: "hidden",
+                          cursor: "pointer",
+                          transition: "box-shadow 0.12s, transform 0.12s",
+                          ...onHover({ boxShadow: 2, transform: "translateX(3px)" }),
+                        }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "stretch" }}>
                           <Box
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              flexWrap: "wrap",
-                              gap: 1,
-                              mb: 1,
+                              width: 6,
+                              flexShrink: 0,
+                              backgroundColor: ms.match.result
+                                ? MATCH_RESULT_META[ms.match.result].color
+                                : "action.hover",
                             }}
-                          >
-                            <Box>
-                              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
-                                {ms.match.team.name} vs{" "}
-                                {ms.match.opponent?.name ??
-                                  ms.match.opponentTeam?.name ??
-                                  "Avversario"}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {formatRome(new Date(ms.match.date), "d MMMM yyyy", {
-                                  locale: dateLocale,
-                                })}
-                                {ms.match.ourScore !== null && ms.match.theirScore !== null
-                                  ? `  ·  ${ms.match.ourScore} – ${ms.match.theirScore}`
-                                  : ""}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              {ms.match.result && (
-                                <Chip
-                                  label={matchResultLabel(ms.match.result)}
-                                  size="small"
-                                  sx={{
-                                    backgroundColor: MATCH_RESULT_META[ms.match.result].color,
-                                    color: "match.onFill",
-                                    fontSize: TYPE_SCALE.xs,
-                                  }}
-                                />
-                              )}
-                              <ChevronRightIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                            </Box>
-                          </Box>
-                          <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
-                            <StatItem label={t("rowPoints")} value={ms.points} />
-                            {ms.twoPointers > 0 && (
-                              <StatItem label={t("row2pt")} value={ms.twoPointers} />
-                            )}
-                            {ms.threePointers > 0 && (
-                              <StatItem label={t("row3pt")} value={ms.threePointers} />
-                            )}
-                            {ms.freeThrows > 0 && (
-                              <StatItem label={t("rowFreeThrows")} value={ms.freeThrows} />
-                            )}
-                            {ms.fouls > 0 && <StatItem label={t("rowFouls")} value={ms.fouls} />}
-                            {ms.illegalFouls > 0 && (
-                              <StatItem label={t("rowIllegal")} value={ms.illegalFouls} />
-                            )}
-                            {ms.shotsAttempted > 0 && (
-                              <StatItem label={t("rowShots")} value={ms.shotsAttempted} />
-                            )}
-                          </Box>
-                          {ms.notes && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 1 }}
+                          />
+                          <Box sx={{ flex: 1, p: 2 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: 1,
+                                mb: 1,
+                              }}
                             >
-                              {ms.notes}
-                            </Typography>
-                          )}
+                              <Box>
+                                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                                  {ms.match.team.name} vs{" "}
+                                  {ms.match.opponent?.name ??
+                                    ms.match.opponentTeam?.name ??
+                                    "Avversario"}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatRome(new Date(ms.match.date), "d MMMM yyyy", {
+                                    locale: dateLocale,
+                                  })}
+                                  {ms.match.ourScore !== null && ms.match.theirScore !== null
+                                    ? `  ·  ${ms.match.ourScore} – ${ms.match.theirScore}`
+                                    : ""}
+                                </Typography>
+                              </Box>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                {ms.match.result && (
+                                  <Chip
+                                    label={matchResultLabel(ms.match.result)}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor: MATCH_RESULT_META[ms.match.result].color,
+                                      color: "match.onFill",
+                                      fontSize: TYPE_SCALE.xs,
+                                    }}
+                                  />
+                                )}
+                                <ChevronRightIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                              <StatItem label={t("rowPoints")} value={ms.points} />
+                              {ms.twoPointers > 0 && (
+                                <StatItem label={t("row2pt")} value={ms.twoPointers} />
+                              )}
+                              {ms.threePointers > 0 && (
+                                <StatItem label={t("row3pt")} value={ms.threePointers} />
+                              )}
+                              {ms.freeThrows > 0 && (
+                                <StatItem label={t("rowFreeThrows")} value={ms.freeThrows} />
+                              )}
+                              {ms.fouls > 0 && <StatItem label={t("rowFouls")} value={ms.fouls} />}
+                              {ms.illegalFouls > 0 && (
+                                <StatItem label={t("rowIllegal")} value={ms.illegalFouls} />
+                              )}
+                              {ms.shotsAttempted > 0 && (
+                                <StatItem label={t("rowShots")} value={ms.shotsAttempted} />
+                              )}
+                            </Box>
+                            {ms.notes && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: "block", mt: 1 }}
+                              >
+                                {ms.notes}
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
-                      </Box>
-                    </Paper>
-                  </Link>
-                ))}
-              </Stack>
-            </Box>
-          </>
-        )}
+                      </Paper>
+                    </Link>
+                  ))}
+                </Stack>
+              </Box>
+            </>
+          )}
+        </Box>
       </Container>
     </>
   );

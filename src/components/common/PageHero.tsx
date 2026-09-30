@@ -1,6 +1,7 @@
 import { Box, Container, Typography } from "@mui/material";
 import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { columnSx, type PageColumn } from "@/lib/layout";
 
 /**
  * Page header delle liste pubbliche (UX-32), uno dei tre modelli di
@@ -19,14 +20,17 @@ interface PageHeroProps {
   nav?: React.ReactNode;
   /** Azione facoltativa a destra del titolo (su mobile va sotto). */
   action?: React.ReactNode;
+  /** Colonna della pagina (UX-37): la stessa del contenuto sotto, cosi' titolo e azione stanno sopra di lui. */
+  column?: PageColumn;
 }
 
 interface PageHeroFrameProps {
+  column?: PageColumn;
   children: React.ReactNode;
 }
 
 /** La fascia senza contenuto: la usa anche lo skeleton dei `loading.tsx`. */
-export function PageHeroFrame({ children }: PageHeroFrameProps) {
+export function PageHeroFrame({ column = "full", children }: PageHeroFrameProps) {
   return (
     <Box
       style={{ backgroundImage: heroGradient.band }}
@@ -39,14 +43,23 @@ export function PageHeroFrame({ children }: PageHeroFrameProps) {
         alignItems: "center",
       }}
     >
-      <Container maxWidth="lg">{children}</Container>
+      <Container maxWidth="lg">
+        <Box sx={columnSx(column)}>{children}</Box>
+      </Container>
     </Box>
   );
 }
 
-export default function PageHero({ title, subtitle, breadcrumb, nav, action }: PageHeroProps) {
+export default function PageHero({
+  title,
+  subtitle,
+  breadcrumb,
+  nav,
+  action,
+  column,
+}: PageHeroProps) {
   return (
-    <PageHeroFrame>
+    <PageHeroFrame column={column}>
       {breadcrumb && <Box sx={{ mb: 1 }}>{breadcrumb}</Box>}
       <Box
         sx={{

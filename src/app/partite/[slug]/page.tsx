@@ -9,6 +9,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { Container, Typography, Box, Link as MuiLink } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import { heroGradient, heroImage, heroResultColor, heroText, heroTint } from "@/lib/heroStyles";
 import { Fragment } from "react";
@@ -640,114 +641,118 @@ export default async function MatchDetailPage({ params }: Props) {
 
       {match.mvps.length > 0 && (
         <Container maxWidth="lg" sx={{ mt: { xs: 3, md: 4 }, mb: -2 }}>
-          <Box
-            sx={{
-              p: 2.5,
-              borderRadius: RADIUS.lg,
-              // Era una card color crema con bordo oro, fuori palette e
-              // sbagliata in dark: ora e' una superficie del tema col bordo
-              // della medaglia.
-              bgcolor: "action.hover",
-              border: "1px solid",
-              borderColor: "medal.gold",
-            }}
-          >
+          <Box sx={columnSx("main")}>
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                mb: 1.5,
-                justifyContent: "center",
+                p: 2.5,
+                borderRadius: RADIUS.lg,
+                // Era una card color crema con bordo oro, fuori palette e
+                // sbagliata in dark: ora e' una superficie del tema col bordo
+                // della medaglia.
+                bgcolor: "action.hover",
+                border: "1px solid",
+                borderColor: "medal.gold",
               }}
             >
-              <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-              <Typography
-                variant="overline"
-                fontWeight={FONT_WEIGHT.bold}
-                sx={{ color: "medal.gold" }}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mb: 1.5,
+                  justifyContent: "center",
+                }}
               >
-                {t("mvp")}
-              </Typography>
-              <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 2,
-                justifyContent: "center",
-              }}
-            >
-              {match.mvps.map((m) => {
-                const person = m.user ?? m.child;
-                if (!person) return null;
-                const role = person.sportRole;
-                const name = person.name ?? "—";
-                const slug = m.user?.slug ?? m.user?.id ?? m.child?.slug ?? m.child?.id ?? null;
-                const content = (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      px: 1.5,
-                      py: 0.75,
-                      borderRadius: RADIUS.md,
-                      bgcolor: "background.paper",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      cursor: slug ? "pointer" : "default",
-                      transition: "transform 0.15s",
-                      ...(slug ? onHover({ transform: "translateY(-2px)" }) : {}),
-                    }}
-                  >
-                    <EmojiEventsIcon sx={{ color: "medal.gold", fontSize: 20 }} />
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        fontWeight={FONT_WEIGHT.bold}
-                        sx={{ color: "text.primary" }}
-                      >
-                        {name}
-                      </Typography>
-                      {role && (
-                        <Box sx={{ mt: 0.25 }}>
-                          <RoleBadge role={role} />
-                        </Box>
-                      )}
+                <EmojiEventsIcon sx={{ color: "medal.gold" }} />
+                <Typography
+                  variant="overline"
+                  fontWeight={FONT_WEIGHT.bold}
+                  sx={{ color: "medal.gold" }}
+                >
+                  {t("mvp")}
+                </Typography>
+                <EmojiEventsIcon sx={{ color: "medal.gold" }} />
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  justifyContent: "center",
+                }}
+              >
+                {match.mvps.map((m) => {
+                  const person = m.user ?? m.child;
+                  if (!person) return null;
+                  const role = person.sportRole;
+                  const name = person.name ?? "—";
+                  const slug = m.user?.slug ?? m.user?.id ?? m.child?.slug ?? m.child?.id ?? null;
+                  const content = (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        px: 1.5,
+                        py: 0.75,
+                        borderRadius: RADIUS.md,
+                        bgcolor: "background.paper",
+                        border: "1px solid",
+                        borderColor: "divider",
+                        cursor: slug ? "pointer" : "default",
+                        transition: "transform 0.15s",
+                        ...(slug ? onHover({ transform: "translateY(-2px)" }) : {}),
+                      }}
+                    >
+                      <EmojiEventsIcon sx={{ color: "medal.gold", fontSize: 20 }} />
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          fontWeight={FONT_WEIGHT.bold}
+                          sx={{ color: "text.primary" }}
+                        >
+                          {name}
+                        </Typography>
+                        {role && (
+                          <Box sx={{ mt: 0.25 }}>
+                            <RoleBadge role={role} />
+                          </Box>
+                        )}
+                      </Box>
                     </Box>
-                  </Box>
-                );
-                return slug ? (
-                  <Link key={m.id} href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
-                    {content}
-                  </Link>
-                ) : (
-                  <Box key={m.id}>{content}</Box>
-                );
-              })}
+                  );
+                  return slug ? (
+                    <Link key={m.id} href={`/giocatori/${slug}`} style={{ textDecoration: "none" }}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <Box key={m.id}>{content}</Box>
+                  );
+                })}
+              </Box>
             </Box>
           </Box>
         </Container>
       )}
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        <MatchDetailTabs
-          ourTeamColor={match.team.color}
-          notes={match.notes}
-          stats={match.playerStats}
-          callups={callups}
-          canSeeCallups={canSeeCallups}
-          hasScore={hasScore}
-          prevMatches={prevMatches}
-          groupStandings={groupStandings}
-          ourTeamId={match.team.id}
-          groupName={match.group?.name ?? null}
-          opponentName={opponentName}
-          matchId={match.id}
-          isStaff={isStaff}
-        />
+        <Box sx={columnSx("main")}>
+          <MatchDetailTabs
+            ourTeamColor={match.team.color}
+            notes={match.notes}
+            stats={match.playerStats}
+            callups={callups}
+            canSeeCallups={canSeeCallups}
+            hasScore={hasScore}
+            prevMatches={prevMatches}
+            groupStandings={groupStandings}
+            ourTeamId={match.team.id}
+            groupName={match.group?.name ?? null}
+            opponentName={opponentName}
+            matchId={match.id}
+            isStaff={isStaff}
+          />
+        </Box>
       </Container>
     </>
   );

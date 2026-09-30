@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Container, Typography, Box, Paper, Divider } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import Link from "next/link";
 import { SITE_HOST } from "@/lib/siteUrl";
 import { buildMetadata } from "@/lib/seo";
@@ -19,9 +19,9 @@ const LAST_UPDATE = "20 maggio 2026";
 export default function PrivacyPage() {
   return (
     <>
-      <PageHero title="Informativa sulla privacy" subtitle="Documento legale" />
+      <PageHero column="reading" title="Informativa sulla privacy" subtitle="Documento legale" />
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
             Ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679 (GDPR) e del D.Lgs. 196/2003
             come modificato dal D.Lgs. 101/2018. Ultimo aggiornamento: {LAST_UPDATE}.

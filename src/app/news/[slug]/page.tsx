@@ -18,7 +18,7 @@ import {
   Tooltip,
   Link as MuiLink,
 } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import Link from "next/link";
@@ -149,7 +149,7 @@ export default async function NewsSlugPage({ params }: Props) {
         />
       )}
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
             <MuiLink href="/news" underline="hover" color="text.secondary" variant="body2">
               News

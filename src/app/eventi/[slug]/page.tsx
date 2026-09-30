@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Container, Box, Typography, Stack } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import { getTranslations, getLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import JsonLd from "@/components/common/JsonLd";
@@ -116,54 +117,56 @@ export default async function EventoPage({ params }: Props) {
       />
 
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        {/* Con la locandina: due colonne su desktop (contenuto + locandina intera
+        <Box sx={columnSx("main")}>
+          {/* Con la locandina: due colonne su desktop (contenuto + locandina intera
             che resta visibile scorrendo); su mobile la locandina è una riga
             compatta prima della descrizione. */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "minmax(0, 1fr)",
-              md: ev.imageUrl ? "minmax(0, 1fr) 280px" : "minmax(0, 1fr)",
-            },
-            gap: { xs: 3, md: 4 },
-            alignItems: "start",
-          }}
-        >
-          <Stack spacing={3}>
-            {ev.description && (
-              // La descrizione e' il contenuto dell'evento, non una nota: testo
-              // pieno, non il grigio secondario che la faceva sembrare staccata.
-              <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
-                {ev.description}
-              </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "minmax(0, 1fr)",
+                md: ev.imageUrl ? "minmax(0, 1fr) 280px" : "minmax(0, 1fr)",
+              },
+              gap: { xs: 3, md: 4 },
+              alignItems: "start",
+            }}
+          >
+            <Stack spacing={3}>
+              {ev.description && (
+                // La descrizione e' il contenuto dell'evento, non una nota: testo
+                // pieno, non il grigio secondario che la faceva sembrare staccata.
+                <Typography variant="body1" sx={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+                  {ev.description}
+                </Typography>
+              )}
+
+              <EventRsvp
+                eventId={ev.id}
+                isLoggedIn={!!userId}
+                isPast={isPast}
+                members={rsvp.members}
+                guests={rsvp.guests}
+                options={optionsView}
+                allowGuests={ev.allowGuests}
+                maxGuests={ev.maxGuests}
+                initialGoing={going}
+              />
+            </Stack>
+
+            {ev.imageUrl && (
+              <Box
+                component="aside"
+                sx={{
+                  order: { xs: -1, md: 0 },
+                  position: { md: "sticky" },
+                  top: { md: 88 },
+                }}
+              >
+                <EventPoster imageUrl={ev.imageUrl} title={ev.title} />
+              </Box>
             )}
-
-            <EventRsvp
-              eventId={ev.id}
-              isLoggedIn={!!userId}
-              isPast={isPast}
-              members={rsvp.members}
-              guests={rsvp.guests}
-              options={optionsView}
-              allowGuests={ev.allowGuests}
-              maxGuests={ev.maxGuests}
-              initialGoing={going}
-            />
-          </Stack>
-
-          {ev.imageUrl && (
-            <Box
-              component="aside"
-              sx={{
-                order: { xs: -1, md: 0 },
-                position: { md: "sticky" },
-                top: { md: 88 },
-              }}
-            >
-              <EventPoster imageUrl={ev.imageUrl} title={ev.title} />
-            </Box>
-          )}
+          </Box>
         </Box>
       </Container>
     </>

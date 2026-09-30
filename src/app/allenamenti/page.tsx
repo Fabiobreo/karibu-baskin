@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
 import { isMemberRole } from "@/lib/authRoles";
 import { prisma } from "@/lib/db";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import PageHero from "@/components/common/PageHero";
 import StaffManageButton from "@/components/common/StaffManageButton";
 import AllenamentiClient from "@/components/training/AllenamentiClient";
@@ -130,6 +131,7 @@ export default async function AllenamentiPage({
   return (
     <>
       <PageHero
+        column="main"
         title={t("trainings")}
         action={
           // "Gestisci" dello staff nella fascia, come in tutte le intestazioni (UX-32).
@@ -137,17 +139,19 @@ export default async function AllenamentiPage({
         }
       />
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-        <AllenamentiClient
-          inCorso={inCorso}
-          upcoming={upcoming}
-          past={past}
-          seasons={seasons}
-          season={season}
-          attendedCount={userId ? mine.size : null}
-          registeredSessionIds={activeRegs.map((r) => r.sessionId)}
-          registrationIdBySession={Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]))}
-          isStaff={isStaff}
-        />
+        <Box sx={columnSx("main")}>
+          <AllenamentiClient
+            inCorso={inCorso}
+            upcoming={upcoming}
+            past={past}
+            seasons={seasons}
+            season={season}
+            attendedCount={userId ? mine.size : null}
+            registeredSessionIds={activeRegs.map((r) => r.sessionId)}
+            registrationIdBySession={Object.fromEntries(activeRegs.map((r) => [r.sessionId, r.id]))}
+            isStaff={isStaff}
+          />
+        </Box>
       </Container>
     </>
   );

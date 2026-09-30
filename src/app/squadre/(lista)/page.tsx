@@ -10,6 +10,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
@@ -64,119 +65,88 @@ export default async function SquadrePage() {
 
   return (
     <>
-      <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} />
+      <PageHero column="main" title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
-        {/* Stats */}
-        <Grid container spacing={2} sx={{ mb: 7 }}>
-          {STATS.map((s) => (
-            <Grid key={s.label} size={{ xs: 6, md: 3 }}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 2.5,
-                  textAlign: "center",
-                  border: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
-                <Typography
-                  variant="h4"
-                  component="p"
-                  color="text.primary"
-                  sx={{ fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
-                >
-                  {s.value}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
+        <Box sx={columnSx("main")}>
+          {/* Stats */}
+          <Grid container spacing={2} sx={{ mb: 7 }}>
+            {STATS.map((s) => (
+              <Grid key={s.label} size={{ xs: 6, md: 3 }}>
+                <Paper
+                  elevation={0}
                   sx={{
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    fontWeight: FONT_WEIGHT.semibold,
+                    p: 2.5,
+                    textAlign: "center",
+                    border: "1px solid",
+                    borderColor: "divider",
                   }}
                 >
-                  {s.label}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
+                  <Typography
+                    variant="h4"
+                    component="p"
+                    color="text.primary"
+                    sx={{ fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
+                  >
+                    {s.value}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                      fontWeight: FONT_WEIGHT.semibold,
+                    }}
+                  >
+                    {s.label}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
 
-        <Divider sx={{ mb: 7 }} />
+          <Divider sx={{ mb: 7 }} />
 
-        {/* Squadre stagione corrente */}
-        {currentTeams.length === 0 ? (
-          <EmptyState
-            icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={t("noTeams")}
-            message={t("noTeamsDesc")}
-          />
-        ) : (
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-              {!isFallback && (
-                <Chip
-                  label={t("currentSeasonChip")}
-                  size="small"
-                  icon={<StarIcon />}
-                  variant="outlined"
-                />
-              )}
-              <Typography variant="overline" color="text.secondary">
-                {t("seasonLabel")} {displaySeason}
-              </Typography>
-            </Box>
-            {isFallback && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
-              </Typography>
-            )}
-            <Typography
-              variant="h4"
-              component="h2"
-              sx={{ mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
-            >
-              {t("ourTeams")}
-            </Typography>
-            <TeamGrid teams={currentTeams} t={t} />
-          </Box>
-        )}
-
-        {/* Simulatore Sfida — solo loggati (la pagina reindirizza al login) */}
-        <Box
-          sx={{
-            mt: 6,
-            p: { xs: 2.5, md: 3 },
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: RADIUS.lg,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-            flexWrap: "wrap",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <SportsKabaddiIcon sx={{ color: "primary.main" }} />
+          {/* Squadre stagione corrente */}
+          {currentTeams.length === 0 ? (
+            <EmptyState
+              icon={<GroupsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+              title={t("noTeams")}
+              message={t("noTeamsDesc")}
+            />
+          ) : (
             <Box>
-              <Typography variant="subtitle1" component="h2">
-                {t("simChallengeTitle")}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+                {!isFallback && (
+                  <Chip
+                    label={t("currentSeasonChip")}
+                    size="small"
+                    icon={<StarIcon />}
+                    variant="outlined"
+                  />
+                )}
+                <Typography variant="overline" color="text.secondary">
+                  {t("seasonLabel")} {displaySeason}
+                </Typography>
+              </Box>
+              {isFallback && (
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
+                </Typography>
+              )}
+              <Typography
+                variant="h4"
+                component="h2"
+                sx={{ mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
+              >
+                {t("ourTeams")}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t("simChallengeDesc")}
-              </Typography>
+              <TeamGrid teams={currentTeams} t={t} />
             </Box>
-          </Box>
-          <Button href="/squadre/sfida" variant="contained">
-            {t("simChallengeCta")}
-          </Button>
-        </Box>
+          )}
 
-        {/* Link archivio */}
-        {hasPastSeasons && (
+          {/* Simulatore Sfida — solo loggati (la pagina reindirizza al login) */}
           <Box
             sx={{
               mt: 6,
@@ -192,51 +162,84 @@ export default async function SquadrePage() {
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <HistoryIcon sx={{ color: "text.secondary" }} />
+              <SportsKabaddiIcon sx={{ color: "primary.main" }} />
               <Box>
                 <Typography variant="subtitle1" component="h2">
-                  {t("previousSeasons")}
+                  {t("simChallengeTitle")}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {t("previousSeasonsDesc")}
+                  {t("simChallengeDesc")}
                 </Typography>
               </Box>
             </Box>
-            <Button href="/squadre/archivio" variant="outlined" size="small">
-              {t("goToArchive")}
+            <Button href="/squadre/sfida" variant="contained">
+              {t("simChallengeCta")}
             </Button>
           </Box>
-        )}
 
-        {/* CTA */}
-        {currentTeams.length > 0 && (
-          <Box
-            sx={{
-              mt: 8,
-              background: heroGradient.footer,
-              borderRadius: RADIUS.lg,
-              p: { xs: 3, md: 5 },
-              textAlign: "center",
-              color: "common.white",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <EmojiEventsIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
-            <Typography variant="h5" component="h2">
-              {t("joinUs")}
-            </Typography>
-            <Typography variant="body1" sx={{ color: heroText.muted, maxWidth: 420 }}>
-              {t("joinUsDesc")}
-            </Typography>
-            {/* Verso "Vieni a provare" (UX-15). */}
-            <Button href={TRY_IT_HREF} variant="contained" size="large" sx={{ mt: 2 }}>
-              {t("joinUsCta")}
-            </Button>
-          </Box>
-        )}
+          {/* Link archivio */}
+          {hasPastSeasons && (
+            <Box
+              sx={{
+                mt: 6,
+                p: { xs: 2.5, md: 3 },
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: RADIUS.lg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 2,
+                flexWrap: "wrap",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <HistoryIcon sx={{ color: "text.secondary" }} />
+                <Box>
+                  <Typography variant="subtitle1" component="h2">
+                    {t("previousSeasons")}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t("previousSeasonsDesc")}
+                  </Typography>
+                </Box>
+              </Box>
+              <Button href="/squadre/archivio" variant="outlined" size="small">
+                {t("goToArchive")}
+              </Button>
+            </Box>
+          )}
+
+          {/* CTA */}
+          {currentTeams.length > 0 && (
+            <Box
+              sx={{
+                mt: 8,
+                background: heroGradient.footer,
+                borderRadius: RADIUS.lg,
+                p: { xs: 3, md: 5 },
+                textAlign: "center",
+                color: "common.white",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <EmojiEventsIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
+              <Typography variant="h5" component="h2">
+                {t("joinUs")}
+              </Typography>
+              <Typography variant="body1" sx={{ color: heroText.muted, maxWidth: 420 }}>
+                {t("joinUsDesc")}
+              </Typography>
+              {/* Verso "Vieni a provare" (UX-15). */}
+              <Button href={TRY_IT_HREF} variant="contained" size="large" sx={{ mt: 2 }}>
+                {t("joinUsCta")}
+              </Button>
+            </Box>
+          )}
+        </Box>
       </Container>
     </>
   );

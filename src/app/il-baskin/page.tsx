@@ -8,7 +8,7 @@ import {
   Divider,
   Stack,
 } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import { getTranslations, getLocale } from "next-intl/server";
 import PageHero from "@/components/common/PageHero";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -49,10 +49,14 @@ export default async function IlBaskinPage() {
 
   return (
     <>
-      <PageHero title={t("ilbaskin.heroTitle")} subtitle={t("ilbaskin.heroSubtitle")} />
+      <PageHero
+        column="reading"
+        title={t("ilbaskin.heroTitle")}
+        subtitle={t("ilbaskin.heroSubtitle")}
+      />
 
       <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           {/* Storia */}
           <Box sx={{ mb: 5 }}>
             <Typography variant="overline" color="text.secondary">

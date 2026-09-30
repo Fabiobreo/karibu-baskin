@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import { Box, Typography, Container, Chip, Paper } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
@@ -47,13 +47,14 @@ export default async function NewsPage() {
   return (
     <>
       <PageHero
+        column="reading"
         title="News"
         subtitle={t("news.heroSubtitle")}
         action={isStaff && <StaffManageButton href="/admin/news" label="Gestisci news" />}
       />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           {posts.length === 0 && (
             <EmptyState
               icon={<ArticleIcon sx={{ fontSize: 56, color: "text.disabled" }} />}

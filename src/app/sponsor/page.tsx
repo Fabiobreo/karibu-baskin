@@ -8,7 +8,7 @@ import {
   Divider,
   Button,
 } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import { getTranslations } from "next-intl/server";
 import PageHero from "@/components/common/PageHero";
@@ -73,10 +73,14 @@ export default async function SponsorPage() {
 
   return (
     <>
-      <PageHero title={t("sponsor.heroTitle")} subtitle={t("sponsor.heroSubtitle")} />
+      <PageHero
+        column="reading"
+        title={t("sponsor.heroTitle")}
+        subtitle={t("sponsor.heroSubtitle")}
+      />
 
       <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           {/* Sponsor attuali */}
           <Box sx={{ mb: 7 }}>
             <Typography variant="overline" color="text.secondary">

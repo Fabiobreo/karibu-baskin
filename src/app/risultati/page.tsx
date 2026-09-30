@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { teamColor } from "@/lib/teamColors";
 import { Container, Typography, Box, Chip, Stack } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
@@ -103,168 +104,170 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title={t("resultsTitle")} />
+      <PageHero column="main" title={t("resultsTitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        {/* ── Filtri stagione ──────────────────────────────────────────────── */}
-        {chipSeasons.length > 1 && (
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              fontWeight={FONT_WEIGHT.semibold}
-              sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
-            >
-              {t("seasonLabel")}
-            </Typography>
-            {chipSeasons.map((s) => (
-              <Link
-                key={s}
-                href={`/risultati?season=${encodeURIComponent(s)}`}
-                style={{ textDecoration: "none" }}
+        <Box sx={columnSx("main")}>
+          {/* ── Filtri stagione ──────────────────────────────────────────────── */}
+          {chipSeasons.length > 1 && (
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 4, alignItems: "center" }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                fontWeight={FONT_WEIGHT.semibold}
+                sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
               >
-                <Chip
-                  label={s}
-                  size="small"
-                  variant={season === s ? "filled" : "outlined"}
-                  color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
-                />
-              </Link>
-            ))}
-          </Box>
-        )}
-
-        {showFallbackNotice && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
-          </Typography>
-        )}
-
-        {/* ── Nessun dato ─────────────────────────────────────────────────── */}
-        {teamGroups.length === 0 && (
-          <EmptyState
-            icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={`${t("resultsEmpty")} ${season}`}
-            message={t("resultsEmptyDesc")}
-          />
-        )}
-
-        {/* ── Sezioni per squadra ─────────────────────────────────────────── */}
-        <Stack spacing={5}>
-          {teamGroups.map((team) => {
-            const tw = team.matches.filter((m) => m.result === "WIN").length;
-            const td = team.matches.filter((m) => m.result === "DRAW").length;
-            const tl = team.matches.filter((m) => m.result === "LOSS").length;
-
-            return (
-              <Box key={team.id}>
-                {/* Team header */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    mb: 2,
-                    flexWrap: "wrap",
-                  }}
+                {t("seasonLabel")}
+              </Typography>
+              {chipSeasons.map((s) => (
+                <Link
+                  key={s}
+                  href={`/risultati?season=${encodeURIComponent(s)}`}
+                  style={{ textDecoration: "none" }}
                 >
-                  {teamColor(team.color) && (
-                    <Box
-                      sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: "50%",
-                        bgcolor: teamColor(team.color),
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
-                  <Typography component="h2" variant="h6" fontWeight={FONT_WEIGHT.bold}>
-                    {team.name}
-                  </Typography>
-                  {team.championship && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={FONT_WEIGHT.semibold}
-                    >
-                      {team.championship}
+                  <Chip
+                    label={s}
+                    size="small"
+                    variant={season === s ? "filled" : "outlined"}
+                    color={season === s ? "primary" : "default"}
+                    sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+                  />
+                </Link>
+              ))}
+            </Box>
+          )}
+
+          {showFallbackNotice && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              {tCommon("seasonNotStarted", { active: activeSeason, shown: displaySeason })}
+            </Typography>
+          )}
+
+          {/* ── Nessun dato ─────────────────────────────────────────────────── */}
+          {teamGroups.length === 0 && (
+            <EmptyState
+              icon={<EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+              title={`${t("resultsEmpty")} ${season}`}
+              message={t("resultsEmptyDesc")}
+            />
+          )}
+
+          {/* ── Sezioni per squadra ─────────────────────────────────────────── */}
+          <Stack spacing={5}>
+            {teamGroups.map((team) => {
+              const tw = team.matches.filter((m) => m.result === "WIN").length;
+              const td = team.matches.filter((m) => m.result === "DRAW").length;
+              const tl = team.matches.filter((m) => m.result === "LOSS").length;
+
+              return (
+                <Box key={team.id}>
+                  {/* Team header */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      mb: 2,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {teamColor(team.color) && (
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: "50%",
+                          bgcolor: teamColor(team.color),
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                    <Typography component="h2" variant="h6" fontWeight={FONT_WEIGHT.bold}>
+                      {team.name}
                     </Typography>
-                  )}
-                  <Box sx={{ ml: "auto", display: "flex", gap: 0.75 }}>
-                    <Chip
-                      label={wins(tw)}
-                      size="small"
-                      sx={{
-                        bgcolor: "match.winBg",
-                        color: "match.win",
-                        fontWeight: FONT_WEIGHT.bold,
-                        fontSize: TYPE_SCALE.xs,
-                        height: 20,
-                      }}
-                    />
-                    {td > 0 && (
+                    {team.championship && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight={FONT_WEIGHT.semibold}
+                      >
+                        {team.championship}
+                      </Typography>
+                    )}
+                    <Box sx={{ ml: "auto", display: "flex", gap: 0.75 }}>
                       <Chip
-                        label={draws(td)}
+                        label={wins(tw)}
                         size="small"
                         sx={{
-                          bgcolor: "match.drawBg",
-                          color: "match.draw",
+                          bgcolor: "match.winBg",
+                          color: "match.win",
                           fontWeight: FONT_WEIGHT.bold,
                           fontSize: TYPE_SCALE.xs,
                           height: 20,
                         }}
                       />
-                    )}
-                    <Chip
-                      label={losses(tl)}
-                      size="small"
-                      sx={{
-                        bgcolor: "match.lossBg",
-                        color: "match.loss",
-                        fontWeight: FONT_WEIGHT.bold,
-                        fontSize: TYPE_SCALE.xs,
-                        height: 20,
-                      }}
-                    />
+                      {td > 0 && (
+                        <Chip
+                          label={draws(td)}
+                          size="small"
+                          sx={{
+                            bgcolor: "match.drawBg",
+                            color: "match.draw",
+                            fontWeight: FONT_WEIGHT.bold,
+                            fontSize: TYPE_SCALE.xs,
+                            height: 20,
+                          }}
+                        />
+                      )}
+                      <Chip
+                        label={losses(tl)}
+                        size="small"
+                        sx={{
+                          bgcolor: "match.lossBg",
+                          color: "match.loss",
+                          fontWeight: FONT_WEIGHT.bold,
+                          fontSize: TYPE_SCALE.xs,
+                          height: 20,
+                        }}
+                      />
+                    </Box>
                   </Box>
+
+                  {/* Match cards */}
+                  <Stack spacing={1}>
+                    {team.matches.map((m) => (
+                      <MatchCard
+                        key={m.id}
+                        match={m}
+                        tFn={t}
+                        dateLocale={dateLocale}
+                        matchResultLabel={matchResultLabel}
+                      />
+                    ))}
+                  </Stack>
                 </Box>
+              );
+            })}
+          </Stack>
 
-                {/* Match cards */}
-                <Stack spacing={1}>
-                  {team.matches.map((m) => (
-                    <MatchCard
-                      key={m.id}
-                      match={m}
-                      tFn={t}
-                      dateLocale={dateLocale}
-                      matchResultLabel={matchResultLabel}
-                    />
-                  ))}
-                </Stack>
-              </Box>
-            );
-          })}
-        </Stack>
-
-        {/* ── Link a prossime partite ─────────────────────────────────────── */}
-        {teamGroups.length > 0 && (
-          <Box sx={{ textAlign: "right", mt: 4 }}>
-            <Link href="/partite" style={{ textDecoration: "none" }}>
-              <Typography
-                variant="body2"
-                color="primary.onLight"
-                sx={{
-                  fontWeight: FONT_WEIGHT.semibold,
-                  "&:hover": { textDecoration: "underline" },
-                }}
-              >
-                {t("seeMatches")}
-              </Typography>
-            </Link>
-          </Box>
-        )}
+          {/* ── Link a prossime partite ─────────────────────────────────────── */}
+          {teamGroups.length > 0 && (
+            <Box sx={{ textAlign: "right", mt: 4 }}>
+              <Link href="/partite" style={{ textDecoration: "none" }}>
+                <Typography
+                  variant="body2"
+                  color="primary.onLight"
+                  sx={{
+                    fontWeight: FONT_WEIGHT.semibold,
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                >
+                  {t("seeMatches")}
+                </Typography>
+              </Link>
+            </Box>
+          )}
+        </Box>
       </Container>
     </>
   );

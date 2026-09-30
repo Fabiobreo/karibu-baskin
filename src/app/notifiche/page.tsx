@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Box, Container } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import { auth } from "@/lib/authjs";
 import { prisma } from "@/lib/db";
 import { mergePrefs, CONTROLLABLE_TYPES } from "@/lib/notifications/notifPrefs";
@@ -63,7 +63,7 @@ export default async function NotifichePage() {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <Box sx={{ maxWidth: READING_WIDTH }}>
+        <Box sx={columnSx("reading")}>
           <PageHeader
             title={t("heroTitle")}
             subtitle={t("heroSubtitle")}

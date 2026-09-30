@@ -1,11 +1,11 @@
 import { Container, Skeleton, Stack, Box } from "@mui/material";
-import { READING_WIDTH } from "@/lib/layout";
+import { columnSx } from "@/lib/layout";
 import { RADIUS } from "@/lib/radius";
 
 export default function NotificheLoading() {
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-      <Box sx={{ maxWidth: READING_WIDTH }}>
+      <Box sx={columnSx("reading")}>
         <Skeleton variant="text" width={160} height={40} sx={{ mb: 3 }} />
         <Stack spacing={1.5}>
           {Array.from({ length: 5 }).map((_, i) => (

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import PageHeader from "@/components/common/PageHeader";
 import { redirect } from "next/navigation";
 import { loadMyAvailabilityMatches } from "@/lib/matches/myAvailabilities";
@@ -29,15 +30,17 @@ export default async function MieDisponibilitaPage() {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <PageHeader
-          title={t("myAvailabilities")}
-          subtitle={t("availabilitiesHeroSubtitle")}
-          breadcrumb={[
-            { label: t("title"), href: "/profilo" },
-            { label: t("availabilitiesTitle") },
-          ]}
-        />
-        <MieDisponibilitaClient initialMatches={items} />
+        <Box sx={columnSx("main")}>
+          <PageHeader
+            title={t("myAvailabilities")}
+            subtitle={t("availabilitiesHeroSubtitle")}
+            breadcrumb={[
+              { label: t("title"), href: "/profilo" },
+              { label: t("availabilitiesTitle") },
+            ]}
+          />
+          <MieDisponibilitaClient initialMatches={items} />
+        </Box>
       </Container>
     </>
   );

@@ -18,6 +18,7 @@ import {
   Stack,
   Divider,
 } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
@@ -552,105 +553,170 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
       </EntityHero>
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        {nextMatch &&
-          (() => {
-            // Precedente incontro tra le stesse squadre nella stessa stagione
-            const previousMeeting = playedMatchesDesc.find(
-              (p) => p.opponent.id === nextMatch.opponent.id
-            );
-            return (
-              <NextMatchCard
-                match={nextMatch}
-                teamName={team.name}
-                teamColor={teamHue}
-                now={now}
-                previousMeeting={previousMeeting ?? null}
-              />
-            );
-          })()}
+        <Box sx={columnSx("main")}>
+          {nextMatch &&
+            (() => {
+              // Precedente incontro tra le stesse squadre nella stessa stagione
+              const previousMeeting = playedMatchesDesc.find(
+                (p) => p.opponent.id === nextMatch.opponent.id
+              );
+              return (
+                <NextMatchCard
+                  match={nextMatch}
+                  teamName={team.name}
+                  teamColor={teamHue}
+                  now={now}
+                  previousMeeting={previousMeeting ?? null}
+                />
+              );
+            })()}
 
-        {playedMatches.length > 0 && (
-          <Box sx={{ mb: 6, mt: nextMatch ? 4 : 0 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: { xs: "flex-start", sm: "flex-end" },
-                justifyContent: "space-between",
-                gap: 1,
-                mb: 2.5,
-                flexWrap: "wrap",
-              }}
-            >
-              <Box>
-                <Typography variant="overline" color="text.secondary">
-                  Statistiche
-                </Typography>
-                <Typography variant="h4" sx={{ mt: 0.5 }}>
-                  {t("seasonBalance")}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontWeight: FONT_WEIGHT.semibold }}
-                >
-                  {includeFriendlies ? t("filterAll") : t("filterOfficial")}
-                </Typography>
-              </Box>
-              {hasFriendlies && (
-                <Box sx={{ display: "flex", gap: 0.5 }}>
-                  <Link
-                    href={`/squadre/${seasonParam}/${slug}`}
-                    style={{ textDecoration: "none" }}
-                    scroll={false}
+          {playedMatches.length > 0 && (
+            <Box sx={{ mb: 6, mt: nextMatch ? 4 : 0 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: { xs: "flex-start", sm: "flex-end" },
+                  justifyContent: "space-between",
+                  gap: 1,
+                  mb: 2.5,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Box>
+                  <Typography variant="overline" color="text.secondary">
+                    Statistiche
+                  </Typography>
+                  <Typography variant="h4" sx={{ mt: 0.5 }}>
+                    {t("seasonBalance")}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: FONT_WEIGHT.semibold }}
                   >
-                    <Chip
-                      label={t("filterOfficialShort")}
-                      size="small"
-                      variant={!includeFriendlies ? "filled" : "outlined"}
-                      color={!includeFriendlies ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
-                    />
-                  </Link>
-                  <Link
-                    href={`/squadre/${seasonParam}/${slug}?amichevoli=1`}
-                    style={{ textDecoration: "none" }}
-                    scroll={false}
-                  >
-                    <Chip
-                      label={t("filterAllShort")}
-                      size="small"
-                      variant={includeFriendlies ? "filled" : "outlined"}
-                      color={includeFriendlies ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
-                    />
-                  </Link>
+                    {includeFriendlies ? t("filterAll") : t("filterOfficial")}
+                  </Typography>
                 </Box>
-              )}
-            </Box>
+                {hasFriendlies && (
+                  <Box sx={{ display: "flex", gap: 0.5 }}>
+                    <Link
+                      href={`/squadre/${seasonParam}/${slug}`}
+                      style={{ textDecoration: "none" }}
+                      scroll={false}
+                    >
+                      <Chip
+                        label={t("filterOfficialShort")}
+                        size="small"
+                        variant={!includeFriendlies ? "filled" : "outlined"}
+                        color={!includeFriendlies ? "primary" : "default"}
+                        sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+                      />
+                    </Link>
+                    <Link
+                      href={`/squadre/${seasonParam}/${slug}?amichevoli=1`}
+                      style={{ textDecoration: "none" }}
+                      scroll={false}
+                    >
+                      <Chip
+                        label={t("filterAllShort")}
+                        size="small"
+                        variant={includeFriendlies ? "filled" : "outlined"}
+                        color={includeFriendlies ? "primary" : "default"}
+                        sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+                      />
+                    </Link>
+                  </Box>
+                )}
+              </Box>
 
-            <Grid container spacing={2}>
-              {/* Differenza punti */}
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2.5,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1,
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                    {diff > 0 ? (
-                      <TrendingUpIcon sx={{ fontSize: 18, color: "match.win" }} />
-                    ) : diff < 0 ? (
-                      <TrendingDownIcon sx={{ fontSize: 18, color: "match.loss" }} />
-                    ) : (
-                      <TrendingFlatIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-                    )}
+              <Grid container spacing={2}>
+                {/* Differenza punti */}
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                      {diff > 0 ? (
+                        <TrendingUpIcon sx={{ fontSize: 18, color: "match.win" }} />
+                      ) : diff < 0 ? (
+                        <TrendingDownIcon sx={{ fontSize: 18, color: "match.loss" }} />
+                      ) : (
+                        <TrendingFlatIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                      )}
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          fontWeight: FONT_WEIGHT.semibold,
+                        }}
+                      >
+                        {t("statDiff")}
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        color: diff > 0 ? "match.win" : diff < 0 ? "match.loss" : "text.primary",
+                        fontVariantNumeric: "tabular-nums",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {diff > 0 ? "+" : ""}
+                      {diff}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 2, mt: "auto" }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          {t("statScored")}
+                        </Typography>
+                        <Typography
+                          fontWeight={FONT_WEIGHT.semibold}
+                          sx={{ fontVariantNumeric: "tabular-nums" }}
+                        >
+                          {pointsFor}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          {t("statConceded")}
+                        </Typography>
+                        <Typography
+                          fontWeight={FONT_WEIGHT.semibold}
+                          sx={{ fontVariantNumeric: "tabular-nums" }}
+                        >
+                          {pointsAgainst}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </Grid>
+
+                {/* Media punti */}
+                <Grid size={{ xs: 6, sm: 4 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
                     <Typography
                       variant="caption"
                       color="text.secondary"
@@ -660,406 +726,348 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                         fontWeight: FONT_WEIGHT.semibold,
                       }}
                     >
-                      {t("statDiff")}
+                      {t("statAvg")}
                     </Typography>
-                  </Box>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      color: diff > 0 ? "match.win" : diff < 0 ? "match.loss" : "text.primary",
-                      fontVariantNumeric: "tabular-nums",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {diff > 0 ? "+" : ""}
-                    {diff}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 2, mt: "auto" }}>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {t("statScored")}
-                      </Typography>
-                      <Typography
-                        fontWeight={FONT_WEIGHT.semibold}
-                        sx={{ fontVariantNumeric: "tabular-nums" }}
-                      >
-                        {pointsFor}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {t("statConceded")}
-                      </Typography>
-                      <Typography
-                        fontWeight={FONT_WEIGHT.semibold}
-                        sx={{ fontVariantNumeric: "tabular-nums" }}
-                      >
-                        {pointsAgainst}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Grid>
-
-              {/* Media punti */}
-              <Grid size={{ xs: 6, sm: 4 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2.5,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1,
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      fontWeight: FONT_WEIGHT.semibold,
-                    }}
-                  >
-                    {t("statAvg")}
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-                    <Typography
-                      variant="h4"
-                      sx={{ fontVariantNumeric: "tabular-nums", lineHeight: 1 }}
-                    >
-                      {formatDecimal(pointsFor / playedMatches.length, locale)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      pt
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
-                    {t("statMatches", { count: playedMatches.length })}
-                  </Typography>
-                </Paper>
-              </Grid>
-
-              {/* Striscia attuale */}
-              <Grid size={{ xs: 6, sm: 4 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2.5,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1,
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      fontWeight: FONT_WEIGHT.semibold,
-                    }}
-                  >
-                    {t("statStreak")}
-                  </Typography>
-                  {streakResult ? (
-                    <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+                    <Box sx={{ display: "flex", alignItems: "baseline", gap: 1 }}>
                       <Typography
                         variant="h4"
-                        sx={{
-                          color: MATCH_RESULT_META[streakResult].color,
-                          lineHeight: 1,
-                          fontVariantNumeric: "tabular-nums",
-                        }}
+                        sx={{ fontVariantNumeric: "tabular-nums", lineHeight: 1 }}
                       >
-                        {streakCount}
+                        {formatDecimal(pointsFor / playedMatches.length, locale)}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: MATCH_RESULT_META[streakResult].color,
-                          fontWeight: FONT_WEIGHT.semibold,
-                          textTransform: "lowercase",
-                        }}
-                      >
-                        {streakResult === "WIN"
-                          ? t("streakWins", { count: streakCount })
-                          : streakResult === "LOSS"
-                            ? t("streakLosses", { count: streakCount })
-                            : t("streakDraws", { count: streakCount })}
+                      <Typography variant="body2" color="text.secondary">
+                        pt
                       </Typography>
                     </Box>
-                  ) : (
-                    <Typography variant="h6" sx={{ color: "text.secondary" }}>
-                      —
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
+                      {t("statMatches", { count: playedMatches.length })}
                     </Typography>
-                  )}
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
-                    {bestWinStreak > 1
-                      ? t("statBestStreak", { count: bestWinStreak })
-                      : streakResult
-                        ? t("consecutive")
-                        : t("noMatchesPlayed")}
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-
-        {leadersByPoints.length > 0 && (
-          <Box sx={{ mb: 6 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <StarIcon sx={{ color: teamHue ?? "text.secondary" }} />
-              <Typography variant="overline" color="text.secondary">
-                {t("leaders")}
-              </Typography>
-            </Box>
-            <Typography variant="h4" sx={{ mb: 2.5 }}>
-              {t("topScorer")}
-            </Typography>
-
-            <Grid container spacing={2}>
-              {leadersByPoints.map((l, idx) => (
-                <Grid key={l.key} size={{ xs: 12, sm: 4 }}>
-                  <LeaderCard
-                    rank={idx + 1}
-                    leader={l}
-                    teamColor={teamHue}
-                    avgLabel={t("leaderAvg", {
-                      avg: formatDecimal(l.points / l.games, locale),
-                    })}
-                  />
+                  </Paper>
                 </Grid>
-              ))}
-            </Grid>
 
-            {(leaderByThrees || leaderByFreeThrows) && (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {leaderByThrees && (
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <SubLeaderRow
-                      icon={
-                        <SportsBasketballIcon
-                          sx={{ fontSize: 20, color: teamHue ?? "text.secondary" }}
-                        />
-                      }
-                      label={t("mostThrees")}
-                      leader={leaderByThrees}
-                      value={leaderByThrees.threePointers}
-                      suffix={t("threeUnit")}
-                    />
-                  </Grid>
-                )}
-                {leaderByFreeThrows && (
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <SubLeaderRow
-                      icon={
-                        <SportsBasketballIcon
-                          sx={{ fontSize: 20, color: teamHue ?? "text.secondary" }}
-                        />
-                      }
-                      label={t("mostFreeThrows")}
-                      leader={leaderByFreeThrows}
-                      value={leaderByFreeThrows.freeThrows}
-                      suffix={t("freeThrowUnit")}
-                    />
-                  </Grid>
-                )}
-              </Grid>
-            )}
-          </Box>
-        )}
-
-        {team.memberships.length > 0 && (
-          <>
-            <Divider sx={{ mb: 5 }} />
-            <Box sx={{ mb: 6 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <GroupsIcon sx={{ color: teamHue ?? "text.secondary" }} />
-                <Typography variant="overline" color="text.secondary">
-                  {t("rosterSection")}
-                </Typography>
-              </Box>
-              <Typography variant="h4" sx={{ mb: 3 }}>
-                {t("rosterCount", { count: team.memberships.length })}
-              </Typography>
-              {hiddenMinors > 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
-                  {t("minorsHidden", { count: hiddenMinors })}
-                </Typography>
-              )}
-
-              <Stack spacing={3}>
-                {sortedRoles.map((role) => {
-                  const key = role === -1 ? "unassigned" : role;
-                  const members = membershipsByRole.get(key) ?? [];
-                  if (members.length === 0) return null;
-                  const isUnassigned = key === "unassigned";
-                  const roleNum = isUnassigned ? null : (key as number);
-                  return (
-                    <Box key={String(key)}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-                        {!isUnassigned && roleNum !== null && (
-                          <Box
-                            aria-hidden
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: "50%",
-                              // Grafite uguale per tutti i ruoli (UX-29): l'informazione e' il numero.
-                              ...roleColorSx(roleNum),
-                              border: "1px solid",
-                              borderColor: "divider",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: FONT_WEIGHT.bold,
-                              fontSize: TYPE_SCALE.sm,
-                            }}
-                          >
-                            {roleNum}
-                          </Box>
-                        )}
+                {/* Striscia attuale */}
+                <Grid size={{ xs: 6, sm: 4 }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        fontWeight: FONT_WEIGHT.semibold,
+                      }}
+                    >
+                      {t("statStreak")}
+                    </Typography>
+                    {streakResult ? (
+                      <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
                         <Typography
-                          variant="subtitle1"
-                          fontWeight={FONT_WEIGHT.bold}
-                          sx={{ color: "text.primary" }}
+                          variant="h4"
+                          sx={{
+                            color: MATCH_RESULT_META[streakResult].color,
+                            lineHeight: 1,
+                            fontVariantNumeric: "tabular-nums",
+                          }}
                         >
-                          {isUnassigned ? t("noRole") : `Ruolo ${roleNum}`}
+                          {streakCount}
                         </Typography>
                         <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontWeight: FONT_WEIGHT.semibold }}
+                          variant="body2"
+                          sx={{
+                            color: MATCH_RESULT_META[streakResult].color,
+                            fontWeight: FONT_WEIGHT.semibold,
+                            textTransform: "lowercase",
+                          }}
                         >
-                          ({members.length})
+                          {streakResult === "WIN"
+                            ? t("streakWins", { count: streakCount })
+                            : streakResult === "LOSS"
+                              ? t("streakLosses", { count: streakCount })
+                              : t("streakDraws", { count: streakCount })}
                         </Typography>
                       </Box>
-                      <Grid container spacing={1.5}>
-                        {members.map((m) => {
-                          const athlete = m.user ?? m.child;
-                          if (!athlete) return null;
-                          const isUser = !!m.user;
-                          // Un genitore in rosa che non ha ancora giocato non ha
-                          // un profilo pubblico: card senza link.
-                          const userSlug = m.user ? withProfileLink(m.user).slug : null;
-                          const userCard = m.user && (
-                            <AthleteCard
-                              name={athlete.name ?? "—"}
-                              image={m.user.image ?? undefined}
-                              roleNum={athlete.sportRole}
-                              roleVariant={athlete.sportRoleVariant}
-                              isCaptain={m.isCaptain}
-                              teamColor={teamHue}
-                            />
-                          );
-                          return (
-                            <Grid key={m.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                              {isUser ? (
-                                userSlug ? (
+                    ) : (
+                      <Typography variant="h6" sx={{ color: "text.secondary" }}>
+                        —
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: "auto" }}>
+                      {bestWinStreak > 1
+                        ? t("statBestStreak", { count: bestWinStreak })
+                        : streakResult
+                          ? t("consecutive")
+                          : t("noMatchesPlayed")}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+
+          {leadersByPoints.length > 0 && (
+            <Box sx={{ mb: 6 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <StarIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                <Typography variant="overline" color="text.secondary">
+                  {t("leaders")}
+                </Typography>
+              </Box>
+              <Typography variant="h4" sx={{ mb: 2.5 }}>
+                {t("topScorer")}
+              </Typography>
+
+              <Grid container spacing={2}>
+                {leadersByPoints.map((l, idx) => (
+                  <Grid key={l.key} size={{ xs: 12, sm: 4 }}>
+                    <LeaderCard
+                      rank={idx + 1}
+                      leader={l}
+                      teamColor={teamHue}
+                      avgLabel={t("leaderAvg", {
+                        avg: formatDecimal(l.points / l.games, locale),
+                      })}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+
+              {(leaderByThrees || leaderByFreeThrows) && (
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {leaderByThrees && (
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <SubLeaderRow
+                        icon={
+                          <SportsBasketballIcon
+                            sx={{ fontSize: 20, color: teamHue ?? "text.secondary" }}
+                          />
+                        }
+                        label={t("mostThrees")}
+                        leader={leaderByThrees}
+                        value={leaderByThrees.threePointers}
+                        suffix={t("threeUnit")}
+                      />
+                    </Grid>
+                  )}
+                  {leaderByFreeThrows && (
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <SubLeaderRow
+                        icon={
+                          <SportsBasketballIcon
+                            sx={{ fontSize: 20, color: teamHue ?? "text.secondary" }}
+                          />
+                        }
+                        label={t("mostFreeThrows")}
+                        leader={leaderByFreeThrows}
+                        value={leaderByFreeThrows.freeThrows}
+                        suffix={t("freeThrowUnit")}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              )}
+            </Box>
+          )}
+
+          {team.memberships.length > 0 && (
+            <>
+              <Divider sx={{ mb: 5 }} />
+              <Box sx={{ mb: 6 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <GroupsIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                  <Typography variant="overline" color="text.secondary">
+                    {t("rosterSection")}
+                  </Typography>
+                </Box>
+                <Typography variant="h4" sx={{ mb: 3 }}>
+                  {t("rosterCount", { count: team.memberships.length })}
+                </Typography>
+                {hiddenMinors > 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: -2, mb: 3 }}>
+                    {t("minorsHidden", { count: hiddenMinors })}
+                  </Typography>
+                )}
+
+                <Stack spacing={3}>
+                  {sortedRoles.map((role) => {
+                    const key = role === -1 ? "unassigned" : role;
+                    const members = membershipsByRole.get(key) ?? [];
+                    if (members.length === 0) return null;
+                    const isUnassigned = key === "unassigned";
+                    const roleNum = isUnassigned ? null : (key as number);
+                    return (
+                      <Box key={String(key)}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+                          {!isUnassigned && roleNum !== null && (
+                            <Box
+                              aria-hidden
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                // Grafite uguale per tutti i ruoli (UX-29): l'informazione e' il numero.
+                                ...roleColorSx(roleNum),
+                                border: "1px solid",
+                                borderColor: "divider",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontWeight: FONT_WEIGHT.bold,
+                                fontSize: TYPE_SCALE.sm,
+                              }}
+                            >
+                              {roleNum}
+                            </Box>
+                          )}
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight={FONT_WEIGHT.bold}
+                            sx={{ color: "text.primary" }}
+                          >
+                            {isUnassigned ? t("noRole") : `Ruolo ${roleNum}`}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontWeight: FONT_WEIGHT.semibold }}
+                          >
+                            ({members.length})
+                          </Typography>
+                        </Box>
+                        <Grid container spacing={1.5}>
+                          {members.map((m) => {
+                            const athlete = m.user ?? m.child;
+                            if (!athlete) return null;
+                            const isUser = !!m.user;
+                            // Un genitore in rosa che non ha ancora giocato non ha
+                            // un profilo pubblico: card senza link.
+                            const userSlug = m.user ? withProfileLink(m.user).slug : null;
+                            const userCard = m.user && (
+                              <AthleteCard
+                                name={athlete.name ?? "—"}
+                                image={m.user.image ?? undefined}
+                                roleNum={athlete.sportRole}
+                                roleVariant={athlete.sportRoleVariant}
+                                isCaptain={m.isCaptain}
+                                teamColor={teamHue}
+                              />
+                            );
+                            return (
+                              <Grid key={m.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                {isUser ? (
+                                  userSlug ? (
+                                    <Link
+                                      href={`/giocatori/${userSlug}`}
+                                      style={{ textDecoration: "none" }}
+                                    >
+                                      {userCard}
+                                    </Link>
+                                  ) : (
+                                    userCard
+                                  )
+                                ) : (
                                   <Link
-                                    href={`/giocatori/${userSlug}`}
+                                    href={`/giocatori/${m.child!.slug ?? m.child!.id}`}
                                     style={{ textDecoration: "none" }}
                                   >
-                                    {userCard}
+                                    <AthleteCard
+                                      name={athlete.name ?? "—"}
+                                      roleNum={athlete.sportRole}
+                                      roleVariant={athlete.sportRoleVariant}
+                                      isCaptain={m.isCaptain}
+                                      teamColor={teamHue}
+                                    />
                                   </Link>
-                                ) : (
-                                  userCard
-                                )
-                              ) : (
-                                <Link
-                                  href={`/giocatori/${m.child!.slug ?? m.child!.id}`}
-                                  style={{ textDecoration: "none" }}
-                                >
-                                  <AthleteCard
-                                    name={athlete.name ?? "—"}
-                                    roleNum={athlete.sportRole}
-                                    roleVariant={athlete.sportRoleVariant}
-                                    isCaptain={m.isCaptain}
-                                    teamColor={teamHue}
-                                  />
-                                </Link>
-                              )}
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Box>
-                  );
-                })}
-              </Stack>
-            </Box>
-          </>
-        )}
-
-        {playedMatchesDesc.length > 0 && (
-          <>
-            <Divider sx={{ mb: 5 }} />
-            <Box sx={{ mb: 6 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <EmojiEventsIcon sx={{ color: teamHue ?? "text.secondary" }} />
-                <Typography variant="overline" color="text.secondary">
-                  {t("historySection")}
-                </Typography>
+                                )}
+                              </Grid>
+                            );
+                          })}
+                        </Grid>
+                      </Box>
+                    );
+                  })}
+                </Stack>
               </Box>
-              <Typography variant="h4" sx={{ mb: 2.5 }}>
-                Risultati
-              </Typography>
-              <Stack spacing={1}>
-                {playedMatchesDesc.map((m) => (
-                  <PlayedMatchCard key={m.id} match={m} teamName={team.name} teamColor={teamHue} />
-                ))}
-              </Stack>
-            </Box>
-          </>
-        )}
+            </>
+          )}
 
-        {upcomingMatches.length > 1 && (
-          <>
-            <Divider sx={{ mb: 5 }} />
-            <Box sx={{ mb: 6 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
-                <Typography variant="overline" color="text.secondary">
-                  {t("upcomingSection")}
+          {playedMatchesDesc.length > 0 && (
+            <>
+              <Divider sx={{ mb: 5 }} />
+              <Box sx={{ mb: 6 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <EmojiEventsIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                  <Typography variant="overline" color="text.secondary">
+                    {t("historySection")}
+                  </Typography>
+                </Box>
+                <Typography variant="h4" sx={{ mb: 2.5 }}>
+                  Risultati
                 </Typography>
+                <Stack spacing={1}>
+                  {playedMatchesDesc.map((m) => (
+                    <PlayedMatchCard
+                      key={m.id}
+                      match={m}
+                      teamName={team.name}
+                      teamColor={teamHue}
+                    />
+                  ))}
+                </Stack>
               </Box>
-              <Typography variant="h4" sx={{ mb: 2.5 }}>
-                {t("upcomingMatches")}
-              </Typography>
-              <Stack spacing={1}>
-                {upcomingMatches.slice(1).map((m) => (
-                  <UpcomingMatchRow
-                    key={m.id}
-                    match={m}
-                    teamName={team.name}
-                    teamColor={team.color}
-                  />
-                ))}
-              </Stack>
-            </Box>
-          </>
-        )}
+            </>
+          )}
 
-        {/* Empty state */}
-        {allMatches.length === 0 && team.memberships.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 8 }}>
-            <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              {t("seasonPreparing")}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              {t("seasonPreparingDesc")}
-            </Typography>
-          </Box>
-        )}
+          {upcomingMatches.length > 1 && (
+            <>
+              <Divider sx={{ mb: 5 }} />
+              <Box sx={{ mb: 6 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                  <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                  <Typography variant="overline" color="text.secondary">
+                    {t("upcomingSection")}
+                  </Typography>
+                </Box>
+                <Typography variant="h4" sx={{ mb: 2.5 }}>
+                  {t("upcomingMatches")}
+                </Typography>
+                <Stack spacing={1}>
+                  {upcomingMatches.slice(1).map((m) => (
+                    <UpcomingMatchRow
+                      key={m.id}
+                      match={m}
+                      teamName={team.name}
+                      teamColor={team.color}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            </>
+          )}
+
+          {/* Empty state */}
+          {allMatches.length === 0 && team.memberships.length === 0 && (
+            <Box sx={{ textAlign: "center", py: 8 }}>
+              <EmojiEventsIcon sx={{ fontSize: 56, color: "text.disabled", mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                {t("seasonPreparing")}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                {t("seasonPreparingDesc")}
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Container>
     </>
   );

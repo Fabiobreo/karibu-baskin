@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { Container } from "@mui/material";
+import { Box, Container } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { auth } from "@/lib/authjs";
@@ -125,18 +126,20 @@ export default async function SfidaPage({ searchParams }: Props) {
 
   return (
     <>
-      <PageHero title={t("heroTitle")} subtitle={t("heroSubtitle")} />
+      <PageHero column="main" title={t("heroTitle")} subtitle={t("heroSubtitle")} />
 
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        {teams.length === 0 ? (
-          <EmptyState
-            icon={<SportsKabaddiIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
-            title={t("emptyTitle")}
-            message={t("emptyDesc")}
-          />
-        ) : (
-          <MatchSimulator teams={teams} initial={{ selA, selB, nonce, result: initialResult }} />
-        )}
+        <Box sx={columnSx("main")}>
+          {teams.length === 0 ? (
+            <EmptyState
+              icon={<SportsKabaddiIcon sx={{ fontSize: 56, color: "text.disabled" }} />}
+              title={t("emptyTitle")}
+              message={t("emptyDesc")}
+            />
+          ) : (
+            <MatchSimulator teams={teams} initial={{ selA, selB, nonce, result: initialResult }} />
+          )}
+        </Box>
       </Container>
     </>
   );

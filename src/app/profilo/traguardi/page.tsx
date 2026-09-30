@@ -3,6 +3,7 @@ import { auth } from "@/lib/authjs";
 import { redirect } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import { Container, Box, Typography, Chip, Grid2 as Grid, Skeleton } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import PageHeader from "@/components/common/PageHeader";
 import { prisma } from "@/lib/db";
@@ -143,21 +144,23 @@ export default async function TraguardiPage() {
   return (
     <>
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <PageHeader
-          title={t("achievements")}
-          subtitle={t("achievementsPageSubtitle")}
-          breadcrumb={[
-            { label: t("title"), href: "/profilo" },
-            { label: t("achievementsPageChip") },
-          ]}
-        />
-        {sections.map((section, i) => (
-          <Box key={section.key} sx={{ mb: i < sections.length - 1 ? 6 : 0 }}>
-            <Suspense fallback={<AchievementSectionSkeleton />}>
-              <AchievementSection player={section.player} name={section.name} />
-            </Suspense>
-          </Box>
-        ))}
+        <Box sx={columnSx("main")}>
+          <PageHeader
+            title={t("achievements")}
+            subtitle={t("achievementsPageSubtitle")}
+            breadcrumb={[
+              { label: t("title"), href: "/profilo" },
+              { label: t("achievementsPageChip") },
+            ]}
+          />
+          {sections.map((section, i) => (
+            <Box key={section.key} sx={{ mb: i < sections.length - 1 ? 6 : 0 }}>
+              <Suspense fallback={<AchievementSectionSkeleton />}>
+                <AchievementSection player={section.player} name={section.name} />
+              </Suspense>
+            </Box>
+          ))}
+        </Box>
       </Container>
     </>
   );

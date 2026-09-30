@@ -16,6 +16,7 @@ import {
   Badge,
   Skeleton,
 } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -499,38 +500,40 @@ export default async function ProfiloPage() {
       {/* `md` come tutte le altre pagine: con `sm` su 1440px restava una
           strisciolina centrale da 600px. */}
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <PageHeader
-          title={t("title")}
-          subtitle={t("heroSubtitle")}
-          breadcrumb={[{ label: t("breadcrumbHome"), href: "/" }, { label: t("title") }]}
-        />
-        {user.appRole === "GUEST" && (
-          <Box sx={{ mb: 3 }}>
-            {/* Stessa card della home: finché lo staff non conferma, il
+        <Box sx={columnSx("main")}>
+          <PageHeader
+            title={t("title")}
+            subtitle={t("heroSubtitle")}
+            breadcrumb={[{ label: t("breadcrumbHome"), href: "/" }, { label: t("title") }]}
+          />
+          {user.appRole === "GUEST" && (
+            <Box sx={{ mb: 3 }}>
+              {/* Stessa card della home: finché lo staff non conferma, il
                 profilo mostra a che punto è l'utente e cosa può già fare. */}
-            <Suspense fallback={null}>
-              <GuestOnboardingSection userId={user.id} />
-            </Suspense>
-          </Box>
-        )}
+              <Suspense fallback={null}>
+                <GuestOnboardingSection userId={user.id} />
+              </Suspense>
+            </Box>
+          )}
 
-        {/* Richieste di collegamento in attesa — sopra le tab, si nasconde da sola se vuota */}
-        <LinkRequestsSection />
+          {/* Richieste di collegamento in attesa — sopra le tab, si nasconde da sola se vuota */}
+          <LinkRequestsSection />
 
-        <ProfileTabs
-          profile={profileTab}
-          family={
-            parentsTab || familyTab || childBadgesTab ? (
-              <>
-                {parentsTab}
-                {familyTab}
-                {childBadgesTab}
-              </>
-            ) : null
-          }
-          notifications={notificationsTab}
-          privacy={<GdprSection email={user.email} />}
-        />
+          <ProfileTabs
+            profile={profileTab}
+            family={
+              parentsTab || familyTab || childBadgesTab ? (
+                <>
+                  {parentsTab}
+                  {familyTab}
+                  {childBadgesTab}
+                </>
+              ) : null
+            }
+            notifications={notificationsTab}
+            privacy={<GdprSection email={user.email} />}
+          />
+        </Box>
       </Container>
     </>
   );

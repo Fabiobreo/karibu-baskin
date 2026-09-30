@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { Container, Typography, Box, Paper, Skeleton, Alert, Grid2 as Grid } from "@mui/material";
+import { columnSx } from "@/lib/layout";
 import GroupsIcon from "@mui/icons-material/Groups";
 import RegistrationForm, {
   type CurrentUser,
@@ -389,215 +390,217 @@ export default function SessionPageClient({
 
       {/* ── Contenuto principale ── */}
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 4 } }}>
-        {loading ? (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Skeleton variant="rectangular" height={80} sx={{ borderRadius: RADIUS.lg }} />
-            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: RADIUS.lg }} />
-            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: RADIUS.lg }} />
-          </Box>
-        ) : session ? (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {/* Riepilogo che resta dopo l'iscrizione: chi, quando, dove (UX-15). */}
-            {!isEnded && (
-              <RegistrationSummary
-                date={session.date}
-                endTime={session.endTime}
-                location={session.location}
-                mine={mine}
-                currentUserId={currentUser?.id ?? null}
-              />
-            )}
-            {/* Banner "la tua squadra" */}
-            {myTeam && (
-              <Paper
-                elevation={0}
-                sx={{
-                  p: { xs: 2, sm: 2.5 },
-                  borderRadius: RADIUS.lg,
-                  // Casacca (eccezione UX-29, col nome sotto): scurita quanto basta per
-                  // il testo bianco, poi sfumata.
-                  background: `linear-gradient(120deg, ${bibFill(myTeam.color)} 0%, ${alpha(bibFill(myTeam.color), 0.8)} 100%)`,
-                  color: "common.white",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
-                <GroupsIcon sx={{ fontSize: 36, opacity: 0.85, flexShrink: 0 }} />
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      opacity: 0.8,
-                      fontWeight: FONT_WEIGHT.semibold,
-                      letterSpacing: 0.8,
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {t("myTeam")}
-                  </Typography>
-                  <Typography variant="h5" sx={{ lineHeight: 1.2 }}>
-                    {teamColorLabel(myTeam.key as "teamA" | "teamB" | "teamC")}
-                  </Typography>
-                </Box>
-              </Paper>
-            )}
-
-            {/* ── Stato: terminato ── */}
-            {isEnded ? (
-              <SectionErrorBoundary label="Vista allenamento">
-                <AllenamentoEndedView
-                  teams={teams}
-                  sessionId={realSessionId}
-                  sessionTitle={session?.title}
-                  sessionDate={session?.date}
-                  sessionEndTime={session?.endTime}
-                  isStaff={isStaff}
-                  rosterProps={rosterProps}
-                  teamDisplayProps={teamDisplayProps}
-                  removingTeams={removingTeams}
-                  onRemoveTeams={handleRemoveTeams}
+        <Box sx={columnSx("main")}>
+          {loading ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Skeleton variant="rectangular" height={80} sx={{ borderRadius: RADIUS.lg }} />
+              <Skeleton variant="rectangular" height={140} sx={{ borderRadius: RADIUS.lg }} />
+              <Skeleton variant="rectangular" height={200} sx={{ borderRadius: RADIUS.lg }} />
+            </Box>
+          ) : session ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              {/* Riepilogo che resta dopo l'iscrizione: chi, quando, dove (UX-15). */}
+              {!isEnded && (
+                <RegistrationSummary
+                  date={session.date}
+                  endTime={session.endTime}
+                  location={session.location}
+                  mine={mine}
+                  currentUserId={currentUser?.id ?? null}
                 />
-              </SectionErrorBoundary>
-            ) : teamFirstLayout ? (
-              /* ── Stato: iscritto + squadre create ── */
-              <>
-                {!rosterRestriction && (
-                  <SectionErrorBoundary label="Squadre">
-                    <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                      <TeamsHeader
-                        teams={teams}
-                        coaches={teamDisplayProps.coaches}
-                        sessionTitle={session?.title}
-                        sessionDate={session?.date}
-                        sessionEndTime={session?.endTime}
-                        isStaff={isStaff}
-                        removingTeams={removingTeams}
-                        onRemoveTeams={handleRemoveTeams}
-                        onEditTeams={() => setEditingTeams(true)}
-                      />
-                      <TeamDisplay {...teamDisplayProps} />
-                    </Paper>
-                  </SectionErrorBoundary>
-                )}
-                <SectionErrorBoundary label="Lista iscritti">
-                  <RosterByRole {...rosterProps} />
+              )}
+              {/* Banner "la tua squadra" */}
+              {myTeam && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: { xs: 2, sm: 2.5 },
+                    borderRadius: RADIUS.lg,
+                    // Casacca (eccezione UX-29, col nome sotto): scurita quanto basta per
+                    // il testo bianco, poi sfumata.
+                    background: `linear-gradient(120deg, ${bibFill(myTeam.color)} 0%, ${alpha(bibFill(myTeam.color), 0.8)} 100%)`,
+                    color: "common.white",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <GroupsIcon sx={{ fontSize: 36, opacity: 0.85, flexShrink: 0 }} />
+                  <Box>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        opacity: 0.8,
+                        fontWeight: FONT_WEIGHT.semibold,
+                        letterSpacing: 0.8,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {t("myTeam")}
+                    </Typography>
+                    <Typography variant="h5" sx={{ lineHeight: 1.2 }}>
+                      {teamColorLabel(myTeam.key as "teamA" | "teamB" | "teamC")}
+                    </Typography>
+                  </Box>
+                </Paper>
+              )}
+
+              {/* ── Stato: terminato ── */}
+              {isEnded ? (
+                <SectionErrorBoundary label="Vista allenamento">
+                  <AllenamentoEndedView
+                    teams={teams}
+                    sessionId={realSessionId}
+                    sessionTitle={session?.title}
+                    sessionDate={session?.date}
+                    sessionEndTime={session?.endTime}
+                    isStaff={isStaff}
+                    rosterProps={rosterProps}
+                    teamDisplayProps={teamDisplayProps}
+                    removingTeams={removingTeams}
+                    onRemoveTeams={handleRemoveTeams}
+                  />
                 </SectionErrorBoundary>
-              </>
-            ) : (
-              /* ── Stato: default — layout a due colonne su desktop ── */
-              <Grid container spacing={3} alignItems="flex-start">
-                {/* Sinistra (desktop): form iscrizione sticky. Viene per primo anche
+              ) : teamFirstLayout ? (
+                /* ── Stato: iscritto + squadre create ── */
+                <>
+                  {!rosterRestriction && (
+                    <SectionErrorBoundary label="Squadre">
+                      <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                        <TeamsHeader
+                          teams={teams}
+                          coaches={teamDisplayProps.coaches}
+                          sessionTitle={session?.title}
+                          sessionDate={session?.date}
+                          sessionEndTime={session?.endTime}
+                          isStaff={isStaff}
+                          removingTeams={removingTeams}
+                          onRemoveTeams={handleRemoveTeams}
+                          onEditTeams={() => setEditingTeams(true)}
+                        />
+                        <TeamDisplay {...teamDisplayProps} />
+                      </Paper>
+                    </SectionErrorBoundary>
+                  )}
+                  <SectionErrorBoundary label="Lista iscritti">
+                    <RosterByRole {...rosterProps} />
+                  </SectionErrorBoundary>
+                </>
+              ) : (
+                /* ── Stato: default — layout a due colonne su desktop ── */
+                <Grid container spacing={3} alignItems="flex-start">
+                  {/* Sinistra (desktop): form iscrizione sticky. Viene per primo anche
                     nel DOM, quindi nell'ordine di lettura e di Tab: è il
                     compito principale della pagina (UX-34). */}
-                <Grid size={{ xs: 12, md: 5 }}>
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      p: { xs: 2, sm: 3 },
-                      position: { md: "sticky" },
-                      top: { md: 24 },
-                    }}
-                  >
-                    {session.registrationOpen === false && isStaff && !isEnded && (
-                      <OpenRegistrationsAlert
-                        sessionId={realSessionId}
-                        onOpened={() => void refetchSession()}
-                      />
-                    )}
-                    {session.registrationOpen === true && isStaff && !isEnded && (
-                      <CloseRegistrationsAlert
-                        sessionId={realSessionId}
-                        onClosed={() => void refetchSession()}
-                      />
-                    )}
-                    <SectionErrorBoundary label="Modulo iscrizione">
-                      {session.registrationOpen === false && !isStaff ? (
-                        <Box sx={{ textAlign: "center", py: 2 }}>
-                          <Typography variant="h6" gutterBottom>
-                            {session.registrationOpenedAt
-                              ? t("registrationsClosed")
-                              : t("comingSoon")}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {session.registrationOpenedAt
-                              ? t("registrationsClosedDesc")
-                              : t("registrationsNotOpenDesc")}
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <>
-                          {/* Le iscrizioni chiuse non bloccano lo staff
+                  <Grid size={{ xs: 12, md: 5 }}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: { xs: 2, sm: 3 },
+                        position: { md: "sticky" },
+                        top: { md: 24 },
+                      }}
+                    >
+                      {session.registrationOpen === false && isStaff && !isEnded && (
+                        <OpenRegistrationsAlert
+                          sessionId={realSessionId}
+                          onOpened={() => void refetchSession()}
+                        />
+                      )}
+                      {session.registrationOpen === true && isStaff && !isEnded && (
+                        <CloseRegistrationsAlert
+                          sessionId={realSessionId}
+                          onClosed={() => void refetchSession()}
+                        />
+                      )}
+                      <SectionErrorBoundary label="Modulo iscrizione">
+                        {session.registrationOpen === false && !isStaff ? (
+                          <Box sx={{ textAlign: "center", py: 2 }}>
+                            <Typography variant="h6" gutterBottom>
+                              {session.registrationOpenedAt
+                                ? t("registrationsClosed")
+                                : t("comingSoon")}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {session.registrationOpenedAt
+                                ? t("registrationsClosedDesc")
+                                : t("registrationsNotOpenDesc")}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <>
+                            {/* Le iscrizioni chiuse non bloccano lo staff
                               (checkRegistrationAllowed ammette sempre COACH e
                               ADMIN): il form resta attivo, e questa riga dice
                               perché. */}
-                          {session.registrationOpen === false && isStaff && !isEnded && (
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                              {t("staffCanRegisterAnyway")}
-                            </Alert>
-                          )}
-                          <RegistrationForm
-                            sessionId={sessionId}
-                            onRegistered={refreshSecondary}
-                            onOptimisticAdd={handleOptimisticAdd}
-                            onSubmitError={invalidateRegistrations}
-                            registeredNames={registrations.map((r) => r.name)}
-                            registeredUserIds={[...registrations, ...mine].map((r) => r.userId)}
-                            registeredChildIds={[...registrations, ...mine].map((r) => r.childId)}
-                            currentUser={currentUser}
-                            parentChildren={parentChildren}
-                            currentSeason={currentSeason}
-                            restrictions={
-                              session
-                                ? {
-                                    allowedRoles: session.allowedRoles ?? [],
-                                    restrictTeamId: session.restrictTeamId ?? null,
-                                    openRoles: session.openRoles ?? [],
-                                    restrictTeamName: session.restrictTeam?.name ?? null,
-                                  }
-                                : undefined
-                            }
-                          />
-                        </>
-                      )}
-                    </SectionErrorBoundary>
-                  </Paper>
-                </Grid>
-
-                {/* Destra (desktop): roster + squadre */}
-                <Grid size={{ xs: 12, md: 7 }}>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                    <SectionErrorBoundary label="Lista iscritti">
-                      <RosterByRole {...rosterProps} />
-                    </SectionErrorBoundary>
-                    {/* Chi non e' tesserato vede un solo invito ad accedere,
-                        in cima al form: niente card Squadre bloccata. */}
-                    {!rosterRestriction && (
-                      <SectionErrorBoundary label="Squadre">
-                        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
-                          <TeamsHeader
-                            teams={teams}
-                            coaches={teamDisplayProps.coaches}
-                            sessionTitle={session?.title}
-                            sessionDate={session?.date}
-                            sessionEndTime={session?.endTime}
-                            isStaff={isStaff}
-                            removingTeams={removingTeams}
-                            onRemoveTeams={handleRemoveTeams}
-                            onEditTeams={() => setEditingTeams(true)}
-                          />
-                          <TeamDisplay {...teamDisplayProps} />
-                        </Paper>
+                            {session.registrationOpen === false && isStaff && !isEnded && (
+                              <Alert severity="info" sx={{ mb: 2 }}>
+                                {t("staffCanRegisterAnyway")}
+                              </Alert>
+                            )}
+                            <RegistrationForm
+                              sessionId={sessionId}
+                              onRegistered={refreshSecondary}
+                              onOptimisticAdd={handleOptimisticAdd}
+                              onSubmitError={invalidateRegistrations}
+                              registeredNames={registrations.map((r) => r.name)}
+                              registeredUserIds={[...registrations, ...mine].map((r) => r.userId)}
+                              registeredChildIds={[...registrations, ...mine].map((r) => r.childId)}
+                              currentUser={currentUser}
+                              parentChildren={parentChildren}
+                              currentSeason={currentSeason}
+                              restrictions={
+                                session
+                                  ? {
+                                      allowedRoles: session.allowedRoles ?? [],
+                                      restrictTeamId: session.restrictTeamId ?? null,
+                                      openRoles: session.openRoles ?? [],
+                                      restrictTeamName: session.restrictTeam?.name ?? null,
+                                    }
+                                  : undefined
+                              }
+                            />
+                          </>
+                        )}
                       </SectionErrorBoundary>
-                    )}
-                  </Box>
+                    </Paper>
+                  </Grid>
+
+                  {/* Destra (desktop): roster + squadre */}
+                  <Grid size={{ xs: 12, md: 7 }}>
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                      <SectionErrorBoundary label="Lista iscritti">
+                        <RosterByRole {...rosterProps} />
+                      </SectionErrorBoundary>
+                      {/* Chi non e' tesserato vede un solo invito ad accedere,
+                        in cima al form: niente card Squadre bloccata. */}
+                      {!rosterRestriction && (
+                        <SectionErrorBoundary label="Squadre">
+                          <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+                            <TeamsHeader
+                              teams={teams}
+                              coaches={teamDisplayProps.coaches}
+                              sessionTitle={session?.title}
+                              sessionDate={session?.date}
+                              sessionEndTime={session?.endTime}
+                              isStaff={isStaff}
+                              removingTeams={removingTeams}
+                              onRemoveTeams={handleRemoveTeams}
+                              onEditTeams={() => setEditingTeams(true)}
+                            />
+                            <TeamDisplay {...teamDisplayProps} />
+                          </Paper>
+                        </SectionErrorBoundary>
+                      )}
+                    </Box>
+                  </Grid>
                 </Grid>
-              </Grid>
-            )}
-          </Box>
-        ) : (
-          <Typography color="error">{t("notFound")}</Typography>
-        )}
+              )}
+            </Box>
+          ) : (
+            <Typography color="error">{t("notFound")}</Typography>
+          )}
+        </Box>
       </Container>
     </>
   );

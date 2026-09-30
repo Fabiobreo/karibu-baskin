@@ -1,5 +1,5 @@
 import PageLoadingSkeleton from "@/components/common/PageLoadingSkeleton";
 
 export default function PartiteLoading() {
-  return <PageLoadingSkeleton variant="list" items={5} />;
+  return <PageLoadingSkeleton column="main" variant="list" items={5} />;
 }
