@@ -19,6 +19,7 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import StadiumIcon from "@mui/icons-material/Stadium";
 import Link from "next/link";
 import EntityHero from "@/components/common/EntityHero";
+import { heroText } from "@/lib/heroStyles";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -27,7 +28,7 @@ import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
-import { contrastText } from "@/lib/colorUtils";
+import TeamChip from "@/components/teams/TeamChip";
 import { auth } from "@/lib/authjs";
 import OpposingTeamEditButton from "@/components/matches/OpposingTeamEditButton";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -150,7 +151,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
       <EntityHero
         chip={t("opposingChip")}
         title={team.name}
-        color="#E65100"
         action={
           isStaff ? (
             <OpposingTeamEditButton
@@ -170,20 +170,20 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/risultati"
               underline="hover"
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.65)",
+                color: heroText.muted,
                 "&:hover": { color: "common.white" },
               }}
             >
               {tMatches("resultsHeroChip")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }} noWrap>
+            <Typography variant="body2" sx={{ color: heroText.secondary }} noWrap>
               {team.name}
             </Typography>
           </Breadcrumbs>
@@ -502,16 +502,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 flexWrap: "wrap",
                               }}
                             >
-                              <Chip
-                                label={m.team.name}
-                                size="small"
-                                sx={{
-                                  bgcolor: m.team.color ?? "primary.main",
-                                  color: contrastText(m.team.color),
-                                  fontSize: TYPE_SCALE.xs,
-                                  height: 20,
-                                }}
-                              />
+                              <TeamChip name={m.team.name} color={m.team.color} compact />
                               <Typography
                                 variant="caption"
                                 color="text.secondary"

@@ -138,7 +138,7 @@ export default async function ClassifichePage() {
         </Typography>
         <Typography
           variant="body2"
-          sx={{ mt: 1, color: "rgba(255,255,255,0.7)", fontWeight: FONT_WEIGHT.semibold }}
+          sx={{ mt: 1, color: heroText.muted, fontWeight: FONT_WEIGHT.semibold }}
         >
           {t("seasonValue", { season: displaySeason })}
         </Typography>

@@ -1,10 +1,8 @@
 import { Avatar, Box, Paper, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import Link from "next/link";
-import { contrastText } from "@/lib/colorUtils";
 import { brandColor } from "@/lib/heroStyles";
 import MedalDisc from "@/components/rating/MedalDisc";
-import AccentText from "@/components/common/AccentText";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -25,7 +23,8 @@ export default function LeaderCard({
     points: number;
     games: number;
   };
-  teamColor: string;
+  /** Hex della tinta squadra (da `teamColor()`), o null: nessun segno di colore. */
+  teamColor: string | null;
 }) {
   const isFirst = rank === 1;
 
@@ -46,7 +45,9 @@ export default function LeaderCard({
         overflow: "hidden",
         transition: "all 0.15s",
         // Si solleva solo quando porta al profilo: senza link e' da leggere.
-        ...(leader.slug ? onHover({ borderColor: teamColor, transform: "translateY(-2px)" }) : {}),
+        ...(leader.slug
+          ? onHover({ borderColor: "primary.main", transform: "translateY(-2px)" })
+          : {}),
       }}
     >
       {/* Medaglia/trofeo in alto a destra */}
@@ -58,8 +59,9 @@ export default function LeaderCard({
         sx={{
           width: 52,
           height: 52,
-          bgcolor: teamColor,
-          color: contrastText(teamColor),
+          // Iniziale nella tinta squadra (etichetta bianca); senza tinta neutra (UX-29).
+          bgcolor: teamColor ?? "action.selected",
+          color: teamColor ? "common.white" : "text.primary",
           fontSize: TYPE_SCALE.xl,
           fontWeight: FONT_WEIGHT.bold,
         }}
@@ -71,15 +73,14 @@ export default function LeaderCard({
           {leader.name}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5, mt: 0.25 }}>
-          {/* Il colore squadra arriva dal DB: come testo va adattato alla
-              superficie, o un verde chiaro sparisce sulla card bianca. */}
-          <AccentText
+          {/* Il numero e' un dato: text.primary, mai la tinta squadra (UX-29). */}
+          <Typography
             variant="h5"
-            accent={teamColor}
-            sx={{ lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
+            component="span"
+            sx={{ lineHeight: 1, fontVariantNumeric: "tabular-nums", color: "text.primary" }}
           >
             {leader.points}
-          </AccentText>
+          </Typography>
           <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
             pt
           </Typography>

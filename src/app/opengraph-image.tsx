@@ -4,13 +4,11 @@ import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import { loadInterFonts } from "@/lib/og/fonts";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { BRAND, HERO, HERO_TEXT } from "@/lib/palette";
 
 export const alt = "Karibu Baskin, sport inclusivo a Montecchio Maggiore (VI)";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-
-const ORANGE = "#E65100";
-const ORANGE_LIGHT = "#FF9E4D";
 
 /** Il logo sorgente è 1600x1600: lo riduco alla dimensione di resa per non
  *  inlinare 576 KB di base64 nell'immagine generata. */
@@ -35,15 +33,28 @@ export default async function OgImage() {
         alignItems: "center",
         gap: 64,
         padding: "0 80px",
-        // Alone caldo dietro al logo che degrada a nero dietro al testo: dà
-        // profondità alla card e alza il contrasto del titolo.
-        background: "linear-gradient(115deg, #4A1F06 0%, #241610 34%, #131313 68%)",
-        color: "#fff",
+        background: HERO.from,
+        color: HERO_TEXT.primary,
         fontFamily: "Inter, sans-serif",
         position: "relative",
         overflow: "hidden",
       }}
     >
+      {/* Alone caldo dietro al logo che sfuma nel grafite dietro al testo: dà
+          profondità alla card e alza il contrasto del titolo. È l'immagine del
+          marchio, l'unica OG in cui l'arancio decora (UX-29). */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          background: `radial-gradient(circle at 20% 50%, ${BRAND.orangeGlow} 0%, ${BRAND.orangeGlowNone} 55%)`,
+        }}
+      />
+
       {/* Satori renderizza solo <img>: next/image non esiste in questo contesto. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={logo} width={340} height={340} alt="" style={{ flexShrink: 0 }} />
@@ -55,7 +66,7 @@ export default async function OgImage() {
             fontSize: 24,
             fontWeight: FONT_WEIGHT.bold,
             letterSpacing: 4,
-            color: ORANGE_LIGHT,
+            color: BRAND.orangeOnDark,
           }}
         >
           MONTECCHIO MAGGIORE (VI)
@@ -78,7 +89,7 @@ export default async function OgImage() {
             flexDirection: "column",
             fontSize: 34,
             fontWeight: FONT_WEIGHT.regular,
-            color: "rgba(255,255,255,0.74)",
+            color: HERO_TEXT.secondary,
             lineHeight: 1.35,
             marginTop: 20,
           }}
@@ -96,7 +107,7 @@ export default async function OgImage() {
           left: 0,
           width: "100%",
           height: 12,
-          background: ORANGE,
+          background: BRAND.orange,
           display: "flex",
         }}
       />

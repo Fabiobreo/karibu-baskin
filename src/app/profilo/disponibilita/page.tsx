@@ -2,6 +2,7 @@ import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
 import { Breadcrumbs, Container, Typography, Link as MuiLink } from "@mui/material";
 import PageHero from "@/components/common/PageHero";
+import { heroText } from "@/lib/heroStyles";
 import { redirect } from "next/navigation";
 import { loadMyAvailabilityMatches } from "@/lib/matches/myAvailabilities";
 import MieDisponibilitaClient from "@/components/matches/MieDisponibilitaClient";
@@ -36,17 +37,17 @@ export default async function MieDisponibilitaPage() {
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/profilo"
               underline="hover"
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
             >
               {t("title")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            <Typography variant="body2" sx={{ color: heroText.secondary }}>
               {t("availabilitiesTitle")}
             </Typography>
           </Breadcrumbs>

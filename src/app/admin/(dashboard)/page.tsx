@@ -138,9 +138,12 @@ export default async function AdminPage() {
           icon={<CalendarMonthIcon />}
           value={sessionsIncomplete}
           label="Allenamenti da completare"
-          caption="Sessioni passate ancora da chiudere: presenze, partitelle e conferma."
-          color="admin.activity"
-          highlight={sessionsIncomplete > 0}
+          caption={
+            sessionsIncomplete > 0
+              ? "Sessioni passate ancora da chiudere: presenze, partitelle e conferma."
+              : "Tutto chiuso: nessun allenamento passato in sospeso."
+          }
+          action={sessionsIncomplete > 0 ? "Completa ora" : undefined}
         />
         <StatCard
           href="/admin/utenti"
@@ -148,7 +151,6 @@ export default async function AdminPage() {
           value={totalUsers}
           label="Utenti registrati"
           caption={`+${recentCount} negli ultimi 30 giorni`}
-          color="admin.registry"
         />
       </Box>
 
@@ -185,7 +187,7 @@ export default async function AdminPage() {
       {/* Badge suggerimenti ruolo */}
       {pendingRoleCount > 0 && (
         <Paper elevation={2} sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-          <NewReleasesIcon color="warning" />
+          <NewReleasesIcon sx={{ color: "text.secondary" }} />
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {pendingRoleCount} {pendingRoleCount === 1 ? "utente ha" : "utenti hanno"} suggerito
@@ -246,6 +248,10 @@ function NavSection({ title, children }: { title: string; children: React.ReactN
  * Card con un numero. Riservata alle due voci che portano davvero un dato: la
  * card è il contenitore più costoso del sistema, spenderla su undici link la
  * svuota di significato.
+ *
+ * Numero e icona sono neutri (UX-29): i KPI non hanno una tinta. L'arancio
+ * compare solo sulla card che chiede un'azione e solo quando ce n'è una
+ * (`action`): bordo, icona e la riga d'invito, perché la card si tocca.
  */
 function StatCard({
   href,
@@ -253,21 +259,22 @@ function StatCard({
   value,
   label,
   caption,
-  color,
-  highlight,
+  action,
 }: {
   href: string;
   icon: React.ReactNode;
   value: number;
   label: string;
   caption: string;
-  color: string;
-  highlight?: boolean;
+  /** Invito all'azione ("Completa ora"): solo quando c'è qualcosa da fare. */
+  action?: string;
 }) {
+  const accent = action != null;
   return (
     <Link href={href} style={{ textDecoration: "none" }}>
       <Paper
-        elevation={2}
+        elevation={0}
+        variant="outlined"
         sx={{
           p: 2.5,
           height: "100%",
@@ -275,32 +282,51 @@ function StatCard({
           gap: 2,
           alignItems: "flex-start",
           cursor: "pointer",
-          border: "2px solid",
-          borderColor: highlight ? color : "transparent",
-          transition: "all 0.15s",
-          ...onHover({ borderColor: color, transform: "translateY(-2px)" }),
+          border: "1px solid",
+          borderColor: accent ? "primary.main" : "divider",
+          // Con l'accento il bordo diventa di 2px senza spostare il contenuto.
+          ...(accent && {
+            outline: "1px solid",
+            outlineColor: "primary.main",
+            outlineOffset: "-2px",
+          }),
+          transition: "background-color 0.15s, border-color 0.15s",
+          ...onHover({ bgcolor: "action.hover" }),
         }}
       >
-        <Box sx={{ color, display: "flex", mt: 0.5 }}>{icon}</Box>
+        <Box
+          sx={{ color: accent ? "primary.onLight" : "text.secondary", display: "flex", mt: 0.5 }}
+        >
+          {icon}
+        </Box>
         <Box sx={{ minWidth: 0 }}>
           <Typography
             component="p"
-            sx={{
-              fontSize: TYPE_SCALE.xl4,
-              fontWeight: FONT_WEIGHT.bold,
-              lineHeight: 1,
-              color,
-              fontVariantNumeric: "tabular-nums",
-            }}
+            variant="stat"
+            sx={{ fontSize: TYPE_SCALE.xl4, color: "text.primary" }}
           >
             {value}
           </Typography>
-          <Typography component="p" variant="subtitle2" sx={{ mt: 0.5 }}>
+          <Typography component="p" variant="subtitle2" sx={{ mt: 0.5, color: "text.primary" }}>
             {label}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
             {caption}
           </Typography>
+          {accent && (
+            <Typography
+              component="p"
+              variant="body2"
+              sx={{
+                mt: 1,
+                color: "primary.onLight",
+                fontWeight: FONT_WEIGHT.semibold,
+                textDecoration: "underline",
+              }}
+            >
+              {action}
+            </Typography>
+          )}
         </Box>
       </Paper>
     </Link>
@@ -357,7 +383,8 @@ function NavLink({
           <Chip
             label={badge}
             size="small"
-            color="warning"
+            // Contatore su un elemento che si tocca: arancio (UX-29), non un avviso.
+            color="primary"
             sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
           />
         )}

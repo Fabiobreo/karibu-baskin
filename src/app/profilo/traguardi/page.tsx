@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import PageHero from "@/components/common/PageHero";
+import { heroText } from "@/lib/heroStyles";
 import { prisma } from "@/lib/db";
 import { loadBadgeInput, type PlayerRef } from "@/lib/rating/badgeService";
 import { computeAllBadges } from "@/lib/rating/badges";
@@ -158,17 +159,17 @@ export default async function TraguardiPage() {
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/profilo"
               underline="hover"
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
             >
               {t("title")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            <Typography variant="body2" sx={{ color: heroText.secondary }}>
               {t("achievementsPageChip")}
             </Typography>
           </Breadcrumbs>

@@ -11,7 +11,7 @@ export default async function PlayedMatchCard({
 }: {
   match: AnyMatch;
   teamName: string;
-  teamColor: string;
+  teamColor: string | null;
 }) {
   const [t, locale, { matchResultLabel }] = await Promise.all([
     getTranslations("matches"),

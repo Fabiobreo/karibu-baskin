@@ -5,20 +5,13 @@ import { isMinor } from "@/lib/minors";
 import { userHasPublicProfile } from "@/lib/publicProfile";
 import { sportRoleLabel } from "@/lib/constants";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { BRAND, HERO_TEXT, ROLE_FILL } from "@/lib/palette";
+import { teamColor } from "@/lib/teamColors";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 type Props = { params: Promise<{ slug: string }> };
-
-// Copia di ROLE_COLORS (src/lib/constants.ts): Satori non legge il tema.
-const ROLE_COLORS: Record<number, string> = {
-  1: "#3D5A80",
-  2: "#2F6B73",
-  3: "#555A96",
-  4: "#7A4E7A",
-  5: "#4A4A4A",
-};
 
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
@@ -51,13 +44,14 @@ export default async function OgImage({ params }: Props) {
       ? rawUser
       : null;
 
-  const playerColor = user?.teamMemberships[0]?.team.color ?? "#E65100";
+  // Tinta della squadra (UX-29): senza tinta nessun segno di colore, mai
+  // l'arancio come ripiego. La tinta non colora mai il testo.
+  const tint = teamColor(user?.teamMemberships[0]?.team.color);
   const totalPoints = user?.matchStats.reduce((s, m) => s + m.points, 0) ?? 0;
   const matchesPlayed = user?.matchStats.length ?? 0;
   const roleLabel = user?.sportRole
     ? sportRoleLabel(user.sportRole, user.sportRoleVariant ?? null)
     : null;
-  const roleColor = user?.sportRole ? (ROLE_COLORS[user.sportRole] ?? "#E65100") : "#E65100";
   const initial = (user?.name ?? "?")[0].toUpperCase();
 
   return new ImageResponse(
@@ -67,8 +61,10 @@ export default async function OgImage({ params }: Props) {
         height: "100%",
         display: "flex",
         alignItems: "center",
-        background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 30%, ${playerColor} 130%)`,
-        color: "#fff",
+        background: tint
+          ? `linear-gradient(150deg, ${BRAND.dark} 0%, ${BRAND.dark} 30%, ${tint} 130%)`
+          : BRAND.dark,
+        color: HERO_TEXT.primary,
         fontFamily: "Inter, sans-serif",
         position: "relative",
         overflow: "hidden",
@@ -84,7 +80,7 @@ export default async function OgImage({ params }: Props) {
           transform: "translateY(-50%)",
           fontSize: 480,
           fontWeight: FONT_WEIGHT.bold,
-          color: "#fff",
+          color: HERO_TEXT.primary,
           opacity: 0.04,
           lineHeight: 1,
           display: "flex",
@@ -99,9 +95,9 @@ export default async function OgImage({ params }: Props) {
           width: 200,
           height: 200,
           borderRadius: "50%",
-          background: playerColor,
-          border: `6px solid ${playerColor}`,
-          boxShadow: `0 8px 40px ${playerColor}88`,
+          background: tint ?? BRAND.darkSoft,
+          border: `6px solid ${tint ?? HERO_TEXT.lineStrong}`,
+          boxShadow: tint ? `0 8px 40px ${tint}88` : "none",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -120,7 +116,7 @@ export default async function OgImage({ params }: Props) {
           style={{
             fontSize: 24,
             fontWeight: FONT_WEIGHT.bold,
-            color: playerColor,
+            color: HERO_TEXT.secondary,
             letterSpacing: "0.14em",
             textTransform: "uppercase",
             marginBottom: 8,
@@ -145,8 +141,11 @@ export default async function OgImage({ params }: Props) {
           {roleLabel && (
             <div
               style={{
-                background: roleColor,
-                color: "#fff",
+                // Badge del ruolo Baskin: grafite per tutti i ruoli, il numero
+                // è l'informazione (UX-29).
+                background: ROLE_FILL,
+                color: HERO_TEXT.primary,
+                border: `2px solid ${HERO_TEXT.lineStrong}`,
                 fontSize: 22,
                 fontWeight: FONT_WEIGHT.bold,
                 padding: "8px 20px",
@@ -160,8 +159,10 @@ export default async function OgImage({ params }: Props) {
           {user?.teamMemberships[0]?.team.name && (
             <div
               style={{
-                background: playerColor,
-                color: "#fff",
+                // Squadra: riempimento nella tinta, oppure contorno neutro.
+                background: tint ?? "transparent",
+                color: HERO_TEXT.primary,
+                border: `2px solid ${tint ?? HERO_TEXT.lineStrong}`,
                 fontSize: 22,
                 fontWeight: FONT_WEIGHT.bold,
                 padding: "8px 20px",
@@ -190,7 +191,7 @@ export default async function OgImage({ params }: Props) {
               <span
                 style={{
                   fontSize: 20,
-                  color: "rgba(255,255,255,0.6)",
+                  color: HERO_TEXT.muted,
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
                   display: "flex",
@@ -205,7 +206,6 @@ export default async function OgImage({ params }: Props) {
                   fontSize: 64,
                   fontWeight: FONT_WEIGHT.bold,
                   lineHeight: 1,
-                  color: playerColor,
                   display: "flex",
                 }}
               >
@@ -214,7 +214,7 @@ export default async function OgImage({ params }: Props) {
               <span
                 style={{
                   fontSize: 20,
-                  color: "rgba(255,255,255,0.6)",
+                  color: HERO_TEXT.muted,
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
                   display: "flex",

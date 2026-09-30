@@ -21,8 +21,8 @@ import HistoryIcon from "@mui/icons-material/History";
 import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import Link from "next/link";
 import { slugify } from "@/lib/slugUtils";
-import { contrastText } from "@/lib/colorUtils";
-import { brandColor, heroGradient } from "@/lib/heroStyles";
+import { teamColor } from "@/lib/teamColors";
+import { brandColor, heroGradient, heroText } from "@/lib/heroStyles";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
@@ -126,7 +126,7 @@ export default async function SquadrePage() {
                   label={t("currentSeasonChip")}
                   size="small"
                   icon={<StarIcon />}
-                  color="warning"
+                  variant="outlined"
                 />
               )}
               <Typography variant="overline" color="text.secondary">
@@ -233,7 +233,7 @@ export default async function SquadrePage() {
             <Typography variant="h5" component="h2">
               {t("joinUs")}
             </Typography>
-            <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 420 }}>
+            <Typography variant="body1" sx={{ color: heroText.muted, maxWidth: 420 }}>
               {t("joinUsDesc")}
             </Typography>
             {/* Verso "Vieni a provare" (UX-15). */}
@@ -261,11 +261,9 @@ type Team = {
 
 function TeamGrid({
   teams,
-  muted = false,
   t,
 }: {
   teams: Team[];
-  muted?: boolean;
 
   t: (key: string, values?: Record<string, any>) => string;
 }) {
@@ -274,10 +272,9 @@ function TeamGrid({
     // all'altezza della gemella, lasciando un vuoto sotto i metadati.
     <Grid container spacing={3} alignItems="flex-start">
       {teams.map((team) => {
-        // Il colore squadra arriva dal DB e puo' essere chiaro (il verde dei
-        // Montekki): il testo bianco fisso ci faceva 2,6:1. Qui il colore del
-        // nome segue la luminanza dello sfondo.
-        const headerText = contrastText(team.color);
+        // Intestazione nella tinta della squadra (UX-29): tutte le tinte reggono
+        // l'etichetta bianca. Senza tinta nessun segno: intestazione neutra.
+        const tint = teamColor(team.color);
         return (
           <Grid key={team.id} size={{ xs: 12, sm: 6 }}>
             <Link
@@ -291,7 +288,6 @@ function TeamGrid({
                   border: "1px solid",
                   borderColor: "divider",
                   cursor: "pointer",
-                  opacity: muted ? 0.7 : 1,
                   transition: "all 0.15s",
                   ...onHover({ transform: "translateY(-3px)", boxShadow: 4, opacity: 1 }),
                 }}
@@ -300,7 +296,9 @@ function TeamGrid({
                   sx={{
                     px: 2.5,
                     py: 2,
-                    backgroundColor: muted ? "grey.200" : (team.color ?? "primary.main"),
+                    bgcolor: tint ?? "action.hover",
+                    borderBottom: tint ? 0 : "1px solid",
+                    borderColor: "divider",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -310,7 +308,7 @@ function TeamGrid({
                     variant="h6"
                     component="h3"
                     fontWeight={FONT_WEIGHT.bold}
-                    sx={{ color: muted ? "text.secondary" : headerText }}
+                    sx={{ color: tint ? "common.white" : "text.primary" }}
                   >
                     {team.name}
                   </Typography>
@@ -318,12 +316,12 @@ function TeamGrid({
                     <Chip
                       label={team.championship}
                       size="small"
-                      sx={{
-                        backgroundColor: muted
-                          ? alpha(brandColor.black, 0.08)
-                          : alpha(headerText, 0.18),
-                        color: muted ? "text.secondary" : headerText,
-                      }}
+                      variant={tint ? "filled" : "outlined"}
+                      sx={
+                        tint
+                          ? { bgcolor: alpha(brandColor.white, 0.18), color: "common.white" }
+                          : undefined
+                      }
                     />
                   )}
                 </Box>

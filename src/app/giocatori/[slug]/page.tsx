@@ -19,7 +19,15 @@ import {
   Alert,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { brandColor, heroBottomBorder, heroMedal, heroTint, heroText } from "@/lib/heroStyles";
+import {
+  brandColor,
+  heroBottomBorder,
+  heroGradient,
+  heroMedal,
+  heroTint,
+  heroText,
+} from "@/lib/heroStyles";
+import { teamColor } from "@/lib/teamColors";
 import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -27,9 +35,8 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Link from "next/link";
-import { sportRoleLabel as sportRoleLabelRaw, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { sportRoleLabel as sportRoleLabelRaw, roleColorSx } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { computeBadgeState } from "@/lib/rating/badges";
 import { getBadgeI18n } from "@/lib/rating/badgeLabels";
@@ -508,15 +515,16 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   // Andamento punti per partita in ordine cronologico (filteredStats è desc).
   const trendValues = [...filteredStats].reverse().map((ms) => ms.points);
 
-  // Colore dominante: colore della squadra corrente, fallback all'arancione Karibu
-  const playerColor = currentTeams[0]?.team.color ?? "#E65100";
+  // Tinta della squadra corrente (UX-29); senza tinta nessun segno di colore,
+  // mai l'arancio come ripiego.
+  const playerHue = teamColor(currentTeams[0]?.team.color);
 
   return (
     <>
       {/* Hero — design "carta giocatore" condivisibile */}
       <Box
         style={{
-          backgroundImage: heroTint(playerColor),
+          backgroundImage: playerHue ? heroTint(playerHue) : heroGradient.dark,
         }}
         sx={{
           ...heroBottomBorder,
@@ -538,14 +546,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         >
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/squadre"
               underline="hover"
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.65)",
+                color: heroText.muted,
                 "&:hover": { color: brandColor.white },
               }}
             >
@@ -559,14 +567,14 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 underline="hover"
                 variant="body2"
                 sx={{
-                  color: "rgba(255,255,255,0.65)",
+                  color: heroText.muted,
                   "&:hover": { color: brandColor.white },
                 }}
               >
                 {breadcrumbTeam.name}
               </MuiLink>
             )}
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }} noWrap>
+            <Typography variant="body2" sx={{ color: heroText.secondary }} noWrap>
               {player.name ?? "Giocatore"}
             </Typography>
           </Breadcrumbs>
@@ -595,8 +603,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   height: { xs: 110, md: 140 },
                   fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
                   fontWeight: FONT_WEIGHT.bold,
-                  bgcolor: playerColor,
-                  border: `4px solid ${playerColor}`,
+                  bgcolor: playerHue ?? heroText.surface,
+                  border: "4px solid",
+                  borderColor: playerHue ?? heroText.lineStrong,
                   boxShadow: "0 8px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(0,0,0,0.25)",
                 }}
               >
@@ -611,8 +620,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     width: 40,
                     height: 40,
                     borderRadius: "50%",
-                    bgcolor: roleColor(player.sportRole),
-                    color: ROLE_TEXT_COLOR,
+                    // Grafite uguale per tutti i ruoli (UX-29): l'informazione e' il numero.
+                    ...roleColorSx(player.sportRole),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -707,9 +716,15 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             : `${m.team.name} · ${m.team.season}`
                         }
                         size="small"
+                        // Squadra nella sua tinta; senza tinta contornata neutra (UX-29).
                         sx={{
-                          bgcolor: m.team.color ?? "text.primary",
-                          color: contrastText(m.team.color),
+                          ...(teamColor(m.team.color)
+                            ? { bgcolor: teamColor(m.team.color), color: "common.white" }
+                            : {
+                                bgcolor: "transparent",
+                                color: heroText.primary,
+                                border: `1px solid ${heroText.lineStrong}`,
+                              }),
                           fontSize: TYPE_SCALE.xs,
                           cursor: "pointer",
                           "a:hover > &": { opacity: 0.9 },
@@ -802,7 +817,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             sx={{
                               fontSize: TYPE_SCALE.xs,
                               fontWeight: FONT_WEIGHT.semibold,
-                              color: "rgba(255,255,255,0.75)",
+                              color: heroText.muted,
                             }}
                           >
                             {m.teamName} · {m.season}
@@ -853,7 +868,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: TYPE_SCALE.xs,
                         fontWeight: FONT_WEIGHT.semibold,
-                        color: "rgba(255,255,255,0.75)",
+                        color: heroText.muted,
                         textTransform: "uppercase",
                         letterSpacing: "0.08em",
                       }}
@@ -866,7 +881,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
                         fontWeight: FONT_WEIGHT.bold,
-                        color: playerColor,
+                        color: heroText.primary,
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
                       }}
@@ -877,7 +892,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: TYPE_SCALE.xs,
                         fontWeight: FONT_WEIGHT.semibold,
-                        color: "rgba(255,255,255,0.75)",
+                        color: heroText.muted,
                       }}
                     >
                       {t("perGame")}
@@ -899,7 +914,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: TYPE_SCALE.xs,
                         fontWeight: FONT_WEIGHT.semibold,
-                        color: "rgba(255,255,255,0.75)",
+                        color: heroText.muted,
                       }}
                     >
                       {t("matchesCount", { count: matchesPlayed })}
@@ -916,7 +931,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   matchesPlayed={matchesPlayed}
                   medalsCount={medals.length}
                   slug={slug}
-                  playerColor={playerColor}
                 />
               </Box>
             </Box>
@@ -950,8 +964,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       c.sportRole ? (
                         <Avatar
                           sx={{
-                            bgcolor: `${roleColor(c.sportRole)} !important`,
-                            color: "common.white !important",
+                            bgcolor: "role.main",
+                            color: "role.contrastText !important",
                             fontWeight: FONT_WEIGHT.semibold,
                           }}
                         >
@@ -1109,24 +1123,22 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
             </Box>
             <Grid container spacing={2} sx={{ mb: 5 }}>
               {[
-                { label: t("matches"), value: matchesPlayed, color: "stats.games" },
-                { label: t("totalPoints"), value: totalPoints, color: "stats.points" },
+                { label: t("matches"), value: matchesPlayed },
+                { label: t("totalPoints"), value: totalPoints },
                 {
                   label: t("avgPoints"),
                   value:
                     matchesPlayed > 0 ? formatDecimal(totalPoints / matchesPlayed, locale) : "—",
-                  color: "text.primary",
                 },
-                { label: t("twoPointers"), value: totalTwo, color: "stats.twopt" },
-                { label: t("threePointers"), value: totalThree, color: "stats.threept" },
-                { label: t("freeThrows"), value: totalFreeThrows, color: "stats.ft" },
-                { label: t("fouls"), value: totalFouls, color: "stats.fouls" },
+                { label: t("twoPointers"), value: totalTwo },
+                { label: t("threePointers"), value: totalThree },
+                { label: t("freeThrows"), value: totalFreeThrows },
+                { label: t("fouls"), value: totalFouls },
                 ...(totalIllegalFouls > 0
                   ? [
                       {
                         label: t("illegalFouls"),
                         value: totalIllegalFouls,
-                        color: "stats.illegalFouls",
                       },
                     ]
                   : []),
@@ -1135,7 +1147,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       {
                         label: t("shotsAttempted"),
                         value: totalShots,
-                        color: "stats.shotsAttempted",
                       },
                     ]
                   : []),
@@ -1149,7 +1160,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       component="p"
                       variant="h4"
                       sx={{
-                        color: s.color,
+                        // Numeri in text.primary: le statistiche sono neutre (UX-29).
+                        color: "text.primary",
                         fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
                       }}
                     >
@@ -1184,7 +1196,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 >
                   {t("pointsTrend")}
                 </Typography>
-                <PointsTrendChart values={trendValues} colorToken={playerColor} />
+                {/* Linea neutra: il grafico parla del giocatore, non della squadra (UX-29). */}
+                <PointsTrendChart values={trendValues} />
               </Paper>
             )}
 
@@ -1314,13 +1327,10 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         ...onHover({ transform: "translateX(4px)", boxShadow: 2 }),
                       }}
                     >
-                      <Box
-                        sx={{
-                          width: 6,
-                          flexShrink: 0,
-                          backgroundColor: m.team.color ?? "primary.main",
-                        }}
-                      />
+                      {/* Fascia della tinta squadra; senza tinta nessun segno (UX-29). */}
+                      {teamColor(m.team.color) && (
+                        <Box sx={{ width: 6, flexShrink: 0, bgcolor: teamColor(m.team.color) }} />
+                      )}
                       <Box
                         sx={{
                           flex: 1,

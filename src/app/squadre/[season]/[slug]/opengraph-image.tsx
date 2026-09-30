@@ -3,6 +3,8 @@ import { loadInterFonts } from "@/lib/og/fonts";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/slugUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { BRAND, HERO_TEXT } from "@/lib/palette";
+import { teamColor } from "@/lib/teamColors";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -25,7 +27,8 @@ export default async function OgImage({ params }: Props) {
   });
   const team = teams.find((t) => slugify(t.name) === slug);
 
-  const teamColor = team?.color ?? "#E65100";
+  // Senza tinta squadra nessun segno di colore (mai l'arancio come ripiego).
+  const tint = teamColor(team?.color);
   const memberCount = team?.memberships.length ?? 0;
 
   return new ImageResponse(
@@ -37,44 +40,52 @@ export default async function OgImage({ params }: Props) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: `linear-gradient(150deg, #1A1A1A 0%, #1A1A1A 40%, ${teamColor} 140%)`,
-        color: "#fff",
+        background: tint
+          ? `linear-gradient(150deg, ${BRAND.dark} 0%, ${BRAND.dark} 40%, ${tint} 140%)`
+          : BRAND.dark,
+        color: HERO_TEXT.primary,
         fontFamily: "Inter, sans-serif",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Cerchi decorativi */}
-      <div
-        style={{
-          position: "absolute",
-          top: -100,
-          right: -100,
-          width: 500,
-          height: 500,
-          borderRadius: "50%",
-          background: `${teamColor}22`,
-          display: "flex",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: -120,
-          left: -120,
-          width: 600,
-          height: 600,
-          borderRadius: "50%",
-          background: `${teamColor}11`,
-          display: "flex",
-        }}
-      />
+      {/* Cerchi decorativi nella tinta della squadra */}
+      {tint && (
+        <div
+          style={{
+            position: "absolute",
+            top: -100,
+            right: -100,
+            width: 500,
+            height: 500,
+            borderRadius: "50%",
+            background: `${tint}22`,
+            display: "flex",
+          }}
+        />
+      )}
+      {tint && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: -120,
+            left: -120,
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            background: `${tint}11`,
+            display: "flex",
+          }}
+        />
+      )}
 
       {/* Badge stagione */}
       <div
         style={{
-          background: teamColor,
-          color: "#fff",
+          // Riempimento nella tinta, oppure contorno neutro senza tinta.
+          background: tint ?? "transparent",
+          color: HERO_TEXT.primary,
+          border: `2px solid ${tint ?? HERO_TEXT.lineStrong}`,
           fontSize: 26,
           fontWeight: FONT_WEIGHT.bold,
           padding: "10px 32px",
@@ -107,7 +118,7 @@ export default async function OgImage({ params }: Props) {
           <div
             style={{
               fontSize: 28,
-              color: "rgba(255,255,255,0.65)",
+              color: HERO_TEXT.secondary,
               fontWeight: FONT_WEIGHT.bold,
               display: "flex",
             }}
@@ -119,7 +130,7 @@ export default async function OgImage({ params }: Props) {
           <div
             style={{
               fontSize: 28,
-              color: "rgba(255,255,255,0.5)",
+              color: HERO_TEXT.muted,
               fontWeight: FONT_WEIGHT.bold,
               display: "flex",
             }}
@@ -135,7 +146,7 @@ export default async function OgImage({ params }: Props) {
           position: "absolute",
           bottom: 32,
           fontSize: 22,
-          color: "rgba(255,255,255,0.3)",
+          color: HERO_TEXT.muted,
           fontWeight: FONT_WEIGHT.bold,
           display: "flex",
         }}

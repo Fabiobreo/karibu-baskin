@@ -17,7 +17,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Image from "next/image";
 import { buildMetadata } from "@/lib/seo";
 import { onHover } from "@/lib/hoverStyles";
-import { brandColor, heroGradient } from "@/lib/heroStyles";
+import { brandColor, heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -241,7 +241,7 @@ export default async function SponsorPage() {
               >
                 {t("sponsor.interestedSponsor")}
               </Typography>
-              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+              <Typography variant="body2" sx={{ color: heroText.muted }}>
                 {t("sponsor.writeUsDesc")}
               </Typography>
             </Box>

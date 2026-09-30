@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { heroText } from "@/lib/heroStyles";
+import { teamColor } from "@/lib/teamColors";
 import { Container, Typography, Box, Chip, Stack } from "@mui/material";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
 import PageHero from "@/components/common/PageHero";
@@ -135,15 +136,18 @@ export default async function RisultatiPage({ searchParams }: Props) {
                 key={t.id}
                 sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}
               >
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: "50%",
-                    bgcolor: t.color ?? "primary.main",
-                    flexShrink: 0,
-                  }}
-                />
+                {/* Pallino della tinta squadra; senza tinta nessun segno (UX-29). */}
+                {teamColor(t.color) && (
+                  <Box
+                    sx={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: "50%",
+                      bgcolor: teamColor(t.color),
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
                 <Typography
                   variant="body2"
                   sx={{ fontWeight: FONT_WEIGHT.semibold, color: "common.white", minWidth: 0 }}
@@ -257,15 +261,17 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     flexWrap: "wrap",
                   }}
                 >
-                  <Box
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: "50%",
-                      bgcolor: team.color ?? "primary.main",
-                      flexShrink: 0,
-                    }}
-                  />
+                  {teamColor(team.color) && (
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        bgcolor: teamColor(team.color),
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
                   <Typography component="h2" variant="h6" fontWeight={FONT_WEIGHT.bold}>
                     {team.name}
                   </Typography>

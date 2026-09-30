@@ -29,7 +29,7 @@ import LightbulbIcon from "@mui/icons-material/LightbulbOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { onHover } from "@/lib/hoverStyles";
-import { heroGradient } from "@/lib/heroStyles";
+import { heroGradient, heroText, socialBrandColor } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -53,21 +53,21 @@ const SOCIAL = [
     label: "Instagram",
     handle: "@karibubaskin",
     href: "https://www.instagram.com/karibubaskin/",
-    color: "#E1306C",
+    color: socialBrandColor.instagram,
   },
   {
     icon: <FacebookIcon sx={{ fontSize: 26 }} />,
     label: "Facebook",
     handle: "karibubaskin",
     href: "https://www.facebook.com/karibubaskin",
-    color: "#1877F2",
+    color: socialBrandColor.facebook,
   },
   {
     icon: <YouTubeIcon sx={{ fontSize: 26 }} />,
     label: "YouTube",
     handle: "@karibubaskin",
     href: "https://youtube.com/@karibubaskin",
-    color: "#FF0000",
+    color: socialBrandColor.youtube,
   },
 ];
 
@@ -562,7 +562,7 @@ export default function ContattiPage() {
               >
                 {t("contatti.interestedSponsor")}
               </Typography>
-              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
+              <Typography variant="body2" sx={{ color: heroText.muted }}>
                 {t("contatti.writeUsDesc")}
               </Typography>
             </Box>

@@ -228,7 +228,8 @@ export default async function ConfrontaPage({ searchParams }: Props) {
                     align="right"
                     fontWeight={aWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
                     sx={{
-                      color: aWins ? "primary.main" : "text.primary",
+                      // Il migliore resta in grassetto; l'altro si smorza. Niente arancio: non si tocca (UX-29).
+                      color: bWins ? "text.secondary" : "text.primary",
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
@@ -251,7 +252,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
                     align="left"
                     fontWeight={bWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
                     sx={{
-                      color: bWins ? "primary.main" : "text.primary",
+                      color: aWins ? "text.secondary" : "text.primary",
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
@@ -264,10 +265,15 @@ export default async function ConfrontaPage({ searchParams }: Props) {
             {(pa.trend.length >= 3 || pb.trend.length >= 3) && (
               <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mt: 3 }}>
                 <Box sx={{ minWidth: 0 }}>
-                  <PointsTrendChart values={pa.trend} colorToken="primary.main" />
+                  <PointsTrendChart values={pa.trend} />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
-                  <PointsTrendChart values={pb.trend} colorToken="secondary.main" />
+                  <PointsTrendChart
+                    values={pb.trend}
+                    colorToken="text.secondary"
+                    dashed
+                    marker="square"
+                  />
                 </Box>
               </Box>
             )}

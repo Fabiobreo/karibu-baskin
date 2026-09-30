@@ -8,7 +8,7 @@ import { auth } from "@/lib/authjs";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
-import { Container, Typography, Box, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
+import { Container, Typography, Box, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import {
   brandColor,
@@ -35,12 +35,13 @@ import { computeStandings } from "@/lib/season/standings";
 import { rosterTeamIds } from "@/lib/matches/mixedTeam";
 import MatchTabellinoButton from "@/components/matches/MatchTabellinoButton";
 import HomeIcon from "@mui/icons-material/Home";
-import FlightIcon from "@mui/icons-material/Flight";
+import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import PlaceIcon from "@mui/icons-material/Place";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import BoltIcon from "@mui/icons-material/Bolt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import RoleBadge from "@/components/common/RoleBadge";
+import StatusPill from "@/components/common/StatusPill";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { onHover } from "@/lib/hoverStyles";
 import { guardianOf } from "@/lib/guardians";
@@ -56,7 +57,8 @@ type Props = { params: Promise<{ slug: string }> };
 const RESULT_GRADIENT: Record<"WIN" | "LOSS" | "DRAW", string> = {
   WIN: heroTint(heroResultColor.WIN),
   LOSS: heroTint(heroResultColor.LOSS),
-  DRAW: heroGradient.dark,
+  // Pareggio: ambra, come l'esito ovunque (UX-29).
+  DRAW: heroTint(heroResultColor.DRAW),
 };
 
 /** Nome sopra il punteggio: identico per le due squadre (UX-35). */
@@ -462,7 +464,7 @@ export default async function MatchDetailPage({ params }: Props) {
               flex: "1 1 auto",
               "& .MuiBreadcrumbs-ol": { flexWrap: "nowrap" },
               "& .MuiBreadcrumbs-li:last-of-type": { minWidth: 0 },
-              "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" },
+              "& .MuiBreadcrumbs-separator": { color: heroText.muted },
             }}
           >
             <MuiLink
@@ -470,7 +472,7 @@ export default async function MatchDetailPage({ params }: Props) {
               underline="hover"
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.65)",
+                color: heroText.muted,
                 // Area di tocco di almeno 24 px (WCAG 2.5.8, UX-22).
                 display: "inline-flex",
                 alignItems: "center",
@@ -480,7 +482,7 @@ export default async function MatchDetailPage({ params }: Props) {
             >
               {t("breadcrumb")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }} noWrap>
+            <Typography variant="body2" sx={{ color: heroText.secondary }} noWrap>
               {matchupTitle}
             </Typography>
           </Breadcrumbs>
@@ -646,20 +648,9 @@ export default async function MatchDetailPage({ params }: Props) {
               >
                 <MatchCountdown targetIso={new Date(match.date).toISOString()} />
                 {isImminent && (
-                  <Chip
-                    icon={<BoltIcon sx={{ fontSize: 14 }} />}
-                    label={t("imminent")}
-                    size="small"
-                    sx={{
-                      fontWeight: FONT_WEIGHT.bold,
-                      // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
-                      // Niente alone pulsante (UX-30): l'urgenza la dicono etichetta e colore.
-                      bgcolor: "primary.fill",
-                      color: "common.white",
-                      letterSpacing: "0.05em",
-                      height: 26,
-                    }}
-                  />
+                  // Stato temporale: pastiglia invertita, non l'arancio, che vuol dire
+                  // "si tocca" (UX-29). Niente alone pulsante (UX-30).
+                  <StatusPill onDark variant="inverted" icon={<BoltIcon />} label={t("imminent")} />
                 )}
               </Box>
             )}
@@ -692,7 +683,7 @@ export default async function MatchDetailPage({ params }: Props) {
                 {match.isHome ? (
                   <HomeIcon sx={{ fontSize: 14 }} />
                 ) : (
-                  <FlightIcon sx={{ fontSize: 14 }} />
+                  <DirectionsBusIcon sx={{ fontSize: 14 }} />
                 )}
                 <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
                   {match.isHome ? t("home") : t("away")}
@@ -789,20 +780,8 @@ export default async function MatchDetailPage({ params }: Props) {
                         {name}
                       </Typography>
                       {role && (
-                        <Box
-                          sx={{
-                            display: "inline-block",
-                            mt: 0.25,
-                            px: 0.75,
-                            py: 0.125,
-                            borderRadius: RADIUS.sm,
-                            bgcolor: roleColor(role),
-                            color: ROLE_TEXT_COLOR,
-                            fontSize: TYPE_SCALE.xs,
-                            fontWeight: FONT_WEIGHT.semibold,
-                          }}
-                        >
-                          R{role}
+                        <Box sx={{ mt: 0.25 }}>
+                          <RoleBadge role={role} />
                         </Box>
                       )}
                     </Box>
@@ -823,6 +802,7 @@ export default async function MatchDetailPage({ params }: Props) {
 
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
         <MatchDetailTabs
+          ourTeamColor={match.team.color}
           notes={match.notes}
           stats={match.playerStats}
           callups={callups}

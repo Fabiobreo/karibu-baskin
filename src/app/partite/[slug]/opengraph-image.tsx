@@ -4,27 +4,28 @@ import { prisma } from "@/lib/db";
 import { it } from "date-fns/locale";
 import { formatRome } from "@/lib/dateUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { BRAND, HERO, HERO_TEXT, OUTCOME } from "@/lib/palette";
+import { teamColor } from "@/lib/teamColors";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Esiti (UX-29): fondo grafite che sfuma nella velatura scura dell'esito. La
+// parola ("Vittoria"…) resta nella riga di dettaglio, il colore non è da solo.
 const RESULT_META = {
   WIN: {
     label: "Vittoria",
-    color: "#2E7D32",
-    bg: "linear-gradient(150deg,#1A2E1A 0%,#1B3A1B 60%,#1F4A1F 100%)",
+    bg: `linear-gradient(150deg, ${BRAND.dark} 0%, ${OUTCOME.dark.winBg} 100%)`,
   },
   LOSS: {
     label: "Sconfitta",
-    color: "#C62828",
-    bg: "linear-gradient(150deg,#2E1A1A 0%,#3A1B1B 60%,#4A1F1F 100%)",
+    bg: `linear-gradient(150deg, ${BRAND.dark} 0%, ${OUTCOME.dark.lossBg} 100%)`,
   },
   DRAW: {
     label: "Pareggio",
-    color: "#E65100",
-    bg: "linear-gradient(150deg,#1A1A1A 0%,#2D1A0A 60%,#3D2010 100%)",
+    bg: `linear-gradient(150deg, ${BRAND.dark} 0%, ${OUTCOME.dark.drawBg} 100%)`,
   },
 };
 
@@ -34,7 +35,7 @@ const MATCH_TYPE_LABEL: Record<string, string> = {
   FRIENDLY: "Amichevole",
 };
 
-const DEFAULT_BG = "linear-gradient(150deg,#1A1A1A 0%,#2D1A0A 60%,#3D2010 100%)";
+const DEFAULT_BG = `linear-gradient(150deg, ${HERO.from} 0%, ${HERO.to} 100%)`;
 
 export default async function OgImage({ params }: Props) {
   const { slug } = await params;
@@ -66,7 +67,7 @@ export default async function OgImage({ params }: Props) {
           alignItems: "center",
           justifyContent: "center",
           background: DEFAULT_BG,
-          color: "#fff",
+          color: HERO_TEXT.primary,
           fontFamily: "Inter, sans-serif",
           fontSize: 48,
         }}
@@ -81,7 +82,8 @@ export default async function OgImage({ params }: Props) {
   const hasScore = match.ourScore !== null && match.theirScore !== null;
   const meta = match.result ? RESULT_META[match.result] : null;
   const bg = meta?.bg ?? DEFAULT_BG;
-  const teamColor = match.team.color ?? "#E65100";
+  // Senza tinta squadra nessuna fascia (mai l'arancio come ripiego).
+  const tint = teamColor(match.team.color);
 
   // Stessa composizione del tabellino della pagina (UX-35): chi gioca in casa
   // a sinistra, nome sopra e punteggio sotto, esito e competizione in una riga.
@@ -139,9 +141,9 @@ export default async function OgImage({ params }: Props) {
         alignItems: "center",
         justifyContent: "center",
         background: bg,
-        color: "#fff",
+        color: HERO_TEXT.primary,
         fontFamily: "Inter, sans-serif",
-        borderBottom: `12px solid ${teamColor}`,
+        ...(tint ? { borderBottom: `12px solid ${tint}` } : {}),
       }}
     >
       <div
@@ -149,7 +151,7 @@ export default async function OgImage({ params }: Props) {
           fontSize: 22,
           fontWeight: FONT_WEIGHT.bold,
           letterSpacing: 4,
-          color: "rgba(255,255,255,0.75)",
+          color: HERO_TEXT.secondary,
           marginBottom: 40,
           display: "flex",
         }}
@@ -172,7 +174,7 @@ export default async function OgImage({ params }: Props) {
             fontSize: hasScore ? 80 : 56,
             fontWeight: FONT_WEIGHT.bold,
             lineHeight: 1,
-            color: "rgba(255,255,255,0.6)",
+            color: HERO_TEXT.muted,
             display: "flex",
             paddingBottom: hasScore ? 24 : 16,
           }}
@@ -192,7 +194,7 @@ export default async function OgImage({ params }: Props) {
       <div
         style={{
           fontSize: 26,
-          color: "rgba(255,255,255,0.7)",
+          color: HERO_TEXT.secondary,
           fontWeight: FONT_WEIGHT.bold,
           display: "flex",
         }}

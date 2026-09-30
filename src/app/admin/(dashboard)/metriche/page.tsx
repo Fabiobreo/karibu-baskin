@@ -162,8 +162,9 @@ function MetricTile({
       sx={{
         p: 2.5,
         height: "100%",
+        // Evidenza, non azione (UX-29): bordo nel colore del testo, niente tinta.
         border: "2px solid",
-        borderColor: highlight ? "admin.tools" : "transparent",
+        borderColor: highlight ? "text.primary" : "transparent",
       }}
     >
       <Typography
@@ -172,7 +173,7 @@ function MetricTile({
           fontSize: TYPE_SCALE.xl4,
           fontWeight: FONT_WEIGHT.bold,
           lineHeight: 1,
-          color: "admin.tools",
+          color: "text.primary",
           fontVariantNumeric: "tabular-nums",
         }}
       >

@@ -24,6 +24,7 @@ import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { SITE_URL } from "@/lib/siteUrl";
+import { BRAND, NEUTRAL } from "@/lib/palette";
 import "./globals.css";
 
 const inter = Inter({
@@ -100,7 +101,7 @@ export async function generateViewport(): Promise<Viewport> {
   return {
     // La barra di stato PWA segue il tema risolto: arancione in chiaro,
     // grigio scurissimo in scuro (prima era fissa su #E65100).
-    themeColor: scheme === "dark" ? "#121212" : "#E65100",
+    themeColor: scheme === "dark" ? NEUTRAL.dark.background : BRAND.orange,
     width: "device-width",
     // Niente `maximumScale`: bloccava lo zoom con due dita su Android (WCAG
     // 1.4.4). Lo zoom automatico di iOS sui campi lo evita il tema, con i

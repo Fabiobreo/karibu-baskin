@@ -1,3 +1,4 @@
+import { ROLE_CHIP_ICONS } from "@/components/common/appRoleIcons";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
@@ -21,7 +22,8 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import { contrastText } from "@/lib/colorUtils";
+import TeamChip from "@/components/teams/TeamChip";
+
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/profile/ParentChildLinker";
 import NotificationPrefsPanel from "@/components/profile/NotificationPrefsPanel";
@@ -43,6 +45,7 @@ import ProfileAvatarEditor from "@/components/profile/ProfileAvatarEditor";
 import ProfileBadges from "@/components/profile/ProfileBadges";
 import { buildMetadata } from "@/lib/seo";
 import PageHero from "@/components/common/PageHero";
+import { heroText } from "@/lib/heroStyles";
 import NextTrainingCard, {
   type NextTrainingInfo,
   type TrainingSubject,
@@ -60,17 +63,6 @@ export const metadata = buildMetadata({
 });
 
 export const revalidate = 0;
-
-const APP_ROLE_CHIP_COLOR: Record<
-  AppRole,
-  "default" | "primary" | "success" | "warning" | "error"
-> = {
-  GUEST: "default",
-  ATHLETE: "primary",
-  PARENT: "success",
-  COACH: "warning",
-  ADMIN: "error",
-};
 
 // Le attese indipendenti vanno in parallelo, e i badge (la parte più costosa:
 // statistiche, MVP e rose di ogni giocatore) arrivano in streaming dentro
@@ -296,6 +288,7 @@ export default async function ProfiloPage() {
     />
   );
 
+  const AppRoleIcon = ROLE_CHIP_ICONS[user.appRole as AppRole];
   const profileTab = (
     <>
       <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
@@ -313,21 +306,15 @@ export default async function ProfiloPage() {
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+          {/* Ruolo utente neutro (UX-29): lo distinguono icona e parola, non il colore. */}
           <Chip
             label={t(`appRole${user.appRole as AppRole}`)}
-            color={APP_ROLE_CHIP_COLOR[user.appRole as AppRole]}
+            icon={<AppRoleIcon />}
+            variant="outlined"
             size="small"
           />
           {currentTeams.map((m) => (
-            <Chip
-              key={m.id}
-              label={m.team.name}
-              size="small"
-              sx={{
-                bgcolor: m.team.color ?? "primary.main",
-                color: contrastText(m.team.color),
-              }}
-            />
+            <TeamChip key={m.id} name={m.team.name} color={m.team.color} compact />
           ))}
         </Box>
 
@@ -346,7 +333,8 @@ export default async function ProfiloPage() {
                 {t("publicProfile")}
               </Button>
             )}
-          <Badge badgeContent={pendingAvailabilities} color="warning" max={99}>
+          {/* Contatore su un elemento che si tocca: arancio (UX-29). */}
+          <Badge badgeContent={pendingAvailabilities} color="primary" max={99}>
             <Button
               href="/profilo/disponibilita"
               size="small"
@@ -520,17 +508,17 @@ export default async function ProfiloPage() {
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/"
               underline="hover"
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
             >
               {t("breadcrumbHome")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            <Typography variant="body2" sx={{ color: heroText.secondary }}>
               {t("title")}
             </Typography>
           </Breadcrumbs>

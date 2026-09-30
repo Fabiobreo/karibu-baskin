@@ -1,9 +1,7 @@
 import { Avatar, Box, Paper, Tooltip, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import RoleBadge from "@/components/common/RoleBadge";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
-import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -21,7 +19,8 @@ export default async function AthleteCard({
   roleNum: number | null | undefined;
   roleVariant: string | null | undefined;
   isCaptain: boolean;
-  teamColor: string;
+  /** Hex della tinta squadra (da `teamColor()`), o null: nessun segno di colore. */
+  teamColor: string | null;
 }) {
   const { sportRoleLabel } = await getEntityLabels();
   return (
@@ -31,13 +30,11 @@ export default async function AthleteCard({
         p: 1.75,
         border: "1px solid",
         borderColor: "divider",
-        borderLeft: isCaptain ? `4px solid ${teamColor}` : undefined,
+        borderLeft: isCaptain && teamColor ? `4px solid ${teamColor}` : undefined,
         display: "flex",
         alignItems: "center",
         gap: 1.5,
         height: "100%",
-        transition: "all 0.12s",
-        "&:hover": { borderColor: teamColor, backgroundColor: alpha(teamColor, 0.031) },
       }}
     >
       <Avatar
@@ -45,8 +42,9 @@ export default async function AthleteCard({
         sx={{
           width: 48,
           height: 48,
-          bgcolor: teamColor,
-          color: contrastText(teamColor),
+          // Iniziale nella tinta squadra (etichetta bianca); senza tinta neutra (UX-29).
+          bgcolor: teamColor ?? "action.selected",
+          color: teamColor ? "common.white" : "text.primary",
           fontSize: TYPE_SCALE.lg,
           fontWeight: FONT_WEIGHT.bold,
           flexShrink: 0,

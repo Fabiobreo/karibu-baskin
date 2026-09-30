@@ -4,6 +4,7 @@ import { Breadcrumbs, Container, Typography, Link as MuiLink } from "@mui/materi
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import PageHero from "@/components/common/PageHero";
+import { heroText } from "@/lib/heroStyles";
 import RoleQuizClient from "@/components/profile/RoleQuizClient";
 import { prisma } from "@/lib/db";
 import { getRolesInfo } from "@/lib/content/baskinInfo";
@@ -59,17 +60,17 @@ export default async function RuoloPage() {
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/profilo"
               underline="hover"
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } }}
+              sx={{ color: heroText.muted, "&:hover": { color: "common.white" } }}
             >
               {tProfile("title")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            <Typography variant="body2" sx={{ color: heroText.secondary }}>
               {t("heroTitle")}
             </Typography>
           </Breadcrumbs>

@@ -16,7 +16,8 @@ import AccessibilityNewIcon from "@mui/icons-material/AccessibilityNew";
 import TimerIcon from "@mui/icons-material/Timer";
 import StarIcon from "@mui/icons-material/Star";
 import GradeIcon from "@mui/icons-material/Grade";
-import { roleColor } from "@/lib/constants";
+import { roleColorSx } from "@/lib/constants";
+import { heroText } from "@/lib/heroStyles";
 import { getRolesInfo, getBaskinRules } from "@/lib/content/baskinInfo";
 import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 import { buildMetadata } from "@/lib/seo";
@@ -152,12 +153,12 @@ export default async function IlBaskinPage() {
                 elevation={0}
                 sx={{ overflow: "hidden", border: "1px solid", borderColor: "divider" }}
               >
-                {/* Header colorato */}
+                {/* Intestazione grafite (UX-29): uguale per tutti i ruoli, l'informazione e' il nome. */}
                 <Box
                   sx={{
                     px: 2.5,
                     py: 1.5,
-                    backgroundColor: roleColor(r.role),
+                    ...roleColorSx(r.role),
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -172,7 +173,7 @@ export default async function IlBaskinPage() {
                     label={r.tag}
                     size="small"
                     sx={{
-                      backgroundColor: "rgba(255,255,255,0.2)",
+                      backgroundColor: heroText.surfaceHover,
                       color: "common.white",
                       fontSize: TYPE_SCALE.xs,
                     }}

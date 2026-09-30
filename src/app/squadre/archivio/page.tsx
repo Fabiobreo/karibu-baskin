@@ -11,6 +11,8 @@ import {
   Link as MuiLink,
 } from "@mui/material";
 import PageHero from "@/components/common/PageHero";
+import { heroText } from "@/lib/heroStyles";
+import { teamColor } from "@/lib/teamColors";
 import EmptyState from "@/components/common/EmptyState";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -62,20 +64,20 @@ export default async function SquadreArchivioPage() {
         breadcrumb={
           <Breadcrumbs
             aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" } }}
+            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
           >
             <MuiLink
               href="/squadre"
               underline="hover"
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.65)",
+                color: heroText.muted,
                 "&:hover": { color: "common.white" },
               }}
             >
               {t("teamBreadcrumb")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            <Typography variant="body2" sx={{ color: heroText.secondary }}>
               {t("archiveTitle")}
             </Typography>
           </Breadcrumbs>
@@ -123,14 +125,17 @@ export default async function SquadreArchivioPage() {
                             "&:hover": { opacity: 1, boxShadow: 3 },
                           }}
                         >
-                          <Box
-                            sx={{
-                              width: 5,
-                              alignSelf: "stretch",
-                              flexShrink: 0,
-                              backgroundColor: team.color ?? "grey.500",
-                            }}
-                          />
+                          {/* Fascia della tinta squadra; senza tinta nessun segno (UX-29). */}
+                          {teamColor(team.color) && (
+                            <Box
+                              sx={{
+                                width: 5,
+                                alignSelf: "stretch",
+                                flexShrink: 0,
+                                bgcolor: teamColor(team.color),
+                              }}
+                            />
+                          )}
                           <Box sx={{ px: 1.5, py: 1.5, flex: 1, minWidth: 0 }}>
                             <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                               {team.name}

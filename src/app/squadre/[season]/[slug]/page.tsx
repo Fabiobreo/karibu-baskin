@@ -29,9 +29,8 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Link from "next/link";
-import { roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
-import { contrastText } from "@/lib/colorUtils";
-import AccentText from "@/components/common/AccentText";
+import { roleColorSx } from "@/lib/constants";
+import { teamColor } from "@/lib/teamColors";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
@@ -44,7 +43,14 @@ import LeaderCard from "./_components/LeaderCard";
 import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
-import { brandColor, heroBottomBorder, heroImage, heroText, heroTint } from "@/lib/heroStyles";
+import {
+  brandColor,
+  heroBottomBorder,
+  heroGradient,
+  heroImage,
+  heroText,
+  heroTint,
+} from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -196,7 +202,8 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
   }
 
   const now = new Date();
-  const teamColor = team.color ?? "#E65100";
+  // Tinta della squadra (UX-29): null = nessun segno di colore, mai l'arancio.
+  const teamHue = teamColor(team.color);
 
   // Unisci team.matches + opponentInMatches (specchiando le seconde)
   // Le partite in cui la squadra è opponentTeam (amichevoli interne contro un'altra
@@ -380,7 +387,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
     <>
       <Box
         style={{
-          backgroundImage: team.imageUrl ? heroImage(team.imageUrl) : heroTint(teamColor),
+          backgroundImage: team.imageUrl
+            ? heroImage(team.imageUrl)
+            : teamHue
+              ? heroTint(teamHue)
+              : heroGradient.dark,
           backgroundSize: team.imageUrl ? "cover" : undefined,
           backgroundPosition: team.imageUrl ? "center" : undefined,
         }}
@@ -418,7 +429,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
           <Breadcrumbs
             aria-label="breadcrumb"
             sx={{
-              "& .MuiBreadcrumbs-separator": { color: "rgba(255,255,255,0.4)" },
+              "& .MuiBreadcrumbs-separator": { color: heroText.muted },
             }}
           >
             <MuiLink
@@ -426,13 +437,13 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               underline="hover"
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.65)",
+                color: heroText.muted,
                 "&:hover": { color: "common.white" },
               }}
             >
               {t("teamBreadcrumb")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            <Typography variant="body2" sx={{ color: heroText.secondary }}>
               {team.name}
             </Typography>
           </Breadcrumbs>
@@ -453,7 +464,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 width: { xs: 72, sm: 96 },
                 height: { xs: 72, sm: 96 },
                 borderRadius: "50%",
-                bgcolor: teamColor,
+                bgcolor: teamHue ?? heroText.surface,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -466,7 +477,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 sx={{
                   fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
                   fontWeight: FONT_WEIGHT.bold,
-                  color: contrastText(teamColor),
+                  color: "common.white",
                   lineHeight: 1,
                   textShadow: "0 2px 8px rgba(0,0,0,0.3)",
                 }}
@@ -482,8 +493,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 size="small"
                 sx={{
                   mb: 1,
-                  bgcolor: teamColor,
-                  color: contrastText(teamColor),
+                  bgcolor: teamHue ?? "transparent",
+                  color: "common.white",
+                  border: teamHue ? 0 : `1px solid ${heroText.lineStrong}`,
                   fontSize: TYPE_SCALE.xs,
                 }}
               />
@@ -633,7 +645,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               <NextMatchCard
                 match={nextMatch}
                 teamName={team.name}
-                teamColor={teamColor}
+                teamColor={teamHue}
                 now={now}
                 previousMeeting={previousMeeting ?? null}
               />
@@ -653,9 +665,9 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
               }}
             >
               <Box>
-                <AccentText variant="overline" accent={teamColor}>
+                <Typography variant="overline" color="text.secondary">
                   Statistiche
-                </AccentText>
+                </Typography>
                 <Typography variant="h4" sx={{ mt: 0.5 }}>
                   {t("seasonBalance")}
                 </Typography>
@@ -887,10 +899,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
         {leadersByPoints.length > 0 && (
           <Box sx={{ mb: 6 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-              <StarIcon sx={{ color: teamColor }} />
-              <AccentText variant="overline" accent={teamColor}>
+              <StarIcon sx={{ color: teamHue ?? "text.secondary" }} />
+              <Typography variant="overline" color="text.secondary">
                 {t("leaders")}
-              </AccentText>
+              </Typography>
             </Box>
             <Typography variant="h4" sx={{ mb: 2.5 }}>
               {t("topScorer")}
@@ -902,7 +914,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                   <LeaderCard
                     rank={idx + 1}
                     leader={l}
-                    teamColor={teamColor}
+                    teamColor={teamHue}
                     avgLabel={t("leaderAvg", {
                       avg: formatDecimal(l.points / l.games, locale),
                     })}
@@ -916,7 +928,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 {leaderByThrees && (
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <SubLeaderRow
-                      icon={<SportsBasketballIcon sx={{ fontSize: 20, color: teamColor }} />}
+                      icon={
+                        <SportsBasketballIcon
+                          sx={{ fontSize: 20, color: teamHue ?? "text.secondary" }}
+                        />
+                      }
                       label={t("mostThrees")}
                       leader={leaderByThrees}
                       value={leaderByThrees.threePointers}
@@ -927,7 +943,11 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                 {leaderByFreeThrows && (
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <SubLeaderRow
-                      icon={<SportsBasketballIcon sx={{ fontSize: 20, color: teamColor }} />}
+                      icon={
+                        <SportsBasketballIcon
+                          sx={{ fontSize: 20, color: teamHue ?? "text.secondary" }}
+                        />
+                      }
                       label={t("mostFreeThrows")}
                       leader={leaderByFreeThrows}
                       value={leaderByFreeThrows.freeThrows}
@@ -945,10 +965,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Divider sx={{ mb: 5 }} />
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <GroupsIcon sx={{ color: teamColor }} />
-                <AccentText variant="overline" accent={teamColor}>
+                <GroupsIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                <Typography variant="overline" color="text.secondary">
                   {t("rosterSection")}
-                </AccentText>
+                </Typography>
               </Box>
               <Typography variant="h4" sx={{ mb: 3 }}>
                 {t("rosterCount", { count: team.memberships.length })}
@@ -971,12 +991,15 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
                         {!isUnassigned && roleNum !== null && (
                           <Box
+                            aria-hidden
                             sx={{
                               width: 28,
                               height: 28,
                               borderRadius: "50%",
-                              bgcolor: roleColor(roleNum),
-                              color: ROLE_TEXT_COLOR,
+                              // Grafite uguale per tutti i ruoli (UX-29): l'informazione e' il numero.
+                              ...roleColorSx(roleNum),
+                              border: "1px solid",
+                              borderColor: "divider",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -1017,7 +1040,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                               roleNum={athlete.sportRole}
                               roleVariant={athlete.sportRoleVariant}
                               isCaptain={m.isCaptain}
-                              teamColor={teamColor}
+                              teamColor={teamHue}
                             />
                           );
                           return (
@@ -1043,7 +1066,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                                     roleNum={athlete.sportRole}
                                     roleVariant={athlete.sportRoleVariant}
                                     isCaptain={m.isCaptain}
-                                    teamColor={teamColor}
+                                    teamColor={teamHue}
                                   />
                                 </Link>
                               )}
@@ -1064,22 +1087,17 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Divider sx={{ mb: 5 }} />
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <EmojiEventsIcon sx={{ color: teamColor }} />
-                <AccentText variant="overline" accent={teamColor}>
+                <EmojiEventsIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                <Typography variant="overline" color="text.secondary">
                   {t("historySection")}
-                </AccentText>
+                </Typography>
               </Box>
               <Typography variant="h4" sx={{ mb: 2.5 }}>
                 Risultati
               </Typography>
               <Stack spacing={1}>
                 {playedMatchesDesc.map((m) => (
-                  <PlayedMatchCard
-                    key={m.id}
-                    match={m}
-                    teamName={team.name}
-                    teamColor={teamColor}
-                  />
+                  <PlayedMatchCard key={m.id} match={m} teamName={team.name} teamColor={teamHue} />
                 ))}
               </Stack>
             </Box>
@@ -1091,10 +1109,10 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
             <Divider sx={{ mb: 5 }} />
             <Box sx={{ mb: 6 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                <CalendarTodayIcon sx={{ color: teamColor }} />
-                <AccentText variant="overline" accent={teamColor}>
+                <CalendarTodayIcon sx={{ color: teamHue ?? "text.secondary" }} />
+                <Typography variant="overline" color="text.secondary">
                   {t("upcomingSection")}
-                </AccentText>
+                </Typography>
               </Box>
               <Typography variant="h4" sx={{ mb: 2.5 }}>
                 {t("upcomingMatches")}
@@ -1105,7 +1123,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
                     key={m.id}
                     match={m}
                     teamName={team.name}
-                    teamColor={teamColor}
+                    teamColor={team.color}
                   />
                 ))}
               </Stack>

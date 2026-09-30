@@ -10,7 +10,7 @@ export default function AdminAuditPage() {
       <AdminPageHeader
         title="Registro Attività"
         subtitle="Tutte le azioni effettuate da coach e admin sul pannello."
-        icon={<HistoryIcon sx={{ color: "admin.audit" }} />}
+        icon={<HistoryIcon sx={{ color: "text.secondary" }} />}
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Registro attività" }]}
       />
       <AuditLogClient />

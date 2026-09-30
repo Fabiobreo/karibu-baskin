@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/db";
 import { Container, Typography, Box, Paper, Chip, Stack } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
+import StatusPill from "@/components/common/StatusPill";
 import HomeIcon from "@mui/icons-material/Home";
-import FlightIcon from "@mui/icons-material/Flight";
+import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PlaceIcon from "@mui/icons-material/Place";
@@ -15,7 +15,8 @@ import MatchTimeCell from "@/components/matches/MatchTimeCell";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
-import { brandColor, heroText } from "@/lib/heroStyles";
+import { heroText } from "@/lib/heroStyles";
+import { teamColor } from "@/lib/teamColors";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -103,7 +104,7 @@ export default async function PartitePage({ searchParams }: Props) {
         >
           {t("upcomingTitle")}
         </Typography>
-        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)" }}>
+        <Typography variant="body2" sx={{ color: heroText.muted }}>
           {upcoming.length === 0
             ? t("upcomingEmpty")
             : t("upcomingCount", { count: upcoming.length })}
@@ -174,15 +175,18 @@ export default async function PartitePage({ searchParams }: Props) {
                   flexWrap: "wrap",
                 }}
               >
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                    bgcolor: team.color ?? brandColor.orange,
-                    flexShrink: 0,
-                  }}
-                />
+                {/* Pallino della tinta squadra; senza tinta nessun segno (UX-29). */}
+                {teamColor(team.color) && (
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      bgcolor: teamColor(team.color),
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
                 <Typography variant="h6" fontWeight={FONT_WEIGHT.bold}>
                   {team.name}
                 </Typography>
@@ -195,16 +199,12 @@ export default async function PartitePage({ searchParams }: Props) {
                     {team.championship}
                   </Typography>
                 )}
+                {/* Conteggio: un dato che non si tocca, quindi neutro (UX-29). */}
                 <Chip
                   label={t("matchCount", { count: team.matches.length })}
                   size="small"
-                  sx={{
-                    ml: "auto",
-                    fontSize: TYPE_SCALE.xs,
-                    height: 20,
-                    bgcolor: alpha(brandColor.orange, 0.1),
-                    color: "primary.main",
-                  }}
+                  variant="outlined"
+                  sx={{ ml: "auto", fontSize: TYPE_SCALE.xs, height: 20 }}
                 />
               </Box>
 
@@ -227,7 +227,10 @@ export default async function PartitePage({ searchParams }: Props) {
                         sx={{
                           border: "1px solid",
                           borderColor: "divider",
-                          borderLeft: `4px solid ${team.color ?? brandColor.orange}`,
+                          // Fascia della tinta squadra; senza tinta resta il bordo neutro.
+                          ...(teamColor(team.color)
+                            ? { borderLeft: `4px solid ${teamColor(team.color)}` }
+                            : {}),
                           overflow: "hidden",
                           cursor: "pointer",
                           transition: "box-shadow 0.15s, border-color 0.15s",
@@ -322,12 +325,11 @@ export default async function PartitePage({ searchParams }: Props) {
                               flexWrap: "wrap",
                             }}
                           >
-                            <Chip
-                              icon={m.isHome ? <HomeIcon /> : <FlightIcon />}
+                            {/* Casa invertita, trasferta contornata: stato, non esito (UX-29). */}
+                            <StatusPill
+                              variant={m.isHome ? "inverted" : "outlined"}
+                              icon={m.isHome ? <HomeIcon /> : <DirectionsBusIcon />}
                               label={m.isHome ? t("home") : t("away")}
-                              size="small"
-                              variant="outlined"
-                              sx={{ fontSize: TYPE_SCALE.xs, height: 22 }}
                             />
                             {m.venue && (
                               <Box

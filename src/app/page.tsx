@@ -173,8 +173,9 @@ export default async function HomePage() {
                 {/* Content */}
                 <Box sx={{ pb: i < storia.length - 1 ? 4 : 0 }}>
                   <Typography
+                    // L'anno e' testo, non un'icona decorativa: neutro (UX-29).
                     variant="caption"
-                    color="primary.onLight"
+                    color="text.secondary"
                     fontWeight={FONT_WEIGHT.semibold}
                     sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
                   >

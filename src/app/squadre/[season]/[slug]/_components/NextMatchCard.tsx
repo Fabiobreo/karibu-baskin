@@ -1,17 +1,17 @@
 import { Box, Chip, Paper, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import HomeIcon from "@mui/icons-material/Home";
-import FlightIcon from "@mui/icons-material/Flight";
+import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import BoltIcon from "@mui/icons-material/Bolt";
 import PlaceIcon from "@mui/icons-material/Place";
 import Link from "next/link";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
-import { contrastText } from "@/lib/colorUtils";
+import StatusPill from "@/components/common/StatusPill";
 import { MATCH_RESULT_META } from "@/lib/matches/matchResults";
 import type { AnyMatch } from "./types";
 import { onHover } from "@/lib/hoverStyles";
-import { brandColor } from "@/lib/heroStyles";
+import { brandColor, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
@@ -26,7 +26,8 @@ export default async function NextMatchCard({
 }: {
   match: AnyMatch;
   teamName: string;
-  teamColor: string;
+  /** Hex della tinta squadra (da `teamColor()`), o null: nessun segno di colore. */
+  teamColor: string | null;
   now: Date;
   previousMeeting: AnyMatch | null;
 }) {
@@ -82,7 +83,10 @@ export default async function NextMatchCard({
         {/* ── BANNER SCURO IN ALTO con tile calendario ─────────────────────── */}
         <Box
           sx={{
-            background: `linear-gradient(120deg, ${brandColor.dark} 0%, ${brandColor.dark} 55%, ${teamColor} 135%)`,
+            // La tinta squadra affiora dall'angolo; senza tinta, nero del marchio pieno (UX-29).
+            background: teamColor
+              ? `linear-gradient(120deg, ${brandColor.dark} 0%, ${brandColor.dark} 55%, ${teamColor} 135%)`
+              : brandColor.dark,
             color: "common.white",
             px: { xs: 2, md: 3 },
             py: { xs: 2, md: 2.25 },
@@ -106,8 +110,8 @@ export default async function NextMatchCard({
           >
             <Box
               sx={{
-                bgcolor: teamColor,
-                color: contrastText(teamColor),
+                bgcolor: teamColor ?? brandColor.darkSoft,
+                color: "common.white",
                 px: 1,
                 py: 0.4,
                 fontSize: TYPE_SCALE.xs,
@@ -123,7 +127,8 @@ export default async function NextMatchCard({
                 sx={{
                   fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 },
                   fontWeight: FONT_WEIGHT.bold,
-                  color: "text.primary",
+                  // Il foglietto e' bianco in entrambi i temi: testo scuro fisso.
+                  color: brandColor.dark,
                   lineHeight: 1,
                   fontVariantNumeric: "tabular-nums",
                 }}
@@ -134,7 +139,7 @@ export default async function NextMatchCard({
                 sx={{
                   fontSize: TYPE_SCALE.xs,
                   fontWeight: FONT_WEIGHT.bold,
-                  color: "text.secondary",
+                  color: alpha(brandColor.dark, 0.72),
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   mt: 0.25,
@@ -159,7 +164,8 @@ export default async function NextMatchCard({
               <Typography
                 variant="overline"
                 sx={{
-                  color: teamColor,
+                  // La tinta squadra non e' mai testo (UX-29).
+                  color: heroText.secondary,
                   fontWeight: FONT_WEIGHT.bold,
                   lineHeight: 1,
                 }}
@@ -209,12 +215,12 @@ export default async function NextMatchCard({
               >
                 ⏱ {formatRome(new Date(match.date), "HH:mm")}
               </Typography>
-              <Typography sx={{ color: "text.secondary", fontSize: TYPE_SCALE.xs }}>·</Typography>
+              <Typography sx={{ color: heroText.muted, fontSize: TYPE_SCALE.xs }}>·</Typography>
               <Typography
                 sx={{
                   fontSize: TYPE_SCALE.xs,
                   fontWeight: FONT_WEIGHT.semibold,
-                  color: isImminent ? teamColor : "text.secondary",
+                  color: isImminent ? heroText.primary : heroText.muted,
                 }}
               >
                 {days === 0 && hours === 0
@@ -226,55 +232,20 @@ export default async function NextMatchCard({
                       : t("daysLeft", { count: days })}
               </Typography>
               {isImminent && (
-                <Chip
-                  icon={<BoltIcon sx={{ fontSize: 12, color: "common.white !important" }} />}
-                  label={t("imminent")}
-                  size="small"
-                  sx={{
-                    bgcolor: teamColor,
-                    color: contrastText(teamColor),
-                    fontWeight: FONT_WEIGHT.bold,
-                    fontSize: TYPE_SCALE.xs,
-                    height: 20,
-                    letterSpacing: "0.04em",
-                  }}
-                />
+                // Stato temporale: pastiglia invertita, non una tinta (UX-29).
+                <StatusPill onDark variant="inverted" icon={<BoltIcon />} label={t("imminent")} />
               )}
             </Box>
           </Box>
 
-          {/* Badge casa/trasferta */}
-          <Box
-            sx={{
-              flexShrink: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 0.4,
-              bgcolor: isHomeMatch ? "match.win" : "status.away",
-              px: 1.5,
-              py: 1,
-              borderRadius: RADIUS.md,
-              minWidth: 64,
-            }}
-          >
-            {isHomeMatch ? (
-              <HomeIcon sx={{ fontSize: 18, color: "common.white" }} />
-            ) : (
-              <FlightIcon sx={{ fontSize: 18, color: "common.white" }} />
-            )}
-            <Typography
-              sx={{
-                fontSize: TYPE_SCALE.xs,
-                fontWeight: FONT_WEIGHT.bold,
-                color: "common.white",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}
-            >
-              {isHomeMatch ? t("home") : t("away")}
-            </Typography>
-          </Box>
+          {/* Casa invertita, trasferta contornata: stato, non esito (UX-29). */}
+          <StatusPill
+            onDark
+            variant={isHomeMatch ? "inverted" : "outlined"}
+            icon={isHomeMatch ? <HomeIcon /> : <DirectionsBusIcon />}
+            label={isHomeMatch ? t("home") : t("away")}
+            sx={{ flexShrink: 0 }}
+          />
         </Box>
 
         {/* ── CORPO: matchup tipo cartellone ───────────────────────────────── */}
@@ -296,8 +267,7 @@ export default async function NextMatchCard({
               alignItems: "center",
               justifyContent: "center",
               gap: 1,
-              borderRight: `1px solid ${alpha(teamColor, 0.13)}`,
-              bgcolor: isHomeMatch ? alpha(teamColor, 0.031) : "background.paper",
+              bgcolor: isHomeMatch ? "action.hover" : "background.paper",
             }}
           >
             <Box
@@ -305,8 +275,8 @@ export default async function NextMatchCard({
                 width: { xs: 44, md: 54 },
                 height: { xs: 44, md: 54 },
                 borderRadius: "50%",
-                bgcolor: teamColor,
-                color: contrastText(teamColor),
+                bgcolor: teamColor ?? "action.selected",
+                color: teamColor ? "common.white" : "text.primary",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -320,7 +290,7 @@ export default async function NextMatchCard({
             <Typography
               variant="caption"
               sx={{
-                color: teamColor,
+                color: "text.secondary",
                 fontWeight: FONT_WEIGHT.bold,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -366,7 +336,8 @@ export default async function NextMatchCard({
                 fontWeight: FONT_WEIGHT.bold,
                 fontSize: { xs: TYPE_SCALE.sm, md: TYPE_SCALE.md },
                 letterSpacing: "0.05em",
-                border: `3px solid ${teamColor}`,
+                border: "3px solid",
+                borderColor: teamColor ?? "background.paper",
                 boxShadow: `0 2px 8px ${alpha(brandColor.black, 0.2)}`,
               }}
             >
@@ -458,7 +429,7 @@ export default async function NextMatchCard({
           >
             {match.venue ? (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <PlaceIcon sx={{ fontSize: 15, color: teamColor }} />
+                <PlaceIcon sx={{ fontSize: 15, color: "text.secondary" }} />
                 <Typography
                   variant="caption"
                   sx={{ fontWeight: FONT_WEIGHT.semibold, color: "text.primary" }}
