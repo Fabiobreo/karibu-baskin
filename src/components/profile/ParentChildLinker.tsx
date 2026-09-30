@@ -17,9 +17,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import LinkIcon from "@mui/icons-material/Link";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { useToast } from "@/context/ToastContext";
 
-import { contrastText } from "@/lib/colorUtils";
+import { teamColor } from "@/lib/teamColors";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -111,7 +112,9 @@ export default function ParentChildLinker({
                     width: 44,
                     height: 44,
                     flexShrink: 0,
-                    bgcolor: child.userId ? "primary.main" : "grey.400",
+                    // Non si tocca: niente arancio (UX-29). Con account: nero del marchio.
+                    bgcolor: child.userId ? "secondary.main" : "grey.400",
+                    color: child.userId ? "secondary.contrastText" : undefined,
                     fontSize: TYPE_SCALE.lg,
                     mt: 0.25,
                   }}
@@ -134,9 +137,13 @@ export default function ParentChildLinker({
                           key={i}
                           label={m.team.name}
                           size="small"
+                          // Tinta squadra come riempimento; senza tinta chip
+                          // contornato neutro, mai l'arancio (UX-29).
+                          variant={teamColor(m.team.color) ? "filled" : "outlined"}
                           sx={{
-                            bgcolor: m.team.color ?? "primary.main",
-                            color: contrastText(m.team.color),
+                            ...(teamColor(m.team.color)
+                              ? { bgcolor: teamColor(m.team.color), color: "common.white" }
+                              : { color: "text.primary" }),
                             fontSize: TYPE_SCALE.xs,
                           }}
                         />
@@ -158,10 +165,11 @@ export default function ParentChildLinker({
                         sx={{ fontSize: TYPE_SCALE.xs }}
                       />
                     ) : child.pendingRequestId ? (
+                      // Attendere non e' un avviso (UX-29): neutro con la clessidra.
                       <Chip
+                        icon={<HourglassEmptyIcon />}
                         label={t("pendingConfirm")}
                         size="small"
-                        color="warning"
                         variant="outlined"
                         sx={{ fontSize: TYPE_SCALE.xs }}
                       />

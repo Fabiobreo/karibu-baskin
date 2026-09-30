@@ -20,7 +20,8 @@ import CloseRegistrationsAlert from "@/components/training/CloseRegistrationsAle
 import TeamsHeader from "@/components/training/TeamsHeader";
 import SectionErrorBoundary from "@/components/common/SectionErrorBoundary";
 import ManageParticipantsDialog from "@/components/admin/ManageParticipantsDialog";
-import { TEAM_META } from "@/lib/constants";
+import { TEAM_META, bibFill } from "@/lib/constants";
+import { alpha } from "@mui/material/styles";
 import { sessionEndDate } from "@/lib/dateUtils";
 import { hasRole, isMemberRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
@@ -413,7 +414,9 @@ export default function SessionPageClient({
                 sx={{
                   p: { xs: 2, sm: 2.5 },
                   borderRadius: RADIUS.lg,
-                  background: `linear-gradient(120deg, ${myTeam.color} 0%, ${myTeam.color}cc 100%)`,
+                  // Casacca (eccezione UX-29, col nome sotto): scurita quanto basta per
+                  // il testo bianco, poi sfumata.
+                  background: `linear-gradient(120deg, ${bibFill(myTeam.color)} 0%, ${alpha(bibFill(myTeam.color), 0.8)} 100%)`,
                   color: "common.white",
                   display: "flex",
                   alignItems: "center",

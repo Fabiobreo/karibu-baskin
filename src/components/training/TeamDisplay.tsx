@@ -24,8 +24,9 @@ import Link from "next/link";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
-import { readableFill, readableOn } from "@/lib/colorUtils";
+import { ROLES, TEAM_META, bibFill } from "@/lib/constants";
+import { alpha } from "@mui/material/styles";
+import { readableOn } from "@/lib/colorUtils";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -38,7 +39,6 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
  * Colore della squadra come riempimento sotto un'etichetta bianca: l'arancio
  * #E65100 col bianco fa 3,78:1, quindi si scurisce quanto basta (UX-22).
  */
-const teamFill = (color: string) => readableFill(color, { preferWhite: true }).bg;
 
 export interface TeamAthlete {
   id: string;
@@ -110,8 +110,9 @@ function RoleBadge({
         alignItems: "center",
         borderRadius: RADIUS.pill,
         overflow: "hidden",
-        bgcolor: roleColor(role),
-        color: ROLE_TEXT_COLOR,
+        // Grafite uguale per tutti i ruoli (UX-29): il numero e' l'informazione.
+        bgcolor: "role.main",
+        color: "role.contrastText",
         fontSize: TYPE_SCALE.xs,
         lineHeight: 1,
         opacity: count === 0 ? 0.28 : 1,
@@ -119,7 +120,12 @@ function RoleBadge({
     >
       <Box sx={{ px: 1.25, py: "5px", fontWeight: FONT_WEIGHT.semibold }}>{label}</Box>
       <Box
-        sx={{ px: 1.25, py: "5px", fontWeight: FONT_WEIGHT.regular, bgcolor: "rgba(0,0,0,0.22)" }}
+        sx={{
+          px: 1.25,
+          py: "5px",
+          fontWeight: FONT_WEIGHT.regular,
+          bgcolor: (theme) => alpha(theme.palette.common.black, 0.22),
+        }}
       >
         {playerLabel}
       </Box>
@@ -147,7 +153,7 @@ export function MobileTeamTabs({
   const allTeams: TeamAthlete[][] = [teams.teamA ?? [], teams.teamB ?? []];
   if (teams.teamC) allTeams.push(teams.teamC);
   const meta = TEAM_META.slice(0, allTeams.length);
-  const activeColor = meta[tab]?.color ?? "primary.main";
+  const activeColor = meta[tab]?.color ?? TEAM_META[0].color;
 
   return (
     <Paper variant="outlined" sx={{ overflow: "hidden" }}>
@@ -190,7 +196,7 @@ export function MobileTeamTabs({
                   sx={{
                     height: 20,
                     fontSize: TYPE_SCALE.xs,
-                    bgcolor: tab === i ? teamFill(m.color) : "action.selected",
+                    bgcolor: tab === i ? bibFill(m.color) : "action.selected",
                     color: tab === i ? "common.white" : "text.secondary",
                   }}
                 />
@@ -274,7 +280,7 @@ export function AlignedTeamGrid({
         sx={{
           px: 2,
           py: 1.5,
-          backgroundColor: teamFill(m.color),
+          backgroundColor: bibFill(m.color),
           display: "flex",
           alignItems: "center",
           gap: 1,
@@ -508,12 +514,14 @@ function TeamEditor({
                         }
                         sx={{
                           fontSize: TYPE_SCALE.xs,
-                          bgcolor: isSelected ? "text.primary" : `${roleColor(role)}22`,
-                          color: isSelected ? "background.paper" : "text.primary",
-                          border: `1px solid ${roleColor(role)}`,
+                          // Selezionato = arancio (UX-29); il ruolo non ha tinta.
+                          bgcolor: isSelected ? "primary.fill" : "action.hover",
+                          color: isSelected ? "common.white" : "text.primary",
+                          border: "1px solid",
+                          borderColor: isSelected ? "primary.fill" : "divider",
                           cursor: "pointer",
                           "&:hover": {
-                            bgcolor: isSelected ? "text.primary" : `${roleColor(role)}44`,
+                            bgcolor: isSelected ? "primary.fill" : "action.selected",
                           },
                         }}
                       />
@@ -542,7 +550,7 @@ function TeamEditor({
                 sx={{
                   px: 2,
                   py: 1,
-                  backgroundColor: teamFill(m.color),
+                  backgroundColor: bibFill(m.color),
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -572,11 +580,11 @@ function TeamEditor({
                     onClick={() => moveTo(key)}
                     sx={{
                       bgcolor: "common.white",
-                      color: teamFill(m.color),
+                      color: bibFill(m.color),
                       fontSize: TYPE_SCALE.xs,
                       py: 0.25,
                       minWidth: 90,
-                      "&:hover": { bgcolor: "rgba(255,255,255,0.88)" },
+                      "&:hover": { bgcolor: "grey.100" },
                     }}
                   >
                     {saving ? <CircularProgress size={14} color="inherit" /> : t("editorMoveTo")}
@@ -602,12 +610,14 @@ function TeamEditor({
                           }
                           sx={{
                             fontSize: TYPE_SCALE.xs,
-                            bgcolor: isSelected ? m.color : `${roleColor(role)}22`,
+                            // Selezionato = arancio (UX-29), come nel gruppo
+                            // "Da assegnare"; il ruolo non ha tinta.
+                            bgcolor: isSelected ? "primary.fill" : "action.hover",
                             color: isSelected ? "common.white" : "text.primary",
-                            border: `1px solid ${isSelected ? m.color : roleColor(role)}`,
-                            boxShadow: isSelected ? `0 0 0 2px ${m.color}66` : "none",
+                            border: "1px solid",
+                            borderColor: isSelected ? "primary.fill" : "divider",
                             cursor: "pointer",
-                            "&:hover": { bgcolor: isSelected ? m.color : `${roleColor(role)}44` },
+                            "&:hover": { bgcolor: isSelected ? "primary.fill" : "action.selected" },
                           }}
                         />
                       );

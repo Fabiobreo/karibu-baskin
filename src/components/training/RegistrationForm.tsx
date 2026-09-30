@@ -17,9 +17,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import LockIcon from "@mui/icons-material/Lock";
-import { ROLES, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { ROLES } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { contrastText } from "@/lib/colorUtils";
+import { teamColor } from "@/lib/teamColors";
 import SportRoleQuestionnaire from "@/components/training/SportRoleQuestionnaire";
 import { hasRestrictions, type SessionRestrictions } from "@/lib/registrationRestrictions";
 import { useState } from "react";
@@ -56,6 +56,18 @@ interface Props {
   restrictions?: SessionRestrictions & { restrictTeamName?: string | null };
   /** Stagione in corso (flag dello staff, o calendario): filtra il badge squadra. */
   currentSeason: string;
+}
+
+/**
+ * Chip della squadra agonistica: riempimento nella tinta con etichetta bianca;
+ * senza tinta nessun segno di colore (chip contornato neutro), mai l'arancio.
+ */
+function teamChipSx(raw: string | null) {
+  const c = teamColor(raw);
+  return {
+    ...(c ? { bgcolor: c, color: "common.white" } : { color: "text.primary" }),
+    "& .MuiChip-label": { px: 0.75 },
+  };
 }
 
 export default function RegistrationForm({
@@ -377,13 +389,8 @@ export default function RegistrationForm({
                           key={m.teamId}
                           label={m.teamName}
                           size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: TYPE_SCALE.xs,
-                            bgcolor: m.teamColor ?? "primary.main",
-                            color: contrastText(m.teamColor),
-                            "& .MuiChip-label": { px: 0.75 },
-                          }}
+                          variant={teamColor(m.teamColor) ? "filled" : "outlined"}
+                          sx={{ height: 20, fontSize: TYPE_SCALE.xs, ...teamChipSx(m.teamColor) }}
                         />
                       ))}
                   </Box>
@@ -410,13 +417,8 @@ export default function RegistrationForm({
                             key={m.teamId}
                             label={m.teamName}
                             size="small"
-                            sx={{
-                              height: 20,
-                              fontSize: TYPE_SCALE.xs,
-                              bgcolor: m.teamColor ?? "primary.main",
-                              color: contrastText(m.teamColor),
-                              "& .MuiChip-label": { px: 0.75 },
-                            }}
+                            variant={teamColor(m.teamColor) ? "filled" : "outlined"}
+                            sx={{ height: 20, fontSize: TYPE_SCALE.xs, ...teamChipSx(m.teamColor) }}
                           />
                         ))}
                     </Box>
@@ -511,11 +513,12 @@ export default function RegistrationForm({
                             borderRadius: `${RADIUS.sm} !important`,
                             border: "1px solid !important",
                             borderColor: "divider !important",
-                            "&.Mui-selected": {
-                              backgroundColor: roleColor(r),
-                              color: ROLE_TEXT_COLOR,
-                              borderColor: `${roleColor(r)} !important`,
-                              "&:hover": { backgroundColor: roleColor(r), opacity: 0.9 },
+                            // Selezionato = arancio (stato attivo), non la tinta
+                            // del ruolo: il numero e' gia' l'informazione (UX-29).
+                            "&.Mui-selected, &.Mui-selected:hover": {
+                              bgcolor: "primary.fill",
+                              color: "common.white",
+                              borderColor: "primary.fill !important",
                             },
                           }}
                         >

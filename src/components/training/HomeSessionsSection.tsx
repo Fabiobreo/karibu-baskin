@@ -2,6 +2,7 @@
 import { Box, Grid2 as Grid, Typography, Button } from "@mui/material";
 import { useTranslations } from "next-intl";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
+import StatusPill from "@/components/common/StatusPill";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
@@ -34,25 +35,9 @@ export default function HomeSessionsSection({
     <>
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                bgcolor: "status.live",
-                flexShrink: 0,
-                "@keyframes pulse": {
-                  "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
-                  "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
-                  "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
-                },
-                animation: "pulse 1.4s ease-in-out infinite",
-              }}
-            />
-            <Typography variant="overline" sx={{ color: "status.liveText" }}>
-              {t("live")}
-            </Typography>
+          {/* In corso: pastiglia invertita con pallino pulsante, niente verde (UX-29). */}
+          <Box sx={{ mb: 1.5 }}>
+            <StatusPill label={t("live")} pulse />
           </Box>
           <Grid container spacing={2}>
             {inCorso.map((s) => (

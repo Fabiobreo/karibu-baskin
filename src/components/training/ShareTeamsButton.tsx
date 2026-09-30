@@ -9,7 +9,8 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { SITE_HOST } from "@/lib/siteUrl";
 import type { TeamsData } from "./TeamDisplay";
-import { ROLES, TEAM_META, roleColor, ROLE_TEXT_COLOR } from "@/lib/constants";
+import { ROLES, TEAM_META } from "@/lib/constants";
+import { BRAND, HERO_TEXT, NEUTRAL, ROLE_FILL } from "@/lib/palette";
 import { TOUCH_TARGET_MIN } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -36,14 +37,10 @@ function formatDateLine(
   return `${datePart} · ${startTime}`;
 }
 
-// Schiarisce un colore hex mescolandolo con bianco (amount 0–1 = % di bianco)
-function tint(hex: string, amount: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const mix = (c: number) => Math.round(c + (255 - c) * amount);
-  return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
-}
+// html2canvas non legge il tema: i colori vengono da `@/lib/palette`. Le
+// casacche (`TEAM_META[].color`, cioè `BIB`) sono l'unico colore delle squadre
+// e stanno sempre accanto al nome (Arancioni/Neri/Bianchi); il resto è neutro.
+const INK = NEUTRAL.light;
 
 export default function ShareTeamsButton({
   teams,
@@ -66,7 +63,7 @@ export default function ShareTeamsButton({
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(cardRef.current, {
         scale: 2,
-        backgroundColor: "#ffffff",
+        backgroundColor: INK.paper,
         logging: false,
         useCORS: false,
       });
@@ -119,20 +116,21 @@ export default function ShareTeamsButton({
           ref={cardRef}
           style={{
             width: CARD_W,
-            background: "#ffffff",
+            background: INK.paper,
             fontFamily: "'Helvetica Neue', Arial, sans-serif",
             overflow: "hidden",
           }}
         >
           {/* ── Header ── */}
-          <div style={{ background: "#E65100", padding: "18px 22px 16px" }}>
+          {/* Testata del marchio, come gli hero: nero con il logotipo arancio. */}
+          <div style={{ background: BRAND.dark, padding: "18px 22px 16px" }}>
             <div
               style={{
                 fontSize: 10,
                 fontWeight: FONT_WEIGHT.bold,
                 letterSpacing: 2,
                 textTransform: "uppercase",
-                color: "rgba(255,255,255,0.65)",
+                color: BRAND.orangeOnDark,
                 marginBottom: 6,
               }}
             >
@@ -142,7 +140,7 @@ export default function ShareTeamsButton({
               style={{
                 fontSize: teams.numTeams === 3 ? 17 : 20,
                 fontWeight: FONT_WEIGHT.bold,
-                color: "#fff",
+                color: HERO_TEXT.primary,
                 lineHeight: 1.2,
               }}
             >
@@ -153,7 +151,7 @@ export default function ShareTeamsButton({
                 style={{
                   fontSize: 11,
                   fontWeight: FONT_WEIGHT.regular,
-                  color: "rgba(255,255,255,0.75)",
+                  color: HERO_TEXT.secondary,
                   marginTop: 5,
                   textTransform: "capitalize",
                 }}
@@ -164,7 +162,7 @@ export default function ShareTeamsButton({
           </div>
 
           {/* ── Squadre affiancate ── */}
-          <div style={{ display: "flex", background: "#fff" }}>
+          <div style={{ display: "flex", background: INK.paper }}>
             {teamKeys.map((key, i) => {
               const teamList = (key === "teamC" ? teams.teamC : teams[key]) ?? [];
               const m = meta[i];
@@ -179,7 +177,7 @@ export default function ShareTeamsButton({
                   key={key}
                   style={{
                     flex: 1,
-                    borderRight: isLast ? "none" : `2px solid #f0f0f0`,
+                    borderRight: isLast ? "none" : `2px solid ${INK.divider}`,
                     display: "flex",
                     flexDirection: "column",
                   }}
@@ -187,7 +185,7 @@ export default function ShareTeamsButton({
                   {/* Team header */}
                   <div
                     style={{
-                      background: tint(m.color, 0.9),
+                      background: INK.background,
                       padding: "10px 14px 9px",
                       borderBottom: `3px solid ${m.color}`,
                     }}
@@ -206,14 +204,21 @@ export default function ShareTeamsButton({
                         style={{
                           fontWeight: FONT_WEIGHT.bold,
                           fontSize: 13,
-                          color: "#111",
+                          color: INK.text,
                           letterSpacing: 0.3,
                         }}
                       >
                         {teamColorLabel(m.key).toUpperCase()}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "#666", marginTop: 2, paddingLeft: 17 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: INK.textSecondary,
+                        marginTop: 2,
+                        paddingLeft: 17,
+                      }}
+                    >
                       {t("athletes", { count: teamList.length })}
                     </div>
                   </div>
@@ -230,8 +235,9 @@ export default function ShareTeamsButton({
                             fontWeight: FONT_WEIGHT.bold,
                             letterSpacing: 1,
                             textTransform: "uppercase",
-                            color: ROLE_TEXT_COLOR,
-                            background: roleColor(role),
+                            // Ruolo Baskin: grafite per tutti, il numero è l'informazione.
+                            color: BRAND.white,
+                            background: ROLE_FILL,
                             borderRadius: 3,
                             padding: "2px 5px",
                             marginBottom: 5,
@@ -245,7 +251,7 @@ export default function ShareTeamsButton({
                             key={p.id}
                             style={{
                               fontSize: teams.numTeams === 3 ? 12 : 13,
-                              color: "#1a1a1a",
+                              color: INK.text,
                               fontWeight: FONT_WEIGHT.regular,
                               lineHeight: 1.55,
                               paddingLeft: 2,
@@ -257,7 +263,7 @@ export default function ShareTeamsButton({
                       </div>
                     ))}
                     {roleGroups.length === 0 && (
-                      <div style={{ fontSize: 11, color: "#bbb", fontStyle: "italic" }}>
+                      <div style={{ fontSize: 11, color: INK.textSecondary, fontStyle: "italic" }}>
                         {t("noAthletesEmpty")}
                       </div>
                     )}
@@ -272,8 +278,8 @@ export default function ShareTeamsButton({
             <div
               style={{
                 padding: "9px 14px",
-                background: "#f8f8f8",
-                borderTop: "2px solid #f0f0f0",
+                background: INK.background,
+                borderTop: `2px solid ${INK.divider}`,
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
@@ -284,7 +290,7 @@ export default function ShareTeamsButton({
                 style={{
                   fontSize: 10,
                   fontWeight: FONT_WEIGHT.bold,
-                  color: "#666",
+                  color: INK.textSecondary,
                   textTransform: "uppercase",
                   letterSpacing: 1,
                 }}
@@ -294,7 +300,7 @@ export default function ShareTeamsButton({
               {coaches.map((c) => (
                 <span
                   key={c.id}
-                  style={{ fontSize: 12, fontWeight: FONT_WEIGHT.semibold, color: "#444" }}
+                  style={{ fontSize: 12, fontWeight: FONT_WEIGHT.semibold, color: INK.inkSoft }}
                 >
                   {c.name}
                 </span>
@@ -305,7 +311,7 @@ export default function ShareTeamsButton({
           {/* ── Footer branding ── */}
           <div
             style={{
-              background: "#111",
+              background: BRAND.dark,
               padding: "7px 14px",
               display: "flex",
               justifyContent: "space-between",
@@ -316,7 +322,7 @@ export default function ShareTeamsButton({
               style={{
                 fontSize: 9,
                 letterSpacing: 0.8,
-                color: "rgba(255,255,255,0.35)",
+                color: HERO_TEXT.muted,
                 textTransform: "uppercase",
               }}
             >

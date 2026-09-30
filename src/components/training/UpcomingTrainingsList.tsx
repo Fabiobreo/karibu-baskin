@@ -10,7 +10,7 @@ import TrainingListRow from "@/components/training/TrainingListRow";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { groupUpcoming, type UpcomingGroup } from "@/lib/trainingList";
-import { TEAM_META } from "@/lib/constants";
+import { TEAM_META, bibFill } from "@/lib/constants";
 import { RADIUS } from "@/lib/radius";
 
 interface UpcomingTrainingsListProps {
@@ -48,7 +48,12 @@ function RegistrationStatus({
       <Chip
         label={teamColorLabel(myTeam.key)}
         size="small"
-        sx={{ bgcolor: myTeam.color, color: "common.white" }}
+        // Casacca (eccezione UX-29, sempre col nome), scurita quanto basta
+        // per reggere l'etichetta bianca.
+        sx={{
+          bgcolor: bibFill(myTeam.color),
+          color: "common.white",
+        }}
       />
     );
   }

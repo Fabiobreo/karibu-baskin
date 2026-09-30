@@ -1,15 +1,15 @@
 "use client";
-import { heroBottomBorder, heroGradient } from "@/lib/heroStyles";
+import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import { useTranslations, useLocale } from "next-intl";
 import { Box, Typography, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import TeamColorDot from "@/components/teams/TeamColorDot";
-import { alpha } from "@mui/material/styles";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import StatusPill from "@/components/common/StatusPill";
 import NextLink from "next/link";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -38,9 +38,9 @@ interface Session {
 
 interface StatusBadge {
   label: string;
-  bgcolor: string;
-  /** Colore dell'etichetta: la pastiglia non e' sempre scura. */
-  color: string;
+  /** Stati temporali neutri (UX-29): nessuna tinta, li distinguono forma e pallino. */
+  variant: "inverted" | "outlined" | "muted";
+  pulse?: boolean;
 }
 
 function getSessionStatus(
@@ -52,31 +52,19 @@ function getSessionStatus(
   const now = new Date();
   const end = sessionEndDate(date, endTime);
 
-  if (now >= date && now <= end)
-    return { label: t("live"), bgcolor: "match.win", color: "match.onFill" };
-  if (now > end) return { label: t("ended"), bgcolor: "action.selected", color: "text.secondary" };
+  // In corso: pastiglia invertita con pallino pulsante, non il verde della
+  // vittoria (il verde vuol dire "positivo", non "adesso").
+  if (now >= date && now <= end) return { label: t("live"), variant: "inverted", pulse: true };
+  if (now > end) return { label: t("ended"), variant: "muted" };
 
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0)
-    // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
-    return { label: t("todayBang"), bgcolor: "primary.fill", color: "common.white" };
-  // "Domani" e "Tra N giorni" stavano sul ciano di default di MUI, fuori dalla
-  // palette arancione/nera: passano al nero del tema, che resta distinto sia
-  // dall'arancione di "Oggi" sia dal grigio di "Concluso".
-  if (diffDays === 1)
-    return {
-      label: tCommon("tomorrow"),
-      bgcolor: "secondary.main",
-      color: "secondary.contrastText",
-    };
-  return {
-    label: tCommon("daysAway", { count: diffDays }),
-    bgcolor: "secondary.main",
-    color: "secondary.contrastText",
-  };
+  // Oggi: invertita senza pallino. Domani e "tra N giorni": contornate.
+  if (diffDays === 0) return { label: t("todayBang"), variant: "inverted" };
+  if (diffDays === 1) return { label: tCommon("tomorrow"), variant: "outlined" };
+  return { label: tCommon("daysAway", { count: diffDays }), variant: "outlined" };
 }
 
 interface Props {
@@ -123,7 +111,7 @@ export default function AllenamientoHero({
         }}
         sx={{
           ...heroBottomBorder,
-          color: "common.white",
+          color: heroText.primary,
           px: { xs: 2.5, sm: 4, md: 8 },
           py: { xs: 3, sm: 4 },
           position: "relative",
@@ -164,7 +152,7 @@ export default function AllenamientoHero({
             aria-label="breadcrumb"
             sx={{
               "& .MuiBreadcrumbs-separator": {
-                color: (theme) => alpha(theme.palette.common.white, 0.4),
+                color: heroText.muted,
                 flexShrink: 0,
               },
               // Una riga sola: l'ultima voce si tronca, le altre restano
@@ -181,9 +169,9 @@ export default function AllenamientoHero({
               underline="hover"
               variant="body2"
               sx={{
-                color: (theme) => alpha(theme.palette.common.white, 0.6),
+                color: heroText.muted,
                 whiteSpace: "nowrap",
-                "&:hover": { color: "common.white" },
+                "&:hover": { color: heroText.primary },
               }}
             >
               {tNav("trainings")}
@@ -191,7 +179,7 @@ export default function AllenamientoHero({
             <Typography
               variant="body2"
               sx={{
-                color: (theme) => alpha(theme.palette.common.white, 0.9),
+                color: heroText.secondary,
                 minWidth: 0,
               }}
               noWrap
@@ -231,47 +219,24 @@ export default function AllenamientoHero({
               const wasOpened = !!session.registrationOpenedAt;
               if (!wasOpened && !isPast) {
                 return (
-                  <Chip
-                    icon={
-                      <HourglassEmptyIcon
-                        sx={{ fontSize: "0.85rem !important", color: "common.white" }}
-                      />
-                    }
+                  <StatusPill
+                    onDark
+                    variant="outlined"
+                    icon={<ScheduleIcon aria-hidden />}
                     label={t("comingSoon")}
-                    size="small"
-                    sx={{
-                      bgcolor: "status.pending",
-                      color: "common.white",
-                      fontSize: TYPE_SCALE.xs,
-                      letterSpacing: 0.5,
-                    }}
                   />
                 );
               }
               return (
-                <Chip
-                  icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "common.white" }} />}
+                <StatusPill
+                  onDark
+                  variant="muted"
+                  icon={<LockIcon aria-hidden />}
                   label={t("registrationsClosed")}
-                  size="small"
-                  sx={{
-                    bgcolor: "status.closed",
-                    color: "common.white",
-                    fontSize: TYPE_SCALE.xs,
-                    letterSpacing: 0.5,
-                  }}
                 />
               );
             })()}
-            <Chip
-              label={status.label}
-              size="small"
-              sx={{
-                bgcolor: status.bgcolor,
-                color: status.color,
-                fontSize: TYPE_SCALE.xs,
-                letterSpacing: 0.5,
-              }}
-            />
+            <StatusPill onDark variant={status.variant} pulse={status.pulse} label={status.label} />
             {((session.allowedRoles && session.allowedRoles.length > 0) ||
               session.restrictTeamId) && (
               <Chip
@@ -329,13 +294,8 @@ export default function AllenamientoHero({
                 mb: 2,
               }}
             >
-              <AccessTimeIcon
-                sx={{ fontSize: 14, color: (theme) => alpha(theme.palette.common.white, 0.55) }}
-              />
-              <Typography
-                variant="body2"
-                sx={{ color: (theme) => alpha(theme.palette.common.white, 0.75) }}
-              >
+              <AccessTimeIcon sx={{ fontSize: 14, color: heroText.muted }} />
+              <Typography variant="body2" sx={{ color: heroText.secondary }}>
                 {countdown}
               </Typography>
             </Box>

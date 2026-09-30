@@ -10,7 +10,6 @@ import { useTranslations } from "next-intl";
 import SportRoleQuestionnaire, {
   type SportRoleResult,
 } from "@/components/training/SportRoleQuestionnaire";
-import { roleColor } from "@/lib/constants";
 import { readError } from "@/lib/fetchJson";
 import { useToast } from "@/context/ToastContext";
 import type { RoleInfo } from "@/lib/content/baskinInfo";
@@ -136,12 +135,11 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
   const info = rolesInfo.find((r) => r.role === result.role);
   // "Ruolo 3: Il Protagonista" → "Il Protagonista": il numero è già nel chip.
   const roleName = info ? info.label.split(": ").slice(1).join(": ") || info.tag : null;
-  const color = roleColor(result.role);
 
   return (
     <Paper
       variant="outlined"
-      sx={{ p: { xs: 2.5, md: 4 }, borderTop: "4px solid", borderTopColor: color }}
+      sx={{ p: { xs: 2.5, md: 4 }, borderTop: "4px solid", borderTopColor: "role.main" }}
     >
       <Typography variant="overline" color="text.secondary">
         {kind === "confirmed" ? t("confirmedOverline") : t("suggestedOverline")}
@@ -150,8 +148,9 @@ function RoleResultCard({ result, rolesInfo, kind, children }: RoleResultCardPro
         <Chip
           label={tRoles("sportRole", { n: result.role, v: result.variant ?? "" })}
           sx={{
-            bgcolor: color,
-            color: "common.white",
+            // Grafite uguale per tutti i ruoli (UX-29): il numero e' l'informazione.
+            bgcolor: "role.main",
+            color: "role.contrastText",
             fontWeight: FONT_WEIGHT.bold,
             fontSize: TYPE_SCALE.sm,
           }}

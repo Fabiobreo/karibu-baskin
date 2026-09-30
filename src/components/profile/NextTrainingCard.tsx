@@ -130,7 +130,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
   const date = new Date(training.date);
 
   return (
-    <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3, borderColor: "primary.main" }}>
+    <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
         <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
         <Typography variant="overline" fontWeight={FONT_WEIGHT.bold} color="text.secondary">
@@ -181,7 +181,7 @@ export default function NextTrainingCard({ training, subjects }: NextTrainingCar
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
                 {isRegistered ? (
-                  <CheckCircleIcon sx={{ fontSize: 18, color: "match.win" }} />
+                  <CheckCircleIcon sx={{ fontSize: 18, color: "success.main" }} />
                 ) : (
                   <RadioButtonUncheckedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
                 )}

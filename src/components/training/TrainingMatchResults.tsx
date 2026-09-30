@@ -16,7 +16,8 @@ import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CheckIcon from "@mui/icons-material/Check";
-import { TEAM_META } from "@/lib/constants";
+import { TEAM_META, bibFill } from "@/lib/constants";
+import { alpha } from "@mui/material/styles";
 import { useToast } from "@/context/ToastContext";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { useTranslations } from "next-intl";
@@ -24,6 +25,11 @@ import type { TeamsData } from "@/components/training/TeamDisplay";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+
+/**
+ * Casacca come riempimento sotto un'etichetta bianca (eccezione dichiarata di
+ * UX-29): l'arancio delle maglie col bianco fa 3,78:1, si scurisce quanto basta.
+ */
 
 type MatchupKey = "AB" | "AC" | "BC";
 
@@ -314,7 +320,7 @@ function MatchupSlot({
               label={`${team1Name}  ${s1}`}
               size="small"
               sx={{
-                bgcolor: winner === 1 ? team1.color : `${team1.color}22`,
+                bgcolor: winner === 1 ? bibFill(team1.color) : alpha(team1.color, 0.13),
                 color: winner === 1 ? "common.white" : "text.primary",
                 fontWeight: winner === 1 ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 border: "1px solid",
@@ -329,7 +335,7 @@ function MatchupSlot({
               label={`${team2Name}  ${s2}`}
               size="small"
               sx={{
-                bgcolor: winner === 2 ? team2.color : `${team2.color}22`,
+                bgcolor: winner === 2 ? bibFill(team2.color) : alpha(team2.color, 0.13),
                 color: winner === 2 ? "common.white" : "text.primary",
                 fontWeight: winner === 2 ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                 border: "1px solid",

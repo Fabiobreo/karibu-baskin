@@ -12,7 +12,8 @@ import {
   Chip,
 } from "@mui/material";
 import LockIcon from "@mui/icons-material/Lock";
-import { ROLE_LABELS, ROLES, roleColor } from "@/lib/constants";
+import { ROLE_LABELS, ROLES } from "@/lib/constants";
+import TeamColorDot from "@/components/teams/TeamColorDot";
 import { getCurrentSeason } from "@/lib/season/seasonUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -129,16 +130,17 @@ export default function SessionRestrictionEditor({
                 py: 0.5,
                 borderRadius: RADIUS.sm,
                 border: "1px solid",
-                borderColor: selected ? roleColor(r) : "divider",
-                bgcolor: selected ? roleColor(r) : "transparent",
+                // Selezionato = arancio (stato attivo), non la tinta del ruolo (UX-29).
+                borderColor: selected ? "primary.fill" : "border.control",
+                bgcolor: selected ? "primary.fill" : "transparent",
                 color: selected ? "common.white" : "text.secondary",
                 fontWeight: FONT_WEIGHT.semibold,
                 fontSize: TYPE_SCALE.xs,
                 cursor: disabled ? "default" : "pointer",
                 transition: "all 0.15s",
                 "&:hover:not(:disabled)": {
-                  borderColor: roleColor(r),
-                  color: selected ? "common.white" : roleColor(r),
+                  borderColor: selected ? "primary.fill" : "primary.main",
+                  color: selected ? "common.white" : "text.primary",
                 },
               }}
             >
@@ -182,17 +184,8 @@ export default function SessionRestrictionEditor({
             {teams.map((t) => (
               <MenuItem key={t.id} value={t.id}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  {t.color && (
-                    <Box
-                      sx={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        bgcolor: t.color,
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
+                  {/* Senza tinta nessun pallino (UX-29). */}
+                  <TeamColorDot color={t.color} size={10} />
                   {t.name}
                   {!seasonFilter && (
                     <Typography
@@ -232,16 +225,17 @@ export default function SessionRestrictionEditor({
                     py: 0.5,
                     borderRadius: RADIUS.sm,
                     border: "1px solid",
-                    borderColor: selected ? roleColor(r) : "divider",
-                    bgcolor: selected ? roleColor(r) : "transparent",
+                    // Selezionato = arancio (stato attivo), non la tinta del ruolo (UX-29).
+                    borderColor: selected ? "primary.fill" : "border.control",
+                    bgcolor: selected ? "primary.fill" : "transparent",
                     color: selected ? "common.white" : "text.secondary",
                     fontWeight: FONT_WEIGHT.semibold,
                     fontSize: TYPE_SCALE.xs,
                     cursor: disabled ? "default" : "pointer",
                     transition: "all 0.15s",
                     "&:hover:not(:disabled)": {
-                      borderColor: roleColor(r),
-                      color: selected ? "common.white" : roleColor(r),
+                      borderColor: selected ? "primary.fill" : "primary.main",
+                      color: selected ? "common.white" : "text.primary",
                     },
                   }}
                 >

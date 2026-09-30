@@ -7,6 +7,7 @@ import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { isSameDay } from "date-fns";
 import { useTranslations } from "next-intl";
 import EmptyState from "@/components/common/EmptyState";
+import StatusPill from "@/components/common/StatusPill";
 import SessionCard, { type SessionWithCount } from "@/components/training/SessionCard";
 import SessionHeroCard from "@/components/training/SessionHeroCard";
 import UpcomingTrainingsList from "@/components/training/UpcomingTrainingsList";
@@ -87,25 +88,9 @@ export default function AllenamentiClient({
       {/* ── In corso ── */}
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                bgcolor: "status.live",
-                flexShrink: 0,
-                "@keyframes pulse": {
-                  "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.7)" },
-                  "70%": { boxShadow: "0 0 0 8px rgba(46,125,50,0)" },
-                  "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0)" },
-                },
-                animation: "pulse 1.4s ease-in-out infinite",
-              }}
-            />
-            <Typography variant="overline" sx={{ color: "status.liveText" }}>
-              {t("live")}
-            </Typography>
+          {/* In corso: pastiglia invertita con pallino pulsante, niente verde (UX-29). */}
+          <Box sx={{ mb: 1.5 }}>
+            <StatusPill label={t("live")} pulse />
           </Box>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {inCorso.map((s) => (

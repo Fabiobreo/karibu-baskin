@@ -13,7 +13,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import StatusPill from "@/components/common/StatusPill";
+import { heroText } from "@/lib/heroStyles";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
@@ -52,31 +54,30 @@ export interface SessionWithCount {
 
 type StatusKey = "live" | "ended" | "todayBang" | "tomorrow" | "daysAway";
 
+/**
+ * Stati temporali neutri (UX-29): In corso e Oggi pastiglia invertita (In corso
+ * con il pallino pulsante), Domani e "tra N giorni" contornate, Concluso tenue.
+ * Niente verde: vuol dire "positivo", non "adesso".
+ */
 function getStatusData(
   date: Date,
   endTime: Date | null
-): { key: StatusKey; diffDays?: number; color: string; labelColor: string } {
+): {
+  key: StatusKey;
+  diffDays?: number;
+  variant: "inverted" | "outlined" | "muted";
+  pulse?: boolean;
+} {
   const now = new Date();
   const end = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
-  if (now >= date && now <= end)
-    return { key: "live", color: "match.win", labelColor: "common.white" };
-  // Grigio fisso, non `text.*`: e' lo sfondo di un'etichetta bianca, e in tema
-  // scuro `text.secondary` (#AAAAAA) la porterebbe a 2,3:1.
-  if (now > end) return { key: "ended", color: "grey.700", labelColor: "common.white" };
+  if (now >= date && now <= end) return { key: "live", variant: "inverted", pulse: true };
+  if (now > end) return { key: "ended", variant: "muted" };
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const sessionDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diffDays = Math.round((sessionDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0)
-    return { key: "todayBang", color: "primary.fill", labelColor: "common.white" };
-  // Come nell'hero: niente ciano fuori palette per "Domani" / "Tra N giorni".
-  if (diffDays === 1)
-    return { key: "tomorrow", color: "secondary.main", labelColor: "secondary.contrastText" };
-  return {
-    key: "daysAway",
-    diffDays,
-    color: "secondary.main",
-    labelColor: "secondary.contrastText",
-  };
+  if (diffDays === 0) return { key: "todayBang", variant: "inverted" };
+  if (diffDays === 1) return { key: "tomorrow", variant: "outlined" };
+  return { key: "daysAway", diffDays, variant: "outlined" };
 }
 
 export default function SessionCard({
@@ -121,7 +122,6 @@ export default function SessionCard({
       : statusData.key === "tomorrow"
         ? tCommon("tomorrow")
         : t(statusData.key);
-  const status = { label: statusLabel, color: statusData.color, labelColor: statusData.labelColor };
   const now = new Date();
   const sessEnd = endTime ?? new Date(date.getTime() + 2 * 60 * 60 * 1000);
   const isPast = now > sessEnd;
@@ -157,14 +157,11 @@ export default function SessionCard({
               border: (theme) => (theme.palette.mode === "dark" ? "1px solid" : undefined),
               borderColor: "divider",
             }),
+          // In corso: contorno pieno nel colore del testo, niente bordo verde
+          // pulsante (il movimento sta nel pallino della pastiglia).
           ...(live && {
-            outline: (theme) => `2px solid ${theme.palette.status.live}`,
-            "@keyframes pulse-border": {
-              "0%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
-              "50%": { boxShadow: "0 0 0 10px rgba(46,125,50,0), 0 2px 8px rgba(0,0,0,0.15)" },
-              "100%": { boxShadow: "0 0 0 0 rgba(46,125,50,0.6), 0 2px 8px rgba(0,0,0,0.15)" },
-            },
-            animation: "pulse-border 2s ease-out infinite",
+            outline: "2px solid",
+            outlineColor: "text.primary",
           }),
         }}
       >
@@ -212,7 +209,7 @@ export default function SessionCard({
               fontWeight={hero ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
               noWrap={!hero}
               sx={{
-                color: muted ? "text.primary" : "common.white",
+                color: muted ? "text.primary" : heroText.primary,
                 lineHeight: 1.2,
                 ...(hero && { fontSize: { xs: TYPE_SCALE.xl, sm: TYPE_SCALE.xl2 } }),
               }}
@@ -229,42 +226,28 @@ export default function SessionCard({
               mt: hero ? 0.25 : 0,
             }}
           >
+            {/* L'intestazione e' scura, tranne nelle card spente. */}
             {showInArrivo && (
-              <Chip
-                icon={
-                  <HourglassEmptyIcon
-                    sx={{ fontSize: "0.9rem !important", color: "common.white" }}
-                  />
-                }
+              <StatusPill
+                onDark
+                variant="outlined"
+                icon={<ScheduleIcon aria-hidden />}
                 label={t("comingSoon")}
-                size="small"
-                sx={{
-                  bgcolor: "status.pending",
-                  color: "common.white",
-                  fontSize: TYPE_SCALE.xs,
-                }}
               />
             )}
             {showChiuse && (
-              <Chip
-                icon={<LockIcon sx={{ fontSize: "0.85rem !important", color: "common.white" }} />}
+              <StatusPill
+                onDark
+                variant="muted"
+                icon={<LockIcon aria-hidden />}
                 label={t("registrationsClosed")}
-                size="small"
-                sx={{
-                  bgcolor: "status.closed",
-                  color: "common.white",
-                  fontSize: TYPE_SCALE.xs,
-                }}
               />
             )}
-            <Chip
-              label={status.label}
-              size="small"
-              sx={{
-                bgcolor: muted ? "action.selected" : status.color,
-                color: muted ? "text.secondary" : status.labelColor,
-                fontSize: TYPE_SCALE.xs,
-              }}
+            <StatusPill
+              onDark={!muted}
+              variant={muted ? "muted" : statusData.variant}
+              pulse={!muted && statusData.pulse}
+              label={statusLabel}
             />
             {/* Lo staff gestisce l'allenamento dall'admin (UX-14): qui solo un
                 collegamento, niente piu' modifica, iscrizioni e squadre. */}
@@ -277,7 +260,7 @@ export default function SessionCard({
                   sx={{
                     ...TOUCH_TARGET_MIN,
                     // E' un bottone: serve almeno 3:1 anche da spento.
-                    color: muted ? "text.secondary" : "rgba(255,255,255,0.7)",
+                    color: muted ? "text.secondary" : heroText.secondary,
                     pointerEvents: "auto",
                   }}
                 >

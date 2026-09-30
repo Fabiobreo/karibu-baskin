@@ -1,4 +1,5 @@
 "use client";
+import { alpha } from "@mui/material/styles";
 import React, { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import InlineError from "@/components/common/InlineError";
@@ -21,7 +22,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import Link from "next/link";
-import { ROLES, roleColor } from "@/lib/constants";
+import { ROLES } from "@/lib/constants";
 import { useToast } from "@/context/ToastContext";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
@@ -93,7 +94,6 @@ function nextAttended(current: boolean | null | undefined): boolean | null {
 
 interface PillProps {
   reg: Registration;
-  roleColor: string;
   highlighted: boolean;
   canDelete: boolean;
   isDeleting: boolean;
@@ -109,7 +109,6 @@ interface PillProps {
 
 function AthletePill({
   reg,
-  roleColor,
   highlighted,
   canDelete,
   isDeleting,
@@ -131,10 +130,11 @@ function AthletePill({
         display: "inline-flex",
         alignItems: "center",
         border: "1.5px solid",
-        borderColor: highlighted ? roleColor : "divider",
+        borderColor: highlighted ? "role.main" : "divider",
         borderRadius: RADIUS.pill,
         overflow: "hidden",
-        bgcolor: highlighted ? `${roleColor}1A` : "background.paper",
+        bgcolor: (theme) =>
+          highlighted ? alpha(theme.palette.role.main, 0.1) : theme.palette.background.paper,
         opacity: isDeleting || isPendingDelete ? 0.45 : 1,
         transition: "border-color 0.15s, opacity 0.15s",
       }}
@@ -144,7 +144,7 @@ function AthletePill({
         sx={{
           width: 28,
           height: 28,
-          bgcolor: roleColor,
+          bgcolor: "role.main",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -237,7 +237,7 @@ function AthletePill({
       )}
       {isDeleting && (
         <Box sx={{ px: 0.75, display: "flex", alignItems: "center" }}>
-          <CircularProgress size={12} sx={{ color: roleColor }} />
+          <CircularProgress size={12} sx={{ color: "role.main" }} />
         </Box>
       )}
     </Box>
@@ -599,7 +599,9 @@ export default function RosterByRole({
                       width: 10,
                       height: 10,
                       borderRadius: "50%",
-                      bgcolor: roleColor(role),
+                      // Grafite uguale per tutti i ruoli (UX-29): il numero e'
+                      // l'informazione, il pallino e' solo l'attacco della riga.
+                      bgcolor: "role.main",
                       flexShrink: 0,
                     }}
                   />
@@ -642,7 +644,6 @@ export default function RosterByRole({
                       <AthletePill
                         key={reg.id}
                         reg={effectiveReg}
-                        roleColor={roleColor(role) ?? "grey.500"}
                         highlighted={highlighted}
                         canDelete={canDelete}
                         isDeleting={deletingId === reg.id}
@@ -735,7 +736,7 @@ export default function RosterByRole({
                           sx={{
                             p: "3px",
                             mr: 0.5,
-                            color: isOwn ? "rgba(255,255,255,0.6)" : "text.secondary",
+                            color: isOwn ? "grey.400" : "text.secondary",
                             "&:hover": {
                               color: isOwn ? "common.white" : "error.main",
                               bgcolor: "transparent",
