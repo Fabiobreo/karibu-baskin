@@ -75,7 +75,7 @@ Tre commit su `develop`: area utente e admin, liste pubbliche, entity hero.
 **Rifinitura dopo la revisione estetica (30/09)**
 
 - Fascia più bassa: 120 px su desktop, 96 su mobile (prima 160/120), sottotitolo a 14 px su telefono.
-- Fondo `heroGradient.band` (`HERO.bandFrom/bandTo`, #262626 → #2E2E2E): un gradino sopra il nero dell'header, così header e fascia non fanno un blocco unico da 220 px, e in tema scuro la fascia si stacca dal fondo pagina. Niente bagliore arancio (sul grafite si leggeva marrone). Anche `heroTint` parte da questo fondo. Contrasti in `palette.test.ts`.
+- Fondo `heroGradient.band` (`HERO.bandFrom/bandTo`, #202020 → #262626: tono B scelto dal committente il 30/09 fra tre varianti): un gradino sopra il nero dell'header, così header e fascia non fanno un blocco unico da 220 px, e in tema scuro la fascia si stacca dal fondo pagina. Niente bagliore arancio (sul grafite si leggeva marrone). Anche `heroTint` parte da questo fondo. Contrasti in `palette.test.ts`.
 - Azioni dello staff con un solo aspetto (`StaffManageButton`) e sempre nell'intestazione: "Gestisci allenamenti" esce dal contenuto di `/allenamenti`; "Crea news" diventa "Gestisci news".
 - Condivisione con un solo aspetto: bottoni fantasma con etichetta (WhatsApp, Copia link, QR code); sul giocatore "Condividi" non è più arancio pieno.
 - `h4` del tema (h2 di sezione) da 34 a 24/28 px; gli h2 con misura esplicita da 32 a 28 px.

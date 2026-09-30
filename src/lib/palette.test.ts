@@ -94,8 +94,11 @@ describe("fascia delle intestazioni", () => {
     }
   });
 
-  it("si stacca dal nero dell'header", () => {
-    expect(ratio(HERO.bandFrom, BRAND.dark)).toBeGreaterThan(1.1);
+  it("resta un gradino sopra il nero dell'header", () => {
+    // Tono B scelto dal committente (30/09): lo stacco e' leggero di proposito,
+    // la fascia deve restare nera, non diventare grigia.
+    expect(ratio(HERO.bandFrom, BRAND.dark)).toBeGreaterThan(1.05);
+    expect(ratio(HERO.bandTo, BRAND.dark)).toBeGreaterThan(1.1);
   });
 });
 

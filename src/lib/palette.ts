@@ -86,8 +86,8 @@ export const HERO = {
    * dell'header (#1A1A1A), cosi' header e fascia non si fondono in un blocco
    * unico e in tema scuro la fascia si stacca dal fondo pagina (#121212).
    */
-  bandFrom: "#262626",
-  bandTo: "#2E2E2E",
+  bandFrom: "#202020",
+  bandTo: "#262626",
   /** Bordo inferiore degli hero in tema scuro. */
   border: "rgba(255, 255, 255, 0.14)",
   /** Velatura sopra una foto di copertina, per reggere il testo bianco. */
