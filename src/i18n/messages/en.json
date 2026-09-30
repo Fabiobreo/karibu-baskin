@@ -443,7 +443,6 @@
     "upcomingMatches": "Upcoming matches",
     "seasonPreparing": "Season in preparation",
     "seasonPreparingDesc": "Roster and schedule will be published soon.",
-    "opposingChip": "Opposing team",
     "facedInSeasons": "Faced in seasons:",
     "lastFacedAlert": "Last faced in season {season}. No matches recorded in the current season ({current}).",
     "noMatchesAgainst": "We have not yet played any matches against this team.",
@@ -467,7 +466,8 @@
     "simChallengeTitle": "Match Simulator",
     "simChallengeDesc": "Build two teams of 6 players from the squad and find out who would win.",
     "simChallengeCta": "Play",
-    "minorsHidden": "{count, plural, one {# underage athlete is not shown, to protect minors.} other {# underage athletes are not shown, to protect minors.}}"
+    "minorsHidden": "{count, plural, one {# underage athlete is not shown, to protect minors.} other {# underage athletes are not shown, to protect minors.}}",
+    "seasonChip": "Season {season}"
   },
   "simulator": {
     "heroTitle": "Match Simulator",

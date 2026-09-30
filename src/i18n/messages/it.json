@@ -443,7 +443,6 @@
     "upcomingMatches": "Prossime partite",
     "seasonPreparing": "Stagione in preparazione",
     "seasonPreparingDesc": "Rosa e calendario verranno pubblicati a breve.",
-    "opposingChip": "Squadra avversaria",
     "facedInSeasons": "Affrontata nelle stagioni:",
     "lastFacedAlert": "Ultima volta affrontata nella stagione {season}. Nessuna partita registrata nella stagione corrente ({current}).",
     "noMatchesAgainst": "Non abbiamo ancora giocato partite contro questa squadra.",
@@ -467,7 +466,8 @@
     "simChallengeTitle": "Simulatore Sfida",
     "simChallengeDesc": "Forma due squadre da 6 giocatori con la rosa e scopri chi vincerebbe.",
     "simChallengeCta": "Gioca",
-    "minorsHidden": "{count, plural, one {# atleta minorenne non è mostrato, per tutela dei minori.} other {# atleti minorenni non sono mostrati, per tutela dei minori.}}"
+    "minorsHidden": "{count, plural, one {# atleta minorenne non è mostrato, per tutela dei minori.} other {# atleti minorenni non sono mostrati, per tutela dei minori.}}",
+    "seasonChip": "Stagione {season}"
   },
   "simulator": {
     "heroTitle": "Simulatore Sfida",

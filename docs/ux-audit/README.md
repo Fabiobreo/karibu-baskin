@@ -131,7 +131,6 @@ Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando
 ### Parcheggiati (da rivalutare dopo le ondate 0-2)
 
 - Riordino del menu principale: servono prove con utenti reali (tree test), le opinioni dei revisori divergono. (La navigazione **dentro** la sezione Partite è in UX-36.)
-- ~~Migrazione sistematica di tutte le pagine su nuovi componenti (`PageHeader`, `SectionHeader`…): il grosso del beneficio arriva dal tema.~~ Ripresa in UX-32 e UX-37: il riaudit del 29/09 mostra che il tema da solo non basta.
 - ~~Shell admin completamente separata: per ora basta togliere il sito pubblico dall'admin (UX-06).~~ Ripresa in UX-40 (header ridotto, non una shell nuova).
 - Fondo neutro al posto del crema `#F7F4F1`.
 - Profilo giocatore: dati ripetuti fra hero e griglia statistiche.

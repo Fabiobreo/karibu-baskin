@@ -4,6 +4,7 @@ import { formatDecimal } from "@/lib/numberFormat";
 import { prisma } from "@/lib/db";
 import { auth } from "@/lib/authjs";
 import { hasRole, isMemberRole } from "@/lib/authRoles";
+import EntityHero from "@/components/common/EntityHero";
 import StaffManageButton from "@/components/common/StaffManageButton";
 import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { publicSubjects } from "@/lib/minors";
@@ -16,8 +17,6 @@ import {
   Chip,
   Stack,
   Divider,
-  Breadcrumbs,
-  Link as MuiLink,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -30,7 +29,7 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Link from "next/link";
 import { roleColorSx } from "@/lib/constants";
-import { teamColor } from "@/lib/teamColors";
+import { teamColor, teamFill } from "@/lib/teamColors";
 import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import type { MatchResult } from "@prisma/client";
@@ -43,14 +42,7 @@ import LeaderCard from "./_components/LeaderCard";
 import SubLeaderRow from "./_components/SubLeaderRow";
 import AthleteCard from "./_components/AthleteCard";
 import { buildMetadata } from "@/lib/seo";
-import {
-  brandColor,
-  heroBottomBorder,
-  heroGradient,
-  heroImage,
-  heroText,
-  heroTint,
-} from "@/lib/heroStyles";
+import { brandColor, heroGradient, heroImage, heroText, heroTint } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -385,254 +377,179 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
 
   return (
     <>
-      <Box
-        style={{
-          backgroundImage: team.imageUrl
-            ? heroImage(team.imageUrl)
-            : teamHue
-              ? heroTint(teamHue)
-              : heroGradient.dark,
-          backgroundSize: team.imageUrl ? "cover" : undefined,
-          backgroundPosition: team.imageUrl ? "center" : undefined,
-        }}
-        sx={{
-          ...heroBottomBorder,
-          color: "common.white",
-          py: { xs: 5, md: 7 },
-          px: 2,
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {viewerIsStaff && (
+      <EntityHero
+        breadcrumb={[{ label: t("teamBreadcrumb"), href: "/squadre" }, { label: team.name }]}
+        title={team.name}
+        background={
+          team.imageUrl ? heroImage(team.imageUrl) : teamHue ? heroTint(teamHue) : heroGradient.dark
+        }
+        manage={
+          viewerIsStaff && (
+            <StaffManageButton href={`/admin/squadre/${team.id}/rosa`} label={t("manage")} />
+          )
+        }
+        leading={
           <Box
             sx={{
-              position: "absolute",
-              top: { xs: 12, md: 16 },
-              right: { xs: 12, md: 20 },
-              zIndex: 3,
+              width: { xs: 72, sm: 96 },
+              height: { xs: 72, sm: 96 },
+              borderRadius: "50%",
+              bgcolor: teamHue ?? heroText.surface,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
+              border: `3px solid ${brandColor.darkSoft}`,
             }}
           >
-            <StaffManageButton href={`/admin/squadre/${team.id}/rosa`} label={t("manage")} />
+            <Typography
+              sx={{
+                fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
+                fontWeight: FONT_WEIGHT.bold,
+                color: "common.white",
+                lineHeight: 1,
+                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              }}
+            >
+              {team.name[0].toUpperCase()}
+            </Typography>
           </Box>
-        )}
+        }
+        subtitle={team.championship}
+        badges={
+          <Chip
+            label={t("seasonChip", { season: team.season })}
+            size="small"
+            // Squadra nella sua tinta con l'etichetta giusta; senza tinta
+            // contornata neutra (UX-29).
+            sx={{
+              ...(teamFill(team.color)
+                ? { bgcolor: teamFill(team.color)?.bg, color: teamFill(team.color)?.fg }
+                : { color: "common.white", border: `1px solid ${heroText.lineStrong}` }),
+              fontSize: TYPE_SCALE.xs,
+            }}
+          />
+        }
+      >
+        {/* Record stagione */}
         <Box
           sx={{
-            position: "absolute",
-            top: { xs: 12, md: 16 },
-            left: { xs: 12, md: 20 },
-            // Spazio a destra per "Gestisci" dello staff.
-            right: viewerIsStaff ? { xs: 140, md: 160 } : { xs: 60, md: 80 },
-            zIndex: 2,
+            mt: 2,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: { xs: 1, sm: 1.5 },
           }}
         >
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{
-              "& .MuiBreadcrumbs-separator": { color: heroText.muted },
-            }}
-          >
-            <MuiLink
-              href="/squadre"
-              underline="hover"
-              variant="body2"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: "common.white" },
-              }}
-            >
-              {t("teamBreadcrumb")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }}>
-              {team.name}
-            </Typography>
-          </Breadcrumbs>
-        </Box>
-
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: { xs: 2, sm: 3 },
-              flexDirection: { xs: "column", sm: "row" },
-            }}
-          >
-            {/* Iniziale grande */}
-            <Box
-              sx={{
-                width: { xs: 72, sm: 96 },
-                height: { xs: 72, sm: 96 },
-                borderRadius: "50%",
-                bgcolor: teamHue ?? heroText.surface,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                boxShadow: "0 6px 24px rgba(0,0,0,0.35)",
-                border: `3px solid ${brandColor.darkSoft}`,
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6 },
-                  fontWeight: FONT_WEIGHT.bold,
-                  color: "common.white",
-                  lineHeight: 1,
-                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                }}
-              >
-                {team.name[0].toUpperCase()}
-              </Typography>
-            </Box>
-
-            {/* Info squadra */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Chip
-                label={`Stagione ${team.season}`}
-                size="small"
-                sx={{
-                  mb: 1,
-                  bgcolor: teamHue ?? "transparent",
-                  color: "common.white",
-                  border: teamHue ? 0 : `1px solid ${heroText.lineStrong}`,
-                  fontSize: TYPE_SCALE.xs,
-                }}
-              />
-              <Typography
-                variant="h3"
-                component="h1"
-                sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 }, lineHeight: 1.1 }}
-              >
-                {team.name}
-              </Typography>
-              {team.championship && (
-                <Typography variant="body1" sx={{ color: heroText.secondary, mt: 0.5 }}>
-                  {team.championship}
-                </Typography>
-              )}
-
-              {/* Record stagione */}
+          {playedMatches.length > 0 && (
+            <>
               <Box
                 sx={{
-                  mt: 2,
                   display: "flex",
-                  flexWrap: "wrap",
                   alignItems: "center",
-                  gap: { xs: 1, sm: 1.5 },
+                  gap: 0.6,
+                  bgcolor: "match.win",
+                  px: 1.25,
+                  py: 0.4,
+                  borderRadius: RADIUS.pill,
                 }}
               >
-                {playedMatches.length > 0 && (
-                  <>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.6,
-                        bgcolor: "match.win",
-                        px: 1.25,
-                        py: 0.4,
-                        borderRadius: RADIUS.pill,
-                      }}
-                    >
-                      <Typography
-                        fontWeight={FONT_WEIGHT.bold}
-                        sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
-                      >
-                        {wins}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: "match.onFill",
-                          fontSize: TYPE_SCALE.xs,
-                          fontWeight: FONT_WEIGHT.semibold,
-                          textTransform: "lowercase",
-                        }}
-                      >
-                        {t("winsWord", { count: wins })}
-                      </Typography>
-                    </Box>
-                    {draws > 0 && (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.6,
-                          bgcolor: "match.draw",
-                          px: 1.25,
-                          py: 0.4,
-                          borderRadius: RADIUS.pill,
-                        }}
-                      >
-                        <Typography
-                          fontWeight={FONT_WEIGHT.bold}
-                          sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
-                        >
-                          {draws}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            color: "match.onFill",
-                            fontSize: TYPE_SCALE.xs,
-                            fontWeight: FONT_WEIGHT.semibold,
-                            textTransform: "lowercase",
-                          }}
-                        >
-                          {t("drawsWord", { count: draws })}
-                        </Typography>
-                      </Box>
-                    )}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.6,
-                        bgcolor: "match.loss",
-                        px: 1.25,
-                        py: 0.4,
-                        borderRadius: RADIUS.pill,
-                      }}
-                    >
-                      <Typography
-                        fontWeight={FONT_WEIGHT.bold}
-                        sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
-                      >
-                        {losses}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          color: "match.onFill",
-                          fontSize: TYPE_SCALE.xs,
-                          fontWeight: FONT_WEIGHT.semibold,
-                          textTransform: "lowercase",
-                        }}
-                      >
-                        {t("lossesWord", { count: losses })}
-                      </Typography>
-                    </Box>
-                  </>
-                )}
-
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <GroupsIcon sx={{ fontSize: 16, color: "common.white" }} />
+                <Typography
+                  fontWeight={FONT_WEIGHT.bold}
+                  sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
+                >
+                  {wins}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "match.onFill",
+                    fontSize: TYPE_SCALE.xs,
+                    fontWeight: FONT_WEIGHT.semibold,
+                    textTransform: "lowercase",
+                  }}
+                >
+                  {t("winsWord", { count: wins })}
+                </Typography>
+              </Box>
+              {draws > 0 && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.6,
+                    bgcolor: "match.draw",
+                    px: 1.25,
+                    py: 0.4,
+                    borderRadius: RADIUS.pill,
+                  }}
+                >
                   <Typography
-                    variant="body2"
-                    sx={{ color: "common.white", fontWeight: FONT_WEIGHT.semibold }}
+                    fontWeight={FONT_WEIGHT.bold}
+                    sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
                   >
-                    {t("athleteCount", { count: totalMembers })}
+                    {draws}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      color: "match.onFill",
+                      fontSize: TYPE_SCALE.xs,
+                      fontWeight: FONT_WEIGHT.semibold,
+                      textTransform: "lowercase",
+                    }}
+                  >
+                    {t("drawsWord", { count: draws })}
                   </Typography>
                 </Box>
-              </Box>
-
-              {team.description && (
-                <Typography variant="body2" sx={{ color: heroText.muted, mt: 2, maxWidth: 580 }}>
-                  {team.description}
-                </Typography>
               )}
-            </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.6,
+                  bgcolor: "match.loss",
+                  px: 1.25,
+                  py: 0.4,
+                  borderRadius: RADIUS.pill,
+                }}
+              >
+                <Typography
+                  fontWeight={FONT_WEIGHT.bold}
+                  sx={{ color: "match.onFill", fontSize: TYPE_SCALE.md }}
+                >
+                  {losses}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "match.onFill",
+                    fontSize: TYPE_SCALE.xs,
+                    fontWeight: FONT_WEIGHT.semibold,
+                    textTransform: "lowercase",
+                  }}
+                >
+                  {t("lossesWord", { count: losses })}
+                </Typography>
+              </Box>
+            </>
+          )}
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <GroupsIcon sx={{ fontSize: 16, color: "common.white" }} />
+            <Typography
+              variant="body2"
+              sx={{ color: "common.white", fontWeight: FONT_WEIGHT.semibold }}
+            >
+              {t("athleteCount", { count: totalMembers })}
+            </Typography>
           </Box>
-        </Container>
-      </Box>
+        </Box>
+
+        {team.description && (
+          <Typography variant="body2" sx={{ color: heroText.muted, mt: 2, maxWidth: 580 }}>
+            {team.description}
+          </Typography>
+        )}
+      </EntityHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         {nextMatch &&

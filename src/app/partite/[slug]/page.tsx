@@ -8,19 +8,11 @@ import { auth } from "@/lib/authjs";
 import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
-import { Container, Typography, Box, Breadcrumbs, Link as MuiLink } from "@mui/material";
+import { Container, Typography, Box, Link as MuiLink } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import {
-  brandColor,
-  heroBottomBorder,
-  heroGradient,
-  heroImage,
-  heroResultColor,
-  heroText,
-  heroTint,
-} from "@/lib/heroStyles";
+import { heroGradient, heroImage, heroResultColor, heroText, heroTint } from "@/lib/heroStyles";
 import { Fragment } from "react";
-import { visuallyHidden } from "@mui/utils";
+import EntityHero from "@/components/common/EntityHero";
 import StaffManageButton from "@/components/common/StaffManageButton";
 import MatchDetailTabs from "@/components/matches/MatchDetailTabs";
 import MatchAvailabilityCard, {
@@ -427,280 +419,220 @@ export default async function MatchDetailPage({ params }: Props) {
           venue: match.venue,
         })}
       />
-      <Box
-        style={{
-          backgroundImage: match.imageUrl ? heroImage(match.imageUrl) : heroBg,
-          backgroundSize: match.imageUrl ? "cover" : undefined,
-          backgroundPosition: match.imageUrl ? "center" : undefined,
-        }}
-        sx={{
-          ...heroBottomBorder,
-          color: "common.white",
-          pt: { xs: 1.5, md: 2 },
-          pb: { xs: 5, md: 7 },
-          px: { xs: 1.5, md: 2.5 },
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* Breadcrumb e azioni su una riga propria, sopra il tabellino: prima
-            erano posizionati sopra il contenuto e a 360 px si toccavano (UX-35). */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 1.5,
-            minHeight: 40,
-            mb: { xs: 3, md: 4 },
-            position: "relative",
-            zIndex: 2,
-          }}
-        >
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{
-              minWidth: 0,
-              flex: "1 1 auto",
-              "& .MuiBreadcrumbs-ol": { flexWrap: "nowrap" },
-              "& .MuiBreadcrumbs-li:last-of-type": { minWidth: 0 },
-              "& .MuiBreadcrumbs-separator": { color: heroText.muted },
-            }}
-          >
-            <MuiLink
-              href="/partite"
-              underline="hover"
-              variant="body2"
-              sx={{
-                color: heroText.muted,
-                // Area di tocco di almeno 24 px (WCAG 2.5.8, UX-22).
-                display: "inline-flex",
-                alignItems: "center",
-                minHeight: 24,
-                "&:hover": { color: brandColor.white },
-              }}
-            >
-              {t("breadcrumb")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }} noWrap>
-              {matchupTitle}
-            </Typography>
-          </Breadcrumbs>
-
-          {/* Azioni: share tabellino + gestione (staff) */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexShrink: 0 }}>
+      <EntityHero
+        breadcrumb={[{ label: t("breadcrumb"), href: "/partite" }, { label: matchupTitle }]}
+        // Il titolo della partita e' composto da piu' blocchi visivi (squadre,
+        // punteggio): l'h1 riassume la partita per chi naviga a voce.
+        title={matchupTitle}
+        hideTitle
+        background={match.imageUrl ? heroImage(match.imageUrl) : heroBg}
+        manage={
+          <>
             {hasScore && (
               <MatchTabellinoButton
                 matchId={match.id}
                 filename={`tabellino-${slugify(match.team.name)}-vs-${slugify(opponentName)}-${formatRome(new Date(match.date), "yyyy-MM-dd")}.png`}
               />
             )}
-            {/* Una sola strada per gestire la partita: l'admin, come per allenamenti,
-                eventi e squadre (UX-23). */}
+            {/* Una sola strada per gestire la partita: l'admin, come per
+                allenamenti, eventi e squadre (UX-23). */}
             {isStaff && (
               <StaffManageButton href={`/admin/partite?edit=${match.id}`} label={t("manage")} />
             )}
-          </Box>
-        </Box>
-
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1, px: { xs: 0.5, sm: 2 } }}>
-          <Box sx={{ textAlign: "center" }}>
-            {/* Il titolo della partita e composto da piu blocchi visivi (squadre,
-                punteggio): l'h1 riassume la partita per chi naviga a voce. */}
-            <Typography variant="h1" component="h1" sx={visuallyHidden}>
-              {matchupTitle}
-            </Typography>
-
-            {/* Tabellino simmetrico (UX-35): chi gioca in casa a sinistra, come
-                si scrive di solito (è la pagina che si condivide); nelle liste
-                invece noi restiamo sempre a sinistra (UX-18). Nome sopra e
-                punteggio sotto, stessa taglia e peso sui due lati. Nel DOM ogni
-                squadra ha nome e punteggio vicini ("Orsi 52 – Karibu 67"); la
-                griglia li mette su due righe, così i punteggi restano allineati
-                anche quando un nome va a capo. */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
-                columnGap: { xs: 1.5, sm: 2, md: 5 },
-                rowGap: { xs: 0.5, md: 1 },
-                alignItems: "center",
-                maxWidth: 760,
-                mx: "auto",
-              }}
-            >
-              {(() => {
-                const side = (
-                  key: string,
-                  name: React.ReactNode,
-                  score: number | null,
-                  column: 1 | 3
-                ) => (
-                  <Fragment key={key}>
-                    <Typography
-                      component="p"
-                      sx={{
-                        ...sideNameSx,
-                        ...nameSizeSx,
-                        ...upcomingNameSx,
-                        gridColumn: column,
-                        gridRow: 1,
-                      }}
-                    >
-                      {name}
-                    </Typography>
-                    {!isUpcoming && (
-                      <Typography component="p" sx={{ ...scoreSx, gridColumn: column, gridRow: 2 }}>
-                        {hasScore ? score : "–"}
-                      </Typography>
-                    )}
-                  </Fragment>
-                );
-                const ourName = match.team.isMixed ? (
-                  // La Karibu di stagione non ha una pagina pubblica: solo il nome.
-                  match.team.name
-                ) : (
-                  <MuiLink
-                    href={`/squadre/${teamSeasonParam}/${teamSlug}`}
-                    underline="hover"
-                    color="inherit"
-                  >
-                    {match.team.name}
-                  </MuiLink>
-                );
-                const middle = (
+          </>
+        }
+      >
+        {/* Il tabellino e' il contenuto dell'entity hero della partita (UX-32). */}
+        <Box sx={{ textAlign: "center" }}>
+          {/* Tabellino simmetrico (UX-35): chi gioca in casa a sinistra, come
+              si scrive di solito (è la pagina che si condivide); nelle liste
+              invece noi restiamo sempre a sinistra (UX-18). Nome sopra e
+              punteggio sotto, stessa taglia e peso sui due lati. Nel DOM ogni
+              squadra ha nome e punteggio vicini ("Orsi 52 – Karibu 67"); la
+              griglia li mette su due righe, così i punteggi restano allineati
+              anche quando un nome va a capo. */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+              columnGap: { xs: 1.5, sm: 2, md: 5 },
+              rowGap: { xs: 0.5, md: 1 },
+              alignItems: "center",
+              maxWidth: 760,
+              mx: "auto",
+            }}
+          >
+            {(() => {
+              const side = (
+                key: string,
+                name: React.ReactNode,
+                score: number | null,
+                column: 1 | 3
+              ) => (
+                <Fragment key={key}>
                   <Typography
-                    key="middle"
                     component="p"
-                    aria-hidden={!isUpcoming}
                     sx={{
-                      gridColumn: 2,
-                      gridRow: isUpcoming ? 1 : 2,
-                      color: heroText.muted,
-                      fontWeight: FONT_WEIGHT.bold,
-                      lineHeight: 1,
-                      fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
-                      fontVariantNumeric: "tabular-nums",
+                      ...sideNameSx,
+                      ...nameSizeSx,
+                      ...upcomingNameSx,
+                      gridColumn: column,
+                      gridRow: 1,
                     }}
                   >
-                    {/* Partita futura: l'orario al posto dei punteggi. */}
-                    {isUpcoming ? formatRome(new Date(match.date), "HH:mm") : "–"}
+                    {name}
                   </Typography>
-                );
-                return match.isHome
-                  ? [
-                      side("us", ourName, match.ourScore, 1),
-                      middle,
-                      side("them", opponentName, match.theirScore, 3),
-                    ]
-                  : [
-                      side("them", opponentName, match.theirScore, 1),
-                      middle,
-                      side("us", ourName, match.ourScore, 3),
-                    ];
-              })()}
-            </Box>
+                  {!isUpcoming && (
+                    <Typography component="p" sx={{ ...scoreSx, gridColumn: column, gridRow: 2 }}>
+                      {hasScore ? score : "–"}
+                    </Typography>
+                  )}
+                </Fragment>
+              );
+              const ourName = match.team.isMixed ? (
+                // La Karibu di stagione non ha una pagina pubblica: solo il nome.
+                match.team.name
+              ) : (
+                <MuiLink
+                  href={`/squadre/${teamSeasonParam}/${teamSlug}`}
+                  underline="hover"
+                  color="inherit"
+                >
+                  {match.team.name}
+                </MuiLink>
+              );
+              const middle = (
+                <Typography
+                  key="middle"
+                  component="p"
+                  aria-hidden={!isUpcoming}
+                  sx={{
+                    gridColumn: 2,
+                    gridRow: isUpcoming ? 1 : 2,
+                    color: heroText.muted,
+                    fontWeight: FONT_WEIGHT.bold,
+                    lineHeight: 1,
+                    fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {/* Partita futura: l'orario al posto dei punteggi. */}
+                  {isUpcoming ? formatRome(new Date(match.date), "HH:mm") : "–"}
+                </Typography>
+              );
+              return match.isHome
+                ? [
+                    side("us", ourName, match.ourScore, 1),
+                    middle,
+                    side("them", opponentName, match.theirScore, 3),
+                  ]
+                : [
+                    side("them", opponentName, match.theirScore, 1),
+                    middle,
+                    side("us", ourName, match.ourScore, 3),
+                  ];
+            })()}
+          </Box>
 
-            {/* Esito e competizione in una riga: l'esito resta anche nel colore
-                dell'hero, niente chip al centro del tabellino. */}
-            <Typography
-              component="p"
-              variant="body2"
-              sx={{
-                mt: { xs: 2.5, md: 3 },
-                color: heroText.secondary,
-                fontWeight: FONT_WEIGHT.semibold,
-              }}
-            >
-              {[
-                match.result ? (
-                  <Box
-                    key="result"
-                    component="span"
-                    sx={{ color: "common.white", fontWeight: FONT_WEIGHT.bold }}
-                  >
-                    {matchResultLabel(match.result)}
-                  </Box>
-                ) : null,
-                matchTypeLabel(match.matchType),
-                match.group?.name ?? null,
-              ]
-                .filter((part) => part !== null)
-                .map((part, i) => (
-                  <Fragment key={i}>
-                    {i > 0 && " · "}
-                    {part}
-                  </Fragment>
-                ))}
-            </Typography>
+          {/* Esito e competizione in una riga: l'esito resta anche nel colore
+              dell'hero, niente chip al centro del tabellino. */}
+          <Typography
+            component="p"
+            variant="body2"
+            sx={{
+              mt: { xs: 2.5, md: 3 },
+              color: heroText.secondary,
+              fontWeight: FONT_WEIGHT.semibold,
+            }}
+          >
+            {[
+              match.result ? (
+                <Box
+                  key="result"
+                  component="span"
+                  sx={{ color: "common.white", fontWeight: FONT_WEIGHT.bold }}
+                >
+                  {matchResultLabel(match.result)}
+                </Box>
+              ) : null,
+              matchTypeLabel(match.matchType),
+              match.group?.name ?? null,
+            ]
+              .filter((part) => part !== null)
+              .map((part, i) => (
+                <Fragment key={i}>
+                  {i > 0 && " · "}
+                  {part}
+                </Fragment>
+              ))}
+          </Typography>
 
-            {/* Countdown + badge come supporto (solo se la partita è ancora futura) */}
-            {isUpcoming && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 1,
-                  flexWrap: "wrap",
-                  mt: 2,
-                }}
-              >
-                <MatchCountdown targetIso={new Date(match.date).toISOString()} />
-                {isImminent && (
-                  // Stato temporale: pastiglia invertita, non l'arancio, che vuol dire
-                  // "si tocca" (UX-29). Niente alone pulsante (UX-30).
-                  <StatusPill onDark variant="inverted" icon={<BoltIcon />} label={t("imminent")} />
-                )}
-              </Box>
-            )}
-
-            {/* Riga meta unica: data e ora, casa/trasferta, luogo */}
+          {/* Countdown + badge come supporto (solo se la partita è ancora futura) */}
+          {isUpcoming && (
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                columnGap: 2,
-                rowGap: 0.5,
+                gap: 1,
                 flexWrap: "wrap",
                 mt: 2,
-                color: heroText.muted,
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <CalendarTodayIcon sx={{ fontSize: 14 }} />
-                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
-                  {/* Partita futura: l'orario sta già al centro del tabellino. */}
-                  {formatRome(
-                    new Date(match.date),
-                    isUpcoming ? "EEEE d MMMM yyyy" : "EEEE d MMMM yyyy · HH:mm",
-                    { locale: dateLocale }
-                  )}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                {match.isHome ? (
-                  <HomeIcon sx={{ fontSize: 14 }} />
-                ) : (
-                  <DirectionsBusIcon sx={{ fontSize: 14 }} />
-                )}
-                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
-                  {match.isHome ? t("home") : t("away")}
-                </Typography>
-              </Box>
-              {match.venue && (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <PlaceIcon sx={{ fontSize: 14 }} />
-                  <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
-                    {match.venue}
-                  </Typography>
-                </Box>
+              <MatchCountdown targetIso={new Date(match.date).toISOString()} />
+              {isImminent && (
+                // Stato temporale: pastiglia invertita, non l'arancio, che vuol dire
+                // "si tocca" (UX-29). Niente alone pulsante (UX-30).
+                <StatusPill onDark variant="inverted" icon={<BoltIcon />} label={t("imminent")} />
               )}
             </Box>
+          )}
+
+          {/* Riga meta unica: data e ora, casa/trasferta, luogo */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              columnGap: 2,
+              rowGap: 0.5,
+              flexWrap: "wrap",
+              mt: 2,
+              color: heroText.muted,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <CalendarTodayIcon sx={{ fontSize: 14 }} />
+              <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
+                {/* Partita futura: l'orario sta già al centro del tabellino. */}
+                {formatRome(
+                  new Date(match.date),
+                  isUpcoming ? "EEEE d MMMM yyyy" : "EEEE d MMMM yyyy · HH:mm",
+                  { locale: dateLocale }
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              {match.isHome ? (
+                <HomeIcon sx={{ fontSize: 14 }} />
+              ) : (
+                <DirectionsBusIcon sx={{ fontSize: 14 }} />
+              )}
+              <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
+                {match.isHome ? t("home") : t("away")}
+              </Typography>
+            </Box>
+            {match.venue && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <PlaceIcon sx={{ fontSize: 14 }} />
+                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
+                  {match.venue}
+                </Typography>
+              </Box>
+            )}
           </Box>
-        </Container>
-      </Box>
+        </Box>
+      </EntityHero>
 
       {availabilityEntities.length > 0 && (
         <MatchAvailabilityCard matchId={match.id} entities={availabilityEntities} />

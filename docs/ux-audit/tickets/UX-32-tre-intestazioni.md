@@ -1,6 +1,6 @@
 # UX-32 · Tre modelli di intestazione di pagina
 
-**Ondata:** 4 · **Stima:** L · **Dipende da:** UX-30 · **Stato:** da fare
+**Ondata:** 4 · **Stima:** L · **Dipende da:** UX-30 · **Stato:** fatto (su `develop`, tre commit)
 
 ## Problema
 
@@ -46,3 +46,33 @@ Aggiornare `design-conventions` in CLAUDE.md (sezione Hero) e togliere dalla lis
 - Nessun uso di `align` su `PageHero`.
 - Altezza della fascia uguale su tutte le liste.
 - `npm run a11y` verde (`heading-order` compreso); schermate prima/dopo delle 8 varianti.
+
+## Fatto (30/09/2026)
+
+Tre commit su `develop`: area utente e admin, liste pubbliche, entity hero.
+
+**Componenti**
+
+- `PageHero` riscritto: fascia di 160 px su desktop e 120 su mobile (`minHeight`), testo a sinistra al bordo del contenuto (`maxWidth` uguale al Container sotto), props `title`, `subtitle`, `breadcrumb`, `nav`, `action`. Tolti `chip`, `align`, `py`, `subtitleMaxWidth` e i `children` liberi. `PageHeroFrame` (la sola fascia) lo usa anche `PageLoadingSkeleton`.
+- `EntityHero` riscritto come hero unico dei dettagli: breadcrumb su una riga con le azioni dello staff (`manage`), titolo allineato al breadcrumb (o nascosto per la partita), `leading`, `subtitle`, `badges`, `meta` (voci `HeroMeta`), contenuto, `actions`. `EventHero` e `AllenamentoHero` restano come adattatori dei dati.
+- `AdminPageHeader` diventa `PageHeader` in `components/common`, per admin e area utente; su mobile il titolo scende di un gradino.
+
+**Pagine per modello**
+
+| Modello | Pagine |
+| --- | --- |
+| Hero con foto | `/` |
+| Page header | `/partite`, `/risultati`, `/classifiche`, `/marcatori`, `/squadre`, `/squadre/archivio`, `/squadre/sfida`, `/giocatori/confronta`, `/allenamenti`, `/calendario`, `/news`, `/eventi`, `/gallery`, `/contatti`, `/il-baskin`, `/faq`, `/sponsor`, `/privacy` |
+| Entity hero | `/allenamento/[id]`, `/eventi/[slug]`, `/partite/[slug]`, `/giocatori/[slug]`, `/squadre/[season]/[slug]`, `/avversarie/[slug]` |
+| Nessuna fascia (`PageHeader`) | `/profilo`, `/profilo/disponibilita`, `/profilo/ruolo`, `/profilo/traguardi`, `/notifiche`, tutto `/admin` (convocazioni e statistiche comprese) |
+| Nessuna fascia (articolo) | `/news/[slug]`: breadcrumb sopra l'h1, com'era |
+
+**Scelte fatte strada facendo**
+
+- Contenuti che il nuovo modello non prevede: il riepilogo V/P/S per squadra dell'hero di `/risultati` è tolto (lo ripete l'intestazione di ogni squadra); i due bottoni dell'hero di `/contatti` sono tolti (li ripete la mini-nav); "Crea news" e "Gestisci tutti" degli eventi vanno nello slot azione; i link di `/classifiche` e `/marcatori` nello slot `nav` (li ripensa UX-36).
+- Misure (Playwright, 1280 e 375 px): tutte le liste a 160 px su desktop; su mobile 120 px, tranne dove il contenuto va a capo: `/il-baskin` (sottotitolo su tre righe, 142), `/squadre/archivio` (breadcrumb, 150), `/classifiche` (tre link, 187).
+
+**Rimasto fuori**
+
+- Lo scorrimento orizzontale di `/admin/partite/[id]/convocazioni` a 375 px c'era già: lo causa la riga "Copertura" della toolbar, non l'intestazione (UX-40).
+- Sulle pagine dell'avversaria la modifica resta la matita con il suo dialog, non un "Gestisci" verso l'admin.

@@ -3,7 +3,7 @@ import { Container, Typography, Box, Paper, Divider } from "@mui/material";
 import Link from "next/link";
 import { SITE_HOST } from "@/lib/siteUrl";
 import { buildMetadata } from "@/lib/seo";
-import { TYPE_SCALE } from "@/lib/typeScale";
+import PageHero from "@/components/common/PageHero";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
@@ -18,17 +18,8 @@ const LAST_UPDATE = "20 maggio 2026";
 export default function PrivacyPage() {
   return (
     <>
+      <PageHero title="Informativa sulla privacy" subtitle="Documento legale" />
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography variant="overline" color="text.secondary">
-          Documento legale
-        </Typography>
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 } }}
-        >
-          Informativa sulla privacy
-        </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
           Ai sensi degli artt. 13 e 14 del Regolamento UE 2016/679 (GDPR) e del D.Lgs. 196/2003 come
           modificato dal D.Lgs. 101/2018. Ultimo aggiornamento: {LAST_UPDATE}.

@@ -32,7 +32,7 @@ Era parcheggiato ("shell admin separata: per ora basta togliere il sito pubblico
    - somma della formazione come "Forza complessiva";
    - frase delle presenze riscritta senza "finestra".
    - Restano visibili solo a COACH e ADMIN, come oggi.
-6. **Intestazioni:** `AdminPageHeader` anche in convocazioni e statistiche, stesso contenitore delle altre pagine admin.
+6. **Intestazioni:** ~~`AdminPageHeader` anche in convocazioni e statistiche~~ fatto in UX-32 (`PageHeader`); resta lo stesso contenitore delle altre pagine admin.
 7. **Target** a 44 px su mobile per icone e link nelle righe di partite e utenti.
 8. **Troncamenti:** nome partita su due righe nelle card della dashboard mobile.
 

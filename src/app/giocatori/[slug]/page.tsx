@@ -13,21 +13,13 @@ import {
   Avatar,
   Stack,
   Divider,
-  Breadcrumbs,
-  Link as MuiLink,
   Button,
   Alert,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import {
-  brandColor,
-  heroBottomBorder,
-  heroGradient,
-  heroMedal,
-  heroTint,
-  heroText,
-} from "@/lib/heroStyles";
+import { brandColor, heroGradient, heroMedal, heroTint, heroText } from "@/lib/heroStyles";
 import { teamColor, teamFill } from "@/lib/teamColors";
+import EntityHero from "@/components/common/EntityHero";
 import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -521,425 +513,335 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
   return (
     <>
-      {/* Hero — design "carta giocatore" condivisibile */}
-      <Box
-        style={{
-          backgroundImage: playerHue ? heroTint(playerHue) : heroGradient.dark,
-        }}
-        sx={{
-          ...heroBottomBorder,
-          color: "common.white",
-          py: { xs: 5, md: 7 },
-          px: 2,
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: { xs: 12, md: 16 },
-            left: { xs: 12, md: 20 },
-            right: { xs: 60, md: 80 },
-            zIndex: 2,
-          }}
-        >
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
-          >
-            <MuiLink
-              href="/squadre"
-              underline="hover"
-              variant="body2"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: brandColor.white },
-              }}
-            >
-              {tTeams("teamBreadcrumb")}
-            </MuiLink>
-            {/* Il profilo giocatore non sta sotto /squadre: il genitore reale
-                e' la sua squadra. Senza squadra ci si ferma a "Squadre". */}
-            {breadcrumbTeam && (
-              <MuiLink
-                href={teamHref(breadcrumbTeam)}
-                underline="hover"
-                variant="body2"
-                sx={{
-                  color: heroText.muted,
-                  "&:hover": { color: brandColor.white },
-                }}
-              >
-                {breadcrumbTeam.name}
-              </MuiLink>
-            )}
-            <Typography variant="body2" sx={{ color: heroText.secondary }} noWrap>
-              {player.name ?? "Giocatore"}
-            </Typography>
-          </Breadcrumbs>
-        </Box>
-
-        <Container maxWidth="md" sx={{ position: "relative", zIndex: 1 }}>
+      {/* Hero — design "carta giocatore" condivisibile, sull'entity hero comune (UX-32) */}
+      <EntityHero
+        breadcrumb={[
+          { label: tTeams("teamBreadcrumb"), href: "/squadre" },
+          // Il profilo giocatore non sta sotto /squadre: il genitore reale e'
+          // la sua squadra. Senza squadra ci si ferma a "Squadre".
+          ...(breadcrumbTeam
+            ? [{ label: breadcrumbTeam.name, href: teamHref(breadcrumbTeam) }]
+            : []),
+          { label: player.name ?? "Giocatore" },
+        ]}
+        title={player.name ?? "—"}
+        background={playerHue ? heroTint(playerHue) : heroGradient.dark}
+        leading={
+          // Avatar grande con ring
           <Box
             sx={{
-              display: "flex",
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: { xs: 2.5, md: 3.5 },
-              flexDirection: { xs: "column", sm: "row" },
+              position: "relative",
+              flexShrink: 0,
             }}
           >
-            {/* Avatar grande con ring */}
-            <Box
+            <Avatar
+              src={player.customImage ?? player.image ?? undefined}
               sx={{
-                position: "relative",
-                flexShrink: 0,
+                width: { xs: 110, md: 140 },
+                height: { xs: 110, md: 140 },
+                fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
+                fontWeight: FONT_WEIGHT.bold,
+                bgcolor: playerHue ?? heroText.surface,
+                border: "4px solid",
+                borderColor: playerHue ?? heroText.lineStrong,
+                boxShadow: "0 8px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(0,0,0,0.25)",
               }}
             >
-              <Avatar
-                src={player.customImage ?? player.image ?? undefined}
+              {(player.name ?? "?")[0].toUpperCase()}
+            </Avatar>
+            {player.sportRole && (
+              <Box
                 sx={{
-                  width: { xs: 110, md: 140 },
-                  height: { xs: 110, md: 140 },
+                  position: "absolute",
+                  bottom: -8,
+                  right: -8,
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  // Grafite uguale per tutti i ruoli (UX-29): l'informazione e' il numero.
+                  ...roleColorSx(player.sportRole),
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: FONT_WEIGHT.bold,
+                  fontSize: TYPE_SCALE.xl,
+                  border: "3px solid",
+                  borderColor: "secondary.main",
+                  boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
+                }}
+              >
+                {player.sportRole}
+              </Box>
+            )}
+          </Box>
+        }
+        badges={
+          // Ruolo per esteso + squadra. Il numero da solo (c'e' gia' sul
+          // bollino dell'avatar) a chi non conosce il Baskin non dice nulla.
+          player.sportRole || heroTeams.length > 0 ? (
+            <>
+              {player.sportRole && (
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: heroText.primary,
+                    fontWeight: FONT_WEIGHT.semibold,
+                    lineHeight: 1,
+                  }}
+                >
+                  {sportRoleLabel(player.sportRole, player.sportRoleVariant)}
+                </Typography>
+              )}
+              {player.sportRole && heroTeams.length > 0 && (
+                <Box component="span" aria-hidden="true" sx={{ color: heroText.muted }}>
+                  ·
+                </Box>
+              )}
+              {heroTeams.map((m) => (
+                // Niente `clickable`: il link e' gia' l'elemento da toccare.
+                <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
+                  <Chip
+                    icon={
+                      m.isCaptain ? (
+                        <EmojiEventsIcon
+                          sx={{
+                            fontSize: "0.95rem !important",
+                            color: `${heroMedal.gold} !important`,
+                          }}
+                        />
+                      ) : undefined
+                    }
+                    // Una squadra di una stagione passata porta la stagione:
+                    // senza, sembrerebbe quella in cui gioca adesso.
+                    label={
+                      m.team.season === currentSeason
+                        ? m.team.name
+                        : `${m.team.name} · ${m.team.season}`
+                    }
+                    size="small"
+                    // Squadra nella sua tinta; senza tinta contornata neutra (UX-29).
+                    sx={{
+                      ...(teamFill(m.team.color)
+                        ? {
+                            bgcolor: teamFill(m.team.color)?.bg,
+                            color: teamFill(m.team.color)?.fg,
+                          }
+                        : {
+                            bgcolor: "transparent",
+                            color: heroText.primary,
+                            border: `1px solid ${heroText.lineStrong}`,
+                          }),
+                      fontSize: TYPE_SCALE.xs,
+                      cursor: "pointer",
+                      "a:hover > &": { opacity: 0.9 },
+                    }}
+                  />
+                </Link>
+              ))}
+            </>
+          ) : undefined
+        }
+        // Un profilo visibile solo allo staff non si condivide.
+        actions={
+          staffOnly ? undefined : (
+            <PlayerShareButtons
+              playerName={player.name ?? "Giocatore"}
+              totalPoints={totalPoints}
+              matchesPlayed={matchesPlayed}
+              medalsCount={medals.length}
+              slug={slug}
+            />
+          )
+        }
+      >
+        {/* Medaglie top scorer */}
+        {medals.length > 0 && (
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              gap: 0.75,
+              flexWrap: "wrap",
+            }}
+          >
+            {medals.slice(0, 4).map((m, i) => {
+              const isFirst = m.rank === 1;
+              const isSecond = m.rank === 2;
+              // L'hero e' scuro in entrambi i temi: qui servono i
+              // valori metallici, non quelli (scuriti) del tema chiaro.
+              const medalColor = isFirst
+                ? heroMedal.gold
+                : isSecond
+                  ? heroMedal.silver
+                  : heroMedal.bronze;
+              const medalColorToken = isFirst
+                ? "medal.gold"
+                : isSecond
+                  ? "medal.silver"
+                  : "medal.bronze";
+              const medalLabel = isFirst
+                ? "Top scorer di ruolo"
+                : isSecond
+                  ? "2° marcatore di ruolo"
+                  : "3° marcatore di ruolo";
+              return (
+                <Box
+                  key={`${m.teamId}-${m.season}-${i}`}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.75,
+                    bgcolor: alpha(brandColor.black, 0.35),
+                    border: `1.5px solid ${medalColor}`,
+                    borderRadius: RADIUS.pill,
+                    pl: 0.5,
+                    pr: 1.25,
+                    py: 0.3,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: `radial-gradient(circle at 30% 30%, ${medalColor} 0%, ${
+                        isFirst
+                          ? heroMedal.goldDeep
+                          : isSecond
+                            ? heroMedal.silverDeep
+                            : heroMedal.bronzeDeep
+                      } 100%)`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <EmojiEventsIcon sx={{ fontSize: 13, color: "common.white" }} />
+                  </Box>
+                  <Box sx={{ lineHeight: 1 }}>
+                    <Typography
+                      sx={{
+                        fontSize: TYPE_SCALE.xs,
+                        fontWeight: FONT_WEIGHT.bold,
+                        color: medalColorToken,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        display: "block",
+                      }}
+                    >
+                      {medalLabel}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: TYPE_SCALE.xs,
+                        fontWeight: FONT_WEIGHT.semibold,
+                        color: heroText.muted,
+                      }}
+                    >
+                      {m.teamName} · {m.season}
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })}
+            {medals.length > 4 && (
+              <Chip
+                label={`+${medals.length - 4}`}
+                size="small"
+                sx={{
+                  bgcolor: alpha(brandColor.white, 0.1),
+                  color: "common.white",
+                  fontSize: TYPE_SCALE.xs,
+                }}
+              />
+            )}
+          </Box>
+        )}
+
+        {/* Hero stat: punti totali stagione corrente o overall se nessun filtro */}
+        {hasStats && (
+          <Box
+            sx={{
+              mt: 2.5,
+              display: "flex",
+              alignItems: "baseline",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+              <Typography
+                sx={{
                   fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
                   fontWeight: FONT_WEIGHT.bold,
-                  bgcolor: playerHue ?? heroText.surface,
-                  border: "4px solid",
-                  borderColor: playerHue ?? heroText.lineStrong,
-                  boxShadow: "0 8px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(0,0,0,0.25)",
-                }}
-              >
-                {(player.name ?? "?")[0].toUpperCase()}
-              </Avatar>
-              {player.sportRole && (
-                <Box
-                  sx={{
-                    position: "absolute",
-                    bottom: -8,
-                    right: -8,
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    // Grafite uguale per tutti i ruoli (UX-29): l'informazione e' il numero.
-                    ...roleColorSx(player.sportRole),
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: FONT_WEIGHT.bold,
-                    fontSize: TYPE_SCALE.xl,
-                    border: "3px solid",
-                    borderColor: "secondary.main",
-                    boxShadow: "0 3px 10px rgba(0,0,0,0.4)",
-                  }}
-                >
-                  {player.sportRole}
-                </Box>
-              )}
-            </Box>
-
-            {/* Info giocatore */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="overline"
-                sx={{
-                  // Occhielli degli hero neutri (UX-28, opzione B): il colore
-                  // della squadra resta sull'anello dell'avatar.
-                  color: heroText.secondary,
-                  fontWeight: FONT_WEIGHT.bold,
+                  color: "common.white",
                   lineHeight: 1,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+                  fontVariantNumeric: "tabular-nums",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.5)",
                 }}
               >
-                ★ Karibu Baskin
+                {totalPoints}
               </Typography>
               <Typography
-                variant="h2"
-                component="h1"
                 sx={{
-                  fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl6 },
-                  lineHeight: 1.05,
-                  mt: 0.5,
-                  textShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                  fontSize: TYPE_SCALE.xs,
+                  fontWeight: FONT_WEIGHT.semibold,
+                  color: heroText.muted,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
                 }}
               >
-                {player.name ?? "—"}
+                {t("totalPoints")}
               </Typography>
-
-              {/* Ruolo per esteso + squadra. Il numero da solo (c'e' gia' sul
-                  bollino dell'avatar) a chi non conosce il Baskin non dice nulla. */}
-              {(player.sportRole || heroTeams.length > 0) && (
-                <Box
-                  sx={{
-                    mt: 1.5,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 1,
-                    alignItems: "center",
-                  }}
-                >
-                  {player.sportRole && (
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        color: heroText.primary,
-                        fontWeight: FONT_WEIGHT.semibold,
-                        lineHeight: 1,
-                      }}
-                    >
-                      {sportRoleLabel(player.sportRole, player.sportRoleVariant)}
-                    </Typography>
-                  )}
-                  {player.sportRole && heroTeams.length > 0 && (
-                    <Box component="span" aria-hidden="true" sx={{ color: heroText.muted }}>
-                      ·
-                    </Box>
-                  )}
-                  {heroTeams.map((m) => (
-                    // Niente `clickable`: il link e' gia' l'elemento da toccare.
-                    <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
-                      <Chip
-                        icon={
-                          m.isCaptain ? (
-                            <EmojiEventsIcon
-                              sx={{
-                                fontSize: "0.95rem !important",
-                                color: `${heroMedal.gold} !important`,
-                              }}
-                            />
-                          ) : undefined
-                        }
-                        // Una squadra di una stagione passata porta la stagione:
-                        // senza, sembrerebbe quella in cui gioca adesso.
-                        label={
-                          m.team.season === currentSeason
-                            ? m.team.name
-                            : `${m.team.name} · ${m.team.season}`
-                        }
-                        size="small"
-                        // Squadra nella sua tinta; senza tinta contornata neutra (UX-29).
-                        sx={{
-                          ...(teamFill(m.team.color)
-                            ? {
-                                bgcolor: teamFill(m.team.color)?.bg,
-                                color: teamFill(m.team.color)?.fg,
-                              }
-                            : {
-                                bgcolor: "transparent",
-                                color: heroText.primary,
-                                border: `1px solid ${heroText.lineStrong}`,
-                              }),
-                          fontSize: TYPE_SCALE.xs,
-                          cursor: "pointer",
-                          "a:hover > &": { opacity: 0.9 },
-                        }}
-                      />
-                    </Link>
-                  ))}
-                </Box>
-              )}
-
-              {/* Medaglie top scorer */}
-              {medals.length > 0 && (
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: "flex",
-                    gap: 0.75,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {medals.slice(0, 4).map((m, i) => {
-                    const isFirst = m.rank === 1;
-                    const isSecond = m.rank === 2;
-                    // L'hero e' scuro in entrambi i temi: qui servono i
-                    // valori metallici, non quelli (scuriti) del tema chiaro.
-                    const medalColor = isFirst
-                      ? heroMedal.gold
-                      : isSecond
-                        ? heroMedal.silver
-                        : heroMedal.bronze;
-                    const medalColorToken = isFirst
-                      ? "medal.gold"
-                      : isSecond
-                        ? "medal.silver"
-                        : "medal.bronze";
-                    const medalLabel = isFirst
-                      ? "Top scorer di ruolo"
-                      : isSecond
-                        ? "2° marcatore di ruolo"
-                        : "3° marcatore di ruolo";
-                    return (
-                      <Box
-                        key={`${m.teamId}-${m.season}-${i}`}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.75,
-                          bgcolor: alpha(brandColor.black, 0.35),
-                          border: `1.5px solid ${medalColor}`,
-                          borderRadius: RADIUS.pill,
-                          pl: 0.5,
-                          pr: 1.25,
-                          py: 0.3,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: "50%",
-                            background: `radial-gradient(circle at 30% 30%, ${medalColor} 0%, ${
-                              isFirst
-                                ? heroMedal.goldDeep
-                                : isSecond
-                                  ? heroMedal.silverDeep
-                                  : heroMedal.bronzeDeep
-                            } 100%)`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <EmojiEventsIcon sx={{ fontSize: 13, color: "common.white" }} />
-                        </Box>
-                        <Box sx={{ lineHeight: 1 }}>
-                          <Typography
-                            sx={{
-                              fontSize: TYPE_SCALE.xs,
-                              fontWeight: FONT_WEIGHT.bold,
-                              color: medalColorToken,
-                              textTransform: "uppercase",
-                              letterSpacing: "0.05em",
-                              display: "block",
-                            }}
-                          >
-                            {medalLabel}
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: TYPE_SCALE.xs,
-                              fontWeight: FONT_WEIGHT.semibold,
-                              color: heroText.muted,
-                            }}
-                          >
-                            {m.teamName} · {m.season}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                  {medals.length > 4 && (
-                    <Chip
-                      label={`+${medals.length - 4}`}
-                      size="small"
-                      sx={{
-                        bgcolor: alpha(brandColor.white, 0.1),
-                        color: "common.white",
-                        fontSize: TYPE_SCALE.xs,
-                      }}
-                    />
-                  )}
-                </Box>
-              )}
-
-              {/* Hero stat: punti totali stagione corrente o overall se nessun filtro */}
-              {hasStats && (
-                <Box
-                  sx={{
-                    mt: 2.5,
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: 2,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                    <Typography
-                      sx={{
-                        fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
-                        fontWeight: FONT_WEIGHT.bold,
-                        color: "common.white",
-                        lineHeight: 1,
-                        fontVariantNumeric: "tabular-nums",
-                        textShadow: "0 2px 4px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      {totalPoints}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: TYPE_SCALE.xs,
-                        fontWeight: FONT_WEIGHT.semibold,
-                        color: heroText.muted,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      {t("totalPoints")}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                    <Typography
-                      sx={{
-                        fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                        fontWeight: FONT_WEIGHT.bold,
-                        color: heroText.primary,
-                        lineHeight: 1,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {formatDecimal(totalPoints / matchesPlayed, locale)}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: TYPE_SCALE.xs,
-                        fontWeight: FONT_WEIGHT.semibold,
-                        color: heroText.muted,
-                      }}
-                    >
-                      {t("perGame")}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                    <Typography
-                      sx={{
-                        fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                        fontWeight: FONT_WEIGHT.bold,
-                        color: "common.white",
-                        lineHeight: 1,
-                        fontVariantNumeric: "tabular-nums",
-                      }}
-                    >
-                      {matchesPlayed}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: TYPE_SCALE.xs,
-                        fontWeight: FONT_WEIGHT.semibold,
-                        color: heroText.muted,
-                      }}
-                    >
-                      {t("matchesCount", { count: matchesPlayed })}
-                    </Typography>
-                  </Box>
-                </Box>
-              )}
-
-              {/* Share section: un profilo visibile solo allo staff non si condivide */}
-              <Box sx={{ mt: 2.5, display: staffOnly ? "none" : undefined }}>
-                <PlayerShareButtons
-                  playerName={player.name ?? "Giocatore"}
-                  totalPoints={totalPoints}
-                  matchesPlayed={matchesPlayed}
-                  medalsCount={medals.length}
-                  slug={slug}
-                />
-              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
+                  fontWeight: FONT_WEIGHT.bold,
+                  color: heroText.primary,
+                  lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {formatDecimal(totalPoints / matchesPlayed, locale)}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: TYPE_SCALE.xs,
+                  fontWeight: FONT_WEIGHT.semibold,
+                  color: heroText.muted,
+                }}
+              >
+                {t("perGame")}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
+                  fontWeight: FONT_WEIGHT.bold,
+                  color: "common.white",
+                  lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {matchesPlayed}
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: TYPE_SCALE.xs,
+                  fontWeight: FONT_WEIGHT.semibold,
+                  color: heroText.muted,
+                }}
+              >
+                {t("matchesCount", { count: matchesPlayed })}
+              </Typography>
             </Box>
           </Box>
-        </Container>
-      </Box>
+        )}
+      </EntityHero>
 
       <Container maxWidth="md" sx={{ py: { xs: 5, md: 8 } }}>
         {staffOnly && (

@@ -1,7 +1,7 @@
 "use client";
-import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import { useTranslations, useLocale } from "next-intl";
-import { Box, Typography, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
+import { Chip, Link as MuiLink } from "@mui/material";
+import EntityHero, { HeroMeta } from "@/components/common/EntityHero";
 import TeamColorDot from "@/components/teams/TeamColorDot";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -10,7 +10,6 @@ import LockIcon from "@mui/icons-material/Lock";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import StatusPill from "@/components/common/StatusPill";
-import NextLink from "next/link";
 import { format } from "date-fns";
 import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import ShareSection from "@/components/common/ShareSection";
@@ -103,250 +102,122 @@ export default function AllenamientoHero({
   // l'idratazione (React non corregge gli attributi in caso di mismatch).
   const sessionUrl = `${SITE_URL}/allenamento/${session.dateSlug ?? session.id}`;
 
+  // Stato delle iscrizioni quando sono chiuse: "a breve" se non si sono
+  // ancora aperte e l'allenamento non e' passato, altrimenti "chiuse".
+  const registrationPill = (() => {
+    if (session.registrationOpen) return null;
+    const isPast = new Date() >= sessionEndDate(sessionDate, sessionEnd);
+    if (!session.registrationOpenedAt && !isPast) {
+      return (
+        <StatusPill
+          onDark
+          variant="outlined"
+          icon={<ScheduleIcon aria-hidden />}
+          label={t("comingSoon")}
+        />
+      );
+    }
+    return (
+      <StatusPill
+        onDark
+        variant="muted"
+        icon={<LockIcon aria-hidden />}
+        label={t("registrationsClosed")}
+      />
+    );
+  })();
+
   return (
-    <>
-      <Box
-        style={{
-          backgroundImage: heroGradient.dark,
-        }}
-        sx={{
-          ...heroBottomBorder,
-          color: heroText.primary,
-          px: { xs: 2.5, sm: 4, md: 8 },
-          py: { xs: 3, sm: 4 },
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {isStaff && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: { xs: 12, md: 16 },
-              right: { xs: 12, md: 20 },
-              zIndex: 2,
-            }}
-          >
-            {/* Una sola strada per gestire l'allenamento: l'admin (UX-23). La
-                matita con il suo dialog di modifica, senza il Luogo, e' sparita. */}
-            <StaffManageButton
-              href={`/admin/allenamenti?apri=${session.id}`}
-              label={t("manageRoster")}
-            />
-          </Box>
-        )}
-
-        {/* Il breadcrumb stava in `position: absolute` sopra il titolo: a 390px
-            andava a capo e i due testi finivano uno sull'altro. Qui ha una riga
-            sua, e resta su una riga sola con l'ellissi. */}
-        <Box
-          sx={{
-            position: "relative",
-            zIndex: 2,
-            mb: { xs: 2, md: 2.5 },
-            pr: isStaff ? { xs: 14, md: 15 } : 0,
-            minWidth: 0,
-          }}
-        >
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{
-              "& .MuiBreadcrumbs-separator": {
-                color: heroText.muted,
-                flexShrink: 0,
-              },
-              // Una riga sola: l'ultima voce si tronca, le altre restano
-              // intere. Senza `flexShrink: 0` sul primo elemento le due voci si
-              // restringono entrambe e i testi si sovrappongono a 320px.
-              "& .MuiBreadcrumbs-ol": { flexWrap: "nowrap" },
-              "& .MuiBreadcrumbs-li": { minWidth: 0, overflow: "hidden" },
-              "& .MuiBreadcrumbs-li:not(:last-of-type)": { flexShrink: 0 },
-            }}
-          >
-            <MuiLink
-              component={NextLink}
-              href="/allenamenti"
-              underline="hover"
-              variant="body2"
-              sx={{
-                color: heroText.muted,
-                whiteSpace: "nowrap",
-                "&:hover": { color: heroText.primary },
-              }}
-            >
-              {tNav("trainings")}
-            </MuiLink>
-            <Typography
-              variant="body2"
-              sx={{
-                color: heroText.secondary,
-                minWidth: 0,
-              }}
-              noWrap
-            >
-              {session.title}
-            </Typography>
-          </Breadcrumbs>
-        </Box>
-
-        <Box sx={{ maxWidth: "md", mx: "auto", position: "relative", textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              lineHeight: 1.15,
-              fontSize: { xs: TYPE_SCALE.xl3, sm: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 },
-              mb: 1.5,
-            }}
-          >
-            {session.title}
-          </Typography>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-              flexWrap: "wrap",
-              mb: countdown ? 0.75 : 2,
-            }}
-          >
-            {(() => {
-              if (session.registrationOpen) return null;
-              const sessEnd = sessionEndDate(sessionDate, sessionEnd);
-              const isPast = new Date() >= sessEnd;
-              const wasOpened = !!session.registrationOpenedAt;
-              if (!wasOpened && !isPast) {
-                return (
-                  <StatusPill
-                    onDark
-                    variant="outlined"
-                    icon={<ScheduleIcon aria-hidden />}
-                    label={t("comingSoon")}
-                  />
-                );
+    <EntityHero
+      breadcrumb={[{ label: tNav("trainings"), href: "/allenamenti" }, { label: session.title }]}
+      title={session.title}
+      manage={
+        // Una sola strada per gestire l'allenamento: l'admin (UX-23).
+        isStaff && (
+          <StaffManageButton
+            href={`/admin/allenamenti?apri=${session.id}`}
+            label={t("manageRoster")}
+          />
+        )
+      }
+      badges={
+        <>
+          {registrationPill}
+          <StatusPill onDark variant={status.variant} pulse={status.pulse} label={status.label} />
+          {((session.allowedRoles && session.allowedRoles.length > 0) ||
+            session.restrictTeamId) && (
+            <Chip
+              icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
+              label={
+                session.restrictTeam ? (
+                  <>
+                    {t.rich("onlyTeam", {
+                      team: session.restrictTeam.name,
+                      name: (chunks) => (
+                        <>
+                          <TeamColorDot color={session.restrictTeam?.color} />
+                          {chunks}
+                        </>
+                      ),
+                    })}
+                    {allowedRolesLabel ? ` · ${allowedRolesLabel}` : ""}
+                  </>
+                ) : (
+                  allowedRolesLabel
+                )
               }
-              return (
-                <StatusPill
-                  onDark
-                  variant="muted"
-                  icon={<LockIcon aria-hidden />}
-                  label={t("registrationsClosed")}
-                />
-              );
-            })()}
-            <StatusPill onDark variant={status.variant} pulse={status.pulse} label={status.label} />
-            {((session.allowedRoles && session.allowedRoles.length > 0) ||
-              session.restrictTeamId) && (
-              <Chip
-                icon={<LockIcon sx={{ fontSize: "0.85rem !important" }} />}
-                label={
-                  session.restrictTeam ? (
-                    <>
-                      {t.rich("onlyTeam", {
-                        team: session.restrictTeam.name,
-                        name: (chunks) => (
-                          <>
-                            <TeamColorDot color={session.restrictTeam?.color} />
-                            {chunks}
-                          </>
-                        ),
-                      })}
-                      {allowedRolesLabel ? ` · ${allowedRolesLabel}` : ""}
-                    </>
-                  ) : (
-                    allowedRolesLabel
-                  )
-                }
-                size="small"
-                sx={{
-                  bgcolor: "warning.light",
-                  color: "warning.contrastText",
-                  fontSize: TYPE_SCALE.xs,
-                }}
-              />
-            )}
-            {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
-              <Chip
-                icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
-                label={t("openToAllRoles", {
-                  count: session.openRoles.length,
-                  roles: formatRoleNumbers(session.openRoles, locale),
-                })}
-                size="small"
-                sx={{
-                  bgcolor: "success.light",
-                  color: "success.contrastText",
-                  fontSize: TYPE_SCALE.xs,
-                }}
-              />
-            )}
-          </Box>
-
-          {countdown && (
-            <Box
+              size="small"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0.75,
-                mb: 2,
+                bgcolor: "warning.light",
+                color: "warning.contrastText",
+                fontSize: TYPE_SCALE.xs,
               }}
-            >
-              <AccessTimeIcon sx={{ fontSize: 14, color: heroText.muted }} />
-              <Typography variant="body2" sx={{ color: heroText.secondary }}>
-                {countdown}
-              </Typography>
-            </Box>
+            />
           )}
-
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              gap: { xs: 1, sm: 2.5 },
-              mb: 2.5,
-              opacity: 0.82,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <CalendarTodayIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2">
-                {format(sessionDate, "EEEE d MMMM yyyy", { locale: dateLocale })}
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <AccessTimeIcon sx={{ fontSize: 16 }} />
-              <Typography variant="body2">
-                {format(sessionDate, "HH:mm")}
-                {sessionEnd && `–${format(sessionEnd, "HH:mm")}`}
-              </Typography>
-            </Box>
-            {/* Dove (UX-15): il luogo dell'allenamento, o la sede del club.
-                Link a Google Maps, non una mappa incorporata: niente cookie. */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <PlaceIcon sx={{ fontSize: 16 }} />
-              <MuiLink
-                href={mapsSearchUrl(trainingLocation(session.location))}
-                target="_blank"
-                rel="noopener noreferrer"
-                color="inherit"
-                underline="always"
-                variant="body2"
-                aria-label={t("locationMap", { place: trainingLocation(session.location) })}
-              >
-                {trainingLocation(session.location)}
-              </MuiLink>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <ShareSection title={session.title} url={sessionUrl} dark />
-          </Box>
-        </Box>
-      </Box>
-    </>
+          {session.restrictTeamId && session.openRoles && session.openRoles.length > 0 && (
+            <Chip
+              icon={<LockOpenIcon sx={{ fontSize: "0.85rem !important" }} />}
+              label={t("openToAllRoles", {
+                count: session.openRoles.length,
+                roles: formatRoleNumbers(session.openRoles, locale),
+              })}
+              size="small"
+              sx={{
+                bgcolor: "success.light",
+                color: "success.contrastText",
+                fontSize: TYPE_SCALE.xs,
+              }}
+            />
+          )}
+        </>
+      }
+      meta={
+        <>
+          <HeroMeta icon={<CalendarTodayIcon />}>
+            {format(sessionDate, "EEEE d MMMM yyyy", { locale: dateLocale })}
+          </HeroMeta>
+          <HeroMeta icon={<AccessTimeIcon />}>
+            {format(sessionDate, "HH:mm")}
+            {sessionEnd && `–${format(sessionEnd, "HH:mm")}`}
+            {countdown && ` · ${countdown}`}
+          </HeroMeta>
+          {/* Dove (UX-15): il luogo dell'allenamento, o la sede del club.
+              Link a Google Maps, non una mappa incorporata: niente cookie. */}
+          <HeroMeta icon={<PlaceIcon />}>
+            <MuiLink
+              href={mapsSearchUrl(trainingLocation(session.location))}
+              target="_blank"
+              rel="noopener noreferrer"
+              color="inherit"
+              underline="always"
+              aria-label={t("locationMap", { place: trainingLocation(session.location) })}
+            >
+              {trainingLocation(session.location)}
+            </MuiLink>
+          </HeroMeta>
+        </>
+      }
+      actions={<ShareSection title={session.title} url={sessionUrl} dark />}
+    />
   );
 }

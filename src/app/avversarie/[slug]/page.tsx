@@ -1,25 +1,13 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import {
-  Box,
-  Typography,
-  Paper,
-  Chip,
-  Container,
-  Divider,
-  Alert,
-  Breadcrumbs,
-  Link as MuiLink,
-} from "@mui/material";
+import { Box, Typography, Paper, Chip, Container, Divider, Alert } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LanguageIcon from "@mui/icons-material/Language";
 import PaletteIcon from "@mui/icons-material/Palette";
 import StadiumIcon from "@mui/icons-material/Stadium";
 import Link from "next/link";
 import EntityHero from "@/components/common/EntityHero";
-import { heroText } from "@/lib/heroStyles";
 import type { Metadata } from "next";
 import type { MatchType } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
@@ -149,10 +137,14 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
   return (
     <>
       <EntityHero
-        chip={t("opposingChip")}
+        breadcrumb={[
+          { label: tMatches("resultsHeroChip"), href: "/risultati" },
+          { label: team.name },
+        ]}
         title={team.name}
-        action={
-          isStaff ? (
+        subtitle={team.city}
+        manage={
+          isStaff && (
             <OpposingTeamEditButton
               teamId={team.id}
               initial={{
@@ -165,28 +157,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                 imageUrl: team.imageUrl,
               }}
             />
-          ) : undefined
-        }
-        breadcrumb={
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            sx={{ "& .MuiBreadcrumbs-separator": { color: heroText.muted } }}
-          >
-            <MuiLink
-              href="/risultati"
-              underline="hover"
-              variant="body2"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: "common.white" },
-              }}
-            >
-              {tMatches("resultsHeroChip")}
-            </MuiLink>
-            <Typography variant="body2" sx={{ color: heroText.secondary }} noWrap>
-              {team.name}
-            </Typography>
-          </Breadcrumbs>
+          )
         }
       />
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
@@ -219,12 +190,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               mb: 1.5,
             }}
           >
-            {team.city && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <LocationOnIcon fontSize="small" />
-                <Typography variant="body2">{team.city}</Typography>
-              </Box>
-            )}
             {team.address && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <StadiumIcon fontSize="small" />
