@@ -181,7 +181,7 @@ export default function PollWidget({
                       variant="body2"
                       fontWeight={voted ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular}
                       sx={{
-                        color: voted ? "primary.main" : "text.primary",
+                        color: voted ? "primary.onLight" : "text.primary",
                         wordBreak: "break-word",
                         minWidth: 0,
                       }}

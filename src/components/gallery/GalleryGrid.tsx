@@ -11,6 +11,7 @@ import {
   useTheme,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -127,8 +128,8 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                 right: 8,
                 zIndex: 3,
                 color: "common.white",
-                bgcolor: "rgba(0,0,0,0.45)",
-                "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                bgcolor: (theme) => alpha(theme.palette.common.black, 0.45),
+                "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.65) },
               }}
             >
               <CloseIcon />
@@ -161,8 +162,8 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                       left: 8,
                       transform: "translateY(-50%)",
                       color: "common.white",
-                      bgcolor: "rgba(0,0,0,0.45)",
-                      "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                      bgcolor: (theme) => alpha(theme.palette.common.black, 0.45),
+                      "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.65) },
                     }}
                   >
                     <ChevronLeftIcon />
@@ -176,8 +177,8 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                       right: 8,
                       transform: "translateY(-50%)",
                       color: "common.white",
-                      bgcolor: "rgba(0,0,0,0.45)",
-                      "&:hover": { bgcolor: "rgba(0,0,0,0.65)" },
+                      bgcolor: (theme) => alpha(theme.palette.common.black, 0.45),
+                      "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.65) },
                     }}
                   >
                     <ChevronRightIcon />
@@ -191,7 +192,7 @@ export default function GalleryGrid({ posts }: GalleryGridProps) {
                       px: 1,
                       py: 0.25,
                       borderRadius: RADIUS.pill,
-                      bgcolor: "rgba(0,0,0,0.55)",
+                      bgcolor: (theme) => alpha(theme.palette.common.black, 0.55),
                       color: "common.white",
                       fontSize: TYPE_SCALE.xs,
                     }}

@@ -4,7 +4,7 @@ import { alpha } from "@mui/material/styles";
 import { visuallyHidden } from "@mui/utils";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
-import ScheduleIcon from "@mui/icons-material/Schedule";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { useLocale, useTranslations } from "next-intl";
 import type { GuestOnboarding, OnboardingStep } from "@/lib/guestOnboarding";
 import { TYPE_SCALE } from "@/lib/typeScale";
@@ -191,16 +191,18 @@ export default function GuestOnboardingCard({
                     bgcolor: isDone
                       ? alpha(theme.palette.success.main, 0.12)
                       : isWaiting
-                        ? alpha(theme.palette.warning.main, 0.12)
+                        ? // Attendere la conferma non e' un avviso (UX-29): neutro,
+                          // lo dice la clessidra.
+                          theme.palette.action.selected
                         : alpha(theme.palette.primary.main, 0.1),
-                    color: isDone ? "success.main" : isWaiting ? "warning.main" : "primary.main",
+                    color: isDone ? "success.main" : isWaiting ? "text.secondary" : "primary.main",
                   })}
                   aria-hidden
                 >
                   {isDone ? (
                     <CheckCircleIcon fontSize="small" />
                   ) : isWaiting ? (
-                    <ScheduleIcon fontSize="small" />
+                    <HourglassEmptyIcon fontSize="small" />
                   ) : (
                     <RadioButtonUncheckedIcon fontSize="small" />
                   )}

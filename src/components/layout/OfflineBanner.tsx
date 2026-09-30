@@ -39,16 +39,23 @@ export default function OfflineBanner() {
   return (
     <Collapse in={visible}>
       <Box
-        sx={{
-          bgcolor: offline ? "status.offline" : "status.online",
-          color: "common.white",
-          py: 0.75,
-          px: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 1,
-          transition: "background-color 0.3s",
+        sx={(theme) => {
+          // Valenza (UX-29): offline e' negativo, di nuovo online positivo, con
+          // l'icona Wi-Fi come secondo segnale. In chiaro il tono scuro regge il
+          // bianco; in scuro il tono pieno con la sua etichetta scura.
+          const tone = offline ? theme.palette.error : theme.palette.success;
+          const light = theme.palette.mode === "light";
+          return {
+            bgcolor: light ? tone.dark : tone.main,
+            color: light ? theme.palette.common.white : tone.contrastText,
+            py: 0.75,
+            px: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+            transition: "background-color 0.3s",
+          };
         }}
       >
         {offline ? <WifiOffIcon sx={{ fontSize: 16 }} /> : <WifiIcon sx={{ fontSize: 16 }} />}

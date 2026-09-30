@@ -1,6 +1,5 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { brandColor, heroBottomBorder, heroGradient } from "@/lib/heroStyles";
+import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -66,8 +65,8 @@ export default function PageHero({
                 size="small"
                 sx={{
                   mb: 2,
-                  backgroundColor: alpha(brandColor.white, 0.12),
-                  color: alpha(brandColor.white, 0.85),
+                  backgroundColor: heroText.surfaceHover,
+                  color: heroText.secondary,
                 }}
               />
             )}
@@ -86,7 +85,7 @@ export default function PageHero({
                 variant="h6"
                 component="p"
                 sx={{
-                  color: "rgba(255,255,255,0.75)",
+                  color: heroText.secondary,
                   fontWeight: FONT_WEIGHT.regular,
                   maxWidth: align === "center" ? subtitleMaxWidth : undefined,
                   mx: align === "center" ? "auto" : undefined,

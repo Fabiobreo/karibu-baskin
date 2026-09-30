@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Box, Typography, Grid2 as Grid } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import Image from "next/image";
 import { RADIUS } from "@/lib/radius";
@@ -83,9 +84,9 @@ export default function YouTubeSection({ videos }: YouTubeSectionProps) {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        bgcolor: "rgba(0,0,0,0.25)",
+                        bgcolor: (theme) => alpha(theme.palette.common.black, 0.25),
                         transition: "background-color 0.2s",
-                        "&:hover": { bgcolor: "rgba(0,0,0,0.4)" },
+                        "&:hover": { bgcolor: (theme) => alpha(theme.palette.common.black, 0.4) },
                       }}
                     >
                       <PlayCircleFilledIcon sx={{ fontSize: 56, color: "common.white" }} />

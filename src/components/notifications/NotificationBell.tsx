@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import NotificationDropdown from "./NotificationDropdown";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { RADIUS } from "@/lib/radius";
+import { heroText } from "@/lib/heroStyles";
 
 export default function NotificationBell() {
   const t = useTranslations("nav");
@@ -29,13 +30,16 @@ export default function NotificationBell() {
         aria-label={t("notifications")}
         sx={{
           ...TOUCH_TARGET,
-          color: "rgba(255,255,255,0.85)",
+          color: heroText.secondary,
           "&:hover": { color: "common.white" },
         }}
       >
         <Badge
           badgeContent={visibleCount > 0 ? visibleCount : undefined}
-          color="error"
+          // Contatore su un elemento che si tocca: arancio, non rosso (UX-29).
+          color="primary"
+          // Il riempimento che regge l'etichetta bianca (4,71:1).
+          sx={{ "& .MuiBadge-badge": { bgcolor: "primary.fill" } }}
           max={99}
           invisible={visibleCount === 0}
         >

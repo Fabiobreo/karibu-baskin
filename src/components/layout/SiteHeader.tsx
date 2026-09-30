@@ -55,6 +55,7 @@ import { fetchJson } from "@/lib/fetchJson";
 import { slugify } from "@/lib/slugUtils";
 import { TOUCH_TARGET, TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { heroText } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -182,6 +183,9 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
         color="secondary"
         elevation={0}
         sx={{
+          // Filo arancione sotto l'header: e' il segno del marchio sulla barra
+          // (famiglia "nero del marchio"), non UI di contenuto. Unica eccezione
+          // alla regola "arancio solo su cio' che si tocca" (UX-29).
           borderBottom: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
           boxShadow: "0 2px 16px rgba(0,0,0,0.6)",
         }}
@@ -642,7 +646,7 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
         PaperProps={{
           sx: {
             width: 240,
-            background: "#1A1A1A",
+            bgcolor: "appBar.from",
             color: "common.white",
             display: "flex",
             flexDirection: "column",
@@ -1131,9 +1135,9 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
               onClick={() => setDrawerOpen(false)}
               style={{
                 fontSize: TYPE_SCALE.xs,
-                color: "rgba(255,255,255,0.35)",
+                color: heroText.muted,
                 textDecoration: "underline",
-                textDecorationColor: "rgba(255,255,255,0.15)",
+                textDecorationColor: heroText.line,
               }}
             >
               {t("privacyPolicy")}

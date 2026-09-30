@@ -1,6 +1,5 @@
 "use client";
 import { Avatar, Box, ListItem, ListItemButton, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import type { SxProps, Theme } from "@mui/material/styles";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
@@ -26,13 +25,16 @@ interface NotificationItemProps {
   onRead: (id: string) => void;
 }
 
+// Il tipo lo dice la forma dell'icona, non il colore (UX-29): tutte neutre.
+const ICON_SX = { color: "text.secondary" } as const;
+
 function NotifIcon({ type }: { type: string }) {
-  if (type === "NEW_TRAINING") return <SportsBasketballIcon fontSize="small" color="primary" />;
-  if (type === "TEAMS_READY") return <GroupsIcon fontSize="small" color="success" />;
-  if (type === "MATCH_RESULT") return <EmojiEventsIcon fontSize="small" color="warning" />;
+  if (type === "NEW_TRAINING") return <SportsBasketballIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "TEAMS_READY") return <GroupsIcon fontSize="small" sx={ICON_SX} />;
+  if (type === "MATCH_RESULT") return <EmojiEventsIcon fontSize="small" sx={ICON_SX} />;
   if (type === "LINK_REQUEST" || type === "LINK_RESPONSE")
-    return <FamilyRestroomIcon fontSize="small" color="secondary" />;
-  return <NotificationsIcon fontSize="small" color="action" />;
+    return <FamilyRestroomIcon fontSize="small" sx={ICON_SX} />;
+  return <NotificationsIcon fontSize="small" sx={ICON_SX} />;
 }
 
 export default function NotificationItem({ notification, onRead }: NotificationItemProps) {
@@ -45,13 +47,9 @@ export default function NotificationItem({ notification, onRead }: NotificationI
     onRead(id);
   }
 
-  const unreadStyles: SxProps<Theme> = isRead
-    ? {}
-    : {
-        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-        borderLeft: "3px solid",
-        borderColor: "primary.main",
-      };
+  // Non letta (UX-29): fondo neutro di selezione, titolo in grassetto e un
+  // pallino prima del titolo. Il pallino e' arancio solo se la riga si tocca.
+  const unreadStyles: SxProps<Theme> = isRead ? {} : { bgcolor: "action.selected" };
 
   const content = (
     <>
@@ -70,6 +68,21 @@ export default function NotificationItem({ notification, onRead }: NotificationI
             ...(url ? { color: "primary.onLight" } : {}),
           }}
         >
+          {!isRead && (
+            <Box
+              component="span"
+              aria-hidden
+              sx={{
+                display: "inline-block",
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                bgcolor: url ? "primary.main" : "text.primary",
+                mr: 0.75,
+                verticalAlign: "middle",
+              }}
+            />
+          )}
           {title}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
@@ -79,18 +92,6 @@ export default function NotificationItem({ notification, onRead }: NotificationI
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: dateLocale })}
         </Typography>
       </Box>
-      {!isRead && (
-        <Box
-          sx={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            bgcolor: "primary.fill",
-            flexShrink: 0,
-            mt: 0.75,
-          }}
-        />
-      )}
       {url && (
         <ChevronRightIcon sx={{ fontSize: 20, color: "text.secondary", flexShrink: 0, mt: 0.5 }} />
       )}

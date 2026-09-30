@@ -386,7 +386,10 @@
     "drawShort": "Pari",
     "resultWins": "{count, plural, one {# vittoria} other {# vittorie}}",
     "resultDraws": "{count, plural, one {# pareggio} other {# pareggi}}",
-    "resultLosses": "{count, plural, one {# sconfitta} other {# sconfitte}}"
+    "resultLosses": "{count, plural, one {# sconfitta} other {# sconfitte}}",
+    "foulsNearLimit": "Vicino al limite di falli",
+    "foulsAtLimit": "Limite di falli raggiunto",
+    "countdownIn": "Tra {time}"
   },
   "teams": {
     "heroChip": "Chi siamo",

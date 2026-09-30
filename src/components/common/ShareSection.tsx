@@ -17,7 +17,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { QRCodeSVG } from "qrcode.react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/context/ToastContext";
-import { socialBrandColor } from "@/lib/heroStyles";
+import { alpha } from "@mui/material/styles";
+import { heroText, socialBrandColor } from "@/lib/heroStyles";
 import { RADIUS } from "@/lib/radius";
 
 interface Props {
@@ -56,23 +57,19 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
+          // Sugli hero scuri e' il bottone fantasma del tema (bordo e fondo
+          // seguono il testo bianco).
+          color={dark ? "inherit" : undefined}
           sx={
             dark
-              ? {
-                  borderColor: "rgba(255,255,255,0.5)",
-                  color: "common.white",
-                  "&:hover": {
-                    borderColor: "common.white",
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                  },
-                }
+              ? { color: "common.white" }
               : {
                   borderColor: socialBrandColor.whatsapp,
                   color: socialBrandColor.whatsapp,
                   "&:hover": {
                     borderColor: socialBrandColor.whatsappDark,
                     color: socialBrandColor.whatsappDark,
-                    backgroundColor: "rgba(37,211,102,0.06)",
+                    backgroundColor: alpha(socialBrandColor.whatsapp, 0.06),
                   },
                 }
           }
@@ -85,9 +82,7 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
             size="small"
             onClick={handleCopy}
             aria-label={t("copyLink")}
-            sx={
-              dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } } : {}
-            }
+            sx={dark ? { color: heroText.secondary, "&:hover": { color: "common.white" } } : {}}
           >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
@@ -98,9 +93,7 @@ export default function ShareSection({ title, url, kind = "training", dark = fal
             size="small"
             onClick={() => setQrOpen(true)}
             aria-label={t("showQr")}
-            sx={
-              dark ? { color: "rgba(255,255,255,0.7)", "&:hover": { color: "common.white" } } : {}
-            }
+            sx={dark ? { color: heroText.secondary, "&:hover": { color: "common.white" } } : {}}
           >
             <QrCode2Icon fontSize="small" />
           </IconButton>

@@ -1,10 +1,13 @@
 import { Box, Chip, Container, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { brandColor, heroBottomBorder, heroTint } from "@/lib/heroStyles";
+import { heroBottomBorder, heroGradient, heroText, heroTint } from "@/lib/heroStyles";
 import type { ContainerProps } from "@mui/material";
 
 interface EntityHeroProps {
-  color: string;
+  /**
+   * Tinta dell'entita' (gia' passata da `teamColor()`). Senza tinta (`null` o
+   * assente, es. le avversarie) l'hero e' il grafite puro: mai l'arancio (UX-29).
+   */
+  color?: string | null;
   title: string;
   chip?: string;
   subtitle?: string;
@@ -30,7 +33,7 @@ export default function EntityHero({
   return (
     <Box
       style={{
-        backgroundImage: heroTint(color),
+        backgroundImage: color ? heroTint(color) : heroGradient.dark,
       }}
       sx={{
         ...heroBottomBorder,
@@ -75,8 +78,8 @@ export default function EntityHero({
             size="small"
             sx={{
               mb: 1.5,
-              backgroundColor: "rgba(255,255,255,0.15)",
-              color: "rgba(255,255,255,0.85)",
+              backgroundColor: heroText.surfaceHover,
+              color: heroText.secondary,
             }}
           />
         )}
@@ -88,7 +91,7 @@ export default function EntityHero({
               {title}
             </Typography>
             {subtitle && (
-              <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.75)", maxWidth: 520 }}>
+              <Typography variant="body1" sx={{ color: heroText.secondary, maxWidth: 520 }}>
                 {subtitle}
               </Typography>
             )}

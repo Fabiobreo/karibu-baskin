@@ -68,7 +68,11 @@ export default async function BirthdayBanner() {
                 {celebrants[0].slug ? (
                   <Link
                     href={`/giocatori/${celebrants[0].slug}`}
-                    style={{ color: "#fff", textDecoration: "underline", textUnderlineOffset: 3 }}
+                    style={{
+                      color: "inherit",
+                      textDecoration: "underline",
+                      textUnderlineOffset: 3,
+                    }}
                   >
                     {celebrants[0].name}
                   </Link>
@@ -87,7 +91,7 @@ export default async function BirthdayBanner() {
                       <Link
                         href={`/giocatori/${c.slug}`}
                         style={{
-                          color: "#fff",
+                          color: "inherit",
                           textDecoration: "underline",
                           textUnderlineOffset: 3,
                         }}

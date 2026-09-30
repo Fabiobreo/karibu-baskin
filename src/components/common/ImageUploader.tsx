@@ -14,6 +14,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useToast } from "@/context/ToastContext";
@@ -116,11 +117,11 @@ export default function ImageUploader({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              bgcolor: "rgba(0,0,0,0.4)",
+              bgcolor: (theme) => alpha(theme.palette.common.black, 0.4),
               borderRadius,
             }}
           >
-            <CircularProgress size={28} sx={{ color: "white" }} />
+            <CircularProgress size={28} sx={{ color: "common.white" }} />
           </Box>
         )}
 

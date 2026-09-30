@@ -101,8 +101,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 value={progress}
                 sx={{
                   height: 3,
-                  bgcolor: "rgba(255,255,255,0.2)",
-                  "& .MuiLinearProgress-bar": { bgcolor: "rgba(255,255,255,0.85)" },
+                  // Segue il colore del testo dell'avviso (bianco in chiaro, scuro
+                  // in scuro), come il bottone fantasma del tema.
+                  bgcolor: "color-mix(in srgb, currentColor 20%, transparent)",
+                  "& .MuiLinearProgress-bar": { bgcolor: "currentColor" },
                 }}
               />
             </Box>

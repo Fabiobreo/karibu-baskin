@@ -386,7 +386,10 @@
     "drawShort": "Draw",
     "resultWins": "{count, plural, one {# win} other {# wins}}",
     "resultDraws": "{count, plural, one {# draw} other {# draws}}",
-    "resultLosses": "{count, plural, one {# loss} other {# losses}}"
+    "resultLosses": "{count, plural, one {# loss} other {# losses}}",
+    "foulsNearLimit": "Close to the foul limit",
+    "foulsAtLimit": "Foul limit reached",
+    "countdownIn": "In {time}"
   },
   "teams": {
     "heroChip": "About us",

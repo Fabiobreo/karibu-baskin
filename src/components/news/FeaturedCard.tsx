@@ -9,7 +9,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import type { PostItem } from "@/components/news/LatestNewsHero";
 import { onHover } from "@/lib/hoverStyles";
 import { alpha } from "@mui/material/styles";
-import { brandColor } from "@/lib/heroStyles";
+import { heroText } from "@/lib/heroStyles";
 import CoverFallback from "@/components/common/CoverFallback";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -70,8 +70,10 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
               sx={{
                 position: "absolute",
                 inset: 0,
-                background:
-                  "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.15) 100%)",
+                background: (theme) => {
+                  const black = theme.palette.common.black;
+                  return `linear-gradient(to top, ${alpha(black, 0.85)} 0%, ${alpha(black, 0.4)} 50%, ${alpha(black, 0.15)} 100%)`;
+                },
               }}
             />
           </>
@@ -101,7 +103,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
               sx={{
                 // Chip informativo sulla foto scura: neutro, non arancio pieno
                 // (UX-07: l'arancio pieno e' per cio' che si tocca).
-                bgcolor: alpha(brandColor.white, 0.16),
+                bgcolor: heroText.surfaceHover,
                 color: "common.white",
                 "& .MuiChip-icon": { color: "common.white" },
               }}
@@ -127,7 +129,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
             <Typography
               variant="body2"
               sx={{
-                color: "rgba(255,255,255,0.92)",
+                color: heroText.primary,
                 lineHeight: 1.55,
                 mb: 1.5,
                 // Senza foto il testo e' tutto il contenuto: estratto anche su
@@ -146,7 +148,7 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           {post.publishedAt && (
             <Typography
               variant="caption"
-              sx={{ color: "rgba(255,255,255,0.85)", fontWeight: FONT_WEIGHT.semibold }}
+              sx={{ color: heroText.secondary, fontWeight: FONT_WEIGHT.semibold }}
             >
               {format(new Date(post.publishedAt), "d MMMM yyyy", { locale: dateLocale })}
             </Typography>

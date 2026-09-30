@@ -2,6 +2,7 @@ import { Box, Container, Grid2 as Grid, Skeleton, Stack } from "@mui/material";
 import type { ContainerProps } from "@mui/material";
 import PageHero from "@/components/common/PageHero";
 import { RADIUS } from "@/lib/radius";
+import { heroText } from "@/lib/heroStyles";
 
 interface PageLoadingSkeletonProps {
   /** Forma del contenuto sotto la hero. */
@@ -18,7 +19,7 @@ interface PageLoadingSkeletonProps {
 
 // Sulla hero scura lo skeleton di default (testo su sfondo chiaro) sparisce:
 // stesso bianco trasparente che PageHero usa per il sottotitolo.
-const onDark = { bgcolor: "rgba(255,255,255,0.14)" };
+const onDark = { bgcolor: heroText.line };
 
 /**
  * Skeleton per i `loading.tsx` delle pagine pubbliche con `PageHero`: la hero

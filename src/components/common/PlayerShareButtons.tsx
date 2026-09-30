@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import { Box, Button } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import ShareIcon from "@mui/icons-material/Share";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { useToast } from "@/context/ToastContext";
-import { brandColor } from "@/lib/heroStyles";
-import { readableFill } from "@/lib/colorUtils";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
 interface Props {
@@ -18,7 +15,6 @@ interface Props {
   matchesPlayed: number;
   medalsCount: number;
   slug: string;
-  playerColor: string;
 }
 
 export default function PlayerShareButtons({
@@ -27,11 +23,8 @@ export default function PlayerShareButtons({
   matchesPlayed,
   medalsCount,
   slug,
-  playerColor,
 }: Props) {
   const { showToast } = useToast();
-  // Colore della squadra come fondo, etichetta bianca: fondo scurito se serve (UX-22).
-  const fill = readableFill(playerColor, { preferWhite: true });
   const t = useTranslations("share");
   const locale = useLocale();
   const [busy, setBusy] = useState(false);
@@ -88,15 +81,9 @@ export default function PlayerShareButtons({
         onClick={handleNativeShare}
         disabled={busy}
         startIcon={<ShareIcon sx={{ fontSize: 16 }} />}
-        sx={{
-          bgcolor: fill.bg,
-          color: fill.fg,
-          fontSize: TYPE_SCALE.xs,
-          textTransform: "none",
-          px: 1.75,
-          py: 0.5,
-          "&:hover": { bgcolor: fill.bg, opacity: 0.9 },
-        }}
+        // Si tocca: bottone primario del tema (UX-29), non il colore della squadra.
+        variant="contained"
+        sx={{ fontSize: TYPE_SCALE.xs, px: 1.75, py: 0.5 }}
       >
         {t("share")}
       </Button>

@@ -6,6 +6,7 @@ import { alpha } from "@mui/material/styles";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { heroText } from "@/lib/heroStyles";
 
 function scrollToAllenamenti() {
   document.getElementById("allenamenti")?.scrollIntoView({ behavior: "smooth" });
@@ -63,8 +64,10 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
         sx={{
           position: "absolute",
           inset: 0,
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.72) 100%)",
+          background: (theme) => {
+            const black = theme.palette.common.black;
+            return `linear-gradient(to bottom, ${alpha(black, 0.55)} 0%, ${alpha(black, 0.35)} 40%, ${alpha(black, 0.72)} 100%)`;
+          },
         }}
       />
 
@@ -132,10 +135,9 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
           </Box>{" "}
           <Box
             component="span"
-            sx={{
-              color: "primary.main",
-              textShadow: (theme) => `0 2px 32px ${alpha(theme.palette.primary.main, 0.5)}`,
-            }}
+            // "Baskin" resta arancione: e' il logotipo (scelta del committente,
+            // UX-29), ma senza alone.
+            sx={{ color: "primary.main" }}
           >
             Baskin
           </Box>{" "}
@@ -160,7 +162,7 @@ export default function HeroSection({ guest, visitor = false, member }: HeroSect
         {/* Sottotitolo */}
         <Typography
           sx={{
-            color: "rgba(255,255,255,0.78)",
+            color: heroText.secondary,
             fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
             lineHeight: 1.65,
             mb: compact ? 4 : 5,

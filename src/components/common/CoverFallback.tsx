@@ -1,6 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { brandColor, heroGradient, heroText } from "@/lib/heroStyles";
+import { heroGradient, heroText } from "@/lib/heroStyles";
 
 interface CoverFallbackProps {
   /** Data in grande: "17" / "ottobre" / "sabato". Senza, resta solo il fondo. */
@@ -11,7 +10,8 @@ interface CoverFallbackProps {
 
 /**
  * Copertina di ripiego per le card senza immagine (UX-19): fondo grafite degli
- * hero con il cerchio di centrocampo in arancio leggero e, se c'e', la data in
+ * hero con il cerchio di centrocampo in un filo neutro (UX-29: l'arancio e'
+ * solo per cio' che si tocca) e, se c'e', la data in
  * grande. Riempie il contenitore del genitore, che decide la proporzione (la
  * stessa delle copertine vere): una griglia di card tutte senza foto sembra
  * voluta, non rotta.
@@ -20,7 +20,7 @@ interface CoverFallbackProps {
  * scuro in entrambi i temi, come gli hero.
  */
 export default function CoverFallback({ day, month, weekday }: CoverFallbackProps) {
-  const line = alpha(brandColor.orange, 0.28);
+  const line = heroText.line;
   return (
     <Box
       aria-hidden

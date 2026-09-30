@@ -5,7 +5,7 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { heroGradient, socialBrandColor } from "@/lib/heroStyles";
+import { heroGradient, heroText, socialBrandColor } from "@/lib/heroStyles";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { TYPE_SCALE } from "@/lib/typeScale";
 
@@ -20,7 +20,7 @@ export default async function Footer() {
         mt: "auto",
         display: { xs: "none", md: "block" },
         background: heroGradient.footer,
-        color: "rgba(255,255,255,0.85)",
+        color: heroText.secondary,
         pt: { xs: 1, sm: 2 },
         pb: { xs: 1, sm: 1.5 },
         px: 2,
@@ -52,7 +52,7 @@ export default async function Footer() {
             <Typography
               variant="caption"
               sx={{
-                color: "rgba(255,255,255,0.45)",
+                color: heroText.muted,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
               }}
@@ -67,7 +67,7 @@ export default async function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                color: "rgba(255,255,255,0.6)",
+                color: heroText.muted,
                 "&:hover": { color: socialBrandColor.instagram },
                 p: 0.75,
               }}
@@ -81,7 +81,7 @@ export default async function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                color: "rgba(255,255,255,0.6)",
+                color: heroText.muted,
                 "&:hover": { color: socialBrandColor.facebook },
                 p: 0.75,
               }}
@@ -95,7 +95,7 @@ export default async function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                color: "rgba(255,255,255,0.6)",
+                color: heroText.muted,
                 "&:hover": { color: socialBrandColor.youtube },
                 p: 0.75,
               }}
@@ -105,9 +105,9 @@ export default async function Footer() {
             </IconButton>
           </Box>
         </Box>
-        <Divider sx={{ width: "100%", borderColor: "rgba(255,255,255,0.08)" }} />
+        <Divider sx={{ width: "100%", borderColor: heroText.line }} />
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+          <Typography variant="caption" sx={{ color: heroText.muted }}>
             © {year} Karibu Baskin Montecchio Maggiore
           </Typography>
           <Box sx={{ display: "flex", gap: 2 }}>
@@ -115,8 +115,8 @@ export default async function Footer() {
               href="/sponsor"
               style={{
                 fontSize: TYPE_SCALE.xs,
-                color: "rgba(255,255,255,0.7)",
-                textDecorationColor: "rgba(255,255,255,0.35)",
+                color: heroText.secondary,
+                textDecorationColor: heroText.lineStrong,
               }}
             >
               Sponsor
@@ -125,8 +125,8 @@ export default async function Footer() {
               href="/privacy"
               style={{
                 fontSize: TYPE_SCALE.xs,
-                color: "rgba(255,255,255,0.7)",
-                textDecorationColor: "rgba(255,255,255,0.35)",
+                color: heroText.secondary,
+                textDecorationColor: heroText.lineStrong,
               }}
             >
               {t("privacyPolicy")}
@@ -155,7 +155,7 @@ export default async function Footer() {
             <Typography
               variant="caption"
               fontWeight={FONT_WEIGHT.semibold}
-              sx={{ color: "rgba(255,255,255,0.7)" }}
+              sx={{ color: heroText.secondary }}
             >
               Karibu Baskin
             </Typography>
@@ -167,7 +167,7 @@ export default async function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                color: "rgba(255,255,255,0.5)",
+                color: heroText.muted,
                 "&:hover": { color: socialBrandColor.instagram },
                 p: 0.5,
               }}
@@ -181,7 +181,7 @@ export default async function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                color: "rgba(255,255,255,0.5)",
+                color: heroText.muted,
                 "&:hover": { color: socialBrandColor.facebook },
                 p: 0.5,
               }}
@@ -195,7 +195,7 @@ export default async function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               sx={{
-                color: "rgba(255,255,255,0.5)",
+                color: heroText.muted,
                 "&:hover": { color: socialBrandColor.youtube },
                 p: 0.5,
               }}
@@ -211,11 +211,11 @@ export default async function Footer() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 1.5,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderTop: `1px solid ${heroText.line}`,
             pt: 0.75,
           }}
         >
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.6)" }}>
+          <Typography variant="caption" sx={{ color: heroText.muted }}>
             © {year} Karibu Baskin
           </Typography>
           <Box sx={{ display: "flex", gap: 2 }}>
@@ -223,9 +223,9 @@ export default async function Footer() {
               href="/sponsor"
               style={{
                 fontSize: TYPE_SCALE.sm,
-                color: "rgba(255,255,255,0.75)",
+                color: heroText.secondary,
                 textDecoration: "underline",
-                textDecorationColor: "rgba(255,255,255,0.35)",
+                textDecorationColor: heroText.lineStrong,
                 padding: "4px 0",
               }}
             >
@@ -235,9 +235,9 @@ export default async function Footer() {
               href="/privacy"
               style={{
                 fontSize: TYPE_SCALE.sm,
-                color: "rgba(255,255,255,0.75)",
+                color: heroText.secondary,
                 textDecoration: "underline",
-                textDecorationColor: "rgba(255,255,255,0.35)",
+                textDecorationColor: heroText.lineStrong,
                 padding: "4px 0",
               }}
             >

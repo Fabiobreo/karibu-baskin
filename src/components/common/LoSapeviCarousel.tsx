@@ -7,7 +7,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
-import { heroGradient } from "@/lib/heroStyles";
+import { heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -151,7 +151,7 @@ export default function LoSapeviCarousel() {
             >
               {item.titolo}
             </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.75 }}>
+            <Typography variant="body2" sx={{ color: heroText.muted, lineHeight: 1.75 }}>
               {item.testo}
             </Typography>
           </Box>
@@ -173,7 +173,7 @@ export default function LoSapeviCarousel() {
         <Typography
           variant="body2"
           fontWeight={FONT_WEIGHT.semibold}
-          sx={{ color: "rgba(255,255,255,0.75)", fontVariantNumeric: "tabular-nums" }}
+          sx={{ color: heroText.secondary, fontVariantNumeric: "tabular-nums" }}
           aria-live="polite"
         >
           {index + 1} / {LO_SAPEVI.length}
@@ -195,11 +195,11 @@ export default function LoSapeviCarousel() {
                 height: 44,
                 color: "common.white",
                 border: "1px solid",
-                borderColor: "rgba(255,255,255,0.3)",
+                borderColor: heroText.lineStrong,
                 "& svg": { fontSize: TYPE_SCALE.md },
                 "&:hover": {
-                  bgcolor: "rgba(255,255,255,0.14)",
-                  borderColor: "rgba(255,255,255,0.6)",
+                  bgcolor: heroText.surfaceHover,
+                  borderColor: heroText.muted,
                 },
               }}
             >

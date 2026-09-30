@@ -79,7 +79,7 @@ export default function RoleBadge({
           fontWeight: FONT_WEIGHT.bold,
           lineHeight: 1,
           fontVariantNumeric: "tabular-nums",
-          // In tema scuro le tinte stanno a meno di 3:1 dal fondo: il bordo le stacca.
+          // In tema scuro il grafite sta a meno di 3:1 dal fondo: il bordo lo stacca.
           border: "1px solid",
           borderColor: "divider",
           flexShrink: 0,

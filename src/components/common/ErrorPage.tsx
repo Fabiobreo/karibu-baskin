@@ -1,9 +1,8 @@
 "use client";
 import { Box, Typography, Button, Stack } from "@mui/material";
 import { useTranslations } from "next-intl";
-import { alpha } from "@mui/material/styles";
 import Image from "next/image";
-import { brandColor, heroGradient } from "@/lib/heroStyles";
+import { heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -79,7 +78,6 @@ export default function ErrorPage({ code, title, description, showReset, onReset
             mt: 2,
             mb: 0,
             letterSpacing: "-4px",
-            textShadow: (theme) => `0 0 60px ${alpha(theme.palette.primary.main, 0.3)}`,
           }}
         >
           {code}
@@ -97,7 +95,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       {/* Descrizione */}
       <Typography
         sx={{
-          color: "rgba(255,255,255,0.45)",
+          color: heroText.muted,
           mb: 4,
           maxWidth: 380,
           lineHeight: 1.7,
@@ -111,7 +109,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
       {digest && (
         <Typography
           sx={{
-            color: "rgba(255,255,255,0.25)",
+            color: heroText.muted,
             fontSize: TYPE_SCALE.xs,
             fontFamily: "monospace",
             mb: 2,
@@ -132,21 +130,16 @@ export default function ErrorPage({ code, title, description, showReset, onReset
         <Button
           href="/"
           variant={showReset ? "outlined" : "contained"}
+          // Accanto a "Riprova" e' il bottone fantasma del tema sugli hero scuri.
+          color={showReset ? "inherit" : "primary"}
           size="large"
-          sx={{
-            px: 4,
-            ...(showReset && {
-              color: "rgba(255,255,255,0.7)",
-              borderColor: "rgba(255,255,255,0.2)",
-              "&:hover": { borderColor: "rgba(255,255,255,0.5)" },
-            }),
-          }}
+          sx={{ px: 4 }}
         >
           {t("backHome")}
         </Button>
       </Stack>
 
-      {/* Linea decorativa in fondo */}
+      {/* Linea decorativa in fondo: neutra, l'arancio e' solo per cio' che si tocca (UX-29) */}
       <Box
         sx={{
           position: "absolute",
@@ -154,8 +147,7 @@ export default function ErrorPage({ code, title, description, showReset, onReset
           left: 0,
           right: 0,
           height: 3,
-          background: `linear-gradient(90deg, transparent, ${brandColor.orange}, transparent)`,
-          opacity: 0.6,
+          background: `linear-gradient(90deg, transparent, ${heroText.lineStrong}, transparent)`,
         }}
       />
     </Box>

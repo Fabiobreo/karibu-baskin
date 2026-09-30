@@ -26,7 +26,6 @@ const SPONSORS = [
   {
     name: "Denis M. Photographer",
     url: "https://www.facebook.com/Denis.M.photographer",
-    color: "#1A1A1A",
     initials: "DM",
     src: "/sponsors/denis.jpg",
     needsPlateOnDark: true,
@@ -34,42 +33,36 @@ const SPONSORS = [
   {
     name: "Villani and Partners",
     url: "https://villaniandpartners.eu/",
-    color: "#1E88E5",
     initials: "VP",
     src: "/sponsors/villani.png",
   },
   {
     name: "LLP",
     url: "https://www.llp.it/",
-    color: "#43A047",
     initials: "LLP",
     src: "/sponsors/LLP.png",
   },
   {
     name: "Tetti Tecchio",
     url: "https://www.tettitecchio.it/",
-    color: "#FF6D00",
     initials: "TT",
     src: "/sponsors/tettitecchio.png",
   },
   {
     name: "Saby Sport",
     url: "https://www.sabysport.com/",
-    color: "#F44336",
     initials: "SS",
     src: "/sponsors/sabysport.png",
   },
   {
     name: "CGRD",
     url: "https://www.cgrd.it/it/",
-    color: "#8E24AA",
     initials: "CG",
     src: "/sponsors/cgrd.png",
   },
 ] satisfies {
   name: string;
   url: string;
-  color: string;
   initials: string;
   src: string | null;
   needsPlateOnDark?: boolean;
@@ -252,9 +245,11 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
           borderRadius: RADIUS.sm,
           overflow: "hidden",
           // Placca chiara sotto i loghi nati per la carta bianca: senza, sul
-          // fondo scuro restano rettangoli neri su nero.
+          // fondo scuro restano rettangoli neri su nero. Il segnaposto senza
+          // logo e' neutro (UX-29): i colori di prima erano tinte senza
+          // significato, le stesse di esiti e squadre.
           backgroundColor: !sponsor.src
-            ? sponsor.color
+            ? theme.palette.action.selected
             : sponsor.needsPlateOnDark && theme.palette.mode === "dark"
               ? theme.palette.common.white
               : "transparent",
@@ -262,7 +257,7 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
           alignItems: "center",
           justifyContent: "center",
           border: sponsor.src ? "1px solid" : "2px dashed",
-          borderColor: sponsor.src ? theme.palette.divider : theme.palette.common.white,
+          borderColor: sponsor.src ? theme.palette.divider : theme.palette.text.secondary,
           position: "relative",
         })}
       >
@@ -277,7 +272,7 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
         ) : (
           <Typography
             sx={{
-              color: "common.white",
+              color: "text.primary",
               fontWeight: FONT_WEIGHT.bold,
               fontSize: TYPE_SCALE.md,
               letterSpacing: "0.06em",

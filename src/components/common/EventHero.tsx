@@ -1,18 +1,20 @@
 import { getTranslations } from "next-intl/server";
-import { Box, Typography, Chip, Breadcrumbs, Link as MuiLink } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import { Box, Typography, Breadcrumbs, Link as MuiLink } from "@mui/material";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
 import ShareSection from "@/components/common/ShareSection";
+import StatusPill from "@/components/common/StatusPill";
 import StaffManageButton from "@/components/common/StaffManageButton";
-import { brandColor, heroBottomBorder, heroGradient } from "@/lib/heroStyles";
+import { heroBottomBorder, heroGradient, heroText } from "@/lib/heroStyles";
 import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { eventStatus, isAllDay, type EventStatus } from "@/lib/events";
 import { mapsSearchUrl } from "@/lib/clubVenue";
 import { SITE_URL } from "@/lib/siteUrl";
 import { TYPE_SCALE } from "@/lib/typeScale";
+
+type StatusPillVariant = "inverted" | "outlined" | "muted";
 
 interface EventHeroProps {
   event: {
@@ -27,13 +29,17 @@ interface EventHeroProps {
   locale: string;
 }
 
-const STATUS_STYLE: Record<EventStatus["kind"], { bgcolor: string; color: string }> = {
-  live: { bgcolor: "match.win", color: "match.onFill" },
-  ended: { bgcolor: "action.selected", color: "text.secondary" },
-  // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
-  today: { bgcolor: "primary.fill", color: "common.white" },
-  tomorrow: { bgcolor: "secondary.main", color: "secondary.contrastText" },
-  daysAway: { bgcolor: "secondary.main", color: "secondary.contrastText" },
+/**
+ * Stati temporali (UX-29): nessuna tinta. "In corso" e "Oggi" sono la pillola
+ * invertita (In corso col pallino pulsante), il futuro e' contornato, il
+ * passato smorzato. La parola e' sempre il primo segnale.
+ */
+const STATUS_PILL: Record<EventStatus["kind"], { variant: StatusPillVariant; pulse?: boolean }> = {
+  live: { variant: "inverted", pulse: true },
+  today: { variant: "inverted" },
+  tomorrow: { variant: "outlined" },
+  daysAway: { variant: "outlined" },
+  ended: { variant: "muted" },
 };
 
 /**
@@ -42,7 +48,7 @@ const STATUS_STYLE: Record<EventStatus["kind"], { bgcolor: string; color: string
  * le due pagine si leggono e si usano allo stesso modo.
  *
  * Server Component: niente `sx` a funzione, i colori su fondo scuro vengono da
- * `brandColor`.
+ * `heroText`.
  */
 export default async function EventHero({ event: ev, isStaff, locale }: EventHeroProps) {
   const [tNav, t, tTrainings, tCommon] = await Promise.all([
@@ -76,7 +82,7 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
     : `${formatRome(ev.date, "HH:mm")}${showEndTime ? `–${formatRome(ev.endDate!, "HH:mm")}` : ""}`;
 
   const eventUrl = `${SITE_URL}/eventi/${ev.slug ?? ev.id}`;
-  const statusStyle = STATUS_STYLE[status.kind];
+  const statusPill = STATUS_PILL[status.kind];
 
   return (
     <Box
@@ -119,7 +125,7 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
           aria-label="breadcrumb"
           sx={{
             "& .MuiBreadcrumbs-separator": {
-              color: alpha(brandColor.white, 0.4),
+              color: heroText.muted,
               flexShrink: 0,
             },
             "& .MuiBreadcrumbs-ol": { flexWrap: "nowrap" },
@@ -132,18 +138,14 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
             underline="hover"
             variant="body2"
             sx={{
-              color: alpha(brandColor.white, 0.6),
+              color: heroText.muted,
               whiteSpace: "nowrap",
               "&:hover": { color: "common.white" },
             }}
           >
             {tNav("events")}
           </MuiLink>
-          <Typography
-            variant="body2"
-            sx={{ color: alpha(brandColor.white, 0.9), minWidth: 0 }}
-            noWrap
-          >
+          <Typography variant="body2" sx={{ color: heroText.secondary, minWidth: 0 }} noWrap>
             {ev.title}
           </Typography>
         </Breadcrumbs>
@@ -163,14 +165,11 @@ export default async function EventHero({ event: ev, isStaff, locale }: EventHer
         </Typography>
 
         <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-          <Chip
+          <StatusPill
             label={statusLabel}
-            size="small"
-            sx={{
-              ...statusStyle,
-              fontSize: TYPE_SCALE.xs,
-              letterSpacing: 0.5,
-            }}
+            variant={statusPill.variant}
+            pulse={statusPill.pulse}
+            onDark
           />
         </Box>
 

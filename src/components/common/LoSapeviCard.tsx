@@ -5,7 +5,7 @@ import { Box, Container, Typography } from "@mui/material";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import { getLoSapevi } from "@/lib/content/loSapevi";
 import { useTranslations, useLocale } from "next-intl";
-import { heroGradient } from "@/lib/heroStyles";
+import { heroGradient, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -84,7 +84,7 @@ export default function LoSapeviCard() {
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.65)", lineHeight: 1.7, maxWidth: 680 }}
+              sx={{ color: heroText.muted, lineHeight: 1.7, maxWidth: 680 }}
             >
               {item.testo}
             </Typography>
