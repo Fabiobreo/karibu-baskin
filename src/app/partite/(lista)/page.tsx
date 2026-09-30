@@ -18,6 +18,7 @@ import { buildMetadata } from "@/lib/seo";
 import { brandColor, heroText } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Prossime partite",
@@ -98,7 +99,6 @@ export default async function PartitePage({ searchParams }: Props) {
         <Typography
           variant="h3"
           component="h1"
-          fontWeight={800}
           sx={{ mb: 1, fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("upcomingTitle")}
@@ -116,7 +116,7 @@ export default async function PartitePage({ searchParams }: Props) {
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={700}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
               {t("seasonLabel")}
@@ -132,7 +132,7 @@ export default async function PartitePage({ searchParams }: Props) {
                   size="small"
                   variant={season === s ? "filled" : "outlined"}
                   color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                  sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
                 />
               </Link>
             ))}
@@ -149,7 +149,10 @@ export default async function PartitePage({ searchParams }: Props) {
                 <Typography
                   variant="body2"
                   color="primary.onLight"
-                  sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
+                  sx={{
+                    fontWeight: FONT_WEIGHT.semibold,
+                    "&:hover": { textDecoration: "underline" },
+                  }}
                 >
                   {t("seeResults")}
                 </Typography>
@@ -180,11 +183,15 @@ export default async function PartitePage({ searchParams }: Props) {
                     flexShrink: 0,
                   }}
                 />
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h6" fontWeight={FONT_WEIGHT.bold}>
                   {team.name}
                 </Typography>
                 {team.championship && (
-                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight={FONT_WEIGHT.semibold}
+                  >
                     {team.championship}
                   </Typography>
                 )}
@@ -193,7 +200,6 @@ export default async function PartitePage({ searchParams }: Props) {
                   size="small"
                   sx={{
                     ml: "auto",
-                    fontWeight: 700,
                     fontSize: TYPE_SCALE.xs,
                     height: 20,
                     bgcolor: alpha(brandColor.orange, 0.1),
@@ -269,7 +275,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontWeight: leftIsUs ? 800 : 600,
+                                fontWeight: leftIsUs ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold,
                                 color: leftIsUs ? "text.primary" : "text.secondary",
                                 textAlign: "right",
                                 flex: "1 1 0",
@@ -283,7 +289,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             <Typography
                               sx={{
                                 color: "text.secondary",
-                                fontWeight: 700,
+                                fontWeight: FONT_WEIGHT.semibold,
                                 fontSize: TYPE_SCALE.sm,
                                 px: 0.5,
                               }}
@@ -293,7 +299,7 @@ export default async function PartitePage({ searchParams }: Props) {
                             <Typography
                               variant="body2"
                               sx={{
-                                fontWeight: leftIsUs ? 600 : 800,
+                                fontWeight: leftIsUs ? FONT_WEIGHT.semibold : FONT_WEIGHT.bold,
                                 color: leftIsUs ? "text.secondary" : "text.primary",
                                 textAlign: "left",
                                 flex: "1 1 0",
@@ -375,7 +381,10 @@ export default async function PartitePage({ searchParams }: Props) {
               <Typography
                 variant="body2"
                 color="primary.onLight"
-                sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  "&:hover": { textDecoration: "underline" },
+                }}
               >
                 {t("seeResults")}
               </Typography>

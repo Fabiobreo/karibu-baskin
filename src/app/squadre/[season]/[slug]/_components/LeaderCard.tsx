@@ -7,6 +7,7 @@ import MedalDisc from "@/components/rating/MedalDisc";
 import AccentText from "@/components/common/AccentText";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export default function LeaderCard({
   rank,
@@ -60,13 +61,13 @@ export default function LeaderCard({
           bgcolor: teamColor,
           color: contrastText(teamColor),
           fontSize: TYPE_SCALE.xl,
-          fontWeight: 800,
+          fontWeight: FONT_WEIGHT.bold,
         }}
       >
         {leader.name[0]?.toUpperCase()}
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0, pr: 3 }}>
-        <Typography variant="body2" fontWeight={700} noWrap>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
           {leader.name}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5, mt: 0.25 }}>
@@ -74,13 +75,12 @@ export default function LeaderCard({
               superficie, o un verde chiaro sparisce sulla card bianca. */}
           <AccentText
             variant="h5"
-            fontWeight={900}
             accent={teamColor}
             sx={{ lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
           >
             {leader.points}
           </AccentText>
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+          <Typography variant="caption" color="text.secondary" fontWeight={FONT_WEIGHT.semibold}>
             pt
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>

@@ -19,6 +19,7 @@ import { slugify } from "@/lib/slugUtils";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { getActiveSeason } from "@/lib/season/activeSeason";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Archivio squadre",
@@ -69,13 +70,12 @@ export default async function SquadreArchivioPage() {
               variant="body2"
               sx={{
                 color: "rgba(255,255,255,0.65)",
-                fontWeight: 500,
                 "&:hover": { color: "common.white" },
               }}
             >
               {t("teamBreadcrumb")}
             </MuiLink>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
               {t("archiveTitle")}
             </Typography>
           </Breadcrumbs>
@@ -132,7 +132,7 @@ export default async function SquadreArchivioPage() {
                             }}
                           />
                           <Box sx={{ px: 1.5, py: 1.5, flex: 1, minWidth: 0 }}>
-                            <Typography variant="body2" fontWeight={700} noWrap>
+                            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                               {team.name}
                             </Typography>
                             {team.championship && (

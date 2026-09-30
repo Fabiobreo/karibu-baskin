@@ -32,6 +32,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // ── Dati ─────────────────────────────────────────────────────────────────────
 
@@ -148,7 +149,7 @@ export default function ContattiPage() {
             size="large"
             startIcon={<MessageIcon />}
             onClick={() => scrollToSection("contatti")}
-            sx={{ fontWeight: 700, px: 3.5 }}
+            sx={{ px: 3.5 }}
           >
             {t("contatti.heroHaveQuestion")}
           </Button>
@@ -159,7 +160,7 @@ export default function ContattiPage() {
             size="large"
             startIcon={<HandshakeIcon />}
             onClick={() => scrollToSection("partner")}
-            sx={{ fontWeight: 700, px: 3.5 }}
+            sx={{ px: 3.5 }}
           >
             {t("contatti.heroSponsor")}
           </Button>
@@ -195,7 +196,7 @@ export default function ContattiPage() {
                     borderRadius: 0,
                     px: 3,
                     py: 1.5,
-                    fontWeight: active ? 700 : 400,
+                    fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                     color: active ? "primary.onLight" : "text.secondary",
                     borderBottom: active ? "2px solid" : "2px solid transparent",
                     borderColor: active ? "primary.main" : "transparent",
@@ -229,7 +230,6 @@ export default function ContattiPage() {
           <Typography
             component="h2"
             variant="h4"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 4, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("contatti.contactUs")}
@@ -267,7 +267,7 @@ export default function ContattiPage() {
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={700}
+                    fontWeight={FONT_WEIGHT.semibold}
                     sx={{
                       textTransform: "uppercase",
                       letterSpacing: "0.06em",
@@ -276,7 +276,11 @@ export default function ContattiPage() {
                   >
                     {c.label}
                   </Typography>
-                  <Typography variant="body2" fontWeight={700} sx={{ lineHeight: 1.3 }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={FONT_WEIGHT.semibold}
+                    sx={{ lineHeight: 1.3 }}
+                  >
                     {c.value}
                   </Typography>
                 </Paper>
@@ -301,9 +305,7 @@ export default function ContattiPage() {
               <Box sx={{ display: "flex", gap: 1.5, alignItems: "flex-start" }}>
                 <LightbulbIcon sx={{ color: "primary.main", mt: 0.25, flexShrink: 0 }} />
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={700}>
-                    {t("contatti.haveIdea")}
-                  </Typography>
+                  <Typography variant="subtitle1">{t("contatti.haveIdea")}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {t("contatti.suggestionDesc")}
                   </Typography>
@@ -313,7 +315,7 @@ export default function ContattiPage() {
                 variant={suggestionOpen ? "outlined" : "contained"}
                 startIcon={suggestionOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 onClick={() => setSuggestionOpen((o) => !o)}
-                sx={{ mt: 2, fontWeight: 700 }}
+                sx={{ mt: 2 }}
               >
                 {suggestionOpen ? t("contatti.closeSuggestion") : t("contatti.openSuggestion")}
               </Button>
@@ -334,7 +336,7 @@ export default function ContattiPage() {
               <Typography variant="overline" color="text.secondary">
                 {t("contatti.followUs")}
               </Typography>
-              <Typography component="h3" variant="h5" fontWeight={800} sx={{ mt: 0.5, mb: 2 }}>
+              <Typography component="h3" variant="h5" sx={{ mt: 0.5, mb: 2 }}>
                 {t("contatti.social")}
               </Typography>
               <Box
@@ -371,7 +373,7 @@ export default function ContattiPage() {
                       <Typography
                         variant="caption"
                         color="text.secondary"
-                        fontWeight={700}
+                        fontWeight={FONT_WEIGHT.semibold}
                         sx={{
                           textTransform: "uppercase",
                           letterSpacing: "0.06em",
@@ -381,7 +383,7 @@ export default function ContattiPage() {
                       >
                         {s.label}
                       </Typography>
-                      <Typography variant="body2" fontWeight={600}>
+                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                         {s.handle}
                       </Typography>
                     </Box>
@@ -394,7 +396,7 @@ export default function ContattiPage() {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{
                   textTransform: "uppercase",
                   letterSpacing: "0.07em",
@@ -436,7 +438,6 @@ export default function ContattiPage() {
           <Typography
             component="h2"
             variant="h4"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("contatti.ourPartners")}
@@ -500,7 +501,6 @@ export default function ContattiPage() {
           <Typography
             component="h2"
             variant="h4"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("contatti.becomeSponsor")}
@@ -528,12 +528,7 @@ export default function ContattiPage() {
                     <HandshakeIcon />
                   </Box>
                   <Box>
-                    <Typography
-                      component="h3"
-                      variant="subtitle2"
-                      fontWeight={700}
-                      sx={{ mb: 0.25 }}
-                    >
+                    <Typography component="h3" variant="subtitle2" sx={{ mb: 0.25 }}>
                       {p.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -559,7 +554,12 @@ export default function ContattiPage() {
             }}
           >
             <Box>
-              <Typography component="h3" variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+              <Typography
+                component="h3"
+                variant="h6"
+                fontWeight={FONT_WEIGHT.bold}
+                sx={{ mb: 0.5 }}
+              >
                 {t("contatti.interestedSponsor")}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>
@@ -573,7 +573,7 @@ export default function ContattiPage() {
               href="mailto:asdkaribubaskin@gmail.com"
               component="a"
               size="large"
-              sx={{ fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}
+              sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
             >
               {t("contatti.writeUs")}
             </Button>

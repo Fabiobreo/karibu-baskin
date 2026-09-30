@@ -26,6 +26,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import PollWidget from "@/components/news/PollWidget";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const revalidate = 60;
 
@@ -158,7 +159,7 @@ export default async function NewsSlugPage({ params }: Props) {
 
         <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
           {post.poll && <HowToVoteIcon fontSize="small" sx={{ color: "primary.main" }} />}
-          <Typography variant="h4" component="h1" fontWeight={800} sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h4" component="h1" sx={{ flex: 1, minWidth: 0 }}>
             {post.title}
           </Typography>
           {isStaff && (
@@ -214,7 +215,7 @@ export default async function NewsSlugPage({ params }: Props) {
               my: 2,
             },
             "& a": { color: "primary.main" },
-            "& strong": { fontWeight: 700 },
+            "& strong": { fontWeight: FONT_WEIGHT.semibold },
             fontSize: TYPE_SCALE.md,
             lineHeight: 1.7,
             color: "text.primary",

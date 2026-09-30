@@ -17,6 +17,7 @@ import { getActiveSeason } from "@/lib/season/activeSeason";
 import { computeStandings } from "@/lib/season/standings";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Classifiche",
@@ -131,12 +132,14 @@ export default async function ClassifichePage() {
         <Typography
           variant="h3"
           component="h1"
-          fontWeight={800}
           sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("pageTitle")}
         </Typography>
-        <Typography variant="body2" sx={{ mt: 1, color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
+        <Typography
+          variant="body2"
+          sx={{ mt: 1, color: "rgba(255,255,255,0.7)", fontWeight: FONT_WEIGHT.semibold }}
+        >
           {t("seasonValue", { season: displaySeason })}
         </Typography>
         <Box sx={{ display: "flex", gap: 1.5, mt: 2, flexWrap: "wrap" }}>
@@ -180,7 +183,7 @@ export default async function ClassifichePage() {
 
         {hasCurrentGroups ? (
           <Box>
-            <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
+            <Typography variant="h4" sx={{ mb: 1 }}>
               {t("standingsTitle")}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

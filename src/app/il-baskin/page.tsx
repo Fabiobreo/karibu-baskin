@@ -22,6 +22,7 @@ import LoSapeviCarousel from "@/components/common/LoSapeviCarousel";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   title: "Il Baskin",
@@ -61,7 +62,6 @@ export default async function IlBaskinPage() {
           <Typography
             variant="h4"
             component="h2"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 2, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("ilbaskin.born2001")}
@@ -84,7 +84,6 @@ export default async function IlBaskinPage() {
           <Typography
             variant="h4"
             component="h2"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("ilbaskin.mainRules")}
@@ -106,12 +105,7 @@ export default async function IlBaskinPage() {
                 >
                   <Box sx={{ color: "primary.main", mt: 0.3, flexShrink: 0 }}>{RULE_ICONS[i]}</Box>
                   <Box>
-                    <Typography
-                      variant="subtitle2"
-                      component="h3"
-                      fontWeight={700}
-                      sx={{ mb: 0.5 }}
-                    >
+                    <Typography variant="subtitle2" component="h3" sx={{ mb: 0.5 }}>
                       {rule.title}
                     </Typography>
                     <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
@@ -144,7 +138,6 @@ export default async function IlBaskinPage() {
           <Typography
             variant="h4"
             component="h2"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("ilbaskin.the5Roles")}
@@ -172,12 +165,7 @@ export default async function IlBaskinPage() {
                     gap: 1,
                   }}
                 >
-                  <Typography
-                    variant="subtitle1"
-                    component="h3"
-                    fontWeight={700}
-                    sx={{ color: "common.white" }}
-                  >
+                  <Typography variant="subtitle1" component="h3" sx={{ color: "common.white" }}>
                     {r.label}
                   </Typography>
                   <Chip
@@ -186,7 +174,6 @@ export default async function IlBaskinPage() {
                     sx={{
                       backgroundColor: "rgba(255,255,255,0.2)",
                       color: "common.white",
-                      fontWeight: 600,
                       fontSize: TYPE_SCALE.xs,
                     }}
                   />
@@ -228,7 +215,7 @@ export default async function IlBaskinPage() {
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            fontWeight={700}
+                            fontWeight={FONT_WEIGHT.semibold}
                             sx={{
                               display: "block",
                               textTransform: "uppercase",
@@ -240,7 +227,7 @@ export default async function IlBaskinPage() {
                           </Typography>
                           <Typography
                             variant="body2"
-                            fontWeight={600}
+                            fontWeight={FONT_WEIGHT.semibold}
                             sx={{ fontSize: TYPE_SCALE.xs, mt: 0.25 }}
                           >
                             {info.value}
@@ -257,7 +244,7 @@ export default async function IlBaskinPage() {
                       "& > summary": {
                         cursor: "pointer",
                         typography: "body2",
-                        fontWeight: 600,
+                        fontWeight: FONT_WEIGHT.semibold,
                         color: "primary.onLight",
                         py: 0.5,
                       },

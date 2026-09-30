@@ -23,6 +23,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { guardianOf } from "@/lib/guardians";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "I miei traguardi",
@@ -85,7 +86,7 @@ async function AchievementSection({ player, name }: AchievementSectionProps) {
       >
         <Typography
           variant="h6"
-          fontWeight={800}
+          fontWeight={FONT_WEIGHT.bold}
           sx={{ display: "flex", alignItems: "center", gap: 1 }}
         >
           <EmojiEventsIcon sx={{ color: "primary.main" }} />
@@ -95,7 +96,6 @@ async function AchievementSection({ player, name }: AchievementSectionProps) {
           label={t("achievementsProgress", { earned: unlocked, total })}
           color={unlocked > 0 ? "primary" : "default"}
           variant={unlocked > 0 ? "filled" : "outlined"}
-          sx={{ fontWeight: 700 }}
         />
       </Box>
       <AchievementsGrid items={items} categoryLabels={badgeI18n.categoryLabels} />

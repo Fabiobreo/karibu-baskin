@@ -17,6 +17,7 @@ import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Confronto giocatori",
@@ -130,16 +131,14 @@ function CompareHeader({ p }: { p: ComparePlayer }) {
         </Avatar>
         <Typography
           variant="subtitle1"
-          fontWeight={800}
+          fontWeight={FONT_WEIGHT.bold}
           noWrap
           sx={{ "&:hover": { textDecoration: "underline" } }}
         >
           {p.name}
         </Typography>
       </Link>
-      {p.sportRole && (
-        <Chip label={`R${p.sportRole}`} size="small" sx={{ mt: 0.5, fontWeight: 700 }} />
-      )}
+      {p.sportRole && <Chip label={`R${p.sportRole}`} size="small" sx={{ mt: 0.5 }} />}
     </Box>
   );
 }
@@ -197,7 +196,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
               }}
             >
               <CompareHeader p={pa} />
-              <Typography variant="overline" color="text.secondary" fontWeight={800}>
+              <Typography variant="overline" color="text.secondary" fontWeight={FONT_WEIGHT.bold}>
                 {t("compareVs")}
               </Typography>
               <CompareHeader p={pb} />
@@ -227,7 +226,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
                 >
                   <Typography
                     align="right"
-                    fontWeight={aWins ? 900 : 600}
+                    fontWeight={aWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
                     sx={{
                       color: aWins ? "primary.main" : "text.primary",
                       fontVariantNumeric: "tabular-nums",
@@ -242,7 +241,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
                     sx={{
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
-                      fontWeight: 700,
+                      fontWeight: FONT_WEIGHT.semibold,
                       minWidth: 64,
                     }}
                   >
@@ -250,7 +249,7 @@ export default async function ConfrontaPage({ searchParams }: Props) {
                   </Typography>
                   <Typography
                     align="left"
-                    fontWeight={bWins ? 900 : 600}
+                    fontWeight={bWins ? FONT_WEIGHT.bold : FONT_WEIGHT.semibold}
                     sx={{
                       color: bWins ? "primary.main" : "text.primary",
                       fontVariantNumeric: "tabular-nums",

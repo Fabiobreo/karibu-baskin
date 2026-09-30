@@ -30,6 +30,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome, isSameRomeDay } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Eventi",
@@ -105,12 +106,12 @@ function EventCard({
               label={dateLabel}
               size="small"
               variant="outlined"
-              sx={{ fontWeight: 700, fontSize: TYPE_SCALE.xs, mb: 1 }}
+              sx={{ fontSize: TYPE_SCALE.xs, mb: 1 }}
             />
             <Typography
               variant="subtitle1"
               component="h3"
-              fontWeight={800}
+              fontWeight={FONT_WEIGHT.bold}
               sx={{ color: "text.primary", lineHeight: 1.25 }}
             >
               {ev.title}

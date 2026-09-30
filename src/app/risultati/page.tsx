@@ -14,6 +14,7 @@ import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Risultati",
@@ -123,7 +124,6 @@ export default async function RisultatiPage({ searchParams }: Props) {
         <Typography
           variant="h3"
           component="h1"
-          fontWeight={800}
           sx={{ mb: 2, fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("resultsTitle")}
@@ -146,7 +146,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                 />
                 <Typography
                   variant="body2"
-                  sx={{ fontWeight: 700, color: "common.white", minWidth: 0 }}
+                  sx={{ fontWeight: FONT_WEIGHT.semibold, color: "common.white", minWidth: 0 }}
                 >
                   {t.name}
                 </Typography>
@@ -157,7 +157,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     sx={{
                       bgcolor: "match.win",
                       color: "match.onFill",
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                       fontSize: TYPE_SCALE.xs,
                       height: 20,
                     }}
@@ -169,7 +169,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       sx={{
                         bgcolor: "match.draw",
                         color: "match.onFill",
-                        fontWeight: 800,
+                        fontWeight: FONT_WEIGHT.bold,
                         fontSize: TYPE_SCALE.xs,
                         height: 20,
                       }}
@@ -181,7 +181,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                     sx={{
                       bgcolor: "match.loss",
                       color: "match.onFill",
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                       fontSize: TYPE_SCALE.xs,
                       height: 20,
                     }}
@@ -200,7 +200,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={700}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
               {t("seasonLabel")}
@@ -216,7 +216,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                   size="small"
                   variant={season === s ? "filled" : "outlined"}
                   color={season === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                  sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
                 />
               </Link>
             ))}
@@ -266,11 +266,15 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       flexShrink: 0,
                     }}
                   />
-                  <Typography component="h2" variant="h6" fontWeight={800}>
+                  <Typography component="h2" variant="h6" fontWeight={FONT_WEIGHT.bold}>
                     {team.name}
                   </Typography>
                   {team.championship && (
-                    <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      fontWeight={FONT_WEIGHT.semibold}
+                    >
                       {team.championship}
                     </Typography>
                   )}
@@ -281,7 +285,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       sx={{
                         bgcolor: "match.winBg",
                         color: "match.win",
-                        fontWeight: 800,
+                        fontWeight: FONT_WEIGHT.bold,
                         fontSize: TYPE_SCALE.xs,
                         height: 20,
                       }}
@@ -293,7 +297,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                         sx={{
                           bgcolor: "match.drawBg",
                           color: "match.draw",
-                          fontWeight: 800,
+                          fontWeight: FONT_WEIGHT.bold,
                           fontSize: TYPE_SCALE.xs,
                           height: 20,
                         }}
@@ -305,7 +309,7 @@ export default async function RisultatiPage({ searchParams }: Props) {
                       sx={{
                         bgcolor: "match.lossBg",
                         color: "match.loss",
-                        fontWeight: 800,
+                        fontWeight: FONT_WEIGHT.bold,
                         fontSize: TYPE_SCALE.xs,
                         height: 20,
                       }}
@@ -337,7 +341,10 @@ export default async function RisultatiPage({ searchParams }: Props) {
               <Typography
                 variant="body2"
                 color="primary.onLight"
-                sx={{ fontWeight: 700, "&:hover": { textDecoration: "underline" } }}
+                sx={{
+                  fontWeight: FONT_WEIGHT.semibold,
+                  "&:hover": { textDecoration: "underline" },
+                }}
               >
                 {t("seeMatches")}
               </Typography>

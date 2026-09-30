@@ -20,6 +20,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { brandColor, heroGradient } from "@/lib/heroStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   title: "Sponsor",
@@ -86,7 +87,6 @@ export default async function SponsorPage() {
           <Typography
             component="h2"
             variant="h4"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("sponsor.ourSponsors")}
@@ -152,10 +152,10 @@ export default async function SponsorPage() {
                     <Chip
                       label={sponsorsContent[i].category}
                       size="small"
-                      sx={{ mb: 1, fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                      sx={{ mb: 1, fontSize: TYPE_SCALE.xs }}
                     />
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-                      <Typography variant="subtitle1" fontWeight={700} noWrap>
+                      <Typography variant="subtitle1" noWrap>
                         {s.name}
                       </Typography>
                       <OpenInNewIcon
@@ -182,7 +182,6 @@ export default async function SponsorPage() {
           <Typography
             component="h2"
             variant="h4"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 1, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("sponsor.becomeSponsor")}
@@ -207,12 +206,7 @@ export default async function SponsorPage() {
                 >
                   <HandshakeIcon sx={{ color: "primary.main", flexShrink: 0, mt: 0.3 }} />
                   <Box>
-                    <Typography
-                      component="h3"
-                      variant="subtitle2"
-                      fontWeight={700}
-                      sx={{ mb: 0.25 }}
-                    >
+                    <Typography component="h3" variant="subtitle2" sx={{ mb: 0.25 }}>
                       {p.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -239,7 +233,12 @@ export default async function SponsorPage() {
             }}
           >
             <Box>
-              <Typography component="h3" variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+              <Typography
+                component="h3"
+                variant="h6"
+                fontWeight={FONT_WEIGHT.bold}
+                sx={{ mb: 0.5 }}
+              >
                 {t("sponsor.interestedSponsor")}
               </Typography>
               <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.6)" }}>

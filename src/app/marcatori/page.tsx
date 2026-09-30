@@ -16,6 +16,7 @@ import type { PlayerStatRow } from "@/components/teams/ClassificaInternaTable";
 import { getActiveSeason } from "@/lib/season/activeSeason";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Marcatori",
@@ -275,7 +276,6 @@ export default async function MarcatoriPage({ searchParams }: Props) {
         <Typography
           variant="h3"
           component="h1"
-          fontWeight={800}
           sx={{ fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl5 } }}
         >
           {t("pageTitle")}
@@ -312,7 +312,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
             <Typography
               variant="caption"
               color="text.secondary"
-              fontWeight={700}
+              fontWeight={FONT_WEIGHT.semibold}
               sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
             >
               {t("seasonLabel")}
@@ -328,7 +328,7 @@ export default async function MarcatoriPage({ searchParams }: Props) {
                   size="small"
                   variant={activeSeason === s ? "filled" : "outlined"}
                   color={activeSeason === s ? "primary" : "default"}
-                  sx={{ cursor: "pointer", fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                  sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
                 />
               </Link>
             ))}

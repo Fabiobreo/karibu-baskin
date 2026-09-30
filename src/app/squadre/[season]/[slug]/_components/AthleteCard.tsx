@@ -6,6 +6,7 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { contrastText } from "@/lib/colorUtils";
 import { getEntityLabels } from "@/lib/entityLabels";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export default async function AthleteCard({
   name,
@@ -47,7 +48,7 @@ export default async function AthleteCard({
           bgcolor: teamColor,
           color: contrastText(teamColor),
           fontSize: TYPE_SCALE.lg,
-          fontWeight: 800,
+          fontWeight: FONT_WEIGHT.bold,
           flexShrink: 0,
         }}
       >
@@ -55,7 +56,7 @@ export default async function AthleteCard({
       </Avatar>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-          <Typography variant="body2" fontWeight={700} noWrap>
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
             {name}
           </Typography>
           {isCaptain && (

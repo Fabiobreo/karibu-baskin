@@ -25,6 +25,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import StarIcon from "@mui/icons-material/Star";
 import { buildMetadata } from "@/lib/seo";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   description:
@@ -97,7 +98,6 @@ export default async function HomePage() {
           <Typography
             variant="h4"
             component="h2"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("whatWeBelieve")}
@@ -112,7 +112,7 @@ export default async function HomePage() {
                   <Box sx={{ color: "primary.main", mb: 1.5 }}>
                     <Icon sx={{ fontSize: 32 }} />
                   </Box>
-                  <Typography variant="h6" component="h3" fontWeight={700} sx={{ mb: 1 }}>
+                  <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
                     {values[i]?.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
@@ -134,7 +134,6 @@ export default async function HomePage() {
           <Typography
             variant="h4"
             component="h2"
-            fontWeight={800}
             sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl4 } }}
           >
             {t("tenYears")}
@@ -176,17 +175,12 @@ export default async function HomePage() {
                   <Typography
                     variant="caption"
                     color="primary.onLight"
-                    fontWeight={700}
+                    fontWeight={FONT_WEIGHT.semibold}
                     sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
                   >
                     {item.anno}
                   </Typography>
-                  <Typography
-                    variant="subtitle1"
-                    component="h3"
-                    fontWeight={700}
-                    sx={{ mt: 0.25, mb: 0.75 }}
-                  >
+                  <Typography variant="subtitle1" component="h3" sx={{ mt: 0.25, mb: 0.75 }}>
                     {item.titolo}
                   </Typography>
                   <Typography

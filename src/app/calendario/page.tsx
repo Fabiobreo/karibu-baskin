@@ -53,7 +53,7 @@ export default async function CalendarioPage() {
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
           <CalendarMonthIcon color="primary" />
-          <Typography variant="h4" component="h1" fontWeight={800}>
+          <Typography variant="h4" component="h1">
             {t("calendar")}
           </Typography>
         </Box>

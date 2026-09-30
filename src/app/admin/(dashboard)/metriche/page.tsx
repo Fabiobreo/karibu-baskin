@@ -7,6 +7,7 @@ import {
   loadAdminMetrics,
 } from "@/lib/metrics/loadAdminMetrics";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // Metriche sempre fresche: sono poche query aggregate, e un numero vecchio di
 // mezz'ora sarebbe più confuso che utile.
@@ -169,7 +170,7 @@ function MetricTile({
         component="p"
         sx={{
           fontSize: TYPE_SCALE.xl4,
-          fontWeight: 900,
+          fontWeight: FONT_WEIGHT.bold,
           lineHeight: 1,
           color: "admin.tools",
           fontVariantNumeric: "tabular-nums",
@@ -177,7 +178,7 @@ function MetricTile({
       >
         {value}
       </Typography>
-      <Typography variant="subtitle2" fontWeight={700} sx={{ mt: 0.75 }}>
+      <Typography variant="subtitle2" sx={{ mt: 0.75 }}>
         {label}
       </Typography>
       <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>

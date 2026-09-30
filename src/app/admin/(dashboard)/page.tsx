@@ -24,6 +24,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const revalidate = 30;
 
@@ -186,7 +187,7 @@ export default async function AdminPage() {
         <Paper elevation={2} sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
           <NewReleasesIcon color="warning" />
           <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" fontWeight={700}>
+            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
               {pendingRoleCount} {pendingRoleCount === 1 ? "utente ha" : "utenti hanno"} suggerito
               il proprio ruolo Baskin
             </Typography>
@@ -286,7 +287,7 @@ function StatCard({
             component="p"
             sx={{
               fontSize: TYPE_SCALE.xl4,
-              fontWeight: 900,
+              fontWeight: FONT_WEIGHT.bold,
               lineHeight: 1,
               color,
               fontVariantNumeric: "tabular-nums",
@@ -294,7 +295,7 @@ function StatCard({
           >
             {value}
           </Typography>
-          <Typography component="p" variant="subtitle2" fontWeight={700} sx={{ mt: 0.5 }}>
+          <Typography component="p" variant="subtitle2" sx={{ mt: 0.5 }}>
             {label}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.4 }}>
@@ -344,7 +345,12 @@ function NavLink({
         >
           {icon}
         </Box>
-        <Typography variant="body2" fontWeight={600} noWrap sx={{ flex: 1, minWidth: 0 }}>
+        <Typography
+          variant="body2"
+          fontWeight={FONT_WEIGHT.semibold}
+          noWrap
+          sx={{ flex: 1, minWidth: 0 }}
+        >
           {label}
         </Typography>
         {hasBadge && (
@@ -352,7 +358,7 @@ function NavLink({
             label={badge}
             size="small"
             color="warning"
-            sx={{ fontWeight: 700, height: 20, fontSize: TYPE_SCALE.xs }}
+            sx={{ height: 20, fontSize: TYPE_SCALE.xs }}
           />
         )}
       </Box>

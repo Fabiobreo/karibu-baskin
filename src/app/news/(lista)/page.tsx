@@ -56,7 +56,6 @@ export default async function NewsPage() {
               variant="contained"
               color="primary"
               startIcon={<AddIcon />}
-              sx={{ fontWeight: 700 }}
             >
               Crea news
             </Button>
@@ -118,7 +117,7 @@ export default async function NewsPage() {
                         <ArticleIcon fontSize="small" sx={{ color: "text.secondary", mt: 0.3 }} />
                       )}
                       <Box sx={{ flex: 1 }}>
-                        <Typography variant="h6" fontWeight={700} sx={{ color: "text.primary" }}>
+                        <Typography variant="h6" sx={{ color: "text.primary" }}>
                           {post.title}
                         </Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>

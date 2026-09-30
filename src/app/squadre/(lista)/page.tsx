@@ -30,6 +30,7 @@ import { getActiveSeason } from "@/lib/season/activeSeason";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata: Metadata = buildMetadata({
   title: "Squadre",
@@ -87,7 +88,6 @@ export default async function SquadrePage() {
                 <Typography
                   variant="h4"
                   component="p"
-                  fontWeight={800}
                   color="text.primary"
                   sx={{ fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
                 >
@@ -96,7 +96,11 @@ export default async function SquadrePage() {
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}
+                  sx={{
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    fontWeight: FONT_WEIGHT.semibold,
+                  }}
                 >
                   {s.label}
                 </Typography>
@@ -123,7 +127,6 @@ export default async function SquadrePage() {
                   size="small"
                   icon={<StarIcon />}
                   color="warning"
-                  sx={{ fontWeight: 700 }}
                 />
               )}
               <Typography variant="overline" color="text.secondary">
@@ -138,7 +141,6 @@ export default async function SquadrePage() {
             <Typography
               variant="h4"
               component="h2"
-              fontWeight={800}
               sx={{ mb: 3, fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
             >
               {t("ourTeams")}
@@ -165,7 +167,7 @@ export default async function SquadrePage() {
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <SportsKabaddiIcon sx={{ color: "primary.main" }} />
             <Box>
-              <Typography variant="subtitle1" component="h2" fontWeight={700}>
+              <Typography variant="subtitle1" component="h2">
                 {t("simChallengeTitle")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -173,7 +175,7 @@ export default async function SquadrePage() {
               </Typography>
             </Box>
           </Box>
-          <Button href="/squadre/sfida" variant="contained" sx={{ fontWeight: 700 }}>
+          <Button href="/squadre/sfida" variant="contained">
             {t("simChallengeCta")}
           </Button>
         </Box>
@@ -197,7 +199,7 @@ export default async function SquadrePage() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <HistoryIcon sx={{ color: "text.secondary" }} />
               <Box>
-                <Typography variant="subtitle1" component="h2" fontWeight={700}>
+                <Typography variant="subtitle1" component="h2">
                   {t("previousSeasons")}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -228,19 +230,14 @@ export default async function SquadrePage() {
             }}
           >
             <EmojiEventsIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
-            <Typography variant="h5" component="h2" fontWeight={800}>
+            <Typography variant="h5" component="h2">
               {t("joinUs")}
             </Typography>
             <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.65)", maxWidth: 420 }}>
               {t("joinUsDesc")}
             </Typography>
             {/* Verso "Vieni a provare" (UX-15). */}
-            <Button
-              href={TRY_IT_HREF}
-              variant="contained"
-              size="large"
-              sx={{ mt: 2, fontWeight: 700 }}
-            >
+            <Button href={TRY_IT_HREF} variant="contained" size="large" sx={{ mt: 2 }}>
               {t("joinUsCta")}
             </Button>
           </Box>
@@ -312,7 +309,7 @@ function TeamGrid({
                   <Typography
                     variant="h6"
                     component="h3"
-                    fontWeight={800}
+                    fontWeight={FONT_WEIGHT.bold}
                     sx={{ color: muted ? "text.secondary" : headerText }}
                   >
                     {team.name}
@@ -326,7 +323,6 @@ function TeamGrid({
                           ? alpha(brandColor.black, 0.08)
                           : alpha(headerText, 0.18),
                         color: muted ? "text.secondary" : headerText,
-                        fontWeight: 700,
                       }}
                     />
                   )}
@@ -344,13 +340,21 @@ function TeamGrid({
                   <Box sx={{ display: "flex", gap: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <GroupsIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight={FONT_WEIGHT.semibold}
+                      >
                         {t("athleteCount", { count: team._count.memberships })}
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       <SportsSoccerIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        fontWeight={FONT_WEIGHT.semibold}
+                      >
                         {t("matchCount", { count: team._count.matches })}
                       </Typography>
                     </Box>

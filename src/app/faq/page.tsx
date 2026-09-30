@@ -7,6 +7,7 @@ import FaqAccordion from "@/components/common/FaqAccordion";
 import { getFaqs } from "@/lib/content/faqs";
 import { buildMetadata } from "@/lib/seo";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   title: "FAQ",
@@ -32,7 +33,10 @@ export default async function FaqPage() {
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
           {t("faq.noAnswer")}{" "}
           <Link href="/contatti" style={{ color: "inherit" }}>
-            <Box component="span" sx={{ color: "primary.onLight", fontWeight: 600 }}>
+            <Box
+              component="span"
+              sx={{ color: "primary.onLight", fontWeight: FONT_WEIGHT.semibold }}
+            >
               {t("faq.contactUs")}
             </Box>
           </Link>
@@ -58,9 +62,7 @@ export default async function FaqPage() {
         >
           <LightbulbIcon sx={{ color: "primary.main", flexShrink: 0 }} />
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle1" fontWeight={700}>
-              {t("faq.suggestionCta")}
-            </Typography>
+            <Typography variant="subtitle1">{t("faq.suggestionCta")}</Typography>
             <Typography variant="body2" color="text.secondary">
               {t("faq.suggestionCtaDesc")}
             </Typography>
@@ -69,7 +71,7 @@ export default async function FaqPage() {
             size="large"
             href="/contatti#suggerimenti"
             variant="contained"
-            sx={{ fontWeight: 700, flexShrink: 0 }}
+            sx={{ flexShrink: 0 }}
           >
             {t("faq.suggestionCtaBtn")}
           </Button>

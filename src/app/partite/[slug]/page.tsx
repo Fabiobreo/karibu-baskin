@@ -47,6 +47,7 @@ import { guardianOf } from "@/lib/guardians";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const revalidate = 3600;
 
@@ -62,7 +63,7 @@ const RESULT_GRADIENT: Record<"WIN" | "LOSS" | "DRAW", string> = {
 const sideNameSx = {
   alignSelf: "end",
   color: heroText.primary,
-  fontWeight: 800,
+  fontWeight: FONT_WEIGHT.bold,
   lineHeight: 1.15,
   fontSize: { xs: TYPE_SCALE.md, sm: TYPE_SCALE.xl, md: TYPE_SCALE.xl2 },
   // Nomi avversari lunghi: a capo fra le parole, sillabando solo se una
@@ -75,7 +76,7 @@ const sideNameSx = {
 const scoreSx = {
   alignSelf: "start",
   color: heroText.primary,
-  fontWeight: 900,
+  fontWeight: FONT_WEIGHT.bold,
   lineHeight: 1,
   fontSize: { xs: TYPE_SCALE.xl6, md: TYPE_SCALE.xl8 },
   fontVariantNumeric: "tabular-nums",
@@ -470,7 +471,6 @@ export default async function MatchDetailPage({ params }: Props) {
               variant="body2"
               sx={{
                 color: "rgba(255,255,255,0.65)",
-                fontWeight: 500,
                 // Area di tocco di almeno 24 px (WCAG 2.5.8, UX-22).
                 display: "inline-flex",
                 alignItems: "center",
@@ -480,11 +480,7 @@ export default async function MatchDetailPage({ params }: Props) {
             >
               {t("breadcrumb")}
             </MuiLink>
-            <Typography
-              variant="body2"
-              sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
-              noWrap
-            >
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }} noWrap>
               {matchupTitle}
             </Typography>
           </Breadcrumbs>
@@ -579,7 +575,7 @@ export default async function MatchDetailPage({ params }: Props) {
                       gridColumn: 2,
                       gridRow: isUpcoming ? 1 : 2,
                       color: heroText.muted,
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                       lineHeight: 1,
                       fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 },
                       fontVariantNumeric: "tabular-nums",
@@ -608,14 +604,18 @@ export default async function MatchDetailPage({ params }: Props) {
             <Typography
               component="p"
               variant="body2"
-              sx={{ mt: { xs: 2.5, md: 3 }, color: heroText.secondary, fontWeight: 600 }}
+              sx={{
+                mt: { xs: 2.5, md: 3 },
+                color: heroText.secondary,
+                fontWeight: FONT_WEIGHT.semibold,
+              }}
             >
               {[
                 match.result ? (
                   <Box
                     key="result"
                     component="span"
-                    sx={{ color: "common.white", fontWeight: 800 }}
+                    sx={{ color: "common.white", fontWeight: FONT_WEIGHT.bold }}
                   >
                     {matchResultLabel(match.result)}
                   </Box>
@@ -651,7 +651,7 @@ export default async function MatchDetailPage({ params }: Props) {
                     label={t("imminent")}
                     size="small"
                     sx={{
-                      fontWeight: 800,
+                      fontWeight: FONT_WEIGHT.bold,
                       // Etichetta bianca sul riempimento arancio unico (UX-28): 4,71:1.
                       // Niente alone pulsante (UX-30): l'urgenza la dicono etichetta e colore.
                       bgcolor: "primary.fill",
@@ -679,7 +679,7 @@ export default async function MatchDetailPage({ params }: Props) {
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <CalendarTodayIcon sx={{ fontSize: 14 }} />
-                <Typography variant="caption" fontWeight={600}>
+                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
                   {/* Partita futura: l'orario sta già al centro del tabellino. */}
                   {formatRome(
                     new Date(match.date),
@@ -694,14 +694,14 @@ export default async function MatchDetailPage({ params }: Props) {
                 ) : (
                   <FlightIcon sx={{ fontSize: 14 }} />
                 )}
-                <Typography variant="caption" fontWeight={600}>
+                <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
                   {match.isHome ? t("home") : t("away")}
                 </Typography>
               </Box>
               {match.venue && (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <PlaceIcon sx={{ fontSize: 14 }} />
-                  <Typography variant="caption" fontWeight={600}>
+                  <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold}>
                     {match.venue}
                   </Typography>
                 </Box>
@@ -739,7 +739,11 @@ export default async function MatchDetailPage({ params }: Props) {
               }}
             >
               <EmojiEventsIcon sx={{ color: "medal.gold" }} />
-              <Typography variant="overline" fontWeight={800} sx={{ color: "medal.gold" }}>
+              <Typography
+                variant="overline"
+                fontWeight={FONT_WEIGHT.bold}
+                sx={{ color: "medal.gold" }}
+              >
                 {t("mvp")}
               </Typography>
               <EmojiEventsIcon sx={{ color: "medal.gold" }} />
@@ -777,7 +781,11 @@ export default async function MatchDetailPage({ params }: Props) {
                   >
                     <EmojiEventsIcon sx={{ color: "medal.gold", fontSize: 20 }} />
                     <Box>
-                      <Typography variant="body2" fontWeight={800} sx={{ color: "text.primary" }}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={FONT_WEIGHT.bold}
+                        sx={{ color: "text.primary" }}
+                      >
                         {name}
                       </Typography>
                       {role && (
@@ -791,7 +799,7 @@ export default async function MatchDetailPage({ params }: Props) {
                             bgcolor: roleColor(role),
                             color: ROLE_TEXT_COLOR,
                             fontSize: TYPE_SCALE.xs,
-                            fontWeight: 700,
+                            fontWeight: FONT_WEIGHT.semibold,
                           }}
                         >
                           R{role}

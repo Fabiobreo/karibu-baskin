@@ -33,6 +33,7 @@ import OpposingTeamEditButton from "@/components/matches/OpposingTeamEditButton"
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const revalidate = 60;
 
@@ -177,17 +178,12 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               variant="body2"
               sx={{
                 color: "rgba(255,255,255,0.65)",
-                fontWeight: 500,
                 "&:hover": { color: "common.white" },
               }}
             >
               {tMatches("resultsHeroChip")}
             </MuiLink>
-            <Typography
-              variant="body2"
-              sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
-              noWrap
-            >
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }} noWrap>
               {team.name}
             </Typography>
           </Breadcrumbs>
@@ -267,7 +263,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                fontWeight={700}
+                fontWeight={FONT_WEIGHT.semibold}
                 sx={{ mr: 0.5 }}
               >
                 {t("facedInSeasons")}
@@ -279,7 +275,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                   size="small"
                   variant={s === currentSeason ? "filled" : "outlined"}
                   color={s === currentSeason ? "primary" : "default"}
-                  sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs, height: 22 }}
+                  sx={{ fontSize: TYPE_SCALE.xs, height: 22 }}
                 />
               ))}
             </Box>
@@ -304,12 +300,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                 const last5 = team.matches.filter((m) => m.result !== null).slice(0, 5);
                 return (
                   <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={700}
-                      color="text.secondary"
-                      gutterBottom
-                    >
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                       {t("historicalBalance", { count: totals.played })}
                     </Typography>
                     <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center" }}>
@@ -318,7 +309,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         sx={{
                           bgcolor: "match.win",
                           color: "match.onFill",
-                          fontWeight: 700,
                           minWidth: 60,
                         }}
                       />
@@ -327,7 +317,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         sx={{
                           bgcolor: "match.draw",
                           color: "match.onFill",
-                          fontWeight: 700,
                           minWidth: 60,
                         }}
                       />
@@ -336,7 +325,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         sx={{
                           bgcolor: "match.loss",
                           color: "match.onFill",
-                          fontWeight: 700,
                           minWidth: 60,
                         }}
                       />
@@ -354,7 +342,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         sx={{
                           color:
                             totals.scored - totals.conceded >= 0 ? "success.dark" : "error.dark",
-                          fontWeight: 700,
+                          fontWeight: FONT_WEIGHT.semibold,
                         }}
                       >
                         {t("pointsDiff")} {totals.scored - totals.conceded >= 0 ? "+" : ""}
@@ -372,7 +360,11 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                           flexWrap: "wrap",
                         }}
                       >
-                        <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          fontWeight={FONT_WEIGHT.semibold}
+                        >
                           {t("lastMatches", { count: last5.length })}
                         </Typography>
                         {last5.map((m) => {
@@ -389,7 +381,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 fontSize: TYPE_SCALE.xs,
-                                fontWeight: 800,
+                                fontWeight: FONT_WEIGHT.bold,
                                 cursor: m.slug ? "pointer" : "default",
                               }}
                             >
@@ -415,7 +407,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
               })()}
 
             {/* Per stagione */}
-            <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
+            <Typography variant="h4" sx={{ mb: 2 }}>
               {t("bySeason")}
             </Typography>
             {seasons.map((s) => (
@@ -430,7 +422,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                     mb: 1.5,
                   }}
                 >
-                  <Typography variant="h6" fontWeight={800}>
+                  <Typography variant="h6" fontWeight={FONT_WEIGHT.bold}>
                     {t("seasonLabel")} {s.season}
                   </Typography>
                   <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
@@ -439,24 +431,19 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                         <Chip
                           label={tMatches("resultWins", { count: s.wins })}
                           size="small"
-                          sx={{ bgcolor: "match.win", color: "match.onFill", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.win", color: "match.onFill" }}
                         />
                         <Chip
                           label={tMatches("resultDraws", { count: s.draws })}
                           size="small"
-                          sx={{ bgcolor: "match.draw", color: "match.onFill", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.draw", color: "match.onFill" }}
                         />
                         <Chip
                           label={tMatches("resultLosses", { count: s.losses })}
                           size="small"
-                          sx={{ bgcolor: "match.loss", color: "match.onFill", fontWeight: 700 }}
+                          sx={{ bgcolor: "match.loss", color: "match.onFill" }}
                         />
-                        <Chip
-                          label={`${s.scored}–${s.conceded}`}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontWeight: 700 }}
-                        />
+                        <Chip label={`${s.scored}–${s.conceded}`} size="small" variant="outlined" />
                       </>
                     )}
                     {s.pending > 0 && (
@@ -484,7 +471,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                           }}
                         >
                           <Box sx={{ minWidth: 90 }}>
-                            <Typography variant="body2" fontWeight={700}>
+                            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                               {formatRome(new Date(m.date), "d MMM yy", { locale: dateLocale })}
                             </Typography>
                             <Box
@@ -521,7 +508,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 sx={{
                                   bgcolor: m.team.color ?? "primary.main",
                                   color: contrastText(m.team.color),
-                                  fontWeight: 700,
                                   fontSize: TYPE_SCALE.xs,
                                   height: 20,
                                 }}
@@ -547,7 +533,7 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                             }}
                           >
                             {m.ourScore !== null && m.theirScore !== null ? (
-                              <Typography variant="body1" fontWeight={800}>
+                              <Typography variant="body1" fontWeight={FONT_WEIGHT.bold}>
                                 {m.ourScore} – {m.theirScore}
                               </Typography>
                             ) : (
@@ -562,7 +548,6 @@ export default async function OpposingTeamPublicPage({ params }: Params) {
                                 sx={{
                                   bgcolor: MATCH_RESULT_META[m.result].color,
                                   color: "match.onFill",
-                                  fontWeight: 700,
                                   fontSize: TYPE_SCALE.xs,
                                   height: 20,
                                   minWidth: 28,

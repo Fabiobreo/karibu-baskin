@@ -22,7 +22,7 @@ export default async function VerifyRequestPage() {
     <Container maxWidth="xs" sx={{ pt: 10 }}>
       <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
         <MarkEmailReadIcon color="primary" sx={{ fontSize: 48, mb: 1 }} />
-        <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
+        <Typography variant="h5" component="h1" gutterBottom>
           {t("title")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -32,7 +32,7 @@ export default async function VerifyRequestPage() {
           {t("spamHint")}
         </Typography>
         <Box>
-          <Button href="/login" variant="outlined" sx={{ textTransform: "none", fontWeight: 600 }}>
+          <Button href="/login" variant="outlined" sx={{ textTransform: "none" }}>
             {t("back")}
           </Button>
         </Box>

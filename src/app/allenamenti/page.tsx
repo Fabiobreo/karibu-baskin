@@ -128,7 +128,7 @@ export default async function AllenamentiPage({
   return (
     <>
       <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
-        <Typography variant="h4" component="h1" fontWeight={800} sx={{ mb: 2 }}>
+        <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
           {t("trainings")}
         </Typography>
         <AllenamentiClient

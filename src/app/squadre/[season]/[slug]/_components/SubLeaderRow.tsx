@@ -1,6 +1,7 @@
 import { Box, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 import type React from "react";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export default function SubLeaderRow({
   icon,
@@ -45,11 +46,15 @@ export default function SubLeaderRow({
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}
+          sx={{
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            fontWeight: FONT_WEIGHT.semibold,
+          }}
         >
           {label}
         </Typography>
-        <Typography variant="body2" fontWeight={700} noWrap>
+        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
           {leader.name} · {value} {suffix}
         </Typography>
       </Box>

@@ -50,6 +50,7 @@ import NextTrainingCard, {
 import { checkRegistrationAllowed } from "@/lib/registrationRestrictions";
 import { userHasPublicProfile } from "@/lib/publicProfile";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   title: "Il mio profilo",
@@ -316,7 +317,6 @@ export default async function ProfiloPage() {
             label={t(`appRole${user.appRole as AppRole}`)}
             color={APP_ROLE_CHIP_COLOR[user.appRole as AppRole]}
             size="small"
-            sx={{ fontWeight: 600 }}
           />
           {currentTeams.map((m) => (
             <Chip
@@ -324,7 +324,6 @@ export default async function ProfiloPage() {
               label={m.team.name}
               size="small"
               sx={{
-                fontWeight: 700,
                 bgcolor: m.team.color ?? "primary.main",
                 color: contrastText(m.team.color),
               }}
@@ -342,7 +341,7 @@ export default async function ProfiloPage() {
                 size="small"
                 variant="outlined"
                 startIcon={<OpenInNewIcon sx={{ fontSize: "0.9rem !important" }} />}
-                sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}
+                sx={{ fontSize: TYPE_SCALE.xs }}
               >
                 {t("publicProfile")}
               </Button>
@@ -353,7 +352,7 @@ export default async function ProfiloPage() {
               size="small"
               variant="outlined"
               startIcon={<EventAvailableIcon sx={{ fontSize: "0.9rem !important" }} />}
-              sx={{ fontSize: TYPE_SCALE.xs, fontWeight: 600 }}
+              sx={{ fontSize: TYPE_SCALE.xs }}
             >
               {t("myAvailabilities")}
             </Button>
@@ -385,11 +384,11 @@ export default async function ProfiloPage() {
             <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
                 <CalendarMonthIcon sx={{ fontSize: 20, color: "text.secondary" }} />
-                <Typography variant="overline" fontWeight={800} color="text.secondary">
+                <Typography variant="overline" fontWeight={FONT_WEIGHT.bold} color="text.secondary">
                   {t("nextTraining")}
                 </Typography>
               </Box>
-              <Typography variant="body2" fontWeight={700}>
+              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                 {t("nextTrainingNone")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -442,7 +441,7 @@ export default async function ProfiloPage() {
   // ── Contenuto tab "Famiglia" (solo PARENT/ADMIN) ──
   const familyTab = isParent ? (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" gutterBottom>
         {t("myChildren")}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -458,7 +457,7 @@ export default async function ProfiloPage() {
   const parentsTab =
     myParents.length > 0 ? (
       <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-        <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
+        <Typography component="h2" variant="subtitle1" gutterBottom>
           {t("myParents")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -474,7 +473,7 @@ export default async function ProfiloPage() {
               >
                 {p.name?.[0]?.toUpperCase()}
               </Avatar>
-              <Typography variant="body1" fontWeight={600}>
+              <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
                 {p.name ?? t("parentNoName")}
               </Typography>
             </Box>
@@ -503,7 +502,7 @@ export default async function ProfiloPage() {
   // ── Contenuto tab "Notifiche" ──
   const notificationsTab = (
     <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
-      <Typography component="h2" variant="subtitle1" fontWeight={700} gutterBottom>
+      <Typography component="h2" variant="subtitle1" gutterBottom>
         {t("notificationsSection")}
       </Typography>
       <NotificationPrefsPanel initialPrefs={mergePrefs(user.notifPrefs)} />

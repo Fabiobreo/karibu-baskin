@@ -50,6 +50,7 @@ import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -545,7 +546,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               variant="body2"
               sx={{
                 color: "rgba(255,255,255,0.65)",
-                fontWeight: 500,
                 "&:hover": { color: brandColor.white },
               }}
             >
@@ -560,18 +560,13 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 variant="body2"
                 sx={{
                   color: "rgba(255,255,255,0.65)",
-                  fontWeight: 500,
                   "&:hover": { color: brandColor.white },
                 }}
               >
                 {breadcrumbTeam.name}
               </MuiLink>
             )}
-            <Typography
-              variant="body2"
-              sx={{ color: "rgba(255,255,255,0.9)", fontWeight: 500 }}
-              noWrap
-            >
+            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }} noWrap>
               {player.name ?? "Giocatore"}
             </Typography>
           </Breadcrumbs>
@@ -599,7 +594,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   width: { xs: 110, md: 140 },
                   height: { xs: 110, md: 140 },
                   fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
-                  fontWeight: 800,
+                  fontWeight: FONT_WEIGHT.bold,
                   bgcolor: playerColor,
                   border: `4px solid ${playerColor}`,
                   boxShadow: "0 8px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(0,0,0,0.25)",
@@ -621,7 +616,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontWeight: 900,
+                    fontWeight: FONT_WEIGHT.bold,
                     fontSize: TYPE_SCALE.xl,
                     border: "3px solid",
                     borderColor: "secondary.main",
@@ -641,7 +636,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   // Occhielli degli hero neutri (UX-28, opzione B): il colore
                   // della squadra resta sull'anello dell'avatar.
                   color: heroText.secondary,
-                  fontWeight: 800,
+                  fontWeight: FONT_WEIGHT.bold,
                   lineHeight: 1,
                   textShadow: "0 1px 2px rgba(0,0,0,0.5)",
                 }}
@@ -651,7 +646,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
               <Typography
                 variant="h2"
                 component="h1"
-                fontWeight={900}
                 sx={{
                   fontSize: { xs: TYPE_SCALE.xl4, md: TYPE_SCALE.xl6 },
                   lineHeight: 1.05,
@@ -677,7 +671,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {player.sportRole && (
                     <Typography
                       variant="body1"
-                      sx={{ color: heroText.primary, fontWeight: 700, lineHeight: 1 }}
+                      sx={{
+                        color: heroText.primary,
+                        fontWeight: FONT_WEIGHT.semibold,
+                        lineHeight: 1,
+                      }}
                     >
                       {sportRoleLabel(player.sportRole, player.sportRoleVariant)}
                     </Typography>
@@ -712,7 +710,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         sx={{
                           bgcolor: m.team.color ?? "text.primary",
                           color: contrastText(m.team.color),
-                          fontWeight: 700,
                           fontSize: TYPE_SCALE.xs,
                           cursor: "pointer",
                           "a:hover > &": { opacity: 0.9 },
@@ -792,7 +789,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           <Typography
                             sx={{
                               fontSize: TYPE_SCALE.xs,
-                              fontWeight: 800,
+                              fontWeight: FONT_WEIGHT.bold,
                               color: medalColorToken,
                               textTransform: "uppercase",
                               letterSpacing: "0.05em",
@@ -804,7 +801,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           <Typography
                             sx={{
                               fontSize: TYPE_SCALE.xs,
-                              fontWeight: 600,
+                              fontWeight: FONT_WEIGHT.semibold,
                               color: "rgba(255,255,255,0.75)",
                             }}
                           >
@@ -821,7 +818,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         bgcolor: alpha(brandColor.white, 0.1),
                         color: "common.white",
-                        fontWeight: 700,
                         fontSize: TYPE_SCALE.xs,
                       }}
                     />
@@ -844,7 +840,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       sx={{
                         fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
-                        fontWeight: 900,
+                        fontWeight: FONT_WEIGHT.bold,
                         color: "common.white",
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
@@ -856,7 +852,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       sx={{
                         fontSize: TYPE_SCALE.xs,
-                        fontWeight: 700,
+                        fontWeight: FONT_WEIGHT.semibold,
                         color: "rgba(255,255,255,0.75)",
                         textTransform: "uppercase",
                         letterSpacing: "0.08em",
@@ -869,7 +865,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       sx={{
                         fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                        fontWeight: 800,
+                        fontWeight: FONT_WEIGHT.bold,
                         color: playerColor,
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
@@ -880,7 +876,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       sx={{
                         fontSize: TYPE_SCALE.xs,
-                        fontWeight: 700,
+                        fontWeight: FONT_WEIGHT.semibold,
                         color: "rgba(255,255,255,0.75)",
                       }}
                     >
@@ -891,7 +887,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       sx={{
                         fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
-                        fontWeight: 800,
+                        fontWeight: FONT_WEIGHT.bold,
                         color: "common.white",
                         lineHeight: 1,
                         fontVariantNumeric: "tabular-nums",
@@ -902,7 +898,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       sx={{
                         fontSize: TYPE_SCALE.xs,
-                        fontWeight: 700,
+                        fontWeight: FONT_WEIGHT.semibold,
                         color: "rgba(255,255,255,0.75)",
                       }}
                     >
@@ -938,7 +934,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {/* Figli (solo staff) */}
         {guardedChildren.length > 0 && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+            <Typography variant="subtitle1" gutterBottom>
               {t("children")}
             </Typography>
             <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
@@ -956,7 +952,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           sx={{
                             bgcolor: `${roleColor(c.sportRole)} !important`,
                             color: "common.white !important",
-                            fontWeight: 700,
+                            fontWeight: FONT_WEIGHT.semibold,
                           }}
                         >
                           {c.sportRole}
@@ -1008,7 +1004,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 justifyContent: "center",
               }}
             >
-              <Typography variant="body1" fontWeight={700}>
+              <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
                 {t("notPlayedYet", { name: player.name ?? "" })}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1035,7 +1031,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         {/* Storico ruolo sportivo */}
         {player.sportRoleHistory.length > 1 && (
           <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 5 }}>
-            <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+            <Typography variant="subtitle1" gutterBottom>
               {t("roleHistory")}
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, alignItems: "center" }}>
@@ -1078,7 +1074,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 <Typography variant="overline" color="text.secondary">
                   {t("statistics")}
                 </Typography>
-                <Typography component="h2" variant="h4" fontWeight={800}>
+                <Typography component="h2" variant="h4">
                   {t("competitive")}
                 </Typography>
               </Box>
@@ -1090,7 +1086,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       size="small"
                       variant={!seasonFilter ? "filled" : "outlined"}
                       color={!seasonFilter ? "primary" : "default"}
-                      sx={{ cursor: "pointer", fontWeight: 600 }}
+                      sx={{ cursor: "pointer" }}
                     />
                   </Link>
                   {seasons.map((s) => (
@@ -1104,7 +1100,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                         size="small"
                         variant={seasonFilter === s ? "filled" : "outlined"}
                         color={seasonFilter === s ? "primary" : "default"}
-                        sx={{ cursor: "pointer", fontWeight: 600 }}
+                        sx={{ cursor: "pointer" }}
                       />
                     </Link>
                   ))}
@@ -1152,7 +1148,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       component="p"
                       variant="h4"
-                      fontWeight={800}
                       sx={{
                         color: s.color,
                         fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
@@ -1163,7 +1158,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}
+                      sx={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        fontWeight: FONT_WEIGHT.semibold,
+                      }}
                     >
                       {s.label}
                     </Typography>
@@ -1213,7 +1212,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {t("honors")}
                 </Typography>
               </Box>
-              <Typography component="h2" variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
                 {t("medals")}
               </Typography>
               <Grid container spacing={2}>
@@ -1260,7 +1259,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             variant="caption"
                             sx={{
                               color: medalColor,
-                              fontWeight: 800,
+                              fontWeight: FONT_WEIGHT.bold,
                               textTransform: "uppercase",
                               letterSpacing: "0.06em",
                               fontSize: TYPE_SCALE.xs,
@@ -1269,7 +1268,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           >
                             {medalLabel}
                           </Typography>
-                          <Typography variant="body2" fontWeight={800} noWrap>
+                          <Typography variant="body2" fontWeight={FONT_WEIGHT.bold} noWrap>
                             {m.teamName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
@@ -1296,7 +1295,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {t("teamsSection")}
                 </Typography>
               </Box>
-              <Typography component="h2" variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
                 {t("competitiveHistory")}
               </Typography>
               <Stack spacing={1.5}>
@@ -1334,7 +1333,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       >
                         <Box>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography variant="body2" fontWeight={700}>
+                            <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                               {m.team.name}
                             </Typography>
                             {m.isCaptain && (
@@ -1351,7 +1350,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                           label={`Stagione ${m.team.season}`}
                           size="small"
                           variant="outlined"
-                          sx={{ fontWeight: 600, fontSize: TYPE_SCALE.xs }}
+                          sx={{ fontSize: TYPE_SCALE.xs }}
                         />
                       </Box>
                     </Paper>
@@ -1373,7 +1372,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   {t("matches")}
                 </Typography>
               </Box>
-              <Typography component="h2" variant="h4" fontWeight={800} sx={{ mb: 3 }}>
+              <Typography component="h2" variant="h4" sx={{ mb: 3 }}>
                 {t("matchStats")}
               </Typography>
               <Stack spacing={1.5}>
@@ -1416,7 +1415,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                             }}
                           >
                             <Box>
-                              <Typography variant="body2" fontWeight={700}>
+                              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
                                 {ms.match.team.name} vs{" "}
                                 {ms.match.opponent?.name ??
                                   ms.match.opponentTeam?.name ??
@@ -1439,7 +1438,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                                   sx={{
                                     backgroundColor: MATCH_RESULT_META[ms.match.result].color,
                                     color: "match.onFill",
-                                    fontWeight: 700,
                                     fontSize: TYPE_SCALE.xs,
                                   }}
                                 />
@@ -1505,7 +1503,6 @@ function SummaryTile({ value, label, note }: { value: number; label: string; not
       <Typography
         component="p"
         variant="h4"
-        fontWeight={800}
         sx={{
           fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 },
           lineHeight: 1.1,
@@ -1517,7 +1514,11 @@ function SummaryTile({ value, label, note }: { value: number; label: string; not
       <Typography
         variant="caption"
         color="text.secondary"
-        sx={{ textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}
+        sx={{
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          fontWeight: FONT_WEIGHT.semibold,
+        }}
       >
         {label}
       </Typography>
@@ -1533,7 +1534,7 @@ function SummaryTile({ value, label, note }: { value: number; label: string; not
 function StatItem({ label, value }: { label: string; value: number }) {
   return (
     <Box sx={{ textAlign: "center" }}>
-      <Typography component="p" variant="h6" fontWeight={800} sx={{ lineHeight: 1 }}>
+      <Typography component="p" variant="h6" fontWeight={FONT_WEIGHT.bold} sx={{ lineHeight: 1 }}>
         {value}
       </Typography>
       <Typography
