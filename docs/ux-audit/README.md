@@ -99,6 +99,7 @@ Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono mi
 | [UX-41](tickets/UX-41-il-baskin-schema.md)          | `/il-baskin` con uno schema del campo                                              | M     | UX-21, UX-29 |
 | [UX-42](tickets/UX-42-area-utente.md)               | Area utente: notifiche, profilo, selettore "per chi"                               | S     | UX-32        |
 | [UX-43](tickets/UX-43-allenamenti-card-evidenza.md) | `/allenamenti`: card in evidenza in un tono solo, "Gestisci" sulla riga del titolo | S     | UX-32        |
+| [UX-44](tickets/UX-44-header-fascia-intermedia.md)  | Header fra 900 e 1.200 px: la barra non ci sta                                     | S     |              |
 
 #### Ordine di lavoro
 
@@ -119,6 +120,7 @@ Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando
 | 5   | UX-29  | Base di sistema: colori                                                                                  |              |
 | 6   | UX-32  | Tre intestazioni: sblocca 33, 36, 37, 40, 42                                                             |              |
 | 7   | UX-37  | Griglia e righe, subito dopo le intestazioni                                                             |              |
+| 7b  | UX-44  | Header che sfora fra 900 e 1.200 px: piccolo, visibile su tablet e finestre ridotte                      |              |
 | 8   | UX-33  | Home del tesserato                                                                                       |              |
 | 8b  | UX-43  | Card in evidenza (anche in home) e "Gestisci" di `/allenamenti`: prima confrontare con il resto del sito |              |
 | 9   | UX-36  | Navigazione Partite                                                                                      |              |

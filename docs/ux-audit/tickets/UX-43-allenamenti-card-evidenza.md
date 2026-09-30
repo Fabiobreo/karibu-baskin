@@ -6,6 +6,8 @@ Nato il 30/09/2026 guardando `/allenamenti` da staff, in tema scuro, durante UX-
 
 > **Prima di tutto confrontare con il resto del sito.** La stessa card in evidenza c'è anche in home (`HomeSessionsSection`), e bottoni staff su una riga propria o "card con testata scura" possono esserci in altre pagine (eventi, partite, squadre). La soluzione va decisa guardando tutte le occorrenze, e allineata ai modelli di intestazione di UX-32 e alle righe di UX-37, non inventata solo per questa pagina.
 
+> **Aggiornamento 01/10/2026:** il punto 2 è già fatto. Nella rifinitura di UX-32 "Gestisci allenamenti" è uscito dal contenuto ed è nello slot `action` della fascia (`StaffManageButton`), come in news ed eventi. Resta il punto 1, la card in evidenza: in `/allenamenti`, in home e nella prossima partita della pagina squadra c'è ancora un blocco scuro subito sotto la fascia scura.
+
 ## Problema
 
 1. **Card in evidenza pesante e in due toni.** È `SessionCard` con `hero` (`SessionHeroCard`), in `/allenamenti` e in home.
