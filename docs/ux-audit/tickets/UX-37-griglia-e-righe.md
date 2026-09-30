@@ -32,12 +32,12 @@
 
 - **Griglia:** `MuiContainer` nel tema con margini 16/24/32 px; tutti i `Container` pubblici `md`/`sm` diventano `lg` (1.200 px, 1.136 di contenuto). `PageHero`, `PageHeroFrame`, `EntityHero` e `PageLoadingSkeleton` non hanno più la prop `maxWidth`. L'header sta nello stesso `Container`: il logo parte dal bordo del contenuto.
 - **Colonna di lettura:** `READING_WIDTH = 760` in `@/lib/layout`, allineata a sinistra dentro la griglia, per `/il-baskin`, `/faq`, `/privacy`, `/sponsor`, `/news`, `/news/[slug]`, `/notifiche` e `/profilo/ruolo`.
-- **Header nella griglia:** tolta la voce "Home" (ci porta il logo), bottoni del menu senza larghezza minima e mai a capo; fra 900 e 1.200 px il nome del club accanto al logo si nasconde.
+- **Header:** resta a tutta larghezza, com'era (decisione del committente del 30/09: "mi piaceva di più largo"). Il punto 1 del ticket vale quindi per intestazioni e contenuto, non per l'header: il logo non è allineato al titolo.
 - **Righe partita:** `/partite` e `PlayedMatchRow` (risultati, pagina squadra) da `sm` in su sono una griglia: data | noi (a destra) | "vs" o punteggio (larghezza fissa, cifre tabulari) | loro (a sinistra) | casa, tipo e luogo o esito. Su mobile resta UX-18.
 
-**Misure (Playwright, 28 pagine, admin collegato):** a 1.440 px logo, breadcrumb e titolo a x = 152 ovunque (entity hero con avatar: il titolo dopo l'avatar); a 360 px tutti a x = 16; una sola larghezza di contenitore (1.200) oltre all'hero con foto della home; nessuno scroll orizzontale a 360 px.
+**Misure (Playwright, 28 pagine, admin collegato):** a 1.440 px breadcrumb e titolo a x = 152 ovunque (entity hero con avatar: il titolo dopo l'avatar); a 360 px tutti a x = 16; una sola larghezza di contenitore (1.200) oltre all'hero con foto della home; nessuno scroll orizzontale a 360 px.
 
 **Rimasto fuori**
 
 - Punto 4 (righe di allenamenti ed eventi a colonne): le righe degli allenamenti hanno già la colonna data fissa; gli eventi sono card, non righe.
-- Fra 900 e circa 1.000 px la barra dell'header sfora ancora di 26-108 px (prima di questo ticket circa 340): servirebbe il menu compatto fino a 1.024 px, che però tocca la navigazione a fondo pagina di mobile.
+- L'header a tutta larghezza sfora come prima fra 900 e circa 1.100 px (a 1.024 px di circa 200 px, le icone di destra escono dallo schermo): da risolvere a parte, per esempio con il menu compatto fino a 1.200 px o togliendo la voce "Home".

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import {
   AppBar,
   Toolbar,
-  Container,
   Box,
   Button,
   IconButton,
@@ -27,6 +26,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import LogoutIcon from "@mui/icons-material/Logout";
+import HomeIcon from "@mui/icons-material/Home";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -60,9 +60,8 @@ import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 // href-only — le label vengono da t() dentro il componente
-// Niente voce "Home": ci porta il logo, e nella griglia del contenuto (UX-37)
-// lo spazio della barra serve alle voci con il nome.
 const NAV_HREFS = [
+  { key: "home" as const, href: "/", iconOnly: true },
   { key: "trainings" as const, href: "/allenamenti" },
   { key: "calendar" as const, href: "/calendario" },
   { key: "events" as const, href: "/eventi" },
@@ -191,462 +190,452 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
           boxShadow: "0 2px 16px rgba(0,0,0,0.6)",
         }}
       >
-        {/* Stessa griglia del contenuto (UX-37): il logo parte dal bordo del
-            contenuto, come il titolo della pagina. */}
-        <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ gap: 1, minHeight: { xs: 56, sm: 60 } }}>
-            {/* Logo + nome */}
-            <Link
-              href="/"
-              style={{
-                textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexShrink: 0,
-                // Su mobile resta solo il logo da 38px: senza questo il bersaglio
-                // sta sotto la soglia tattile.
-                minHeight: TOUCH_TARGET_SIZE,
-              }}
-            >
-              <Image
-                src="/logo.png"
-                alt="Karibu Baskin"
-                width={38}
-                height={38}
-                style={{ objectFit: "contain" }}
-              />
-              {/* Nome del club accanto al logo: su tablet e da desktop largo. Fra
-                900 e 1.200 px la barra sta nella griglia del contenuto (UX-37) e
-                senza il nome le voci del menu restano su una riga. */}
-              <Box sx={{ display: { xs: "none", sm: "block", md: "none", lg: "block" } }}>
-                <Typography
-                  component="span"
-                  variant="subtitle2"
-                  fontWeight={FONT_WEIGHT.bold}
+        <Toolbar sx={{ gap: 1, minHeight: { xs: 56, sm: 60 } }}>
+          {/* Logo + nome */}
+          <Link
+            href="/"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexShrink: 0,
+              // Su mobile resta solo il logo da 38px: senza questo il bersaglio
+              // sta sotto la soglia tattile.
+              minHeight: TOUCH_TARGET_SIZE,
+            }}
+          >
+            <Image
+              src="/logo.png"
+              alt="Karibu Baskin"
+              width={38}
+              height={38}
+              style={{ objectFit: "contain" }}
+            />
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Typography
+                component="span"
+                variant="subtitle2"
+                fontWeight={FONT_WEIGHT.bold}
+                sx={{
+                  display: "block",
+                  color: "common.white",
+                  lineHeight: 1.1,
+                  fontSize: TYPE_SCALE.sm,
+                }}
+              >
+                Karibu Baskin
+              </Typography>
+              <Typography
+                component="span"
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: (theme) => alpha(theme.palette.common.white, 0.5),
+                  fontSize: TYPE_SCALE.xs,
+                  letterSpacing: "0.07em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Montecchio Maggiore
+              </Typography>
+            </Box>
+          </Link>
+
+          {/* Nav desktop */}
+          <Box
+            component="nav"
+            aria-label={t("mainNav")}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              gap: 0.5,
+              ml: 3,
+              flex: 1,
+              alignItems: "center",
+            }}
+          >
+            {/* Voci semplici: Home, Allenamenti, Calendario, News */}
+            {NAV_HREFS.map((link) => {
+              const active = STARTSWITH_NAV.includes(link.href)
+                ? (pathname?.startsWith(link.href) ?? false)
+                : pathname === link.href;
+              return (
+                <Button
+                  key={link.href}
+                  component={Link}
+                  href={link.href}
+                  size="small"
+                  aria-current={active ? "page" : undefined}
+                  aria-label={link.iconOnly ? t(link.key) : undefined}
                   sx={{
-                    display: "block",
-                    color: "common.white",
-                    lineHeight: 1.1,
+                    color: active
+                      ? "common.white"
+                      : (theme) => alpha(theme.palette.common.white, 0.6),
+                    fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
                     fontSize: TYPE_SCALE.sm,
+                    borderBottom: active ? "2px solid" : "2px solid transparent",
+                    borderBottomColor: active ? "primary.main" : "transparent",
+                    borderRadius: 0,
+                    pb: "2px",
+                    minWidth: link.iconOnly ? 36 : undefined,
+                    px: link.iconOnly ? 1 : undefined,
+                    "&:hover": { color: "common.white", backgroundColor: "transparent" },
                   }}
                 >
-                  Karibu Baskin
-                </Typography>
-                <Typography
-                  component="span"
-                  variant="caption"
-                  sx={{
-                    display: "block",
-                    color: (theme) => alpha(theme.palette.common.white, 0.5),
-                    fontSize: TYPE_SCALE.xs,
-                    letterSpacing: "0.07em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Montecchio Maggiore
-                </Typography>
-              </Box>
-            </Link>
+                  {link.iconOnly ? <HomeIcon fontSize="small" /> : t(link.key)}
+                </Button>
+              );
+            })}
 
-            {/* Nav desktop */}
-            <Box
-              component="nav"
-              aria-label={t("mainNav")}
+            {/* Dropdown Partite */}
+            <Button
+              size="small"
+              onClick={(e) => setPartiteAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
               sx={{
-                display: { xs: "none", md: "flex" },
-                gap: 0.25,
-                ml: { md: 1.5, lg: 3 },
-                flex: 1,
-                alignItems: "center",
-                // Le voci non vanno mai a capo ("Il Baskin" su due righe).
-                // Senza la larghezza minima di MUI (64 px) "News" ed "Eventi" non
-                // si portano dietro spazio vuoto.
-                "& .MuiButton-root": { whiteSpace: "nowrap", minWidth: 0 },
+                color: partiteActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
+                fontWeight: partiteActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                fontSize: TYPE_SCALE.sm,
+                borderBottom: partiteActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: partiteActive ? "primary.main" : "transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
               }}
             >
-              {/* Voci semplici: Home, Allenamenti, Calendario, News */}
-              {NAV_HREFS.map((link) => {
-                const active = STARTSWITH_NAV.includes(link.href)
-                  ? (pathname?.startsWith(link.href) ?? false)
-                  : pathname === link.href;
-                return (
-                  <Button
-                    key={link.href}
-                    component={Link}
-                    href={link.href}
-                    size="small"
-                    aria-current={active ? "page" : undefined}
-                    sx={{
-                      color: active
-                        ? "common.white"
-                        : (theme) => alpha(theme.palette.common.white, 0.6),
-                      fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                      fontSize: TYPE_SCALE.sm,
-                      borderBottom: active ? "2px solid" : "2px solid transparent",
-                      borderBottomColor: active ? "primary.main" : "transparent",
-                      borderRadius: 0,
-                      pb: "2px",
-                      "&:hover": { color: "common.white", backgroundColor: "transparent" },
-                    }}
-                  >
-                    {t(link.key)}
-                  </Button>
-                );
-              })}
-
-              {/* Dropdown Partite */}
-              <Button
-                size="small"
-                onClick={(e) => setPartiteAnchor(e.currentTarget)}
-                endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
-                sx={{
-                  color: partiteActive
-                    ? "common.white"
-                    : (theme) => alpha(theme.palette.common.white, 0.6),
-                  fontWeight: partiteActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                  fontSize: TYPE_SCALE.sm,
-                  borderBottom: partiteActive ? "2px solid" : "2px solid transparent",
-                  borderBottomColor: partiteActive ? "primary.main" : "transparent",
-                  borderRadius: 0,
-                  pb: "2px",
-                  "&:hover": { color: "common.white", backgroundColor: "transparent" },
-                }}
-              >
-                {t("matches")}
-              </Button>
-              <Menu
-                anchorEl={partiteAnchor}
-                open={Boolean(partiteAnchor)}
-                onClose={() => setPartiteAnchor(null)}
-                transformOrigin={{ horizontal: "left", vertical: "top" }}
-                anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-                PaperProps={{ sx: { mt: 0.5, minWidth: 150 } }}
-              >
-                {PARTITE_HREFS.map((pl) => (
-                  <MenuItem
-                    key={pl.href}
-                    component={Link}
-                    href={pl.href}
-                    selected={pathname === pl.href}
-                    aria-current={pathname === pl.href ? "page" : undefined}
-                    onClick={() => setPartiteAnchor(null)}
-                    sx={{
-                      fontSize: TYPE_SCALE.sm,
-                      fontWeight: pathname === pl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                    }}
-                  >
-                    {t(pl.key)}
-                  </MenuItem>
-                ))}
-              </Menu>
-
-              {/* Dropdown Squadre */}
-              <Button
-                size="small"
-                onClick={(e) => setSquadreAnchor(e.currentTarget)}
-                endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
-                sx={{
-                  color: squadreActive
-                    ? "common.white"
-                    : (theme) => alpha(theme.palette.common.white, 0.6),
-                  fontWeight: squadreActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                  fontSize: TYPE_SCALE.sm,
-                  borderBottom: squadreActive ? "2px solid" : "2px solid transparent",
-                  borderBottomColor: squadreActive ? "primary.main" : "transparent",
-                  borderRadius: 0,
-                  pb: "2px",
-                  "&:hover": { color: "common.white", backgroundColor: "transparent" },
-                }}
-              >
-                {t("teams")}
-              </Button>
-              <Menu
-                anchorEl={squadreAnchor}
-                open={Boolean(squadreAnchor)}
-                onClose={() => setSquadreAnchor(null)}
-                transformOrigin={{ horizontal: "left", vertical: "top" }}
-                anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-                PaperProps={{ sx: { mt: 0.5, minWidth: 160 } }}
-              >
-                {squadreLinks.map((sl) => (
-                  <MenuItem
-                    key={sl.href}
-                    component={Link}
-                    href={sl.href}
-                    selected={pathname === sl.href}
-                    aria-current={pathname === sl.href ? "page" : undefined}
-                    onClick={() => setSquadreAnchor(null)}
-                    sx={{
-                      fontSize: TYPE_SCALE.sm,
-                      fontWeight: pathname === sl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                    }}
-                  >
-                    {sl.label}
-                  </MenuItem>
-                ))}
-              </Menu>
-
-              {/* Dropdown Il Baskin */}
-              <Button
-                size="small"
-                onClick={(e) => setIlBaskinAnchor(e.currentTarget)}
-                endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
-                sx={{
-                  color: ilBaskinActive
-                    ? "common.white"
-                    : (theme) => alpha(theme.palette.common.white, 0.6),
-                  fontWeight: ilBaskinActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                  fontSize: TYPE_SCALE.sm,
-                  borderBottom: ilBaskinActive ? "2px solid" : "2px solid transparent",
-                  borderBottomColor: ilBaskinActive ? "primary.main" : "transparent",
-                  borderRadius: 0,
-                  pb: "2px",
-                  "&:hover": { color: "common.white", backgroundColor: "transparent" },
-                }}
-              >
-                {t("baskin")}
-              </Button>
-              <Menu
-                anchorEl={ilBaskinAnchor}
-                open={Boolean(ilBaskinAnchor)}
-                onClose={() => setIlBaskinAnchor(null)}
-                transformOrigin={{ horizontal: "left", vertical: "top" }}
-                anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-                PaperProps={{ sx: { mt: 0.5, minWidth: 170 } }}
-              >
-                {IL_BASKIN_HREFS.map((bl) => (
-                  <MenuItem
-                    key={bl.href}
-                    component={bl.disabled ? "li" : Link}
-                    href={bl.disabled ? undefined : bl.href}
-                    selected={pathname === bl.href}
-                    aria-current={pathname === bl.href ? "page" : undefined}
-                    disabled={bl.disabled}
-                    onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
-                    sx={{
-                      fontSize: TYPE_SCALE.sm,
-                      fontWeight: pathname === bl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                      gap: 1,
-                    }}
-                  >
-                    {t(bl.key)}
-                    {bl.badge && (
-                      <Box
-                        component="span"
-                        sx={{
-                          ml: "auto",
-                          fontSize: TYPE_SCALE.xs,
-                          px: 0.6,
-                          py: 0.1,
-                          borderRadius: RADIUS.sm,
-                          bgcolor: "action.selected",
-                          color: "text.secondary",
-                          fontWeight: FONT_WEIGHT.semibold,
-                          textTransform: "uppercase",
-                          letterSpacing: "0.04em",
-                        }}
-                      >
-                        {bl.badge}
-                      </Box>
-                    )}
-                  </MenuItem>
-                ))}
-              </Menu>
-
-              {/* Dropdown Contatti */}
-              <Button
-                size="small"
-                onClick={(e) => setContattiAnchor(e.currentTarget)}
-                endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
-                sx={{
-                  color: contattiActive
-                    ? "common.white"
-                    : (theme) => alpha(theme.palette.common.white, 0.6),
-                  fontWeight: contattiActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                  fontSize: TYPE_SCALE.sm,
-                  borderBottom: contattiActive ? "2px solid" : "2px solid transparent",
-                  borderBottomColor: contattiActive ? "primary.main" : "transparent",
-                  borderRadius: 0,
-                  pb: "2px",
-                  "&:hover": { color: "common.white", backgroundColor: "transparent" },
-                }}
-              >
-                {t("contacts")}
-              </Button>
-              <Menu
-                anchorEl={contattiAnchor}
-                open={Boolean(contattiAnchor)}
-                onClose={() => setContattiAnchor(null)}
-                transformOrigin={{ horizontal: "left", vertical: "top" }}
-                anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-                PaperProps={{ sx: { mt: 0.5, minWidth: 140 } }}
-              >
-                {CONTATTI_HREFS.map((cl) => (
-                  <MenuItem
-                    key={cl.href}
-                    component={Link}
-                    href={cl.href}
-                    selected={pathname === cl.href}
-                    aria-current={pathname === cl.href ? "page" : undefined}
-                    onClick={() => setContattiAnchor(null)}
-                    sx={{
-                      fontSize: TYPE_SCALE.sm,
-                      fontWeight: pathname === cl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                    }}
-                  >
-                    {t(cl.key)}
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
-
-            <Box sx={{ flex: { xs: 1, md: 0 } }} />
-
-            {/* Ricerca globale — visibile sempre (desktop + mobile) */}
-            <GlobalSearch />
-
-            {/* Selettore tema + lingua (desktop) — visibili a tutti, loggati e non */}
-            <Box
-              sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, mr: 0.5 }}
+              {t("matches")}
+            </Button>
+            <Menu
+              anchorEl={partiteAnchor}
+              open={Boolean(partiteAnchor)}
+              onClose={() => setPartiteAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 150 } }}
             >
-              <ThemeSwitcher />
-              <LanguageSwitcher onDark />
-            </Box>
+              {PARTITE_HREFS.map((pl) => (
+                <MenuItem
+                  key={pl.href}
+                  component={Link}
+                  href={pl.href}
+                  selected={pathname === pl.href}
+                  aria-current={pathname === pl.href ? "page" : undefined}
+                  onClick={() => setPartiteAnchor(null)}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === pl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  }}
+                >
+                  {t(pl.key)}
+                </MenuItem>
+              ))}
+            </Menu>
 
-            {/* Campanellino notifiche (desktop) */}
-            <Box sx={{ display: { xs: "none", md: "flex" } }}>
-              <NotificationBell />
-            </Box>
+            {/* Dropdown Squadre */}
+            <Button
+              size="small"
+              onClick={(e) => setSquadreAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: squadreActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
+                fontWeight: squadreActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                fontSize: TYPE_SCALE.sm,
+                borderBottom: squadreActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: squadreActive ? "primary.main" : "transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
+              }}
+            >
+              {t("teams")}
+            </Button>
+            <Menu
+              anchorEl={squadreAnchor}
+              open={Boolean(squadreAnchor)}
+              onClose={() => setSquadreAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 160 } }}
+            >
+              {squadreLinks.map((sl) => (
+                <MenuItem
+                  key={sl.href}
+                  component={Link}
+                  href={sl.href}
+                  selected={pathname === sl.href}
+                  aria-current={pathname === sl.href ? "page" : undefined}
+                  onClick={() => setSquadreAnchor(null)}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === sl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  }}
+                >
+                  {sl.label}
+                </MenuItem>
+              ))}
+            </Menu>
 
-            {/* Avatar utente loggato (desktop) */}
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
-              {status === "loading" ? (
-                <Skeleton
-                  variant="circular"
-                  width={34}
-                  height={34}
-                  sx={{ bgcolor: (theme) => alpha(theme.palette.common.white, 0.1) }}
-                />
-              ) : user ? (
-                <>
-                  <IconButton
-                    onClick={(e) => setMenuAnchor(e.currentTarget)}
-                    aria-label={t("userMenu")}
-                    sx={{ p: 0.5 }}
-                  >
-                    <Avatar
-                      src={user.customImage ?? user.image ?? undefined}
-                      alt={user.name ?? "Utente"}
+            {/* Dropdown Il Baskin */}
+            <Button
+              size="small"
+              onClick={(e) => setIlBaskinAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: ilBaskinActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
+                fontWeight: ilBaskinActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                fontSize: TYPE_SCALE.sm,
+                borderBottom: ilBaskinActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: ilBaskinActive ? "primary.main" : "transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
+              }}
+            >
+              {t("baskin")}
+            </Button>
+            <Menu
+              anchorEl={ilBaskinAnchor}
+              open={Boolean(ilBaskinAnchor)}
+              onClose={() => setIlBaskinAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 170 } }}
+            >
+              {IL_BASKIN_HREFS.map((bl) => (
+                <MenuItem
+                  key={bl.href}
+                  component={bl.disabled ? "li" : Link}
+                  href={bl.disabled ? undefined : bl.href}
+                  selected={pathname === bl.href}
+                  aria-current={pathname === bl.href ? "page" : undefined}
+                  disabled={bl.disabled}
+                  onClick={() => !bl.disabled && setIlBaskinAnchor(null)}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === bl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                    gap: 1,
+                  }}
+                >
+                  {t(bl.key)}
+                  {bl.badge && (
+                    <Box
+                      component="span"
                       sx={{
-                        width: 34,
-                        height: 34,
+                        ml: "auto",
                         fontSize: TYPE_SCALE.xs,
-                        bgcolor: "primary.fill",
-                        cursor: "pointer",
+                        px: 0.6,
+                        py: 0.1,
+                        borderRadius: RADIUS.sm,
+                        bgcolor: "action.selected",
+                        color: "text.secondary",
+                        fontWeight: FONT_WEIGHT.semibold,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
                       }}
                     >
-                      {!(user.customImage ?? user.image) && initials}
-                    </Avatar>
-                  </IconButton>
-                  <Menu
-                    anchorEl={menuAnchor}
-                    open={Boolean(menuAnchor)}
-                    onClose={() => setMenuAnchor(null)}
-                    transformOrigin={{ horizontal: "right", vertical: "top" }}
-                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                    PaperProps={{ sx: { mt: 1, minWidth: 180 } }}
-                  >
-                    <Box sx={{ px: 2, py: 1 }}>
-                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-                        {user.name}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" noWrap>
-                        {user.email}
-                      </Typography>
+                      {bl.badge}
                     </Box>
-                    <Divider />
-                    <MenuItem
-                      onClick={() => {
-                        setMenuAnchor(null);
-                        router.push("/profilo");
-                      }}
-                    >
-                      <ListItemIcon>
-                        <AccountCircleIcon fontSize="small" />
-                      </ListItemIcon>
-                      {t("myProfile")}
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => {
-                        setMenuAnchor(null);
-                        router.push("/profilo/disponibilita");
-                      }}
-                    >
-                      <ListItemIcon>
-                        <EventAvailableIcon fontSize="small" />
-                      </ListItemIcon>
-                      {t("myAvailabilities")}
-                    </MenuItem>
-                    {isStaff && (
-                      <MenuItem
-                        onClick={() => {
-                          setMenuAnchor(null);
-                          router.push("/admin");
-                        }}
-                        sx={{ color: "primary.onLight", fontWeight: FONT_WEIGHT.semibold }}
-                      >
-                        <ListItemIcon>
-                          <AdminPanelSettingsIcon fontSize="small" sx={{ color: "primary.main" }} />
-                        </ListItemIcon>
-                        {t("admin")}
-                      </MenuItem>
-                    )}
-                    <Divider />
-                    <MenuItem
-                      onClick={() => {
-                        setMenuAnchor(null);
-                        void handleSignOut();
-                      }}
-                      sx={{ color: "error.main" }}
-                    >
-                      <ListItemIcon>
-                        <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
-                      </ListItemIcon>
-                      {t("logout")}
-                    </MenuItem>
-                  </Menu>
-                </>
-              ) : (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Button
-                    onClick={() => router.push("/login")}
-                    size="small"
-                    variant="outlined"
+                  )}
+                </MenuItem>
+              ))}
+            </Menu>
+
+            {/* Dropdown Contatti */}
+            <Button
+              size="small"
+              onClick={(e) => setContattiAnchor(e.currentTarget)}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: "0.9rem !important", ml: -0.5 }} />}
+              sx={{
+                color: contattiActive
+                  ? "common.white"
+                  : (theme) => alpha(theme.palette.common.white, 0.6),
+                fontWeight: contattiActive ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                fontSize: TYPE_SCALE.sm,
+                borderBottom: contattiActive ? "2px solid" : "2px solid transparent",
+                borderBottomColor: contattiActive ? "primary.main" : "transparent",
+                borderRadius: 0,
+                pb: "2px",
+                "&:hover": { color: "common.white", backgroundColor: "transparent" },
+              }}
+            >
+              {t("contacts")}
+            </Button>
+            <Menu
+              anchorEl={contattiAnchor}
+              open={Boolean(contattiAnchor)}
+              onClose={() => setContattiAnchor(null)}
+              transformOrigin={{ horizontal: "left", vertical: "top" }}
+              anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+              PaperProps={{ sx: { mt: 0.5, minWidth: 140 } }}
+            >
+              {CONTATTI_HREFS.map((cl) => (
+                <MenuItem
+                  key={cl.href}
+                  component={Link}
+                  href={cl.href}
+                  selected={pathname === cl.href}
+                  aria-current={pathname === cl.href ? "page" : undefined}
+                  onClick={() => setContattiAnchor(null)}
+                  sx={{
+                    fontSize: TYPE_SCALE.sm,
+                    fontWeight: pathname === cl.href ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                  }}
+                >
+                  {t(cl.key)}
+                </MenuItem>
+              ))}
+            </Menu>
+          </Box>
+
+          <Box sx={{ flex: { xs: 1, md: 0 } }} />
+
+          {/* Ricerca globale — visibile sempre (desktop + mobile) */}
+          <GlobalSearch />
+
+          {/* Selettore tema + lingua (desktop) — visibili a tutti, loggati e non */}
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 1, mr: 0.5 }}>
+            <ThemeSwitcher />
+            <LanguageSwitcher onDark />
+          </Box>
+
+          {/* Campanellino notifiche (desktop) */}
+          <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <NotificationBell />
+          </Box>
+
+          {/* Avatar utente loggato (desktop) */}
+          <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
+            {status === "loading" ? (
+              <Skeleton
+                variant="circular"
+                width={34}
+                height={34}
+                sx={{ bgcolor: (theme) => alpha(theme.palette.common.white, 0.1) }}
+              />
+            ) : user ? (
+              <>
+                <IconButton
+                  onClick={(e) => setMenuAnchor(e.currentTarget)}
+                  aria-label={t("userMenu")}
+                  sx={{ p: 0.5 }}
+                >
+                  <Avatar
+                    src={user.customImage ?? user.image ?? undefined}
+                    alt={user.name ?? "Utente"}
                     sx={{
-                      color: "common.white",
-                      borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
+                      width: 34,
+                      height: 34,
                       fontSize: TYPE_SCALE.xs,
-                      "&:hover": { borderColor: "common.white" },
+                      bgcolor: "primary.fill",
+                      cursor: "pointer",
                     }}
                   >
-                    {t("login")}
-                  </Button>
-                </Box>
-              )}
-            </Box>
+                    {!(user.customImage ?? user.image) && initials}
+                  </Avatar>
+                </IconButton>
+                <Menu
+                  anchorEl={menuAnchor}
+                  open={Boolean(menuAnchor)}
+                  onClose={() => setMenuAnchor(null)}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  PaperProps={{ sx: { mt: 1, minWidth: 180 } }}
+                >
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
+                      {user.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {user.email}
+                    </Typography>
+                  </Box>
+                  <Divider />
+                  <MenuItem
+                    onClick={() => {
+                      setMenuAnchor(null);
+                      router.push("/profilo");
+                    }}
+                  >
+                    <ListItemIcon>
+                      <AccountCircleIcon fontSize="small" />
+                    </ListItemIcon>
+                    {t("myProfile")}
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setMenuAnchor(null);
+                      router.push("/profilo/disponibilita");
+                    }}
+                  >
+                    <ListItemIcon>
+                      <EventAvailableIcon fontSize="small" />
+                    </ListItemIcon>
+                    {t("myAvailabilities")}
+                  </MenuItem>
+                  {isStaff && (
+                    <MenuItem
+                      onClick={() => {
+                        setMenuAnchor(null);
+                        router.push("/admin");
+                      }}
+                      sx={{ color: "primary.onLight", fontWeight: FONT_WEIGHT.semibold }}
+                    >
+                      <ListItemIcon>
+                        <AdminPanelSettingsIcon fontSize="small" sx={{ color: "primary.main" }} />
+                      </ListItemIcon>
+                      {t("admin")}
+                    </MenuItem>
+                  )}
+                  <Divider />
+                  <MenuItem
+                    onClick={() => {
+                      setMenuAnchor(null);
+                      void handleSignOut();
+                    }}
+                    sx={{ color: "error.main" }}
+                  >
+                    <ListItemIcon>
+                      <LogoutIcon fontSize="small" sx={{ color: "error.main" }} />
+                    </ListItemIcon>
+                    {t("logout")}
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Button
+                  onClick={() => router.push("/login")}
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    color: "common.white",
+                    borderColor: (theme) => alpha(theme.palette.common.white, 0.3),
+                    fontSize: TYPE_SCALE.xs,
+                    "&:hover": { borderColor: "common.white" },
+                  }}
+                >
+                  {t("login")}
+                </Button>
+              </Box>
+            )}
+          </Box>
 
-            {/* Hamburger mobile */}
-            <IconButton
-              color="inherit"
-              onClick={() => setDrawerOpen(true)}
-              aria-label={t("openMenu")}
-              sx={{ ...TOUCH_TARGET, display: { md: "none" } }}
-            >
-              <MenuIcon />
-            </IconButton>
-          </Toolbar>
-        </Container>
+          {/* Hamburger mobile */}
+          <IconButton
+            color="inherit"
+            onClick={() => setDrawerOpen(true)}
+            aria-label={t("openMenu")}
+            sx={{ ...TOUCH_TARGET, display: { md: "none" } }}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
       </AppBar>
 
       {/* Drawer mobile — solo pagine secondarie */}
