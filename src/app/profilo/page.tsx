@@ -105,12 +105,35 @@ export default async function ProfiloPage() {
       },
       childAccount: {
         select: {
+          id: true,
           _count: { select: { registrations: true } },
           // Chi è figlio di qualcuno (scheda figlio legata all'account) vede
-          // i suoi genitori nella tab Famiglia.
+          // nella tab Famiglia i suoi genitori e, attraverso di loro, fratelli
+          // e sorelle: gli altri figli di almeno uno dei suoi genitori.
           guardians: {
             orderBy: { createdAt: "asc" as const },
-            select: { user: { select: { id: true, name: true, image: true, customImage: true } } },
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  customImage: true,
+                  guardianOf: {
+                    select: {
+                      child: {
+                        select: {
+                          id: true,
+                          name: true,
+                          gender: true,
+                          user: { select: { image: true, customImage: true } },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -473,6 +496,60 @@ export default async function ProfiloPage() {
       </Paper>
     ) : null;
 
+  // Fratelli e sorelle: gli altri figli dei miei genitori, una volta sola anche
+  // se li abbiamo in comune tutti e due. Solo nome e foto, come per i genitori.
+  const ownChildId = user.childAccount?.id;
+  const siblings = [
+    ...new Map(
+      myParents
+        .flatMap((p) => p.guardianOf.map((g) => g.child))
+        .filter((c) => c.id !== ownChildId)
+        .map((c) => [c.id, c] as const)
+    ).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name, "it"));
+  // Il titolo segue chi c'e': "Mia sorella", "I miei fratelli", o tutti e due.
+  const siblingsKind = siblings.every((s) => s.gender === "MALE")
+    ? "brothers"
+    : siblings.every((s) => s.gender === "FEMALE")
+      ? "sisters"
+      : "mixed";
+  const siblingsTab =
+    siblings.length > 0 ? (
+      <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3 }}>
+        <Typography component="h2" variant="subtitle1" gutterBottom>
+          {t("mySiblings", { kind: siblingsKind, count: siblings.length })}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {t("mySiblingsDesc")}
+        </Typography>
+        <Stack spacing={1.5}>
+          {siblings.map((s) => (
+            <Box key={s.id} sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Avatar
+                src={s.user?.customImage ?? s.user?.image ?? undefined}
+                alt=""
+                sx={{ width: 40, height: 40 }}
+              >
+                {s.name[0]?.toUpperCase()}
+              </Avatar>
+              <Box>
+                <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
+                  {s.name}
+                </Typography>
+                {/* Con il titolo misto la parola dice chi e' chi; senza il
+                    genere non si indovina. */}
+                {siblingsKind === "mixed" && s.gender && (
+                  <Typography variant="caption" color="text.secondary">
+                    {t(s.gender === "MALE" ? "siblingBrother" : "siblingSister")}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+      </Paper>
+    ) : null;
+
   // Badge dei figli (tab Famiglia). Senza `emptyLabel` BadgeShowcase non
   // mostra nulla per un figlio senza badge né traguardi vicini.
   const childBadgesTab =
@@ -527,9 +604,10 @@ export default async function ProfiloPage() {
           <ProfileTabs
             profile={profileTab}
             family={
-              parentsTab || familyTab || childBadgesTab ? (
+              parentsTab || siblingsTab || familyTab || childBadgesTab ? (
                 <>
                   {parentsTab}
+                  {siblingsTab}
                   {familyTab}
                   {childBadgesTab}
                 </>
