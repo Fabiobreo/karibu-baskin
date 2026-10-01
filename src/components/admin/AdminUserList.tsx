@@ -22,6 +22,8 @@ import UserFilters from "@/components/admin/userList/UserFilters";
 import UsersTable from "@/components/admin/userList/UsersTable";
 import UsersMobileCards from "@/components/admin/userList/UsersMobileCards";
 import ChildrenTab from "@/components/admin/userList/ChildrenTab";
+import AthletesTab from "@/components/admin/userList/AthletesTab";
+import { isAthleteAccount } from "@/lib/athletes";
 import UserEditDialog from "@/components/admin/userList/UserEditDialog";
 import type {
   AdminRow,
@@ -36,8 +38,31 @@ import type {
 /** Righe per pagina di default, allineato al server (vedi utenti/page.tsx). */
 const DEFAULT_ROWS_PER_PAGE = 25;
 
+type UserRow = UserEntry & { kind: "user" };
+type TabKey = "athletes" | "accounts" | "children";
+
+const toUserRow = (u: UserEntry): UserRow => ({ ...u, kind: "user" });
+
+/**
+ * Tab di partenza: Atleti, a meno che l'URL non chieda altro. Un link con dei
+ * filtri (ricerca, ruolo utente, pagina…) parla della lista degli account.
+ */
+function initialTab(filters: CurrentFilters, page: number): TabKey {
+  if (filters.tab === "figli") return "children";
+  const hasAccountFilters =
+    !!filters.search ||
+    !!filters.appRole ||
+    !!filters.sportRole ||
+    !!filters.gender ||
+    !!filters.teamId ||
+    !!filters.athleteStatus ||
+    page > 1;
+  return filters.tab === "account" || hasAccountFilters ? "accounts" : "athletes";
+}
+
 export default function AdminUserList({
   users: initialUsers,
+  athleteUsers: initialAthleteUsers,
   childEntries: initialChildren,
   initialTeams = [],
   isAdmin = false,
@@ -47,7 +72,10 @@ export default function AdminUserList({
   currentFilters = {},
   currentSeason,
 }: {
+  /** Pagina corrente della tab Account (filtrata e paginata dal server). */
   users: UserEntry[];
+  /** Tutti gli account che giocano, per la tab Atleti (vedi `@/lib/athletes`). */
+  athleteUsers: UserEntry[];
   childEntries: ChildEntry[];
   initialTeams?: TeamInfo[];
   isAdmin?: boolean;
@@ -115,6 +143,8 @@ export default function AdminUserList({
       if ((merged.page ?? 1) > 1) params.set("page", String(merged.page));
       if ((merged.limit ?? DEFAULT_ROWS_PER_PAGE) !== DEFAULT_ROWS_PER_PAGE)
         params.set("limit", String(merged.limit));
+      // Filtri e pagine sono della tab Account: l'URL la riapre al ricaricamento.
+      params.set("tab", "account");
       startTransition(() => router.push(`${pathname}?${params.toString()}`));
     },
     [
@@ -131,6 +161,11 @@ export default function AdminUserList({
       pathname,
       router,
     ]
+  );
+
+  // Account che giocano: tutti, indipendenti da filtri e pagina della tab Account.
+  const [athleteUserRows, setAthleteUserRows] = useState<UserRow[]>(() =>
+    initialAthleteUsers.map(toUserRow)
   );
 
   const [rows, setRows] = useState<AdminRow[]>(() => [
@@ -150,10 +185,28 @@ export default function AdminUserList({
       ...initialUsers.map((u) => ({ ...u, kind: "user" as const })),
       ...initialChildren.map((c) => ({ ...c, kind: "child" as const })),
     ]);
-  }, [initialUsers, initialChildren]);
+    setAthleteUserRows(initialAthleteUsers.map(toUserRow));
+  }, [initialUsers, initialAthleteUsers, initialChildren]);
 
-  // Tab attivo: 0 = utenti, 1 = figli senza account
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabKey>(() => initialTab(currentFilters, serverPage));
+
+  /**
+   * Aggiorna una persona ovunque compaia. Un account puo' stare nella pagina
+   * della tab Account, nella lista degli atleti o in entrambe; e una modifica
+   * (ruolo utente, ruolo Baskin) puo' farlo entrare o uscire dagli atleti.
+   */
+  function updateRow(target: Pick<AdminRow, "kind" | "id">, change: (row: AdminRow) => AdminRow) {
+    const isTarget = (r: AdminRow) => r.kind === target.kind && r.id === target.id;
+    const current = athleteUserRows.find(isTarget) ?? rows.find(isTarget);
+    if (!current) return;
+    const next = change(current);
+    setRows((prev) => prev.map((r) => (isTarget(r) ? next : r)));
+    if (next.kind !== "user") return;
+    setAthleteUserRows((prev) => {
+      const others = prev.filter((r) => r.id !== next.id);
+      return isAthleteAccount(next) ? [...others, next] : others;
+    });
+  }
 
   // Dialogs
   const [editRow, setEditRow] = useState<AdminRow | null>(null);
@@ -271,7 +324,7 @@ export default function AdminUserList({
     setFilterTeamId("");
     setFilterAthleteStatus("");
     setPage(0);
-    if (serverDriven) startTransition(() => router.push(pathname));
+    if (serverDriven) startTransition(() => router.push(`${pathname}?tab=account`));
   }
 
   // Scelta multipla anche con la paginazione sul server: nell'URL i valori
@@ -303,8 +356,8 @@ export default function AdminUserList({
       body: JSON.stringify({ appRole: newRole }),
     });
     if (res.ok) {
-      setRows((prev) =>
-        prev.map((r) => (r.kind === "user" && r.id === userId ? { ...r, appRole: newRole } : r))
+      updateRow({ kind: "user", id: userId }, (r) =>
+        r.kind === "user" ? { ...r, appRole: newRole } : r
       );
       showToast({ message: `Ruolo aggiornato a ${ROLE_LABELS_IT[newRole]}`, severity: "success" });
     } else {
@@ -324,25 +377,23 @@ export default function AdminUserList({
     });
     if (res.ok) {
       const updated = await res.json();
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === row.id && r.kind === "user"
-            ? {
-                ...r,
-                sportRole: updated.sportRole,
-                sportRoleVariant: updated.sportRoleVariant,
-                sportRoleSuggested: null,
-                sportRoleSuggestedVariant: null,
-                sportRoleHistory:
-                  updated.sportRole !== null
-                    ? [
-                        { sportRole: updated.sportRole, changedAt: new Date().toISOString() },
-                        ...r.sportRoleHistory,
-                      ]
-                    : r.sportRoleHistory,
-              }
-            : r
-        )
+      updateRow(row, (r) =>
+        r.kind === "user"
+          ? {
+              ...r,
+              sportRole: updated.sportRole,
+              sportRoleVariant: updated.sportRoleVariant,
+              sportRoleSuggested: null,
+              sportRoleSuggestedVariant: null,
+              sportRoleHistory:
+                updated.sportRole !== null
+                  ? [
+                      { sportRole: updated.sportRole, changedAt: new Date().toISOString() },
+                      ...r.sportRoleHistory,
+                    ]
+                  : r.sportRoleHistory,
+            }
+          : r
       );
       showToast({ message: "Ruolo confermato", severity: "success" });
     } else {
@@ -357,12 +408,8 @@ export default function AdminUserList({
       body: JSON.stringify({ clearRoleSuggestion: true }),
     });
     if (res.ok) {
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === row.id && r.kind === "user"
-            ? { ...r, sportRoleSuggested: null, sportRoleSuggestedVariant: null }
-            : r
-        )
+      updateRow(row, (r) =>
+        r.kind === "user" ? { ...r, sportRoleSuggested: null, sportRoleSuggestedVariant: null } : r
       );
       showToast({ message: "Suggerimento rimosso", severity: "info" });
     } else {
@@ -397,13 +444,10 @@ export default function AdminUserList({
           return;
         }
       }
-      setRows((prev) =>
-        prev.map((r) => {
-          if (r.id !== row.id || r.kind !== row.kind) return r;
-          const others = r.teamMemberships.filter((m) => m.team.season !== currentSeason);
-          return { ...r, teamMemberships: newMembership ? [...others, newMembership] : others };
-        })
-      );
+      updateRow(row, (r) => {
+        const others = r.teamMemberships.filter((m) => m.team.season !== currentSeason);
+        return { ...r, teamMemberships: newMembership ? [...others, newMembership] : others };
+      });
       showToast({
         message: newTeamId ? "Squadra aggiornata" : "Rimosso dalla squadra",
         severity: "success",
@@ -423,7 +467,9 @@ export default function AdminUserList({
     try {
       const res = await fetch(url, { method: "DELETE" });
       if (res.ok) {
-        setRows((prev) => prev.filter((r) => r.id !== deleteRow.id));
+        const gone = (r: AdminRow) => r.kind === deleteRow.kind && r.id === deleteRow.id;
+        setRows((prev) => prev.filter((r) => !gone(r)));
+        setAthleteUserRows((prev) => prev.filter((r) => !gone(r)));
         const label =
           deleteRow.kind === "user"
             ? `Utente "${deleteRow.name ?? deleteRow.email}" eliminato`
@@ -444,25 +490,50 @@ export default function AdminUserList({
   // ── Render ────────────────────────────────────────────────────────────────
 
   const summary = serverDriven
-    ? `${serverTotal} utenti`
+    ? `${serverTotal} account`
     : processed.length !== userCount
       ? `${processed.length} di ${userCount}`
-      : `${userCount} utenti`;
+      : `${userCount} account`;
+
+  // La rosa: account che giocano e figli senza account, insieme.
+  const athleteRows = useMemo<AdminRow[]>(
+    () => [...athleteUserRows, ...childRows],
+    [athleteUserRows, childRows]
+  );
+  const activeAthleteCount = athleteRows.filter((r) => r.athleteStatus === null).length;
 
   return (
     <Box>
       {/* ── Tabs ── */}
       <Tabs
-        value={activeTab}
-        onChange={(_, v) => setActiveTab(v)}
+        value={activeTab === "children" && childCount === 0 ? "athletes" : activeTab}
+        onChange={(_, v: TabKey) => setActiveTab(v)}
+        variant="scrollable"
+        scrollButtons="auto"
         sx={{ mb: 2.5, borderBottom: "1px solid", borderColor: "divider" }}
       >
-        <Tab label={`Utenti (${userCount})`} />
-        {childCount > 0 && <Tab label={`Figli senza account (${childCount})`} />}
+        {/* Il numero e' la rosa attiva: in pausa ed ex si vedono dal filtro di stato. */}
+        <Tab value="athletes" label={`Atleti (${activeAthleteCount})`} />
+        <Tab value="accounts" label={`Account (${userCount})`} />
+        {childCount > 0 && <Tab value="children" label={`Figli senza account (${childCount})`} />}
       </Tabs>
 
-      {/* TAB 0 — Utenti con account */}
-      {activeTab === 0 && (
+      {/* Atleti: chi gioca, con o senza account */}
+      {(activeTab === "athletes" || (activeTab === "children" && childCount === 0)) && (
+        <AthletesTab
+          rows={athleteRows}
+          teams={availableTeams}
+          currentSeason={currentSeason}
+          onConfirmSuggestedRole={handleConfirmSuggestedRole}
+          onRejectSuggestedRole={handleRejectSuggestedRole}
+          onTeamChange={handleTeamChange}
+          onEdit={setEditRow}
+          onDelete={setDeleteRow}
+        />
+      )}
+
+      {/* Account: chiunque possa entrare nell'app */}
+      {activeTab === "accounts" && (
         <>
           <UserFilters
             search={search}
@@ -551,8 +622,8 @@ export default function AdminUserList({
         </>
       )}
 
-      {/* TAB 1 — Figli senza account */}
-      {activeTab === 1 && (
+      {/* Figli senza account */}
+      {activeTab === "children" && childCount > 0 && (
         <ChildrenTab
           childRows={childRows}
           teams={availableTeams}
@@ -601,9 +672,7 @@ export default function AdminUserList({
           currentSeason={currentSeason}
           onClose={() => setEditRow(null)}
           onSaved={(updated) => {
-            setRows((prev) =>
-              prev.map((r) => (r.id === updated.id && r.kind === updated.kind ? updated : r))
-            );
+            updateRow(updated, () => updated);
             // I genitori si salvano subito, a scheda aperta: la scheda deve
             // vedere la lista nuova.
             setEditRow((cur) =>

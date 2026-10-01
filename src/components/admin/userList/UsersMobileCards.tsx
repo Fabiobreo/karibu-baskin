@@ -12,7 +12,7 @@ import {
   type AdminRow,
 } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
-import { joinNames } from "@/lib/guardianNames";
+import { childOfLabel, joinNames } from "@/lib/guardianNames";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -88,6 +88,17 @@ export default function UsersMobileCards({
                     sx={{ fontStyle: "italic" }}
                   >
                     Genitore di {joinNames(row.childNames)}
+                  </Typography>
+                )}
+                {row.parentNames && row.parentNames.length > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    noWrap
+                    display="block"
+                    sx={{ fontStyle: "italic" }}
+                  >
+                    {childOfLabel(row.gender, row.parentNames)}
                   </Typography>
                 )}
                 <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>

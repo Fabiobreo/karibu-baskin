@@ -10,6 +10,7 @@ import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { ATHLETE_STATUS_LABELS, ROLE_LABELS_IT, sportRoleLabel } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { teamColor } from "@/lib/teamColors";
 import TeamChip from "@/components/teams/TeamChip";
 
@@ -59,6 +60,8 @@ export interface UserEntry {
   teamMemberships: MembershipInfo[];
   /** Figli di cui e' genitore, nell'ordine di collegamento. */
   childNames?: string[];
+  /** Genitori collegati, se l'account e' anche figlio di qualcuno. */
+  parentNames?: string[];
 }
 
 export interface ChildEntry {
@@ -90,7 +93,42 @@ export interface CurrentFilters {
   sortBy?: string;
   sortDir?: string;
   limit?: number;
+  /** Tab da aprire: `account` o `figli`; senza, la tab Atleti. */
+  tab?: string;
 }
+
+// ── Stile dei filtri ─────────────────────────────────────────────────────────
+
+/**
+ * Stato selezionato di un chip filtro. Se il filtro ha un colore suo (ruolo
+ * utente, ruolo Baskin, squadra) il chip selezionato lo prende come
+ * riempimento: e' lo stesso colore che quel valore ha nella tabella sotto.
+ * Senza colore (ospite, "Non impostato", squadra senza tinta) resta in
+ * inchiostro: fondo `action.selected`, bordo e testo pieni. Sempre semibold,
+ * come i gruppi di bottoni di Genere e Stato.
+ */
+export function filterChipSx(active: boolean, fill?: { bgcolor?: string; color?: string } | null) {
+  if (!active) return { cursor: "pointer", fontWeight: FONT_WEIGHT.regular } as const;
+  const bgcolor = fill?.bgcolor ?? "action.selected";
+  return {
+    cursor: "pointer",
+    fontWeight: FONT_WEIGHT.semibold,
+    bgcolor,
+    color: fill?.color ?? "text.primary",
+    // Con il riempimento il bordo e' quello dei badge di ruolo (visibile solo
+    // in scuro, dove le tinte scure si perdono sul fondo).
+    borderColor: fill?.bgcolor ? "border.role" : "text.primary",
+    "& .MuiChip-icon": { color: "inherit" },
+    // Il chip cliccabile di MUI in hover torna grigio: resta nel suo colore.
+    "&.MuiChip-clickable:hover": { bgcolor },
+  } as const;
+}
+
+export const TOGGLE_SX = {
+  px: 1.5,
+  fontSize: TYPE_SCALE.xs,
+  "&.Mui-selected": { fontWeight: FONT_WEIGHT.semibold, color: "text.primary" },
+} as const;
 
 // ── Componenti condivisi ─────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 "use client";
-import { ROLE_CHIP_ICONS } from "@/components/common/appRoleIcons";
+import { ROLE_CHIP_ICONS, appRoleChipSx } from "@/components/common/appRoleIcons";
 import { useState } from "react";
 import {
   Badge,
@@ -18,10 +18,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import type { AppRole } from "@prisma/client";
-import { ROLE_LABELS_IT, sportRoleLabel } from "@/lib/constants";
+import { ROLE_LABELS_IT, roleColorSx, sportRoleLabel } from "@/lib/constants";
 import TeamColorDot from "@/components/teams/TeamColorDot";
-import { teamColor } from "@/lib/teamColors";
-import { ALL_APP_ROLES, type TeamInfo } from "@/components/admin/userList/userListShared";
+import { teamFill } from "@/lib/teamColors";
+import {
+  ALL_APP_ROLES,
+  TOGGLE_SX,
+  filterChipSx,
+  type TeamInfo,
+} from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -44,7 +49,7 @@ interface UserFiltersProps {
   teams: TeamInfo[];
 }
 
-/** Barra di ricerca + filtri del tab Utenti (ruolo app, ruolo Baskin, genere, stato, squadra). */
+/** Barra di ricerca + filtri del tab Account (ruolo app, ruolo Baskin, genere, stato, squadra). */
 export default function UserFilters({
   search,
   onSearchChange,
@@ -147,15 +152,12 @@ export default function UserFilters({
                     label={ROLE_LABELS_IT[role]}
                     size="small"
                     icon={<Icon />}
-                    // Selezionato = stato attivo standard (arancio), non un colore del ruolo.
-                    color={active ? "primary" : "default"}
-                    variant={active ? "filled" : "outlined"}
+                    variant="outlined"
                     onClick={() => onToggleAppRole(role)}
                     aria-pressed={active}
                     sx={{
-                      cursor: "pointer",
-                      fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                      "& .MuiChip-icon": { color: active ? "inherit" : "text.secondary" },
+                      "& .MuiChip-icon": { color: "text.secondary" },
+                      ...filterChipSx(active, role === "GUEST" ? null : appRoleChipSx(role)),
                     }}
                   />
                 );
@@ -177,16 +179,10 @@ export default function UserFilters({
               <Chip
                 label="Non impostato"
                 size="small"
-                color={filterSportRoles.includes("none") ? "primary" : "default"}
-                variant={filterSportRoles.includes("none") ? "filled" : "outlined"}
+                variant="outlined"
                 onClick={() => onToggleSportRole("none")}
                 aria-pressed={filterSportRoles.includes("none")}
-                sx={{
-                  cursor: "pointer",
-                  fontWeight: filterSportRoles.includes("none")
-                    ? FONT_WEIGHT.semibold
-                    : FONT_WEIGHT.regular,
-                }}
+                sx={filterChipSx(filterSportRoles.includes("none"))}
               />
               {[1, 2, 3, 4, 5].map((r) => {
                 const active = filterSportRoles.includes(r.toString());
@@ -195,14 +191,10 @@ export default function UserFilters({
                     key={r}
                     label={sportRoleLabel(r)}
                     size="small"
-                    color={active ? "primary" : "default"}
-                    variant={active ? "filled" : "outlined"}
+                    variant="outlined"
                     onClick={() => onToggleSportRole(r.toString())}
                     aria-pressed={active}
-                    sx={{
-                      cursor: "pointer",
-                      fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
-                    }}
+                    sx={filterChipSx(active, roleColorSx(r))}
                   />
                 );
               })}
@@ -225,16 +217,16 @@ export default function UserFilters({
               size="small"
               onChange={(_e, val) => onGenderChange(val ?? "")}
             >
-              <ToggleButton value="" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="" sx={TOGGLE_SX}>
                 Tutti
               </ToggleButton>
-              <ToggleButton value="MALE" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="MALE" sx={TOGGLE_SX}>
                 M
               </ToggleButton>
-              <ToggleButton value="FEMALE" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="FEMALE" sx={TOGGLE_SX}>
                 F
               </ToggleButton>
-              <ToggleButton value="none" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="none" sx={TOGGLE_SX}>
                 N/D
               </ToggleButton>
             </ToggleButtonGroup>
@@ -256,16 +248,16 @@ export default function UserFilters({
               size="small"
               onChange={(_e, val) => onAthleteStatusChange(val ?? "")}
             >
-              <ToggleButton value="" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="" sx={TOGGLE_SX}>
                 Tutti
               </ToggleButton>
-              <ToggleButton value="active" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="active" sx={TOGGLE_SX}>
                 Attivi
               </ToggleButton>
-              <ToggleButton value="INACTIVE_SEASON" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="INACTIVE_SEASON" sx={TOGGLE_SX}>
                 In pausa
               </ToggleButton>
-              <ToggleButton value="FORMER" sx={{ px: 1.5, fontSize: TYPE_SCALE.xs }}>
+              <ToggleButton value="FORMER" sx={TOGGLE_SX}>
                 Ex
               </ToggleButton>
             </ToggleButtonGroup>
@@ -285,23 +277,23 @@ export default function UserFilters({
               <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap" }}>
                 {teams.map((t) => {
                   const active = filterTeamId === t.id;
+                  const fill = teamFill(t.color);
                   return (
                     <Chip
                       key={t.id}
                       label={t.name}
                       size="small"
-                      color={active ? "primary" : "default"}
-                      variant={active ? "filled" : "outlined"}
+                      variant="outlined"
                       onClick={() => onTeamFilterChange(active ? "" : t.id)}
                       aria-pressed={active}
                       sx={{
-                        cursor: "pointer",
-                        fontWeight: active ? FONT_WEIGHT.semibold : FONT_WEIGHT.regular,
+                        ...filterChipSx(active, fill && { bgcolor: fill.bg, color: fill.fg }),
                         "& .MuiChip-avatar": { width: "auto", height: "auto", ml: 1, mr: -0.5 },
                       }}
-                      // Il pallino e' l'identita' della squadra; lo stato selezionato e' l'arancio.
+                      // Non selezionata: pallino della squadra. Selezionata: tutto il
+                      // chip nella sua tinta, e il pallino non serve piu'.
                       avatar={
-                        teamColor(t.color) ? (
+                        fill && !active ? (
                           <Box component="span" sx={{ display: "inline-flex" }}>
                             <TeamColorDot color={t.color} />
                           </Box>

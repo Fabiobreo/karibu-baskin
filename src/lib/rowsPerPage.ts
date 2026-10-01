@@ -9,6 +9,7 @@
 /** Chiavi delle tabelle: una preferenza ciascuna. */
 export type RowsPerPageTable =
   | "users"
+  | "athletes"
   | "children"
   | "anonymous-registrations"
   | "opponents"

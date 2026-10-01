@@ -3,6 +3,7 @@ import type { AppRole, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { staffGuard } from "@/lib/apiAuth";
 import { GUARDIANS_SELECT, guardianList, guardianNames } from "@/lib/guardians";
+import { TRAINING_REGISTRABLE_WHERE } from "@/lib/athletes";
 
 export interface AdminPerson {
   kind: "user" | "child";
@@ -31,7 +32,8 @@ type Kind = (typeof KINDS)[number];
 //           record Child) e gli utenti con account che una scheda figlio non
 //           ce l'hanno ancora (es. un atleta figlio di un altro tesserato)
 //  - all:   iscrizione manuale agli allenamenti; qui un figlio con account
-//           compare una volta sola, come utente
+//           compare una volta sola, come utente, e il genitore che non gioca
+//           non compare (vedi `TRAINING_REGISTRABLE_WHERE`)
 export async function GET(req: NextRequest) {
   const denied = await staffGuard();
   if (denied) return denied;
@@ -53,6 +55,7 @@ export async function GET(req: NextRequest) {
         OR: [{ name: contains }, { email: contains }],
         // Chi ha già una scheda figlio compare come figlio, non due volte.
         ...(kind === "child" ? { childAccount: null } : {}),
+        ...(kind === "all" ? TRAINING_REGISTRABLE_WHERE : {}),
       },
       select: {
         id: true,

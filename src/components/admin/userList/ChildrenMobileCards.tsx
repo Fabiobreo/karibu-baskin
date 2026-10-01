@@ -7,7 +7,7 @@ import { sportRoleLabel } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
-import { guardianNames } from "@/lib/guardianNames";
+import { childOfLabel } from "@/lib/guardianNames";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -70,8 +70,17 @@ export default function ChildrenMobileCards({
               <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
                 {row.name}
               </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap display="block">
-                Figlio di {guardianNames(row.guardians)}
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                display="block"
+                sx={{ fontStyle: "italic" }}
+              >
+                {childOfLabel(
+                  row.gender,
+                  row.guardians.map((g) => g.name?.trim() || g.email)
+                )}
               </Typography>
               <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
                 <AthleteStatusChip status={row.athleteStatus} />

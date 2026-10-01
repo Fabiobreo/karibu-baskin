@@ -36,7 +36,7 @@ import {
   type UserEntry,
 } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
-import { joinNames } from "@/lib/guardianNames";
+import { childOfLabel, joinNames } from "@/lib/guardianNames";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -177,6 +177,17 @@ export default function UsersTable({
                           sx={{ display: "block", fontStyle: "italic" }}
                         >
                           Genitore di {joinNames(row.childNames)}
+                        </Typography>
+                      )}
+                      {row.parentNames && row.parentNames.length > 0 && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          title={childOfLabel(row.gender, row.parentNames)}
+                          sx={{ display: "block", fontStyle: "italic" }}
+                        >
+                          {childOfLabel(row.gender, row.parentNames)}
                         </Typography>
                       )}
                       <AthleteStatusChip status={row.athleteStatus} />

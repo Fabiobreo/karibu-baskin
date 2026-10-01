@@ -12,6 +12,7 @@ import { GUARDIANS_SELECT, guardianList } from "@/lib/guardians";
 import { cookies } from "next/headers";
 import { parseRowsPerPage, rowsPerPageCookieName } from "@/lib/rowsPerPage";
 import { joinFilter, parseAppRoles, parseSportRoles, sportRoleWhere } from "@/lib/userFilters";
+import { ATHLETE_ACCOUNT_WHERE } from "@/lib/athletes";
 
 export const revalidate = 60;
 
@@ -19,6 +20,20 @@ const VALID_GENDERS: Gender[] = ["MALE", "FEMALE"];
 const VALID_ATHLETE_STATUSES: AthleteStatus[] = ["INACTIVE_SEASON", "FORMER"];
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+/** Appiattisce i collegamenti di famiglia in due liste di nomi per la riga. */
+function toUserEntry<
+  T extends {
+    guardianOf: { child: { name: string } }[];
+    childAccount: { guardians: { user: { name: string | null; email: string } }[] } | null;
+  },
+>({ guardianOf, childAccount, ...user }: T) {
+  return {
+    ...user,
+    childNames: guardianOf.map((g) => g.child.name),
+    parentNames: (childAccount?.guardians ?? []).map((g) => g.user.name?.trim() || g.user.email),
+  };
+}
 
 export default async function AdminUtentiPage({ searchParams }: { searchParams: SearchParams }) {
   const sp = await searchParams;
@@ -29,6 +44,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const gender = sp.gender as string | undefined;
   const teamId = sp.teamId as string | undefined;
   const athleteStatus = sp.athleteStatus as string | undefined;
+  const tab = sp.tab as string | undefined;
   const sortBy = (sp.sortBy as string | undefined) ?? "createdAt";
   const sortDir = ((sp.sortDir as string | undefined) ?? "desc") as "asc" | "desc";
   const page = Math.max(1, parseInt((sp.page as string | undefined) ?? "1", 10));
@@ -101,6 +117,16 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       orderBy: { createdAt: "asc" as const },
       select: { child: { select: { name: true } } },
     },
+    // Genitori di chi ha un account ma e' anche figlio di qualcuno: sotto il
+    // nome compare "Figlio di …", come per i figli senza account.
+    childAccount: {
+      select: {
+        guardians: {
+          orderBy: { createdAt: "asc" as const },
+          select: { user: { select: { name: true, email: true } } },
+        },
+      },
+    },
     sportRoleHistory: {
       orderBy: { changedAt: "desc" as const },
       select: { sportRole: true, changedAt: true },
@@ -119,9 +145,12 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   const isAdmin = session?.user?.appRole === "ADMIN";
   const currentSeason = await getCurrentSeasonLabel();
 
-  const [users, total, childEntries, teams, pendingGuests] = await Promise.all([
+  const [users, total, athleteUsers, childEntries, teams, pendingGuests] = await Promise.all([
     prisma.user.findMany({ where, orderBy, skip: (page - 1) * limit, take: limit, select }),
     prisma.user.count({ where }),
+    // Tab Atleti: tutti gli account che giocano, senza filtri ne' paginazione
+    // (poche decine di righe: ricerca e filtri avvengono nel browser).
+    prisma.user.findMany({ where: ATHLETE_ACCOUNT_WHERE, orderBy: { name: "asc" }, select }),
     prisma.child.findMany({
       where: { userId: null },
       orderBy: [{ athleteStatus: { sort: "asc", nulls: "first" } }, { createdAt: "asc" }],
@@ -191,10 +220,8 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
       <GuestApprovalInbox guests={pendingGuests} />
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         <AdminUserList
-          users={users.map(({ guardianOf, ...u }) => ({
-            ...u,
-            childNames: guardianOf.map((g) => g.child.name),
-          }))}
+          users={users.map(toUserEntry)}
+          athleteUsers={athleteUsers.map(toUserEntry)}
           childEntries={childEntries.map(({ guardians, ...c }) => ({
             ...c,
             guardians: guardianList({ guardians }),
@@ -215,6 +242,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
             sortBy,
             sortDir,
             limit,
+            tab,
           }}
         />
       </Paper>
