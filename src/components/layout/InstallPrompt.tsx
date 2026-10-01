@@ -8,27 +8,52 @@ import AddBoxOutlinedIcon from "@mui/icons-material/AddBoxOutlined";
 import { useTranslations } from "next-intl";
 import { useHasMounted } from "@/lib/useHasMounted";
 import { RADIUS } from "@/lib/radius";
+import {
+  INSTALL_STATE_KEY,
+  LEGACY_DISMISS_KEY,
+  canShowInstallPrompt,
+  parseInstallState,
+  recordDismissed,
+  recordShown,
+  type InstallPromptState,
+} from "@/lib/installPrompt";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-const DISMISS_KEY = "kb-install-dismissed";
 const COOKIE_KEY = "kb-cookie-consent";
-/** Dopo un rifiuto non riproponiamo il banner per 30 giorni. */
-const SNOOZE_MS = 30 * 24 * 60 * 60 * 1000;
 /** Ritardo prima di proporre l'installazione: prima l'utente guarda il sito. */
 const INITIAL_DELAY_MS = 20_000;
 
-function isSnoozed(): boolean {
+/**
+ * Stato condiviso fra pagine e schede (`localStorage`): quante volte il banner
+ * e' comparso, quando, e l'ultimo rifiuto. Le regole stanno in
+ * `@/lib/installPrompt`.
+ */
+function readState(): InstallPromptState {
   try {
-    const raw = localStorage.getItem(DISMISS_KEY);
-    if (!raw) return false;
-    return Date.now() - Number(raw) < SNOOZE_MS;
+    return parseInstallState(
+      localStorage.getItem(INSTALL_STATE_KEY),
+      localStorage.getItem(LEGACY_DISMISS_KEY)
+    );
   } catch {
-    return false;
+    return parseInstallState(null);
   }
+}
+
+function writeState(state: InstallPromptState) {
+  try {
+    localStorage.setItem(INSTALL_STATE_KEY, JSON.stringify(state));
+  } catch {
+    /* localStorage non disponibile: il banner riapparira' alla prossima visita */
+  }
+}
+
+/** Il banner si puo' proporre adesso? */
+function mayShow(): boolean {
+  return canShowInstallPrompt(readState(), Date.now());
 }
 
 function cookieBannerClosed(): boolean {
@@ -69,11 +94,11 @@ export default function InstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   // iOS non emette mai beforeinstallprompt: la sola via è l'istruzione manuale.
-  const iosMode = mounted && isIosSafari() && !isStandalone() && !isSnoozed();
+  const iosMode = mounted && isIosSafari() && !isStandalone();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (isStandalone() || isSnoozed()) return;
+    if (isStandalone()) return;
 
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
@@ -83,27 +108,42 @@ export default function InstallPrompt() {
       setVisible(false);
       setDeferred(null);
     };
+    // Un'altra scheda ha mostrato o chiuso il banner: qui non serve piu'.
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === INSTALL_STATE_KEY && !mayShow()) setVisible(false);
+    };
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);
+    window.addEventListener("storage", onStorage);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
+      window.removeEventListener("storage", onStorage);
     };
+  }, []);
+
+  // Mostra il banner e lo conta: la comparsa si registra subito, cosi' un
+  // ricaricamento, un'altra pagina o un'altra scheda non lo ripropongono.
+  const show = useCallback(() => {
+    if (!mayShow()) return;
+    writeState(recordShown(readState(), Date.now()));
+    setVisible(true);
   }, []);
 
   // Mostra il banner solo dopo il ritardo iniziale e quando il banner cookie è già stato chiuso.
   useEffect(() => {
     if (!deferred && !iosMode) return;
+    if (!mayShow()) return;
     let interval: ReturnType<typeof setInterval> | undefined;
     const timer = setTimeout(() => {
       if (cookieBannerClosed()) {
-        setVisible(true);
+        show();
         return;
       }
       interval = setInterval(() => {
         if (cookieBannerClosed()) {
-          setVisible(true);
+          show();
           if (interval) clearInterval(interval);
         }
       }, 3000);
@@ -112,14 +152,10 @@ export default function InstallPrompt() {
       clearTimeout(timer);
       if (interval) clearInterval(interval);
     };
-  }, [deferred, iosMode]);
+  }, [deferred, iosMode, show]);
 
   const dismiss = useCallback(() => {
-    try {
-      localStorage.setItem(DISMISS_KEY, String(Date.now()));
-    } catch {
-      /* localStorage non disponibile: il banner riapparirà alla prossima visita */
-    }
+    writeState(recordDismissed(readState(), Date.now()));
     setVisible(false);
   }, []);
 
