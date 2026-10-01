@@ -25,51 +25,32 @@ function ev(partial: Partial<CalendarEvent>): CalendarEvent {
   };
 }
 
-describe("resa del calendario (UX-29)", () => {
-  it("distingue i tipi per forma: partita piena, allenamento contornato, evento tenue", () => {
+describe("resa del calendario", () => {
+  it("da' a ogni tipo un colore suo, dal tema", () => {
     for (const theme of [lightTheme, darkTheme]) {
-      expect(eventVisual(theme, "match").shape).toBe("filled");
-      expect(eventVisual(theme, "training").shape).toBe("outlined");
-      expect(eventVisual(theme, "event").shape).toBe("tonal");
-      const shapes = TYPES.map((type) => eventVisual(theme, type).shape);
-      expect(new Set(shapes).size).toBe(TYPES.length);
+      for (const type of TYPES) {
+        expect(eventVisual(theme, type).bg).toBe(theme.palette.calendar[type]);
+      }
+      expect(new Set(TYPES.map((type) => eventVisual(theme, type).bg)).size).toBe(TYPES.length);
     }
   });
 
-  it("non usa l'arancio del marchio su nessun chip", () => {
+  it("tiene il testo sopra il 4,5:1 su ogni chip, nei due temi", () => {
     for (const theme of [lightTheme, darkTheme]) {
       for (const type of TYPES) {
-        const v = eventVisual(theme, type);
-        for (const c of [v.bg, v.fg, v.border]) {
-          expect(c).not.toBe(theme.palette.primary.main);
-          expect(c).not.toBe(theme.palette.primary.fill);
-        }
+        const { bg, fg } = eventVisual(theme, type);
+        // L'etichetta scura e' nero all'87%: si confronta il colore che si vede.
+        const seen = fg.startsWith("rgba") ? "#1F1F1F" : fg;
+        expect(contrastRatio(bg, seen)!, `${type} ${theme.palette.mode}`).toBeGreaterThanOrEqual(
+          4.5
+        );
       }
     }
   });
 
-  it("la partita e' nel nero del marchio, con testo sopra il 4,5:1", () => {
-    for (const theme of [lightTheme, darkTheme]) {
-      const { bg, fg } = eventVisual(theme, "match");
-      expect(bg).toBe(theme.palette.secondary.main);
-      expect(contrastRatio(bg, fg)!).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it("il bordo dell'allenamento regge il 3:1 sul foglio", () => {
-    for (const theme of [lightTheme, darkTheme]) {
-      const { border, fg } = eventVisual(theme, "training");
-      expect(border).toBe(theme.palette.text.secondary);
-      expect(fg).toBe(theme.palette.text.primary);
-      expect(contrastRatio(border!, theme.palette.background.paper)!).toBeGreaterThanOrEqual(3);
-    }
-  });
-
-  it("stende il bordo solo sul contornato", () => {
-    expect(surfaceSx(eventVisual(lightTheme, "training")).border).toBe(
-      `1px solid ${lightTheme.palette.text.secondary}`
-    );
-    expect(surfaceSx(eventVisual(lightTheme, "match")).border).toBe("1px solid transparent");
+  it("stende fondo e testo del tipo", () => {
+    const visual = eventVisual(lightTheme, "training");
+    expect(surfaceSx(visual)).toEqual({ bgcolor: visual.bg, color: visual.fg });
   });
 
   it("porta il colore squadra sulla tinta della palette", () => {
@@ -77,7 +58,7 @@ describe("resa del calendario (UX-29)", () => {
     // Un hex storico si legge sulla tinta del suo settore.
     expect(eventVisual(lightTheme, "match", "#8E24AA").accent).toBe(TEAM.violet);
     // Il colore squadra non tocca mai lo sfondo del tipo.
-    expect(eventVisual(lightTheme, "match", "blue").bg).toBe(lightTheme.palette.secondary.main);
+    expect(eventVisual(lightTheme, "match", "blue").bg).toBe(lightTheme.palette.calendar.match);
   });
 
   it("non inventa una fascia se la squadra manca", () => {

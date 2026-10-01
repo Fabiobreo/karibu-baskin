@@ -49,15 +49,16 @@ const RESTRICTED_SYNTAX = [
     message:
       "Ripiego sul colore di una squadra: usa teamColor() da @/lib/teamColors, che restituisce null senza colore (nessun segno, mai primary).",
   },
-  // Token tolti in UX-29: tipi, stati, KPI e statistiche sono neutri.
+  // Token tolti in UX-29: stati, KPI e statistiche sono neutri. `calendar` e'
+  // tornato il 01/10 (tipo di impegno nel calendario, decisione del committente).
   {
-    selector: "Literal[value=/^(admin|calendar|stats|status)[.]/]",
+    selector: "Literal[value=/^(admin|stats|status)[.]/]",
     message:
       "Token rimosso in UX-29: tipi, stati temporali, KPI e statistiche sono neutri (icona, forma o parola). Vedi CLAUDE.md, Colore = significato.",
   },
   {
     selector:
-      "MemberExpression[object.property.name='palette'][property.name=/^(admin|calendar|stats|status)$/]",
+      "MemberExpression[object.property.name='palette'][property.name=/^(admin|stats|status)$/]",
     message: "Token rimosso in UX-29: vedi CLAUDE.md, Colore = significato.",
   },
   // `info` e' neutro: il blu e' delle squadre.

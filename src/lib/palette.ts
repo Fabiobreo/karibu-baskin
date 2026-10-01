@@ -248,6 +248,19 @@ export const APP_ROLE = {
   },
 } as const;
 
+/**
+ * Calendario: il fondo del chip dice il TIPO di impegno (decisione del
+ * committente, 01/10: si torna ai colori di prima di UX-29, che nella griglia
+ * si leggevano meglio delle sole forme). Petrolio l'allenamento, arancio la
+ * partita, azzurro l'evento; la squadra resta la fascia a sinistra. Il testo
+ * sopra lo sceglie `contrastText()`: bianco in chiaro (6,61 / 5,60 / 4,80:1),
+ * scuro in scuro (>= 8,6:1). Icona e parola accompagnano sempre il colore.
+ */
+export const CALENDAR = {
+  light: { training: "#00695C", match: BRAND.orangeOnLight, event: "#0277BD" },
+  dark: { training: "#4DB6AC", match: BRAND.orangeOnDark, event: "#4FC3F7" },
+} as const;
+
 /** Casacche d'allenamento: colori veri delle maglie, sempre accompagnati dal nome. */
 export const BIB = {
   orange: "#E65100",

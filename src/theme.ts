@@ -8,6 +8,7 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 import {
   APP_ROLE,
   BIB,
+  CALENDAR,
   BRAND,
   FOCUS_RING,
   HERO,
@@ -92,6 +93,9 @@ type WarmSurfacePalette = {
 /** Chip del ruolo utente: fondo tenue e testo della stessa tinta. */
 type AppRolePalette = Record<keyof typeof APP_ROLE.light, { bg: string; fg: string }>;
 
+/** Calendario: colore di fondo del chip per tipo di impegno. */
+type CalendarPalette = Record<keyof typeof CALENDAR.light, string>;
+
 type FocusRingPalette = {
   /** Colore dell'anello esterno. */
   main: string;
@@ -136,6 +140,7 @@ declare module "@mui/material/styles" {
     heroGradient: HeroGradientPalette;
     warmSurface: WarmSurfacePalette;
     appRole: AppRolePalette;
+    calendar: CalendarPalette;
     focusRing: FocusRingPalette;
     appBar: AppBarPalette;
     adminBand: AdminBandPalette;
@@ -144,6 +149,7 @@ declare module "@mui/material/styles" {
   interface PaletteOptions {
     warmSurface?: WarmSurfacePalette;
     appRole?: AppRolePalette;
+    calendar?: CalendarPalette;
     match?: MatchPalette;
     team?: TeamPalette;
     bib?: BibPalette;
@@ -626,6 +632,7 @@ export const lightTheme = createTheme({
     heroGradient: { ...heroGradient, border: "transparent", cardHead: heroGradient.band },
     warmSurface: WARM_SURFACE.light,
     appRole: APP_ROLE.light,
+    calendar: CALENDAR.light,
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
     adminBand: lightAdminBand,
@@ -676,6 +683,7 @@ export const darkTheme = createTheme({
     heroGradient: { ...heroGradient, border: HERO.border, cardHead: HERO.cardHead },
     warmSurface: WARM_SURFACE.dark,
     appRole: APP_ROLE.dark,
+    calendar: CALENDAR.dark,
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
     adminBand: darkAdminBand,
