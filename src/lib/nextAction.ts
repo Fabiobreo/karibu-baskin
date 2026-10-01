@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { guardianOf } from "@/lib/guardians";
 import { countPendingAvailabilities } from "@/lib/matches/myAvailabilities";
@@ -12,6 +13,7 @@ import { checkRegistrationAllowed, type SessionRestrictions } from "@/lib/regist
 const WINDOW_DAYS = 45;
 
 export interface ActionSession {
+  id: string;
   href: string;
   title: string;
   date: Date;
@@ -102,8 +104,23 @@ function href(s: { id: string; dateSlug: string | null }) {
   return `/allenamento/${s.dateSlug ?? s.id}`;
 }
 
-/** Tutto quello che serve alla card. Query in parallelo (Neon a freddo). */
-export async function loadNextAction(userId: string, appRole: string): Promise<NextAction> {
+/**
+ * L'allenamento di cui parla la card, se ce n'e' uno: la sezione "Prossimi
+ * allenamenti" della home non lo ripete (UX-33).
+ */
+export function actionSessionId(action: NextAction): string | null {
+  return action.kind === "register" || action.kind === "registered" ? action.session.id : null;
+}
+
+/**
+ * Tutto quello che serve alla card. Query in parallelo (Neon a freddo). In
+ * cache per richiesta: in home la chiedono sia la card sia la sezione degli
+ * allenamenti.
+ */
+export const loadNextAction = cache(async function loadNextAction(
+  userId: string,
+  appRole: string
+): Promise<NextAction> {
   const now = new Date();
   const horizon = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
@@ -188,6 +205,7 @@ export async function loadNextAction(userId: string, appRole: string): Promise<N
     endTime: Date | null;
     location: string | null;
   }): ActionSession => ({
+    id: s.id,
     href: href(s),
     title: s.title,
     date: s.date,
@@ -214,4 +232,4 @@ export async function loadNextAction(userId: string, appRole: string): Promise<N
         }
       : null,
   });
-}
+});

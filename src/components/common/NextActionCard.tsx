@@ -13,15 +13,13 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface NextActionCardProps {
   action: NextAction;
-  /** Sovrapposta al fondo dell'hero, come la card degli ospiti. */
-  overlapHero?: boolean;
 }
 
 /**
  * "La tua prossima cosa da fare" (UX-16): una sola azione per i tesserati, in
  * cima alla home e al profilo. Stesso impianto di `GuestOnboardingCard`.
  */
-export default function NextActionCard({ action, overlapHero = false }: NextActionCardProps) {
+export default function NextActionCard({ action }: NextActionCardProps) {
   const t = useTranslations("nextAction");
   const locale = useLocale();
   // Fuso esplicito: la card si renderizza anche sul server (UTC su Vercel) e
@@ -95,15 +93,8 @@ export default function NextActionCard({ action, overlapHero = false }: NextActi
     <Paper
       component="section"
       aria-labelledby="next-action-title"
-      elevation={overlapHero ? 8 : 0}
-      variant={overlapHero ? "elevation" : "outlined"}
-      sx={{
-        position: "relative",
-        zIndex: 2,
-        borderRadius: RADIUS.lg,
-        p: { xs: 2.5, md: 3 },
-        ...(overlapHero && { mt: { xs: -7, md: -10 } }),
-      }}
+      variant="outlined"
+      sx={{ borderRadius: RADIUS.lg, p: { xs: 2.5, md: 3 } }}
     >
       <Typography variant="overline" color="text.secondary" component="p">
         {t("overline")}

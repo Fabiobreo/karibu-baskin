@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 
 /** Oltre questa soglia un allenamento non è "il prossimo" (come in HomeSessions). */
@@ -12,6 +13,7 @@ export interface OnboardingStep {
 }
 
 export interface OnboardingSession {
+  id: string;
   href: string;
   date: Date;
 }
@@ -52,10 +54,25 @@ function sessionHref(s: { id: string; dateSlug: string | null }): string {
 }
 
 /**
- * Tutto quello che serve alla card "I tuoi primi passi". Le query partono in
- * parallelo: con Neon a freddo, in fila si sommerebbero.
+ * L'allenamento che la card mette in evidenza nel passo "primo allenamento":
+ * quello a cui iscriversi, o quello a cui si e' gia' iscritti. La sezione
+ * "Prossimi allenamenti" della home non lo ripete (UX-33).
  */
-export async function loadGuestOnboarding(userId: string): Promise<GuestOnboarding> {
+export function onboardingSessionId(data: GuestOnboarding): string | null {
+  const training = data.steps.find((s) => s.id === "training");
+  return training?.status === "done"
+    ? (data.registeredSession?.id ?? null)
+    : (data.nextSession?.id ?? null);
+}
+
+/**
+ * Tutto quello che serve alla card "I tuoi primi passi". Le query partono in
+ * parallelo: con Neon a freddo, in fila si sommerebbero. In cache per
+ * richiesta: in home la chiedono sia la card sia la sezione degli allenamenti.
+ */
+export const loadGuestOnboarding = cache(async function loadGuestOnboarding(
+  userId: string
+): Promise<GuestOnboarding> {
   const now = new Date();
   const horizon = new Date(now.getTime() + NEXT_SESSION_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
@@ -108,10 +125,11 @@ export async function loadGuestOnboarding(userId: string): Promise<GuestOnboardi
     roleConfirmed: user?.sportRole != null,
     registeredSession: upcomingRegistration
       ? {
+          id: upcomingRegistration.session.id,
           href: sessionHref(upcomingRegistration.session),
           date: upcomingRegistration.session.date,
         }
       : null,
-    nextSession: next ? { href: sessionHref(next), date: next.date } : null,
+    nextSession: next ? { id: next.id, href: sessionHref(next), date: next.date } : null,
   };
-}
+});

@@ -3,9 +3,16 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db", () => ({ prisma: {} }));
 vi.mock("@/lib/matches/myAvailabilities", () => ({ countPendingAvailabilities: vi.fn() }));
 
-import { pickNextAction, type OpenSession, type Subject, showsNextAction } from "./nextAction";
+import {
+  actionSessionId,
+  pickNextAction,
+  type OpenSession,
+  type Subject,
+  showsNextAction,
+} from "./nextAction";
 
 const base = {
+  id: "s1",
   href: "/allenamento/x",
   title: "Allenamento",
   date: new Date("2026-10-01T16:00:00Z"),
@@ -121,5 +128,18 @@ describe("showsNextAction", () => {
   it("mai ai GUEST e agli anonimi", () => {
     expect(showsNextAction("GUEST", 3)).toBe(false);
     expect(showsNextAction(null, null)).toBe(false);
+  });
+});
+
+describe("actionSessionId", () => {
+  it("da' l'allenamento della card, da non ripetere sotto", () => {
+    expect(actionSessionId({ kind: "register", session: base, childName: null })).toBe("s1");
+    expect(actionSessionId({ kind: "registered", session: base, names: [], self: true })).toBe(
+      "s1"
+    );
+  });
+  it("niente allenamento per disponibilita' e 'sei a posto'", () => {
+    expect(actionSessionId({ kind: "availability", count: 1 })).toBeNull();
+    expect(actionSessionId({ kind: "allSet" })).toBeNull();
   });
 });

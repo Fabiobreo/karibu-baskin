@@ -14,6 +14,7 @@ export default function HomeSessionsSection({
   registrationIdBySession,
   isStaff,
   isMember = false,
+  featuredAbove = false,
 }: {
   inCorso: SessionWithCount[];
   upcoming: SessionWithCount[];
@@ -21,6 +22,8 @@ export default function HomeSessionsSection({
   isStaff: boolean;
   /** Tesserato: niente inviti a "venire a provare" (UX-16). */
   isMember?: boolean;
+  /** Il prossimo allenamento e' gia' nella card in testa alla home (UX-33). */
+  featuredAbove?: boolean;
 }) {
   const t = useTranslations("trainings");
   // Niente stato locale ne' azioni staff: le squadre e il resto si gestiscono
@@ -31,8 +34,14 @@ export default function HomeSessionsSection({
   // Nessun `return null` quando entrambe le liste sono vuote: quel caso ha il
   // suo stato dedicato qui sotto. Uscire in anticipo lasciava vuoto il
   // contenitore #allenamenti, e la CTA della hero ci scorreva sopra.
+  // L'unico allenamento in vista e' gia' nella card in testa (UX-33): la
+  // sezione non ha altro da dire e sparisce, resta solo lo spazio.
+  if (featuredAbove && inCorso.length === 0 && upcoming.length === 0) {
+    return <Box sx={{ pt: { xs: 3, md: 5 } }} />;
+  }
+
   return (
-    <>
+    <Box sx={{ py: { xs: 3, md: 5 } }}>
       {inCorso.length > 0 && (
         <Box sx={{ mb: 3 }}>
           {/* In corso: pastiglia invertita con pallino pulsante, niente verde (UX-29). */}
@@ -122,6 +131,6 @@ export default function HomeSessionsSection({
           </Grid>
         </>
       )}
-    </>
+    </Box>
   );
 }

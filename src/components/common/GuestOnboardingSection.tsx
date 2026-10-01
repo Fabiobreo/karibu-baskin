@@ -1,10 +1,12 @@
 import { Container } from "@mui/material";
+import { heroOverlapSx } from "@/lib/heroStyles";
 import GuestOnboardingCard from "@/components/common/GuestOnboardingCard";
 import { loadGuestOnboarding } from "@/lib/guestOnboarding";
 
 interface GuestOnboardingSectionProps {
   userId: string;
-  overlapHero?: boolean;
+  /** In home: dentro il contenitore della pagina, sopra il bordo basso dell'hero (UX-33). */
+  home?: boolean;
 }
 
 /**
@@ -13,13 +15,13 @@ interface GuestOnboardingSectionProps {
  */
 export default async function GuestOnboardingSection({
   userId,
-  overlapHero = false,
+  home = false,
 }: GuestOnboardingSectionProps) {
   const data = await loadGuestOnboarding(userId);
-  if (!overlapHero) return <GuestOnboardingCard data={data} />;
+  if (!home) return <GuestOnboardingCard data={data} />;
   return (
-    <Container maxWidth="lg">
-      <GuestOnboardingCard data={data} overlapHero />
+    <Container maxWidth="lg" sx={heroOverlapSx}>
+      <GuestOnboardingCard data={data} />
     </Container>
   );
 }

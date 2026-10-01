@@ -45,7 +45,11 @@ type ValueItem = { title: string; body: string };
 // le query andavano in fila e la pagina compariva tutta insieme alla fine,
 // lentissima quando il database era sospeso (avvio a freddo Neon).
 export default async function HomePage() {
-  const [t, userSession] = await Promise.all([getTranslations("home"), auth()]);
+  const [t, tGuest, userSession] = await Promise.all([
+    getTranslations("home"),
+    getTranslations("guestOnboarding"),
+    auth(),
+  ]);
   const storia = t.raw("storia") as StoriaItem[];
   const values = t.raw("values") as ValueItem[];
 
@@ -55,16 +59,6 @@ export default async function HomePage() {
   // Membri attivi: home "operativa" (allenamenti prima); anonimi/GUEST: home istituzionale
   const isMember =
     appRole === "ATHLETE" || appRole === "PARENT" || appRole === "COACH" || appRole === "ADMIN";
-
-  // Il Container #allenamenti resta fuori dal Suspense: è l'ancora della CTA
-  // della hero e deve esistere prima che arrivino i dati.
-  const sessionsBlock = (
-    <Container id="allenamenti" maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
-      <Suspense fallback={<HomeSectionSkeleton variant="sessions" />}>
-        <HomeSessions userId={userId} isMember={isMember} isStaff={isStaff} />
-      </Suspense>
-    </Container>
-  );
 
   const matchesBlock = (
     <Suspense fallback={<HomeSectionSkeleton variant="matches" />}>
@@ -214,6 +208,36 @@ export default async function HomePage() {
       : null;
   const showNextAction = showsNextAction(appRole, staffSportRole);
   const isGuest = appRole === "GUEST" && !!userId;
+  const memberHead = showNextAction && !!userId && !!appRole;
+
+  // Il Container #allenamenti resta fuori dal Suspense: è l'ancora della CTA
+  // della hero e deve esistere prima che arrivino i dati.
+  const sessionsBlock = (
+    <Container id="allenamenti" maxWidth="lg">
+      <Suspense
+        fallback={
+          // Lo spazio sopra e sotto e' della sezione, che puo' anche non esserci.
+          <Box sx={{ py: { xs: 3, md: 5 } }}>
+            <HomeSectionSkeleton variant="sessions" />
+          </Box>
+        }
+      >
+        <HomeSessions
+          userId={userId}
+          isMember={isMember}
+          isStaff={isStaff}
+          // L'allenamento della card in testa non si ripete nella sezione (UX-33).
+          headCard={
+            memberHead && appRole
+              ? { kind: "nextAction", appRole }
+              : isGuest
+                ? { kind: "guestOnboarding" }
+                : null
+          }
+        />
+      </Suspense>
+    </Container>
+  );
 
   return (
     <>
@@ -225,18 +249,26 @@ export default async function HomePage() {
         </Suspense>
       )}
 
-      {showNextAction && userId && appRole ? (
+      {/* Tesserati e account in attesa (UX-33): la foto resta, ma l'hero e'
+          bassa e ha solo il saluto. La CTA e' la card subito sotto. */}
+      {memberHead && userId && appRole ? (
         <>
-          <HeroSection member={{ firstName }} />
-          <Suspense fallback={<GuestOnboardingSkeleton />}>
-            <NextActionSection userId={userId} appRole={appRole} overlapHero />
+          <HeroSection
+            greeting={firstName ? t("heroHello", { name: firstName }) : t("heroHelloNoName")}
+          />
+          <Suspense fallback={<GuestOnboardingSkeleton compact />}>
+            <NextActionSection userId={userId} appRole={appRole} home />
           </Suspense>
         </>
       ) : isGuest && userId ? (
         <>
-          <HeroSection guest={{ firstName }} />
+          <HeroSection
+            greeting={
+              firstName ? tGuest("heroGreeting", { name: firstName }) : tGuest("heroGreetingNoName")
+            }
+          />
           <Suspense fallback={<GuestOnboardingSkeleton />}>
-            <GuestOnboardingSection userId={userId} overlapHero />
+            <GuestOnboardingSection userId={userId} home />
           </Suspense>
         </>
       ) : (

@@ -13,8 +13,6 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface GuestOnboardingCardProps {
   data: GuestOnboarding;
-  /** In home la card si sovrappone al bordo basso della hero. */
-  overlapHero?: boolean;
 }
 
 /**
@@ -22,10 +20,7 @@ interface GuestOnboardingCardProps {
  * staff. Sostituisce il vecchio avviso "account in revisione": l'attesa diventa
  * uno dei passi di un percorso, e gli altri si possono fare subito.
  */
-export default function GuestOnboardingCard({
-  data,
-  overlapHero = false,
-}: GuestOnboardingCardProps) {
+export default function GuestOnboardingCard({ data }: GuestOnboardingCardProps) {
   const t = useTranslations("guestOnboarding");
   const tRoles = useTranslations("roles");
   const locale = useLocale();
@@ -107,15 +102,8 @@ export default function GuestOnboardingCard({
     <Paper
       component="section"
       aria-labelledby="guest-onboarding-title"
-      elevation={overlapHero ? 8 : 0}
-      variant={overlapHero ? "elevation" : "outlined"}
-      sx={{
-        position: "relative",
-        zIndex: 2,
-        borderRadius: RADIUS.lg,
-        p: { xs: 2.5, md: 3.5 },
-        ...(overlapHero && { mt: { xs: -7, md: -10 } }),
-      }}
+      variant="outlined"
+      sx={{ borderRadius: RADIUS.lg, p: { xs: 2.5, md: 3.5 } }}
     >
       <Box
         sx={{

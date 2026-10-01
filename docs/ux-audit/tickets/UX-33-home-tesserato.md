@@ -1,6 +1,6 @@
 # UX-33 · Home: testa del tesserato senza foto, niente duplicati
 
-**Ondata:** 4 · **Stima:** M · **Dipende da:** UX-32 · **Stato:** da fare
+**Ondata:** 4 · **Stima:** M · **Dipende da:** UX-32 · **Stato:** fatto (su `develop`)
 
 ## Problema
 
@@ -38,3 +38,23 @@ La decisione "Home con la stessa struttura per tutti" (README) resta: cambia sol
 - Home atleta a 1440 × 900 e a 390 × 844: la prossima azione è visibile senza scorrere e compare una sola volta nella prima schermata.
 - Home anonima: nome del club solo nell'header, testo dell'hero leggibile sopra la foto (contrasto misurato su un campione di punti dietro al testo, almeno 4,5:1).
 - Testi nuovi in `it.json` ed `en.json`; `npm run a11y` verde.
+
+## Com'è stato fatto
+
+- **Tesserati e ospiti:** la foto resta (scelta del committente, 01/10/2026: la versione senza foto, con la fascia di `PageHero`, è stata scartata), e l'hero resta alta (62vh su desktop, 60svh su telefono; provata e scartata anche l'hero bassa a 40vh). Ha solo il saluto come h1 ("Ciao Luca!", per gli ospiti "Ciao Fabio, ti diamo il benvenuto!"), in basso a sinistra, senza sottotitolo né bottoni. La card sale sopra il bordo basso dell'hero (`heroOverlapSx`), così si vede senza scorrere. `HeroSection` ha una sola variante, `greeting`, al posto di `member` e `guest`; la sovrapposizione è del contenitore, non più una prop delle card. Tolti dai dizionari i testi dell'hero degli ospiti (sottotitolo e due CTA).
+- **Niente duplicati:** `HomeSessions` riceve `headCard` e salta l'allenamento di cui parla la card (`actionSessionId`, `onboardingSessionId`), mostrando il successivo. Se non ce n'è un altro, la sezione sparisce (resta solo lo spazio), invece del falso "nessun allenamento in programma". `loadNextAction` e `loadGuestOnboarding` sono in cache per richiesta.
+- **Anonimo:** foto scoperta in alto, testo in basso a sinistra sopra una velatura che comincia 96 px prima del titolo (72% di nero dietro al testo), inviti sotto il testo. h1 "Basket inclusivo a Montecchio Maggiore" a 48 px su desktop (32 su telefono), 800. Il nome del club resta nell'h1 solo per gli screen reader. Su desktop il blocco copre in parte la fila davanti della foto: provata e scartata dal committente (01/10/2026) la variante con gli inviti a destra del testo, che la scopriva ma staccava i bottoni dal titolo. "Vieni a provare" piena e "Cos'è il Baskin?" come link sottolineato; sottotitolo con `text-wrap: balance`.
+- **Staff:** chi non gioca tiene la hero con la foto (nuova impaginazione, CTA "Prossimi allenamenti") e il banner. Chi gioca aveva già la testa degli atleti (UX-24) e la segue anche qui.
+
+### Misure (01/10/2026)
+
+- Home atleta, 1440 × 900: hero di 558 px, la card va da 539 a 664 px e l'allenamento della card compare una sola volta nella pagina. A 390 × 844: il bottone della card finisce una quarantina di px sopra la barra di navigazione in basso.
+- Contrasto dell'hero: misurato sulla foto a 1440 × 720. Dietro al testo ci sono punti quasi bianchi (striscione a terra e righe del campo, luminanza fino a 0,85-1), quindi la velatura è tarata sul bianco: fondo `#474747`, 9,3:1 con il titolo e 7:1 con il sottotitolo. Il minimo per reggere 4,5:1 sarebbe il 61% di nero.
+- Provato anche in tema chiaro e come staff che non gioca.
+- `npm run a11y`: nessuna nuova violazione grave.
+
+## Rimasto fuori
+
+- **Disponibilità e "Prossime partite":** la card dice solo "Hai N partite a cui rispondere" e porta a `/profilo/disponibilita`, e le card delle partite non hanno una CTA di disponibilità: l'azione non è ripetuta. Togliere le partite dalla sezione le farebbe sparire dalla home senza che la card le nomini. Da riprendere se la card comincerà a nominare la partita.
+- **Sottotitolo dell'hero:** "Sport inclusivo per tutti…" ripete "inclusivo" del nuovo titolo. Testo da rivedere con il club.
+- **Peso della card della prossima azione:** in home pesa meno della card dell'allenamento sotto, che ha la testata nera. Provato e scartato il contorno spesso in inchiostro; da riprendere in UX-43, che riguarda le card in evidenza.

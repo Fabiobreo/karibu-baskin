@@ -909,9 +909,6 @@
   "guestOnboarding": {
     "heroGreeting": "Hi {name}, welcome!",
     "heroGreetingNoName": "Welcome!",
-    "heroSubtitle": "The best way to start is to come to the gym. Meanwhile, the staff will confirm your profile.",
-    "heroCtaTrainings": "Upcoming training sessions",
-    "heroCtaRole": "Find your role",
     "overline": "Karibu means welcome",
     "title": "Your first steps",
     "progress": "{done} of {total}",
@@ -1428,10 +1425,11 @@
     "seasonsLabel": "Season"
   },
   "home": {
-    "heroSubtitle": "Inclusive sport for everyone. Let's train together, without distinctions.",
+    "heroSubtitle": "Sport for everyone. Let's train together, without distinctions.",
     "upcomingTrainings": "Upcoming training sessions",
     "heroTryCta": "Come and try",
     "heroHello": "Hi {name}!",
+    "heroHelloNoName": "Hi!",
     "whatIsBaskin": "What is Baskin?",
     "birthdaySingular": "{name}'s birthday today",
     "birthdayPlural": "Celebrating today",
@@ -1486,7 +1484,7 @@
         "testo": "We reach 10 years of activity with over 80 members and organise the \"Karibu Ten League\", a celebratory tournament with 6 participating teams. A milestone that celebrates the growth of the association and opens a new era: that of the Montekki and the Kapuleti."
       }
     ],
-    "heroTitleTail": "inclusive sport in Montecchio Maggiore",
+    "heroTitle": "Inclusive basketball in Montecchio Maggiore",
     "joinTitle": "Want to try Baskin?",
     "joinBody": "Baskin is for everyone, whatever your ability. Write to us and we will tell you when and where to come to your first training session.",
     "joinCta": "Write to us",

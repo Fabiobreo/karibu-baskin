@@ -2,9 +2,14 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Box, Container } from "@mui/material";
 import GuestOnboardingCard from "./GuestOnboardingCard";
 import HeroSection from "./HeroSection";
+import { heroOverlapSx } from "@/lib/heroStyles";
 import { computeOnboardingSteps, type GuestOnboarding } from "@/lib/guestOnboarding";
 
-const nextSession = { href: "/allenamento/demo", date: new Date("2026-09-18T18:30:00Z") };
+const nextSession = {
+  id: "demo",
+  href: "/allenamento/demo",
+  date: new Date("2026-09-18T18:30:00Z"),
+};
 
 function data(input: {
   hasRole: boolean;
@@ -63,15 +68,15 @@ export const NessunAllenamentoAperto: Story = {
   },
 };
 
-/** Come appare in home: hero ridotta e card sovrapposta al suo bordo. */
+/** Come appare in home: hero con il saluto e card sopra il suo bordo basso (UX-33). */
 export const HomeGuest: Story = {
   parameters: { layout: "fullscreen" },
   decorators: [(Story) => <Story />],
   render: () => (
     <Box sx={{ bgcolor: "background.default", pb: 6 }}>
-      <HeroSection guest={{ firstName: "Fabio" }} />
-      <Container maxWidth="md">
-        <GuestOnboardingCard data={data({ hasRole: false, hasRegistration: false })} overlapHero />
+      <HeroSection greeting="Ciao Fabio, ti diamo il benvenuto!" />
+      <Container maxWidth="lg" sx={heroOverlapSx}>
+        <GuestOnboardingCard data={data({ hasRole: false, hasRegistration: false })} />
       </Container>
     </Box>
   ),

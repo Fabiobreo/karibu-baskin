@@ -909,9 +909,6 @@
   "guestOnboarding": {
     "heroGreeting": "Ciao {name}, ti diamo il benvenuto!",
     "heroGreetingNoName": "Ti diamo il benvenuto!",
-    "heroSubtitle": "Il modo migliore per iniziare è venire in palestra. Intanto lo staff conferma il tuo profilo.",
-    "heroCtaTrainings": "Prossimi allenamenti",
-    "heroCtaRole": "Scopri il tuo ruolo",
     "overline": "Karibu significa benvenuto",
     "title": "I tuoi primi passi",
     "progress": "{done} di {total}",
@@ -1428,10 +1425,11 @@
     "seasonsLabel": "Stagione"
   },
   "home": {
-    "heroSubtitle": "Sport inclusivo per tutti. Alleniamoci insieme, senza distinzioni.",
+    "heroSubtitle": "Sport per tutti. Alleniamoci insieme, senza distinzioni.",
     "upcomingTrainings": "Prossimi allenamenti",
     "heroTryCta": "Vieni a provare",
     "heroHello": "Ciao {name}!",
+    "heroHelloNoName": "Ciao!",
     "whatIsBaskin": "Cos'è il Baskin?",
     "birthdaySingular": "{name} compie gli anni oggi",
     "birthdayPlural": "Oggi festeggiano",
@@ -1486,7 +1484,7 @@
         "testo": "Raggiungiamo i 10 anni di attività con oltre 80 iscritti e organizziamo la \"Karibu Ten League\", un torneo celebrativo con 6 squadre partecipanti. Un traguardo che celebra la crescita dell'associazione e apre una nuova era: quella dei Montekki e dei Kapuleti."
       }
     ],
-    "heroTitleTail": "sport inclusivo a Montecchio Maggiore",
+    "heroTitle": "Basket inclusivo a Montecchio Maggiore",
     "joinTitle": "Vuoi provare il Baskin?",
     "joinBody": "Il Baskin è per tutti, qualunque sia la tua abilità. Scrivici e ti diciamo quando e dove venire al primo allenamento.",
     "joinCta": "Scrivici",

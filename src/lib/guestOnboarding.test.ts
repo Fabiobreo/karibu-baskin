@@ -9,7 +9,11 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { computeOnboardingSteps, loadGuestOnboarding } from "./guestOnboarding";
+import {
+  computeOnboardingSteps,
+  loadGuestOnboarding,
+  onboardingSessionId,
+} from "./guestOnboarding";
 import { prisma } from "@/lib/db";
 
 const p = prisma as unknown as {
@@ -89,5 +93,20 @@ describe("loadGuestOnboarding", () => {
     p.registration.count.mockResolvedValue(1);
     const res = await loadGuestOnboarding("u1");
     expect(res.steps.find((s) => s.id === "training")?.status).toBe("done");
+  });
+
+  it("dice quale allenamento mette in evidenza la card", async () => {
+    const date = new Date("2026-09-18T18:30:00Z");
+    p.trainingSession.findMany.mockResolvedValue([
+      { id: "s1", dateSlug: "a", date, allowedRoles: [] },
+    ]);
+    // Passo da fare: l'allenamento a cui iscriversi.
+    expect(onboardingSessionId(await loadGuestOnboarding("u1"))).toBe("s1");
+
+    // Passo fatto: quello a cui si e' iscritti, o nessuno.
+    p.registration.count.mockResolvedValue(1);
+    expect(onboardingSessionId(await loadGuestOnboarding("u1"))).toBeNull();
+    p.registration.findFirst.mockResolvedValue({ session: { id: "s2", dateSlug: null, date } });
+    expect(onboardingSessionId(await loadGuestOnboarding("u1"))).toBe("s2");
   });
 });

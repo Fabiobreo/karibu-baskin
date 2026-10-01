@@ -65,6 +65,17 @@ export const heroBottomBorder = {
 } as const;
 
 /**
+ * Card in testa alla home di tesserati e ospiti (UX-33): sale sopra il bordo
+ * basso dell'hero, cosi' l'hero resta alta e la card si vede senza scorrere.
+ * `HeroSection greeting` lascia sotto il saluto lo spazio che la card copre.
+ */
+export const heroOverlapSx = {
+  position: "relative",
+  zIndex: 2,
+  mt: { xs: -7, md: -10 },
+} as const;
+
+/**
  * I due colori del marchio, come costanti importabili anche dai Server
  * Component (`src/theme.ts` e' `"use client"` e non e' importabile di la').
  * Servono per le velature `alpha(...)` dentro `sx`: in un Server Component non
