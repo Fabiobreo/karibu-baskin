@@ -111,24 +111,24 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-| #   | Ticket | Perché in questa posizione                                                                               | In attesa di |
-| --- | ------ | -------------------------------------------------------------------------------------------------------- | ------------ |
-| 1   | UX-34  | Piccolo, indipendente, sulla conversione principale (iscrizione)                                         |              |
-| 2   | UX-35  | Piccolo, indipendente, sulla pagina più condivisa                                                        |              |
-| 3   | UX-30  | Base di sistema: raggi e bottoni, prima delle intestazioni                                               |              |
-| 4   | UX-31  | Base di sistema: pesi tipografici e regola ESLint                                                        |              |
-| 5   | UX-29  | Base di sistema: colori                                                                                  |              |
-| 6   | UX-32  | Tre intestazioni: sblocca 33, 36, 37, 40, 42                                                             |              |
-| 7   | UX-37  | Griglia e righe, subito dopo le intestazioni                                                             |              |
-| 7b  | UX-44  | Header che sfora fra 900 e 1.200 px: piccolo, visibile su tablet e finestre ridotte                      |              |
-| 8   | UX-33  | Home del tesserato                                                                                       |              |
-| 8b  | UX-43  | Card in evidenza (anche in home) e "Gestisci" di `/allenamenti`: prima confrontare con il resto del sito |              |
-| 9   | UX-36  | Navigazione Partite                                                                                      |              |
-| 10  | UX-38  | Copertine e stati vuoti                                                                                  |              |
-| 11  | UX-42  | Area utente                                                                                              |              |
-| 12  | UX-40  | Admin (PR separate per punto)                                                                            |              |
-| 13  | UX-39  | Footer e nastro sponsor                                                                                  |              |
-| 14  | UX-41  | `/il-baskin` con lo schema del campo                                                                     |              |
+| #   | Ticket | Perché in questa posizione                                                                                | In attesa di |
+| --- | ------ | --------------------------------------------------------------------------------------------------------- | ------------ |
+| 1   | UX-34  | Piccolo, indipendente, sulla conversione principale (iscrizione)                                          |              |
+| 2   | UX-35  | Piccolo, indipendente, sulla pagina più condivisa                                                         |              |
+| 3   | UX-30  | Base di sistema: raggi e bottoni, prima delle intestazioni                                                |              |
+| 4   | UX-31  | Base di sistema: pesi tipografici e regola ESLint                                                         |              |
+| 5   | UX-29  | Base di sistema: colori                                                                                   |              |
+| 6   | UX-32  | Tre intestazioni: sblocca 33, 36, 37, 40, 42                                                              |              |
+| 7   | UX-37  | Griglia e righe, subito dopo le intestazioni                                                              |              |
+| 7b  | UX-44  | Header che sfora fra 900 e 1.200 px: piccolo, visibile su tablet e finestre ridotte                       |              |
+| 8   | UX-33  | Home del tesserato                                                                                        |              |
+| 8b  | UX-43  | Card in evidenza (anche in home) e "Gestisci" di `/allenamenti`: prima confrontare con il resto del sito  |              |
+| 9   | UX-39  | Footer e nastro sponsor: sono in ogni pagina, pesano su qualità percepita e fiducia (anticipato il 01/10) |              |
+| 10  | UX-38  | Copertine e stati vuoti                                                                                   |              |
+| 11  | UX-36  | Navigazione Partite                                                                                       |              |
+| 12  | UX-41  | `/il-baskin` con lo schema del campo                                                                      |              |
+| 13  | UX-40  | Admin (PR separate per punto)                                                                             |              |
+| 14  | UX-42  | Area utente                                                                                               |              |
 
 ### Parcheggiati (da rivalutare dopo le ondate 0-2)
 

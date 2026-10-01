@@ -133,16 +133,31 @@ export default function SessionCard({
   const showChiuse = !isRegOpen && (wasOpened || isPast) && !muted;
 
   const px = 2;
-  const iconSize = 13;
-  const textVariant = "caption" as const;
-  const dateFormat = "EEE d MMM";
+  // Card in evidenza (UX-43): dati su una riga leggibile, data per esteso.
+  const iconSize = hero ? 16 : 13;
+  const textVariant = hero ? ("body2" as const) : ("caption" as const);
+  const infoColor = hero ? "text.primary" : "text.secondary";
+  const dateFormat = hero ? "EEEE d MMMM" : "EEE d MMM";
   const chipFontSize = "0.68rem";
+  const canSignUp = !isRegistered && !muted && isRegOpen;
+  const dateLabel = format(date, dateFormat, { locale: dateLocale });
+
+  const countInfo = (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+      <GroupsIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
+      <Typography variant={textVariant} color={infoColor} fontWeight={FONT_WEIGHT.regular}>
+        {t("registeredCount", { count: s._count.registrations })}
+      </Typography>
+    </Box>
+  );
 
   return (
     <>
       <Paper
-        elevation={muted ? 0 : live ? 4 : hero ? 4 : 2}
-        variant={muted ? "outlined" : "elevation"}
+        // Un tono solo (UX-43): stessa superficie delle righe della lista,
+        // contornata, senza ombra. In scuro l'ombra schiariva il corpo e nella
+        // stessa schermata c'erano tre grigi diversi.
+        variant="outlined"
         sx={{
           overflow: "hidden",
           height: "100%",
@@ -151,12 +166,10 @@ export default function SessionCard({
           opacity: muted ? 0.72 : 1,
           position: "relative",
           cursor: "pointer",
-          "&:hover": { boxShadow: muted ? undefined : live ? 6 : hero ? 6 : 4 },
-          ...(!muted &&
-            !live && {
-              border: (theme) => (theme.palette.mode === "dark" ? "1px solid" : undefined),
-              borderColor: "divider",
-            }),
+          transition: "border-color 0.15s",
+          "@media (hover: hover)": {
+            "&:hover": { borderColor: muted ? undefined : "text.secondary" },
+          },
           // In corso: contorno pieno nel colore del testo, niente bordo verde
           // pulsante (il movimento sta nel pallino della pastiglia).
           ...(live && {
@@ -186,13 +199,11 @@ export default function SessionCard({
         <Box
           sx={{
             px,
-            py: hero ? { xs: 2, sm: 2.5 } : 1.5,
+            py: hero ? 2 : 1.5,
+            // La testata scura dice "questo e' il prossimo": in chiaro il
+            // grafite delle fasce, in scuro un grigio piu' chiaro del corpo.
             background: (theme) =>
-              muted
-                ? theme.palette.action.hover
-                : theme.palette.mode === "dark"
-                  ? theme.palette.common.black
-                  : theme.palette.heroGradient.dark,
+              muted ? theme.palette.action.hover : theme.palette.heroGradient.cardHead,
             display: "flex",
             alignItems: hero ? "flex-start" : "center",
             justifyContent: "space-between",
@@ -280,128 +291,151 @@ export default function SessionCard({
               minWidth: 0,
               pl: px,
               pr: px,
-              pt: 1.5,
-              pb: 2,
+              pt: hero ? 1.75 : 1.5,
+              pb: hero ? 1.75 : 2,
               display: "flex",
-              flexDirection: "column",
-              gap: 0.75,
+              // In evidenza, da `sm`: dati a sinistra e azione a destra, sulla
+              // stessa riga. Cosi' il corpo non resta mezzo vuoto.
+              flexDirection: hero ? { xs: "column", sm: "row" } : "column",
+              alignItems: hero ? { sm: "center" } : undefined,
+              justifyContent: "space-between",
+              gap: hero ? { xs: 1, sm: 2 } : 0.75,
               pointerEvents: "none",
             }}
           >
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: hero ? 2 : 1.5, flexWrap: "wrap" }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
-                <Typography
-                  variant={textVariant}
-                  color="text.secondary"
-                  fontWeight={FONT_WEIGHT.regular}
-                >
-                  {format(date, dateFormat, { locale: dateLocale })}
-                </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, minWidth: 0 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  columnGap: hero ? 2 : 1.5,
+                  rowGap: 0.5,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <CalendarTodayIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
+                  <Typography
+                    variant={textVariant}
+                    color={infoColor}
+                    fontWeight={FONT_WEIGHT.regular}
+                  >
+                    {hero
+                      ? dateLabel.charAt(0).toLocaleUpperCase() + dateLabel.slice(1)
+                      : dateLabel}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
+                  <Typography
+                    variant={textVariant}
+                    color={infoColor}
+                    fontWeight={FONT_WEIGHT.regular}
+                  >
+                    {format(date, "HH:mm")}
+                    {endTime && `–${format(endTime, "HH:mm")}`}
+                  </Typography>
+                </Box>
+                {hero && countInfo}
               </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <AccessTimeIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
-                <Typography
-                  variant={textVariant}
-                  color="text.secondary"
-                  fontWeight={FONT_WEIGHT.regular}
-                >
-                  {format(date, "HH:mm")}
-                  {endTime && `–${format(endTime, "HH:mm")}`}
-                </Typography>
-              </Box>
-            </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <GroupsIcon sx={{ fontSize: iconSize, color: "text.secondary" }} />
-                <Typography
-                  variant={textVariant}
-                  color="text.secondary"
-                  fontWeight={FONT_WEIGHT.regular}
-                >
-                  {t("registeredCount", { count: s._count.registrations })}
-                </Typography>
-              </Box>
-              {isRegistered && !myTeam && (
-                <Chip
-                  icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
-                  label={t("registeredBadge")}
-                  size="small"
-                  color="success"
-                  sx={{ fontSize: chipFontSize }}
-                />
+              {hero ? (
+                // Da iscritto: la conferma in parole, con la stessa formula delle
+                // righe della lista ("Ci sei"). Verde = positivo, con l'icona.
+                isRegistered &&
+                !myTeam && (
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 0.75, color: "success.main" }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 18 }} />
+                    <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold}>
+                      {t("rowRegistered")}
+                    </Typography>
+                  </Box>
+                )
+              ) : (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+                  {countInfo}
+                  {isRegistered && !myTeam && (
+                    <Chip
+                      icon={<CheckCircleIcon sx={{ fontSize: "0.85rem !important" }} />}
+                      label={t("registeredBadge")}
+                      size="small"
+                      color="success"
+                      sx={{ fontSize: chipFontSize }}
+                    />
+                  )}
+                </Box>
               )}
-            </Box>
 
-            {(s.restrictTeamId || (s.allowedRoles && s.allowedRoles.length > 0)) && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
-                <Chip
-                  icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
-                  label={
-                    s.restrictTeam ? (
-                      <>
-                        {t.rich("onlyTeam", {
-                          team: s.restrictTeam.name,
-                          name: (chunks) => (
-                            <>
-                              <TeamColorDot color={s.restrictTeam?.color} />
-                              {chunks}
-                            </>
-                          ),
-                        })}
-                        {s.allowedRoles?.length
-                          ? ` · ${s.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}`
-                          : ""}
-                      </>
-                    ) : (
-                      s.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
-                    )
-                  }
-                  size="small"
-                  sx={{
-                    fontSize: chipFontSize,
-                    bgcolor: "warning.light",
-                    color: "warning.contrastText",
-                  }}
-                />
-                {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+              {(s.restrictTeamId || (s.allowedRoles && s.allowedRoles.length > 0)) && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                   <Chip
-                    icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
-                    label={t("openToAllRoles", {
-                      // `count` è obbligatorio: la stringa è al plurale ICU e
-                      // senza di esso next-intl rende un errore di formattazione
-                      // al posto dell'etichetta. `formatRoleNumbers` allinea la
-                      // resa a quella dell'hero, che localizza la congiunzione.
-                      count: s.openRoles.length,
-                      roles: formatRoleNumbers(s.openRoles, locale),
-                    })}
+                    icon={<LockIcon sx={{ fontSize: "0.9rem !important" }} />}
+                    label={
+                      s.restrictTeam ? (
+                        <>
+                          {t.rich("onlyTeam", {
+                            team: s.restrictTeam.name,
+                            name: (chunks) => (
+                              <>
+                                <TeamColorDot color={s.restrictTeam?.color} />
+                                {chunks}
+                              </>
+                            ),
+                          })}
+                          {s.allowedRoles?.length
+                            ? ` · ${s.allowedRoles.map((r) => tRoles("role", { n: r })).join(", ")}`
+                            : ""}
+                        </>
+                      ) : (
+                        s.allowedRoles!.map((r) => tRoles("role", { n: r })).join(", ")
+                      )
+                    }
                     size="small"
                     sx={{
                       fontSize: chipFontSize,
-                      bgcolor: "success.light",
-                      color: "success.contrastText",
+                      bgcolor: "warning.light",
+                      color: "warning.contrastText",
                     }}
                   />
-                )}
-              </Box>
-            )}
+                  {s.restrictTeamId && s.openRoles && s.openRoles.length > 0 && (
+                    <Chip
+                      icon={<LockOpenIcon sx={{ fontSize: "0.9rem !important" }} />}
+                      label={t("openToAllRoles", {
+                        // `count` è obbligatorio: la stringa è al plurale ICU e
+                        // senza di esso next-intl rende un errore di formattazione
+                        // al posto dell'etichetta. `formatRoleNumbers` allinea la
+                        // resa a quella dell'hero, che localizza la congiunzione.
+                        count: s.openRoles.length,
+                        roles: formatRoleNumbers(s.openRoles, locale),
+                      })}
+                      size="small"
+                      sx={{
+                        fontSize: chipFontSize,
+                        bgcolor: "success.light",
+                        color: "success.contrastText",
+                      }}
+                    />
+                  )}
+                </Box>
+              )}
+            </Box>
 
-            {/* CTA in fondo alla colonna sinistra */}
+            {/* CTA: in fondo alla colonna, o a destra nella card in evidenza */}
             <Box
               sx={{
-                mt: "auto",
-                pt: 0.75,
+                mt: hero ? 0 : "auto",
+                pt: hero ? 0 : 0.75,
                 display: "flex",
                 gap: 1,
                 flexWrap: "wrap",
+                flexShrink: 0,
                 pointerEvents: "auto",
                 zIndex: 2,
               }}
             >
-              {!isRegistered && !muted && isRegOpen && (
+              {canSignUp && (
                 // 40 px e senza freccia (UX-30): e' l'azione principale della card.
                 <Button href={href} variant="contained">
                   {t("signUp")}
@@ -411,13 +445,18 @@ export default function SessionCard({
                 <Button
                   // Un solo bottone pieno per card: se c'e' "Iscriviti", le
                   // squadre passano in secondo piano (UX-30).
-                  variant={
-                    myTeam || (!isRegistered && !muted && isRegOpen) ? "outlined" : "contained"
-                  }
+                  variant={myTeam || canSignUp ? "outlined" : "contained"}
                   startIcon={<SportsBasketballIcon />}
                   onClick={() => setTeamsOpen(true)}
                 >
                   {t("viewTeamsBtn")}
+                </Button>
+              )}
+              {/* In evidenza, da iscritto e senza squadre: il corpo non resta
+                  senza un'azione. Secondaria: l'iscrizione e' gia' fatta. */}
+              {hero && isRegistered && !hasTeams && (
+                <Button href={href} variant="outlined">
+                  {t("openTraining")}
                 </Button>
               )}
             </Box>

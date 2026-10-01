@@ -70,6 +70,11 @@ type MedalPalette = {
 type HeroGradientPalette = {
   dark: string;
   /**
+   * Testata delle card degli allenamenti (UX-43): in chiaro il grafite delle
+   * fasce, in scuro un grigio piu' chiaro del corpo della card.
+   */
+  cardHead: string;
+  /**
    * Bordo inferiore degli hero (UX-08): trasparente in chiaro, visibile in
    * scuro, dove un hero grafite su #121212 si confonderebbe con la pagina.
    */
@@ -603,7 +608,7 @@ export const lightTheme = createTheme({
     team: TEAM,
     bib: BIB,
     medal: MEDAL.light,
-    heroGradient: { ...heroGradient, border: "transparent" },
+    heroGradient: { ...heroGradient, border: "transparent", cardHead: heroGradient.band },
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
     adminBand: lightAdminBand,
@@ -651,7 +656,7 @@ export const darkTheme = createTheme({
     team: TEAM,
     bib: BIB,
     medal: MEDAL.dark,
-    heroGradient: { ...heroGradient, border: HERO.border },
+    heroGradient: { ...heroGradient, border: HERO.border, cardHead: HERO.cardHead },
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
     adminBand: darkAdminBand,

@@ -1,6 +1,6 @@
 # UX-43 · `/allenamenti`: card in evidenza in un tono solo e "Gestisci" sulla riga del titolo
 
-**Ondata:** 4 · **Stima:** S · **Dipende da:** UX-32 · **Stato:** da fare
+**Ondata:** 4 · **Stima:** S · **Dipende da:** UX-32 · **Stato:** fatto (su `develop`)
 
 Nato il 30/09/2026 guardando `/allenamenti` da staff, in tema scuro, durante UX-30. I problemi non vengono da UX-30: la pagina era già così.
 
@@ -36,3 +36,28 @@ Nato il 30/09/2026 guardando `/allenamenti` da staff, in tema scuro, durante UX-
 - Da staff, "Gestisci" è sulla riga dell'h1 a 1.440 px e non occupa una riga propria a 360 px.
 - Stesso trattamento in home e in `/allenamenti`, e nelle altre pagine emerse dal confronto.
 - `npm run a11y` verde; schermate prima/dopo in chiaro e scuro, da anonimo, tesserato e staff.
+
+## Com'è stato fatto
+
+Il ticket è stato rivisto con il committente prima di scrivere codice (01/10/2026), con un confronto affiancato: [`img/ux43-card-in-evidenza.png`](../img/ux43-card-in-evidenza.png) (oggi, A "testata tenuta", B "piatta come da ticket", in chiaro e in scuro).
+
+- **Scelta la variante A, non la B del ticket.** La testata scura resta: è lei a dire "questo è il prossimo". Con la card piatta l'evidenza spariva e la card diventava una riga più alta.
+- **Un tono solo per il corpo:** `SessionCard` è sempre `outlined`, senza ombra. In scuro il corpo è `#1E1E1E` come le righe (misurato dal DOM: card e riga `rgb(30, 30, 30)`, nessuna ombra).
+- **Testata:** in chiaro il grafite delle fasce (`heroGradient.band`, senza bagliore arancio); in scuro `#3D3D3D` (`HERO.cardHead`), più chiaro del corpo. Il committente la voleva più staccata del grafite: scartati il nero puro (più scuro della pagina, sembrava un buco) e la testata invertita chiara (abbagliava e gareggiava con l'intestazione). Token `palette.heroGradient.cardHead`, contrasto tenuto fermo in `palette.test.ts`.
+- **Corpo della card in evidenza:** data per esteso, orario e iscritti su una riga a 14 px in `text.primary`; da `sm` il bottone sta a destra sulla stessa riga. Da iscritto: "Ci sei" in verde con l'icona (la stessa formula delle righe) e "Apri l'allenamento" contornato, così il corpo non resta vuoto.
+- **Righe:** "Iscriviti" non è più un chip arancione che sembra un bottone: è "Iscrizioni aperte" in testo, in inchiostro pieno per distinguerlo da "in arrivo" e "chiuse". Il pallone che apre le squadre ha l'etichetta "Squadre" da tablet in su (su telefono resta l'icona, con il nome accessibile).
+
+### Punti del ticket non applicati, e perché
+
+- **Punto 4 (un solo titolo):** "Prossimi allenamenti" resta, perché sotto c'è "Allenamenti passati": sono due sezioni sorelle.
+- **Punto 5 (stato in arancione e verde):** l'arancio è solo per ciò che si tocca e gli stati sono neutri (UX-29). "Iscrizioni aperte" è neutro; il verde resta solo per "Ci sei", che è una valenza positiva.
+- **Titolo `h5`:** era già a 24 px.
+
+### Verifiche
+
+`/allenamenti` e home da atleta, in chiaro e in scuro, a 1440 × 900 e 390 × 844; stato "iscritto" e varianti in corso, con squadre e terminato dalle storie di Storybook. `npm run a11y` verde.
+
+## Rimasto fuori
+
+- **Altre pagine del confronto:** la prossima partita della pagina squadra ha ancora un blocco scuro sotto la fascia. Non è una `SessionCard`: va vista a parte.
+- **Home del tesserato:** la card grande dell'allenamento successivo sta subito sotto la card "prossima cosa da fare". Ora pesa meno di prima, ma l'ordine dei pesi resta da decidere.

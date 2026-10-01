@@ -94,6 +94,13 @@ describe("fascia delle intestazioni", () => {
     }
   });
 
+  it("testata delle card in tema scuro: regge il testo e si stacca dal corpo", () => {
+    expect(ratio(HERO_TEXT.primary, HERO.cardHead)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(HERO_TEXT.secondary, HERO.cardHead)).toBeGreaterThanOrEqual(4.5);
+    // Scelta del committente (01/10): la testata deve vedersi, non fondersi.
+    expect(ratio(HERO.cardHead, NEUTRAL.dark.paper)).toBeGreaterThan(1.4);
+  });
+
   it("resta un gradino sopra il nero dell'header", () => {
     // Tono B scelto dal committente (30/09): lo stacco e' leggero di proposito,
     // la fascia deve restare nera, non diventare grigia.

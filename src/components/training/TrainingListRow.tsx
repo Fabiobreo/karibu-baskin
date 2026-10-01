@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import Link from "next/link";
@@ -155,15 +155,26 @@ export default function TrainingListRow({
           }}
         >
           {s.teams && (
-            <Tooltip title={t("viewTeamsBtn")}>
-              <IconButton
-                aria-label={t("viewTeamsBtn")}
-                onClick={() => setTeamsOpen(true)}
-                sx={{ color: "text.secondary" }}
-              >
-                <SportsBasketballIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-            </Tooltip>
+            // Con l'etichetta da `sm` (UX-43): il pallone da solo non diceva
+            // che cosa apre. Su telefono, dove non c'e' spazio, resta l'icona.
+            <Button
+              size="small"
+              variant="text"
+              color="inherit"
+              aria-label={t("viewTeamsBtn")}
+              onClick={() => setTeamsOpen(true)}
+              sx={{
+                minWidth: 40,
+                minHeight: 40,
+                color: "text.primary",
+                gap: 0.75,
+              }}
+            >
+              <SportsBasketballIcon sx={{ fontSize: 20, color: "text.secondary" }} />
+              <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
+                {t("rowTeams")}
+              </Box>
+            </Button>
           )}
           {/* Lo staff gestisce iscrizioni, squadre e modifiche dall'admin (UX-14). */}
           {isStaff && (

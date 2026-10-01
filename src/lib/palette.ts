@@ -88,6 +88,13 @@ export const HERO = {
    */
   bandFrom: "#202020",
   bandTo: "#262626",
+  /**
+   * Testata delle card degli allenamenti in tema scuro (UX-43): piu' chiara del
+   * corpo della card (#1E1E1E), perche' in scuro "in rilievo" vuol dire piu'
+   * chiaro. Il nero puro sembrava un buco, il grafite della fascia si fondeva.
+   * In chiaro la testata usa la fascia (`bandFrom`/`bandTo`).
+   */
+  cardHead: "#3D3D3D",
   /** Bordo inferiore degli hero in tema scuro. */
   border: "rgba(255, 255, 255, 0.14)",
   /** Velatura sopra una foto di copertina, per reggere il testo bianco. */

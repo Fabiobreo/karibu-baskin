@@ -12,6 +12,7 @@ import type { SessionWithCount } from "@/components/training/SessionCard";
 import { groupUpcoming, type UpcomingGroup } from "@/lib/trainingList";
 import { TEAM_META, bibFill } from "@/lib/constants";
 import { RADIUS } from "@/lib/radius";
+import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 interface UpcomingTrainingsListProps {
   sessions: SessionWithCount[];
@@ -63,13 +64,18 @@ function RegistrationStatus({
     );
   }
   if (s.registrationOpen) {
+    // Testo, non un chip arancione (UX-43): sembrava un bottone, ma il link e'
+    // la riga intera. Stato neutro (UX-29); l'inchiostro pieno lo distingue
+    // da "in arrivo" e "chiuse".
     return (
-      <Chip
-        label={t("rowRegister")}
-        size="small"
-        variant="outlined"
-        sx={{ color: "primary.onLight", borderColor: "primary.main" }}
-      />
+      <Typography
+        variant="caption"
+        color="text.primary"
+        fontWeight={FONT_WEIGHT.semibold}
+        sx={{ whiteSpace: "nowrap" }}
+      >
+        {t("rowOpen")}
+      </Typography>
     );
   }
   return (
