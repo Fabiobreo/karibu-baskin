@@ -50,7 +50,8 @@ export default async function LatestNewsHero() {
     <Box sx={{ bgcolor: "action.hover", py: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <NewspaperIcon sx={{ color: "text.secondary", fontSize: 32 }} />
+          {/* Icona decorativa di una sezione chiara: arancio (UX-28, opzione B). */}
+          <NewspaperIcon sx={{ color: "primary.main", fontSize: 32 }} />
           <Box>
             <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1 }}>
               {t("updates")}
@@ -65,21 +66,36 @@ export default async function LatestNewsHero() {
           </Box>
         </Box>
 
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: side.length > 0 ? 7 : 12 }}>
-            <FeaturedCard post={featured} featuredLabel={t("featured")} />
-          </Grid>
-
-          {side.length > 0 && (
-            <Grid size={{ xs: 12, md: 5 }}>
-              <Stack spacing={2} sx={{ height: "100%" }}>
-                {side.map((p) => (
-                  <SideCard key={p.id} post={p} />
-                ))}
-              </Stack>
+        {featured.imageUrl ? (
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: side.length > 0 ? 7 : 12 }}>
+              <FeaturedCard
+                post={{ ...featured, imageUrl: featured.imageUrl }}
+                featuredLabel={t("featured")}
+              />
             </Grid>
-          )}
-        </Grid>
+
+            {side.length > 0 && (
+              <Grid size={{ xs: 12, md: 5 }}>
+                <Stack spacing={2} sx={{ height: "100%" }}>
+                  {side.map((p) => (
+                    <SideCard key={p.id} post={p} />
+                  ))}
+                </Stack>
+              </Grid>
+            )}
+          </Grid>
+        ) : (
+          // L'ultima news non ha una foto: niente blocco grande quasi vuoto,
+          // sta fra le altre come card normale (UX-38).
+          <Grid container spacing={2}>
+            {posts.map((p) => (
+              <Grid key={p.id} size={{ xs: 12, md: posts.length > 1 ? 6 : 12 }}>
+                <SideCard post={p} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
 
         <Box sx={{ textAlign: "right", mt: 2 }}>
           <Link href="/news" style={{ textDecoration: "none" }}>

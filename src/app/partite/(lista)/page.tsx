@@ -17,6 +17,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { getDateFnsLocale } from "@/lib/dateLocale";
 import { buildMetadata } from "@/lib/seo";
 import { teamColor } from "@/lib/teamColors";
+import TeamSectionHeader from "@/components/teams/TeamSectionHeader";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { formatRome } from "@/lib/dateUtils";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -155,46 +156,13 @@ export default async function PartitePage({ searchParams }: Props) {
           <Stack spacing={5}>
             {teamGroups.map((team) => (
               <Box key={team.id}>
-                {/* Team header */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    mb: 2,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {/* Pallino della tinta squadra; senza tinta nessun segno (UX-29). */}
-                  {teamColor(team.color) && (
-                    <Box
-                      sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: "50%",
-                        bgcolor: teamColor(team.color),
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
-                  <Typography variant="h6" fontWeight={FONT_WEIGHT.bold}>
-                    {team.name}
-                  </Typography>
-                  {team.championship && (
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      fontWeight={FONT_WEIGHT.semibold}
-                    >
-                      {team.championship}
-                    </Typography>
-                  )}
-                  {/* Conteggio: un dato che non si tocca, quindi neutro (UX-29). */}
-                  <Chip
-                    label={t("matchCount", { count: team.matches.length })}
-                    size="small"
-                    variant="outlined"
-                    sx={{ ml: "auto", fontSize: TYPE_SCALE.xs, height: 20 }}
+                {/* Intestazione nella tinta della squadra; senza tinta e' neutra (UX-29). */}
+                <Box sx={{ mb: 2 }}>
+                  <TeamSectionHeader
+                    name={team.name}
+                    color={team.color}
+                    championship={team.championship}
+                    aside={t("matchCount", { count: team.matches.length })}
                   />
                 </Box>
 
@@ -224,9 +192,14 @@ export default async function PartitePage({ searchParams }: Props) {
                             overflow: "hidden",
                             cursor: "pointer",
                             transition: "box-shadow 0.15s, border-color 0.15s",
+                            // Si tocca: al passaggio bordo arancio. La fascia
+                            // a sinistra resta della squadra.
                             "&:hover": {
                               boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-                              borderColor: "text.disabled",
+                              borderTopColor: "primary.main",
+                              borderRightColor: "primary.main",
+                              borderBottomColor: "primary.main",
+                              ...(teamColor(team.color) ? {} : { borderLeftColor: "primary.main" }),
                             },
                           }}
                         >

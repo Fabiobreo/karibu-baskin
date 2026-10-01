@@ -67,7 +67,7 @@ export default function SideCard({ post }: SideCardProps) {
             (post.poll ? (
               <HowToVoteIcon sx={{ fontSize: 32, color: "primary.main" }} />
             ) : (
-              <ArticleIcon sx={{ fontSize: 32, color: "text.secondary" }} />
+              <ArticleIcon sx={{ fontSize: 32, color: "primary.main" }} />
             ))}
         </Box>
 

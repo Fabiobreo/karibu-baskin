@@ -1,4 +1,4 @@
-import { Container, Box, Typography, Paper, Avatar, Chip, Divider } from "@mui/material";
+import { Container, Box, Typography, Paper, Chip, Divider } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -9,6 +9,7 @@ import { isMemberRole } from "@/lib/authRoles";
 import { isMinor, isMinorChild } from "@/lib/minors";
 import { userHasPublicProfile } from "@/lib/publicProfile";
 import PageHero from "@/components/common/PageHero";
+import TeamAvatar from "@/components/teams/TeamAvatar";
 import ComparePicker from "@/components/common/ComparePicker";
 import PointsTrendChart from "@/components/rating/PointsTrendChart";
 import { shootingAccuracy } from "@/lib/matches/accuracy";
@@ -37,6 +38,8 @@ type ComparePlayer = {
   slug: string | null;
   image: string | null;
   sportRole: number | null;
+  /** Colore salvato dell'ultima squadra, per la tinta dell'avatar. */
+  teamColor: string | null;
   matches: number;
   points: number;
   avg: number;
@@ -67,6 +70,8 @@ async function loadComparePlayer(
       },
     },
     _count: { select: { matchMvps: true } },
+    // Per la tinta dell'avatar: la squadra della stagione piu' recente.
+    teamMemberships: { select: { team: { select: { color: true, season: true } } } },
   };
 
   // Utente e figlio in parallelo: il figlio conta solo se l'utente non ha un
@@ -102,6 +107,9 @@ async function loadComparePlayer(
     slug: row.slug,
     image: child ? null : (user?.customImage ?? user?.image ?? null),
     sportRole: row.sportRole,
+    teamColor:
+      [...row.teamMemberships].sort((a, b) => b.team.season.localeCompare(a.team.season))[0]?.team
+        .color ?? null,
     matches,
     points,
     avg: matches > 0 ? points / matches : 0,
@@ -117,19 +125,13 @@ function CompareHeader({ p }: { p: ComparePlayer }) {
   return (
     <Box sx={{ textAlign: "center" }}>
       <Link href={href} style={{ textDecoration: "none", color: "inherit" }}>
-        <Avatar
-          src={p.image ?? undefined}
-          sx={{
-            width: 64,
-            height: 64,
-            mx: "auto",
-            mb: 1,
-            fontSize: TYPE_SCALE.xl3,
-            cursor: "pointer",
-          }}
-        >
-          {p.name[0]}
-        </Avatar>
+        <TeamAvatar
+          name={p.name}
+          image={p.image}
+          color={p.teamColor}
+          size={64}
+          sx={{ mx: "auto", mb: 1, fontSize: TYPE_SCALE.xl3, cursor: "pointer" }}
+        />
         <Typography
           variant="subtitle1"
           fontWeight={FONT_WEIGHT.bold}

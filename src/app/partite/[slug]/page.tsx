@@ -739,6 +739,7 @@ export default async function MatchDetailPage({ params }: Props) {
         <Box sx={columnSx("main")}>
           <MatchDetailTabs
             ourTeamColor={match.team.color}
+            playersTeamColor={match.opponentTeamId ? null : match.team.color}
             notes={match.notes}
             stats={match.playerStats}
             callups={callups}

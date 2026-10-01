@@ -508,9 +508,11 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
   // Andamento punti per partita in ordine cronologico (filteredStats è desc).
   const trendValues = [...filteredStats].reverse().map((ms) => ms.points);
 
-  // Tinta della squadra corrente (UX-29); senza tinta nessun segno di colore,
-  // mai l'arancio come ripiego.
-  const playerHue = teamColor(currentTeams[0]?.team.color);
+  // Tinta della squadra mostrata nell'hero: quella corrente o, fuori stagione,
+  // l'ultima (il chip accanto al nome ne dice la stagione). Senza tinta nessun
+  // segno di colore, mai l'arancio come ripiego (UX-29).
+  const playerFill = teamFill(heroTeams[0]?.team.color);
+  const playerHue = playerFill?.bg ?? null;
 
   return (
     <>
@@ -527,6 +529,7 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
         ]}
         title={player.name ?? "—"}
         background={playerHue ? heroTint(playerHue) : heroGradient.band}
+        accent={playerHue}
         leading={
           // Avatar grande con ring
           <Box
@@ -543,6 +546,8 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 fontSize: { xs: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
                 fontWeight: FONT_WEIGHT.bold,
                 bgcolor: playerHue ?? heroText.surface,
+                // Iniziale con l'etichetta della tinta: bianca o scura, >= 4,5:1.
+                color: playerFill?.fg ?? heroText.primary,
                 border: "4px solid",
                 borderColor: playerHue ?? heroText.lineStrong,
                 boxShadow: "0 8px 28px rgba(0,0,0,0.35), 0 0 0 6px rgba(0,0,0,0.25)",
@@ -675,11 +680,6 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 : isSecond
                   ? heroMedal.silver
                   : heroMedal.bronze;
-              const medalColorToken = isFirst
-                ? "medal.gold"
-                : isSecond
-                  ? "medal.silver"
-                  : "medal.bronze";
               const medalLabel = isFirst
                 ? "Top scorer di ruolo"
                 : isSecond
@@ -725,7 +725,9 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                       sx={{
                         fontSize: TYPE_SCALE.xs,
                         fontWeight: FONT_WEIGHT.bold,
-                        color: medalColorToken,
+                        // Metallo chiaro degli hero: il token del tema in
+                        // chiaro e' scurito e sul fondo scuro non si leggeva.
+                        color: medalColor,
                         textTransform: "uppercase",
                         letterSpacing: "0.05em",
                         display: "block",
@@ -889,51 +891,54 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
 
           {/* Riepilogo: numeri in riquadri. Punti e partite della carriera
             stanno gia' nell'hero; qui allenamenti e MVP. Chi non ha ancora
-            giocato ha una riga di stato al posto dei numeri a zero. */}
-          <Box
-            component="section"
-            aria-label={t("athleteInfo")}
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-              gap: 2,
-              mb: 5,
-            }}
-          >
-            <SummaryTile
-              value={trainingsValue}
-              label={t("trainingsLabel")}
-              note={
-                attendedCount > 0 && player._count.registrations > attendedCount
-                  ? t("trainingsOf", { count: player._count.registrations })
-                  : undefined
-              }
-            />
-            {careerMatches > 0 ? (
-              player._count.matchMvps > 0 && (
-                <SummaryTile value={player._count.matchMvps} label={t("mvpLabel")} />
-              )
-            ) : (
-              <Paper
-                elevation={0}
-                variant="outlined"
-                sx={{
-                  gridColumn: { sm: "span 2" },
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                }}
-              >
-                <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
-                  {t("notPlayedYet", { name: player.name ?? "" })}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t("notPlayedYetDesc")}
-                </Typography>
-              </Paper>
-            )}
-          </Box>
+            giocato ha una sola card a tutta larghezza al posto dei numeri a
+            zero (UX-38): una tessera accanto a una card di stato pesava piu'
+            del contenuto. */}
+          {careerMatches > 0 ? (
+            <Box
+              component="section"
+              aria-label={t("athleteInfo")}
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+                gap: 2,
+                mb: 5,
+              }}
+            >
+              <SummaryTile
+                accent={playerHue}
+                value={trainingsValue}
+                label={t("trainingsLabel")}
+                note={
+                  attendedCount > 0 && player._count.registrations > attendedCount
+                    ? t("trainingsOf", { count: player._count.registrations })
+                    : undefined
+                }
+              />
+              {player._count.matchMvps > 0 && (
+                <SummaryTile
+                  accent={playerHue}
+                  value={player._count.matchMvps}
+                  label={t("mvpLabel")}
+                />
+              )}
+            </Box>
+          ) : (
+            <Paper
+              component="section"
+              aria-label={t("athleteInfo")}
+              elevation={0}
+              variant="outlined"
+              sx={{ p: 2, mb: 5 }}
+            >
+              <Typography variant="body1" fontWeight={FONT_WEIGHT.semibold}>
+                {t("noMatchesSummary", { count: trainingsValue })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t("notPlayedYetDesc")}
+              </Typography>
+            </Paper>
+          )}
 
           {/* Badge / achievement. Senza partite i traguardi sono tutti a zero:
             se ne mostra solo il prossimo, non una lista di barre vuote. */}
@@ -1108,8 +1113,12 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                   >
                     {t("pointsTrend")}
                   </Typography>
-                  {/* Linea neutra: il grafico parla del giocatore, non della squadra (UX-29). */}
-                  <PointsTrendChart values={trendValues} />
+                  {/* Linea nella tinta della squadra (01/10): e' l'identita', come
+                    grafico. L'Oro sulla carta non arriva a 3:1: resta in inchiostro. */}
+                  <PointsTrendChart
+                    values={trendValues}
+                    colorToken={playerHue && !playerFill?.ring ? playerHue : "text.primary"}
+                  />
                 </Paper>
               )}
 
@@ -1415,13 +1424,32 @@ function teamHref(team: { name: string; season: string }): string {
   return `/squadre/${team.season.replace("-", "")}/${slugify(team.name)}`;
 }
 
-/** Riquadro numerico del riepilogo: numero grande, etichetta sotto. */
-function SummaryTile({ value, label, note }: { value: number; label: string; note?: string }) {
+/**
+ * Riquadro numerico del riepilogo: numero grande, etichetta sotto. `accent` e'
+ * l'hex della tinta squadra: un filo in alto, segno grafico dell'identita'.
+ */
+function SummaryTile({
+  value,
+  label,
+  note,
+  accent = null,
+}: {
+  value: number;
+  label: string;
+  note?: string;
+  accent?: string | null;
+}) {
   return (
     <Paper
       elevation={0}
       variant="outlined"
-      sx={{ p: 2, textAlign: "center", display: "flex", flexDirection: "column" }}
+      sx={{
+        p: 2,
+        textAlign: "center",
+        display: "flex",
+        flexDirection: "column",
+        ...(accent ? { borderTop: `3px solid ${accent}` } : {}),
+      }}
     >
       <Typography
         component="p"

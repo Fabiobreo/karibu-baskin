@@ -21,7 +21,6 @@ import {
   useTheme,
 } from "@mui/material";
 import Link from "next/link";
-import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { ROLES, TEAM_META, bibFill, roleColorSx } from "@/lib/constants";
@@ -853,28 +852,13 @@ export default function TeamDisplay({
     );
   }
 
-  // Nessuna squadra, utente normale
+  // Nessuna squadra, utente normale: una riga sotto il titolo della sezione,
+  // senza riquadro (UX-38: lo stato vuoto non pesa piu' del contenuto).
   if (!teams) {
     return (
-      <Box
-        sx={{
-          py: 4,
-          px: 3,
-          textAlign: "center",
-          borderRadius: RADIUS.md,
-          border: "1px dashed",
-          borderColor: "divider",
-          backgroundColor: "background.paper",
-        }}
-      >
-        <SportsBasketballIcon sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
-        <Typography variant="body1" color="text.secondary">
-          {isEnded ? t("teamsNotPublishedPast") : t("teamsNotPublished")}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          {isEnded ? t("teamsNotPublishedPastDesc") : t("teamsNotPublishedDesc")}
-        </Typography>
-      </Box>
+      <Typography variant="body2" color="text.secondary">
+        {isEnded ? t("teamsNotPublishedPastDesc") : t("teamsNotPublishedDesc")}
+      </Typography>
     );
   }
 

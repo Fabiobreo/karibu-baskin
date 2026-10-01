@@ -12,7 +12,7 @@ import { useActiveDateLocale } from "@/hooks/useActiveDateLocale";
 import { onHover } from "@/lib/hoverStyles";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
-import { teamColor } from "@/lib/teamColors";
+import { teamFill } from "@/lib/teamColors";
 
 export interface MatchCardData {
   id: string;
@@ -62,6 +62,7 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
     >
       {matches.map((m, idx) => {
         const highlight = idx === 0 && m.isImminent;
+        const fill = teamFill(m.team.color);
         return (
           <Link
             key={m.id}
@@ -71,7 +72,6 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
             <Paper
               elevation={highlight ? 6 : 2}
               sx={{
-                p: { xs: 2, md: 2.5 },
                 height: "100%",
                 position: "relative",
                 overflow: "hidden",
@@ -86,19 +86,29 @@ export default function ProssimePartiteCards({ matches }: ProssimePartiteCardsPr
                 }),
               }}
             >
-              {teamColor(m.team.color) && (
+              {/* Testata nella tinta della squadra, con il suo nome sopra (come le
+                card di /squadre); senza tinta nessun segno di colore. */}
+              {fill && (
                 <Box
                   sx={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: 6,
-                    backgroundColor: teamColor(m.team.color),
+                    px: { xs: 2, md: 2.5 },
+                    py: 0.75,
+                    bgcolor: fill.bg,
+                    color: fill.fg,
+                    boxShadow: fill.ring ? `inset 0 0 0 1px ${fill.ring}` : undefined,
                   }}
-                />
+                >
+                  <Typography
+                    variant="caption"
+                    fontWeight={FONT_WEIGHT.semibold}
+                    sx={{ color: "inherit", display: "block" }}
+                    noWrap
+                  >
+                    {m.team.name}
+                  </Typography>
+                </Box>
               )}
-              <Box sx={{ pl: 1.5 }}>
+              <Box sx={{ p: { xs: 2, md: 2.5 } }}>
                 {m.isImminent && (
                   <Chip
                     icon={<BoltIcon sx={{ fontSize: 16 }} />}

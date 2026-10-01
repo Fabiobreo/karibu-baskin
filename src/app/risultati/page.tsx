@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
-import { teamColor } from "@/lib/teamColors";
+import TeamSectionHeader from "@/components/teams/TeamSectionHeader";
+import { RADIUS } from "@/lib/radius";
 import { Container, Typography, Box, Chip, Stack } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import PlayedMatchRow from "@/components/matches/PlayedMatchRow";
@@ -161,40 +162,41 @@ export default async function RisultatiPage({ searchParams }: Props) {
 
               return (
                 <Box key={team.id}>
-                  {/* Team header */}
+                  {/* Intestazione nella tinta della squadra; sotto, il bilancio:
+                    una barra in proporzione e i conteggi per esteso (il colore
+                    non e' mai l'unico segnale, WCAG 1.4.1). */}
+                  <TeamSectionHeader
+                    name={team.name}
+                    color={team.color}
+                    championship={team.championship}
+                    aside={t("matchCount", { count: team.matches.length })}
+                  />
                   <Box
                     sx={{
                       display: "flex",
                       alignItems: "center",
                       gap: 1.5,
-                      mb: 2,
                       flexWrap: "wrap",
+                      mt: 1.5,
+                      mb: 2,
                     }}
                   >
-                    {teamColor(team.color) && (
-                      <Box
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: "50%",
-                          bgcolor: teamColor(team.color),
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                    <Typography component="h2" variant="h6" fontWeight={FONT_WEIGHT.bold}>
-                      {team.name}
-                    </Typography>
-                    {team.championship && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={FONT_WEIGHT.semibold}
-                      >
-                        {team.championship}
-                      </Typography>
-                    )}
-                    <Box sx={{ ml: "auto", display: "flex", gap: 0.75 }}>
+                    <Box
+                      aria-hidden
+                      sx={{
+                        display: "flex",
+                        gap: "2px",
+                        flex: "1 1 160px",
+                        height: 8,
+                        borderRadius: RADIUS.pill,
+                        overflow: "hidden",
+                      }}
+                    >
+                      {tw > 0 && <Box sx={{ flexGrow: tw, flexBasis: 0, bgcolor: "match.win" }} />}
+                      {td > 0 && <Box sx={{ flexGrow: td, flexBasis: 0, bgcolor: "match.draw" }} />}
+                      {tl > 0 && <Box sx={{ flexGrow: tl, flexBasis: 0, bgcolor: "match.loss" }} />}
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 0.75 }}>
                       <Chip
                         label={wins(tw)}
                         size="small"

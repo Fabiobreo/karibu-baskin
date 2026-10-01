@@ -86,11 +86,9 @@ function EventCard({
                 sx={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
             ) : (
-              <CoverFallback
-                weekday={formatRome(ev.date, "EEEE", { locale: dl })}
-                day={formatRome(ev.date, "d", { locale: dl })}
-                month={formatRome(ev.date, "MMMM yyyy", { locale: dl })}
-              />
+              // Senza foto il titolo sta sulla copertina ed e' l'intestazione
+              // della card: sotto restano data e luogo, una volta sola (UX-38).
+              <CoverFallback title={ev.title} titleComponent="h3" seed={ev.id} />
             )}
           </Box>
           <Box sx={{ p: 2 }}>
@@ -98,16 +96,18 @@ function EventCard({
               label={dateLabel}
               size="small"
               variant="outlined"
-              sx={{ fontSize: TYPE_SCALE.xs, mb: 1 }}
+              sx={{ fontSize: TYPE_SCALE.xs }}
             />
-            <Typography
-              variant="subtitle1"
-              component="h3"
-              fontWeight={FONT_WEIGHT.bold}
-              sx={{ color: "text.primary", lineHeight: 1.25 }}
-            >
-              {ev.title}
-            </Typography>
+            {ev.imageUrl && (
+              <Typography
+                variant="subtitle1"
+                component="h3"
+                fontWeight={FONT_WEIGHT.bold}
+                sx={{ color: "text.primary", lineHeight: 1.25, mt: 1 }}
+              >
+                {ev.title}
+              </Typography>
+            )}
             {ev.location && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.75 }}>
                 <PlaceIcon sx={{ fontSize: 15, color: "text.secondary" }} />

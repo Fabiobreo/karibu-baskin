@@ -12,7 +12,6 @@ import {
   TableCell,
   TableBody,
   TableSortLabel,
-  Avatar,
   Chip,
   TablePagination,
   InputAdornment,
@@ -24,6 +23,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import Link from "next/link";
 import RoleBadge from "@/components/common/RoleBadge";
 import TeamChip from "@/components/teams/TeamChip";
+import TeamAvatar from "@/components/teams/TeamAvatar";
 import { useLocale, useTranslations } from "next-intl";
 import { formatDecimal } from "@/lib/numberFormat";
 import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
@@ -393,12 +393,13 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   </TableCell>
                   <TableCell sx={{ minWidth: 200 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Avatar
-                        src={row.image ?? undefined}
-                        sx={{ width: 26, height: 26, fontSize: TYPE_SCALE.xs }}
-                      >
-                        {(row.name ?? "?")[0]}
-                      </Avatar>
+                      <TeamAvatar
+                        name={row.name}
+                        image={row.image}
+                        color={row.teams[0]?.color}
+                        size={26}
+                        sx={{ fontSize: TYPE_SCALE.xs }}
+                      />
                       <Box>
                         {(row.slug ?? row.id) ? (
                           <Link
@@ -533,12 +534,13 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
                   >
                     {rank}
                   </Typography>
-                  <Avatar
-                    src={row.image ?? undefined}
-                    sx={{ width: 32, height: 32, fontSize: TYPE_SCALE.sm }}
-                  >
-                    {(row.name ?? "?")[0]}
-                  </Avatar>
+                  <TeamAvatar
+                    name={row.name}
+                    image={row.image}
+                    color={row.teams[0]?.color}
+                    size={32}
+                    sx={{ fontSize: TYPE_SCALE.sm }}
+                  />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     {(row.slug ?? row.id) ? (
                       <Link

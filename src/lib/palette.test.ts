@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@/lib/colorUtils";
 import {
+  APP_ROLE,
   BRAND,
   HERO,
   HERO_TEXT,
@@ -11,6 +12,7 @@ import {
   ROLE_COLORS,
   TEAM,
   TEAM_LABEL,
+  WARM_SURFACE,
 } from "@/lib/palette";
 
 // Le soglie di UX-29. Le distanze percettive (CIEDE2000, daltonismo) sono nel
@@ -51,6 +53,14 @@ describe("tinte squadra", () => {
 describe("ruoli", () => {
   it.each(Object.entries(ROLE_COLORS))("il ruolo %s regge il numero bianco", (_, hex) => {
     expect(ratio(hex, BRAND.white)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("ruolo utente", () => {
+  it.each(["light", "dark"] as const)("in tema %s il testo regge sul suo fondo", (mode) => {
+    for (const { bg, fg } of Object.values(APP_ROLE[mode])) {
+      expect(ratio(fg, bg)).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 
@@ -120,6 +130,39 @@ describe("neutri", () => {
 
   it("il grigio neutro regge l'etichetta bianca", () => {
     expect(ratio(NEUTRAL.grey, BRAND.white)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("pesca (superficie di marchio chiara)", () => {
+  it("in chiaro regge testo, testo secondario e link arancio", () => {
+    const bg = WARM_SURFACE.light.bg;
+    expect(ratio(NEUTRAL.light.text, bg)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(NEUTRAL.light.textSecondary, bg)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(BRAND.orangeOnLight, bg)).toBeGreaterThanOrEqual(4.5);
+    // Il bottone pieno si stacca dalla superficie (WCAG 1.4.11).
+    expect(ratio(BRAND.orangeFill, bg)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("in scuro regge testo, testo secondario e link arancio", () => {
+    const bg = WARM_SURFACE.dark.bg;
+    expect(ratio(NEUTRAL.dark.text, bg)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(NEUTRAL.dark.textSecondary, bg)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(BRAND.orangeOnDark, bg)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("blocco d'invito arancio", () => {
+  it("regge il testo bianco e il bottone bianco", () => {
+    expect(ratio(BRAND.white, BRAND.orangeFill)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio(BRAND.dark, BRAND.white)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("filo dell'header", () => {
+  it("l'arancio della maglia si vede sul nero dell'header e sulla fascia", () => {
+    for (const bg of [BRAND.dark, BRAND.darkSoft, HERO.bandFrom, NEUTRAL.dark.background]) {
+      expect(ratio(BRAND.orange, bg)).toBeGreaterThanOrEqual(3);
+    }
   });
 });
 

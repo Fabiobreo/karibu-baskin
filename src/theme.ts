@@ -6,6 +6,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS, SHAPE_RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import {
+  APP_ROLE,
   BIB,
   BRAND,
   FOCUS_RING,
@@ -16,6 +17,7 @@ import {
   ROLE_BORDER_DARK,
   SHADOW,
   TEAM,
+  WARM_SURFACE,
 } from "@/lib/palette";
 
 // Re-export per retro-compatibilità (vedi src/lib/heroStyles.ts per il motivo).
@@ -81,6 +83,15 @@ type HeroGradientPalette = {
   border: string;
 };
 
+/** Pesca: superficie di marchio chiara, mai interattiva. Porta sempre il suo bordo. */
+type WarmSurfacePalette = {
+  bg: string;
+  border: string;
+};
+
+/** Chip del ruolo utente: fondo tenue e testo della stessa tinta. */
+type AppRolePalette = Record<keyof typeof APP_ROLE.light, { bg: string; fg: string }>;
+
 type FocusRingPalette = {
   /** Colore dell'anello esterno. */
   main: string;
@@ -123,12 +134,16 @@ declare module "@mui/material/styles" {
     bib: BibPalette;
     medal: MedalPalette;
     heroGradient: HeroGradientPalette;
+    warmSurface: WarmSurfacePalette;
+    appRole: AppRolePalette;
     focusRing: FocusRingPalette;
     appBar: AppBarPalette;
     adminBand: AdminBandPalette;
     border: BorderPalette;
   }
   interface PaletteOptions {
+    warmSurface?: WarmSurfacePalette;
+    appRole?: AppRolePalette;
     match?: MatchPalette;
     team?: TeamPalette;
     bib?: BibPalette;
@@ -609,6 +624,8 @@ export const lightTheme = createTheme({
     bib: BIB,
     medal: MEDAL.light,
     heroGradient: { ...heroGradient, border: "transparent", cardHead: heroGradient.band },
+    warmSurface: WARM_SURFACE.light,
+    appRole: APP_ROLE.light,
     focusRing: lightFocusRing,
     appBar: sharedAppBar,
     adminBand: lightAdminBand,
@@ -657,6 +674,8 @@ export const darkTheme = createTheme({
     bib: BIB,
     medal: MEDAL.dark,
     heroGradient: { ...heroGradient, border: HERO.border, cardHead: HERO.cardHead },
+    warmSurface: WARM_SURFACE.dark,
+    appRole: APP_ROLE.dark,
     focusRing: darkFocusRing,
     appBar: sharedAppBar,
     adminBand: darkAdminBand,

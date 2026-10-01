@@ -27,6 +27,11 @@ interface Props {
   ourTeamId: string;
   /** Colore salvato della nostra squadra: pallino accanto al nome in classifica. */
   ourTeamColor?: string | null;
+  /**
+   * Colore della squadra di convocati e marcatori, per la tinta degli avatar.
+   * Null nelle amichevoli interne: i giocatori stanno su due squadre nostre.
+   */
+  playersTeamColor?: string | null;
   groupName: string | null;
   opponentName: string;
   matchId: string;
@@ -42,6 +47,7 @@ export default function MatchDetailTabs({
   prevMatches,
   groupStandings,
   ourTeamColor = null,
+  playersTeamColor = null,
   groupName,
   opponentName,
   matchId,
@@ -106,6 +112,7 @@ export default function MatchDetailTabs({
           prevMatches={prevMatches}
           groupStandings={groupStandings}
           ourTeamColor={ourTeamColor}
+          playersTeamColor={playersTeamColor}
           groupName={groupName}
           opponentName={opponentName}
           matchId={matchId}
@@ -113,7 +120,14 @@ export default function MatchDetailTabs({
         />
       )}
 
-      {tab === 1 && <MatchStatsTab stats={stats} matchId={matchId} isStaff={isStaff} />}
+      {tab === 1 && (
+        <MatchStatsTab
+          stats={stats}
+          matchId={matchId}
+          isStaff={isStaff}
+          teamColor={playersTeamColor}
+        />
+      )}
     </>
   );
 }

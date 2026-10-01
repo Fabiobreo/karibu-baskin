@@ -14,6 +14,7 @@ import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
+import BrandCta from "@/components/common/BrandCta";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -212,31 +213,15 @@ export default async function SquadrePage() {
 
           {/* CTA */}
           {currentTeams.length > 0 && (
-            <Box
-              sx={{
-                mt: 8,
-                background: heroGradient.footer,
-                borderRadius: RADIUS.lg,
-                p: { xs: 3, md: 5 },
-                textAlign: "center",
-                color: "common.white",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <EmojiEventsIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
-              <Typography variant="h5" component="h2">
-                {t("joinUs")}
-              </Typography>
-              <Typography variant="body1" sx={{ color: heroText.muted, maxWidth: 420 }}>
-                {t("joinUsDesc")}
-              </Typography>
-              {/* Verso "Vieni a provare" (UX-15). */}
-              <Button href={TRY_IT_HREF} variant="contained" size="large" sx={{ mt: 2 }}>
-                {t("joinUsCta")}
-              </Button>
+            // Verso "Vieni a provare" (UX-15).
+            <Box sx={{ mt: 8 }}>
+              <BrandCta
+                layout="center"
+                icon={<EmojiEventsIcon />}
+                title={t("joinUs")}
+                body={t("joinUsDesc")}
+                action={{ href: TRY_IT_HREF, label: t("joinUsCta") }}
+              />
             </Box>
           )}
         </Box>

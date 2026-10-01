@@ -2,7 +2,6 @@
 import { useState, type ReactNode } from "react";
 import { Box, Button, IconButton, Tooltip, Typography } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
-import SportsBasketballIcon from "@mui/icons-material/SportsBasketball";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useTranslations } from "next-intl";
@@ -11,6 +10,7 @@ import TeamsModal from "@/components/training/TeamsModal";
 import type { SessionWithCount } from "@/components/training/SessionCard";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TEAM_META, bibFill } from "@/lib/constants";
 
 interface TrainingListRowProps {
   session: SessionWithCount;
@@ -58,8 +58,10 @@ export default function TrainingListRow({
           columnGap: { xs: 1.5, sm: 2 },
           px: { xs: 1.5, sm: 2 },
           py: 1.5,
-          "&:hover": { bgcolor: "action.hover" },
-          transition: "background-color 0.15s",
+          // Si tocca: al passaggio una fascia arancio a sinistra, oltre al fondo.
+          borderLeft: "3px solid transparent",
+          "&:hover": { bgcolor: "action.hover", borderLeftColor: "primary.main" },
+          transition: "background-color 0.15s, border-color 0.15s",
           // L'ingranaggio dello staff si vede al passaggio del mouse; sui
           // dispositivi touch, che il passaggio non ce l'hanno, resta visibile.
           "@media (hover: hover)": {
@@ -170,7 +172,23 @@ export default function TrainingListRow({
                 gap: 0.75,
               }}
             >
-              <SportsBasketballIcon sx={{ fontSize: 20, color: "text.secondary" }} />
+              {/* Le casacche delle squadre fatte: colori veri delle maglie,
+                accanto alla parola "Squadre". */}
+              <Box aria-hidden sx={{ display: "flex", gap: "3px" }}>
+                {TEAM_META.filter((m) => s.teams?.[m.key]).map((m) => (
+                  <Box
+                    key={m.key}
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      bgcolor: bibFill(m.color),
+                      border: "1px solid",
+                      borderColor: "divider",
+                    }}
+                  />
+                ))}
+              </Box>
               <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>
                 {t("rowTeams")}
               </Box>

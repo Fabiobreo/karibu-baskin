@@ -1,6 +1,6 @@
 # UX-38 · Copertine tipografiche e stati vuoti compatti
 
-**Ondata:** 4 · **Stima:** S · **Dipende da:** UX-19 · **Stato:** da fare
+**Ondata:** 4 · **Stima:** S · **Dipende da:** UX-19 · **Stato:** fatto (su `develop`), punto 6 scartato
 
 ## Problema
 
@@ -33,3 +33,12 @@ Altri stati vuoti che pesano più del contenuto:
 - In `/eventi` due card vicine senza foto non sono identiche; la data compare una volta per card.
 - Nessuno stato vuoto più alto di 120 px nelle pagine citate, salvo le pagine intere senza contenuto (`EmptyState`).
 - Testi in `it.json` ed `en.json`; `npm run a11y` verde.
+
+## Com'è stato fatto
+
+1. **Copertina di ripiego** (`CoverFallback`): titolo dell'evento in grande (è l'`h3` della card, quindi sotto non si ripete), quattro disegni di campo scelti dall'id (`coverBackdropIndex`), niente data. Non c'è un "tipo" di evento nei dati, quindi nessun segno del tipo.
+2. **News in evidenza senza foto:** `LatestNewsHero` mostra tutte le news come card normali (`SideCard`) su due colonne; `FeaturedCard` resta solo per le news con foto.
+3. **Profilo giocatore senza partite:** una card a tutta larghezza ("3 allenamenti · nessuna partita ufficiale per ora"), traguardi sotto.
+4. **Disponibilità:** l'istruzione "Tocca Sì o No" compare solo con almeno una partita futura. La fascia da 300 px l'aveva già tolta UX-32.
+5. **Squadre non ancora fatte:** una riga di testo sotto il titolo "Squadre", senza riquadro né icona. Il pannello di creazione dello staff resta com'è: contiene dei comandi, non è uno stato vuoto.
+6. **Gallery nel menu: scartato** (01/10). La sincronizzazione fa upsert, quindi un sync fallito non svuota la pagina; la pagina vuota ha già il suo `EmptyState`; nascondere la voce costerebbe una query nel layout di ogni pagina.

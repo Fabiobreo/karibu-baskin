@@ -16,6 +16,7 @@ import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import { useSession } from "next-auth/react";
 import PageHero from "@/components/common/PageHero";
+import BrandCta from "@/components/common/BrandCta";
 import TryItSection from "@/components/common/TryItSection";
 import SuggestionForm from "@/components/common/SuggestionForm";
 import Image from "next/image";
@@ -512,44 +513,16 @@ export default function ContattiPage() {
               ))}
             </Grid>
 
-            <Box
-              sx={{
-                background: heroGradient.footer,
-                borderRadius: RADIUS.lg,
-                p: { xs: 3, md: 4 },
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 2,
-                color: "common.white",
+            <BrandCta
+              titleComponent="h3"
+              title={t("contatti.interestedSponsor")}
+              body={t("contatti.writeUsDesc")}
+              action={{
+                href: "mailto:asdkaribubaskin@gmail.com",
+                label: t("contatti.writeUs"),
+                startIcon: <EmailIcon />,
               }}
-            >
-              <Box>
-                <Typography
-                  component="h3"
-                  variant="h6"
-                  fontWeight={FONT_WEIGHT.bold}
-                  sx={{ mb: 0.5 }}
-                >
-                  {t("contatti.interestedSponsor")}
-                </Typography>
-                <Typography variant="body2" sx={{ color: heroText.muted }}>
-                  {t("contatti.writeUsDesc")}
-                </Typography>
-              </Box>
-              {/* Contornato (UX-30): il bottone pieno della pagina e' l'invio del modulo. */}
-              <Button
-                variant="outlined"
-                startIcon={<EmailIcon />}
-                href="mailto:asdkaribubaskin@gmail.com"
-                component="a"
-                size="large"
-                sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
-              >
-                {t("contatti.writeUs")}
-              </Button>
-            </Box>
+            />
           </Box>
         </Container>
       </Box>

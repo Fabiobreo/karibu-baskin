@@ -83,7 +83,9 @@ export default function PlayedMatchRow({
           overflow: "hidden",
           cursor: "pointer",
           transition: "box-shadow 0.15s, border-color 0.15s",
-          "&:hover": { boxShadow: 2, borderColor: "text.secondary" },
+          // Si tocca: al passaggio bordo e freccia arancio.
+          "&:hover": { boxShadow: 2, borderColor: "primary.main" },
+          "&:hover .row-chevron": { color: "primary.main" },
         }}
       >
         <Box sx={{ display: "flex", alignItems: "stretch" }}>
@@ -201,7 +203,11 @@ export default function PlayedMatchRow({
                   sx={{ bgcolor: meta.bg, color: meta.color, fontWeight: FONT_WEIGHT.bold }}
                 />
               )}
-              <ChevronRightIcon aria-hidden sx={{ fontSize: 18, color: "text.secondary" }} />
+              <ChevronRightIcon
+                className="row-chevron"
+                aria-hidden
+                sx={{ fontSize: 18, color: "text.secondary" }}
+              />
             </Box>
           </Box>
         </Box>

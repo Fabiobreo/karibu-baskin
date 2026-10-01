@@ -12,12 +12,12 @@ import {
   TableBody,
   TablePagination,
   Paper,
-  Avatar,
   Typography,
   Tooltip,
 } from "@mui/material";
 import BlockIcon from "@mui/icons-material/Block";
 import Link from "next/link";
+import TeamAvatar from "@/components/teams/TeamAvatar";
 import { useTranslations } from "next-intl";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 
@@ -51,7 +51,14 @@ export interface MatchStatRow {
   } | null;
 }
 
-export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
+export default function MatchStatsTable({
+  stats,
+  teamColor = null,
+}: {
+  stats: MatchStatRow[];
+  /** Colore salvato della squadra per cui hanno giocato: tinta degli avatar. */
+  teamColor?: string | null;
+}) {
   const t = useTranslations("matches");
   const tCommon = useTranslations("common");
   const { sportRoleLabel } = useEntityLabels();
@@ -129,12 +136,13 @@ export default function MatchStatsTable({ stats }: { stats: MatchStatRow[] }) {
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Avatar
-                        src={image ?? undefined}
-                        sx={{ width: 24, height: 24, fontSize: TYPE_SCALE.xs }}
-                      >
-                        {name[0]}
-                      </Avatar>
+                      <TeamAvatar
+                        name={name}
+                        image={image}
+                        color={teamColor}
+                        size={24}
+                        sx={{ fontSize: TYPE_SCALE.xs }}
+                      />
                       <Box>
                         {slug ? (
                           <Link

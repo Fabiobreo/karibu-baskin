@@ -12,6 +12,7 @@ import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import { getTranslations } from "next-intl/server";
 import PageHero from "@/components/common/PageHero";
+import BrandCta from "@/components/common/BrandCta";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmailIcon from "@mui/icons-material/Email";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -221,43 +222,16 @@ export default async function SponsorPage() {
             </Grid>
 
             {/* CTA contatto */}
-            <Box
-              sx={{
-                background: heroGradient.footer,
-                borderRadius: RADIUS.lg,
-                p: { xs: 3, md: 4 },
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 2,
-                color: "common.white",
+            <BrandCta
+              titleComponent="h3"
+              title={t("sponsor.interestedSponsor")}
+              body={t("sponsor.writeUsDesc")}
+              action={{
+                href: "mailto:asdkaribubaskin@gmail.com",
+                label: t("sponsor.contactUs"),
+                startIcon: <EmailIcon />,
               }}
-            >
-              <Box>
-                <Typography
-                  component="h3"
-                  variant="h6"
-                  fontWeight={FONT_WEIGHT.bold}
-                  sx={{ mb: 0.5 }}
-                >
-                  {t("sponsor.interestedSponsor")}
-                </Typography>
-                <Typography variant="body2" sx={{ color: heroText.muted }}>
-                  {t("sponsor.writeUsDesc")}
-                </Typography>
-              </Box>
-              <Button
-                href="mailto:asdkaribubaskin@gmail.com"
-                variant="contained"
-                color="primary"
-                startIcon={<EmailIcon />}
-                size="large"
-                sx={{ whiteSpace: "nowrap" }}
-              >
-                {t("sponsor.contactUs")}
-              </Button>
-            </Box>
+            />
           </Box>
         </Box>
       </Container>

@@ -66,7 +66,9 @@ export default function LoSapeviCard() {
             <Typography
               variant="overline"
               sx={{
-                color: "text.secondary",
+                // Sul grafite, uguale nei due temi: `text.secondary` in chiaro
+                // faceva circa 3:1.
+                color: heroText.muted,
                 display: "block",
                 mb: 0.25,
                 fontSize: TYPE_SCALE.xs,

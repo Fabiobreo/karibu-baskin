@@ -12,6 +12,8 @@ interface CallupsListSectionProps {
   callups: CallupWithStat[];
   canSeeCallups: boolean;
   hasScore: boolean;
+  /** Colore salvato della squadra dei convocati: tinta degli avatar. */
+  teamColor?: string | null;
 }
 
 /**
@@ -22,6 +24,7 @@ export default function CallupsListSection({
   callups,
   canSeeCallups,
   hasScore,
+  teamColor = null,
 }: CallupsListSectionProps) {
   const t = useTranslations("matches");
   const tNav = useTranslations("nav");
@@ -125,7 +128,7 @@ export default function CallupsListSection({
             <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
               <Stack divider={<Divider />}>
                 {list.map((c) => (
-                  <CallupRow key={c.id} c={c} hasScore={hasScore} />
+                  <CallupRow key={c.id} c={c} hasScore={hasScore} teamColor={teamColor} />
                 ))}
               </Stack>
             </Paper>
@@ -145,7 +148,7 @@ export default function CallupsListSection({
           <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden" }}>
             <Stack divider={<Divider />}>
               {noRole.map((c) => (
-                <CallupRow key={c.id} c={c} hasScore={hasScore} />
+                <CallupRow key={c.id} c={c} hasScore={hasScore} teamColor={teamColor} />
               ))}
             </Stack>
           </Paper>
@@ -164,7 +167,7 @@ export default function CallupsListSection({
           <Paper elevation={0} variant="outlined" sx={{ overflow: "hidden", opacity: 0.65 }}>
             <Stack divider={<Divider />}>
               {notPlayed.map((c) => (
-                <CallupRow key={c.id} c={c} hasScore={false} />
+                <CallupRow key={c.id} c={c} hasScore={false} teamColor={teamColor} />
               ))}
             </Stack>
           </Paper>

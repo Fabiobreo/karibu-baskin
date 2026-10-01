@@ -12,7 +12,9 @@ export default function MatchStatsTab({
   stats,
   matchId,
   isStaff,
+  teamColor = null,
 }: {
+  teamColor?: string | null;
   stats: MatchStatRow[];
   matchId: string;
   isStaff: boolean;
@@ -45,7 +47,7 @@ export default function MatchStatsTab({
           </Typography>
         </Box>
       ) : (
-        <MatchStatsTable stats={stats} />
+        <MatchStatsTable stats={stats} teamColor={teamColor} />
       )}
     </Box>
   );

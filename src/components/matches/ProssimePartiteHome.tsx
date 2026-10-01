@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { Box, Container, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import { brandColor } from "@/lib/heroStyles";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import { prisma } from "@/lib/db";
 import { withDbRetry } from "@/lib/dbRetry";
@@ -50,17 +48,16 @@ export default async function ProssimePartiteHome() {
     <Box
       sx={{
         py: { xs: 4, md: 6 },
-        background: `linear-gradient(135deg, ${alpha(brandColor.orange, 0.06)} 0%, ${alpha(
-          brandColor.orange,
-          0.02
-        )} 100%)`,
-        borderTop: `1px solid ${alpha(brandColor.orange, 0.12)}`,
-        borderBottom: `1px solid ${alpha(brandColor.orange, 0.12)}`,
+        // Sul fondo della pagina, con un filo sopra: la fascia pesca qui non
+        // ha convinto il committente (01/10); il colore lo portano le card.
+        borderTop: "1px solid",
+        borderColor: "divider",
       }}
     >
       <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
-          <EmojiEventsIcon sx={{ color: "text.secondary", fontSize: 32 }} />
+          {/* Icona decorativa di una sezione chiara: arancio (UX-28, opzione B). */}
+          <EmojiEventsIcon sx={{ color: "primary.main", fontSize: 32 }} />
           <Box>
             <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1 }}>
               {t("homeChip")}

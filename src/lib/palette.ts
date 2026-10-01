@@ -7,6 +7,7 @@
  * Una tinta, un significato; tutto il resto e' neutro:
  * - arancio: si tocca, oppure e' attivo/selezionato;
  * - nero del marchio: superfici di marchio e neutro invertito;
+ * - pesca (`WARM_SURFACE`): superficie di marchio chiara, mai interattiva;
  * - verde / ambra / rosso: valenza (positivo / a meta' / negativo), esiti;
  * - tinte squadra: identita' della squadra di una stagione, mai testo;
  * - metalli: livelli e onori, sempre con una forma.
@@ -28,7 +29,7 @@ export const BRAND = {
   orangeFill: "#C84B00",
   /** Hover del riempimento (6,22:1). */
   orangeFillHover: "#A83F00",
-  /** Arancio come TESTO su fondo chiaro (5,60:1 su bianco, 5,11:1 sul crema). */
+  /** Arancio come TESTO su fondo chiaro (5,60:1 su bianco, 5,06:1 sul crema, 4,89:1 sul pesca). */
   orangeOnLight: "#BF360C",
   /** Arancio come TESTO su fondo scuro (8,03:1 su #121212). */
   orangeOnDark: "#FF8A50",
@@ -46,11 +47,16 @@ export const BRAND = {
 /** Superfici e testo dei due temi. */
 export const NEUTRAL = {
   light: {
-    background: "#F7F4F1",
+    /**
+     * Crema caldo (ottobre 2026): stessa luminanza di prima (#F7F4F1), croma
+     * quasi tripla. E' la superficie piu' grande del sito: da qui passa il
+     * "calore" delle pagine, senza toccare i contrasti.
+     */
+    background: "#FAF2EA",
     paper: "#FFFFFF",
     text: "#1A1A1A",
     textSecondary: "#666666",
-    /** Bordo dei campi dei moduli: 3,65:1 su bianco, 3,33:1 sul crema (WCAG 1.4.11). */
+    /** Bordo dei campi dei moduli: 3,65:1 su bianco, 3,30:1 sul crema (WCAG 1.4.11). */
     borderControl: "#8A8580",
     /** `secondary.light`. */
     inkSoft: "#3D3D3D",
@@ -75,6 +81,19 @@ export const NEUTRAL = {
   onLightFill: "rgba(0, 0, 0, 0.87)",
   /** Grigio neutro sotto un'etichetta bianca (6,19:1): `info`, segnaposto. */
   grey: "#616161",
+} as const;
+
+/**
+ * Pesca: l'arancio del marchio a luminanza alta (in scuro, bassa). E' la
+ * superficie di marchio chiara, il corrispettivo del nero: una fascia per
+ * pagina, mai un elemento che si tocca (decisione del committente, 01/10).
+ * In chiaro regge testo, testo secondario e link arancio (>= 4,89:1); il verde
+ * della vittoria no (4,48:1): niente esiti come testo sul pesca. In scuro sta a
+ * 1,07:1 dalla carta, quindi porta sempre il suo bordo.
+ */
+export const WARM_SURFACE = {
+  light: { bg: "#FFECE1", border: "rgba(230, 81, 0, 0.16)" },
+  dark: { bg: "#302017", border: "rgba(255, 138, 80, 0.24)" },
 } as const;
 
 /** Fondo degli hero e del footer: grafite pieno, uguale nei due temi. */
@@ -191,20 +210,43 @@ export const TEAM_LABEL: Record<keyof typeof TEAM, string> = {
 export const TEAM_RING = "rgba(0, 0, 0, 0.45)";
 
 /**
- * Colori dei ruoli Baskin: fascia scura (luminanza 0,025-0,066), numero bianco
- * >= 9:1. Le squadre stanno nella fascia media: la luminanza li separa anche
- * per chi non distingue le tinte. Nel tema scuro il badge ha il bordo
- * `ROLE_BORDER_DARK`, perche' contro #1E1E1E si ferma a 1,2-2,1:1.
+ * Colori dei ruoli Baskin: cinque tinte scure ma vive (ottobre 2026: croma
+ * media da 0,088 a 0,128, prima a badge piccolo si leggevano nere), numero
+ * bianco >= 7,6:1. Restano sotto le squadre per luminanza (stacco 1,46:1) e il
+ * numero nel badge e' sempre il secondo segnale. Nel tema scuro il badge ha il
+ * bordo `ROLE_BORDER_DARK`, perche' contro #1E1E1E si ferma a 1,8-2,2:1.
  */
 export const ROLE_COLORS: Record<1 | 2 | 3 | 4 | 5, string> = {
-  1: "#253496", // blu notte
-  2: "#1E5142", // verde abete
-  3: "#394F01", // oliva
-  4: "#392442", // prugna
-  5: "#472117", // terra
+  1: "#263EB4", // blu
+  2: "#005C4C", // verde abete
+  3: "#485A00", // oliva
+  4: "#742680", // prugna
+  5: "#7A2D2E", // terra rossa
 };
 
 export const ROLE_BORDER_DARK = "rgba(255, 255, 255, 0.23)";
+
+/**
+ * Ruolo utente nell'app (decisione del committente, 01/10): chip tonale, fondo
+ * tenue e testo scuro della stessa tinta (>= 6,3:1), sempre con icona e parola.
+ * Blu atleta, viola genitore, petrolio allenatore: tre tinte fuori da verde,
+ * ambra e rosso, che restano della valenza, e lontane per forma dai ruoli
+ * Baskin (badge pieno col numero) e dalle squadre (riempimento medio).
+ * L'ospite resta neutro contornato (e' "in attesa"), l'admin e' il nero del
+ * marchio pieno: non hanno valori qui.
+ */
+export const APP_ROLE = {
+  light: {
+    ATHLETE: { bg: "#E3EEFF", fg: "#1B4FA8" },
+    PARENT: { bg: "#F0E8F8", fg: "#6A3D94" },
+    COACH: { bg: "#DDF1F1", fg: "#0F5E66" },
+  },
+  dark: {
+    ATHLETE: { bg: "#16294A", fg: "#9CC2FF" },
+    PARENT: { bg: "#2E2140", fg: "#D0B3EE" },
+    COACH: { bg: "#12343A", fg: "#8FD6DC" },
+  },
+} as const;
 
 /** Casacche d'allenamento: colori veri delle maglie, sempre accompagnati dal nome. */
 export const BIB = {
@@ -279,7 +321,7 @@ export const SHADOW = {
 
 /** Email: niente tema, niente variabili CSS. Grigi e marchio. */
 export const EMAIL = {
-  background: "#F7F4F1",
+  background: "#FAF2EA",
   card: "#FFFFFF",
   text: "#1A1A1A",
   textSecondary: "#666666",

@@ -76,10 +76,11 @@ export default async function HomePage() {
   const chiSiamoBlock = (
     <Box
       sx={{
-        bgcolor: "action.hover",
+        // Pesca: superficie di marchio chiara, non interattiva (01/10).
+        bgcolor: "warmSurface.bg",
         borderTop: "1px solid",
         borderBottom: "1px solid",
-        borderColor: "divider",
+        borderColor: "warmSurface.border",
         py: { xs: 6, md: 9 },
       }}
     >

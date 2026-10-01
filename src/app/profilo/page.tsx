@@ -1,4 +1,8 @@
-import { ROLE_CHIP_ICONS } from "@/components/common/appRoleIcons";
+import {
+  ROLE_CHIP_ICONS,
+  appRoleChipSx,
+  appRoleChipVariant,
+} from "@/components/common/appRoleIcons";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/authjs";
@@ -308,8 +312,9 @@ export default async function ProfiloPage() {
           <Chip
             label={t(`appRole${user.appRole as AppRole}`)}
             icon={<AppRoleIcon />}
-            variant="outlined"
+            variant={appRoleChipVariant(user.appRole as AppRole)}
             size="small"
+            sx={appRoleChipSx(user.appRole as AppRole)}
           />
           {currentTeams.map((m) => (
             <TeamChip key={m.id} name={m.team.name} color={m.team.color} compact />

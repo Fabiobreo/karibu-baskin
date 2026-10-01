@@ -171,10 +171,13 @@ export default function MieDisponibilitaClient({ initialMatches }: Props) {
   return (
     <>
       {/* Microcopy operativa: dice cosa fare, quando si salva e cosa succede
-          se non rispondi. Sta in cima apposta. */}
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3, display: "block" }}>
-        {t("availabilitiesDesc")}
-      </Typography>
+          se non rispondi. Sta in cima apposta, ma solo se c'e' una partita a
+          cui rispondere: senza bottoni "Tocca Si' o No" non ha senso (UX-38). */}
+      {futureMatches.length > 0 && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, display: "block" }}>
+          {t("availabilitiesDesc")}
+        </Typography>
+      )}
 
       {initialMatches.length === 0 ? (
         <EmptyState

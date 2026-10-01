@@ -32,6 +32,12 @@ interface EntityHeroProps {
    * dell'entita', `heroImage(url)` per una foto. Di default il grafite.
    */
   background?: string;
+  /**
+   * Hex della tinta squadra (da `teamColor()`): un filo pieno sul bordo basso
+   * dell'hero. E' un segno grafico dell'identita', mai testo; senza tinta
+   * resta il bordo neutro.
+   */
+  accent?: string | null;
   /** Azioni dello staff, sulla riga del breadcrumb. */
   manage?: ReactNode;
   /** Elemento a sinistra del titolo (avatar, iniziale). */
@@ -78,6 +84,7 @@ export default function EntityHero({
   title,
   hideTitle = false,
   background = heroGradient.band,
+  accent = null,
   manage,
   leading,
   subtitle,
@@ -98,7 +105,7 @@ export default function EntityHero({
         backgroundPosition: hasPhoto ? "center" : undefined,
       }}
       sx={{
-        ...heroBottomBorder,
+        ...(accent ? { borderBottom: `4px solid ${accent}` } : heroBottomBorder),
         color: "common.white",
         pt: { xs: 1.5, md: 2 },
         pb: { xs: 3, md: 4 },

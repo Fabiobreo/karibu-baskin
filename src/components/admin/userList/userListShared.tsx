@@ -1,12 +1,17 @@
 "use client";
-import { ROLE_CHIP_ICONS, ATHLETE_STATUS_CHIP_ICONS } from "@/components/common/appRoleIcons";
+import {
+  ROLE_CHIP_ICONS,
+  ATHLETE_STATUS_CHIP_ICONS,
+  appRoleChipSx,
+  appRoleChipVariant,
+} from "@/components/common/appRoleIcons";
 import { Box, Chip, MenuItem, Select, Typography } from "@mui/material";
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { ATHLETE_STATUS_LABELS, ROLE_LABELS_IT, sportRoleLabel } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { teamColor } from "@/lib/teamColors";
-import TeamColorDot from "@/components/teams/TeamColorDot";
+import TeamChip from "@/components/teams/TeamChip";
 
 // ── Tipi condivisi della gestione utenti ─────────────────────────────────────
 
@@ -109,8 +114,9 @@ export function AthleteStatusChip({ status }: { status: AthleteStatus | null }) 
 }
 
 /**
- * Chip del ruolo utente (UX-29): contornato neutro con l'icona del ruolo. Il
- * ruolo non ha un colore: lo dicono l'icona e la parola.
+ * Chip del ruolo utente: icona, parola e la tinta del ruolo (`appRoleChipSx`:
+ * tonale per atleta, genitore e allenatore, nero pieno per l'admin, neutro per
+ * l'ospite).
  */
 export function AppRoleChip({ role, sx }: { role: AppRole; sx?: SxProps<Theme> }) {
   const Icon = ROLE_CHIP_ICONS[role];
@@ -118,9 +124,9 @@ export function AppRoleChip({ role, sx }: { role: AppRole; sx?: SxProps<Theme> }
     <Chip
       label={ROLE_LABELS_IT[role]}
       size="small"
-      variant="outlined"
+      variant={appRoleChipVariant(role)}
       icon={<Icon />}
-      sx={[{ "& .MuiChip-icon": { color: "text.secondary" } }, ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[appRoleChipSx(role), ...(Array.isArray(sx) ? sx : [sx])]}
     />
   );
 }
@@ -149,7 +155,7 @@ export function SuggestedRoleChip({ role, variant }: { role: number; variant?: s
 
 /**
  * Select della squadra (stagione corrente) usata nelle celle delle tabelle
- * utenti e figli: pallino colore + nome, voce "Nessuna squadra".
+ * utenti e figli: chip pieno nella tinta della squadra, voce "Nessuna squadra".
  */
 export function TeamCellSelect({
   value,
@@ -188,14 +194,7 @@ export function TeamCellSelect({
               —
             </Typography>
           );
-        return (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <TeamColorDot color={team.color} size={10} />
-            <Typography variant="body2" noWrap component="span">
-              {team.name}
-            </Typography>
-          </Box>
-        );
+        return <TeamChip name={team.name} color={team.color} sx={{ cursor: "pointer" }} />;
       }}
     >
       <MenuItem value="">
@@ -203,10 +202,7 @@ export function TeamCellSelect({
       </MenuItem>
       {teams.map((t) => (
         <MenuItem key={t.id} value={t.id}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TeamColorDot color={t.color} size={10} />
-            {t.name}
-          </Box>
+          <TeamChip name={t.name} color={t.color} sx={{ cursor: "pointer" }} />
         </MenuItem>
       ))}
     </Select>

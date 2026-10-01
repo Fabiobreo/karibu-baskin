@@ -35,9 +35,13 @@ export const heroGradient = {
  * partita): stesso grafite, con il colore che affiora da un angolo invece di
  * tingere tutta la superficie. `color` puo' arrivare dal database, quindi si
  * miscela con `color-mix` e non con un suffisso esadecimale.
+ *
+ * Il picco resta al 45% (sopra, sull'Oro, i testi secondari scendono sotto
+ * 4,5:1); la sfumatura arriva all'80% del raggio, cosi' la tinta si vede su
+ * circa meta' dell'hero e non solo nell'angolo.
  */
 export function heroTint(color: string): string {
-  return `radial-gradient(100% 140% at 100% 100%, color-mix(in srgb, ${color} 45%, transparent) 0%, transparent 65%), ${HERO_BAND}`;
+  return `radial-gradient(100% 140% at 100% 100%, color-mix(in srgb, ${color} 45%, transparent) 0%, transparent 80%), ${HERO_BAND}`;
 }
 
 /** Foto di copertina sotto l'hero, velata per reggere il testo bianco. */

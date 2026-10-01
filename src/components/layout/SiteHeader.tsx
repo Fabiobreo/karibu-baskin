@@ -200,9 +200,10 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
         elevation={0}
         sx={{
           // Filo arancione sotto l'header: e' il segno del marchio sulla barra
-          // (famiglia "nero del marchio"), non UI di contenuto. Unica eccezione
-          // alla regola "arancio solo su cio' che si tocca" (UX-29).
-          borderBottom: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.35)}`,
+          // (famiglia "nero del marchio"), non UI di contenuto. Pieno e di 3 px
+          // (01/10): a 1 px e al 35% sul nero si leggeva marrone, e spariva.
+          borderBottom: "3px solid",
+          borderColor: "primary.main",
           boxShadow: "0 2px 16px rgba(0,0,0,0.6)",
         }}
       >

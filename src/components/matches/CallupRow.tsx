@@ -1,13 +1,23 @@
 "use client";
 
-import { Avatar, Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Link from "next/link";
+import TeamAvatar from "@/components/teams/TeamAvatar";
 import type { CallupWithStat } from "@/components/matches/matchDetailTypes";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Riga di un convocato: avatar, nome, eventuale variante ruolo e punti se la partita è giocata. */
-export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore: boolean }) {
+export default function CallupRow({
+  c,
+  hasScore,
+  teamColor = null,
+}: {
+  c: CallupWithStat;
+  hasScore: boolean;
+  /** Colore salvato della squadra per cui e' convocato: tinta dell'avatar. */
+  teamColor?: string | null;
+}) {
   const person = c.user ?? c.child;
   if (!person) return null;
   const name = person.name ?? "—";
@@ -19,9 +29,13 @@ export default function CallupRow({ c, hasScore }: { c: CallupWithStat; hasScore
 
   const inner = (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.25 }}>
-      <Avatar src={image ?? undefined} sx={{ width: 38, height: 38, fontSize: TYPE_SCALE.sm }}>
-        {name[0]}
-      </Avatar>
+      <TeamAvatar
+        name={name}
+        image={image}
+        color={teamColor}
+        size={38}
+        sx={{ fontSize: TYPE_SCALE.sm }}
+      />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
           {name}

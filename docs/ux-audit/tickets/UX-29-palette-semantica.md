@@ -128,3 +128,17 @@ Il committente ha aggiunto due vincoli: **il colore di una squadra deve poter es
 **Minimi (ΔE00 normale / daltonismo):** squadra-squadra 17,7 / 9,4; ruolo-ruolo 18,1 / 11,7; ruolo-squadra 19,4 / 12,8. Coppie deboli dichiarate: Arancio squadra e arancio dei bottoni con daltonismo (1,8: li separano il nome della squadra e la forma di bottone), Verde squadra e vittoria (12,5 / 10,5: la lettera sul chip dell'esito), Oro e medaglie/pareggio (≥ 13,4: posizione sulla medaglia, lettera sul pareggio). La fascia oro nei pannelli chiari non ha l'anello tranne nel calendario: il nome della squadra le sta sempre accanto.
 
 **Mappatura dei colori storici** per famiglia: rossi e rosa → Lampone, arancio e marroni → Arancio, oro/giallo/oliva → Oro, verdi e verde acqua → Verde, azzurri e blu → Blu, viola → Viola, grigi → Ardesia. Escono Tortora e Petrolio. `teamFill()` porta fondo, etichetta e anello a chip, intestazioni di card e avatar; `TeamChip` e le immagini OG lo usano.
+
+## Aggiornamento del 01/10: il sito era diventato "meno colorato"
+
+Dopo le lamentele degli utenti, verifica con un esperto di UI/UX e uno di colore e decisioni del committente. La regola "un colore, un significato" resta; cambia questo:
+
+- **Fondo pagina** `#F7F4F1` → `#FAF2EA`: stessa luminanza, croma quasi tripla. Contrasti invariati (testo secondario 5,18:1, link arancio 5,06:1, bordo dei campi 3,30:1).
+- **Pesca** (`WARM_SURFACE`: `#FFECE1` in chiaro, `#302017` in scuro, sempre con il suo bordo): superficie di marchio chiara, non interattiva. In home sulla sezione "Chi siamo" (su "Prossime partite" provata e scartata dal committente).
+- **Filo dell'header** pieno, 3 px di `#E65100` (prima 1 px al 35%, che sul nero si leggeva marrone).
+- **Blocco d'invito in arancio pieno** (`BrandCta`): `/squadre`, `/contatti`, `/sponsor`. Fondo `#C84B00`, testo bianco (4,71:1), bottone bianco con etichetta nera.
+- **Ruoli più vivi**: `#263EB4`, `#005C4C`, `#485A00`, `#742680`, `#7A2D2E` (croma media da 0,088 a 0,128; numero bianco >= 7,6:1). Lo stacco di luminanza dalle squadre scende da 1,73:1 a 1,46:1 e la distanza minima fra ruoli con daltonismo da 11,8 a 7,7: il numero nel badge resta il secondo segnale.
+- **Ruolo utente colorato** (`APP_ROLE`): chip tonale blu per l'atleta, viola per il genitore, petrolio per l'allenatore (testo sul fondo >= 6,3:1), nero pieno per l'admin, neutro per l'ospite. Sempre con icona e parola.
+- **Tinta squadra come superficie**: avatar (`TeamAvatar`), intestazioni delle liste (`TeamSectionHeader`), testata delle card partita in home, filo e sfumatura più ampia negli hero, riga della nostra squadra in classifica, filo sulle tessere e linea del grafico nel profilo giocatore.
+
+Scartati con i numeri: grafite caldo o freddo (differenza sotto la soglia utile, più il rischio "marrone"), il bagliore arancio negli hero (è lo stesso marrone già scartato), una tinta decorativa nuova (la ruota è piena: il petrolio sta a ΔE 13,2 dall'Ardesia). Non fatte: foto nella fascia delle pagine (mancano le foto) e sezione "Dalla gallery" in home (serve la conferma del club).

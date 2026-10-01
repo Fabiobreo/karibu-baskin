@@ -224,13 +224,19 @@ export default function GironeFullView({
             <TableBody>
               {standings.map((s, i) => {
                 const teamSlug = slugify(s.name);
+                const ourTint = s.isOurs ? teamColor(teamById.get(s.id)?.color) : null;
                 return (
                   <TableRow
                     key={s.id}
                     sx={{
-                      // Nostra riga (UX-29): fondo neutro selezionato, grassetto e
-                      // pallino squadra; niente arancio (vuol dire "si tocca").
-                      bgcolor: s.isOurs ? "action.selected" : undefined,
+                      // Nostra riga: fondo tenue nella tinta della squadra (01/10),
+                      // grassetto e pallino; senza tinta il neutro selezionato.
+                      // Mai arancio (vuol dire "si tocca").
+                      bgcolor: ourTint
+                        ? `color-mix(in srgb, ${ourTint} 16%, transparent)`
+                        : s.isOurs
+                          ? "action.selected"
+                          : undefined,
                       "& td": s.isOurs
                         ? { color: "text.primary", fontWeight: FONT_WEIGHT.semibold }
                         : {},

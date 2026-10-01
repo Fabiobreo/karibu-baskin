@@ -19,6 +19,7 @@ interface MatchCallupsTabProps {
   prevMatches: PrevMatchPreview[];
   groupStandings: StandingEntry[] | null;
   ourTeamColor?: string | null;
+  playersTeamColor?: string | null;
   groupName: string | null;
   opponentName: string;
   matchId: string;
@@ -34,6 +35,7 @@ export default function MatchCallupsTab({
   prevMatches,
   groupStandings,
   ourTeamColor = null,
+  playersTeamColor = null,
   groupName,
   opponentName,
   matchId,
@@ -60,9 +62,14 @@ export default function MatchCallupsTab({
         </Box>
       )}
 
-      {hasScore && <TopScorersSection top3={top3} />}
+      {hasScore && <TopScorersSection top3={top3} teamColor={playersTeamColor} />}
 
-      <CallupsListSection callups={callups} canSeeCallups={canSeeCallups} hasScore={hasScore} />
+      <CallupsListSection
+        callups={callups}
+        canSeeCallups={canSeeCallups}
+        hasScore={hasScore}
+        teamColor={playersTeamColor}
+      />
 
       {hasContext && (
         <Box sx={{ mt: 5 }}>

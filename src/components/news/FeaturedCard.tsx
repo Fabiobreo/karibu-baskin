@@ -10,7 +10,6 @@ import type { PostItem } from "@/components/news/LatestNewsHero";
 import { onHover } from "@/lib/hoverStyles";
 import { alpha } from "@mui/material/styles";
 import { heroText } from "@/lib/heroStyles";
-import CoverFallback from "@/components/common/CoverFallback";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -26,7 +25,8 @@ function stripHtml(html: string, len: number): string {
 }
 
 interface FeaturedCardProps {
-  post: PostItem;
+  /** Solo news con una foto: senza, la home la mostra come card normale (UX-38). */
+  post: PostItem & { imageUrl: string };
   featuredLabel: string;
 }
 
@@ -53,35 +53,27 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
           }),
         }}
       >
-        {post.imageUrl ? (
-          <>
-            <Box
-              className="featured-img"
-              sx={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage: `url(${post.imageUrl})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                transition: "transform 0.4s ease",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
-                background: (theme) => {
-                  const black = theme.palette.common.black;
-                  return `linear-gradient(to top, ${alpha(black, 0.85)} 0%, ${alpha(black, 0.4)} 50%, ${alpha(black, 0.15)} 100%)`;
-                },
-              }}
-            />
-          </>
-        ) : (
-          // Senza foto: impaginazione solo testo sul fondo degli hero, senza
-          // l'icona gigante che sembrava uno skeleton rimasto a meta' (UX-19).
-          <CoverFallback />
-        )}
+        <Box
+          className="featured-img"
+          sx={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url(${post.imageUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            transition: "transform 0.4s ease",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background: (theme) => {
+              const black = theme.palette.common.black;
+              return `linear-gradient(to top, ${alpha(black, 0.85)} 0%, ${alpha(black, 0.4)} 50%, ${alpha(black, 0.15)} 100%)`;
+            },
+          }}
+        />
 
         <Box
           sx={{
@@ -132,10 +124,8 @@ export default function FeaturedCard({ post, featuredLabel }: FeaturedCardProps)
                 color: heroText.primary,
                 lineHeight: 1.55,
                 mb: 1.5,
-                // Senza foto il testo e' tutto il contenuto: estratto anche su
-                // mobile e una riga in piu'.
-                display: post.imageUrl ? { xs: "none", sm: "-webkit-box" } : "-webkit-box",
-                WebkitLineClamp: post.imageUrl ? 2 : 3,
+                display: { xs: "none", sm: "-webkit-box" },
+                WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 textShadow: "0 1px 4px rgba(0,0,0,0.5)",

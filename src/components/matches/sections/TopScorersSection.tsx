@@ -1,7 +1,8 @@
 "use client";
 
-import { Avatar, Box, Paper, Typography } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import RoleBadge from "@/components/common/RoleBadge";
+import TeamAvatar from "@/components/teams/TeamAvatar";
 import StarIcon from "@mui/icons-material/Star";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -12,7 +13,14 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 /** Card dei top 3 marcatori della partita (visibili a tutti se la partita è giocata). */
-export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
+export default function TopScorersSection({
+  top3,
+  teamColor = null,
+}: {
+  top3: MatchStatRow[];
+  /** Colore salvato della squadra per cui hanno giocato: tinta degli avatar. */
+  teamColor?: string | null;
+}) {
   const t = useTranslations("matches");
   const { sportRoleLabel } = useEntityLabels();
   if (top3.length === 0) return null;
@@ -59,12 +67,13 @@ export default function TopScorersSection({ top3 }: { top3: MatchStatRow[] }) {
                   sx={{ position: "absolute", top: 6, right: 6, fontSize: 14, color: "medal.gold" }}
                 />
               )}
-              <Avatar
-                src={image ?? undefined}
-                sx={{ width: 44, height: 44, fontSize: TYPE_SCALE.md, mx: "auto", mb: 1 }}
-              >
-                {name[0]}
-              </Avatar>
+              <TeamAvatar
+                name={name}
+                image={image}
+                color={teamColor}
+                size={44}
+                sx={{ fontSize: TYPE_SCALE.md, mx: "auto", mb: 1 }}
+              />
               <Typography
                 variant="body2"
                 fontWeight={FONT_WEIGHT.semibold}

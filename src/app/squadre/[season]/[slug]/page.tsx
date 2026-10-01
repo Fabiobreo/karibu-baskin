@@ -384,6 +384,7 @@ export default async function TeamProfilePage({ params, searchParams }: Props) {
         background={
           team.imageUrl ? heroImage(team.imageUrl) : teamHue ? heroTint(teamHue) : heroGradient.band
         }
+        accent={teamHue}
         manage={
           viewerIsStaff && (
             <StaffManageButton href={`/admin/squadre/${team.id}/rosa`} label={t("manage")} />
