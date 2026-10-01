@@ -14,7 +14,6 @@ import SiteHeader from "@/components/layout/SiteHeader";
 import SkipToContent from "@/components/layout/SkipToContent";
 import Footer from "@/components/layout/Footer";
 import HideInAdmin from "@/components/layout/HideInAdmin";
-import SponsorBanner from "@/components/common/SponsorBanner";
 import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
 import CookieBanner from "@/components/layout/CookieBanner";
@@ -160,9 +159,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <OfflineBanner />
                   {children}
                 </Box>
-                {/* Solo fuori dall'admin: nel pannello staff sono rumore. */}
+                {/* Solo fuori dall'admin: nel pannello staff sono rumore. Gli
+                    sponsor sono la fascia superiore del footer (UX-39). */}
                 <HideInAdmin>
-                  <SponsorBanner />
                   <Footer />
                 </HideInAdmin>
                 <BottomNav />

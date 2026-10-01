@@ -59,13 +59,13 @@ Tre commit su `develop`: area utente e admin, liste pubbliche, entity hero.
 
 **Pagine per modello**
 
-| Modello | Pagine |
-| --- | --- |
-| Hero con foto | `/` |
-| Page header | `/partite`, `/risultati`, `/classifiche`, `/marcatori`, `/squadre`, `/squadre/archivio`, `/squadre/sfida`, `/giocatori/confronta`, `/allenamenti`, `/calendario`, `/news`, `/eventi`, `/gallery`, `/contatti`, `/il-baskin`, `/faq`, `/sponsor`, `/privacy` |
-| Entity hero | `/allenamento/[id]`, `/eventi/[slug]`, `/partite/[slug]`, `/giocatori/[slug]`, `/squadre/[season]/[slug]`, `/avversarie/[slug]` |
-| Nessuna fascia (`PageHeader`) | `/profilo`, `/profilo/disponibilita`, `/profilo/ruolo`, `/profilo/traguardi`, `/notifiche`, tutto `/admin` (convocazioni e statistiche comprese) |
-| Nessuna fascia (articolo) | `/news/[slug]`: breadcrumb sopra l'h1, com'era |
+| Modello                       | Pagine                                                                                                                                                                                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero con foto                 | `/`                                                                                                                                                                                                                                                         |
+| Page header                   | `/partite`, `/risultati`, `/classifiche`, `/marcatori`, `/squadre`, `/squadre/archivio`, `/squadre/sfida`, `/giocatori/confronta`, `/allenamenti`, `/calendario`, `/news`, `/eventi`, `/gallery`, `/contatti`, `/il-baskin`, `/faq`, `/sponsor`, `/privacy` |
+| Entity hero                   | `/allenamento/[id]`, `/eventi/[slug]`, `/partite/[slug]`, `/giocatori/[slug]`, `/squadre/[season]/[slug]`, `/avversarie/[slug]`                                                                                                                             |
+| Nessuna fascia (`PageHeader`) | `/profilo`, `/profilo/disponibilita`, `/profilo/ruolo`, `/profilo/traguardi`, `/notifiche`, tutto `/admin` (convocazioni e statistiche comprese)                                                                                                            |
+| Nessuna fascia (articolo)     | `/news/[slug]`: breadcrumb sopra l'h1, com'era                                                                                                                                                                                                              |
 
 **Scelte fatte strada facendo**
 

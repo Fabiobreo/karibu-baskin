@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Box, IconButton, Typography } from "@mui/material";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -8,189 +9,138 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { onHover } from "@/lib/hoverStyles";
 import { TOUCH_TARGET } from "@/lib/touchTarget";
-import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { heroText } from "@/lib/heroStyles";
+import { isTaskPath } from "@/lib/taskPages";
 
 // ── Dati sponsor ──────────────────────────────────────────────────────────────
-// src: percorso immagine in /public (es. "/sponsors/denis.png")
-// Lasciare src: null finché l'immagine non è disponibile → mostra placeholder
+// src: percorso immagine in /public (es. "/sponsors/denis.jpg").
 //
-// needsPlateOnDark: il logo è nato per la carta bianca e sul fondo scuro
-// sparisce. Misurato sui file reali (quota di pixel che arrivano a 3:1 contro
-// #1E1E1E): denis 5%, LLP 34%, tettitecchio 37%, sabysport 84%, cgrd 86%,
-// villani 94%. Solo il primo ha bisogno della placca: villani, sabysport e
-// cgrd sono loghi chiari, e sul bianco sparirebbero a loro volta.
+// Tessere tutte uguali (UX-39): bianche, perche' quasi tutti i loghi sono nati
+// per la carta bianca (quattro hanno il fondo bianco dentro il file). Senza
+// didascalia: il nome sta nell'`alt` e nel link.
+//
+// ownBackground: il logo e' un'immagine con un fondo scuro suo (un biglietto da
+// visita nero). Riempie la tessera invece di stare in un riquadro bianco, e un
+// bordo chiaro la stacca dal fondo scuro del footer.
 
-const SPONSORS = [
+const SPONSORS: Sponsor[] = [
   {
     name: "Denis M. Photographer",
     url: "https://www.facebook.com/Denis.M.photographer",
-    initials: "DM",
     src: "/sponsors/denis.jpg",
-    needsPlateOnDark: true,
+    ownBackground: true,
   },
   {
     name: "Villani and Partners",
     url: "https://villaniandpartners.eu/",
-    initials: "VP",
     src: "/sponsors/villani.png",
   },
-  {
-    name: "LLP",
-    url: "https://www.llp.it/",
-    initials: "LLP",
-    src: "/sponsors/LLP.png",
-  },
-  {
-    name: "Tetti Tecchio",
-    url: "https://www.tettitecchio.it/",
-    initials: "TT",
-    src: "/sponsors/tettitecchio.png",
-  },
-  {
-    name: "Saby Sport",
-    url: "https://www.sabysport.com/",
-    initials: "SS",
-    src: "/sponsors/sabysport.png",
-  },
-  {
-    name: "CGRD",
-    url: "https://www.cgrd.it/it/",
-    initials: "CG",
-    src: "/sponsors/cgrd.png",
-  },
-] satisfies {
+  { name: "LLP", url: "https://www.llp.it/", src: "/sponsors/LLP.png" },
+  { name: "Tetti Tecchio", url: "https://www.tettitecchio.it/", src: "/sponsors/tettitecchio.png" },
+  { name: "Saby Sport", url: "https://www.sabysport.com/", src: "/sponsors/sabysport.png" },
+  { name: "CGRD", url: "https://www.cgrd.it/it/", src: "/sponsors/cgrd.png" },
+];
+
+interface Sponsor {
   name: string;
   url: string;
-  initials: string;
-  src: string | null;
-  needsPlateOnDark?: boolean;
-}[];
-
-type Sponsor = (typeof SPONSORS)[number] & { needsPlateOnDark?: boolean };
+  src: string;
+  ownBackground?: boolean;
+}
 
 // Due copie e non sei: l'animazione trasla di -50%, quindi con due metà
 // identiche il punto di arrivo coincide con quello di partenza e il ciclo non
-// salta. Sei copie erano 36 nodi immagine in fondo a ogni pagina del sito.
+// salta.
 const COPIES = [0, 1];
 
 // Secondi per far scorrere un set completo. Con -50% su due copie il viaggio è
-// esattamente un set, quindi è anche la durata dell'animazione: la velocità per
-// sponsor resta quella di prima.
+// esattamente un set, quindi è anche la durata dell'animazione.
 const SECONDS_PER_SET = SPONSORS.length * 4;
 
-const CLONE_SELECTOR = '& [data-sponsor-clone="true"]';
+const GAP_PX = 16;
+const TILE = { width: { xs: 124, sm: 148 }, height: { xs: 54, sm: 64 } } as const;
 
 /**
- * Nastro fermo: niente animazione e niente copie.
+ * Nastro fermo: niente animazione e niente copie, tutti i loghi visibili in
+ * una griglia (tre per riga su telefono).
  *
- * Con la pausa (o con "riduci movimento") la striscia deve restare leggibile,
- * non congelarsi a metà logo: le copie spariscono e resta la lista dei sei
- * sponsor, scorribile a mano nel contenitore.
+ * Vale per le pagine d'uso, per la pausa e per "riduci movimento": la striscia
+ * non si congela a metà logo, diventa l'elenco dei sei sponsor.
  */
 const STATIC_TRACK = {
   animation: "none",
   transform: "none",
-  [CLONE_SELECTOR]: { display: "none" },
+  width: "auto",
+  flexWrap: "wrap",
+  '& [data-sponsor-clone="true"]': { display: "none" },
+  "& > a": {
+    width: { xs: `calc((100% - ${GAP_PX * 2}px) / 3)`, sm: TILE.width.sm },
+  },
 } as const;
 
+/**
+ * Gli sponsor, fascia superiore del footer (UX-39): stessi loghi, stesso
+ * ordine, in ogni pagina pubblica. Sulle pagine di contenuto il nastro scorre
+ * (con la pausa); sulle pagine d'uso sta fermo.
+ */
 export default function SponsorBanner() {
   const t = useTranslations("common");
+  const tFooter = useTranslations("footer");
+  const pathname = usePathname();
   const [paused, setPaused] = useState(false);
+  const still = isTaskPath(pathname);
+  const isStatic = still || paused;
 
   return (
-    <Box
-      component="section"
-      aria-label={t("sponsorsLabel")}
-      sx={{
-        borderTop: "1px solid",
-        borderBottom: "1px solid",
-        borderColor: "divider",
-        bgcolor: "background.paper",
-        pt: 1.5,
-        pb: { xs: "calc(16px + 60px + env(safe-area-inset-bottom, 0px))", md: 2 },
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-      }}
-    >
-      {/* Etichetta e comando fuori dal nastro: stavano in `position: absolute`
-          sopra la pista, e a schermo largo la parola "Sponsor" finiva addosso
-          al logo in uscita. Qui lo spazio glielo riserva il layout. */}
-      <Box
-        sx={{
-          flexShrink: 0,
-          pl: { xs: 0.5, sm: 1.5 },
-          display: "flex",
-          alignItems: "center",
-          gap: 0.25,
-        }}
-      >
-        <Typography
-          variant="caption"
-          sx={{
-            color: "text.secondary",
-            fontWeight: FONT_WEIGHT.semibold,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            fontSize: TYPE_SCALE.xs,
-            display: { xs: "none", sm: "block" },
-          }}
-        >
-          {t("sponsorsLabel")}
+    <Box component="section" aria-label={t("sponsorsLabel")}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1, minHeight: 44 }}>
+        <Typography variant="overline" component="h2" sx={{ color: heroText.muted }}>
+          {tFooter("sponsorsTitle")}
         </Typography>
         {/* WCAG 2.2.2: un contenuto in movimento che parte da solo e dura più di
             cinque secondi deve poter essere fermato. La pausa in `:hover` non
-            basta, perché da tastiera e su touch non è raggiungibile. */}
-        <IconButton
-          onClick={() => setPaused((p) => !p)}
-          aria-label={paused ? t("sponsorsResume") : t("sponsorsPause")}
-          aria-pressed={paused}
-          sx={{ ...TOUCH_TARGET, color: "text.secondary" }}
-        >
-          {paused ? <PlayArrowIcon sx={{ fontSize: 16 }} /> : <PauseIcon sx={{ fontSize: 16 }} />}
-        </IconButton>
+            basta, perché da tastiera e su touch non è raggiungibile. Dove il
+            nastro e' gia' fermo il comando non serve. */}
+        {!still && (
+          <IconButton
+            onClick={() => setPaused((p) => !p)}
+            aria-label={paused ? t("sponsorsResume") : t("sponsorsPause")}
+            aria-pressed={paused}
+            sx={{
+              ...TOUCH_TARGET,
+              color: heroText.secondary,
+              // Con "riduci movimento" il nastro e' gia' fermo.
+              "@media (prefers-reduced-motion: reduce)": { display: "none" },
+            }}
+          >
+            {paused ? <PlayArrowIcon sx={{ fontSize: 16 }} /> : <PauseIcon sx={{ fontSize: 16 }} />}
+          </IconButton>
+        )}
       </Box>
 
-      {/* Nastro */}
       <Box
         sx={{
-          flex: 1,
-          minWidth: 0,
-          position: "relative",
-          overflowX: paused ? "auto" : "hidden",
-          overflowY: "hidden",
-          "@media (prefers-reduced-motion: reduce)": { overflowX: "auto" },
-          "&::before, &::after": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            width: 40,
-            zIndex: 2,
-            pointerEvents: "none",
-          },
-          "&::before": {
-            left: 0,
-            background: (theme) =>
-              `linear-gradient(to right, ${theme.palette.background.paper}, transparent)`,
-          },
-          "&::after": {
-            right: 0,
-            background: (theme) =>
-              `linear-gradient(to left, ${theme.palette.background.paper}, transparent)`,
-          },
+          overflow: "hidden",
+          // Bordi sfumati mentre scorre. Maschera e non una sfumatura colorata:
+          // il fondo del footer e' un gradiente, un colore pieno si vedrebbe.
+          ...(!isStatic && {
+            maskImage:
+              "linear-gradient(to right, transparent, black 32px, black calc(100% - 32px), transparent)",
+            "@media (prefers-reduced-motion: reduce)": { maskImage: "none" },
+          }),
         }}
       >
         <Box
           sx={{
             display: "flex",
-            gap: 3,
+            gap: `${GAP_PX}px`,
             width: "max-content",
             "@keyframes marquee": {
               "0%": { transform: "translateX(0)" },
-              "100%": { transform: "translateX(-50%)" },
+              // Meta' pista piu' meta' dello spazio fra le due copie: il ciclo
+              // riparte esattamente da dove e' cominciato.
+              "100%": { transform: `translateX(calc(-50% - ${GAP_PX / 2}px))` },
             },
             animation: `marquee ${SECONDS_PER_SET}s linear infinite`,
             "&:hover": { animationPlayState: "paused" },
@@ -198,12 +148,12 @@ export default function SponsorBanner() {
             // la durata: da solo lascerebbe l'animazione a girare a scatti.
             // Qui viene tolta del tutto.
             "@media (prefers-reduced-motion: reduce)": STATIC_TRACK,
-            ...(paused ? STATIC_TRACK : {}),
+            ...(isStatic ? STATIC_TRACK : {}),
           }}
         >
           {COPIES.map((copy) =>
             SPONSORS.map((s) => (
-              <SponsorCard key={`${s.name}-${copy}`} sponsor={s} clone={copy > 0} />
+              <SponsorTile key={`${s.name}-${copy}`} sponsor={s} clone={copy > 0} />
             ))
           )}
         </Box>
@@ -212,7 +162,7 @@ export default function SponsorBanner() {
   );
 }
 
-function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
+function SponsorTile({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
   return (
     <Box
       component="a"
@@ -226,77 +176,36 @@ function SponsorCard({ sponsor, clone }: { sponsor: Sponsor; clone: boolean }) {
       aria-hidden={clone || undefined}
       tabIndex={clone ? -1 : undefined}
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 0.5,
-        textDecoration: "none",
+        position: "relative",
+        display: "block",
         flexShrink: 0,
-        cursor: "pointer",
-        transition: "transform 0.15s, opacity 0.15s",
-        ...onHover({ transform: "scale(1.06)", opacity: 0.85 }),
+        width: TILE.width,
+        height: TILE.height,
+        borderRadius: RADIUS.md,
+        overflow: "hidden",
+        bgcolor: sponsor.ownBackground ? "common.black" : "common.white",
+        border: "1px solid",
+        borderColor: sponsor.ownBackground ? heroText.lineStrong : "transparent",
+        transition: "transform 0.15s",
+        ...onHover({ transform: "scale(1.04)" }),
+        "&:focus-visible": {
+          outline: "2px solid",
+          outlineColor: heroText.primary,
+          outlineOffset: "2px",
+        },
       }}
     >
-      {/* Logo reale o placeholder */}
-      <Box
-        sx={(theme) => ({
-          width: 110,
-          height: 44,
-          borderRadius: RADIUS.sm,
-          overflow: "hidden",
-          // Placca chiara sotto i loghi nati per la carta bianca: senza, sul
-          // fondo scuro restano rettangoli neri su nero. Il segnaposto senza
-          // logo e' neutro (UX-29): i colori di prima erano tinte senza
-          // significato, le stesse di esiti e squadre.
-          backgroundColor: !sponsor.src
-            ? theme.palette.action.selected
-            : sponsor.needsPlateOnDark && theme.palette.mode === "dark"
-              ? theme.palette.common.white
-              : "transparent",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          border: sponsor.src ? "1px solid" : "2px dashed",
-          borderColor: sponsor.src ? theme.palette.divider : theme.palette.text.secondary,
-          position: "relative",
-        })}
-      >
-        {sponsor.src ? (
-          <Image
-            src={sponsor.src}
-            alt={sponsor.name}
-            fill
-            sizes="110px"
-            style={{ objectFit: "contain", padding: "4px" }}
-          />
-        ) : (
-          <Typography
-            sx={{
-              color: "text.primary",
-              fontWeight: FONT_WEIGHT.bold,
-              fontSize: TYPE_SCALE.md,
-              letterSpacing: "0.06em",
-              userSelect: "none",
-            }}
-          >
-            {sponsor.initials}
-          </Typography>
-        )}
-      </Box>
-
-      <Typography
-        variant="caption"
-        sx={{
-          color: "text.secondary",
-          fontSize: TYPE_SCALE.xs,
-          maxWidth: 110,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {sponsor.name}
-      </Typography>
+      <Image
+        src={sponsor.src}
+        alt={sponsor.name}
+        fill
+        sizes="148px"
+        style={
+          sponsor.ownBackground
+            ? { objectFit: "cover" }
+            : { objectFit: "contain", padding: "8px 12px" }
+        }
+      />
     </Box>
   );
 }

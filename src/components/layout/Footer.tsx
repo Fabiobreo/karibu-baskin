@@ -1,251 +1,214 @@
-import { Box, Typography, IconButton, Divider } from "@mui/material";
+import { Box, Container, IconButton, Link as MuiLink, Typography } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import Image from "next/image";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import SponsorBanner from "@/components/common/SponsorBanner";
 import { heroGradient, heroText, socialBrandColor } from "@/lib/heroStyles";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
-import { TYPE_SCALE } from "@/lib/typeScale";
+import { CLUB_VENUE, CLUB_VENUE_LABEL, TRY_IT_HREF, mapsSearchUrl } from "@/lib/clubVenue";
+import {
+  CLUB_EMAIL,
+  CLUB_LEGAL_NAME,
+  CLUB_PHONES,
+  CLUB_SOCIAL,
+  CLUB_TAX_ID,
+} from "@/lib/clubContacts";
 
+// Link del footer: testo chiaro sottolineato, alto abbastanza da toccarlo.
+const linkSx = {
+  display: "inline-block",
+  py: 0.5,
+  color: heroText.secondary,
+  textDecorationColor: heroText.lineStrong,
+  "&:hover": { color: heroText.primary },
+} as const;
+
+const SOCIAL = [
+  { label: "Instagram", href: CLUB_SOCIAL.instagram, Icon: InstagramIcon, hover: "instagram" },
+  { label: "Facebook", href: CLUB_SOCIAL.facebook, Icon: FacebookIcon, hover: "facebook" },
+  { label: "YouTube", href: CLUB_SOCIAL.youtube, Icon: YouTubeIcon, hover: "youtube" },
+] as const;
+
+function ColumnTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <Typography
+      variant="overline"
+      component="h2"
+      sx={{ display: "block", color: heroText.muted, mb: 0.5 }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
+/**
+ * Chiusura di ogni pagina pubblica (UX-39), anche su telefono: gli sponsor in
+ * cima, poi dove siamo, i link del sito e i contatti. E' quello che un genitore
+ * cerca in fondo alla pagina.
+ */
 export default async function Footer() {
-  const t = await getTranslations("nav");
+  const [t, tNav] = await Promise.all([getTranslations("footer"), getTranslations("nav")]);
   const year = new Date().getFullYear();
+
+  const siteLinks = [
+    { href: "/allenamenti", label: tNav("trainings") },
+    { href: "/il-baskin", label: tNav("baskin") },
+    { href: "/calendario", label: tNav("calendar") },
+    { href: "/squadre", label: tNav("teams") },
+    { href: "/partite", label: tNav("matches") },
+    { href: "/faq", label: tNav("faq") },
+    { href: "/news", label: tNav("news") },
+    { href: "/sponsor", label: tNav("sponsor") },
+  ];
 
   return (
     <Box
       component="footer"
       sx={{
         mt: "auto",
-        display: { xs: "none", md: "block" },
         background: heroGradient.footer,
         color: heroText.secondary,
-        pt: { xs: 1, sm: 2 },
-        pb: { xs: 1, sm: 1.5 },
-        px: 2,
+        // Su telefono la barra di navigazione in basso copre il fondo pagina.
+        pb: { xs: "calc(60px + env(safe-area-inset-bottom, 0px))", md: 0 },
       }}
     >
-      {/* ── Desktop: layout originale a colonne ── */}
-      <Box
-        sx={{
-          display: { xs: "none", sm: "flex" },
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 2,
-          maxWidth: 600,
-          mx: "auto",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Image
-            src="/logo.png"
-            alt="Karibu Baskin"
-            width={52}
-            height={52}
-            style={{ objectFit: "contain" }}
-          />
-          <Box>
-            <Typography component="div" variant="subtitle1" sx={{ lineHeight: 1.2 }}>
-              Karibu Baskin
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: heroText.muted,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              Montecchio Maggiore
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 0.5, ml: 0.5 }}>
-            <IconButton
-              component="a"
-              href="https://www.instagram.com/karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: socialBrandColor.instagram },
-                p: 0.75,
-              }}
-              aria-label="Instagram"
-            >
-              <InstagramIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://www.facebook.com/karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: socialBrandColor.facebook },
-                p: 0.75,
-              }}
-              aria-label="Facebook"
-            >
-              <FacebookIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://youtube.com/@karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: socialBrandColor.youtube },
-                p: 0.75,
-              }}
-              aria-label="YouTube"
-            >
-              <YouTubeIcon fontSize="small" />
-            </IconButton>
-          </Box>
+      <Container maxWidth="lg">
+        {/* ── Sponsor ── */}
+        <Box sx={{ pt: { xs: 2, md: 2.5 }, pb: { xs: 3, md: 3.5 } }}>
+          <SponsorBanner />
         </Box>
-        <Divider sx={{ width: "100%", borderColor: heroText.line }} />
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
-          <Typography variant="caption" sx={{ color: heroText.muted }}>
-            © {year} Karibu Baskin Montecchio Maggiore
-          </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Link
-              href="/sponsor"
-              style={{
-                fontSize: TYPE_SCALE.xs,
-                color: heroText.secondary,
-                textDecorationColor: heroText.lineStrong,
-              }}
-            >
-              Sponsor
-            </Link>
-            <Link
-              href="/privacy"
-              style={{
-                fontSize: TYPE_SCALE.xs,
-                color: heroText.secondary,
-                textDecorationColor: heroText.lineStrong,
-              }}
-            >
-              {t("privacyPolicy")}
-            </Link>
-          </Box>
-        </Box>
-      </Box>
 
-      {/* ── Mobile: due righe per leggibilità ── */}
-      <Box
-        sx={{
-          display: { xs: "flex", sm: "none" },
-          flexDirection: "column",
-          gap: 0.75,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Image
-              src="/logo.png"
-              alt="Karibu Baskin"
-              width={24}
-              height={24}
-              style={{ objectFit: "contain" }}
-            />
-            <Typography
-              variant="caption"
-              fontWeight={FONT_WEIGHT.semibold}
-              sx={{ color: heroText.secondary }}
-            >
-              Karibu Baskin
+        {/* ── Tre colonne (una su telefono) ── */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1.2fr 1fr 1.2fr" },
+            gap: { xs: 3, md: 6 },
+            py: { xs: 3, md: 4 },
+            borderTop: `1px solid ${heroText.line}`,
+          }}
+        >
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 1.5 }}>
+              <Image
+                src="/logo.png"
+                alt=""
+                width={40}
+                height={40}
+                style={{ objectFit: "contain" }}
+              />
+              <Typography component="div" variant="subtitle1" sx={{ color: heroText.primary }}>
+                Karibu Baskin
+              </Typography>
+            </Box>
+            <ColumnTitle>{t("whereWhen")}</ColumnTitle>
+            <Typography variant="body2" component="address" sx={{ fontStyle: "normal" }}>
+              <Box component="strong" sx={{ color: heroText.primary }}>
+                {CLUB_VENUE.name}
+              </Box>
+              <br />
+              {CLUB_VENUE.street} · {CLUB_VENUE.postalCode} {CLUB_VENUE.city} ({CLUB_VENUE.province}
+              )
             </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <MuiLink
+                variant="body2"
+                href={mapsSearchUrl(CLUB_VENUE_LABEL)}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={linkSx}
+              >
+                {t("openMaps")}
+              </MuiLink>
+              <MuiLink variant="body2" href="/allenamenti" sx={linkSx}>
+                {t("nextTrainings")}
+              </MuiLink>
+              <MuiLink variant="body2" href={TRY_IT_HREF} sx={linkSx}>
+                {t("tryIt")}
+              </MuiLink>
+            </Box>
           </Box>
-          <Box sx={{ display: "flex", gap: 0 }}>
-            <IconButton
-              component="a"
-              href="https://www.instagram.com/karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
+
+          <Box component="nav" aria-label={t("navLabel")}>
+            <ColumnTitle>{t("site")}</ColumnTitle>
+            <Box
+              component="ul"
               sx={{
-                color: heroText.muted,
-                "&:hover": { color: socialBrandColor.instagram },
-                p: 0.5,
+                listStyle: "none",
+                m: 0,
+                p: 0,
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                columnGap: 3,
               }}
-              aria-label="Instagram"
             >
-              <InstagramIcon sx={{ fontSize: 17 }} />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://www.facebook.com/karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: socialBrandColor.facebook },
-                p: 0.5,
-              }}
-              aria-label="Facebook"
-            >
-              <FacebookIcon sx={{ fontSize: 17 }} />
-            </IconButton>
-            <IconButton
-              component="a"
-              href="https://youtube.com/@karibubaskin"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                color: heroText.muted,
-                "&:hover": { color: socialBrandColor.youtube },
-                p: 0.5,
-              }}
-              aria-label="YouTube"
-            >
-              <YouTubeIcon sx={{ fontSize: 17 }} />
-            </IconButton>
+              {siteLinks.map((l) => (
+                <li key={l.href}>
+                  <MuiLink variant="body2" href={l.href} sx={linkSx}>
+                    {l.label}
+                  </MuiLink>
+                </li>
+              ))}
+            </Box>
+          </Box>
+
+          <Box>
+            <ColumnTitle>{t("contacts")}</ColumnTitle>
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              <MuiLink variant="body2" href={`mailto:${CLUB_EMAIL}`} sx={linkSx}>
+                {CLUB_EMAIL}
+              </MuiLink>
+              {CLUB_PHONES.map((p) => (
+                <Typography key={p.href} variant="body2" component="div">
+                  {p.name}{" "}
+                  <MuiLink variant="body2" href={p.href} sx={linkSx}>
+                    {p.label}
+                  </MuiLink>
+                </Typography>
+              ))}
+            </Box>
+            <Box sx={{ display: "flex", gap: 0.5, mt: 0.5, ml: -1 }}>
+              {SOCIAL.map(({ label, href, Icon, hover }) => (
+                <IconButton
+                  key={label}
+                  component="a"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  sx={{
+                    color: heroText.secondary,
+                    "&:hover": { color: socialBrandColor[hover] },
+                  }}
+                >
+                  <Icon fontSize="small" />
+                </IconButton>
+              ))}
+            </Box>
           </Box>
         </Box>
+
+        {/* ── Riga legale ── */}
         <Box
           sx={{
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 1.5,
+            columnGap: 3,
+            py: 1.5,
             borderTop: `1px solid ${heroText.line}`,
-            pt: 0.75,
           }}
         >
           <Typography variant="caption" sx={{ color: heroText.muted }}>
-            © {year} Karibu Baskin
+            © {year} {CLUB_LEGAL_NAME} · {t("taxId")} {CLUB_TAX_ID}
           </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Link
-              href="/sponsor"
-              style={{
-                fontSize: TYPE_SCALE.sm,
-                color: heroText.secondary,
-                textDecoration: "underline",
-                textDecorationColor: heroText.lineStrong,
-                padding: "4px 0",
-              }}
-            >
-              Sponsor
-            </Link>
-            <Link
-              href="/privacy"
-              style={{
-                fontSize: TYPE_SCALE.sm,
-                color: heroText.secondary,
-                textDecoration: "underline",
-                textDecorationColor: heroText.lineStrong,
-                padding: "4px 0",
-              }}
-            >
-              {t("privacyPolicy")}
-            </Link>
-          </Box>
+          <MuiLink variant="caption" href="/privacy" sx={linkSx}>
+            {tNav("privacyPolicy")}
+          </MuiLink>
         </Box>
-      </Box>
+      </Container>
     </Box>
   );
 }

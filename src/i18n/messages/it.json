@@ -16,6 +16,17 @@
     "allSetBody": "Per ora non c'è niente da fare: ti avvisiamo quando si aprono le iscrizioni.",
     "allSetAction": "Vedi il calendario"
   },
+  "footer": {
+    "sponsorsTitle": "I nostri sponsor",
+    "whereWhen": "Dove e quando",
+    "openMaps": "Apri in Google Maps",
+    "nextTrainings": "Prossimi allenamenti",
+    "tryIt": "Vieni a provare",
+    "site": "Il sito",
+    "navLabel": "Link del sito",
+    "contacts": "Contatti",
+    "taxId": "C.F."
+  },
   "common": {
     "sponsorsLabel": "Sponsor",
     "sponsorsPause": "Metti in pausa lo scorrimento degli sponsor",

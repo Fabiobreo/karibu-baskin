@@ -16,6 +16,17 @@
     "allSetBody": "Nothing to do for now: we will let you know when sign-ups open.",
     "allSetAction": "See the calendar"
   },
+  "footer": {
+    "sponsorsTitle": "Our sponsors",
+    "whereWhen": "Where and when",
+    "openMaps": "Open in Google Maps",
+    "nextTrainings": "Upcoming training sessions",
+    "tryIt": "Come and try",
+    "site": "The site",
+    "navLabel": "Site links",
+    "contacts": "Contacts",
+    "taxId": "Tax ID"
+  },
   "common": {
     "sponsorsLabel": "Sponsors",
     "sponsorsPause": "Pause the sponsor strip",

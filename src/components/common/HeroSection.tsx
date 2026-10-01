@@ -3,7 +3,6 @@ import Image from "next/image";
 import { Box, Typography, Button, Container, Link as MuiLink } from "@mui/material";
 import { TRY_IT_HREF } from "@/lib/clubVenue";
 import { alpha } from "@mui/material/styles";
-import { visuallyHidden } from "@mui/utils";
 import { useTranslations } from "next-intl";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -31,8 +30,8 @@ interface HeroSectionProps {
    */
   visitor?: boolean;
   /**
-   * Tesserati e account in attesa (UX-33): hero un po' piu' bassa, con il solo
-   * saluto, senza sottotitolo ne' bottoni. La CTA e' la card che sale sopra il
+   * Tesserati e account in attesa (UX-33): hero un po' piu' bassa, con il saluto
+   * sopra il nome del club, senza sottotitolo ne' bottoni. La CTA e' la card che sale sopra il
    * bordo basso dell'hero (`heroOverlapSx`), e cosi' si vede senza scorrere.
    */
   greeting?: string;
@@ -88,49 +87,73 @@ export default function HeroSection({ visitor = false, greeting }: HeroSectionPr
       >
         <Container maxWidth="lg">
           <Box>
-            {/* Titolo di contenuto: sport e luogo. Il nome del club si vede
-                gia' nell'header, e la scritta grande copriva la foto: qui resta
-                solo per chi usa uno screen reader, che altrimenti sentirebbe un
-                titolo di pagina senza il nome della squadra. */}
+            {greeting && (
+              <Typography
+                sx={{
+                  color: heroText.primary,
+                  fontWeight: FONT_WEIGHT.semibold,
+                  fontSize: { xs: TYPE_SCALE.lg, md: TYPE_SCALE.xl },
+                  mb: 0.5,
+                }}
+              >
+                {greeting}
+              </Typography>
+            )}
+
+            {/* Il nome del club: chi entra nel sito si aspetta di leggerlo
+                (scelta del committente, 01/10/2026). In basso a sinistra e non
+                piu' al centro a 96 px, dove copriva le facce: qui sta sopra la
+                velatura e "Baskin" arancione non finisce sulle maglie arancioni.
+                Lo spazio fra i due span serve al testo accessibile. */}
             <Typography
               component="h1"
               sx={{
-                // `relative`: il testo nascosto resta dentro il titolo (UX-20).
-                position: "relative",
                 color: heroText.primary,
                 fontWeight: FONT_WEIGHT.bold,
-                fontSize: compact
-                  ? { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl5 }
-                  : { xs: TYPE_SCALE.xl4, sm: TYPE_SCALE.xl5, md: TYPE_SCALE.xl6 },
-                lineHeight: 1.1,
-                letterSpacing: "-0.02em",
-                textWrap: "balance",
-                // Su desktop sta in una riga: il blocco di testo resta basso e
-                // copre la foto il meno possibile.
-                mb: compact ? 0 : { xs: 1.5, md: 2 },
+                fontSize: { xs: TYPE_SCALE.xl5, sm: TYPE_SCALE.xl6, md: TYPE_SCALE.xl7 },
+                lineHeight: 1,
+                letterSpacing: "-0.03em",
+                mb: compact ? 0 : { xs: 1.25, md: 1.5 },
               }}
             >
-              {!compact && (
-                <Box component="span" sx={visuallyHidden}>
-                  Karibu Baskin:{" "}
-                </Box>
-              )}
-              {greeting ?? t("heroTitle")}
+              Karibu{" "}
+              <Box
+                component="span"
+                // "Baskin" arancione e' il logotipo (eccezione di marchio, UX-29).
+                sx={{ color: "primary.main" }}
+              >
+                Baskin
+              </Box>
             </Typography>
 
             {!compact && (
-              <Typography
-                sx={{
-                  color: heroText.secondary,
-                  fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
-                  lineHeight: 1.6,
-                  // Niente parola sola sull'ultima riga.
-                  textWrap: "balance",
-                  maxWidth: 560,
-                }}
-              >
-                {t("heroSubtitle")}
-              </Typography>
+              <>
+                {/* Cosa siamo e dove, subito sotto il nome. */}
+                <Typography
+                  sx={{
+                    color: heroText.primary,
+                    fontWeight: FONT_WEIGHT.semibold,
+                    fontSize: { xs: TYPE_SCALE.lg, md: TYPE_SCALE.xl },
+                    lineHeight: 1.3,
+                    textWrap: "balance",
+                    mb: 0.5,
+                  }}
+                >
+                  {t("heroTitle")}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: heroText.secondary,
+                    fontSize: { xs: TYPE_SCALE.md, md: TYPE_SCALE.lg },
+                    lineHeight: 1.6,
+                    // Niente parola sola sull'ultima riga.
+                    textWrap: "balance",
+                    maxWidth: 560,
+                  }}
+                >
+                  {t("heroSubtitle")}
+                </Typography>
+              </>
             )}
           </Box>
 

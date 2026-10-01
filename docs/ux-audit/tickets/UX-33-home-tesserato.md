@@ -58,3 +58,13 @@ La decisione "Home con la stessa struttura per tutti" (README) resta: cambia sol
 - **Disponibilità e "Prossime partite":** la card dice solo "Hai N partite a cui rispondere" e porta a `/profilo/disponibilita`, e le card delle partite non hanno una CTA di disponibilità: l'azione non è ripetuta. Togliere le partite dalla sezione le farebbe sparire dalla home senza che la card le nomini. Da riprendere se la card comincerà a nominare la partita.
 - **Sottotitolo dell'hero:** "Sport inclusivo per tutti…" ripete "inclusivo" del nuovo titolo. Testo da rivedere con il club.
 - **Peso della card della prossima azione:** in home pesa meno della card dell'allenamento sotto, che ha la testata nera. Provato e scartato il contorno spesso in inchiostro; da riprendere in UX-43, che riguarda le card in evidenza.
+
+## Revisione del 01/10/2026: torna il nome del club
+
+Rivista con il committente la versione appena fatta, confrontando prima, adesso e una terza via: [`img/ux33-hero-confronto-anonimo.png`](../img/ux33-hero-confronto-anonimo.png), [`img/ux33-hero-confronto-tesserato.png`](../img/ux33-hero-confronto-tesserato.png).
+
+- **Cosa non andava:** senza la scritta "Karibu Baskin" l'hero aveva perso carattere, e chi entra nel sito si aspetta di leggere il nome. Per i tesserati l'hero era grande per dire solo "Ciao Fabio!".
+- **Scelta la terza via, per tutti:** l'h1 è "Karibu Baskin", con "Baskin" arancione (logotipo, eccezione di marchio di UX-29), a 64 px su desktop e 40 su telefono, in basso a sinistra sopra la velatura. Non è più al centro a 96 px sopra le facce, e "Baskin" non cade più sulle maglie arancioni: i due difetti che il riaudit contestava.
+- **Anonimo:** sotto il nome la riga "Basket inclusivo a Montecchio Maggiore", poi la frase (tenuta per scelta del committente), bottone e link.
+- **Tesserati e ospiti:** saluto piccolo sopra il nome, niente bottoni; la card resta sovrapposta al bordo basso.
+- Il criterio "nome del club solo nell'header" di questo ticket è quindi superato da una decisione del committente.

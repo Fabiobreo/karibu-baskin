@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/lib/siteUrl";
+import { CLUB_EMAIL, CLUB_LEGAL_NAME, CLUB_SOCIAL, CLUB_TAX_ID } from "@/lib/clubContacts";
 
 /**
  * Dati strutturati schema.org (JSON-LD) per le pagine pubbliche (KB-12).
@@ -37,21 +38,17 @@ export function organizationJsonLd() {
     "@context": CONTEXT,
     "@type": "SportsOrganization",
     "@id": ORGANIZATION_ID,
-    name: "ASD Karibu Baskin Montecchio Maggiore",
+    name: CLUB_LEGAL_NAME,
     alternateName: "Karibu Baskin",
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     sport: "Baskin",
     foundingDate: "2015",
-    email: "asdkaribubaskin@gmail.com",
-    taxID: "04301440246",
+    email: CLUB_EMAIL,
+    taxID: CLUB_TAX_ID,
     location: HOME_VENUE,
     address: HOME_VENUE.address,
-    sameAs: [
-      "https://www.instagram.com/karibubaskin",
-      "https://www.facebook.com/karibubaskin",
-      "https://youtube.com/@karibubaskin",
-    ],
+    sameAs: [CLUB_SOCIAL.instagram, CLUB_SOCIAL.facebook, CLUB_SOCIAL.youtube],
   };
 }
 
