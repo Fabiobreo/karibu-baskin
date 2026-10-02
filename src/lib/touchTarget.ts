@@ -1,5 +1,6 @@
 import type { Theme } from "@mui/material/styles";
 import type { SystemStyleObject } from "@mui/system";
+import { TYPE_SCALE } from "@/lib/typeScale";
 
 /**
  * Lato minimo di un bersaglio tattile, in px.
@@ -35,6 +36,22 @@ export const TOUCH_TARGET_ON_PHONE = { minHeight: { xs: TOUCH_TARGET_SIZE, sm: 0
 /** Come sopra, per un `TextField size="small"` (alto 40 px). */
 export const TOUCH_FIELD_ON_PHONE = {
   "& .MuiInputBase-root": { minHeight: { xs: TOUCH_TARGET_SIZE, sm: 0 } },
+} as const;
+
+/**
+ * Solo su telefono: un `Chip` che si tocca (filtro, selettore) diventa alto 44 px
+ * a vista, con il testo a 14 px (UX-45). Niente area invisibile più grande: chi
+ * fatica a mirare ha bisogno di vedere il bersaglio. Va per ultimo nello `sx`.
+ *
+ * La media query è scritta per esteso (è `theme.breakpoints.down("sm")`) perché
+ * una funzione nello `sx` non passa da un Server Component a `Chip`.
+ */
+export const TOUCH_CHIP_ON_PHONE = {
+  "@media (max-width:599.95px)": {
+    minHeight: TOUCH_TARGET_SIZE,
+    minWidth: TOUCH_TARGET_SIZE,
+    fontSize: TYPE_SCALE.sm,
+  },
 } as const;
 
 /**

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import SponsorBanner from "@/components/common/SponsorBanner";
 import { heroGradient, heroText, socialBrandColor } from "@/lib/heroStyles";
+import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 import { CLUB_VENUE, CLUB_VENUE_LABEL, TRY_IT_HREF, mapsSearchUrl } from "@/lib/clubVenue";
 import {
   CLUB_EMAIL,
@@ -15,13 +16,26 @@ import {
   CLUB_TAX_ID,
 } from "@/lib/clubContacts";
 
-// Link del footer: testo chiaro sottolineato, alto abbastanza da toccarlo.
+// Link del footer: testo chiaro sottolineato. Sotto `md` il footer è a una
+// colonna e si usa col dito: ogni link è un bersaglio da 44 px (UX-45).
 const linkSx = {
-  display: "inline-block",
-  py: 0.5,
+  display: { xs: "inline-flex", md: "inline-block" },
+  alignItems: "center",
+  verticalAlign: { xs: "top", md: "baseline" },
+  minHeight: { xs: TOUCH_TARGET_SIZE, md: 0 },
+  minWidth: { xs: TOUCH_TARGET_SIZE, md: 0 },
+  py: { xs: 0, md: 0.5 },
   color: heroText.secondary,
   textDecorationColor: heroText.lineStrong,
   "&:hover": { color: heroText.primary },
+} as const;
+
+// Telefoni: si tocca tutta la riga "nome + numero", sottolineato resta il numero.
+const phoneLinkSx = {
+  ...linkSx,
+  columnGap: 0.5,
+  "& > span": { textDecoration: "underline", textDecorationColor: heroText.lineStrong },
+  "&:hover > span": { textDecorationColor: "inherit" },
 } as const;
 
 const SOCIAL = [
@@ -161,15 +175,18 @@ export default async function Footer() {
                 {CLUB_EMAIL}
               </MuiLink>
               {CLUB_PHONES.map((p) => (
-                <Typography key={p.href} variant="body2" component="div">
-                  {p.name}{" "}
-                  <MuiLink variant="body2" href={p.href} sx={linkSx}>
-                    {p.label}
-                  </MuiLink>
-                </Typography>
+                <MuiLink
+                  key={p.href}
+                  variant="body2"
+                  underline="none"
+                  href={p.href}
+                  sx={phoneLinkSx}
+                >
+                  {p.name} <span>{p.label}</span>
+                </MuiLink>
               ))}
             </Box>
-            <Box sx={{ display: "flex", gap: 0.5, mt: 0.5, ml: -1 }}>
+            <Box sx={{ display: "flex", gap: 0.5, mt: 0.5, ml: { xs: -1.5, md: -1 } }}>
               {SOCIAL.map(({ label, href, Icon, hover }) => (
                 <IconButton
                   key={label}
@@ -179,6 +196,8 @@ export default async function Footer() {
                   rel="noopener noreferrer"
                   aria-label={label}
                   sx={{
+                    minWidth: { xs: TOUCH_TARGET_SIZE, md: 0 },
+                    minHeight: { xs: TOUCH_TARGET_SIZE, md: 0 },
                     color: heroText.secondary,
                     "&:hover": { color: socialBrandColor[hover] },
                   }}

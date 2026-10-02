@@ -31,6 +31,7 @@ import type { MatchType } from "@prisma/client";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_TARGET_SIZE } from "@/lib/touchTarget";
 
 export interface AvailabilityEntity {
   kind: "user" | "child";
@@ -385,10 +386,17 @@ function CompactMatchRow({
                     onChange(m.matchId, entity, v as boolean);
                   }}
                   sx={{
+                    // Il nome a sinistra si accorcia, i bottoni no.
+                    flexShrink: 0,
                     "& .MuiToggleButton-root": {
                       py: 0.25,
                       px: 1,
-                      fontSize: TYPE_SCALE.xs,
+                      // Su telefono 44 px di altezza e 64 di larghezza: Sì e No
+                      // sono attaccati e dicono l'opposto, la larghezza evita
+                      // di toccare quello sbagliato (UX-45).
+                      minHeight: { xs: TOUCH_TARGET_SIZE, sm: 0 },
+                      minWidth: { xs: 64, sm: 0 },
+                      fontSize: { xs: TYPE_SCALE.sm, sm: TYPE_SCALE.xs },
                       fontWeight: FONT_WEIGHT.semibold,
                       textTransform: "none",
                       border: "1px solid",

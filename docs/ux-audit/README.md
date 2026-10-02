@@ -127,7 +127,7 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-Al 02/10/2026 tutti i ticket delle ondate 0-4 sono fatti. La lista è quella dell'ondata 5, nell'ordine della sua tabella: UX-45, UX-46, UX-47, UX-48, UX-49 (in attesa di una decisione), UX-50, UX-51.
+Al 02/10/2026 tutti i ticket delle ondate 0-4 sono fatti. La lista è quella dell'ondata 5, nell'ordine della sua tabella: UX-46, UX-47, UX-48, UX-49 (in attesa di una decisione), UX-50, UX-51.
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

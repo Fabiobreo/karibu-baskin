@@ -30,6 +30,7 @@ import { formatAccuracy, shootingAccuracy } from "@/lib/matches/accuracy";
 import { useEntityLabels } from "@/hooks/useEntityLabels";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_CHIP_ON_PHONE } from "@/lib/touchTarget";
 
 export interface PlayerStatRow {
   /** Id del giocatore (User o Child). */
@@ -270,7 +271,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
             variant={roleFilter === null ? "filled" : "outlined"}
             color={roleFilter === null ? "primary" : "default"}
             onClick={() => handleRoleFilter(null)}
-            sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+            sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs, ...TOUCH_CHIP_ON_PHONE }}
           />
           {ROLE_OPTIONS.filter((r) => rolesInData.has(r)).map((r) => (
             <Chip
@@ -282,7 +283,7 @@ export default function ClassificaInternaTable({ rows }: { rows: PlayerStatRow[]
               // Selezionato = stato attivo standard, come "Tutti" (UX-29).
               variant={roleFilter === r ? "filled" : "outlined"}
               color={roleFilter === r ? "primary" : "default"}
-              sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs }}
+              sx={{ cursor: "pointer", fontSize: TYPE_SCALE.xs, ...TOUCH_CHIP_ON_PHONE }}
             />
           ))}
           {filtered.length !== rows.length && (

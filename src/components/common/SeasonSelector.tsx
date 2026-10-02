@@ -2,6 +2,7 @@ import { Box, Chip, Typography } from "@mui/material";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_CHIP_ON_PHONE } from "@/lib/touchTarget";
 
 interface SeasonSelectorProps {
   /** Stagioni fra cui scegliere, dalla più recente. */
@@ -52,13 +53,15 @@ export default function SeasonSelector({
               key={s}
               href={`${basePath}?season=${encodeURIComponent(s)}`}
               aria-current={s === current ? "true" : undefined}
-              style={{ textDecoration: "none" }}
+              // inline-flex: il link prende l'altezza del chip, così il bersaglio
+              // è il chip intero e non la sola riga di testo.
+              style={{ textDecoration: "none", display: "inline-flex" }}
             >
               <Chip
                 label={s}
                 variant={s === current ? "filled" : "outlined"}
                 color={s === current ? "primary" : "default"}
-                sx={{ cursor: "pointer" }}
+                sx={{ cursor: "pointer", ...TOUCH_CHIP_ON_PHONE }}
               />
             </Link>
           ))
