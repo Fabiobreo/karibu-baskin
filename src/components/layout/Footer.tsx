@@ -56,6 +56,7 @@ export default async function Footer() {
     { href: "/il-baskin", label: tNav("baskin") },
     { href: "/calendario", label: tNav("calendar") },
     { href: "/squadre", label: tNav("teams") },
+    { href: "/il-club", label: tNav("whoWeAre") },
     { href: "/partite", label: tNav("matches") },
     { href: "/faq", label: tNav("faq") },
     { href: "/news", label: tNav("news") },

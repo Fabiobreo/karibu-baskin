@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { auth } from "@/lib/authjs";
 import { getTranslations } from "next-intl/server";
-import { Container, Typography, Box, Grid2 as Grid, Paper, Divider, Stack } from "@mui/material";
+import { Container, Box, Divider } from "@mui/material";
 import HomeSessions from "@/components/training/HomeSessions";
 import HomeSectionSkeleton from "@/components/common/HomeSectionSkeleton";
 import JoinUsCta from "@/components/common/JoinUsCta";
@@ -11,6 +11,8 @@ import HeroSection from "@/components/common/HeroSection";
 import LatestNewsHero from "@/components/news/LatestNewsHero";
 import LoSapeviCard from "@/components/common/LoSapeviCard";
 import ProssimePartiteHome from "@/components/matches/ProssimePartiteHome";
+import ClubValues from "@/components/common/ClubValues";
+import ClubHistory from "@/components/common/ClubHistory";
 import BirthdayBanner from "@/components/common/BirthdayBanner";
 import GuestOnboardingSection from "@/components/common/GuestOnboardingSection";
 import GuestOnboardingSkeleton from "@/components/common/GuestOnboardingSkeleton";
@@ -18,14 +20,7 @@ import PendingAvailabilityBanner from "@/components/matches/PendingAvailabilityB
 import NextActionSection from "@/components/common/NextActionSection";
 import { showsNextAction } from "@/lib/nextAction";
 import { prisma } from "@/lib/db";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import GroupsIcon from "@mui/icons-material/Groups";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import StarIcon from "@mui/icons-material/Star";
 import { buildMetadata } from "@/lib/seo";
-import { TYPE_SCALE } from "@/lib/typeScale";
-import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export const metadata = buildMetadata({
   description:
@@ -34,9 +29,6 @@ export const metadata = buildMetadata({
 });
 
 export const revalidate = 0;
-
-type StoriaItem = { anno: string; titolo: string; testo: string };
-type ValueItem = { title: string; body: string };
 
 // Prima di mandare HTML la pagina aspetta solo la sessione (serve a scegliere
 // quale home mostrare). Ogni sezione con dati fa le sue query dentro un
@@ -50,8 +42,6 @@ export default async function HomePage() {
     getTranslations("guestOnboarding"),
     auth(),
   ]);
-  const storia = t.raw("storia") as StoriaItem[];
-  const values = t.raw("values") as ValueItem[];
 
   const userId = userSession?.user?.id ?? null;
   const appRole = userSession?.user?.appRole ?? null;
@@ -85,112 +75,13 @@ export default async function HomePage() {
       }}
     >
       <Container maxWidth="lg">
-        {/* Valori */}
         <Box sx={{ mb: 8 }}>
-          <Typography variant="overline" color="text.secondary">
-            {t("whoWeAre")}
-          </Typography>
-          <Typography
-            variant="h4"
-            component="h2"
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
-          >
-            {t("whatWeBelieve")}
-          </Typography>
-          <Grid container spacing={2}>
-            {[FavoriteIcon, GroupsIcon, EmojiEventsIcon, LocationOnIcon].map((Icon, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6 }}>
-                <Paper
-                  elevation={0}
-                  sx={{ p: 3, border: "1px solid", borderColor: "divider", height: "100%" }}
-                >
-                  <Box sx={{ color: "primary.main", mb: 1.5 }}>
-                    <Icon sx={{ fontSize: 32 }} />
-                  </Box>
-                  <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
-                    {values[i]?.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                    {values[i]?.body}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
+          <ClubValues />
         </Box>
 
         <Divider sx={{ mb: 8 }} />
 
-        {/* Storia */}
-        <Box>
-          <Typography variant="overline" color="text.secondary">
-            {t("ourHistory")}
-          </Typography>
-          <Typography
-            variant="h4"
-            component="h2"
-            sx={{ mt: 0.5, mb: 3, fontSize: { xs: TYPE_SCALE.xl2, md: TYPE_SCALE.xl3 } }}
-          >
-            {t("tenYears")}
-          </Typography>
-          <Stack spacing={0}>
-            {storia.map((item, i) => (
-              <Box key={item.anno} sx={{ display: "flex", gap: 3 }}>
-                {/* Timeline line */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "50%",
-                      backgroundColor: "primary.fill",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <StarIcon sx={{ color: "common.white", fontSize: 18 }} />
-                  </Box>
-                  {i < storia.length - 1 && (
-                    // Server Component: niente sx a funzione (non serializzabile) →
-                    // token stringa theme-aware per la linea della timeline
-                    <Box sx={{ width: 2, flex: 1, bgcolor: "divider", my: 0.5 }} />
-                  )}
-                </Box>
-                {/* Content */}
-                <Box sx={{ pb: i < storia.length - 1 ? 4 : 0 }}>
-                  <Typography
-                    // L'anno e' testo, non un'icona decorativa: neutro (UX-29).
-                    variant="caption"
-                    color="text.secondary"
-                    fontWeight={FONT_WEIGHT.semibold}
-                    sx={{ textTransform: "uppercase", letterSpacing: "0.08em" }}
-                  >
-                    {item.anno}
-                  </Typography>
-                  <Typography variant="subtitle1" component="h3" sx={{ mt: 0.25, mb: 0.75 }}>
-                    {item.titolo}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ lineHeight: 1.75, maxWidth: 560 }}
-                  >
-                    {item.testo}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Stack>
-        </Box>
+        <ClubHistory />
       </Container>
     </Box>
   );

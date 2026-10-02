@@ -1,5 +1,6 @@
 "use client";
 
+import { CLUB_AFFILIATION } from "@/lib/clubContacts";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -382,7 +383,7 @@ export default function ContattiPage() {
                   <br />
                   C.F. 04301440246
                   <br />
-                  Affiliata ENSI ETS, nr. VEN10
+                  Affiliata {CLUB_AFFILIATION}
                 </Typography>
               </Grid>
             </Grid>

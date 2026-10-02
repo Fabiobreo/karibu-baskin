@@ -326,6 +326,7 @@ async function main() {
         ["marcatori", "/marcatori"],
         ["giocatore", playerProfile],
         ["il-baskin", "/il-baskin"],
+        ["il-club", "/il-club"],
         ["contatti", "/contatti"],
         ["login", "/login"],
         ["eventi", "/eventi"],

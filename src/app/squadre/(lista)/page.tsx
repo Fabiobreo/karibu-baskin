@@ -1,15 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
-import {
-  Box,
-  Container,
-  Typography,
-  Grid2 as Grid,
-  Paper,
-  Chip,
-  Divider,
-  Button,
-} from "@mui/material";
+import { Box, Container, Typography, Grid2 as Grid, Paper, Chip, Button } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import { alpha } from "@mui/material/styles";
 import PageHero from "@/components/common/PageHero";
@@ -45,12 +36,6 @@ export const revalidate = 3600;
 
 export default async function SquadrePage() {
   const [t, tCommon] = await Promise.all([getTranslations("teams"), getTranslations("common")]);
-  const STATS = [
-    { value: "2015", label: t("foundingYear") },
-    { value: "80+", label: t("registeredAthletes") },
-    { value: "2", label: t("teamsInField") },
-    { value: "1°", label: t("regionalTitle") },
-  ];
   const [teams, { activeSeason, displaySeason, isFallback }] = await Promise.all([
     prisma.competitiveTeam.findMany({
       // La Karibu di stagione è solo una scelta dello staff: niente pagina pubblica.
@@ -70,45 +55,6 @@ export default async function SquadrePage() {
 
       <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
         <Box sx={columnSx("main")}>
-          {/* Stats */}
-          <Grid container spacing={2} sx={{ mb: 7 }}>
-            {STATS.map((s) => (
-              <Grid key={s.label} size={{ xs: 6, md: 3 }}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2.5,
-                    textAlign: "center",
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  <Typography
-                    variant="h4"
-                    component="p"
-                    color="text.primary"
-                    sx={{ fontSize: { xs: TYPE_SCALE.xl3, md: TYPE_SCALE.xl4 } }}
-                  >
-                    {s.value}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      fontWeight: FONT_WEIGHT.semibold,
-                    }}
-                  >
-                    {s.label}
-                  </Typography>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-
-          <Divider sx={{ mb: 7 }} />
-
           {/* Squadre stagione corrente */}
           {currentTeams.length === 0 ? (
             <EmptyState
@@ -173,7 +119,8 @@ export default async function SquadrePage() {
                 </Typography>
               </Box>
             </Box>
-            <Button href="/squadre/sfida" variant="contained">
+            {/* Secondario: l'azione principale della pagina è l'invito in fondo. */}
+            <Button href="/squadre/sfida" variant="outlined">
               {t("simChallengeCta")}
             </Button>
           </Box>
@@ -272,8 +219,10 @@ function TeamGrid({
                   border: "1px solid",
                   borderColor: "divider",
                   cursor: "pointer",
-                  transition: "all 0.15s",
-                  ...onHover({ transform: "translateY(-3px)", boxShadow: 4, opacity: 1 }),
+                  transition: "border-color 0.15s",
+                  // Card cliccabile: al passaggio prende il bordo arancio, niente
+                  // ombra né sollevamento (come le altre card del sito).
+                  ...onHover({ borderColor: "primary.main" }),
                 }}
               >
                 <Box

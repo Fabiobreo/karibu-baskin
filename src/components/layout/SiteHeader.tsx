@@ -157,7 +157,8 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
     pathname === "/classifiche" ||
     pathname === "/marcatori" ||
     (pathname?.startsWith("/partite") ?? false);
-  const squadreActive = pathname?.startsWith("/squadre") ?? false;
+  // "Chi siamo" (`/il-club`) sta nel menu Squadre (UX-36b).
+  const squadreActive = (pathname?.startsWith("/squadre") ?? false) || pathname === "/il-club";
   const ilBaskinActive = pathname === "/il-baskin" || pathname === "/gallery";
   const contattiActive = pathname === "/contatti" || pathname === "/faq" || pathname === "/sponsor";
 
@@ -171,12 +172,13 @@ export default function SiteHeader({ currentSeason }: SiteHeaderProps) {
   });
   const currentTeams = (allTeams ?? []).filter((t) => t.season === currentSeason);
   const squadreLinks = [
-    { label: t("whoWeAre"), href: "/squadre" },
+    { label: t("allTeams"), href: "/squadre" },
     ...currentTeams.map((team) => ({
       label: team.name,
       href: `/squadre/${currentSeason.replace("-", "")}/${slugify(team.name)}`,
     })),
     { label: t("archive"), href: "/squadre/archivio" },
+    { label: t("whoWeAre"), href: "/il-club" },
   ];
 
   const { data: session, status } = useSession();

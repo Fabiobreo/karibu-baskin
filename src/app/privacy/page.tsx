@@ -3,6 +3,7 @@ import { Container, Typography, Box, Paper, Divider } from "@mui/material";
 import { columnSx } from "@/lib/layout";
 import Link from "next/link";
 import { SITE_HOST } from "@/lib/siteUrl";
+import { CLUB_AFFILIATION } from "@/lib/clubContacts";
 import { buildMetadata } from "@/lib/seo";
 import PageHero from "@/components/common/PageHero";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
@@ -33,7 +34,7 @@ export default function PrivacyPage() {
                 Il titolare del trattamento dei dati personali è{" "}
                 <strong>ASD Karibu Baskin Montecchio Maggiore</strong>, codice fiscale 04301440246,
                 con sede operativa presso il Polisportivo Gino Cosaro, Via del Vigo 11, 36075
-                Montecchio Maggiore (VI), affiliata ENSI ETS nr. VEN10.
+                Montecchio Maggiore (VI), affiliata {CLUB_AFFILIATION}.
               </P>
               <P>
                 Per qualsiasi richiesta inerente il trattamento dei dati personali è possibile
@@ -110,7 +111,7 @@ export default function PrivacyPage() {
                   6, par. 1, lett. f) (legittimo interesse del titolare).
                 </Li>
                 <Li>
-                  <strong>Adempimenti di legge</strong> (es. obblighi associativi ENSI ETS,
+                  <strong>Adempimenti di legge</strong> (es. obblighi associativi EISI ETS,
                   fiscali): base giuridica art. 6, par. 1, lett. c).
                 </Li>
               </Ul>

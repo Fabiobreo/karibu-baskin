@@ -253,6 +253,7 @@
     "scorers": "Top scorers",
     "teams": "Teams",
     "whoWeAre": "About us",
+    "allTeams": "All teams",
     "archive": "Archive",
     "baskin": "Baskin",
     "whatIsBaskin": "What is Baskin",
@@ -411,8 +412,8 @@
     "countdownIn": "In {time}"
   },
   "teams": {
-    "heroTitle": "ASD Karibu Baskin",
-    "heroSubtitle": "Founded in 2015 in Montecchio Maggiore. Over 80 athletes, 2 teams in Veneto championships.",
+    "heroTitle": "Teams",
+    "heroSubtitle": "The Karibu teams, season by season: rosters, matches and results.",
     "currentSeasonChip": "Ongoing",
     "ourTeams": "Our teams",
     "noTeams": "No teams registered",
@@ -427,10 +428,6 @@
     "leaderAvg": "{avg}/game",
     "athleteCount": "{count, plural, one {# athlete} other {# athletes}}",
     "matchCount": "{count, plural, one {# match} other {# matches}}",
-    "foundingYear": "Founded",
-    "registeredAthletes": "Registered athletes",
-    "teamsInField": "Active teams",
-    "regionalTitle": "Regional title 2018",
     "archiveTitle": "Teams archive",
     "archiveSubtitle": "All Karibu Baskin teams from past seasons.",
     "archiveEmpty": "No previous seasons",
@@ -1533,5 +1530,20 @@
     "tier_silver": "Silver",
     "tier_gold": "Gold",
     "tierExplain": "The border colour tells you how hard the achievement is. Gold is the hardest."
+  },
+  "club": {
+    "heroTitle": "About us",
+    "heroSubtitle": "ASD Karibu Baskin: inclusive basketball in Montecchio Maggiore since 2015.",
+    "intro": "Karibu Baskin is a sports club in Montecchio Maggiore, in the province of Vicenza. We play Baskin: a form of basketball where people with and without disabilities are on court together, in the same team.",
+    "baskinCta": "How Baskin is played",
+    "teamsTitle": "Our teams",
+    "teamsBody": "Rosters, matches and results, season by season.",
+    "teamsCta": "See the teams",
+    "associationTitle": "The association",
+    "legalName": "Name",
+    "taxId": "Tax ID",
+    "affiliation": "Affiliation",
+    "venue": "Where we are",
+    "contactCta": "Contacts"
   }
 }

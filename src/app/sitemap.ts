@@ -22,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/classifiche`, priority: 0.75, changeFrequency: "weekly" },
     { url: `${BASE}/marcatori`, priority: 0.7, changeFrequency: "weekly" },
     { url: `${BASE}/il-baskin`, priority: 0.6, changeFrequency: "monthly" },
+    { url: `${BASE}/il-club`, priority: 0.6, changeFrequency: "monthly" },
     { url: `${BASE}/news`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/eventi`, priority: 0.6, changeFrequency: "weekly" },
     { url: `${BASE}/gallery`, priority: 0.55, changeFrequency: "weekly" },

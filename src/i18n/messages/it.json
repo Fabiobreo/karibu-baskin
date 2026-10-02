@@ -253,6 +253,7 @@
     "scorers": "Marcatori",
     "teams": "Squadre",
     "whoWeAre": "Chi siamo",
+    "allTeams": "Tutte le squadre",
     "archive": "Archivio",
     "baskin": "Il Baskin",
     "whatIsBaskin": "Cos'è il Baskin",
@@ -411,8 +412,8 @@
     "countdownIn": "Tra {time}"
   },
   "teams": {
-    "heroTitle": "ASD Karibu Baskin",
-    "heroSubtitle": "Nati nel 2015 a Montecchio Maggiore. Oltre 80 atleti, 2 squadre nei campionati veneti.",
+    "heroTitle": "Squadre",
+    "heroSubtitle": "Le squadre del Karibu, stagione per stagione: rose, partite e risultati.",
     "currentSeasonChip": "In corso",
     "ourTeams": "Le nostre squadre",
     "noTeams": "Nessuna squadra registrata",
@@ -427,10 +428,6 @@
     "leaderAvg": "{avg}/partita",
     "athleteCount": "{count, plural, one {# atleta} other {# atleti}}",
     "matchCount": "{count, plural, one {# partita} other {# partite}}",
-    "foundingYear": "Anno di fondazione",
-    "registeredAthletes": "Atleti tesserati",
-    "teamsInField": "Squadre in campo",
-    "regionalTitle": "Titolo regionale 2018",
     "archiveTitle": "Archivio squadre",
     "archiveSubtitle": "Tutte le squadre Karibu Baskin dalle stagioni passate.",
     "archiveEmpty": "Nessuna stagione precedente",
@@ -1533,5 +1530,20 @@
     "tier_silver": "Argento",
     "tier_gold": "Oro",
     "tierExplain": "Il colore del bordo dice quanto è difficile il traguardo. L'oro è il più difficile."
+  },
+  "club": {
+    "heroTitle": "Chi siamo",
+    "heroSubtitle": "ASD Karibu Baskin: basket inclusivo a Montecchio Maggiore dal 2015.",
+    "intro": "Il Karibu Baskin è un'associazione sportiva di Montecchio Maggiore, in provincia di Vicenza. Giochiamo a Baskin: un basket in cui persone con e senza disabilità stanno in campo insieme, nella stessa squadra.",
+    "baskinCta": "Come si gioca a Baskin",
+    "teamsTitle": "Le nostre squadre",
+    "teamsBody": "Rose, partite e risultati, stagione per stagione.",
+    "teamsCta": "Vedi le squadre",
+    "associationTitle": "L'associazione",
+    "legalName": "Nome",
+    "taxId": "Codice fiscale",
+    "affiliation": "Affiliazione",
+    "venue": "Dove siamo",
+    "contactCta": "Contatti"
   }
 }

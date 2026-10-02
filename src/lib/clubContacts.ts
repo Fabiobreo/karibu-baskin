@@ -5,6 +5,8 @@
 export const CLUB_LEGAL_NAME = "ASD Karibu Baskin Montecchio Maggiore";
 export const CLUB_EMAIL = "asdkaribubaskin@gmail.com";
 export const CLUB_TAX_ID = "04301440246";
+/** Ente di affiliazione e numero, come li dichiara il club. */
+export const CLUB_AFFILIATION = "EISI ETS, nr. VEN10";
 
 export const CLUB_PHONES = [
   { name: "Elisa", label: "349 297 2703", href: "tel:+393492972703" },
