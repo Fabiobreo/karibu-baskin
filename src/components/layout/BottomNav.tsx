@@ -11,6 +11,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useSession } from "next-auth/react";
 import { useNotifications } from "@/context/NotificationContext";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { isStandaloneApp, previousHistoryPath, tabNavigationAction } from "@/lib/tabNavigation";
 
 export default function BottomNav() {
   const t = useTranslations("nav");
@@ -41,6 +42,21 @@ export default function BottomNav() {
     : "?";
   const visibleCount = mounted ? unreadCount : 0;
 
+  // Nell'app installata le schede non si accumulano nella cronologia: il gesto
+  // indietro di Android torna alla Home e poi esce (regole in tabNavigation).
+  function goToTab(value: string) {
+    const target = value === "/profilo" && status === "unauthenticated" ? "/login" : value;
+    const action = tabNavigationAction({
+      standalone: isStandaloneApp(),
+      currentPath: pathname,
+      target,
+      previousPath: previousHistoryPath(),
+    });
+    if (action.kind === "back") router.back();
+    else if (action.kind === "replace") router.replace(action.href);
+    else router.push(action.href);
+  }
+
   return (
     <Paper
       component="nav"
@@ -59,7 +75,7 @@ export default function BottomNav() {
     >
       <BottomNavigation
         value={active}
-        onChange={(_e, val: string) => router.push(val)}
+        onChange={(_e, val: string) => goToTab(val)}
         // Etichetta su ogni voce, non solo su quella attiva: le icone da sole
         // non si capiscono (UX-06).
         showLabels
@@ -125,9 +141,6 @@ export default function BottomNav() {
           }
           value="/profilo"
           aria-current={active === "/profilo" ? "page" : undefined}
-          onClick={() => {
-            if (status === "unauthenticated") router.push("/login");
-          }}
           icon={
             status === "authenticated" && user ? (
               <Avatar

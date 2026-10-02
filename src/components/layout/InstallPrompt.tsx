@@ -7,6 +7,7 @@ import InstallMobileIcon from "@mui/icons-material/InstallMobile";
 import AddBoxOutlinedIcon from "@mui/icons-material/AddBoxOutlined";
 import { useTranslations } from "next-intl";
 import { useHasMounted } from "@/lib/useHasMounted";
+import { isStandaloneApp as isStandalone } from "@/lib/tabNavigation";
 import { RADIUS } from "@/lib/radius";
 import {
   INSTALL_STATE_KEY,
@@ -62,14 +63,6 @@ function cookieBannerClosed(): boolean {
   } catch {
     return true;
   }
-}
-
-function isStandalone(): boolean {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    // iOS Safari espone questo flag non standard
-    (navigator as Navigator & { standalone?: boolean }).standalone === true
-  );
 }
 
 function isIosSafari(): boolean {

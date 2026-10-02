@@ -462,6 +462,8 @@ Service worker (`public/sw.js`, versione `karibu-v11`), registrato **solo in pro
 
 Tre regole da non violare: il worker **non inventa risposte** (niente 503 sintetici, l'errore si propaga: una risposta finta viene scambiata per valida e rende stati vuoti falsi); le scritture in cache stanno in `event.waitUntil` e **non possono alterare la risposta**; niente `skipWaiting()` automatico, l'aggiornamento lo accetta l'utente da `SwUpdateToast`. Il logout svuota le cache di pagine e API (`purgeServiceWorkerCaches` in `@/lib/swCachePurge`). Alzare `VERSION` cancella dai dispositivi le cache delle versioni precedenti. Test in `src/lib/serviceWorker.test.ts`.
 
+**Gesto indietro nell'app installata:** la barra in basso (`BottomNav`) non accumula le schede nella cronologia, come le app Android native: dalla Home a una scheda aggiunge una voce, fra le schede sostituisce, alla Home torna indietro se sotto c'è la Home. Così indietro porta alla Home e poi esce. Vale solo con `display-mode: standalone`; nel browser ogni tocco resta una voce. Regole in `@/lib/tabNavigation` (`tabNavigationAction`, testata). I link nelle pagine continuano ad aggiungere voci.
+
 Pagine pre-cachate all'installazione: `/`, `/il-baskin`, `/squadre`, `/contatti`, `/sponsor`. (Mai precachare un redirect come `/la-squadra`: una risposta "redirected" salvata in cache non combacia più in lettura.)
 
 ## Pagina allenamento (`/allenamento/[sessionId]`)
