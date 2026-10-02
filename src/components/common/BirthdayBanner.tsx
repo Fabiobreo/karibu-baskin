@@ -1,44 +1,21 @@
-import { prisma } from "@/lib/db";
 import { withDbRetry } from "@/lib/dbRetry";
+import { loadTodayCelebrants } from "@/lib/birthdays";
 import { Box, Container, Typography } from "@mui/material";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { heroGradient, heroText } from "@/lib/heroStyles";
 import { BRAND } from "@/lib/palette";
-import { PUBLIC_PROFILE_SELECT, withProfileLink } from "@/lib/publicProfile";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export default async function BirthdayBanner() {
-  const now = new Date();
-  const todayMonth = now.getMonth() + 1;
-  const todayDay = now.getDate();
-
-  const [t, users] = await Promise.all([
+  // Account e figli senza account, con la stessa regola della notifica del
+  // cron. Anche i genitori ricevono gli auguri, ma senza link se non hanno un
+  // profilo pubblico (`slug` null).
+  const [t, celebrants] = await Promise.all([
     getTranslations("home"),
-    withDbRetry(() =>
-      prisma.user.findMany({
-        where: { birthDate: { not: null }, appRole: { not: "GUEST" }, slug: { not: null } },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          birthDate: true,
-          sportRole: true,
-          ...PUBLIC_PROFILE_SELECT,
-        },
-      })
-    ),
+    withDbRetry(() => loadTodayCelebrants()),
   ]);
-
-  // Anche i genitori ricevono gli auguri, ma senza link se non hanno un
-  // profilo pubblico (`slug` null, vedi withProfileLink).
-  const celebrants = users
-    .filter((u) => {
-      const d = new Date(u.birthDate!);
-      return d.getMonth() + 1 === todayMonth && d.getDate() === todayDay;
-    })
-    .map(withProfileLink);
 
   if (celebrants.length === 0) return null;
 
@@ -91,7 +68,7 @@ export default async function BirthdayBanner() {
               <>
                 {t("birthdayPlural")}{" "}
                 {celebrants.map((c, i) => (
-                  <span key={c.id}>
+                  <span key={c.key}>
                     {i > 0 && (i === celebrants.length - 1 ? " e " : ", ")}
                     {c.slug ? (
                       <Link

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
+import { loadTodayCelebrants } from "@/lib/birthdays";
 import { sendPushToUsers } from "@/lib/notifications/webpush";
 import { createTargetedAppNotifications } from "@/lib/notifications/appNotifications";
 
@@ -18,20 +19,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
   }
 
-  const now = new Date();
-  const todayMonth = now.getMonth() + 1; // 1-12
-  const todayDay = now.getDate();
-
-  // Recupera tutti gli utenti con birthDate impostata (non guest)
-  const users = await prisma.user.findMany({
-    where: { birthDate: { not: null }, appRole: { not: "GUEST" } },
-    select: { id: true, name: true, birthDate: true },
-  });
-
-  const celebrants = users.filter((u) => {
-    const d = new Date(u.birthDate!);
-    return d.getMonth() + 1 === todayMonth && d.getDate() === todayDay;
-  });
+  // Account e figli senza account: stessa lista del banner in home.
+  const celebrants = await loadTodayCelebrants();
 
   if (celebrants.length === 0) {
     return NextResponse.json({ sent: 0 });
