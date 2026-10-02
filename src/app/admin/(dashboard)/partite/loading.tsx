@@ -1,9 +1,9 @@
-import { Container, Skeleton, Stack, Box } from "@mui/material";
+import { Skeleton, Stack, Box } from "@mui/material";
 import { RADIUS } from "@/lib/radius";
 
 export default function Loading() {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box>
       <Skeleton variant="text" width={220} height={44} sx={{ mb: 3 }} />
       <Stack spacing={2}>
         {Array.from({ length: 4 }).map((_, i) => (
@@ -19,6 +19,6 @@ export default function Loading() {
           </Box>
         ))}
       </Stack>
-    </Container>
+    </Box>
   );
 }

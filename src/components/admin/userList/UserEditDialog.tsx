@@ -24,6 +24,8 @@ import type { AppRole } from "@prisma/client";
 import { SPORT_ROLE_VARIANT_LABELS, sportRoleLabel, ATHLETE_STATUS_LABELS } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
 import { useToast } from "@/context/ToastContext";
+import { assignableAppRoles } from "@/lib/authRoles";
+import { readError } from "@/lib/fetchJson";
 import {
   AppRoleChip,
   type AdminRow,
@@ -49,6 +51,8 @@ interface EditState {
 interface UserEditDialogProps {
   row: AdminRow;
   isAdmin: boolean;
+  /** Chi sta guardando: nessuno cambia il proprio ruolo utente. */
+  currentUserId?: string | null;
   teams: TeamInfo[];
   currentSeason: string;
   onClose: () => void;
@@ -63,6 +67,7 @@ interface UserEditDialogProps {
 export default function UserEditDialog({
   row,
   isAdmin,
+  currentUserId = null,
   teams,
   currentSeason,
   onClose,
@@ -85,6 +90,17 @@ export default function UserEditDialog({
   );
   const [saving, setSaving] = useState(false);
 
+  // I ruoli utente fra cui chi guarda può scegliere (stessa regola dell'API):
+  // l'allenatore approva solo gli ospiti, nessuno cambia il proprio.
+  const roleOptions =
+    row.kind === "user"
+      ? assignableAppRoles({
+          actorRole: isAdmin ? "ADMIN" : "COACH",
+          isSelf: row.id === currentUserId,
+          current: row.appRole,
+        })
+      : [];
+
   async function handleSave() {
     setSaving(true);
     const payload: Record<string, unknown> = {
@@ -95,7 +111,7 @@ export default function UserEditDialog({
       athleteStatus: editState.athleteStatus || null,
     };
     if (editState.name.trim()) payload.name = editState.name.trim();
-    if (row.kind === "user" && editState.appRole) {
+    if (row.kind === "user" && editState.appRole && editState.appRole !== row.appRole) {
       payload.appRole = editState.appRole;
     }
     if (row.kind === "user" && editState.email.trim() && editState.email.trim() !== row.email) {
@@ -108,8 +124,9 @@ export default function UserEditDialog({
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
+      const message = await readError(res);
       setSaving(false);
-      showToast({ message: "Errore nel salvataggio", severity: "error" });
+      showToast({ message, severity: "error" });
       return;
     }
 
@@ -353,15 +370,29 @@ export default function UserEditDialog({
                 fullWidth
                 size="small"
                 value={editState.appRole}
+                disabled={roleOptions.length <= 1}
+                inputProps={{ "aria-label": "Ruolo utente" }}
                 onChange={(e) => setEditState((s) => ({ ...s, appRole: e.target.value }))}
                 renderValue={(val) => <AppRoleChip role={val as AppRole} />}
               >
-                {(["GUEST", "ATHLETE", "PARENT", "COACH", "ADMIN"] as AppRole[]).map((r) => (
+                {roleOptions.map((r) => (
                   <MenuItem key={r} value={r}>
                     <AppRoleChip role={r} />
                   </MenuItem>
                 ))}
               </Select>
+              {roleOptions.length <= 1 && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  display="block"
+                  sx={{ mt: 0.5 }}
+                >
+                  {row.id === currentUserId
+                    ? "Il proprio ruolo non si cambia: lo fa un altro admin."
+                    : "Il ruolo utente lo cambia un admin."}
+                </Typography>
+              )}
             </Box>
           )}
 
@@ -468,6 +499,8 @@ export default function UserEditDialog({
                 size="small"
                 displayEmpty
                 value={editTeamId}
+                disabled={!isAdmin}
+                inputProps={{ "aria-label": "Squadra" }}
                 onChange={(e) => setEditTeamId(e.target.value)}
               >
                 <MenuItem value="">

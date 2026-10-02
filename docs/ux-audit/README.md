@@ -96,7 +96,7 @@ Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono mi
 | [UX-37](tickets/UX-37-griglia-e-righe.md)           | Griglia unica e righe partita a colonne fisse                                      | M     | UX-32        |
 | [UX-38](tickets/UX-38-copertine-e-stati-vuoti.md)   | Copertine tipografiche e stati vuoti compatti                                      | S     | UX-19        |
 | [UX-39](tickets/UX-39-footer-e-nastro-sponsor.md)   | Footer a tre colonne e nastro sponsor normalizzato                                 | M     |              |
-| [UX-40](tickets/UX-40-admin.md)                     | Admin: header ridotto, tab, azioni fuori dalle righe, linguaggio, target           | L     | UX-32        |
+| [UX-40](tickets/UX-40-admin.md)                     | Admin: una barra sola e menu, azioni fuori dalle righe, linguaggio, target         | L     | UX-32        |
 | [UX-41](tickets/UX-41-il-baskin-schema.md)          | `/il-baskin` con uno schema del campo                                              | M     | UX-21, UX-29 |
 | [UX-42](tickets/UX-42-area-utente.md)               | Area utente: notifiche, profilo, selettore "per chi"                               | S     | UX-32        |
 | [UX-43](tickets/UX-43-allenamenti-card-evidenza.md) | `/allenamenti`: card in evidenza in un tono solo, "Gestisci" sulla riga del titolo | S     | UX-32        |
@@ -114,9 +114,8 @@ Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando
 
 | #   | Ticket | Perché in questa posizione                                   | In attesa di                                    |
 | --- | ------ | ------------------------------------------------------------ | ----------------------------------------------- |
-| 1   | UX-40  | Admin (PR separate per punto)                                |                                                 |
-| 2   | UX-42  | Area utente                                                  |                                                 |
-| 3   | UX-36b | `/squadre` solo squadre e pagina "Il club" (da UX-36, 01/10) | Testi del club; quale numero di atleti mostrare |
+| 1   | UX-42  | Area utente                                                  |                                                 |
+| 2   | UX-36b | `/squadre` solo squadre e pagina "Il club" (da UX-36, 01/10) | Testi del club; quale numero di atleti mostrare |
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 

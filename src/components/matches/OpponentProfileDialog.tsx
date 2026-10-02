@@ -247,7 +247,7 @@ export default function OpponentProfileDialog({
             display="block"
             mb={1}
           >
-            Forza complessiva stimata (usata per il Match Quality Score)
+            Forza dell&apos;avversaria (serve a stimare quanto sarà equilibrata la partita)
           </Typography>
           <ToggleButtonGroup
             exclusive
@@ -268,7 +268,8 @@ export default function OpponentProfileDialog({
           </ToggleButtonGroup>
           {strengthPreset === null && (
             <Typography variant="caption" color="text.secondary" display="block" mt={0.75}>
-              Non impostata: il Match Quality Score non sarà disponibile per questa squadra.
+              Non impostata: contro questa squadra non si può stimare l&apos;equilibrio della
+              partita.
             </Typography>
           )}
         </Box>

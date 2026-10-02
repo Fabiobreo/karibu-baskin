@@ -20,7 +20,7 @@ export default async function AdminEventiPage() {
   return (
     <>
       <PageHeader
-        title="Gestione Eventi"
+        title="Eventi"
         subtitle="Tornei, trasferte e altri eventi del club."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Eventi" }]}
       />

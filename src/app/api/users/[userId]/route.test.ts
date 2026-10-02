@@ -228,6 +228,69 @@ describe("PATCH /api/users/[userId]", () => {
     );
   });
 
+  describe("chi può assegnare un ruolo utente", () => {
+    function asCoach() {
+      mockAuth.mockResolvedValue({ user: { id: "coach-1" } });
+      mockIsAdmin.mockResolvedValue(false);
+    }
+
+    it("l'allenatore non può promuovere ad admin", async () => {
+      asCoach();
+      const [req, ctx] = makePATCH("user-1", { appRole: "ADMIN" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(403);
+      expect(p.user.update).not.toHaveBeenCalled();
+    });
+
+    it("l'allenatore non può promuovere sé stesso", async () => {
+      asCoach();
+      p.user.findUnique.mockResolvedValue({ ...baseUser, id: "coach-1", appRole: "COACH" });
+      const [req, ctx] = makePATCH("coach-1", { appRole: "ADMIN" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(403);
+      expect(p.user.update).not.toHaveBeenCalled();
+    });
+
+    it("l'allenatore non cambia il ruolo di un tesserato", async () => {
+      asCoach();
+      const [req, ctx] = makePATCH("user-1", { appRole: "PARENT" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(403);
+    });
+
+    it("l'allenatore approva un ospite come atleta", async () => {
+      asCoach();
+      p.user.findUnique.mockResolvedValue({ ...baseUser, appRole: "GUEST" });
+      p.user.update.mockResolvedValue({ ...baseUser, appRole: "ATHLETE" });
+      const [req, ctx] = makePATCH("user-1", { appRole: "ATHLETE" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(200);
+    });
+
+    it("l'allenatore salva la scheda se il ruolo resta uguale", async () => {
+      asCoach();
+      const [req, ctx] = makePATCH("user-1", { appRole: "ATHLETE", gender: null });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(200);
+    });
+
+    it("l'admin non cambia il proprio ruolo", async () => {
+      p.user.findUnique.mockResolvedValue({ ...baseUser, id: "admin-1", appRole: "ADMIN" });
+      const [req, ctx] = makePATCH("admin-1", { appRole: "COACH" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(403);
+      expect(p.user.update).not.toHaveBeenCalled();
+    });
+
+    it("risponde 404 se la persona non esiste", async () => {
+      p.user.findUnique.mockResolvedValue(null);
+      const [req, ctx] = makePATCH("non-existent", { appRole: "COACH" });
+      const res = await PATCH(req, ctx);
+      expect(res.status).toBe(404);
+      expect(p.user.update).not.toHaveBeenCalled();
+    });
+  });
+
   it("restituisce 404 se l'utente non esiste (P2025)", async () => {
     const p2025 = new Prisma.PrismaClientKnownRequestError("Record not found", {
       code: "P2025",

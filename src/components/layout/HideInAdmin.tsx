@@ -17,3 +17,10 @@ export default function HideInAdmin({ children }: { children: ReactNode }) {
   if (isAdminPath(pathname)) return null;
   return <>{children}</>;
 }
+
+/** Il contrario: mostra il contenuto solo nel pannello admin (UX-40). */
+export function OnlyInAdmin({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  if (!isAdminPath(pathname)) return null;
+  return <>{children}</>;
+}

@@ -10,6 +10,7 @@ import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { ATHLETE_STATUS_LABELS, ROLE_LABELS_IT, sportRoleLabel } from "@/lib/constants";
 import { TYPE_SCALE } from "@/lib/typeScale";
+import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 import { teamColor } from "@/lib/teamColors";
 import TeamChip from "@/components/teams/TeamChip";
@@ -52,8 +53,6 @@ export interface UserEntry {
   gender: Gender | null;
   birthDate: Date | string | null;
   athleteStatus: AthleteStatus | null;
-  ratingMu: number | null;
-  ratingSigma: number | null;
   createdAt: Date | string;
   _count: { registrations: number };
   sportRoleHistory: RoleHistoryEntry[];
@@ -72,8 +71,6 @@ export interface ChildEntry {
   gender: Gender | null;
   birthDate: Date | string | null;
   athleteStatus: AthleteStatus | null;
-  ratingMu: number | null;
-  ratingSigma: number | null;
   createdAt: Date | string;
   /** Genitori collegati, nell'ordine di collegamento. */
   guardians: { id: string; name: string | null; email: string }[];
@@ -125,6 +122,7 @@ export function filterChipSx(active: boolean, fill?: { bgcolor?: string; color?:
 }
 
 export const TOGGLE_SX = {
+  ...TOUCH_TARGET_ON_PHONE,
   px: 1.5,
   fontSize: TYPE_SCALE.xs,
   "&.Mui-selected": { fontWeight: FONT_WEIGHT.semibold, color: "text.primary" },
@@ -201,6 +199,7 @@ export function TeamCellSelect({
   memberships,
   onChange,
   ariaLabel,
+  readOnly = false,
 }: {
   value: string;
   teams: TeamInfo[];
@@ -208,7 +207,20 @@ export function TeamCellSelect({
   onChange: (teamId: string) => void;
   /** Nome accessibile: nella riga di una tabella la select non ha etichetta visibile. */
   ariaLabel: string;
+  /** Solo l'admin assegna le squadre: agli allenatori la squadra si mostra e basta. */
+  readOnly?: boolean;
 }) {
+  if (readOnly) {
+    const team =
+      teams.find((t) => t.id === value) ?? memberships.find((m) => m.teamId === value)?.team;
+    return team ? (
+      <TeamChip name={team.name} color={team.color} />
+    ) : (
+      <Typography variant="body2" color="text.secondary" component="span">
+        —
+      </Typography>
+    );
+  }
   return (
     <Select
       value={value}

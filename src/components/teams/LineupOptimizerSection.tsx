@@ -22,7 +22,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import HeightIcon from "@mui/icons-material/Height";
 import { roleColorSx } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import { TRUESKILL } from "@/lib/rating/trueskill";
+import { displayLevel, formationStrength } from "@/lib/rating/staffLevel";
 import { optimizeLineup } from "@/lib/rating/lineupOptimizer";
 import type { CandidateInput } from "@/lib/matches/callupStats";
 import type { LineupResult, RoleDepthEntry } from "@/lib/rating/lineupOptimizer";
@@ -30,7 +30,7 @@ import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
-// Gap μ oltre il quale scatta il warning rischio falli
+// Divario di livello fra titolare e riserva oltre il quale si avvisa del rischio di falli
 const GAP_WARNING_THRESHOLD = 6;
 
 interface Props {
@@ -73,11 +73,11 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
           fontWeight={FONT_WEIGHT.bold}
           sx={{ flex: 1, letterSpacing: "0.02em" }}
         >
-          Analisi Formazione
+          Analisi della formazione
         </Typography>
         {result && (
           <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
-            {result.feasibleCount} formazioni valide
+            {result.feasibleCount} formazioni possibili
           </Typography>
         )}
         <IconButton
@@ -98,13 +98,13 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
             </Typography>
           ) : result === null || result.feasibleCount === 0 ? (
             <Alert severity="warning" sx={{ fontSize: TYPE_SCALE.sm }}>
-              Nessuna formazione valida trovata. Controlla i vincoli regolamentari (R1/R2 esclusivi,
-              somma ruoli ≤ 23, genere su R4/R5).
+              Con questi convocati non c&apos;è una formazione regolare. Controlla i ruoli 1 e 2, la
+              somma dei ruoli (massimo 23) e il genere nei ruoli 4 e 5.
             </Alert>
           ) : (
             <Stack spacing={2.5}>
               {/* Formazione ottimale */}
-              <BestLineupCard lineup={result.topLineups[0]} />
+              <BestLineupCard lineup={result.topLineups[0]} opponentMu={opponentMu} />
 
               {/* Alternative */}
               {result.topLineups.length > 1 && (
@@ -151,7 +151,44 @@ export default function LineupOptimizerSection({ selectedCandidates, opponentMu 
 
 // ── Best lineup card ──────────────────────────────────────────────────────────
 
-function BestLineupCard({ lineup }: { lineup: LineupResult }) {
+/**
+ * Chip della forza di una formazione: il solo numero di livello che lo staff
+ * vede (UX-40), mai accanto a un nome.
+ */
+function StrengthChip({
+  lineup,
+  opponentMu,
+  short = false,
+}: {
+  lineup: LineupResult;
+  opponentMu?: number | null;
+  /** Nelle alternative, dove il chip si ripete: solo "Forza 28". */
+  short?: boolean;
+}) {
+  const strength = formationStrength(lineup.muSum, lineup.players.length);
+  const name = short ? "Forza" : "Forza della formazione";
+  return (
+    <Tooltip title="Media del livello stimato dei sei in campo. Il livello si ricava dai risultati delle partitelle: tutti partono da 25. Lo vede solo lo staff.">
+      <Chip
+        label={
+          opponentMu != null
+            ? `${name} ${strength} · avversario ${displayLevel(opponentMu)}`
+            : `${name} ${strength}`
+        }
+        size="small"
+        sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
+      />
+    </Tooltip>
+  );
+}
+
+function BestLineupCard({
+  lineup,
+  opponentMu,
+}: {
+  lineup: LineupResult;
+  opponentMu: number | null;
+}) {
   const winPct = lineup.winProbability;
   const winLabel =
     winPct == null
@@ -164,15 +201,11 @@ function BestLineupCard({ lineup }: { lineup: LineupResult }) {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, mb: 1.5 }}>
         <Typography variant="overline" fontWeight={FONT_WEIGHT.bold} color="text.secondary">
-          Formazione Ottimale
+          Formazione consigliata
         </Typography>
-        <Chip
-          label={`Σμ ${lineup.muSum.toFixed(1)}`}
-          size="small"
-          sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
-        />
+        <StrengthChip lineup={lineup} opponentMu={opponentMu} />
         {winLabel && (
           <Chip
             label={`${Math.round((winPct ?? 0) * 100)}% · ${winLabel}`}
@@ -224,11 +257,7 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
         <Typography variant="caption" fontWeight={FONT_WEIGHT.semibold} color="text.secondary">
           #{rank}
         </Typography>
-        <Chip
-          label={`Σμ ${lineup.muSum.toFixed(1)}`}
-          size="small"
-          sx={{ fontSize: TYPE_SCALE.xs, height: 20 }}
-        />
+        <StrengthChip lineup={lineup} short />
         {lineup.winProbability != null && (
           <Typography variant="caption" color="text.secondary">
             {Math.round(lineup.winProbability * 100)}% vittoria
@@ -239,24 +268,20 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
         {[...lineup.players]
           .sort((a, b) => (a.sportRole ?? 99) - (b.sportRole ?? 99))
           .map((p) => (
-            <Tooltip
+            <Chip
               key={`${p.kind}-${p.id}`}
-              title={`μ ${(p.ratingMu ?? TRUESKILL.MU).toFixed(1)}`}
-            >
-              <Chip
-                avatar={
-                  <Avatar
-                    src={p.image ?? undefined}
-                    sx={{ bgcolor: "action.selected", color: "text.primary" }}
-                  >
-                    {p.name[0]}
-                  </Avatar>
-                }
-                label={p.name.split(" ")[0]}
-                size="small"
-                sx={{ fontSize: TYPE_SCALE.xs, height: 26 }}
-              />
-            </Tooltip>
+              avatar={
+                <Avatar
+                  src={p.image ?? undefined}
+                  sx={{ bgcolor: "action.selected", color: "text.primary" }}
+                >
+                  {p.name[0]}
+                </Avatar>
+              }
+              label={p.name.split(" ")[0]}
+              size="small"
+              sx={{ fontSize: TYPE_SCALE.xs, height: 26 }}
+            />
           ))}
       </Box>
     </Paper>
@@ -266,7 +291,8 @@ function AlternativeLineupCard({ lineup, rank }: { lineup: LineupResult; rank: n
 // ── Player row ────────────────────────────────────────────────────────────────
 
 function PlayerRow({ player: p }: { player: CandidateInput }) {
-  const mu = (p.ratingMu ?? TRUESKILL.MU).toFixed(1);
+  // Niente numero accanto al nome: si dice solo se il livello non c'è ancora,
+  // perché in quel caso nella forza della formazione vale quello di partenza.
   const hasRating = p.ratingMu != null;
 
   return (
@@ -292,20 +318,13 @@ function PlayerRow({ player: p }: { player: CandidateInput }) {
         {p.name}
       </Typography>
       {p.sportRole && <RoleBadge role={p.sportRole} variant={p.sportRoleVariant} />}
-      <Tooltip title={hasRating ? `Rating TrueSkill μ=${mu}` : "Non ancora valutato (μ default)"}>
-        <Typography
-          variant="caption"
-          fontWeight={FONT_WEIGHT.semibold}
-          sx={{
-            minWidth: 38,
-            textAlign: "right",
-            color: hasRating ? "text.primary" : "text.secondary",
-            fontStyle: hasRating ? "normal" : "italic",
-          }}
-        >
-          μ {mu}
-        </Typography>
-      </Tooltip>
+      {!hasRating && (
+        <Tooltip title="Non ha ancora partitelle con il punteggio: nella forza della formazione vale il livello di partenza.">
+          <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic" }}>
+            non ancora valutato
+          </Typography>
+        </Tooltip>
+      )}
       {p.height != null && (
         <Tooltip title={`Altezza: ${p.height} cm`}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
@@ -331,7 +350,7 @@ function RoleDepthPanel({ entries }: { entries: RoleDepthEntry[] }) {
         color="text.secondary"
         sx={{ display: "block", mb: 1 }}
       >
-        Profondità per Ruolo
+        Titolari e riserve per ruolo
       </Typography>
       <Stack spacing={1}>
         {entries.map((entry) => (
@@ -374,18 +393,17 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
       {/* Titolari */}
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, flex: 1 }}>
         {entry.inLineup.map((p) => (
-          <Tooltip key={`${p.kind}-${p.id}`} title={`μ ${(p.ratingMu ?? TRUESKILL.MU).toFixed(1)}`}>
-            <Chip
-              label={`${p.name.split(" ")[0]} ${(p.ratingMu ?? TRUESKILL.MU).toFixed(0)}`}
-              size="small"
-              sx={{
-                fontSize: TYPE_SCALE.xs,
-                height: 22,
-                bgcolor: "action.selected",
-                color: "text.primary",
-              }}
-            />
-          </Tooltip>
+          <Chip
+            key={`${p.kind}-${p.id}`}
+            label={p.name.split(" ")[0]}
+            size="small"
+            sx={{
+              fontSize: TYPE_SCALE.xs,
+              height: 22,
+              bgcolor: "action.selected",
+              color: "text.primary",
+            }}
+          />
         ))}
       </Box>
 
@@ -417,28 +435,24 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
           </Box>
         ) : (
           entry.onBench.map((p) => (
-            <Tooltip
+            <Chip
               key={`${p.kind}-${p.id}`}
-              title={`μ ${(p.ratingMu ?? TRUESKILL.MU).toFixed(1)}`}
-            >
-              <Chip
-                label={`${p.name.split(" ")[0]} ${(p.ratingMu ?? TRUESKILL.MU).toFixed(0)}`}
-                size="small"
-                sx={{
-                  fontSize: TYPE_SCALE.xs,
-                  height: 22,
-                  bgcolor: "action.hover",
-                  color: "text.secondary",
-                }}
-              />
-            </Tooltip>
+              label={p.name.split(" ")[0]}
+              size="small"
+              sx={{
+                fontSize: TYPE_SCALE.xs,
+                height: 22,
+                bgcolor: "action.hover",
+                color: "text.secondary",
+              }}
+            />
           ))
         )}
       </Box>
 
       {/* Gap warning */}
       {gapWarning && entry.gap != null && (
-        <Tooltip title="Gap elevato: rischio falli (titolare molto più forte della riserva)">
+        <Tooltip title="Il titolare è molto più forte della riserva: con il cambio c'è rischio di falli.">
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.25, flexShrink: 0 }}>
             <WarningAmberIcon sx={{ fontSize: 14, color: "error.main" }} />
             <Typography
@@ -447,7 +461,7 @@ function RoleDepthRow({ entry }: { entry: RoleDepthEntry }) {
               fontWeight={FONT_WEIGHT.semibold}
               sx={{ fontSize: TYPE_SCALE.xs }}
             >
-              −{entry.gap.toFixed(1)}
+              divario alto
             </Typography>
           </Box>
         </Tooltip>

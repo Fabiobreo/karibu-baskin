@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { teamColor } from "@/lib/teamColors";
-import { Box, Paper, Typography, Chip, Stack } from "@mui/material";
+import { Box, Button, Paper, Typography, Chip, Stack, Link as MuiLink } from "@mui/material";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -74,12 +73,21 @@ export default async function AdminProssimePartite() {
               ? `${count}/${MIN_CALLUPS} convocati`
               : `${count} convocati`;
           return (
+            // Su telefono tre piani: nome a tutta larghezza (su due righe, mai
+            // troncato a "Kari…"), sotto la data, sotto ancora stato e azione.
+            // Da `sm` tutto su una riga (UX-40).
             <Box
               key={m.id}
               sx={{
-                display: "flex",
+                display: "grid",
+                gridTemplateColumns: { xs: "4px 1fr auto", sm: "4px 1fr auto auto" },
+                gridTemplateAreas: {
+                  xs: '"mark name name" "mark status action"',
+                  sm: '"mark name status action"',
+                },
                 alignItems: "center",
-                gap: 1.5,
+                columnGap: 1.5,
+                rowGap: 1,
                 p: 1.25,
                 borderRadius: RADIUS.md,
                 border: "1px solid",
@@ -87,68 +95,69 @@ export default async function AdminProssimePartite() {
                 borderColor: isMissing ? "error.main" : "divider",
               }}
             >
-              <Link
-                href={m.slug ? `/partite/${m.slug}` : "#"}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  flex: 1,
-                  minWidth: 0,
+              <Box
+                sx={{
+                  gridArea: "mark",
+                  alignSelf: "stretch",
+                  borderRadius: RADIUS.sm,
+                  // Tinta della squadra; senza tinta la fascia resta vuota (nessun segno).
+                  bgcolor: teamColor(m.team.color) ?? "transparent",
                 }}
-              >
-                <Box
+              />
+              <Box sx={{ gridArea: "name", minWidth: 0 }}>
+                <MuiLink
+                  href={m.slug ? `/partite/${m.slug}` : `/admin/partite?edit=${m.id}`}
+                  underline="hover"
+                  color="inherit"
+                  variant="body2"
                   sx={{
-                    width: 4,
-                    alignSelf: "stretch",
-                    borderRadius: RADIUS.sm,
-                    // Tinta della squadra; senza tinta la fascia resta vuota (nessun segno).
-                    bgcolor: teamColor(m.team.color) ?? "transparent",
+                    fontWeight: FONT_WEIGHT.semibold,
+                    display: "-webkit-box",
+                    WebkitBoxOrient: "vertical",
+                    WebkitLineClamp: { xs: 2, sm: 1 },
+                    overflow: "hidden",
+                    overflowWrap: "anywhere",
                   }}
-                />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    variant="body2"
-                    fontWeight={FONT_WEIGHT.semibold}
-                    sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
+                  {m.team.name} vs {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
+                </MuiLink>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                  {relativeShort(m.date, now)} · {formatRome(m.date, "HH:mm")}
+                </Typography>
+              </Box>
+              <Chip
+                size="small"
+                color={chipColor}
+                // L'icona sta dentro l'etichetta, non nella prop `icon`: da un
+                // Server Component l'elemento può arrivare al Chip ancora non
+                // risolto, il Chip lo scarta sul server e lo disegna nel
+                // browser, e l'idratazione fallisce (a volte: dipende dai tempi).
+                label={
+                  <Box
+                    component="span"
+                    sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
                   >
-                    {m.team.name} vs {m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {relativeShort(m.date, now)} · {formatRome(m.date, "HH:mm")}
-                  </Typography>
-                </Box>
-                <Chip
-                  size="small"
-                  color={chipColor}
-                  icon={
-                    isOk ? (
+                    {isOk ? (
                       <CheckCircleIcon style={{ fontSize: 14 }} />
                     ) : (
                       <WarningAmberIcon style={{ fontSize: 14 }} />
-                    )
-                  }
-                  label={chipLabel}
-                  sx={{ flexShrink: 0 }}
-                />
-              </Link>
-              <Link
+                    )}
+                    {chipLabel}
+                  </Box>
+                }
+                sx={{ gridArea: "status", justifySelf: "start" }}
+              />
+              <Button
                 href={`/admin/partite/${m.id}/convocazioni`}
-                style={{ textDecoration: "none", flexShrink: 0 }}
+                variant="outlined"
+                size="small"
+                aria-label={`Convoca per ${m.team.name} vs ${
+                  m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"
+                }`}
+                sx={{ gridArea: "action", minHeight: { xs: 44, sm: 32 }, whiteSpace: "nowrap" }}
               >
-                <Typography
-                  variant="caption"
-                  color="primary.onLight"
-                  sx={{
-                    fontWeight: FONT_WEIGHT.semibold,
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  Convoca →
-                </Typography>
-              </Link>
+                Convoca
+              </Button>
             </Box>
           );
         })}

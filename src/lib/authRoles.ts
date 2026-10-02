@@ -23,6 +23,41 @@ export function canRegister(role: AppRole): boolean {
   return hasRole(role, "GUEST");
 }
 
+export const ALL_APP_ROLES = Object.keys(ROLE_HIERARCHY) as AppRole[];
+
+interface AppRoleChange {
+  /** Ruolo di chi fa la modifica. */
+  actorRole: AppRole;
+  /** Vero se chi fa la modifica è la persona stessa. */
+  isSelf: boolean;
+  current: AppRole;
+  next: AppRole;
+}
+
+/**
+ * Chi può assegnare quale ruolo utente (UX-40, passo 0).
+ *
+ * L'admin assegna qualunque ruolo, tranne il proprio: un admin che si toglie il
+ * ruolo per sbaglio non può più rimetterselo. L'allenatore approva soltanto i
+ * nuovi account, da ospite ad atleta o genitore: prima poteva promuovere
+ * chiunque ad admin, sé compreso. Lasciare il ruolo com'è è sempre permesso (la
+ * scheda utente lo rimanda uguale insieme agli altri campi).
+ */
+export function canAssignAppRole({ actorRole, isSelf, current, next }: AppRoleChange): boolean {
+  if (next === current) return true;
+  if (isSelf) return false;
+  if (actorRole === "ADMIN") return true;
+  if (actorRole === "COACH") {
+    return current === "GUEST" && (next === "ATHLETE" || next === "PARENT");
+  }
+  return false;
+}
+
+/** I ruoli fra cui chi guarda può scegliere per una persona (quello attuale compreso). */
+export function assignableAppRoles(change: Omit<AppRoleChange, "next">): AppRole[] {
+  return ALL_APP_ROLES.filter((next) => canAssignAppRole({ ...change, next }));
+}
+
 /**
  * Tesserato del Karibu: ATHLETE o superiore.
  *

@@ -38,12 +38,14 @@ import {
   type UserEntry,
 } from "@/components/admin/userList/userListShared";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
 interface AthletesTabProps {
   /** Tutti gli atleti: account che giocano e figli senza account, in ogni stato. */
   rows: AdminRow[];
   teams: TeamInfo[];
   currentSeason: string;
+  isAdmin: boolean;
   onConfirmSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
   onRejectSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
   onTeamChange: (row: AdminRow, teamId: string) => void;
@@ -84,6 +86,7 @@ export default function AthletesTab({
   rows,
   teams,
   currentSeason,
+  isAdmin,
   onConfirmSuggestedRole,
   onRejectSuggestedRole,
   onTeamChange,
@@ -154,7 +157,7 @@ export default function AthletesTab({
           value={filters.search}
           onChange={(e) => update({ search: e.target.value })}
           size="small"
-          sx={{ width: { xs: "100%", sm: 280 } }}
+          sx={{ width: { xs: "100%", sm: 280 }, ...TOUCH_FIELD_ON_PHONE }}
           slotProps={{
             htmlInput: { "aria-label": "Cerca fra gli atleti" },
             input: {
@@ -192,6 +195,7 @@ export default function AthletesTab({
         </Typography>
         <Button
           size="small"
+          sx={TOUCH_TARGET_ON_PHONE}
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           startIcon={
@@ -341,6 +345,7 @@ export default function AthletesTab({
         onSort={handleSort}
         teams={teams}
         currentSeason={currentSeason}
+        isAdmin={isAdmin}
         emptyLabel={
           activeFilterCount > 0
             ? "Nessun atleta corrisponde ai filtri selezionati."

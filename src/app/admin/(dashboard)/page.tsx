@@ -172,7 +172,7 @@ export default async function AdminPage() {
         <NavSection title="Strumenti">
           <NavLink href="/admin/metriche" icon={<InsightsIcon />} label="Metriche" />
           <NavLink href="/admin/sviluppo" icon={<TrendingUpIcon />} label="Sviluppo giocatori" />
-          <NavLink href="/admin/esporta" icon={<DownloadIcon />} label="Esporta CSV" />
+          <NavLink href="/admin/esporta" icon={<DownloadIcon />} label="Esporta dati" />
           <NavLink
             href="/admin/suggerimenti"
             icon={<LightbulbIcon />}
@@ -194,7 +194,7 @@ export default async function AdminPage() {
               il proprio ruolo Baskin
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Vai su Gestione Utenti per confermare o modificare il ruolo.
+              Vai su Utenti per confermare o modificare il ruolo.
             </Typography>
           </Box>
           <Link href="/admin/utenti" style={{ textDecoration: "none" }}>

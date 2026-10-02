@@ -5,6 +5,7 @@ import { Paper, Button, Stack } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
 import PageHeader from "@/components/common/PageHeader";
+import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import type { AppRole, AthleteStatus, Gender, Prisma } from "@prisma/client";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { auth } from "@/lib/authjs";
@@ -108,8 +109,6 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
     gender: true,
     birthDate: true,
     athleteStatus: true,
-    ratingMu: true,
-    ratingSigma: true,
     createdAt: true,
     _count: { select: { registrations: true } },
     // Figli collegati: sotto il nome del genitore compare "Genitore di …".
@@ -162,8 +161,6 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
         gender: true,
         birthDate: true,
         athleteStatus: true,
-        ratingMu: true,
-        ratingSigma: true,
         createdAt: true,
         ...GUARDIANS_SELECT,
         _count: { select: { registrations: true } },
@@ -194,7 +191,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
   return (
     <>
       <PageHeader
-        title="Gestione Utenti"
+        title="Utenti"
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Utenti" }]}
         action={
           <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
@@ -203,6 +200,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
               variant="outlined"
               startIcon={<ChildCareIcon />}
               size="small"
+              sx={TOUCH_TARGET_ON_PHONE}
             >
               Nuovo figlio
             </Button>
@@ -211,6 +209,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
               variant="contained"
               startIcon={<PersonAddIcon />}
               size="small"
+              sx={TOUCH_TARGET_ON_PHONE}
             >
               Nuovo utente
             </Button>
@@ -228,6 +227,7 @@ export default async function AdminUtentiPage({ searchParams }: { searchParams: 
           }))}
           initialTeams={teams}
           isAdmin={isAdmin}
+          currentUserId={session?.user?.id ?? null}
           currentSeason={currentSeason}
           serverTotal={total}
           serverPage={page}

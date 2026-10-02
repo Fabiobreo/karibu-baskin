@@ -21,18 +21,13 @@ import {
   Stack,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import HomeIcon from "@mui/icons-material/Home";
 import FlightIcon from "@mui/icons-material/Flight";
 import EventIcon from "@mui/icons-material/Event";
 import HistoryIcon from "@mui/icons-material/History";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import GroupsIcon from "@mui/icons-material/Groups";
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import SportsMartialArtsIcon from "@mui/icons-material/SportsMartialArts";
 import type { MatchCoverage } from "@/lib/matches/matchCoverage";
 import { useState, useEffect, useMemo } from "react";
 import { useRowsPerPage } from "@/hooks/useRowsPerPage";
@@ -56,6 +51,8 @@ import GroupMatchInlineScore from "@/components/teams/GroupMatchInlineScore";
 import OpponentProfileDialog from "@/components/matches/OpponentProfileDialog";
 import type { OpponentProfile } from "@/lib/schemas/match";
 import TeamChip from "@/components/teams/TeamChip";
+import MatchRowActions from "@/components/admin/MatchRowActions";
+import type { MatchRowActionKey } from "@/lib/matches/adminRowAction";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
@@ -83,7 +80,8 @@ type Match = {
   opponent: OpposingTeam | null;
   opponentTeam?: { id: string; name: string; color: string | null } | null;
   group: { id: string; name: string } | null;
-  _count: { playerStats: number };
+  _count: { playerStats: number; callups: number };
+  slug?: string | null;
   opponentProfile?: unknown; // Prisma.JsonValue — castato a OpponentProfile dove serve
 };
 
@@ -106,6 +104,12 @@ type Props = {
   groupMatches: GroupMatch[];
   /** Mappa matchId → copertura ruoli (solo partite future) */
   coverages: Record<string, MatchCoverage>;
+  /**
+   * Creare, modificare ed eliminare una partita, risultato e statistiche sono
+   * dell'admin; l'allenatore convoca. Le azioni che l'API rifiuterebbe non si
+   * mostrano.
+   */
+  isAdmin: boolean;
 };
 
 const RESULT_LABELS: Record<MatchResult, string> = {
@@ -180,7 +184,7 @@ function MatchMobileCard({
   matchday,
   coverage,
   now,
-  router,
+  isAdmin,
   onResult,
   onEdit,
   onDelete,
@@ -190,7 +194,7 @@ function MatchMobileCard({
   matchday?: number | null;
   coverage?: MatchCoverage;
   now: number;
-  router: RouterLike;
+  isAdmin: boolean;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
@@ -268,88 +272,89 @@ function MatchMobileCard({
                 }}
               />
             )}
-            <Tooltip title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}>
-              <Button
-                size="small"
-                onClick={() => onResult(m)}
-                sx={{
-                  minWidth: 0,
-                  px: 1,
-                  py: 0,
-                  textTransform: "none",
-                  color: m.ourScore !== null ? "text.primary" : "primary.main",
-                  fontSize: TYPE_SCALE.sm,
-                }}
-              >
-                {m.ourScore !== null && m.theirScore !== null
-                  ? `${m.ourScore} – ${m.theirScore}`
-                  : "+ Risultato"}
-              </Button>
-            </Tooltip>
-            {m.ourScore !== null && m._count.playerStats === 0 && (
-              <MissingStatsChip matchId={m.id} router={router} />
-            )}
+            {m.ourScore !== null && <MatchScore match={m} />}
           </Box>
         </Box>
-        <Box sx={{ display: "flex", gap: 0.25, flexShrink: 0 }}>
-          <Tooltip title="Convocati">
-            <IconButton
-              size="medium"
-              color="primary"
-              aria-label="Convocati partita"
-              onClick={() => router.push(`/admin/partite/${m.id}/convocazioni`)}
-            >
-              <GroupsIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          {m.result && m.opponentId && (
-            <Tooltip
-              title={m.opponentProfile ? "Modifica profilo avversario" : "Profila avversario"}
-            >
-              <IconButton
-                size="medium"
-                color={m.opponentProfile ? "primary" : "default"}
-                aria-label="Profila avversario"
-                onClick={() => onProfile(m)}
-              >
-                <SportsMartialArtsIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          )}
-          <Tooltip title="Modifica">
-            <IconButton size="medium" aria-label="Modifica partita" onClick={() => onEdit(m)}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Elimina">
-            <IconButton
-              size="medium"
-              color="error"
-              aria-label="Elimina partita"
-              onClick={() => onDelete(m.id)}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
       </Box>
+      <RowActions
+        match={m}
+        upcoming={upcoming}
+        isAdmin={isAdmin}
+        layout="card"
+        onResult={onResult}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onProfile={onProfile}
+      />
     </Box>
   );
 }
 
-/** Chip per partite giocate senza statistiche giocatori — clicca per inserirle. */
-function MissingStatsChip({ matchId, router }: { matchId: string; router: RouterLike }) {
+/** Il punteggio, o un trattino finché non c'è: si inserisce dall'azione della riga. */
+function MatchScore({ match: m }: { match: Match }) {
+  const played = m.ourScore !== null && m.theirScore !== null;
   return (
-    <Tooltip title="Partita giocata senza statistiche giocatori (clicca per inserirle)">
-      <Chip
-        label="Senza stats"
-        size="small"
-        color="warning"
-        variant="outlined"
-        onClick={() => router.push(`/admin/partite/${matchId}/statistiche`)}
-        sx={{ fontSize: TYPE_SCALE.xs, height: 20, cursor: "pointer" }}
-      />
-    </Tooltip>
+    <Typography
+      variant="body2"
+      component="span"
+      sx={{
+        fontWeight: FONT_WEIGHT.semibold,
+        fontVariantNumeric: "tabular-nums",
+        color: played ? "text.primary" : "text.secondary",
+      }}
+    >
+      {played ? `${m.ourScore} – ${m.theirScore}` : "—"}
+    </Typography>
+  );
+}
+
+/** Azioni di una partita: lo stato lo ricava dalla riga, il resto lo fa `MatchRowActions`. */
+function RowActions({
+  match: m,
+  upcoming,
+  isAdmin,
+  layout,
+  onResult,
+  onEdit,
+  onDelete,
+  onProfile,
+}: {
+  match: Match;
+  upcoming: boolean;
+  isAdmin: boolean;
+  layout?: "row" | "card";
+  onResult: (m: Match) => void;
+  onEdit: (m: Match) => void;
+  onDelete: (id: string) => void;
+  onProfile: (m: Match) => void;
+}) {
+  const handlers: Partial<Record<MatchRowActionKey, () => void>> = {
+    result: () => onResult(m),
+    edit: () => onEdit(m),
+    delete: () => onDelete(m.id),
+    profile: () => onProfile(m),
+  };
+  return (
+    <MatchRowActions
+      state={{
+        upcoming,
+        hasResult: m.ourScore !== null,
+        hasStats: m._count.playerStats > 0,
+        callups: m._count.callups,
+        isInternal: !!m.opponentTeam,
+        hasOpponent: !!m.opponentId,
+        hasProfile: !!m.opponentProfile,
+        isAdmin,
+      }}
+      matchLabel={`${m.team.name} vs ${m.opponent?.name ?? m.opponentTeam?.name ?? "Avversario"}`}
+      hrefs={{
+        callups: `/admin/partite/${m.id}/convocazioni`,
+        stats: `/admin/partite/${m.id}/statistiche`,
+        public: `/partite/${m.slug ?? m.id}`,
+      }}
+      onAction={(key) => handlers[key]?.()}
+      layout={layout}
+    />
   );
 }
 
@@ -394,6 +399,7 @@ export default function AdminPartiteClient({
   groups,
   groupMatches: initialGroupMatches,
   coverages,
+  isAdmin,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -473,13 +479,26 @@ export default function AdminPartiteClient({
 
   function handleSaved(saved: MatchFormMatch, isEdit: boolean) {
     if (isEdit) {
+      // La risposta della PUT non porta né i conteggi né il livello
+      // dell'avversaria: restano quelli della riga.
       setMatches((prev) =>
-        prev.map((m) => (m.id === saved.id ? ({ ...saved, _count: m._count } as Match) : m))
+        prev.map((m) => {
+          if (m.id !== saved.id) return m;
+          const next = { ...saved, _count: m._count } as Match;
+          if (next.opponent && m.opponent && next.opponent.id === m.opponent.id) {
+            next.opponent = { ...next.opponent, ratingMu: m.opponent.ratingMu };
+          }
+          return next;
+        })
       );
       setMatchDialog(false);
       router.refresh();
     } else {
-      setMatches((prev) => [saved as Match, ...prev]);
+      // Una partita appena creata non ha né convocati né statistiche.
+      setMatches((prev) => [
+        { ...(saved as Match), _count: { playerStats: 0, callups: 0 } },
+        ...prev,
+      ]);
       setMatchDialog(false);
       router.push(`/admin/partite/${saved.id}/convocazioni`);
     }
@@ -546,16 +565,18 @@ export default function AdminPartiteClient({
         </Alert>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-          disabled={teams.length === 0}
-        >
-          Nuova partita
-        </Button>
-      </Box>
+      {isAdmin && (
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+            disabled={teams.length === 0}
+          >
+            Nuova partita
+          </Button>
+        </Box>
+      )}
 
       <Tabs
         value={tab}
@@ -575,14 +596,14 @@ export default function AdminPartiteClient({
       </Tabs>
 
       {matches.length === 0 ? (
-        <EmptyState onCreate={openCreate} disabled={teams.length === 0} />
+        <EmptyState onCreate={openCreate} disabled={teams.length === 0} canCreate={isAdmin} />
       ) : tab === "LEAGUE" ? (
         <LeagueView
           matches={filteredMatches}
           groupMatches={groupMatches}
           coverages={coverages}
           now={now}
-          router={router}
+          isAdmin={isAdmin}
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
           onDelete={handleDeleteMatch}
@@ -598,7 +619,7 @@ export default function AdminPartiteClient({
           setPage={setPage}
           setRpp={setRpp}
           now={now}
-          router={router}
+          isAdmin={isAdmin}
           onResult={(m) => setResultMatch(m)}
           onEdit={openEdit}
           onDelete={handleDeleteMatch}
@@ -658,14 +679,22 @@ export default function AdminPartiteClient({
 // Empty state
 // ──────────────────────────────────────────────────────────────────────────────
 
-function EmptyState({ onCreate, disabled }: { onCreate: () => void; disabled: boolean }) {
+function EmptyState({
+  onCreate,
+  disabled,
+  canCreate,
+}: {
+  onCreate: () => void;
+  disabled: boolean;
+  canCreate: boolean;
+}) {
   return (
     <Paper elevation={0} variant="outlined" sx={{ p: 6, textAlign: "center" }}>
       <EmojiEventsIcon sx={{ fontSize: 48, color: "text.disabled", mb: 1 }} />
       <Typography variant="h6" color="text.secondary">
         Nessuna partita registrata
       </Typography>
-      {disabled ? (
+      {!canCreate ? null : disabled ? (
         <Typography variant="body2" color="text.secondary">
           Crea prima una squadra nella sezione Squadre.
         </Typography>
@@ -682,14 +711,12 @@ function EmptyState({ onCreate, disabled }: { onCreate: () => void; disabled: bo
 // Vista Campionato: raggruppata per girone, con sub-row di contesto per giornata
 // ──────────────────────────────────────────────────────────────────────────────
 
-type RouterLike = ReturnType<typeof useRouter>;
-
 function LeagueView({
   matches,
   groupMatches,
   coverages,
   now,
-  router,
+  isAdmin,
   onResult,
   onEdit,
   onDelete,
@@ -700,7 +727,7 @@ function LeagueView({
   groupMatches: GroupMatch[];
   coverages: Record<string, MatchCoverage>;
   now: number;
-  router: RouterLike;
+  isAdmin: boolean;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
@@ -807,16 +834,9 @@ function LeagueView({
                   <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
                     Punteggio
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      fontWeight: FONT_WEIGHT.semibold,
-                      display: { xs: "none", sm: "table-cell" },
-                    }}
-                    align="center"
-                  >
-                    Stats
+                  <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="right">
+                    Azioni
                   </TableCell>
-                  <TableCell />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -833,7 +853,7 @@ function LeagueView({
                       others={others}
                       coverage={coverages[m.id]}
                       now={now}
-                      router={router}
+                      isAdmin={isAdmin}
                       onResult={onResult}
                       onEdit={onEdit}
                       onDelete={onDelete}
@@ -854,7 +874,7 @@ function LeagueView({
                 matchday={m.matchday}
                 coverage={coverages[m.id]}
                 now={now}
-                router={router}
+                isAdmin={isAdmin}
                 onResult={onResult}
                 onEdit={onEdit}
                 onDelete={onDelete}
@@ -873,7 +893,7 @@ function MatchRowAndContext({
   others,
   coverage,
   now,
-  router,
+  isAdmin,
   onResult,
   onEdit,
   onDelete,
@@ -884,7 +904,7 @@ function MatchRowAndContext({
   others: GroupMatch[];
   coverage: MatchCoverage | undefined;
   now: number;
-  router: RouterLike;
+  isAdmin: boolean;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
@@ -951,41 +971,14 @@ function MatchRowAndContext({
           )}
         </TableCell>
         <TableCell align="center">
-          <Tooltip title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}>
-            <Button
-              size="small"
-              onClick={() => onResult(m)}
-              sx={{
-                minWidth: 0,
-                px: 1,
-                py: 0.25,
-                textTransform: "none",
-                color: m.ourScore !== null ? "text.primary" : "primary.main",
-                fontSize: TYPE_SCALE.sm,
-              }}
-            >
-              {m.ourScore !== null && m.theirScore !== null
-                ? `${m.ourScore} – ${m.theirScore}`
-                : "+ Risultato"}
-            </Button>
-          </Tooltip>
-        </TableCell>
-        <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-          {m.ourScore !== null && m._count.playerStats === 0 ? (
-            <MissingStatsChip matchId={m.id} router={router} />
-          ) : (
-            <Typography
-              variant="caption"
-              color={m._count.playerStats > 0 ? "text.primary" : "text.secondary"}
-            >
-              {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
-            </Typography>
-          )}
+          <MatchScore match={m} />
         </TableCell>
         <TableCell align="right">
-          <ActionIcons
+          <RowActions
             match={m}
-            router={router}
+            upcoming={upcoming}
+            isAdmin={isAdmin}
+            onResult={onResult}
             onEdit={onEdit}
             onDelete={onDelete}
             onProfile={onProfile}
@@ -995,7 +988,7 @@ function MatchRowAndContext({
       {others.length > 0 && (
         <TableRow>
           <TableCell
-            colSpan={8}
+            colSpan={7}
             sx={{
               py: 0.75,
               backgroundColor: "action.hover",
@@ -1062,13 +1055,9 @@ function FlatTableHead() {
         <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="center">
           Punteggio
         </TableCell>
-        <TableCell
-          sx={{ fontWeight: FONT_WEIGHT.semibold, display: { xs: "none", sm: "table-cell" } }}
-          align="center"
-        >
-          Stats
+        <TableCell sx={{ fontWeight: FONT_WEIGHT.semibold }} align="right">
+          Azioni
         </TableCell>
-        <TableCell />
       </TableRow>
     </TableHead>
   );
@@ -1079,7 +1068,7 @@ function FlatMatchRow({
   m,
   coverage,
   upcoming,
-  router,
+  isAdmin,
   onResult,
   onEdit,
   onDelete,
@@ -1088,7 +1077,7 @@ function FlatMatchRow({
   m: Match;
   coverage: MatchCoverage | undefined;
   upcoming: boolean;
-  router: RouterLike;
+  isAdmin: boolean;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
@@ -1152,41 +1141,14 @@ function FlatMatchRow({
         )}
       </TableCell>
       <TableCell align="center">
-        <Tooltip title={m.ourScore !== null ? "Modifica risultato" : "Inserisci risultato"}>
-          <Button
-            size="small"
-            onClick={() => onResult(m)}
-            sx={{
-              minWidth: 0,
-              px: 1,
-              py: 0.25,
-              textTransform: "none",
-              color: m.ourScore !== null ? "text.primary" : "primary.main",
-              fontSize: TYPE_SCALE.sm,
-            }}
-          >
-            {m.ourScore !== null && m.theirScore !== null
-              ? `${m.ourScore} – ${m.theirScore}`
-              : "+ Risultato"}
-          </Button>
-        </Tooltip>
-      </TableCell>
-      <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
-        {m.ourScore !== null && m._count.playerStats === 0 ? (
-          <MissingStatsChip matchId={m.id} router={router} />
-        ) : (
-          <Typography
-            variant="caption"
-            color={m._count.playerStats > 0 ? "text.primary" : "text.secondary"}
-          >
-            {m._count.playerStats > 0 ? `${m._count.playerStats} gioc.` : "—"}
-          </Typography>
-        )}
+        <MatchScore match={m} />
       </TableCell>
       <TableCell align="right">
-        <ActionIcons
+        <RowActions
           match={m}
-          router={router}
+          upcoming={upcoming}
+          isAdmin={isAdmin}
+          onResult={onResult}
           onEdit={onEdit}
           onDelete={onDelete}
           onProfile={onProfile}
@@ -1201,7 +1163,7 @@ function FlatMatchesTable({
   matches,
   coverages,
   now,
-  router,
+  isAdmin,
   onResult,
   onEdit,
   onDelete,
@@ -1210,7 +1172,7 @@ function FlatMatchesTable({
   matches: Match[];
   coverages: Record<string, MatchCoverage>;
   now: number;
-  router: RouterLike;
+  isAdmin: boolean;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
@@ -1229,7 +1191,7 @@ function FlatMatchesTable({
                 m={m}
                 coverage={coverages[m.id]}
                 upcoming={isUpcoming(m, now)}
-                router={router}
+                isAdmin={isAdmin}
                 onResult={onResult}
                 onEdit={onEdit}
                 onDelete={onDelete}
@@ -1247,7 +1209,7 @@ function FlatMatchesTable({
             match={m}
             coverage={coverages[m.id]}
             now={now}
-            router={router}
+            isAdmin={isAdmin}
             onResult={onResult}
             onEdit={onEdit}
             onDelete={onDelete}
@@ -1267,7 +1229,7 @@ function FlatView({
   setPage,
   setRpp,
   now,
-  router,
+  isAdmin,
   onResult,
   onEdit,
   onDelete,
@@ -1280,7 +1242,7 @@ function FlatView({
   setPage: (n: number) => void;
   setRpp: (n: number) => void;
   now: number;
-  router: RouterLike;
+  isAdmin: boolean;
   onResult: (m: Match) => void;
   onEdit: (m: Match) => void;
   onDelete: (id: string) => void;
@@ -1320,7 +1282,7 @@ function FlatView({
             matches={upcoming}
             coverages={coverages}
             now={now}
-            router={router}
+            isAdmin={isAdmin}
             onResult={onResult}
             onEdit={onEdit}
             onDelete={onDelete}
@@ -1339,7 +1301,7 @@ function FlatView({
             matches={pastPaginated}
             coverages={coverages}
             now={now}
-            router={router}
+            isAdmin={isAdmin}
             onResult={onResult}
             onEdit={onEdit}
             onDelete={onDelete}
@@ -1363,73 +1325,5 @@ function FlatView({
         </Paper>
       )}
     </Stack>
-  );
-}
-
-function ActionIcons({
-  match,
-  router,
-  onEdit,
-  onDelete,
-  onProfile,
-}: {
-  match: Match;
-  router: RouterLike;
-  onEdit: (m: Match) => void;
-  onDelete: (id: string) => void;
-  onProfile: (m: Match) => void;
-}) {
-  return (
-    <>
-      <Tooltip title="Convocati">
-        <IconButton
-          size="medium"
-          color="primary"
-          aria-label="Convocati partita"
-          onClick={() => router.push(`/admin/partite/${match.id}/convocazioni`)}
-        >
-          <GroupsIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Statistiche giocatori">
-        <IconButton
-          size="medium"
-          color="primary"
-          aria-label="Statistiche giocatori"
-          onClick={() => router.push(`/admin/partite/${match.id}/statistiche`)}
-        >
-          <LeaderboardIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      {match.result && match.opponentId && (
-        <Tooltip
-          title={match.opponentProfile ? "Modifica profilo avversario" : "Profila avversario"}
-        >
-          <IconButton
-            size="medium"
-            color={match.opponentProfile ? "primary" : "default"}
-            aria-label="Profila avversario"
-            onClick={() => onProfile(match)}
-          >
-            <SportsMartialArtsIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      )}
-      <Tooltip title="Modifica">
-        <IconButton size="medium" aria-label="Modifica partita" onClick={() => onEdit(match)}>
-          <EditIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Elimina">
-        <IconButton
-          size="medium"
-          color="error"
-          aria-label="Elimina partita"
-          onClick={() => onDelete(match.id)}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </>
   );
 }

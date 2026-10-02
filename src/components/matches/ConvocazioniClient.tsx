@@ -2,7 +2,7 @@
 
 import InlineError from "@/components/common/InlineError";
 import { useMemo, useState } from "react";
-import { Box, Button, Container } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import PageHeader from "@/components/common/PageHeader";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import { useRouter } from "next/navigation";
@@ -220,7 +220,7 @@ export default function ConvocazioniClient({
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Box>
       <PageHeader
         title={matchLabel}
         breadcrumb={[
@@ -234,10 +234,9 @@ export default function ConvocazioniClient({
               ? "Amichevole interna: convoca i giocatori per ciascuna squadra"
               : `Stagione ${activeTeam.season}`}
             {teams.some((t) => t.isMixed) && ". Karibu gioca con tutti i giocatori della stagione"}
-            {". Presenze calcolate sulle ultime 2 settimane"}
             {windowEligibleSessions > 0
-              ? ` (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento gestito" : "allenamenti gestiti"})`
-              : " (nessun allenamento gestito in finestra)"}
+              ? `. Presenze contate sugli allenamenti delle ultime 2 settimane (${windowEligibleSessions} ${windowEligibleSessions === 1 ? "allenamento" : "allenamenti"})`
+              : ". Nelle ultime 2 settimane non ci sono allenamenti conclusi: le presenze non sono disponibili"}
           </>
         }
       />
@@ -313,6 +312,6 @@ export default function ConvocazioniClient({
 
       {/* Analisi formazione */}
       <LineupOptimizerSection selectedCandidates={selectedCandidates} opponentMu={opponentMu} />
-    </Container>
+    </Box>
   );
 }

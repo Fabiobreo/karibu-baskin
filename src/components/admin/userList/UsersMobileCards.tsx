@@ -1,10 +1,8 @@
 "use client";
 import TeamChip from "@/components/teams/TeamChip";
-import { Avatar, Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { Avatar, Box, Typography } from "@mui/material";
 import RoleBadge from "@/components/common/RoleBadge";
-import RatingBadge from "@/components/rating/RatingBadge";
+import { PersonCardButton, PersonRowMenu } from "@/components/admin/userList/PersonRowControls";
 import {
   AppRoleChip,
   AthleteStatusChip,
@@ -20,6 +18,8 @@ interface UsersMobileCardsProps {
   rows: AdminRow[];
   currentSeason: string;
   activeFilterCount: number;
+  /** Eliminare un utente è dell'admin. */
+  isAdmin: boolean;
   onEdit: (row: AdminRow) => void;
   onDelete: (row: AdminRow) => void;
 }
@@ -29,6 +29,7 @@ export default function UsersMobileCards({
   rows,
   currentSeason,
   activeFilterCount,
+  isAdmin,
   onEdit,
   onDelete,
 }: UsersMobileCardsProps) {
@@ -57,99 +58,79 @@ export default function UsersMobileCards({
             <Box
               key={`user-${row.id}`}
               sx={{
-                px: 2,
+                pl: 2,
+                pr: 1,
                 py: 1.5,
                 borderBottom: "1px solid",
                 borderColor: "divider",
                 "&:last-child": { borderBottom: 0 },
                 display: "flex",
                 alignItems: "center",
-                gap: 1.5,
+                gap: 1,
               }}
             >
-              <Avatar
-                src={row.image ?? undefined}
-                sx={{ width: 36, height: 36, fontSize: TYPE_SCALE.sm, flexShrink: 0 }}
-              >
-                {(row.name ?? "?")[0].toUpperCase()}
-              </Avatar>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-                  {row.name ?? "—"}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" noWrap display="block">
-                  {row.email}
-                </Typography>
-                {row.childNames && row.childNames.length > 0 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    display="block"
-                    sx={{ fontStyle: "italic" }}
-                  >
-                    Genitore di {joinNames(row.childNames)}
+              <PersonCardButton name={row.name ?? row.email} onOpen={() => onEdit(row)}>
+                <Avatar
+                  src={row.image ?? undefined}
+                  sx={{ width: 36, height: 36, fontSize: TYPE_SCALE.sm, flexShrink: 0 }}
+                >
+                  {(row.name ?? "?")[0].toUpperCase()}
+                </Avatar>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
+                    {row.name ?? "—"}
                   </Typography>
-                )}
-                {row.parentNames && row.parentNames.length > 0 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    noWrap
-                    display="block"
-                    sx={{ fontStyle: "italic" }}
-                  >
-                    {childOfLabel(row.gender, row.parentNames)}
+                  <Typography variant="caption" color="text.secondary" noWrap display="block">
+                    {row.email}
                   </Typography>
-                )}
-                <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
-                  <AppRoleChip role={row.appRole} sx={{ fontSize: TYPE_SCALE.xs }} />
-                  <AthleteStatusChip status={row.athleteStatus} />
-                  {row.sportRole ? (
-                    <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
-                  ) : row.sportRoleSuggested ? (
-                    <SuggestedRoleChip
-                      role={row.sportRoleSuggested}
-                      variant={row.sportRoleSuggestedVariant}
-                    />
-                  ) : null}
-                  {team && (
-                    <TeamChip
-                      name={team.name}
-                      color={team.color}
-                      sx={{ fontSize: TYPE_SCALE.xs }}
-                    />
+                  {row.childNames && row.childNames.length > 0 && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                      sx={{ fontStyle: "italic" }}
+                    >
+                      Genitore di {joinNames(row.childNames)}
+                    </Typography>
                   )}
-                  {row.ratingMu != null && (
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      label={<RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />}
-                      sx={{ fontSize: TYPE_SCALE.xs }}
-                    />
+                  {row.parentNames && row.parentNames.length > 0 && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      noWrap
+                      display="block"
+                      sx={{ fontStyle: "italic" }}
+                    >
+                      {childOfLabel(row.gender, row.parentNames)}
+                    </Typography>
                   )}
+                  <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
+                    <AppRoleChip role={row.appRole} sx={{ fontSize: TYPE_SCALE.xs }} />
+                    <AthleteStatusChip status={row.athleteStatus} />
+                    {row.sportRole ? (
+                      <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
+                    ) : row.sportRoleSuggested ? (
+                      <SuggestedRoleChip
+                        role={row.sportRoleSuggested}
+                        variant={row.sportRoleSuggestedVariant}
+                      />
+                    ) : null}
+                    {team && (
+                      <TeamChip
+                        name={team.name}
+                        color={team.color}
+                        sx={{ fontSize: TYPE_SCALE.xs }}
+                      />
+                    )}
+                  </Box>
                 </Box>
-              </Box>
-              <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-                <Tooltip title="Modifica utente">
-                  <IconButton
-                    size="medium"
-                    aria-label="Modifica utente"
-                    onClick={() => onEdit(row)}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Elimina utente">
-                  <IconButton
-                    size="medium"
-                    aria-label="Elimina utente"
-                    color="error"
-                    onClick={() => onDelete(row)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              </PersonCardButton>
+              <PersonRowMenu
+                name={row.name ?? row.email}
+                canDelete={isAdmin}
+                onOpen={() => onEdit(row)}
+                onDelete={() => onDelete(row)}
+              />
             </Box>
           );
         })

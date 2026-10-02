@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import type { AppRole, AthleteStatus, Gender } from "@prisma/client";
 import { isAdminUser, isCoachOrAdmin } from "@/lib/apiAuth";
 import { auth } from "@/lib/authjs";
+import { canAssignAppRole } from "@/lib/authRoles";
 import { sendPushToUser } from "@/lib/notifications/webpush";
 import { createAppNotification } from "@/lib/notifications/appNotifications";
 import { ROLE_LABELS } from "@/lib/constants";
@@ -47,7 +48,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ us
       return NextResponse.json({ error: "Ruolo app non valido" }, { status: 400 });
     }
     const cur = await prisma.user.findUnique({ where: { id: userId }, select: { appRole: true } });
-    prevAppRole = cur?.appRole ?? null;
+    if (!cur) return NextResponse.json({ error: "Utente non trovato" }, { status: 404 });
+    // L'allenatore approva solo i nuovi account; il resto è dell'admin, e
+    // nessuno cambia il proprio ruolo (regola in `canAssignAppRole`).
+    const allowed = canAssignAppRole({
+      actorRole: isAdmin ? "ADMIN" : "COACH",
+      isSelf: actorSession?.user?.id === userId,
+      current: cur.appRole,
+      next: body.appRole,
+    });
+    if (!allowed) {
+      return NextResponse.json({ error: "Non puoi assegnare questo ruolo" }, { status: 403 });
+    }
+    prevAppRole = cur.appRole;
     data.appRole = body.appRole;
   }
 

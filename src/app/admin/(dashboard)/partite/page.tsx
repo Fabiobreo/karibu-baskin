@@ -4,9 +4,10 @@ import PageHeader from "@/components/common/PageHeader";
 import { computeMatchCoverageBatch, type MatchCoverage } from "@/lib/matches/matchCoverage";
 import { ensureClubTeam } from "@/lib/matches/mixedTeam";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
+import { auth } from "@/lib/authjs";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Gestione Partite | Admin" };
+export const metadata: Metadata = { title: "Partite | Admin" };
 export const revalidate = 30;
 
 export default async function AdminPartitePage() {
@@ -14,7 +15,8 @@ export default async function AdminPartitePage() {
   // amichevoli e tornei.
   await ensureClubTeam(await getCurrentSeasonLabel());
 
-  const [teams, opposingTeams, matches, groups] = await Promise.all([
+  const [session, teams, opposingTeams, matches, groups] = await Promise.all([
+    auth(),
     prisma.competitiveTeam.findMany({
       orderBy: [{ season: "desc" }, { name: "asc" }],
       select: { id: true, name: true, season: true, color: true, isMixed: true },
@@ -30,7 +32,7 @@ export default async function AdminPartitePage() {
         opponent: { select: { id: true, name: true, city: true, ratingMu: true } },
         opponentTeam: { select: { id: true, name: true, color: true } },
         group: { select: { id: true, name: true } },
-        _count: { select: { playerStats: true } },
+        _count: { select: { playerStats: true, callups: true } },
       },
       // opponentProfile è incluso automaticamente (non è una relazione, è un campo Json)
     }),
@@ -84,7 +86,7 @@ export default async function AdminPartitePage() {
   return (
     <>
       <PageHeader
-        title="Gestione Partite"
+        title="Partite"
         subtitle="Calendario delle partite ufficiali, convocazioni e statistiche."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Partite" }]}
       />
@@ -95,6 +97,7 @@ export default async function AdminPartitePage() {
         groups={groupsForForm}
         groupMatches={groupMatches}
         coverages={coverages}
+        isAdmin={session?.user?.appRole === "ADMIN"}
       />
     </>
   );

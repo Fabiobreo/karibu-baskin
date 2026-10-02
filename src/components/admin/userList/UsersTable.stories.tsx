@@ -30,8 +30,6 @@ function user(
     gender: i % 2 ? "MALE" : "FEMALE",
     birthDate: null,
     athleteStatus: null,
-    ratingMu: null,
-    ratingSigma: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     _count: { registrations: i },
     sportRoleHistory: [],
@@ -54,8 +52,6 @@ const rows: AdminRow[] = [
   user(5, "Tasson Sara", "sara.tasson@gmail.com", {
     sportRole: null,
     sportRoleSuggested: 4,
-    ratingMu: 26.2,
-    ratingSigma: 6.1,
   }),
   user(6, "Bartolomeo Vattelapesca Zanellato", "bartolomeo.vattelapesca.zanellato@libero.it", {
     athleteStatus: "INACTIVE_SEASON",
@@ -75,7 +71,7 @@ function Panel({ width }: { width: number }) {
           teams={teams}
           currentSeason={SEASON}
           activeFilterCount={0}
-          onRoleChange={fn()}
+          isAdmin
           onConfirmSuggestedRole={fn()}
           onRejectSuggestedRole={fn()}
           onTeamChange={fn()}

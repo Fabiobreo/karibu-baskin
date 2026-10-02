@@ -13,13 +13,14 @@ import OfflineBanner from "@/components/layout/OfflineBanner";
 import SiteHeader from "@/components/layout/SiteHeader";
 import SkipToContent from "@/components/layout/SkipToContent";
 import Footer from "@/components/layout/Footer";
-import HideInAdmin from "@/components/layout/HideInAdmin";
+import HideInAdmin, { OnlyInAdmin } from "@/components/layout/HideInAdmin";
+import MainContent from "@/components/layout/MainContent";
+import AdminHeader from "@/components/admin/AdminHeader";
 import BottomNav from "@/components/layout/BottomNav";
 import SwUpdateToast from "@/components/layout/SwUpdateToast";
 import CookieBanner from "@/components/layout/CookieBanner";
 import InstallPrompt from "@/components/layout/InstallPrompt";
 import MissingNameDialog from "@/components/layout/MissingNameDialog";
-import Box from "@mui/material/Box";
 import { auth } from "@/lib/authjs";
 import { getCurrentSeasonLabel } from "@/lib/season/activeSeason";
 import { SITE_URL } from "@/lib/siteUrl";
@@ -147,24 +148,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Providers session={session} colorMode={colorMode} colorScheme={colorScheme}>
               <ToastProvider>
                 <SkipToContent />
-                <SiteHeader currentSeason={currentSeason} />
-                {/* tabIndex -1: senza, lo skip link sposta solo lo scroll e il
-                    focus resta sul body. */}
-                <Box
-                  component="main"
-                  id="contenuto"
-                  tabIndex={-1}
-                  sx={{ flex: 1, pb: { xs: "60px", md: 0 }, outline: "none" }}
-                >
+                {/* Il pannello staff ha la sua intestazione e nessun'altra
+                    navigazione (UX-40): header, footer e barra in basso del
+                    sito restano fuori. Gli sponsor sono la fascia superiore
+                    del footer (UX-39). */}
+                <HideInAdmin>
+                  <SiteHeader currentSeason={currentSeason} />
+                </HideInAdmin>
+                <OnlyInAdmin>
+                  <AdminHeader />
+                </OnlyInAdmin>
+                <MainContent>
                   <OfflineBanner />
                   {children}
-                </Box>
-                {/* Solo fuori dall'admin: nel pannello staff sono rumore. Gli
-                    sponsor sono la fascia superiore del footer (UX-39). */}
+                </MainContent>
                 <HideInAdmin>
                   <Footer />
+                  <BottomNav />
                 </HideInAdmin>
-                <BottomNav />
                 <SwUpdateToast />
                 <CookieBanner />
                 <InstallPrompt />

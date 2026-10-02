@@ -20,7 +20,6 @@ import {
   MenuItem,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import RatingBadge from "@/components/rating/RatingBadge";
 import RatingSparkline from "@/components/rating/RatingSparkline";
 import { classifyTrend, TREND_META, type TrendLabel } from "@/lib/rating/ratingTrend";
 import { ordinal } from "@/lib/rating/trueskill";
@@ -29,10 +28,12 @@ import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 type SkillBucket = "alta" | "media" | "bassa";
 
+// Le fasce dicono la posizione nella lista, non un giudizio sulla persona
+// (UX-40): servono solo a filtrare, non compaiono mai accanto a un nome.
 const SKILL_LABELS: Record<SkillBucket, string> = {
-  alta: "Alta",
-  media: "Media",
-  bassa: "Bassa",
+  alta: "Terzo più alto",
+  media: "Terzo centrale",
+  bassa: "Terzo più basso",
 };
 
 export interface TrackedAthlete {
@@ -189,17 +190,17 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
           </Select>
         </FormControl>
 
-        <FormControl size="small" sx={{ minWidth: 130 }}>
-          <InputLabel id="dev-skill-label">Skill</InputLabel>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel id="dev-skill-label">Livello</InputLabel>
           <Select
             labelId="dev-skill-label"
-            label="Skill"
+            label="Livello"
             value={skillFilter ?? "all"}
             onChange={(e) =>
               setSkillFilter(e.target.value === "all" ? null : (e.target.value as SkillBucket))
             }
           >
-            <MenuItem value="all">Tutte</MenuItem>
+            <MenuItem value="all">Tutti</MenuItem>
             <MenuItem value="alta">{SKILL_LABELS.alta}</MenuItem>
             <MenuItem value="media">{SKILL_LABELS.media}</MenuItem>
             <MenuItem value="bassa">{SKILL_LABELS.bassa}</MenuItem>
@@ -230,11 +231,10 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
               <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                 Ruolo
               </TableCell>
-              <TableCell align="center">Skill</TableCell>
               <TableCell align="center">Andamento</TableCell>
               <TableCell align="center">Trend</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                Partite (train. / uff.)
+                Partitelle (+ ufficiali)
               </TableCell>
             </TableRow>
           </TableHead>
@@ -250,9 +250,6 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
                   <Typography variant="body2" color="text.secondary">
                     {r.sportRole ? sportRoleLabel(r.sportRole, r.sportRoleVariant) : "—"}
                   </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <RatingBadge mu={r.mu} sigma={r.sigma} />
                 </TableCell>
                 <TableCell align="center">
                   <RatingSparkline
@@ -292,7 +289,7 @@ export default function DevelopmentTracker({ athletes }: { athletes: TrackedAthl
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   Nessun giocatore corrisponde ai filtri.
                 </TableCell>
               </TableRow>

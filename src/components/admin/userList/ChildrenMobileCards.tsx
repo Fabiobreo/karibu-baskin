@@ -1,12 +1,9 @@
 "use client";
 import TeamChip from "@/components/teams/TeamChip";
-import { Avatar, Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { sportRoleLabel } from "@/lib/constants";
+import { Avatar, Box, Typography } from "@mui/material";
 import RoleBadge from "@/components/common/RoleBadge";
-import RatingBadge from "@/components/rating/RatingBadge";
 import { AthleteStatusChip, type ChildEntry } from "@/components/admin/userList/userListShared";
+import { PersonCardButton, PersonRowMenu } from "@/components/admin/userList/PersonRowControls";
 import { childOfLabel } from "@/lib/guardianNames";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
@@ -45,76 +42,67 @@ export default function ChildrenMobileCards({
           <Box
             key={`child-${row.id}`}
             sx={{
-              px: 2,
+              pl: 2,
+              pr: 1,
               py: 1.5,
               borderBottom: "1px solid",
               borderColor: "divider",
               "&:last-child": { borderBottom: 0 },
               display: "flex",
               alignItems: "center",
-              gap: 1.5,
+              gap: 1,
             }}
           >
-            <Avatar
-              sx={{
-                width: 36,
-                height: 36,
-                fontSize: TYPE_SCALE.sm,
-                bgcolor: "grey.400",
-                flexShrink: 0,
-              }}
-            >
-              {row.name[0].toUpperCase()}
-            </Avatar>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-                {row.name}
-              </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
-                display="block"
-                sx={{ fontStyle: "italic" }}
+            <PersonCardButton name={row.name} onOpen={() => onEdit(row)}>
+              <Avatar
+                sx={{
+                  width: 36,
+                  height: 36,
+                  fontSize: TYPE_SCALE.sm,
+                  bgcolor: "grey.400",
+                  flexShrink: 0,
+                }}
               >
-                {childOfLabel(
-                  row.gender,
-                  row.guardians.map((g) => g.name?.trim() || g.email)
-                )}
-              </Typography>
-              <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
-                <AthleteStatusChip status={row.athleteStatus} />
-                {row.sportRole && <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />}
-                {team && (
-                  <TeamChip name={team.name} color={team.color} sx={{ fontSize: TYPE_SCALE.xs }} />
-                )}
-                {row.ratingMu != null && (
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={<RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} compact />}
-                    sx={{ fontSize: TYPE_SCALE.xs }}
-                  />
-                )}
-              </Box>
-            </Box>
-            <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
-              <Tooltip title="Modifica figlio">
-                <IconButton size="medium" aria-label="Modifica figlio" onClick={() => onEdit(row)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Elimina figlio">
-                <IconButton
-                  size="medium"
-                  aria-label="Elimina figlio"
-                  color="error"
-                  onClick={() => onDelete(row)}
+                {row.name[0].toUpperCase()}
+              </Avatar>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
+                  {row.name}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  noWrap
+                  display="block"
+                  sx={{ fontStyle: "italic" }}
                 >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
+                  {childOfLabel(
+                    row.gender,
+                    row.guardians.map((g) => g.name?.trim() || g.email)
+                  )}
+                </Typography>
+                <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
+                  <AthleteStatusChip status={row.athleteStatus} />
+                  {row.sportRole && (
+                    <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
+                  )}
+                  {team && (
+                    <TeamChip
+                      name={team.name}
+                      color={team.color}
+                      sx={{ fontSize: TYPE_SCALE.xs }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            </PersonCardButton>
+            {/* Un figlio senza account lo elimina anche l'allenatore (così l'API). */}
+            <PersonRowMenu
+              name={row.name}
+              canDelete
+              onOpen={() => onEdit(row)}
+              onDelete={() => onDelete(row)}
+            />
           </Box>
         );
       })}

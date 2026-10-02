@@ -26,6 +26,18 @@ export const TOUCH_TARGET: SystemStyleObject<Theme> = {
 };
 
 /**
+ * Solo su telefono: porta a 44 px di altezza un controllo compatto (bottone
+ * `small`, `ToggleButton`) che su desktop resta della sua misura. Per le barre
+ * degli strumenti dell'admin, dense su desktop e usate col dito in palestra.
+ */
+export const TOUCH_TARGET_ON_PHONE = { minHeight: { xs: TOUCH_TARGET_SIZE, sm: 0 } } as const;
+
+/** Come sopra, per un `TextField size="small"` (alto 40 px). */
+export const TOUCH_FIELD_ON_PHONE = {
+  "& .MuiInputBase-root": { minHeight: { xs: TOUCH_TARGET_SIZE, sm: 0 } },
+} as const;
+
+/**
  * Variante per i controlli che hanno una larghezza propria (bottoni con
  * etichetta, `ToggleButton` in fila): vincola solo il minimo, senza forzare
  * il quadrato.

@@ -12,13 +12,15 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import { GENDER_LABELS_SHORT } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import RatingBadge from "@/components/rating/RatingBadge";
+import {
+  PersonCardButton,
+  PersonNameButton,
+  PersonRowMenu,
+} from "@/components/admin/userList/PersonRowControls";
 import TeamAvatar from "@/components/teams/TeamAvatar";
 import TeamChip from "@/components/teams/TeamChip";
 import {
@@ -44,6 +46,8 @@ interface AthletesTableProps {
   onSort: (col: AthleteSortColumn) => void;
   teams: TeamInfo[];
   currentSeason: string;
+  /** Squadra ed eliminazione di un account sono dell'admin. */
+  isAdmin: boolean;
   /** Testo della tabella vuota (dipende dai filtri accesi). */
   emptyLabel: string;
   onConfirmSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
@@ -52,10 +56,6 @@ interface AthletesTableProps {
   onEdit: (row: AdminRow) => void;
   onDelete: (row: AdminRow) => void;
 }
-
-const SKILL_COLUMN_HINT =
-  "Rating TrueSkill: stima di livello usata per bilanciare le squadre. " +
-  "Il ± e' l'incertezza della stima, e cala col numero di partite giocate.";
 
 const rowKey = (row: AdminRow) => `${row.kind}-${row.id}`;
 const rowName = (row: AdminRow) => row.name ?? (row.kind === "user" ? row.email : "—");
@@ -80,7 +80,18 @@ function familyLine(row: AdminRow): string | null {
  * di chi non ce l'ha. E' l'unica differenza fra i due tipi di riga che allo
  * staff serve vedere qui.
  */
-function AthleteIdentity({ row, season, size }: { row: AdminRow; season: string; size: number }) {
+function AthleteIdentity({
+  row,
+  season,
+  size,
+  onOpen,
+}: {
+  row: AdminRow;
+  season: string;
+  size: number;
+  /** In tabella il nome apre la scheda; nella card lo fa tutta la card. */
+  onOpen?: () => void;
+}) {
   const team = currentTeam(row, season)?.team;
   const family = familyLine(row);
   return (
@@ -93,9 +104,13 @@ function AthleteIdentity({ row, season, size }: { row: AdminRow; season: string;
         sx={{ fontSize: TYPE_SCALE.sm }}
       />
       <Box sx={{ minWidth: 0 }}>
-        <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-          {rowName(row)}
-        </Typography>
+        {onOpen ? (
+          <PersonNameButton name={rowName(row)} onOpen={onOpen} />
+        ) : (
+          <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
+            {rowName(row)}
+          </Typography>
+        )}
         {row.kind === "user" && (
           <Typography
             variant="caption"
@@ -136,28 +151,18 @@ function AthleteIdentity({ row, season, size }: { row: AdminRow; season: string;
 
 function RowActions({
   row,
+  isAdmin,
   onEdit,
   onDelete,
-}: Pick<AthletesTableProps, "onEdit" | "onDelete"> & { row: AdminRow }) {
-  const name = rowName(row);
+}: Pick<AthletesTableProps, "isAdmin" | "onEdit" | "onDelete"> & { row: AdminRow }) {
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5, flexShrink: 0 }}>
-      <Tooltip title="Modifica">
-        <IconButton size="medium" aria-label={`Modifica ${name}`} onClick={() => onEdit(row)}>
-          <EditIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Elimina">
-        <IconButton
-          size="medium"
-          aria-label={`Elimina ${name}`}
-          color="error"
-          onClick={() => onDelete(row)}
-        >
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </Box>
+    <PersonRowMenu
+      name={rowName(row)}
+      // Un account lo elimina solo l'admin; un figlio senza account anche l'allenatore.
+      canDelete={isAdmin || row.kind === "child"}
+      onOpen={() => onEdit(row)}
+      onDelete={() => onDelete(row)}
+    />
   );
 }
 
@@ -169,6 +174,7 @@ export default function AthletesTable({
   onSort,
   teams,
   currentSeason,
+  isAdmin,
   emptyLabel,
   onConfirmSuggestedRole,
   onRejectSuggestedRole,
@@ -205,16 +211,6 @@ export default function AthletesTable({
               <TableCell align="center">{sortLabel("sportRole", "Baskin")}</TableCell>
               <TableCell align="center">Squadra</TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
-                <Tooltip title={SKILL_COLUMN_HINT}>
-                  <Box
-                    component="span"
-                    sx={{ cursor: "help", borderBottom: "1px dotted", pb: "1px" }}
-                  >
-                    Skill
-                  </Box>
-                </Tooltip>
-              </TableCell>
-              <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
                 Genere
               </TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
@@ -227,7 +223,12 @@ export default function AthletesTable({
             {rows.map((row) => (
               <TableRow key={rowKey(row)} hover>
                 <TableCell sx={{ maxWidth: 300 }}>
-                  <AthleteIdentity row={row} season={currentSeason} size={30} />
+                  <AthleteIdentity
+                    row={row}
+                    season={currentSeason}
+                    size={30}
+                    onOpen={() => onEdit(row)}
+                  />
                 </TableCell>
 
                 {/* Ruolo Baskin: confermato, oppure suggerito dall'atleta e da confermare. */}
@@ -282,11 +283,8 @@ export default function AthletesTable({
                     memberships={row.teamMemberships}
                     onChange={(teamId) => onTeamChange(row, teamId)}
                     ariaLabel={`Squadra di ${rowName(row)}`}
+                    readOnly={!isAdmin}
                   />
-                </TableCell>
-
-                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
-                  <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
                 </TableCell>
 
                 <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
@@ -306,14 +304,14 @@ export default function AthletesTable({
                 </TableCell>
 
                 <TableCell align="center">
-                  <RowActions row={row} onEdit={onEdit} onDelete={onDelete} />
+                  <RowActions row={row} isAdmin={isAdmin} onEdit={onEdit} onDelete={onDelete} />
                 </TableCell>
               </TableRow>
             ))}
 
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   {emptyLabel}
                 </TableCell>
               </TableRow>
@@ -337,7 +335,8 @@ export default function AthletesTable({
             <Box
               key={rowKey(row)}
               sx={{
-                px: 2,
+                pl: 2,
+                pr: 1,
                 py: 1.5,
                 borderBottom: "1px solid",
                 borderColor: "divider",
@@ -347,24 +346,26 @@ export default function AthletesTable({
                 gap: 1,
               }}
             >
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <AthleteIdentity row={row} season={currentSeason} size={36} />
-                <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.75, pl: 6 }}>
-                  {row.sportRole ? (
-                    <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
-                  ) : (
-                    row.kind === "user" &&
-                    row.sportRoleSuggested && (
-                      <SuggestedRoleChip
-                        role={row.sportRoleSuggested}
-                        variant={row.sportRoleSuggestedVariant}
-                      />
-                    )
-                  )}
-                  {team && <TeamChip name={team.name} color={team.color} compact />}
+              <PersonCardButton name={rowName(row)} onOpen={() => onEdit(row)}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <AthleteIdentity row={row} season={currentSeason} size={36} />
+                  <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.75, pl: 6 }}>
+                    {row.sportRole ? (
+                      <RoleBadge role={row.sportRole} variant={row.sportRoleVariant} />
+                    ) : (
+                      row.kind === "user" &&
+                      row.sportRoleSuggested && (
+                        <SuggestedRoleChip
+                          role={row.sportRoleSuggested}
+                          variant={row.sportRoleSuggestedVariant}
+                        />
+                      )
+                    )}
+                    {team && <TeamChip name={team.name} color={team.color} compact />}
+                  </Box>
                 </Box>
-              </Box>
-              <RowActions row={row} onEdit={onEdit} onDelete={onDelete} />
+              </PersonCardButton>
+              <RowActions row={row} isAdmin={isAdmin} onEdit={onEdit} onDelete={onDelete} />
             </Box>
           );
         })}

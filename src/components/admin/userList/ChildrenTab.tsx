@@ -5,7 +5,6 @@ import {
   Avatar,
   Box,
   Button,
-  IconButton,
   InputAdornment,
   Table,
   TableBody,
@@ -16,16 +15,13 @@ import {
   TableRow,
   TableSortLabel,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ChildCareIcon from "@mui/icons-material/ChildCare";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { sportRoleLabel, GENDER_LABELS_SHORT } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import RatingBadge from "@/components/rating/RatingBadge";
+import { PersonNameButton, PersonRowMenu } from "@/components/admin/userList/PersonRowControls";
 import {
   AthleteStatusChip,
   TeamCellSelect,
@@ -36,6 +32,7 @@ import ChildrenMobileCards from "@/components/admin/userList/ChildrenMobileCards
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
 type ChildRow = ChildEntry & { kind: "child" };
 type ChildSortColumn = "name" | "createdAt" | "sportRole";
@@ -44,6 +41,8 @@ interface ChildrenTabProps {
   childRows: ChildRow[];
   teams: TeamInfo[];
   currentSeason: string;
+  /** Assegnare la squadra è dell'admin. */
+  isAdmin: boolean;
   onTeamChange: (row: ChildRow, teamId: string) => void;
   onEdit: (row: ChildRow) => void;
   onDelete: (row: ChildRow) => void;
@@ -57,6 +56,7 @@ export default function ChildrenTab({
   childRows,
   teams,
   currentSeason,
+  isAdmin,
   onTeamChange,
   onEdit,
   onDelete,
@@ -116,7 +116,7 @@ export default function ChildrenTab({
             setPage(0);
           }}
           size="small"
-          sx={{ width: { xs: "100%", sm: 280 } }}
+          sx={{ width: { xs: "100%", sm: 280 }, ...TOUCH_FIELD_ON_PHONE }}
           slotProps={{
             input: {
               startAdornment: (
@@ -137,6 +137,7 @@ export default function ChildrenTab({
           variant="outlined"
           size="small"
           startIcon={<ChildCareIcon />}
+          sx={TOUCH_TARGET_ON_PHONE}
         >
           Nuovo figlio
         </Button>
@@ -176,9 +177,6 @@ export default function ChildrenTab({
                 </TableSortLabel>
               </TableCell>
               <TableCell align="center">Squadra</TableCell>
-              <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                Skill
-              </TableCell>
               <TableCell align="center" sx={{ display: { xs: "none", sm: "table-cell" } }}>
                 Genere
               </TableCell>
@@ -197,9 +195,7 @@ export default function ChildrenTab({
                       {row.name[0].toUpperCase()}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-                        {row.name}
-                      </Typography>
+                      <PersonNameButton name={row.name} onOpen={() => onEdit(row)} />
                       <AthleteStatusChip status={row.athleteStatus} />
                     </Box>
                   </Box>
@@ -244,12 +240,8 @@ export default function ChildrenTab({
                     memberships={row.teamMemberships}
                     onChange={(teamId) => onTeamChange(row, teamId)}
                     ariaLabel={`Squadra di ${row.name}`}
+                    readOnly={!isAdmin}
                   />
-                </TableCell>
-
-                {/* Skill (TrueSkill) — solo COACH/ADMIN */}
-                <TableCell align="center" sx={{ display: { xs: "none", md: "table-cell" } }}>
-                  <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
                 </TableCell>
 
                 {/* Genere */}
@@ -263,36 +255,21 @@ export default function ChildrenTab({
                   )}
                 </TableCell>
 
-                {/* Azioni */}
+                {/* Azioni: un figlio senza account lo elimina anche l'allenatore. */}
                 <TableCell align="center">
-                  <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                    <Tooltip title="Modifica figlio">
-                      <IconButton
-                        size="medium"
-                        aria-label="Modifica figlio"
-                        onClick={() => onEdit(row)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Elimina figlio">
-                      <IconButton
-                        size="medium"
-                        aria-label="Elimina figlio"
-                        color="error"
-                        onClick={() => onDelete(row)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
+                  <PersonRowMenu
+                    name={row.name}
+                    canDelete
+                    onOpen={() => onEdit(row)}
+                    onDelete={() => onDelete(row)}
+                  />
                 </TableCell>
               </TableRow>
             ))}
 
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
                   {search
                     ? "Nessun risultato corrisponde alla ricerca."
                     : "Nessun figlio senza account trovato."}

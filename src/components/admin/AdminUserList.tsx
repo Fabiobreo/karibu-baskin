@@ -18,6 +18,7 @@ import {
 import type { AppRole } from "@prisma/client";
 import { ROLE_LABELS_IT, ROLE_HIERARCHY } from "@/lib/authRoles";
 import { useToast } from "@/context/ToastContext";
+import { readError } from "@/lib/fetchJson";
 import UserFilters from "@/components/admin/userList/UserFilters";
 import UsersTable from "@/components/admin/userList/UsersTable";
 import UsersMobileCards from "@/components/admin/userList/UsersMobileCards";
@@ -66,6 +67,7 @@ export default function AdminUserList({
   childEntries: initialChildren,
   initialTeams = [],
   isAdmin = false,
+  currentUserId = null,
   serverTotal,
   serverPage = 1,
   serverLimit = DEFAULT_ROWS_PER_PAGE,
@@ -79,6 +81,8 @@ export default function AdminUserList({
   childEntries: ChildEntry[];
   initialTeams?: TeamInfo[];
   isAdmin?: boolean;
+  /** Chi sta guardando: nessuno cambia il proprio ruolo utente. */
+  currentUserId?: string | null;
   /** Stagione in corso (flag dello staff, o calendario), dal Server Component. */
   currentSeason: string;
   serverTotal?: number;
@@ -349,22 +353,6 @@ export default function AdminUserList({
 
   // ── Azioni tabella ────────────────────────────────────────────────────────
 
-  async function handleRoleChange(userId: string, newRole: AppRole) {
-    const res = await fetch(`/api/users/${userId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ appRole: newRole }),
-    });
-    if (res.ok) {
-      updateRow({ kind: "user", id: userId }, (r) =>
-        r.kind === "user" ? { ...r, appRole: newRole } : r
-      );
-      showToast({ message: `Ruolo aggiornato a ${ROLE_LABELS_IT[newRole]}`, severity: "success" });
-    } else {
-      showToast({ message: "Errore aggiornamento ruolo", severity: "error" });
-    }
-  }
-
   async function handleConfirmSuggestedRole(row: UserEntry & { kind: "user" }) {
     if (!row.sportRoleSuggested) return;
     const res = await fetch(`/api/users/${row.id}`, {
@@ -509,7 +497,7 @@ export default function AdminUserList({
         value={activeTab === "children" && childCount === 0 ? "athletes" : activeTab}
         onChange={(_, v: TabKey) => setActiveTab(v)}
         variant="scrollable"
-        scrollButtons="auto"
+        scrollButtons={false}
         sx={{ mb: 2.5, borderBottom: "1px solid", borderColor: "divider" }}
       >
         {/* Il numero e' la rosa attiva: in pausa ed ex si vedono dal filtro di stato. */}
@@ -524,6 +512,7 @@ export default function AdminUserList({
           rows={athleteRows}
           teams={availableTeams}
           currentSeason={currentSeason}
+          isAdmin={isAdmin}
           onConfirmSuggestedRole={handleConfirmSuggestedRole}
           onRejectSuggestedRole={handleRejectSuggestedRole}
           onTeamChange={handleTeamChange}
@@ -578,7 +567,7 @@ export default function AdminUserList({
             teams={availableTeams}
             currentSeason={currentSeason}
             activeFilterCount={activeFilterCount}
-            onRoleChange={handleRoleChange}
+            isAdmin={isAdmin}
             onConfirmSuggestedRole={handleConfirmSuggestedRole}
             onRejectSuggestedRole={handleRejectSuggestedRole}
             onTeamChange={handleTeamChange}
@@ -590,6 +579,7 @@ export default function AdminUserList({
             rows={paginated}
             currentSeason={currentSeason}
             activeFilterCount={activeFilterCount}
+            isAdmin={isAdmin}
             onEdit={setEditRow}
             onDelete={setDeleteRow}
           />
@@ -628,6 +618,7 @@ export default function AdminUserList({
           childRows={childRows}
           teams={availableTeams}
           currentSeason={currentSeason}
+          isAdmin={isAdmin}
           onTeamChange={handleTeamChange}
           onEdit={setEditRow}
           onDelete={setDeleteRow}
@@ -668,6 +659,7 @@ export default function AdminUserList({
         <UserEditDialog
           row={editRow}
           isAdmin={isAdmin}
+          currentUserId={currentUserId}
           teams={availableTeams}
           currentSeason={currentSeason}
           onClose={() => setEditRow(null)}

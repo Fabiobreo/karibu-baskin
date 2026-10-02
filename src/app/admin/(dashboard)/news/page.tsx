@@ -40,7 +40,7 @@ export default async function AdminNewsPage() {
   return (
     <>
       <PageHeader
-        title="Gestione News"
+        title="News"
         subtitle="Articoli, sondaggi e comunicazioni del club."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "News" }]}
       />

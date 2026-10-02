@@ -565,7 +565,7 @@ export default function AdminGironeWorkspaceClient({
           </Typography>
         </Box>
         <Button href="/admin/partite" size="small" variant="outlined" startIcon={<OpenInNewIcon />}>
-          Apri Gestione Partite
+          Apri Partite
         </Button>
       </Paper>
 

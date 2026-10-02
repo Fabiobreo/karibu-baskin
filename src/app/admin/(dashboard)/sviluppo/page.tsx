@@ -81,13 +81,13 @@ export default async function SviluppoPage() {
     <>
       <PageHeader
         title="Sviluppo giocatori"
-        subtitle="Andamento del rating TrueSkill nel tempo (μ). Visibile solo allo staff."
+        subtitle="Come cambia nel tempo il livello stimato di ogni giocatore. Lo vede solo lo staff."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Sviluppo" }]}
       />
       <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}>
         {athletes.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
-            Nessun rating disponibile: servono partitelle con punteggio registrato.
+            Nessun livello stimato: servono partitelle con il punteggio registrato.
           </Typography>
         ) : (
           <DevelopmentTracker athletes={athletes} />

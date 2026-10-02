@@ -55,7 +55,7 @@ export default function MatchQualityBadge({
             </Typography>
           )}
           <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-            Basato su rating TrueSkill (COACH/ADMIN)
+            Stima ricavata dai risultati delle partitelle. La vede solo lo staff.
           </Typography>
         </Box>
       }

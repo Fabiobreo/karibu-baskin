@@ -72,7 +72,8 @@ export default function AdminTrainingsView({
           value={section}
           onChange={(_, v: TrainingsSection) => changeSection(v)}
           variant="scrollable"
-          scrollButtons="auto"
+          // Niente frecce: tre schede, e su telefono si scorre col dito (UX-40).
+          scrollButtons={false}
           aria-label="Sezioni degli allenamenti"
           sx={{ flex: 1, minWidth: 0, "& .MuiTab-root": { minHeight: 48 } }}
         >

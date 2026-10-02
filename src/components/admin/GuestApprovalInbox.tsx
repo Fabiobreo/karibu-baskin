@@ -9,6 +9,7 @@ import { useToast } from "@/context/ToastContext";
 import { readError } from "@/lib/fetchJson";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { RADIUS } from "@/lib/radius";
+import { TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
 
 export interface GuestUser {
@@ -110,6 +111,7 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                   size="small"
                   variant="contained"
                   disabled={busy}
+                  sx={TOUCH_TARGET_ON_PHONE}
                   onClick={() => approve(g, "ATHLETE")}
                 >
                   Atleta
@@ -118,6 +120,7 @@ export default function GuestApprovalInbox({ guests: initialGuests }: { guests: 
                   size="small"
                   variant="outlined"
                   disabled={busy}
+                  sx={TOUCH_TARGET_ON_PHONE}
                   onClick={() => approve(g, "PARENT")}
                 >
                   Genitore

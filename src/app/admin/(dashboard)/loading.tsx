@@ -1,9 +1,9 @@
-import { Container, Skeleton, Box, Stack } from "@mui/material";
+import { Skeleton, Box, Stack } from "@mui/material";
 import { RADIUS } from "@/lib/radius";
 
 export default function AdminLoading() {
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box>
       <Skeleton variant="text" width={240} height={40} sx={{ mb: 3 }} />
       <Stack spacing={2}>
         {Array.from({ length: 4 }).map((_, i) => (
@@ -16,6 +16,6 @@ export default function AdminLoading() {
           </Box>
         ))}
       </Stack>
-    </Container>
+    </Box>
   );
 }

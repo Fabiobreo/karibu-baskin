@@ -22,7 +22,7 @@ export default async function AdminSquadrePage() {
   return (
     <>
       <PageHeader
-        title="Gestione Squadre"
+        title="Squadre"
         subtitle="Organizza le squadre per stagione."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Squadre" }]}
       />

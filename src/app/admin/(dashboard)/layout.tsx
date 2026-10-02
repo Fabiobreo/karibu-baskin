@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/authjs";
 import { hasRole } from "@/lib/authRoles";
 import type { AppRole } from "@prisma/client";
-import AdminNavBar from "@/components/admin/AdminNavBar";
 import { Container } from "@mui/material";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -14,11 +13,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <>
-      <AdminNavBar />
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        {children}
-      </Container>
-    </>
+    // L'intestazione del pannello (`AdminHeader`) la monta il layout radice,
+    // fuori dal <main>.
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {children}
+    </Container>
   );
 }

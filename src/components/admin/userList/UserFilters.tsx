@@ -29,6 +29,7 @@ import {
 } from "@/components/admin/userList/userListShared";
 import { TYPE_SCALE } from "@/lib/typeScale";
 import { FONT_WEIGHT } from "@/lib/fontWeight";
+import { TOUCH_FIELD_ON_PHONE, TOUCH_TARGET_ON_PHONE } from "@/lib/touchTarget";
 
 interface UserFiltersProps {
   search: string;
@@ -83,7 +84,7 @@ export default function UserFilters({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           size="small"
-          sx={{ width: { xs: "100%", sm: 280 } }}
+          sx={{ width: { xs: "100%", sm: 280 }, ...TOUCH_FIELD_ON_PHONE }}
           slotProps={{
             input: {
               startAdornment: (
@@ -99,6 +100,7 @@ export default function UserFilters({
         </Typography>
         <Button
           size="small"
+          sx={TOUCH_TARGET_ON_PHONE}
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           startIcon={

@@ -12,7 +12,15 @@ import { TOUCH_TARGET } from "@/lib/touchTarget";
 import { RADIUS } from "@/lib/radius";
 import { heroText } from "@/lib/heroStyles";
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  /**
+   * Su che fondo sta: `dark` (default) è l'header del sito, `surface` una
+   * barra del colore della carta, come quella dell'admin.
+   */
+  tone?: "dark" | "surface";
+}
+
+export default function NotificationBell({ tone = "dark" }: NotificationBellProps) {
   const t = useTranslations("nav");
   const { status } = useSession();
   const { unreadCount } = useNotifications();
@@ -30,8 +38,8 @@ export default function NotificationBell() {
         aria-label={t("notifications")}
         sx={{
           ...TOUCH_TARGET,
-          color: heroText.secondary,
-          "&:hover": { color: "common.white" },
+          color: tone === "dark" ? heroText.secondary : "text.secondary",
+          "&:hover": { color: tone === "dark" ? "common.white" : "text.primary" },
         }}
       >
         <Badge

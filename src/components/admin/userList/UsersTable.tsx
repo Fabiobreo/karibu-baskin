@@ -4,8 +4,6 @@ import {
   Box,
   Chip,
   IconButton,
-  MenuItem,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -16,16 +14,12 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import type { AppRole } from "@prisma/client";
 import { GENDER_LABELS_SHORT } from "@/lib/constants";
 import RoleBadge from "@/components/common/RoleBadge";
-import RatingBadge from "@/components/rating/RatingBadge";
+import { PersonNameButton, PersonRowMenu } from "@/components/admin/userList/PersonRowControls";
 import {
-  ALL_APP_ROLES,
   AppRoleChip,
   AthleteStatusChip,
   SuggestedRoleChip,
@@ -48,21 +42,14 @@ interface UsersTableProps {
   teams: TeamInfo[];
   currentSeason: string;
   activeFilterCount: number;
-  onRoleChange: (userId: string, role: AppRole) => void;
+  /** Squadra ed eliminazione sono dell'admin. */
+  isAdmin: boolean;
   onConfirmSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
   onRejectSuggestedRole: (row: UserEntry & { kind: "user" }) => void;
   onTeamChange: (row: AdminRow, teamId: string) => void;
   onEdit: (row: AdminRow) => void;
   onDelete: (row: AdminRow) => void;
 }
-
-/**
- * La colonna mostra `26.2 ±6.1` senza dire cosa sia: e' il rating TrueSkill
- * usato per bilanciare le partitelle, con la sua incertezza.
- */
-const SKILL_COLUMN_HINT =
-  "Rating TrueSkill: stima di livello usata per bilanciare le squadre. " +
-  "Il ± e' l'incertezza della stima, e cala col numero di partite giocate.";
 
 /** Tabella desktop del tab Utenti. */
 export default function UsersTable({
@@ -73,7 +60,7 @@ export default function UsersTable({
   teams,
   currentSeason,
   activeFilterCount,
-  onRoleChange,
+  isAdmin,
   onConfirmSuggestedRole,
   onRejectSuggestedRole,
   onTeamChange,
@@ -123,16 +110,6 @@ export default function UsersTable({
             </TableCell>
             <TableCell align="center">Squadra</TableCell>
             <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
-              <Tooltip title={SKILL_COLUMN_HINT}>
-                <Box
-                  component="span"
-                  sx={{ cursor: "help", borderBottom: "1px dotted", pb: "1px" }}
-                >
-                  Skill
-                </Box>
-              </Tooltip>
-            </TableCell>
-            <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
               Genere
             </TableCell>
             <TableCell align="center">Azioni</TableCell>
@@ -156,9 +133,7 @@ export default function UsersTable({
                       {(row.name ?? "?")[0].toUpperCase()}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" fontWeight={FONT_WEIGHT.semibold} noWrap>
-                        {row.name ?? "—"}
-                      </Typography>
+                      <PersonNameButton name={row.name ?? row.email} onOpen={() => onEdit(row)} />
                       <Typography
                         variant="caption"
                         color="text.secondary"
@@ -195,22 +170,10 @@ export default function UsersTable({
                   </Box>
                 </TableCell>
 
-                {/* Ruolo utente */}
+                {/* Ruolo utente: si legge qui, si cambia nella scheda (con Salva e
+                    Annulla). Prima era una tendina attiva su ogni riga. */}
                 <TableCell>
-                  <Select
-                    value={row.appRole}
-                    size="small"
-                    onChange={(e) => onRoleChange(row.id, e.target.value as AppRole)}
-                    inputProps={{ "aria-label": `Ruolo utente di ${row.name ?? row.email}` }}
-                    sx={{ minWidth: 110, fontSize: TYPE_SCALE.xs }}
-                    renderValue={(val) => <AppRoleChip role={val as AppRole} />}
-                  >
-                    {ALL_APP_ROLES.map((r) => (
-                      <MenuItem key={r} value={r}>
-                        <AppRoleChip role={r} />
-                      </MenuItem>
-                    ))}
-                  </Select>
+                  <AppRoleChip role={row.appRole} />
                 </TableCell>
 
                 {/* Ruolo Baskin */}
@@ -268,12 +231,8 @@ export default function UsersTable({
                     memberships={row.teamMemberships}
                     onChange={(teamId) => onTeamChange(row, teamId)}
                     ariaLabel={`Squadra di ${row.name ?? row.email}`}
+                    readOnly={!isAdmin}
                   />
-                </TableCell>
-
-                {/* Skill (TrueSkill) — solo COACH/ADMIN */}
-                <TableCell align="center" sx={{ display: { xs: "none", lg: "table-cell" } }}>
-                  <RatingBadge mu={row.ratingMu} sigma={row.ratingSigma} />
                 </TableCell>
 
                 {/* Genere */}
@@ -289,27 +248,12 @@ export default function UsersTable({
 
                 {/* Azioni */}
                 <TableCell align="center">
-                  <Box sx={{ display: "flex", justifyContent: "center", gap: 0.5 }}>
-                    <Tooltip title="Modifica utente">
-                      <IconButton
-                        size="medium"
-                        aria-label="Modifica utente"
-                        onClick={() => onEdit(row)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Elimina utente">
-                      <IconButton
-                        size="medium"
-                        aria-label="Elimina utente"
-                        color="error"
-                        onClick={() => onDelete(row)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
+                  <PersonRowMenu
+                    name={row.name ?? row.email}
+                    canDelete={isAdmin}
+                    onOpen={() => onEdit(row)}
+                    onDelete={() => onDelete(row)}
+                  />
                 </TableCell>
               </TableRow>
             );
@@ -317,7 +261,7 @@ export default function UsersTable({
 
           {rows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} align="center" sx={{ py: 4, color: "text.secondary" }}>
+              <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
                 {activeFilterCount > 0
                   ? "Nessun risultato corrisponde ai filtri selezionati."
                   : "Nessun utente trovato."}

@@ -25,7 +25,7 @@ export default async function AdminGalleryPage() {
   return (
     <>
       <PageHeader
-        title="Gestione Gallery"
+        title="Gallery"
         subtitle="Feed Instagram e video del club mostrati nella pagina pubblica /gallery."
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Gallery" }]}
       />

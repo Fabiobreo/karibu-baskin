@@ -8,7 +8,7 @@ export default function AdminAuditPage() {
   return (
     <>
       <PageHeader
-        title="Registro Attività"
+        title="Registro attività"
         subtitle="Tutte le azioni effettuate da coach e admin sul pannello."
         icon={<HistoryIcon sx={{ color: "text.secondary" }} />}
         breadcrumb={[{ label: "Dashboard", href: "/admin" }, { label: "Registro attività" }]}
