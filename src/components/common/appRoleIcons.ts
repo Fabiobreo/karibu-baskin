@@ -23,6 +23,10 @@ export const ROLE_CHIP_ICONS: Record<AppRole, SvgIconComponent> = {
   ADMIN: AdminPanelSettingsIcon,
 };
 
+// L'icona sta nella prop `icon` (Client Component) oppure dentro l'etichetta
+// (`ChipIconLabel`, dai Server Component).
+const CHIP_ICON = "& .MuiChip-icon, & .MuiChip-label .MuiSvgIcon-root";
+
 /**
  * `sx` del chip del ruolo utente (01/10): tonale per atleta, genitore e
  * allenatore (`palette.appRole`), nero del marchio pieno per l'admin, neutro
@@ -31,18 +35,18 @@ export const ROLE_CHIP_ICONS: Record<AppRole, SvgIconComponent> = {
  * `"filled"` per gli altri (`appRoleChipVariant`).
  */
 export function appRoleChipSx(role: AppRole) {
-  if (role === "GUEST") return { "& .MuiChip-icon": { color: "text.secondary" } };
+  if (role === "GUEST") return { [CHIP_ICON]: { color: "text.secondary" } };
   if (role === "ADMIN") {
     return {
       bgcolor: "secondary.main",
       color: "secondary.contrastText",
-      "& .MuiChip-icon": { color: "inherit" },
+      [CHIP_ICON]: { color: "inherit" },
     };
   }
   return {
     bgcolor: `appRole.${role}.bg`,
     color: `appRole.${role}.fg`,
-    "& .MuiChip-icon": { color: "inherit" },
+    [CHIP_ICON]: { color: "inherit" },
   };
 }
 

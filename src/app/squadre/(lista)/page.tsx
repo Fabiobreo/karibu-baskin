@@ -6,6 +6,7 @@ import { alpha } from "@mui/material/styles";
 import PageHero from "@/components/common/PageHero";
 import EmptyState from "@/components/common/EmptyState";
 import BrandCta from "@/components/common/BrandCta";
+import ChipIconLabel from "@/components/common/ChipIconLabel";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
@@ -67,9 +68,17 @@ export default async function SquadrePage() {
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
                 {!isFallback && (
                   <Chip
-                    label={t("currentSeasonChip")}
+                    // Icona dentro `label`, non in `icon`: vedi ChipIconLabel.
+                    label={
+                      <ChipIconLabel
+                        icon={<StarIcon sx={{ fontSize: 18, color: "text.secondary" }} />}
+                        size="small"
+                        variant="outlined"
+                      >
+                        {t("currentSeasonChip")}
+                      </ChipIconLabel>
+                    }
                     size="small"
-                    icon={<StarIcon />}
                     variant="outlined"
                   />
                 )}

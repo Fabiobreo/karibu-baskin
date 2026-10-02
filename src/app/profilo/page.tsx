@@ -26,6 +26,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import TeamChip from "@/components/teams/TeamChip";
+import ChipIconLabel from "@/components/common/ChipIconLabel";
 
 import type { AppRole } from "@prisma/client";
 import ParentChildLinker, { type ChildData } from "@/components/profile/ParentChildLinker";
@@ -333,8 +334,16 @@ export default async function ProfiloPage() {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
           {/* Ruolo utente neutro (UX-29): lo distinguono icona e parola, non il colore. */}
           <Chip
-            label={t(`appRole${user.appRole as AppRole}`)}
-            icon={<AppRoleIcon />}
+            // Icona dentro `label`, non in `icon`: vedi ChipIconLabel.
+            label={
+              <ChipIconLabel
+                icon={<AppRoleIcon sx={{ fontSize: 18 }} />}
+                size="small"
+                variant={appRoleChipVariant(user.appRole as AppRole)}
+              >
+                {t(`appRole${user.appRole as AppRole}`)}
+              </ChipIconLabel>
+            }
             variant={appRoleChipVariant(user.appRole as AppRole)}
             size="small"
             sx={appRoleChipSx(user.appRole as AppRole)}

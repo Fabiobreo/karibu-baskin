@@ -21,6 +21,7 @@ import { alpha } from "@mui/material/styles";
 import { brandColor, heroGradient, heroMedal, heroTint, heroText } from "@/lib/heroStyles";
 import { teamColor, teamFill } from "@/lib/teamColors";
 import EntityHero from "@/components/common/EntityHero";
+import ChipIconLabel from "@/components/common/ChipIconLabel";
 import MedalDisc from "@/components/rating/MedalDisc";
 import PlayerShareButtons from "@/components/common/PlayerShareButtons";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -607,22 +608,22 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                 // Niente `clickable`: il link e' gia' l'elemento da toccare.
                 <Link key={m.id} href={teamHref(m.team)} style={{ textDecoration: "none" }}>
                   <Chip
-                    icon={
-                      m.isCaptain ? (
-                        <EmojiEventsIcon
-                          sx={{
-                            fontSize: "0.95rem !important",
-                            color: `${heroMedal.gold} !important`,
-                          }}
-                        />
-                      ) : undefined
-                    }
                     // Una squadra di una stagione passata porta la stagione:
                     // senza, sembrerebbe quella in cui gioca adesso.
+                    // Icona dentro `label`, non in `icon`: vedi ChipIconLabel.
                     label={
-                      m.team.season === currentSeason
-                        ? m.team.name
-                        : `${m.team.name} · ${m.team.season}`
+                      <ChipIconLabel
+                        icon={
+                          m.isCaptain ? (
+                            <EmojiEventsIcon sx={{ fontSize: "0.95rem", color: heroMedal.gold }} />
+                          ) : undefined
+                        }
+                        size="small"
+                      >
+                        {m.team.season === currentSeason
+                          ? m.team.name
+                          : `${m.team.name} · ${m.team.season}`}
+                      </ChipIconLabel>
                     }
                     size="small"
                     // Squadra nella sua tinta; senza tinta contornata neutra (UX-29).
@@ -866,22 +867,32 @@ export default async function PlayerProfilePage({ params, searchParams }: Props)
                     {/* Niente `clickable`: il link e' gia' l'elemento da
                       toccare, un bottone dentro farebbe due fermate di Tab. */}
                     <Chip
-                      label={c.name}
+                      // Avatar dentro `label`, non in `avatar`: vedi ChipIconLabel.
+                      label={
+                        <ChipIconLabel
+                          icon={
+                            c.sportRole ? (
+                              <Avatar
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  bgcolor: roleColor(c.sportRole),
+                                  color: "common.white",
+                                  fontSize: TYPE_SCALE.xs,
+                                  fontWeight: FONT_WEIGHT.semibold,
+                                }}
+                              >
+                                {c.sportRole}
+                              </Avatar>
+                            ) : undefined
+                          }
+                          variant="outlined"
+                        >
+                          {c.name}
+                        </ChipIconLabel>
+                      }
                       variant="outlined"
                       sx={{ cursor: "pointer", "a:hover > &": { bgcolor: "action.hover" } }}
-                      avatar={
-                        c.sportRole ? (
-                          <Avatar
-                            sx={{
-                              bgcolor: roleColor(c.sportRole),
-                              color: "common.white !important",
-                              fontWeight: FONT_WEIGHT.semibold,
-                            }}
-                          >
-                            {c.sportRole}
-                          </Avatar>
-                        ) : undefined
-                      }
                     />
                   </Link>
                 ))}
