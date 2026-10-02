@@ -7,6 +7,7 @@ Audit grafico, UX e di usabilità del sito, con contro-revisione di tre revisori
 - [img/](img/): tavole di confronto per le decisioni visive.
 - [RIAUDIT.md](RIAUDIT.md): voti e misure del 24/09, metodo e script ([misure/](misure/)) per rifare l'audit e capire se il sito è migliorato.
 - [RIAUDIT-2026-09-29.md](RIAUDIT-2026-09-29.md): primo riaudit (voti, compiti, misure, verifica dei ticket, problemi aperti e proposta di ondata 4).
+- [RIAUDIT-2026-10-02.md](RIAUDIT-2026-10-02.md): secondo riaudit, a ondata 4 chiusa (voti, compiti, misure di sistema, verifica dei ticket UX-29 … UX-44, problemi rimasti e ticket proposti).
 
 ## Decisioni già prese
 
@@ -102,6 +103,20 @@ Nasce dal [riaudit del 29/09](RIAUDIT-2026-09-29.md): barriere e compiti sono mi
 | [UX-43](tickets/UX-43-allenamenti-card-evidenza.md) | `/allenamenti`: card in evidenza in un tono solo, "Gestisci" sulla riga del titolo | S     | UX-32        |
 | [UX-44](tickets/UX-44-header-fascia-intermedia.md)  | Header fra 900 e 1.200 px: la barra non ci sta                                     | S     |              |
 
+### Ondata 5 · Dopo il secondo riaudit (02/10)
+
+Nasce dal [riaudit del 02/10](RIAUDIT-2026-10-02.md): il sistema regge (intestazioni, raggi, pesi, palette), restano una ricaduta di UX-39 sui target da telefono, un difetto nel profilo dell'ospite, le liste admin non toccate da UX-40 e alcune rifiniture. Ticket piccoli, in ordine di utilità.
+
+| Ticket                                           | Titolo                                                               | Stima | Dipende da | In attesa di              |
+| ------------------------------------------------ | -------------------------------------------------------------------- | ----- | ---------- | ------------------------- |
+| [UX-45](tickets/UX-45-target-su-telefono.md)     | Target da 44 px su telefono: footer, disponibilità, filtri marcatori | S     |            |                           |
+| [UX-46](tickets/UX-46-profilo-ospite.md)         | Profilo dell'ospite senza card contraddittorie                       | S     |            |                           |
+| [UX-47](tickets/UX-47-liste-admin-rimaste.md)    | Liste admin rimaste: un'azione con l'etichetta più "⋯"               | M     | UX-40      |                           |
+| [UX-48](tickets/UX-48-marcatori-su-telefono.md)  | `/marcatori` su telefono: prima i nomi, poi i filtri                 | S     | UX-45      |                           |
+| [UX-49](tickets/UX-49-tinta-squadra-e-azioni.md) | Tinta squadra dove convive con azioni ed esiti                       | S     |            | decisione del committente |
+| [UX-50](tickets/UX-50-partita-futura-anonimo.md) | Partita futura per chi non è tesserato                               | S     |            |                           |
+| [UX-51](tickets/UX-51-rifiniture.md)             | Rifiniture dal secondo riaudit                                       | S     |            |                           |
+
 #### Ordine di lavoro
 
 Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di questa lista** che soddisfa tutte e tre le condizioni:
@@ -112,7 +127,7 @@ Quando si chiede "lavoriamo sul prossimo ticket", il prossimo è **il primo di q
 
 Se il primo della lista è bloccato si passa al successivo, e lo si dice. Quando si prende una decisione la si scrive nel ticket e la si toglie da qui.
 
-Al 02/10/2026 la lista è vuota: tutti i ticket delle ondate 0-4 sono fatti.
+Al 02/10/2026 tutti i ticket delle ondate 0-4 sono fatti. La lista è quella dell'ondata 5, nell'ordine della sua tabella: UX-45, UX-46, UX-47, UX-48, UX-49 (in attesa di una decisione), UX-50, UX-51.
 
 I ticket fatti escono dalla lista: restano nelle tabelle delle ondate, con lo stato nel file.
 
